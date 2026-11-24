@@ -42,13 +42,11 @@ Add a branch to a company.
 
 ### branch names are the company's
 
-Starts from the world `a branch`.
+Starts from the world `four branches`.
 
 - **Ada can't add a second branch of the same name.** `ada` (role company.owner) calls and sends company the world's company, branchName `Nairobi`, and is refused with BranchNameTaken, BR-001, carrying branchName `Nairobi`.
-- **Ada adds a branch with the longest name allowed.** `ada` (role company.owner) calls and sends company the world's company, branchName `Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019`, and gets back an answer matching `^brn_[0-9a-z]+$`.
-- **Ada adds a third branch.** `ada` (role company.owner) calls and sends company the world's company, branchName `Kisumu-West Site 2`, and gets back an answer matching `^brn_[0-9a-z]+$`.
-- **her second company may reuse the first branch's name, because names are unique within a company.** `ada` (role company.owner) calls and sends company the world's otherCompany, branchName `Nairobi`, and gets back an answer matching `^brn_[0-9a-z]+$`.
-- **Ada adds a branch to her second company under a name the first doesn't use.** `ada` (role company.owner) calls and sends company the world's otherCompany, branchName `Eldoret Depot 3`, and gets back an answer matching `^brn_[0-9a-z]+$`.
+- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, branchName `murang'a  Côte/Est depot`, and is refused with BranchNameTaken, BR-001, carrying branchName `murang'a  Côte/Est depot`.
+- **Ada adds a third branch to her first company.** `ada` (role company.owner) calls and sends company the world's company, branchName `Kisumu-West Site 2`, and gets back an answer matching `^brn_[0-9a-z]+$`.
 
 ### set up branches
 

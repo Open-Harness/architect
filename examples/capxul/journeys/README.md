@@ -9,9 +9,14 @@ record types are listed in `../doctypes.md`.
 - `a company`: Ada (signed in) sets up Acme Trading (`AT`, Kenya, USD). It gives `company`.
 - `a department`, from `a company`: Ada adds Engineering. It gives `company` and `department`.
 - `a team`, from `a department`: Ada adds the job title Engineer. It gives `company`, `department` and `designation`.
-- `two companies`, from `a company`: Ada sets up Acme Logistics too. It gives `company` and `otherCompany`.
+- `two companies`, from `a company`: Ada sets up Acme Logistics (`AL`, Uganda, UGX) too. It gives `company` and
+  `otherCompany`.
 - `a branch`, from `two companies`: Ada adds the branch Nairobi to Acme Trading. It gives those and `branch`.
-- `a grade`, from `two companies`: Ada adds the grade Senior to Acme Trading. It gives those and `grade`.
+- `two branches`, `three branches` and `four branches`, each from the one before: Ada adds a branch with all 140
+  letters a name allows to Acme Trading (`longBranch`), then Nairobi (`otherBranch`) and a name with a lower-case
+  start, an apostrophe, an accent, a slash and two spaces in a row (`oddBranch`) to Acme Logistics. The names are in
+  `blueprint/values/branches-names.ts`.
+- `a grade` to `four grades`: the same for grades, from Senior (`grade`, `longGrade`, `otherGrade`, `oddGrade`).
 - `an employee`, from `a team`: Ada hires Olga (signed in) as an engineer in Engineering, joining 2026-01-05. It gives
   those and `employee`.
 - `kyb started`, from `a company`: Ada starts Acme Trading's KYB with Bridge. It gives `company`, `business`, `kybLink`
@@ -44,9 +49,9 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `another-companys-job-title-is-refused` | `a team` | Ada (owner), Olga, Bo (signed in) | The same for a job title (`DesignationNotInCompany`) |
 | `an-employee-leaves` | `an employee` | Ada (owner), Olga (signed in) | Ada reads Olga's record as the company's owner. Olga can't relieve herself (`NotAllowed`). A relieving day before the joining day is refused `RelievedBeforeJoined`, and she stays `active`. `employee.relieve` answers and emits `EmployeeRelieved` with the day, and leaves her `left`. A second relieve is refused by the machine (`state: left`). Olga still reads her old record, every field unchanged but its state. Ada may hire her again as a new employee while the old one stays `left`. The new one can't be relieved the day before rejoining (`RelievedBeforeJoined`, carrying the new joining day) but can on that day itself |
 | `set-up-branches` | `a company` | Ada (owner), Bo (signed in) | `branch.create` answers a `brn_` id, emits `BranchCreated` with the company and leaves it `active`, with the `insert` span. Two branches read back under their own names. Bo can't add to Ada's company or read hers (`NotAllowed`). Bo's own branch, in his own company, reads back as he typed it, and Ada can't read it |
-| `branch-names-are-the-companys` | `a branch` | Ada (owner of both) | A name taken in the company is refused (`BranchNameTaken`). Two more branches, one named with all 140 letters allowed, digits and punctuation, the other with a hyphen and a digit, each read back exactly, and the first is unchanged by them. The second company may reuse the first's name and take a name the first doesn't use, each filed under the second company exactly; the first company's first branch still reads back as before |
+| `branch-names-are-the-companys` | `four branches` | Ada (owner of both) | A name taken in either company is refused (`BranchNameTaken`). Ada adds a third branch, named with a hyphen and a digit, which reads back as typed. Then every branch the worlds made reads back exactly, in its own company, and both companies read back unchanged: a create that changes an earlier record or the company fails here |
 | `set-up-grades` | `a company` | Ada (owner), Bo (signed in) | The same for `employee-grade.create`: an `egr_` id, `EmployeeGradeCreated` with the company, `active`, two grades, Bo refused in Ada's company and Ada in his |
-| `grade-names-are-the-companys` | `a grade` | Ada (owner of both) | The same for grades (`EmployeeGradeNameTaken`), with their own names |
+| `grade-names-are-the-companys` | `four grades` | Ada (owner of both) | The same for grades (`EmployeeGradeNameTaken`) |
 | `bridge-start-a-kyb` | `a company` | Ada (owner), Bo (signed in) | `bridge-business.start` answers a `kyb_` id and two `https://` pages, Bridge's KYB form and its terms, which differ; emits `KybStarted` with the company, leaves it `started`, with the `insert` span. Bo can't start one for Ada's company or read hers (`NotAllowed`). A second start is refused `KybAlreadyStarted`. It reads back as she typed it |
 | `bridge-kyb-is-decided-by-bridge` | `two kybs started` | Ada (owner), Bo (signed in), Bridge (the system) | Only Bridge decides: Ada can't approve her own, Bo can't turn his down (`NotAllowed`). Before approval no account opens (`KybNotApproved`, after `load`, before `insert`). Bridge approves (`KybApproved`, `approved`); an approved KYB can't be approved or turned down again (`notFrom`). Bridge turns Bo's down with its reason (`KybRejected`, `rejected`), which can't then be approved and opens no account; Bo reads his back whole against the world, his form and terms differing. Ada's reads back approved, every field as it was started, the links as `start` gave them |
 | `bridge-a-rejected-kyb-keeps-what-bridge-gave` | `kyb started` | Ada (owner), Bridge (the system) | Bridge turning the KYB down (`KybRejected`, with its reason) changes no field but the state |
@@ -123,4 +128,5 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
   two companies may share one. A grade's three fields (`default_salary_structure`, `default_base_pay` and its
   `currency`, fetched from the structure) come with Salary Structure in payroll (slice 9), so neither needs record
   listing (#764) or the company's currency (#882). Employee's own `branch` and `grade` links wait on optional
-  references (#742); until then no employee names either.
+  references (#742); until then no employee names either. A journey hands on only its latest answer, so the records
+  read back after a later create come from starting worlds, and each name journey makes its one create after them.

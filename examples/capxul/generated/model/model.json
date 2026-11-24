@@ -4261,7 +4261,7 @@
           "role": "company.owner"
         }
       },
-      "starts": "a branch",
+      "starts": "four branches",
       "steps": [
         {
           "title": "Ada can't add a second branch of the same name",
@@ -4292,40 +4292,7 @@
           ]
         },
         {
-          "title": "the branch she had is left as it was",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "world",
-                  "branch"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "Nairobi",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Ada adds a branch with the longest name allowed",
+          "title": "nor reuse a name her second company holds there",
           "call": {
             "actor": "ada",
             "operation": "branch.create",
@@ -4333,65 +4300,19 @@
               "company": {
                 "ref": [
                   "world",
-                  "company"
+                  "otherCompany"
                 ]
               },
-              "branchName": "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019"
+              "branchName": "murang'a  Côte/Est depot"
             }
           },
           "checks": [
             {
-              "kind": "expect",
-              "match": "^brn_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "BranchCreated",
+              "kind": "refuses",
+              "error": "BranchNameTaken",
               "fields": {
-                "branch": {
-                  "ref": [
-                    "last",
-                    "branch"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
+                "branchName": "murang'a  Côte/Est depot"
               }
-            }
-          ]
-        },
-        {
-          "title": "it reads back whole",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019",
-                "active"
-              ]
             },
             {
               "kind": "no-events"
@@ -4399,7 +4320,7 @@
           ]
         },
         {
-          "title": "Ada adds a third branch",
+          "title": "Ada adds a third branch to her first company",
           "call": {
             "actor": "ada",
             "operation": "branch.create",
@@ -4473,7 +4394,7 @@
           ]
         },
         {
-          "title": "her first branch is unchanged by the two after it",
+          "title": "her first company's first branch is unchanged by every create after it",
           "call": {
             "actor": "ada",
             "operation": "branch.get",
@@ -4506,155 +4427,7 @@
           ]
         },
         {
-          "title": "her second company may reuse the first branch's name, because names are unique within a company",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "otherCompany"
-                ]
-              },
-              "branchName": "Nairobi"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^brn_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "BranchCreated",
-              "fields": {
-                "branch": {
-                  "ref": [
-                    "last",
-                    "branch"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        {
-          "title": "that branch is the second company's own record",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                },
-                "Nairobi",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Ada adds a branch to her second company under a name the first doesn't use",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "otherCompany"
-                ]
-              },
-              "branchName": "Eldoret Depot 3"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^brn_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "BranchCreated",
-              "fields": {
-                "branch": {
-                  "ref": [
-                    "last",
-                    "branch"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        {
-          "title": "it is filed under the second company",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                },
-                "Eldoret Depot 3",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "and the first company's first branch still reads back as before",
+          "title": "the one with the longest name allowed reads back whole",
           "call": {
             "actor": "ada",
             "operation": "branch.get",
@@ -4662,7 +4435,7 @@
               "id": {
                 "ref": [
                   "world",
-                  "branch"
+                  "longBranch"
                 ]
               }
             }
@@ -4677,7 +4450,147 @@
                     "company"
                   ]
                 },
+                "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's branch of the same name as the first is its own record",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherBranch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
                 "Nairobi",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's other branch keeps every letter and space she typed",
+          "call": {
+            "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "oddBranch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "murang'a  Côte/Est depot",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her first company is unchanged by its branchs",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Trading",
+                "AT",
+                "Kenya",
+                "USD",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so is her second",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Logistics",
+                "AL",
+                "Uganda",
+                "UGX",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
                 "active"
               ]
             },
@@ -4687,7 +4600,7 @@
           ]
         }
       ],
-      "sourceHash": "f3e6a5046a3cc66c8a7a6af6eb415f711c07a7e38f5fdaf774a211f477ed7faa"
+      "sourceHash": "78e77413c07f422809fd902107e9f00789d8d453e96a2ffaa7edd4e2dcad9054"
     },
     "journeys/bridge-a-bank-account-closes.ts": {
       "name": "bridge: a bank account closes",
@@ -7446,7 +7359,7 @@
           "role": "company.owner"
         }
       },
-      "starts": "a grade",
+      "starts": "four grades",
       "steps": [
         {
           "title": "Ada can't add a second grade of the same name",
@@ -7477,40 +7390,7 @@
           ]
         },
         {
-          "title": "the grade she had is left as it was",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "world",
-                  "grade"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "Senior",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Ada adds a grade with the longest name allowed",
+          "title": "nor reuse a name her second company holds there",
           "call": {
             "actor": "ada",
             "operation": "employee-grade.create",
@@ -7518,65 +7398,19 @@
               "company": {
                 "ref": [
                   "world",
-                  "company"
+                  "otherCompany"
                 ]
               },
-              "gradeName": "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027."
+              "gradeName": "cadre supérieur  B/3 (d'Abidjan)"
             }
           },
           "checks": [
             {
-              "kind": "expect",
-              "match": "^egr_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "EmployeeGradeCreated",
+              "kind": "refuses",
+              "error": "EmployeeGradeNameTaken",
               "fields": {
-                "grade": {
-                  "ref": [
-                    "last",
-                    "grade"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
+                "gradeName": "cadre supérieur  B/3 (d'Abidjan)"
               }
-            }
-          ]
-        },
-        {
-          "title": "it reads back whole",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027.",
-                "active"
-              ]
             },
             {
               "kind": "no-events"
@@ -7584,7 +7418,7 @@
           ]
         },
         {
-          "title": "Ada adds a third grade",
+          "title": "Ada adds a third grade to her first company",
           "call": {
             "actor": "ada",
             "operation": "employee-grade.create",
@@ -7658,7 +7492,7 @@
           ]
         },
         {
-          "title": "her first grade is unchanged by the two after it",
+          "title": "her first company's first grade is unchanged by every create after it",
           "call": {
             "actor": "ada",
             "operation": "employee-grade.get",
@@ -7691,155 +7525,7 @@
           ]
         },
         {
-          "title": "her second company may reuse the first grade's name, because names are unique within a company",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "otherCompany"
-                ]
-              },
-              "gradeName": "Senior"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^egr_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "EmployeeGradeCreated",
-              "fields": {
-                "grade": {
-                  "ref": [
-                    "last",
-                    "grade"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        {
-          "title": "that grade is the second company's own record",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                },
-                "Senior",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Ada adds a grade to her second company under a name the first doesn't use",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "otherCompany"
-                ]
-              },
-              "gradeName": "Band 7 Lead"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^egr_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "EmployeeGradeCreated",
-              "fields": {
-                "grade": {
-                  "ref": [
-                    "last",
-                    "grade"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        {
-          "title": "it is filed under the second company",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                },
-                "Band 7 Lead",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "and the first company's first grade still reads back as before",
+          "title": "the one with the longest name allowed reads back whole",
           "call": {
             "actor": "ada",
             "operation": "employee-grade.get",
@@ -7847,7 +7533,7 @@
               "id": {
                 "ref": [
                   "world",
-                  "grade"
+                  "longGrade"
                 ]
               }
             }
@@ -7862,7 +7548,147 @@
                     "company"
                   ]
                 },
+                "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027.",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's grade of the same name as the first is its own record",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherGrade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
                 "Senior",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her second company's other grade keeps every letter and space she typed",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "oddGrade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "cadre supérieur  B/3 (d'Abidjan)",
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her first company is unchanged by its grades",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Trading",
+                "AT",
+                "Kenya",
+                "USD",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so is her second",
+          "call": {
+            "actor": "ada",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Acme Logistics",
+                "AL",
+                "Uganda",
+                "UGX",
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
                 "active"
               ]
             },
@@ -7872,7 +7698,7 @@
           ]
         }
       ],
-      "sourceHash": "af4028cc7a41a788469eb4b5ab05e89a2851e886175044c5743363a1fe9fc3b1"
+      "sourceHash": "d85de9be7ec266c0d5dc022cf0a146c2941fd1a4f661d4da6bff8673755206e1"
     },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
@@ -10366,6 +10192,136 @@
         }
       }
     },
+    "four branches": {
+      "name": "four branches",
+      "file": "blueprint/starting-worlds/four-branches.ts",
+      "from": "three branches",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "02cb36691e1ae168b4b428c70924cd34b730e2c812b67a8be29aadeb45441f15",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "branchName": "murang'a  Côte/Est depot"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "world",
+            "branch"
+          ]
+        },
+        "longBranch": {
+          "ref": [
+            "world",
+            "longBranch"
+          ]
+        },
+        "otherBranch": {
+          "ref": [
+            "world",
+            "otherBranch"
+          ]
+        },
+        "oddBranch": {
+          "ref": [
+            "last",
+            "branch"
+          ]
+        }
+      }
+    },
+    "four grades": {
+      "name": "four grades",
+      "file": "blueprint/starting-worlds/four-grades.ts",
+      "from": "three grades",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "1cf0f568f710dbfa57c3e6fc9faca9e3958a394cd28bc571bd76ac5bd397e72d",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "gradeName": "cadre supérieur  B/3 (d'Abidjan)"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "world",
+            "grade"
+          ]
+        },
+        "longGrade": {
+          "ref": [
+            "world",
+            "longGrade"
+          ]
+        },
+        "otherGrade": {
+          "ref": [
+            "world",
+            "otherGrade"
+          ]
+        },
+        "oddGrade": {
+          "ref": [
+            "last",
+            "grade"
+          ]
+        }
+      }
+    },
     "kyb approved": {
       "name": "kyb approved",
       "file": "blueprint/starting-worlds/kyb-approved.ts",
@@ -10502,6 +10458,124 @@
         }
       }
     },
+    "three branches": {
+      "name": "three branches",
+      "file": "blueprint/starting-worlds/three-branches.ts",
+      "from": "two branches",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "0c17c5ba27eca8e86e244dede535292b7a326a962b0f927717e956245b5efed5",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "branchName": "Nairobi"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "world",
+            "branch"
+          ]
+        },
+        "longBranch": {
+          "ref": [
+            "world",
+            "longBranch"
+          ]
+        },
+        "otherBranch": {
+          "ref": [
+            "last",
+            "branch"
+          ]
+        }
+      }
+    },
+    "three grades": {
+      "name": "three grades",
+      "file": "blueprint/starting-worlds/three-grades.ts",
+      "from": "two grades",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "9a0574157fc50d12719c7efc00907ae69fb36e0ea8204d83c2fbeb1112ca37b7",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            },
+            "gradeName": "Senior"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "world",
+            "grade"
+          ]
+        },
+        "longGrade": {
+          "ref": [
+            "world",
+            "longGrade"
+          ]
+        },
+        "otherGrade": {
+          "ref": [
+            "last",
+            "grade"
+          ]
+        }
+      }
+    },
     "two bank accounts": {
       "name": "two bank accounts",
       "file": "blueprint/starting-worlds/two-bank-accounts.ts",
@@ -10593,6 +10667,59 @@
         }
       }
     },
+    "two branches": {
+      "name": "two branches",
+      "file": "blueprint/starting-worlds/two-branches.ts",
+      "from": "a branch",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "9d966919e739afb460e6be4077efb073792f1116dd6ab5d16f2cb54264b416d8",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "branch.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "branchName": "Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "branch": {
+          "ref": [
+            "world",
+            "branch"
+          ]
+        },
+        "longBranch": {
+          "ref": [
+            "last",
+            "branch"
+          ]
+        }
+      }
+    },
     "two companies": {
       "name": "two companies",
       "file": "blueprint/starting-worlds/two-companies.ts",
@@ -10602,7 +10729,7 @@
           "kind": "signed-in"
         }
       },
-      "sourceHash": "5a0953ee63123a3908b2ef9ae1b3214422141fe1c26035e960a01f4189d98549",
+      "sourceHash": "2a8ed7b1c5dbceb4a508842bc2933f0ff8cc10a17482a2bffde96db553d3053e",
       "makes": [
         {
           "actor": "ada",
@@ -10610,8 +10737,8 @@
           "payload": {
             "companyName": "Acme Logistics",
             "abbr": "AL",
-            "country": "Kenya",
-            "defaultCurrency": "KES"
+            "country": "Uganda",
+            "defaultCurrency": "UGX"
           }
         }
       ],
@@ -10626,6 +10753,59 @@
           "ref": [
             "last",
             "company"
+          ]
+        }
+      }
+    },
+    "two grades": {
+      "name": "two grades",
+      "file": "blueprint/starting-worlds/two-grades.ts",
+      "from": "a grade",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "28c917f8f3f8228c86310c2e19bd793428ad4c774c5afe2e31b199ca9245cfa3",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-grade.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "gradeName": "L5-B Senior Staff Engineer, Platform & Infrastructure (Payments, Ledger and Payroll Systems), band 3 of 4, reviewed each January since 2027."
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "grade": {
+          "ref": [
+            "world",
+            "grade"
+          ]
+        },
+        "longGrade": {
+          "ref": [
+            "last",
+            "grade"
           ]
         }
       }

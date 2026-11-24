@@ -6,6 +6,6 @@ import create from "../things/company/verbs/create.ts";
 export default Blueprint.startingWorld("two companies", {
   from: "a company",
   cast: { ada: Blueprint.signedIn },
-  makes: (s) => [s.ada.run(create, { companyName: "Acme Logistics", abbr: "AL", country: "Kenya", defaultCurrency: "KES" })],
+  makes: (s) => [s.ada.run(create, { companyName: "Acme Logistics", abbr: "AL", country: "Uganda", defaultCurrency: "UGX" })],
   gives: (s) => ({ company: s.world.company, otherCompany: s.last.company }),
 });

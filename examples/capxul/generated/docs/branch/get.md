@@ -33,15 +33,13 @@ Read one branch by its id: company, branchName, state.
 
 ### branch names are the company's
 
-Starts from the world `a branch`.
+Starts from the world `four branches`.
 
-- **the branch she had is left as it was.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
-- **it reads back whole.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's company, `Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019`, `active`].
 - **the third reads back as typed.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's company, `Kisumu-West Site 2`, `active`].
-- **her first branch is unchanged by the two after it.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
-- **that branch is the second company's own record.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's otherCompany, `Nairobi`, `active`].
-- **it is filed under the second company.** `ada` (role company.owner) calls and sends id the last call's branch, and gets back [the world's otherCompany, `Eldoret Depot 3`, `active`].
-- **and the first company's first branch still reads back as before.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
+- **her first company's first branch is unchanged by every create after it.** `ada` (role company.owner) calls and sends id the world's branch, and gets back [the world's company, `Nairobi`, `active`].
+- **the one with the longest name allowed reads back whole.** `ada` (role company.owner) calls and sends id the world's longBranch, and gets back [the world's company, `Mombasa Port, Shed 14 - Cold-Store & Bonded Warehouse (Kilindini Harbour, Gate 2), serving the Coast, Lamu and Tana River counties from 2019`, `active`].
+- **her second company's branch of the same name as the first is its own record.** `ada` (role company.owner) calls and sends id the world's otherBranch, and gets back [the world's otherCompany, `Nairobi`, `active`].
+- **her second company's other branch keeps every letter and space she typed.** `ada` (role company.owner) calls and sends id the world's oddBranch, and gets back [the world's otherCompany, `murang'a  Côte/Est depot`, `active`].
 
 ### set up branches
 
