@@ -8,5 +8,5 @@ export default Blueprint.startingWorld("three grades", {
   from: "two grades",
   cast: { ada: owner },
   makes: (s) => [s.ada.run(create, { company: s.world.otherCompany, gradeName: "Senior" })],
-  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, grade: s.world.grade, longGrade: s.world.longGrade, otherGrade: s.last.grade }),
+  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, boCompany: s.world.boCompany, grade: s.world.grade, longGrade: s.world.longGrade, otherGrade: s.last.grade }),
 });

@@ -1,19 +1,20 @@
 // Journey-author file. The builder never edits it (AGENTS.md, "Journeys and checks come first").
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone. A journey can hand on only
-// the latest answer, so the grades read back at the end are made by the starting worlds, and this journey's one create
-// comes after all of them: a create that changes an earlier record is caught by the reads that follow it.
-import { Blueprint, emits, expect, noEvents, refuses } from "orthograph";
+// the latest answer, so the grades read back at the end are made by the starting worlds, and this journey's one create,
+// Bo's, comes after all of them: a create that changes any earlier record or company is caught by the reads after it.
+import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
 import { EmployeeGradeCreated } from "../blueprint/things/employee-grade/events.ts";
 import { EmployeeGradeNameTaken } from "../blueprint/things/employee-grade/errors.ts";
-import { long, odd } from "../blueprint/values/grades-names.ts";
+import { digits, long, odd } from "../blueprint/values/grades-names.ts";
 import getCompany from "../blueprint/things/company/verbs/get.ts";
 import createGrade from "../blueprint/things/employee-grade/verbs/create.ts";
 import getGrade from "../blueprint/things/employee-grade/verbs/get.ts";
 
 export default Blueprint.journey("grade names are the company's", {
-  // Ada runs Acme Trading, with the grades Senior and a 140-letter one, and Acme Logistics, with Senior and one more.
-  cast: { ada: owner },
+  // Ada runs Acme Trading, with Senior and a 140-letter grade, and Acme Logistics, with Senior and one more. Bo runs Bo
+  // Ltd, which has none.
+  cast: { ada: owner, bo: Blueprint.signedIn },
   starts: "four grades",
   steps: (s) => [
     s.step(
@@ -29,15 +30,34 @@ export default Blueprint.journey("grade names are the company's", {
       noEvents(),
     ),
     s.step(
-      "Ada adds a third grade to her first company",
-      s.ada.run(createGrade, { company: s.world.company, gradeName: "Grade-2 Associate Analyst" }),
-      expect((a) => a.grade).toMatch(/^egr_[0-9a-z]+$/),
-      emits(EmployeeGradeCreated, { grade: s.last.grade, company: s.world.company }),
+      "Bo can't add a grade to Ada's company",
+      s.bo.run(createGrade, { company: s.world.company, gradeName: digits }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+      spans({ absent: ["employee-grade.create.insert"] }),
     ),
     s.step(
-      "the third reads back as typed",
+      "Bo adds his company's first grade, named with digits alone",
+      s.bo.run(createGrade, { company: s.world.boCompany, gradeName: digits }),
+      expect((a) => a.grade).toMatch(/^egr_[0-9a-z]+$/),
+      emits(EmployeeGradeCreated, { grade: s.last.grade, company: s.world.boCompany }),
+    ),
+    s.step(
+      "Ada can't read Bo's grade",
       s.ada.run(getGrade, { id: s.last.grade }),
-      expect((a) => [a.company, a.gradeName, a.state]).toEqual([s.world.company, "Grade-2 Associate Analyst", "active"]),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+    ),
+    s.step(
+      "Bo reads it back whole, in his own company",
+      s.bo.run(getGrade, { id: s.last.grade }),
+      expect((a) => [a.company, a.gradeName, a.state]).toEqual([s.world.boCompany, digits, "active"]),
+      noEvents(),
+    ),
+    s.step(
+      "Bo can't read Ada's first grade",
+      s.bo.run(getGrade, { id: s.world.grade }),
+      refuses(Blueprint.NotAllowed),
       noEvents(),
     ),
     s.step(
@@ -86,6 +106,19 @@ export default Blueprint.journey("grade names are the company's", {
         "Uganda",
         "UGX",
         s.ada.person,
+        "active",
+      ]),
+      noEvents(),
+    ),
+    s.step(
+      "and Bo's",
+      s.bo.run(getCompany, { id: s.world.boCompany }),
+      expect((a) => [a.companyName, a.abbr, a.country, a.defaultCurrency, a.owner, a.state]).toEqual([
+        "Bo Ltd",
+        "BL",
+        "Tanzania",
+        "TZS",
+        s.bo.person,
         "active",
       ]),
       noEvents(),

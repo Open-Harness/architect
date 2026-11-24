@@ -45,8 +45,9 @@ Add a grade to a company.
 Starts from the world `four grades`.
 
 - **Ada can't add a second grade of the same name.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Senior`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `Senior`.
-- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, gradeName `cadre supérieur  B/3 (d'Abidjan)`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `cadre supérieur  B/3 (d'Abidjan)`.
-- **Ada adds a third grade to her first company.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Grade-2 Associate Analyst`, and gets back an answer matching `^egr_[0-9a-z]+$`.
+- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, gradeName `cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ`, and is refused with EmployeeGradeNameTaken, EG-001, carrying gradeName `cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ`.
+- **Bo can't add a grade to Ada's company.** `bo` (signed in) calls and sends company the world's company, gradeName `007`, and is refused with NotAllowed, AR-001.
+- **Bo adds his company's first grade, named with digits alone.** `bo` (signed in) calls and sends company the world's boCompany, gradeName `007`, and gets back an answer matching `^egr_[0-9a-z]+$`.
 
 ### set up grades
 
@@ -54,8 +55,6 @@ Starts from the world `a company`.
 
 - **Ada adds a grade.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Junior`, and gets back an answer matching `^egr_[0-9a-z]+$`.
 - **Bo can't add a grade to Ada's company.** `bo` (signed in) calls and sends company the world's company, gradeName `Lead`, and is refused with NotAllowed, AR-001.
-- **Ada adds a second grade.** `ada` (role company.owner) calls and sends company the world's company, gradeName `Principal Engineer II`, and gets back an answer matching `^egr_[0-9a-z]+$`.
-- **Bo adds a grade to his company.** `bo` (signed in) calls and sends company the last call's company, gradeName `Associate`, and gets back an answer matching `^egr_[0-9a-z]+$`.
 
 ## How to call
 

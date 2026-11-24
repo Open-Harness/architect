@@ -9,5 +9,5 @@ export default Blueprint.startingWorld("two branches", {
   from: "a branch",
   cast: { ada: owner },
   makes: (s) => [s.ada.run(create, { company: s.world.company, branchName: long })],
-  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, branch: s.world.branch, longBranch: s.last.branch }),
+  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, boCompany: s.world.boCompany, branch: s.world.branch, longBranch: s.last.branch }),
 });

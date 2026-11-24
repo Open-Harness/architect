@@ -9,5 +9,5 @@ export default Blueprint.startingWorld("four branches", {
   from: "three branches",
   cast: { ada: owner },
   makes: (s) => [s.ada.run(create, { company: s.world.otherCompany, branchName: odd })],
-  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, branch: s.world.branch, longBranch: s.world.longBranch, otherBranch: s.world.otherBranch, oddBranch: s.last.branch }),
+  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, boCompany: s.world.boCompany, branch: s.world.branch, longBranch: s.world.longBranch, otherBranch: s.world.otherBranch, oddBranch: s.last.branch }),
 });

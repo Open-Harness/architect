@@ -3,10 +3,10 @@ import { Blueprint } from "orthograph";
 import { owner } from "../things/company/roles.ts";
 import create from "../things/employee-grade/verbs/create.ts";
 
-/** From two companies: Ada has added the grade Senior to Acme Trading. */
+/** From three companies: Ada has added the grade Senior to Acme Trading. */
 export default Blueprint.startingWorld("a grade", {
-  from: "two companies",
+  from: "three companies",
   cast: { ada: owner },
   makes: (s) => [s.ada.run(create, { company: s.world.company, gradeName: "Senior" })],
-  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, grade: s.last.grade }),
+  gives: (s) => ({ company: s.world.company, otherCompany: s.world.otherCompany, boCompany: s.world.boCompany, grade: s.last.grade }),
 });

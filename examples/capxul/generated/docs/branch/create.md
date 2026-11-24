@@ -45,8 +45,9 @@ Add a branch to a company.
 Starts from the world `four branches`.
 
 - **Ada can't add a second branch of the same name.** `ada` (role company.owner) calls and sends company the world's company, branchName `Nairobi`, and is refused with BranchNameTaken, BR-001, carrying branchName `Nairobi`.
-- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, branchName `murang'a  Côte/Est depot`, and is refused with BranchNameTaken, BR-001, carrying branchName `murang'a  Côte/Est depot`.
-- **Ada adds a third branch to her first company.** `ada` (role company.owner) calls and sends company the world's company, branchName `Kisumu-West Site 2`, and gets back an answer matching `^brn_[0-9a-z]+$`.
+- **nor reuse a name her second company holds there.** `ada` (role company.owner) calls and sends company the world's otherCompany, branchName `murang'a  Côte/Est JKIA depot’s አዲስ`, and is refused with BranchNameTaken, BR-001, carrying branchName `murang'a  Côte/Est JKIA depot’s አዲስ`.
+- **Bo can't add a branch to Ada's company.** `bo` (signed in) calls and sends company the world's company, branchName `007`, and is refused with NotAllowed, AR-001.
+- **Bo adds his company's first branch, named with digits alone.** `bo` (signed in) calls and sends company the world's boCompany, branchName `007`, and gets back an answer matching `^brn_[0-9a-z]+$`.
 
 ### set up branches
 
@@ -54,8 +55,6 @@ Starts from the world `a company`.
 
 - **Ada adds a branch.** `ada` (role company.owner) calls and sends company the world's company, branchName `Nairobi`, and gets back an answer matching `^brn_[0-9a-z]+$`.
 - **Bo can't add a branch to Ada's company.** `bo` (signed in) calls and sends company the world's company, branchName `Mombasa`, and is refused with NotAllowed, AR-001.
-- **Ada adds a second branch.** `ada` (role company.owner) calls and sends company the world's company, branchName `Kisumu Depot`, and gets back an answer matching `^brn_[0-9a-z]+$`.
-- **Bo adds a branch to his company.** `bo` (signed in) calls and sends company the last call's company, branchName `Kampala`, and gets back an answer matching `^brn_[0-9a-z]+$`.
 
 ## How to call
 

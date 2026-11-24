@@ -5650,6 +5650,9 @@
         "ada": {
           "kind": "role",
           "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
         }
       },
       "starts": "four branches",
@@ -5694,7 +5697,7 @@
                   "otherCompany"
                 ]
               },
-              "branchName": "murang'a  Côte/Est depot"
+              "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
             }
           },
           "checks": [
@@ -5702,7 +5705,7 @@
               "kind": "refuses",
               "error": "BranchNameTaken",
               "fields": {
-                "branchName": "murang'a  Côte/Est depot"
+                "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
               }
             },
             {
@@ -5711,9 +5714,9 @@
           ]
         },
         {
-          "title": "Ada adds a third branch to her first company",
+          "title": "Bo can't add a branch to Ada's company",
           "call": {
-            "actor": "ada",
+            "actor": "bo",
             "operation": "branch.create",
             "payload": {
               "company": {
@@ -5722,7 +5725,40 @@
                   "company"
                 ]
               },
-              "branchName": "Kisumu-West Site 2"
+              "branchName": "007"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "branch.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Bo adds his company's first branch, named with digits alone",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              },
+              "branchName": "007"
             }
           },
           "checks": [
@@ -5744,7 +5780,7 @@
                 "company": {
                   "ref": [
                     "world",
-                    "company"
+                    "boCompany"
                   ]
                 }
               }
@@ -5752,9 +5788,34 @@
           ]
         },
         {
-          "title": "the third reads back as typed",
+          "title": "Ada can't read Bo's branch",
           "call": {
             "actor": "ada",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads it back whole, in his own company",
+          "call": {
+            "actor": "bo",
             "operation": "branch.get",
             "payload": {
               "id": {
@@ -5772,12 +5833,37 @@
                 {
                   "ref": [
                     "world",
-                    "company"
+                    "boCompany"
                   ]
                 },
-                "Kisumu-West Site 2",
+                "007",
                 "active"
               ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's first branch",
+          "call": {
+            "actor": "bo",
+            "operation": "branch.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "branch"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
             },
             {
               "kind": "no-events"
@@ -5907,7 +5993,7 @@
                     "otherCompany"
                   ]
                 },
-                "murang'a  Côte/Est depot",
+                "murang'a  Côte/Est JKIA depot’s አዲስ",
                 "active"
               ]
             },
@@ -5989,9 +6075,46 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "and Bo's",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Bo Ltd",
+                "BL",
+                "Tanzania",
+                "TZS",
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "78e77413c07f422809fd902107e9f00789d8d453e96a2ffaa7edd4e2dcad9054"
+      "sourceHash": "8f19dc16b7da65e628bf133aacbcdf535d0c1a13a5b2d533e3ebdd857de66d51"
     },
     "journeys/bridge-a-bank-account-closes.ts": {
       "name": "bridge: a bank account closes",
@@ -9096,6 +9219,9 @@
         "ada": {
           "kind": "role",
           "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
         }
       },
       "starts": "four grades",
@@ -9140,7 +9266,7 @@
                   "otherCompany"
                 ]
               },
-              "gradeName": "cadre supérieur  B/3 (d'Abidjan)"
+              "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
             }
           },
           "checks": [
@@ -9148,7 +9274,7 @@
               "kind": "refuses",
               "error": "EmployeeGradeNameTaken",
               "fields": {
-                "gradeName": "cadre supérieur  B/3 (d'Abidjan)"
+                "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
               }
             },
             {
@@ -9157,9 +9283,9 @@
           ]
         },
         {
-          "title": "Ada adds a third grade to her first company",
+          "title": "Bo can't add a grade to Ada's company",
           "call": {
-            "actor": "ada",
+            "actor": "bo",
             "operation": "employee-grade.create",
             "payload": {
               "company": {
@@ -9168,7 +9294,40 @@
                   "company"
                 ]
               },
-              "gradeName": "Grade-2 Associate Analyst"
+              "gradeName": "007"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-grade.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Bo adds his company's first grade, named with digits alone",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              },
+              "gradeName": "007"
             }
           },
           "checks": [
@@ -9190,7 +9349,7 @@
                 "company": {
                   "ref": [
                     "world",
-                    "company"
+                    "boCompany"
                   ]
                 }
               }
@@ -9198,9 +9357,34 @@
           ]
         },
         {
-          "title": "the third reads back as typed",
+          "title": "Ada can't read Bo's grade",
           "call": {
             "actor": "ada",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads it back whole, in his own company",
+          "call": {
+            "actor": "bo",
             "operation": "employee-grade.get",
             "payload": {
               "id": {
@@ -9218,12 +9402,37 @@
                 {
                   "ref": [
                     "world",
-                    "company"
+                    "boCompany"
                   ]
                 },
-                "Grade-2 Associate Analyst",
+                "007",
                 "active"
               ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's first grade",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-grade.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "grade"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
             },
             {
               "kind": "no-events"
@@ -9353,7 +9562,7 @@
                     "otherCompany"
                   ]
                 },
-                "cadre supérieur  B/3 (d'Abidjan)",
+                "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ",
                 "active"
               ]
             },
@@ -9435,9 +9644,46 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "and Bo's",
+          "call": {
+            "actor": "bo",
+            "operation": "company.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Bo Ltd",
+                "BL",
+                "Tanzania",
+                "TZS",
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "active"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "d85de9be7ec266c0d5dc022cf0a146c2941fd1a4f661d4da6bff8673755206e1"
+      "sourceHash": "b542e7ca0b670c6a1694604becd2156d2c4bcbd70f5b2ba255b7cc989115a74e"
     },
     "journeys/hire-an-employee.ts": {
       "name": "hire an employee",
@@ -10630,39 +10876,6 @@
           ]
         },
         {
-          "title": "Ada reads the branch back",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "Nairobi",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
           "title": "Bo can't add a branch to Ada's company",
           "call": {
             "actor": "bo",
@@ -10697,59 +10910,7 @@
           ]
         },
         {
-          "title": "Ada adds a second branch",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "company"
-                ]
-              },
-              "branchName": "Kisumu Depot"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^brn_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "BranchCreated",
-              "fields": {
-                "branch": {
-                  "ref": [
-                    "last",
-                    "branch"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              }
-            },
-            {
-              "kind": "is-in",
-              "thing": "branch",
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              },
-              "state": "active"
-            }
-          ]
-        },
-        {
-          "title": "it reads back under its own name",
+          "title": "Ada reads the branch back",
           "call": {
             "actor": "ada",
             "operation": "branch.get",
@@ -10772,132 +10933,9 @@
                     "company"
                   ]
                 },
-                "Kisumu Depot",
+                "Nairobi",
                 "active"
               ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Bo sets up a company of his own",
-          "call": {
-            "actor": "bo",
-            "operation": "company.create",
-            "payload": {
-              "companyName": "Bo Ltd",
-              "abbr": "BL",
-              "country": "Uganda",
-              "defaultCurrency": "UGX"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^com_[0-9a-z]+$",
-              "flags": ""
-            }
-          ]
-        },
-        {
-          "title": "Bo adds a branch to his company",
-          "call": {
-            "actor": "bo",
-            "operation": "branch.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "last",
-                  "company"
-                ]
-              },
-              "branchName": "Kampala"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^brn_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "BranchCreated",
-              "fields": {
-                "branch": {
-                  "ref": [
-                    "last",
-                    "branch"
-                  ]
-                }
-              }
-            },
-            {
-              "kind": "is-in",
-              "thing": "branch",
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              },
-              "state": "active"
-            }
-          ]
-        },
-        {
-          "title": "Ada can't read Bo's branch",
-          "call": {
-            "actor": "ada",
-            "operation": "branch.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "refuses",
-              "error": "NotAllowed",
-              "fields": {}
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Bo reads his branch back, in his own company",
-          "call": {
-            "actor": "bo",
-            "operation": "branch.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "branch"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                "Kampala",
-                "active"
-              ]
-            },
-            {
-              "kind": "expect",
-              "match": "^com_[0-9a-z]+$",
-              "flags": ""
             },
             {
               "kind": "no-events"
@@ -10905,7 +10943,7 @@
           ]
         }
       ],
-      "sourceHash": "f3e50f6196451d192e622876168561a10e4be2bf3c3d4a5fe43c9f265c1849eb"
+      "sourceHash": "409bd6a97ec8142a9dd20e873524525e2b0efae7f8418d9dcbc84cd1a9a85970"
     },
     "journeys/set-up-departments-and-job-titles.ts": {
       "name": "set up departments and job titles",
@@ -11553,39 +11591,6 @@
           ]
         },
         {
-          "title": "Ada reads the grade back",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "Junior",
-                "active"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
           "title": "Bo can't add a grade to Ada's company",
           "call": {
             "actor": "bo",
@@ -11620,59 +11625,7 @@
           ]
         },
         {
-          "title": "Ada adds a second grade",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "company"
-                ]
-              },
-              "gradeName": "Principal Engineer II"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^egr_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "EmployeeGradeCreated",
-              "fields": {
-                "grade": {
-                  "ref": [
-                    "last",
-                    "grade"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              }
-            },
-            {
-              "kind": "is-in",
-              "thing": "employee-grade",
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              },
-              "state": "active"
-            }
-          ]
-        },
-        {
-          "title": "it reads back under its own name",
+          "title": "Ada reads the grade back",
           "call": {
             "actor": "ada",
             "operation": "employee-grade.get",
@@ -11695,132 +11648,9 @@
                     "company"
                   ]
                 },
-                "Principal Engineer II",
+                "Junior",
                 "active"
               ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Bo sets up a company of his own",
-          "call": {
-            "actor": "bo",
-            "operation": "company.create",
-            "payload": {
-              "companyName": "Bo Ltd",
-              "abbr": "BL",
-              "country": "Uganda",
-              "defaultCurrency": "UGX"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^com_[0-9a-z]+$",
-              "flags": ""
-            }
-          ]
-        },
-        {
-          "title": "Bo adds a grade to his company",
-          "call": {
-            "actor": "bo",
-            "operation": "employee-grade.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "last",
-                  "company"
-                ]
-              },
-              "gradeName": "Associate"
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^egr_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "EmployeeGradeCreated",
-              "fields": {
-                "grade": {
-                  "ref": [
-                    "last",
-                    "grade"
-                  ]
-                }
-              }
-            },
-            {
-              "kind": "is-in",
-              "thing": "employee-grade",
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              },
-              "state": "active"
-            }
-          ]
-        },
-        {
-          "title": "Ada can't read Bo's grade",
-          "call": {
-            "actor": "ada",
-            "operation": "employee-grade.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "refuses",
-              "error": "NotAllowed",
-              "fields": {}
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Bo reads his grade back, in his own company",
-          "call": {
-            "actor": "bo",
-            "operation": "employee-grade.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "grade"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                "Associate",
-                "active"
-              ]
-            },
-            {
-              "kind": "expect",
-              "match": "^com_[0-9a-z]+$",
-              "flags": ""
             },
             {
               "kind": "no-events"
@@ -11828,7 +11658,7 @@
           ]
         }
       ],
-      "sourceHash": "a61a39be3f3fdfbc6df1f22b709863da39b3d13602292b25cad98e4d137936ce"
+      "sourceHash": "7f0cb3dd66fdeb039e58234d520b19a72d893bb5c22c718e297a55d72f0f3b5f"
     },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",
@@ -12295,14 +12125,14 @@
     "a branch": {
       "name": "a branch",
       "file": "blueprint/starting-worlds/a-branch.ts",
-      "from": "two companies",
+      "from": "three companies",
       "cast": {
         "ada": {
           "kind": "role",
           "role": "company.owner"
         }
       },
-      "sourceHash": "e31a15d676fcb02023ee34e4969eec933260833c7284a991174892290e1698d6",
+      "sourceHash": "c619f25cbc5f7b9130327ede7ef0f7d859179415b3913da32624e770cc1c549c",
       "makes": [
         {
           "actor": "ada",
@@ -12329,6 +12159,12 @@
           "ref": [
             "world",
             "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
           ]
         },
         "branch": {
@@ -12415,14 +12251,14 @@
     "a grade": {
       "name": "a grade",
       "file": "blueprint/starting-worlds/a-grade.ts",
-      "from": "two companies",
+      "from": "three companies",
       "cast": {
         "ada": {
           "kind": "role",
           "role": "company.owner"
         }
       },
-      "sourceHash": "bce6a9b0a8a0accd48b2f57c1f3fa3af5dc5cbe37280f9220751cb819ae741a5",
+      "sourceHash": "5890d4691de97d7c88a96cfb364029112a67858515ef05511abdae94d0873417",
       "makes": [
         {
           "actor": "ada",
@@ -12449,6 +12285,12 @@
           "ref": [
             "world",
             "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
           ]
         },
         "grade": {
@@ -12863,7 +12705,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "02cb36691e1ae168b4b428c70924cd34b730e2c812b67a8be29aadeb45441f15",
+      "sourceHash": "78ae93b29aab51dbf0486b05cc682c72a0caab097199673f9e4eda6708a59617",
       "makes": [
         {
           "actor": "ada",
@@ -12875,7 +12717,7 @@
                 "otherCompany"
               ]
             },
-            "branchName": "murang'a  Côte/Est depot"
+            "branchName": "murang'a  Côte/Est JKIA depot’s አዲስ"
           }
         }
       ],
@@ -12890,6 +12732,12 @@
           "ref": [
             "world",
             "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
           ]
         },
         "branch": {
@@ -12928,7 +12776,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "1cf0f568f710dbfa57c3e6fc9faca9e3958a394cd28bc571bd76ac5bd397e72d",
+      "sourceHash": "16bf12e8402c4156ed067590f1977f118ced98a799f6f23f2968209e5b545f19",
       "makes": [
         {
           "actor": "ada",
@@ -12940,7 +12788,7 @@
                 "otherCompany"
               ]
             },
-            "gradeName": "cadre supérieur  B/3 (d'Abidjan)"
+            "gradeName": "cadre supérieur  B/3 (d'Abidjan’s HQ) ደረጃ"
           }
         }
       ],
@@ -12955,6 +12803,12 @@
           "ref": [
             "world",
             "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
           ]
         },
         "grade": {
@@ -13129,7 +12983,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "0c17c5ba27eca8e86e244dede535292b7a326a962b0f927717e956245b5efed5",
+      "sourceHash": "5bfaaf6c5f3dfd54bb90b9195f9a83bc1a2e96335abc431f0d5b8b6510203fda",
       "makes": [
         {
           "actor": "ada",
@@ -13158,6 +13012,12 @@
             "otherCompany"
           ]
         },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
         "branch": {
           "ref": [
             "world",
@@ -13178,6 +13038,49 @@
         }
       }
     },
+    "three companies": {
+      "name": "three companies",
+      "file": "blueprint/starting-worlds/three-companies.ts",
+      "from": "two companies",
+      "cast": {
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "6bbcda711acd04b68459ad8b3ed478bf48cbd661c6e1687e558b3d3312b8d515",
+      "makes": [
+        {
+          "actor": "bo",
+          "operation": "company.create",
+          "payload": {
+            "companyName": "Bo Ltd",
+            "abbr": "BL",
+            "country": "Tanzania",
+            "defaultCurrency": "TZS"
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "last",
+            "company"
+          ]
+        }
+      }
+    },
     "three grades": {
       "name": "three grades",
       "file": "blueprint/starting-worlds/three-grades.ts",
@@ -13188,7 +13091,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "9a0574157fc50d12719c7efc00907ae69fb36e0ea8204d83c2fbeb1112ca37b7",
+      "sourceHash": "1719ed9fabcb3a580e8fba0fc93f83f060f744282a0d3f3a9b909b413a8393a6",
       "makes": [
         {
           "actor": "ada",
@@ -13215,6 +13118,12 @@
           "ref": [
             "world",
             "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
           ]
         },
         "grade": {
@@ -13338,7 +13247,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "9d966919e739afb460e6be4077efb073792f1116dd6ab5d16f2cb54264b416d8",
+      "sourceHash": "37f3e666b6960e93e3e2765364083c671f67d75a7e1cbd7222d84c1e356357ff",
       "makes": [
         {
           "actor": "ada",
@@ -13365,6 +13274,12 @@
           "ref": [
             "world",
             "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
           ]
         },
         "branch": {
@@ -13428,7 +13343,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "28c917f8f3f8228c86310c2e19bd793428ad4c774c5afe2e31b199ca9245cfa3",
+      "sourceHash": "4130078499712f158837070931a9c55bcb29b47c2a73d52eb24969f189db3d55",
       "makes": [
         {
           "actor": "ada",
@@ -13455,6 +13370,12 @@
           "ref": [
             "world",
             "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
           ]
         },
         "grade": {
