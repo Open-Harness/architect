@@ -1,7 +1,7 @@
 // #764, the D1 store's half: a list's rows count as read. Two calls that each list "no overlapping leave for this employee" and then insert can't both
 // commit overlapping rows: one runs again and sees the other. A change outside the list's `where` and `state` doesn't make a call run again. The
 // in-memory half is language-effect's records/list-race.test.ts; this runs the same handler through `Handlers.serve` over `StoreD1`, in real workerd and
-// real D1, so the build picks how D1 guards a list. The table is test/migrations/0008_leaves.sql. Written by the checks author for Goal 16; the builder
+// real D1, so the build picks how D1 guards a list. The table is test/migrations/0010_leaves.sql. Written by the checks author for Goal 16; the builder
 // never edits this file or that migration, and only removes lines from `expected-failing/`. `list` is reached through a cast until it exists.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { env } from "cloudflare:workers";
@@ -95,7 +95,7 @@ describe("two calls that each list, then insert, in D1 (#764)", () => {
     return { exits, runs, a, b, stored: await idsOf(emp), cancelled: lap(emp, "0") };
   };
 
-  it("can't both commit overlapping leave: one runs again, sees the other's row, and is refused", { timeout: 60_000 }, async () => {
+  it("can't both commit overlapping leave: one runs again, sees the other's row, and is refused", { timeout: 15_000 }, async () => {
     const { exits, runs, a, b, stored, cancelled } = await race(true);
     expect(died(exits), "no call died").toEqual([]);
     expect(runs.slice(0, 2).map((r) => [r.id, r.listed])).toEqual(expect.arrayContaining([[a, []], [b, []]]));
@@ -109,7 +109,7 @@ describe("two calls that each list, then insert, in D1 (#764)", () => {
     expect(stored).toEqual([cancelled, won[0]]);
   });
 
-  it("control: two calls whose leave doesn't overlap both commit", { timeout: 60_000 }, async () => {
+  it("control: two calls whose leave doesn't overlap both commit", { timeout: 15_000 }, async () => {
     const { exits, a, b, stored, cancelled } = await race(false);
     expect(died(exits), "no call died").toEqual([]);
     expect(exits.map((e) => (Exit.isSuccess(e) ? e.value.application : Cause.squash(e.cause)))).toEqual([a, b]);
@@ -159,7 +159,7 @@ describe("in D1, a change the list didn't read doesn't make the call run again (
     ["ada's new leave with another note, the list on employee and note", (u, { ada: a }) => u.records.insert(Leave, { ...leave(lap(a, "c"), a, 20n, 21n), note: "other" }, "open"), () => ({ note: "new" })],
   ];
   for (const [what, change, shapeOf] of outside) {
-    it(`${what}: ada's call commits on its first run`, { timeout: 60_000 }, async () => {
+    it(`${what}: ada's call commits on its first run`, { timeout: 15_000 }, async () => {
       const { changed, exit, runs, application } = await around(change, shapeOf);
       expect(changed).toBe("committed");
       expect(Exit.isSuccess(exit) ? exit.value : String(Cause.squash(exit.cause))).toEqual({ application });
@@ -184,10 +184,11 @@ describe("in D1, a change the list didn't read doesn't make the call run again (
     ["bob's new leave, bob's listed first", (u, { bob }) => u.records.insert(Leave, leave(lap(bob, "b"), bob, 10n, 12n), "open"), ({ bob }) => ({ before: bob })],
     // The call writes no leave, only an ask: the list still guards its commit.
     ["ada's new leave on other days, the call writing an ask", adaNew, () => ({ ask: true })],
-    ["ada's 60th more leave changed, past a page of 50", (u, { ada: a }) => u.records.update(Leave, lap(a, "p59"), { note: "moved" }), () => ({ many: true })],
+    // A row deep in a page of 50: a guard capped below the page misses it. (A row past the page was never read, so either answer is fair there.)
+    ["ada's 43rd listed leave changed, deep in a page of 50", (u, { ada: a }) => u.records.update(Leave, lap(a, "p40"), { note: "moved" }), () => ({ many: true })],
   ];
   for (const [what, change, shapeOf] of inside) {
-    it(`control, ${what}: ada's call runs again and then commits`, { timeout: 60_000 }, async () => {
+    it(`control, ${what}: ada's call runs again and then commits`, { timeout: 15_000 }, async () => {
       const { changed, exit, runs, application } = await around(change, shapeOf);
       expect(changed).toBe("committed");
       expect(Exit.isSuccess(exit) ? exit.value : String(Cause.squash(exit.cause))).toEqual({ application });

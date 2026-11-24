@@ -17,4 +17,4 @@ src/modules/store/list-guard.test.ts > in D1, a change the list didn't read does
 src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's new leave on other days, bob's listed first: ada's call runs again and then commits
 src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, bob's new leave, bob's listed first: ada's call runs again and then commits
 src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's new leave on other days, the call writing an ask: ada's call runs again and then commits
-src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's 60th more leave changed, past a page of 50: ada's call runs again and then commits
+src/modules/store/list-guard.test.ts > in D1, a change the list didn't read doesn't make the call run again (#764) > control, ada's 43rd listed leave changed, deep in a page of 50: ada's call runs again and then commits
