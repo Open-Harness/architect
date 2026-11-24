@@ -383,7 +383,8 @@ describe("14 M1.12: acme mounts its clients, and what they make is unchanged apa
       expect(mounts[name], `mounts.${name}`).toMatchObject({ kind: "projection", file: mountPath(name), package: "@orthograph/projections" });
       expect(mounts[name]?.hash, `mounts.${name}.hash`).toEqual(expect.any(String));
     }
-    expect(Object.keys(mounts).filter((name) => mounts[name]?.kind === "projection").sort()).toEqual(["api", "cli", "mcp", "model", "sdk", "server"]);
+    // M1.22 adds the `actions` projection beside them (design/decisions/WEB-actions-projection.md): it may be mounted or not, nothing else may.
+    expect(Object.keys(mounts).filter((name) => mounts[name]?.kind === "projection" && name !== "actions").sort()).toEqual(["api", "cli", "mcp", "model", "sdk", "server"]);
   });
 
   it("writes no generated/cli when its mount is removed, and still writes the sdk and the mcp", () => {

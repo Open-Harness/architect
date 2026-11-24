@@ -1,0 +1,191 @@
+{
+  "routes": [
+    {
+      "page": "access",
+      "path": "/portal/reference/access",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "Who may call what."
+    },
+    {
+      "page": "compare",
+      "path": "/portal/compare",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "Every environment side by side."
+    },
+    {
+      "page": "environment",
+      "path": "/portal/environments/:name",
+      "params": [
+        "name"
+      ],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "One declared environment: its summary, its fields and its proof."
+    },
+    {
+      "page": "events",
+      "path": "/portal/reference/events",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "Every event a thing emits."
+    },
+    {
+      "page": "home",
+      "path": "/portal",
+      "params": [],
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "The things as cards in the tree's order, and what each did in the window."
+    },
+    {
+      "page": "journeys",
+      "path": "/portal/journeys",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "Every declared journey as a sequence of steps."
+    },
+    {
+      "page": "machines",
+      "path": "/portal/reference/machines",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "Every lifecycle."
+    },
+    {
+      "page": "monitor",
+      "path": "/portal/monitor",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "The alerts, issues and objectives the declarations imply."
+    },
+    {
+      "page": "operation",
+      "path": "/portal/operations/:name",
+      "params": [
+        "name"
+      ],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "One operation, on five tabs: contract, metrics, proof, docs and notes."
+    },
+    {
+      "page": "plugins",
+      "path": "/portal/plugins",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "A card per mounted plugin, then the stores and what each runs on."
+    },
+    {
+      "page": "refusals",
+      "path": "/portal/reference/refusals",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "Every refusal code, counted in the window."
+    },
+    {
+      "page": "thing",
+      "path": "/portal/things/:name",
+      "params": [
+        "name"
+      ],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "One thing: its lifecycle, its operations, its rules, events and errors."
+    },
+    {
+      "page": "trace",
+      "path": "/portal/traces/:id",
+      "params": [
+        "id"
+      ],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "One call's trace: its structure and timing, never a value."
+    },
+    {
+      "page": "values",
+      "path": "/portal/reference/values",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "Every value a field can take."
+    },
+    {
+      "page": "worlds",
+      "path": "/portal/starting-worlds",
+      "params": [],
+      "parent": "home",
+      "allowed": [
+        {
+          "kind": "anyone"
+        }
+      ],
+      "description": "The starting worlds, and the journeys that start from each."
+    }
+  ]
+}

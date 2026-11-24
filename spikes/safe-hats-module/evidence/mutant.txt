@@ -1,0 +1,40 @@
+No files changed, compilation skipped
+{"timestamp":1795256796,"event":"failure","invariant":"invariant_budgetAccounting","target":"test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest","reason":"period spend: 100 != 0"}
+
+Ran 1 test for test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest
+[FAIL: period spend: 100 != 0]
+	[Sequence] (original: 9, shrunk: 3)
+		sender=0x0000000000000000000000000000000000002B6c addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=spend(bool,uint128,uint8) args=[false, 292776029463061551 [2.927e17], 1]
+		sender=0x7B8fA0bAc9EC75A801535F0E77f0d80003e17d94 addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=advance(uint64) args=[18446744073709551615 [1.844e19]]
+		sender=0xad1139F7E613b474dB32C5Bb41636c1507cE466A addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=changeLimit(bool,uint128) args=[false, 100]
+ invariant_budgetAccounting() (runs: 1, calls: 9, reverts: 0)
+
+╭---------------+-------------+-------+---------+----------╮
+| Contract      | Selector    | Calls | Reverts | Discards |
++==========================================================+
+| BudgetActions | advance     | 4     | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | changeLimit | 3     | 0       | 0        |
+|---------------+-------------+-------+---------+----------|
+| BudgetActions | spend       | 2     | 0       | 0        |
+╰---------------+-------------+-------+---------+----------╯
+
+Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 1.33s (1.33s CPU time)
+
+Ran 1 test suite in 1.34s (1.33s CPU time): 0 tests passed, 1 failed, 0 skipped (1 total tests)
+
+Failing tests:
+Encountered 1 failing test in test/HatBudgetInvariant.t.sol:HatBudgetInvariantTest
+[FAIL: period spend: 100 != 0]
+	[Sequence] (original: 9, shrunk: 3)
+		sender=0x0000000000000000000000000000000000002B6c addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=spend(bool,uint128,uint8) args=[false, 292776029463061551 [2.927e17], 1]
+		sender=0x7B8fA0bAc9EC75A801535F0E77f0d80003e17d94 addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=advance(uint64) args=[18446744073709551615 [1.844e19]]
+		sender=0xad1139F7E613b474dB32C5Bb41636c1507cE466A addr=[test/HatBudgetInvariant.t.sol:BudgetActions]0x96d3F6c20EEd2697647F543fE6C08bC2Fbf39758 calldata=changeLimit(bool,uint128) args=[false, 100]
+ invariant_budgetAccounting() (runs: 1, calls: 9, reverts: 0)
+
+Encountered a total of 1 failing tests, 0 tests succeeded
+
+Tip: Run `forge test --rerun` to retry only the 1 failed test
+
+Fuzz seed: 0x7 (use `--fuzz-seed` to reproduce)
+Wall time: 2.241 s

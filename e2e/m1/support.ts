@@ -49,8 +49,11 @@ export const succeeds = (root: string, ...args: ReadonlyArray<string>) => {
 
 // ---- a mount, by hand ----
 
-/** The projections `@orthograph/projections` ships (M1-plugins section 15, and `model`): acme mounts any subset of them. */
-export const SHIPPED_PROJECTIONS = ["api", "cli", "docs", "mcp", "model", "portal", "sdk", "server"] as const;
+/**
+ * The projections `@orthograph/projections` ships (M1-plugins section 15, and `model`): acme mounts any subset of them.
+ * `actions` joined them at M1.22 (design/decisions/WEB-actions-projection.md).
+ */
+export const SHIPPED_PROJECTIONS = ["actions", "api", "cli", "docs", "mcp", "model", "portal", "sdk", "server"] as const;
 /** A project's mounts that are projections: each is kind "projection" from `@orthograph/projections`, and its name is one it ships. */
 export const projectionMounts = (mounts: Record<string, { readonly kind: string; readonly package: string }> | undefined) => {
   const all = Object.entries(mounts ?? {}).filter(([, mount]) => mount.kind === "projection");

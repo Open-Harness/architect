@@ -16,3 +16,5 @@ export type { Cast, EntryEnv, WorldEnv, WorldHost } from "#modules/world/types.j
 export { WorldClock } from "#modules/clock/service.js";
 export type { ClockDeclaration, ClockEnv, ClockSource } from "#modules/clock/types.js";
 export type { WorldWakes } from "#modules/timers/types.js";
+export { Relayer } from "#modules/relayer/service.js";
+export type { Relayed, RelayerApi, RelayerConfig, RelayerEnv, RelayState, RelayStatus, Replaced } from "#modules/relayer/types.js";
