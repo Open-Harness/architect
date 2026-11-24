@@ -44,6 +44,8 @@ Starts from the world `three companies`.
 - **it reads back twelve hours long.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Twelve`, `08:00`, `20:00`].
 - **it reads back ending at midnight.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Evening`, `16:00`, `00:00`].
 - **it reads back starting at midnight.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Graveyard`, `00:00`, `08:00`].
+- **it reads back sixteen hours long.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Sixteen`, `06:00`, `22:00`].
+- **it reads back from six in the evening to eight in the morning.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [`Overnight`, `18:00`, `08:00`].
 - **it reads back in Acme Logistics with its own times.** `ada` (role company.owner) calls and sends id the last call's shiftType, and gets back [the world's otherCompany, `Day`, `08:00`, `16:30`, `active`].
 - **it reads back in Bo Ltd.** `bo` (signed in) calls and sends id the last call's shiftType, and gets back [the world's boCompany, `Day`, `09:00`, `17:00`].
 

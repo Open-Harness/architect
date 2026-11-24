@@ -17,6 +17,8 @@ export default Blueprint.startingWorld("an attendance request", {
   ],
   gives: (s) => ({
     company: s.world.company,
+    department: s.world.department,
+    designation: s.world.designation,
     employee: s.world.employee,
     attendance: s.world.attendance,
     attendanceRequest: s.last.attendanceRequest,

@@ -8582,6 +8582,81 @@
           ]
         },
         {
+          "title": "Ada hires Bo too",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.hire",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "person": {
+                "ref": [
+                  "cast",
+                  "bo",
+                  "person"
+                ]
+              },
+              "firstName": "Bo Mwangi",
+              "gender": "Male",
+              "dateOfBirth": "1990-07-01",
+              "dateOfJoining": "2026-02-01",
+              "department": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              },
+              "designation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^emp_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "and marks him present on Monday 23 November, a day Olga's request covers and she has no attendance for",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-23",
+              "status": "Present"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^att_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
           "title": "Olga can't approve her own request",
           "call": {
             "actor": "olga",
@@ -9962,9 +10037,95 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Olga asks to work from home for forty days, 1 April to 10 May 2027",
+          "call": {
+            "actor": "olga",
+            "operation": "attendance-request.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "fromDate": "2027-04-01",
+              "toDate": "2027-05-10",
+              "reason": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^arq_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "approved, it marks all forty",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance-request.approve",
+            "payload": {
+              "attendanceRequest": {
+                "ref": [
+                  "last",
+                  "attendanceRequest"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "40",
+                "0"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "its last day, 10 May, is marked working from home",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.list",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2027-05-10"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "2027-05-10",
+                  "Work From Home",
+                  "marked"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "4e76526eb48f12c2b50d3867a700c0520c4e222992df950a254c49ac2d925e55"
+      "sourceHash": "d2a3dc9368509ad7544f2226df37dff080ce3feac3e06dc7acea08b8ef6e9885"
     },
     "journeys/attendance-stays-in-its-company.ts": {
       "name": "attendance stays in its company",
@@ -9983,6 +10144,127 @@
       },
       "starts": "an attendance request",
       "steps": [
+        {
+          "title": "Ada sets up a second company of her own",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Logistics",
+              "abbr": "AL",
+              "country": "Uganda",
+              "defaultCurrency": "UGX"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada can't mark Olga in it: she works for Acme Trading, though Ada runs both",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2026-11-25",
+              "status": "Present"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor ask for Olga's attendance there",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance-request.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "fromDate": "2026-11-30",
+              "toDate": "2026-11-30",
+              "reason": "On Duty"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "RequesterNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Olga ask for herself there",
+          "call": {
+            "actor": "olga",
+            "operation": "attendance-request.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "fromDate": "2026-11-30",
+              "toDate": "2026-11-30",
+              "reason": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "RequesterNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
         {
           "title": "Bo sets up a company of his own",
           "call": {
@@ -10790,7 +11072,7 @@
           ]
         }
       ],
-      "sourceHash": "ad0a6df54a438e9a4ef23f396049b2008fdc38a8c0140314552680ec36ebbe33"
+      "sourceHash": "de990b528b5fe0bb7b3761103201b590cfbb2c9f3edb54c631583301d0a48ed9"
     },
     "journeys/branch-names-are-the-companys.ts": {
       "name": "branch names are the company's",
@@ -22166,6 +22448,112 @@
           ]
         },
         {
+          "title": "a sixteen-hour shift is allowed",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "shiftTypeName": "Sixteen",
+              "startTime": "06:00",
+              "endTime": "22:00"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^sht_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "it reads back sixteen hours long",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "shiftType"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Sixteen",
+                "06:00",
+                "22:00"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and a fourteen-hour shift overnight",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "shiftTypeName": "Overnight",
+              "startTime": "18:00",
+              "endTime": "08:00"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^sht_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "it reads back from six in the evening to eight in the morning",
+          "call": {
+            "actor": "ada",
+            "operation": "shift-type.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "shiftType"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Overnight",
+                "18:00",
+                "08:00"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Day can't be added to Acme Trading twice",
           "call": {
             "actor": "ada",
@@ -22387,7 +22775,7 @@
           ]
         }
       ],
-      "sourceHash": "6da266f9796f13feb3994f2e2560ad728051e2d0a2c6a31be5ad9d4cdae73847"
+      "sourceHash": "ee82fc18d934a16938d823b11649ea82287b23a9736bc3b78af62514a5d1de2e"
     },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",
@@ -23355,7 +23743,7 @@
           "kind": "signed-in"
         }
       },
-      "sourceHash": "fe65f2b18cfbfaa296dee14d6d375cbab18f79b8a7ec2bfd67e40c189564eea7",
+      "sourceHash": "f81958fe39bbe0eee79af17d8cb4714815ea4fc42887072d83f3146806be7b9c",
       "makes": [
         {
           "actor": "olga",
@@ -23384,6 +23772,18 @@
           "ref": [
             "world",
             "company"
+          ]
+        },
+        "department": {
+          "ref": [
+            "world",
+            "department"
+          ]
+        },
+        "designation": {
+          "ref": [
+            "world",
+            "designation"
           ]
         },
         "employee": {
@@ -23416,7 +23816,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "b86d6090832514dcd20db9f07025fcad4eb94609910ffc97af41dbc82e6684b4",
+      "sourceHash": "7ca25981fc30ec3a790fed655880e94ff4117ec1577e4336fa76c9f739bafa58",
       "makes": [
         {
           "actor": "ada",
@@ -23444,6 +23844,18 @@
           "ref": [
             "world",
             "company"
+          ]
+        },
+        "department": {
+          "ref": [
+            "world",
+            "department"
+          ]
+        },
+        "designation": {
+          "ref": [
+            "world",
+            "designation"
           ]
         },
         "employee": {

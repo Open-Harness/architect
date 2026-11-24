@@ -55,6 +55,7 @@ Starts from the world `an attendance request`.
 - **and present on the Sunday before the request.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-22`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **and present on the Wednesday, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **and absent on the Saturday after it.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-28`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.
+- **and marks him present on Monday 23 November, a day Olga's request covers and she has no attendance for.** `ada` (role company.owner) calls and sends company the world's company, employee the last call's employee, attendanceDate `2026-11-23`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **a day it marked can't be marked again.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendanceAlreadyMarked, AN-004, carrying attendanceDate `2026-11-25`.
 - **Ada marks Olga absent on Monday 30 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-11-30`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **and present on Tuesday 1 December, in the office.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-01`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
@@ -66,6 +67,7 @@ Starts from the world `an attendance request`.
 
 Starts from the world `an attendance request`.
 
+- **Ada can't mark Olga in it: she works for Acme Trading, though Ada runs both.** `ada` (role company.owner) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.
 - **Bo can't mark Olga in his company: she works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Present`, and is refused with AttendeeNotInCompany, AN-001.
 - **nor mark her absent there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Absent`, and is refused with AttendeeNotInCompany, AN-001.
 - **nor mark her half day there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, attendanceDate `2026-11-25`, status `Half Day`, and is refused with AttendeeNotInCompany, AN-001.

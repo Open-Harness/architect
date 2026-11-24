@@ -57,6 +57,7 @@ Starts from the world `an attendance request`.
 - **approved, it marks both, across the year's end.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `0`].
 - **approved, it marks three days, with no 29 February.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].
 - **approved, it marks 28 February and 1 March and changes 29 February to present.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `1`].
+- **approved, it marks all forty.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`40`, `0`].
 
 ### attendance stays in its company
 

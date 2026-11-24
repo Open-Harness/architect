@@ -25,6 +25,29 @@ export default Blueprint.journey("attendance stays in its company", {
   starts: "an attendance request",
   steps: (s) => [
     s.step(
+      "Ada sets up a second company of her own",
+      s.ada.run(createCompany, { companyName: "Acme Logistics", abbr: "AL", country: "Uganda", defaultCurrency: "UGX" }),
+      expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
+    ),
+    s.step(
+      "Ada can't mark Olga in it: she works for Acme Trading, though Ada runs both",
+      s.ada.run(mark, { company: s.last.company, employee: s.world.employee, attendanceDate: "2026-11-25", status: "Present" }),
+      refuses(AttendeeNotInCompany),
+      noEvents(),
+    ),
+    s.step(
+      "nor ask for Olga's attendance there",
+      s.ada.run(create, { company: s.last.company, employee: s.world.employee, fromDate: "2026-11-30", toDate: "2026-11-30", reason: "On Duty" }),
+      refuses(RequesterNotInCompany),
+      noEvents(),
+    ),
+    s.step(
+      "nor can Olga ask for herself there",
+      s.olga.run(create, { company: s.last.company, employee: s.world.employee, fromDate: "2026-11-30", toDate: "2026-11-30", reason: "Work From Home" }),
+      refuses(RequesterNotInCompany),
+      noEvents(),
+    ),
+    s.step(
       "Bo sets up a company of his own",
       s.bo.run(createCompany, { companyName: "Bo Ltd", abbr: "BL", country: "Kenya", defaultCurrency: "KES" }),
       expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),

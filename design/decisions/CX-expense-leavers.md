@@ -1,5 +1,8 @@
 # CX-expense-leavers: a leaver can't start new HR records, but can finish open ones
 
+Titled until 24 November 2026 "a leaver can't start an expense claim, but can finish one"; widened by the extension
+below (#964).
+
 **Decided 24 November 2026** by Goal 16's lead, on #937's 🔍 review.
 
 HRMS's `validate_active_employee` (`hrms/hr/utils.py`, at `46b38904`) refuses an expense claim only for an employee whose
@@ -17,4 +20,5 @@ the case a company wants stopped. Payroll (slice 9) revisits this when it brings
 refuses `AttendeeHasLeft` and `attendance-request.create` refuses `RequesterHasLeft`, judged on mark and create only, and
 a request opened before the employee left can still be approved and mark its days. HRMS's `validate_active_employee` and
 `validate_employee_status` refuse only an Inactive employee, so HRMS lets a Left employee be marked; Capxul's rule is
-stricter, and payroll revisits it with the rest.
+stricter, and payroll revisits it with the rest. HRMS's relieving-day bound on a request's days waits on a stored
+relieving day (#742, item 5).

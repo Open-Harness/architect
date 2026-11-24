@@ -122,6 +122,28 @@ export default Blueprint.journey("set up shift types", {
       noEvents(),
     ),
     s.step(
+      "a sixteen-hour shift is allowed",
+      s.ada.run(create, { company: s.world.company, shiftTypeName: "Sixteen", startTime: "06:00", endTime: "22:00" }),
+      expect((a) => a.shiftType).toMatch(/^sht_[0-9a-z]+$/),
+    ),
+    s.step(
+      "it reads back sixteen hours long",
+      s.ada.run(get, { id: s.last.shiftType }),
+      expect((a) => [a.shiftTypeName, a.startTime, a.endTime]).toEqual(["Sixteen", "06:00", "22:00"]),
+      noEvents(),
+    ),
+    s.step(
+      "and a fourteen-hour shift overnight",
+      s.ada.run(create, { company: s.world.company, shiftTypeName: "Overnight", startTime: "18:00", endTime: "08:00" }),
+      expect((a) => a.shiftType).toMatch(/^sht_[0-9a-z]+$/),
+    ),
+    s.step(
+      "it reads back from six in the evening to eight in the morning",
+      s.ada.run(get, { id: s.last.shiftType }),
+      expect((a) => [a.shiftTypeName, a.startTime, a.endTime]).toEqual(["Overnight", "18:00", "08:00"]),
+      noEvents(),
+    ),
+    s.step(
       "Day can't be added to Acme Trading twice",
       s.ada.run(create, { company: s.world.company, shiftTypeName: "Day", startTime: "08:00", endTime: "16:00" }),
       refuses(ShiftTypeNameTaken, { shiftTypeName: "Day" }),

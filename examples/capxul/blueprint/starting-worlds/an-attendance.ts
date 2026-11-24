@@ -8,5 +8,11 @@ export default Blueprint.startingWorld("an attendance", {
   from: "an employee",
   cast: { ada: owner },
   makes: (s) => [s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-24", status: "Absent" })],
-  gives: (s) => ({ company: s.world.company, employee: s.world.employee, attendance: s.last.attendance }),
+  gives: (s) => ({
+    company: s.world.company,
+    department: s.world.department,
+    designation: s.world.designation,
+    employee: s.world.employee,
+    attendance: s.last.attendance,
+  }),
 });

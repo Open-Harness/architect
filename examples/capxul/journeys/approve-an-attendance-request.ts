@@ -15,6 +15,7 @@ import create from "../blueprint/things/attendance-request/verbs/create.ts";
 import approve from "../blueprint/things/attendance-request/verbs/approve.ts";
 import reject from "../blueprint/things/attendance-request/verbs/reject.ts";
 import get from "../blueprint/things/attendance-request/verbs/get.ts";
+import hire from "../blueprint/things/employee/verbs/hire.ts";
 
 type Item = { readonly id: string; readonly company: string; readonly employee: string; readonly attendanceDate: string; readonly status: string; readonly state: string };
 /** A page's items as [day, status, company, employee, state], by day: the order a handler marks them in is its own. */
@@ -49,6 +50,25 @@ export default Blueprint.journey("approve an attendance request", {
     s.step(
       "and absent on the Saturday after it",
       s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2026-11-28", status: "Absent" }),
+      expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
+    ),
+    s.step(
+      "Ada hires Bo too",
+      s.ada.run(hire, {
+        company: s.world.company,
+        person: s.bo.person,
+        firstName: "Bo Mwangi",
+        gender: "Male",
+        dateOfBirth: "1990-07-01",
+        dateOfJoining: "2026-02-01",
+        department: s.world.department,
+        designation: s.world.designation,
+      }),
+      expect((a) => a.employee).toMatch(/^emp_[0-9a-z]+$/),
+    ),
+    s.step(
+      "and marks him present on Monday 23 November, a day Olga's request covers and she has no attendance for",
+      s.ada.run(mark, { company: s.world.company, employee: s.last.employee, attendanceDate: "2026-11-23", status: "Present" }),
       expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
     ),
     s.step(
@@ -247,6 +267,22 @@ export default Blueprint.journey("approve an attendance request", {
         ["2028-02-29", "Present"],
         ["2028-03-01", "Present"],
       ])),
+      noEvents(),
+    ),
+    s.step(
+      "Olga asks to work from home for forty days, 1 April to 10 May 2027",
+      s.olga.run(create, { company: s.world.company, employee: s.world.employee, fromDate: "2027-04-01", toDate: "2027-05-10", reason: WFH }),
+      expect((a) => a.attendanceRequest).toMatch(/^arq_[0-9a-z]+$/),
+    ),
+    s.step(
+      "approved, it marks all forty",
+      s.ada.run(approve, { attendanceRequest: s.last.attendanceRequest }),
+      expect((a) => [a.marked, a.changed]).toEqual([40n, 0n]),
+    ),
+    s.step(
+      "its last day, 10 May, is marked working from home",
+      s.ada.run(list, { employee: s.world.employee, attendanceDate: "2027-05-10" }),
+      expect((p) => p.items.map((i: Item) => [i.attendanceDate, i.status, i.state])).toEqual([["2027-05-10", WFH, "marked"]]),
       noEvents(),
     ),
   ];

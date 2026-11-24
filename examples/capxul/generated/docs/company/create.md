@@ -59,6 +59,7 @@ Starts from the world `a team`.
 
 Starts from the world `an attendance request`.
 
+- **Ada sets up a second company of her own.** `ada` (role company.owner) calls and sends companyName `Acme Logistics`, abbr `AL`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
 - **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 - **Bo sets up a second company.** `bo` (signed in) calls and sends companyName `Bo Ventures`, abbr `BV`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
