@@ -104,9 +104,11 @@ agreed on #707.
   at `1770ffad`. #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`. #919 brought
   slice 8c whole, at `de09a851`: #914, the holiday checks, and #918, the holiday handlers. A 🔍 failed #919 while it
   carried only #914, because capxul `prove` was ✘ with 17 failing and no CI ratchet covers capxul. So #919 stayed a
-  draft until #918 merged and `prove` passed, as #832 did for slice 8a. `goal/capxul` is now ahead of `main` only by
-  #921 (docs), and #922 is open there. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates
-  checks) turned `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`.
+  draft until #918 merged and `prove` passed, as #832 did for slice 8a. `goal/capxul` is now ahead of `main` by #921
+  (docs) and #922 (Day becomes `Blueprint.day()`), and both wait for the next round. Goal 16 also lands its
+  framework slices in `main` itself: #915 (the Dates checks) turned `main` red at `bf3c60bf`, and #917 (the Dates build)
+  made it green again at `9afb7efd`.
+
   #887 lands `goal/superagent` through #790 and stays a draft, with `main` merged in at `dfcd6760`. Its merge, ratchet
   and checks hold, but two things block it. 18 of its 26 pull requests have no 🔍 pass recorded on GitHub, and Goal
   17 is asked on #563 to link them. The 🔍's review of the three builds that change framework code found
