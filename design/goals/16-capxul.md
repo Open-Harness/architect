@@ -133,7 +133,7 @@ Goal 18 (#749). Slice 8a is built: Capxul's app and its Company (#757) and emplo
 titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) waits on handlers
 that can list records (#764, case 2 with Goal 17's #758). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
 and bank accounts). Their handlers are built as well (#787, d0f02a2b). Slice 8c, holiday lists, is built: its checks are #914 (4f5cefaf), and a separate
-builder made them green (#918, 15c79143), so `prove` passes all 22 journeys in `goal/capxul`. Expense claims are in USDC, the one
+builder made them green (#918, 15c79143), so `prove` passes all 22 journeys in `goal/capxul`. Branch and Employee Grade's checks are in (#924, 19c24f88), and a separate builder is making them green. Expense claims are in USDC, the one
 dollar asset every Capxul company uses for now (Aaron, 24 November 2026; `CX-grill.md`, section 3), so they wait on
 nothing; their checks are under way. The generated Bridge
 adapter waits on Goal 17's slice 4 (#739). Goal 16 has claimed two
