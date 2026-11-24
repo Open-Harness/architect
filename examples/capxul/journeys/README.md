@@ -53,6 +53,24 @@ record types are listed in `../doctypes.md`.
 - `a leave application`, from `a leave allocation`: Olga asks for Monday 2027-03-01 to Wednesday 2027-03-03. It gives
   those and `leaveApplication`.
 
+- `a job opening`, from `an employee`: Ada opens Backend Engineer, under Engineer, for two. It adds `jobOpening`.
+- `a job applicant`, from `a job opening`: Pat Mwangi applies, as pat@example.com. It adds `jobApplicant`.
+- `an interview round`, from `a job applicant`: Ada adds the round Technical, with Olga. It adds `interviewRound`.
+- `a second employee`, from `an interview round`: Ada hires Cy (signed in) as an engineer, joining 2026-06-01. It adds
+  `secondEmployee`.
+- `an outside company`, `an outside department` and `an outside employee`, each from the one before: Ada sets up Acme
+  Logistics, adds Logistics to it, and hires Bo (signed in) there as a driver. They add `otherCompany`,
+  `otherDepartment` and `outsider`: an employee of Ada's, but not at Acme Trading.
+- `an interview`, from `an outside employee`: Ada schedules Pat's Technical with Olga and Cy on Thursday 2026-12-03, ten
+  to eleven. It adds `interview`.
+- `a second job title`, from `an outside employee`: Ada adds the job title Lead Engineer to Acme Trading. It adds
+  `otherDesignation`.
+- `a technical round`, from `an employee`: Ada adds the round Technical, with Olga, before any job is open. It adds
+  `interviewRound`.
+
+Capxul's local world's clock stands at Tuesday 2026-12-01 09:00 UTC until a journey moves it; a world adds its keys to
+what the worlds before it gave.
+
 A world can hand on only the answer of its latest call (`s.last`), so most add one record; `two kybs started` and
 `a reopened account` make two calls and hand on what the first gave through the second's payload or the world.
 
@@ -101,6 +119,12 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `overlapping-leave` | `a leave application` | Ada (owner), Olga, Bo (signed in) | Two overlapping applications: `LeaveOverlaps` against an open or approved one of any type, on a shared first or last day, inside and around; not against a rejected or cancelled one or another employee's. `LeaveTooLong` counts the same type's open or approved applications that run on, not other types', and 0 is no limit |
 | `leave-days` | `a leave allocation` | Ada (owner), Olga, Bo (signed in) | Holidays of any of Acme Trading's lists are skipped unless the type counts them, Bo Ltd's aren't; approve leaves the holiday unmarked, and `mark` refuses it. `LeaveAllHolidays`, `LeaveEndsBeforeStart`, `LeaveBeforeJoining` (the joining day allowed), `LeaveDayAttended` for Present and Work From Home only, on create and again on approve |
 | `attendance-requests-and-leave` | `a leave application` | Ada (owner), Olga, Bo (signed in) | `AttendanceRequestOverlaps` against a draft or approved request on a shared day, inside and around, not a rejected one or another employee's. An approved request skips the days an approved leave covers, not an open leave's |
+| `open-a-job` | `a job applicant` | Ada (owner), Olga, Bo (signed in) | `job-opening.create` takes its company from the job title, answers a `jop_` id, emits `JobOpeningCreated` with the vacancies, `open`, and reads back as typed; only the owner opens or reads one, and none is opened for nobody (`OpeningWithoutVacancies`); one person is enough. An email may apply again, to the same opening or another, and an applicant takes the opening's company; only the owner adds or reads one. The owner closes an opening that hasn't filled (`JobOpeningClosed`, `closed`); it can't be closed again, takes no new applicant (`OpeningClosed`), and those already in stay open, and may still be offered the job and accepted |
+| `make-a-job-offer` | `a second job title` | Ada (owner), Bo, Olga (signed in) | An applicant is accepted only once their own offer is accepted (`OfferNotAccepted` with none, one awaiting, one rejected, or another applicant's accepted). Only the owner offers; a job title of Ada's other company is `OfferDesignationNotInCompany`. One offer per applicant in every state (`OfferAlreadyMade`). Accepting or rejecting an offer answers its applicant, and can't be done twice, nor by anyone but the owner; the applicant's accept (from hold) and reject (from hold, and by the owner only) follow as a second call (#972). An offer may be any job title of the applicant's company, and an applicant on hold may accept one. Offers and applicants read back as made |
+| `set-up-interview-rounds` | `an outside employee` | Ada (owner), Bo, Olga, Dee (signed in) | `interview-round.create` answers an `irn_` id, emits `InterviewRoundCreated`, and reads back with its interviewers in the order given, none too. Its name is the company's (`RoundNameTaken`); Acme Logistics and Dee's company may reuse it. An interviewer from Ada's other company is `RoundInterviewerNotInCompany` wherever they stand; a leaver is `RoundInterviewerHasLeft` wherever they stand, after the company check; a round made before she left keeps her |
+| `schedule-an-interview` | `an outside employee` | Ada (owner), Bo, Olga (signed in) | `interview.create` answers an `ivw_` id, emits `InterviewScheduled`, `pending`, and reads back with its interviewers in order. Refusals, each pinned before the next: `ApplicantRejected`, `RoundNotInCompany` (a round of Ada's other company), `InterviewEndsBeforeStart` (the same minute, a quarter hour back within an hour, past midnight), `InterviewerNotInCompany` and `InterviewerHasLeft` wherever they stand. One interview per applicant per round, also once it is rejected (`InterviewAlreadyScheduled`). An applicant on hold may be interviewed. A leaver is refused on a day already past, and at a round that lists her. A rejected applicant is refused before a round of another company. Only the owner clears or rejects, once; a minute-long interview, a day already past and one still to come are allowed |
+| `give-interview-feedback` | `an interview` | Ada (owner), Olga, Cy, Bo (signed in) | Only an interviewer gives feedback, as themselves (`NotAllowed` for Ada and Bo; `FeedbackGiverNotInterviewer` for an employee not on it, judged before the day). Nothing before the interview's own day by the world's clock, to the last second of the eve (`FeedbackBeforeInterview`, carrying that interview's day); the day itself is allowed. One per interviewer per interview (`FeedbackAlreadyGiven`), but one on another interview is allowed. Feedback doesn't decide the interview. A leaver still gives feedback on a pending interview she was on, and feedback may be given on an interview already cleared. Each reads back as given, by the giver or the owner |
+| `hire-from-a-job-opening` | `a technical round` | Ada (owner), Olga, Pat (signed in) | The whole way: an opening, Pat's application, an interview the same day, Olga's feedback, the interview cleared, an offer, its acceptance, Pat accepted (the second call, #972), the opening closed and Pat hired. Each step reaches the record the one before it made or read |
 
 ## Where the docs were silent
 

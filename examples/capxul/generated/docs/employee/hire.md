@@ -98,6 +98,12 @@ Starts from the world `a team`.
 - **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.
 - **Ada may hire Bo on the day he was born, which ERPNext allows.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-06-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
 
+### hire from a job opening
+
+Starts from the world `a technical round`.
+
+- **Ada hires Pat, joining on 4 January 2027.** `ada` (role company.owner) calls and sends company the world's company, person the cast's pat person, firstName `Pat Mwangi`, gender `Non-Conforming`, dateOfBirth `1997-05-21`, dateOfJoining `2027-01-04`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
 ### mark attendance
 
 Starts from the world `an employee`.

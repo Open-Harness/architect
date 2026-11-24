@@ -18,6 +18,12 @@ import * as ExpenseClaim from "../../../blueprint/things/expense-claim/errors.ts
 import * as ExpenseClaimType from "../../../blueprint/things/expense-claim-type/errors.ts";
 import * as Holiday from "../../../blueprint/things/holiday/errors.ts";
 import * as HolidayList from "../../../blueprint/things/holiday-list/errors.ts";
+import * as Interview from "../../../blueprint/things/interview/errors.ts";
+import * as InterviewFeedback from "../../../blueprint/things/interview-feedback/errors.ts";
+import * as InterviewRound from "../../../blueprint/things/interview-round/errors.ts";
+import * as JobApplicant from "../../../blueprint/things/job-applicant/errors.ts";
+import * as JobOffer from "../../../blueprint/things/job-offer/errors.ts";
+import * as JobOpening from "../../../blueprint/things/job-opening/errors.ts";
 import * as LeaveAllocation from "../../../blueprint/things/leave-allocation/errors.ts";
 import * as LeaveApplication from "../../../blueprint/things/leave-application/errors.ts";
 import * as LeaveType from "../../../blueprint/things/leave-type/errors.ts";
@@ -62,6 +68,23 @@ export const refusals = {
   HolidayOutsideList: { code: "HD-002", exit: 42, status: 422 },
   HolidayListNameTaken: { code: "HL-001", exit: 43, status: 422 },
   HolidayListEndsBeforeStart: { code: "HL-002", exit: 44, status: 422 },
+  ApplicantRejected: { code: "IV-001", exit: 41, status: 422 },
+  RoundNotInCompany: { code: "IV-002", exit: 42, status: 422 },
+  InterviewEndsBeforeStart: { code: "IV-003", exit: 43, status: 422 },
+  InterviewerNotInCompany: { code: "IV-004", exit: 44, status: 422 },
+  InterviewerHasLeft: { code: "IV-005", exit: 45, status: 422 },
+  InterviewAlreadyScheduled: { code: "IV-006", exit: 46, status: 422 },
+  FeedbackGiverNotInterviewer: { code: "IF-001", exit: 41, status: 422 },
+  FeedbackBeforeInterview: { code: "IF-002", exit: 42, status: 422 },
+  FeedbackAlreadyGiven: { code: "IF-003", exit: 43, status: 422 },
+  RoundNameTaken: { code: "IR-001", exit: 41, status: 422 },
+  RoundInterviewerNotInCompany: { code: "IR-002", exit: 42, status: 422 },
+  RoundInterviewerHasLeft: { code: "IR-003", exit: 43, status: 422 },
+  OpeningClosed: { code: "JA-001", exit: 41, status: 422 },
+  OfferNotAccepted: { code: "JA-002", exit: 42, status: 422 },
+  OfferDesignationNotInCompany: { code: "JF-001", exit: 41, status: 422 },
+  OfferAlreadyMade: { code: "JF-002", exit: 42, status: 422 },
+  OpeningWithoutVacancies: { code: "JO-001", exit: 41, status: 422 },
   AllocateeNotInCompany: { code: "LL-001", exit: 41, status: 422 },
   AllocateeHasLeft: { code: "LL-002", exit: 42, status: 422 },
   AllocationTypeNotInCompany: { code: "LL-003", exit: 43, status: 422 },
@@ -101,6 +124,12 @@ export const refusals = {
   ExpenseClaimTypeNotActive: { code: "ET-900", exit: 40, status: 409 },
   HolidayNotActive: { code: "HD-900", exit: 40, status: 409 },
   HolidayListNotActive: { code: "HL-900", exit: 40, status: 409 },
+  InterviewNotPending: { code: "IV-900", exit: 40, status: 409 },
+  InterviewFeedbackNotGiven: { code: "IF-900", exit: 40, status: 409 },
+  InterviewRoundNotActive: { code: "IR-900", exit: 40, status: 409 },
+  JobApplicantNotOpen: { code: "JA-900", exit: 40, status: 409 },
+  JobOfferNotAwaiting: { code: "JF-900", exit: 40, status: 409 },
+  JobOpeningNotOpen: { code: "JO-900", exit: 40, status: 409 },
   LeaveAllocationNotDraft: { code: "LL-900", exit: 40, status: 409 },
   LeaveApplicationNotOpen: { code: "LP-900", exit: 40, status: 409 },
   LeaveTypeNotActive: { code: "LT-900", exit: 40, status: 409 },
@@ -112,6 +141,8 @@ export const refusals = {
   DesignationNotFound: { code: "DS-901", exit: 4, status: 404 },
   EmployeeNotFound: { code: "EM-901", exit: 4, status: 404 },
   ExpenseClaimTypeNotFound: { code: "ET-901", exit: 4, status: 404 },
+  InterviewNotFound: { code: "IV-901", exit: 4, status: 404 },
+  InterviewRoundNotFound: { code: "IR-901", exit: 4, status: 404 },
   LeaveTypeNotFound: { code: "LT-901", exit: 4, status: 404 },
   NotAllowed: { code: "AR-001", exit: 3, status: 403 },
   IdempotencyConflict: { code: "AR-002", exit: 120, status: 409 },
@@ -192,6 +223,40 @@ ErrorNames.name(HolidayList.HolidayListNameTaken, "HolidayListNameTaken");
 export class HolidayListNameTaken extends Schema.TaggedError<HolidayListNameTaken>()("HolidayListNameTaken", { code: Schema.Literal(refusals.HolidayListNameTaken.code), ...wireStruct(HolidayList.HolidayListNameTaken.fields).fields }, { httpApiStatus: refusals.HolidayListNameTaken.status }) { static readonly code = refusals.HolidayListNameTaken.code; }
 ErrorNames.name(HolidayList.HolidayListEndsBeforeStart, "HolidayListEndsBeforeStart");
 export class HolidayListEndsBeforeStart extends Schema.TaggedError<HolidayListEndsBeforeStart>()("HolidayListEndsBeforeStart", { code: Schema.Literal(refusals.HolidayListEndsBeforeStart.code), ...wireStruct(HolidayList.HolidayListEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.HolidayListEndsBeforeStart.status }) { static readonly code = refusals.HolidayListEndsBeforeStart.code; }
+ErrorNames.name(Interview.ApplicantRejected, "ApplicantRejected");
+export class ApplicantRejected extends Schema.TaggedError<ApplicantRejected>()("ApplicantRejected", { code: Schema.Literal(refusals.ApplicantRejected.code), ...wireStruct(Interview.ApplicantRejected.fields).fields }, { httpApiStatus: refusals.ApplicantRejected.status }) { static readonly code = refusals.ApplicantRejected.code; }
+ErrorNames.name(Interview.RoundNotInCompany, "RoundNotInCompany");
+export class RoundNotInCompany extends Schema.TaggedError<RoundNotInCompany>()("RoundNotInCompany", { code: Schema.Literal(refusals.RoundNotInCompany.code), ...wireStruct(Interview.RoundNotInCompany.fields).fields }, { httpApiStatus: refusals.RoundNotInCompany.status }) { static readonly code = refusals.RoundNotInCompany.code; }
+ErrorNames.name(Interview.InterviewEndsBeforeStart, "InterviewEndsBeforeStart");
+export class InterviewEndsBeforeStart extends Schema.TaggedError<InterviewEndsBeforeStart>()("InterviewEndsBeforeStart", { code: Schema.Literal(refusals.InterviewEndsBeforeStart.code), ...wireStruct(Interview.InterviewEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.InterviewEndsBeforeStart.status }) { static readonly code = refusals.InterviewEndsBeforeStart.code; }
+ErrorNames.name(Interview.InterviewerNotInCompany, "InterviewerNotInCompany");
+export class InterviewerNotInCompany extends Schema.TaggedError<InterviewerNotInCompany>()("InterviewerNotInCompany", { code: Schema.Literal(refusals.InterviewerNotInCompany.code), ...wireStruct(Interview.InterviewerNotInCompany.fields).fields }, { httpApiStatus: refusals.InterviewerNotInCompany.status }) { static readonly code = refusals.InterviewerNotInCompany.code; }
+ErrorNames.name(Interview.InterviewerHasLeft, "InterviewerHasLeft");
+export class InterviewerHasLeft extends Schema.TaggedError<InterviewerHasLeft>()("InterviewerHasLeft", { code: Schema.Literal(refusals.InterviewerHasLeft.code), ...wireStruct(Interview.InterviewerHasLeft.fields).fields }, { httpApiStatus: refusals.InterviewerHasLeft.status }) { static readonly code = refusals.InterviewerHasLeft.code; }
+ErrorNames.name(Interview.InterviewAlreadyScheduled, "InterviewAlreadyScheduled");
+export class InterviewAlreadyScheduled extends Schema.TaggedError<InterviewAlreadyScheduled>()("InterviewAlreadyScheduled", { code: Schema.Literal(refusals.InterviewAlreadyScheduled.code), ...wireStruct(Interview.InterviewAlreadyScheduled.fields).fields }, { httpApiStatus: refusals.InterviewAlreadyScheduled.status }) { static readonly code = refusals.InterviewAlreadyScheduled.code; }
+ErrorNames.name(InterviewFeedback.FeedbackGiverNotInterviewer, "FeedbackGiverNotInterviewer");
+export class FeedbackGiverNotInterviewer extends Schema.TaggedError<FeedbackGiverNotInterviewer>()("FeedbackGiverNotInterviewer", { code: Schema.Literal(refusals.FeedbackGiverNotInterviewer.code), ...wireStruct(InterviewFeedback.FeedbackGiverNotInterviewer.fields).fields }, { httpApiStatus: refusals.FeedbackGiverNotInterviewer.status }) { static readonly code = refusals.FeedbackGiverNotInterviewer.code; }
+ErrorNames.name(InterviewFeedback.FeedbackBeforeInterview, "FeedbackBeforeInterview");
+export class FeedbackBeforeInterview extends Schema.TaggedError<FeedbackBeforeInterview>()("FeedbackBeforeInterview", { code: Schema.Literal(refusals.FeedbackBeforeInterview.code), ...wireStruct(InterviewFeedback.FeedbackBeforeInterview.fields).fields }, { httpApiStatus: refusals.FeedbackBeforeInterview.status }) { static readonly code = refusals.FeedbackBeforeInterview.code; }
+ErrorNames.name(InterviewFeedback.FeedbackAlreadyGiven, "FeedbackAlreadyGiven");
+export class FeedbackAlreadyGiven extends Schema.TaggedError<FeedbackAlreadyGiven>()("FeedbackAlreadyGiven", { code: Schema.Literal(refusals.FeedbackAlreadyGiven.code), ...wireStruct(InterviewFeedback.FeedbackAlreadyGiven.fields).fields }, { httpApiStatus: refusals.FeedbackAlreadyGiven.status }) { static readonly code = refusals.FeedbackAlreadyGiven.code; }
+ErrorNames.name(InterviewRound.RoundNameTaken, "RoundNameTaken");
+export class RoundNameTaken extends Schema.TaggedError<RoundNameTaken>()("RoundNameTaken", { code: Schema.Literal(refusals.RoundNameTaken.code), ...wireStruct(InterviewRound.RoundNameTaken.fields).fields }, { httpApiStatus: refusals.RoundNameTaken.status }) { static readonly code = refusals.RoundNameTaken.code; }
+ErrorNames.name(InterviewRound.RoundInterviewerNotInCompany, "RoundInterviewerNotInCompany");
+export class RoundInterviewerNotInCompany extends Schema.TaggedError<RoundInterviewerNotInCompany>()("RoundInterviewerNotInCompany", { code: Schema.Literal(refusals.RoundInterviewerNotInCompany.code), ...wireStruct(InterviewRound.RoundInterviewerNotInCompany.fields).fields }, { httpApiStatus: refusals.RoundInterviewerNotInCompany.status }) { static readonly code = refusals.RoundInterviewerNotInCompany.code; }
+ErrorNames.name(InterviewRound.RoundInterviewerHasLeft, "RoundInterviewerHasLeft");
+export class RoundInterviewerHasLeft extends Schema.TaggedError<RoundInterviewerHasLeft>()("RoundInterviewerHasLeft", { code: Schema.Literal(refusals.RoundInterviewerHasLeft.code), ...wireStruct(InterviewRound.RoundInterviewerHasLeft.fields).fields }, { httpApiStatus: refusals.RoundInterviewerHasLeft.status }) { static readonly code = refusals.RoundInterviewerHasLeft.code; }
+ErrorNames.name(JobApplicant.OpeningClosed, "OpeningClosed");
+export class OpeningClosed extends Schema.TaggedError<OpeningClosed>()("OpeningClosed", { code: Schema.Literal(refusals.OpeningClosed.code), ...wireStruct(JobApplicant.OpeningClosed.fields).fields }, { httpApiStatus: refusals.OpeningClosed.status }) { static readonly code = refusals.OpeningClosed.code; }
+ErrorNames.name(JobApplicant.OfferNotAccepted, "OfferNotAccepted");
+export class OfferNotAccepted extends Schema.TaggedError<OfferNotAccepted>()("OfferNotAccepted", { code: Schema.Literal(refusals.OfferNotAccepted.code), ...wireStruct(JobApplicant.OfferNotAccepted.fields).fields }, { httpApiStatus: refusals.OfferNotAccepted.status }) { static readonly code = refusals.OfferNotAccepted.code; }
+ErrorNames.name(JobOffer.OfferDesignationNotInCompany, "OfferDesignationNotInCompany");
+export class OfferDesignationNotInCompany extends Schema.TaggedError<OfferDesignationNotInCompany>()("OfferDesignationNotInCompany", { code: Schema.Literal(refusals.OfferDesignationNotInCompany.code), ...wireStruct(JobOffer.OfferDesignationNotInCompany.fields).fields }, { httpApiStatus: refusals.OfferDesignationNotInCompany.status }) { static readonly code = refusals.OfferDesignationNotInCompany.code; }
+ErrorNames.name(JobOffer.OfferAlreadyMade, "OfferAlreadyMade");
+export class OfferAlreadyMade extends Schema.TaggedError<OfferAlreadyMade>()("OfferAlreadyMade", { code: Schema.Literal(refusals.OfferAlreadyMade.code), ...wireStruct(JobOffer.OfferAlreadyMade.fields).fields }, { httpApiStatus: refusals.OfferAlreadyMade.status }) { static readonly code = refusals.OfferAlreadyMade.code; }
+ErrorNames.name(JobOpening.OpeningWithoutVacancies, "OpeningWithoutVacancies");
+export class OpeningWithoutVacancies extends Schema.TaggedError<OpeningWithoutVacancies>()("OpeningWithoutVacancies", { code: Schema.Literal(refusals.OpeningWithoutVacancies.code), ...wireStruct(JobOpening.OpeningWithoutVacancies.fields).fields }, { httpApiStatus: refusals.OpeningWithoutVacancies.status }) { static readonly code = refusals.OpeningWithoutVacancies.code; }
 ErrorNames.name(LeaveAllocation.AllocateeNotInCompany, "AllocateeNotInCompany");
 export class AllocateeNotInCompany extends Schema.TaggedError<AllocateeNotInCompany>()("AllocateeNotInCompany", { code: Schema.Literal(refusals.AllocateeNotInCompany.code), ...wireStruct(LeaveAllocation.AllocateeNotInCompany.fields).fields }, { httpApiStatus: refusals.AllocateeNotInCompany.status }) { static readonly code = refusals.AllocateeNotInCompany.code; }
 ErrorNames.name(LeaveAllocation.AllocateeHasLeft, "AllocateeHasLeft");
@@ -253,6 +318,12 @@ export class ExpenseClaimNotDraft extends Schema.TaggedError<ExpenseClaimNotDraf
 export class ExpenseClaimTypeNotActive extends Schema.TaggedError<ExpenseClaimTypeNotActive>()("ExpenseClaimTypeNotActive", { code: Schema.Literal(refusals.ExpenseClaimTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ExpenseClaimTypeNotActive.status }) { static readonly code = refusals.ExpenseClaimTypeNotActive.code; }
 export class HolidayNotActive extends Schema.TaggedError<HolidayNotActive>()("HolidayNotActive", { code: Schema.Literal(refusals.HolidayNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.HolidayNotActive.status }) { static readonly code = refusals.HolidayNotActive.code; }
 export class HolidayListNotActive extends Schema.TaggedError<HolidayListNotActive>()("HolidayListNotActive", { code: Schema.Literal(refusals.HolidayListNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.HolidayListNotActive.status }) { static readonly code = refusals.HolidayListNotActive.code; }
+export class InterviewNotPending extends Schema.TaggedError<InterviewNotPending>()("InterviewNotPending", { code: Schema.Literal(refusals.InterviewNotPending.code), ...{ state: Schema.Literals(["pending", "cleared", "rejected"]) } }, { httpApiStatus: refusals.InterviewNotPending.status }) { static readonly code = refusals.InterviewNotPending.code; }
+export class InterviewFeedbackNotGiven extends Schema.TaggedError<InterviewFeedbackNotGiven>()("InterviewFeedbackNotGiven", { code: Schema.Literal(refusals.InterviewFeedbackNotGiven.code), ...{ state: Schema.Literals(["given"]) } }, { httpApiStatus: refusals.InterviewFeedbackNotGiven.status }) { static readonly code = refusals.InterviewFeedbackNotGiven.code; }
+export class InterviewRoundNotActive extends Schema.TaggedError<InterviewRoundNotActive>()("InterviewRoundNotActive", { code: Schema.Literal(refusals.InterviewRoundNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.InterviewRoundNotActive.status }) { static readonly code = refusals.InterviewRoundNotActive.code; }
+export class JobApplicantNotOpen extends Schema.TaggedError<JobApplicantNotOpen>()("JobApplicantNotOpen", { code: Schema.Literal(refusals.JobApplicantNotOpen.code), ...{ state: Schema.Literals(["open", "hold", "rejected", "accepted"]) } }, { httpApiStatus: refusals.JobApplicantNotOpen.status }) { static readonly code = refusals.JobApplicantNotOpen.code; }
+export class JobOfferNotAwaiting extends Schema.TaggedError<JobOfferNotAwaiting>()("JobOfferNotAwaiting", { code: Schema.Literal(refusals.JobOfferNotAwaiting.code), ...{ state: Schema.Literals(["awaiting", "accepted", "rejected"]) } }, { httpApiStatus: refusals.JobOfferNotAwaiting.status }) { static readonly code = refusals.JobOfferNotAwaiting.code; }
+export class JobOpeningNotOpen extends Schema.TaggedError<JobOpeningNotOpen>()("JobOpeningNotOpen", { code: Schema.Literal(refusals.JobOpeningNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.JobOpeningNotOpen.status }) { static readonly code = refusals.JobOpeningNotOpen.code; }
 export class LeaveAllocationNotDraft extends Schema.TaggedError<LeaveAllocationNotDraft>()("LeaveAllocationNotDraft", { code: Schema.Literal(refusals.LeaveAllocationNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted"]) } }, { httpApiStatus: refusals.LeaveAllocationNotDraft.status }) { static readonly code = refusals.LeaveAllocationNotDraft.code; }
 export class LeaveApplicationNotOpen extends Schema.TaggedError<LeaveApplicationNotOpen>()("LeaveApplicationNotOpen", { code: Schema.Literal(refusals.LeaveApplicationNotOpen.code), ...{ state: Schema.Literals(["open", "approved", "rejected", "cancelled"]) } }, { httpApiStatus: refusals.LeaveApplicationNotOpen.status }) { static readonly code = refusals.LeaveApplicationNotOpen.code; }
 export class LeaveTypeNotActive extends Schema.TaggedError<LeaveTypeNotActive>()("LeaveTypeNotActive", { code: Schema.Literal(refusals.LeaveTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.LeaveTypeNotActive.status }) { static readonly code = refusals.LeaveTypeNotActive.code; }
@@ -264,6 +335,8 @@ export class DepartmentNotFound extends Schema.TaggedError<DepartmentNotFound>()
 export class DesignationNotFound extends Schema.TaggedError<DesignationNotFound>()("DesignationNotFound", { code: Schema.Literal(refusals.DesignationNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.DesignationNotFound.status }) { static readonly code = refusals.DesignationNotFound.code; }
 export class EmployeeNotFound extends Schema.TaggedError<EmployeeNotFound>()("EmployeeNotFound", { code: Schema.Literal(refusals.EmployeeNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.EmployeeNotFound.status }) { static readonly code = refusals.EmployeeNotFound.code; }
 export class ExpenseClaimTypeNotFound extends Schema.TaggedError<ExpenseClaimTypeNotFound>()("ExpenseClaimTypeNotFound", { code: Schema.Literal(refusals.ExpenseClaimTypeNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.ExpenseClaimTypeNotFound.status }) { static readonly code = refusals.ExpenseClaimTypeNotFound.code; }
+export class InterviewNotFound extends Schema.TaggedError<InterviewNotFound>()("InterviewNotFound", { code: Schema.Literal(refusals.InterviewNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.InterviewNotFound.status }) { static readonly code = refusals.InterviewNotFound.code; }
+export class InterviewRoundNotFound extends Schema.TaggedError<InterviewRoundNotFound>()("InterviewRoundNotFound", { code: Schema.Literal(refusals.InterviewRoundNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.InterviewRoundNotFound.status }) { static readonly code = refusals.InterviewRoundNotFound.code; }
 export class LeaveTypeNotFound extends Schema.TaggedError<LeaveTypeNotFound>()("LeaveTypeNotFound", { code: Schema.Literal(refusals.LeaveTypeNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.LeaveTypeNotFound.status }) { static readonly code = refusals.LeaveTypeNotFound.code; }
 export class NotAllowed extends Schema.TaggedError<NotAllowed>()("NotAllowed", { code: Schema.Literal(refusals.NotAllowed.code), ...{} }, { httpApiStatus: refusals.NotAllowed.status }) { static readonly code = refusals.NotAllowed.code; }
 export class IdempotencyConflict extends Schema.TaggedError<IdempotencyConflict>()("IdempotencyConflict", { code: Schema.Literal(refusals.IdempotencyConflict.code), ...{} }, { httpApiStatus: refusals.IdempotencyConflict.status }) { static readonly code = refusals.IdempotencyConflict.code; }
@@ -313,6 +386,23 @@ export const declared = {
   HolidayOutsideList: Holiday.HolidayOutsideList,
   HolidayListNameTaken: HolidayList.HolidayListNameTaken,
   HolidayListEndsBeforeStart: HolidayList.HolidayListEndsBeforeStart,
+  ApplicantRejected: Interview.ApplicantRejected,
+  RoundNotInCompany: Interview.RoundNotInCompany,
+  InterviewEndsBeforeStart: Interview.InterviewEndsBeforeStart,
+  InterviewerNotInCompany: Interview.InterviewerNotInCompany,
+  InterviewerHasLeft: Interview.InterviewerHasLeft,
+  InterviewAlreadyScheduled: Interview.InterviewAlreadyScheduled,
+  FeedbackGiverNotInterviewer: InterviewFeedback.FeedbackGiverNotInterviewer,
+  FeedbackBeforeInterview: InterviewFeedback.FeedbackBeforeInterview,
+  FeedbackAlreadyGiven: InterviewFeedback.FeedbackAlreadyGiven,
+  RoundNameTaken: InterviewRound.RoundNameTaken,
+  RoundInterviewerNotInCompany: InterviewRound.RoundInterviewerNotInCompany,
+  RoundInterviewerHasLeft: InterviewRound.RoundInterviewerHasLeft,
+  OpeningClosed: JobApplicant.OpeningClosed,
+  OfferNotAccepted: JobApplicant.OfferNotAccepted,
+  OfferDesignationNotInCompany: JobOffer.OfferDesignationNotInCompany,
+  OfferAlreadyMade: JobOffer.OfferAlreadyMade,
+  OpeningWithoutVacancies: JobOpening.OpeningWithoutVacancies,
   AllocateeNotInCompany: LeaveAllocation.AllocateeNotInCompany,
   AllocateeHasLeft: LeaveAllocation.AllocateeHasLeft,
   AllocationTypeNotInCompany: LeaveAllocation.AllocationTypeNotInCompany,
@@ -338,4 +428,4 @@ export const declared = {
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, AttendanceOnLeave, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, AttendanceRequestOverlaps, KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, AllocateeNotInCompany, AllocateeHasLeft, AllocationTypeNotInCompany, AllocationEndsBeforeStart, AllocationOverlaps, LeaveWithoutPayNotAllocated, NoLeavesAllocated, AllocationExceedsPeriod, ApplicantNotInCompany, ApplicantHasLeft, ApplicationTypeNotInCompany, LeaveEndsBeforeStart, LeaveBeforeJoining, NoAllocationCovers, LeaveAllHolidays, InsufficientLeaveBalance, LeaveOverlaps, LeaveTooLong, LeaveDayAttended, LeaveTypeNameTaken, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, LeaveAllocationNotDraft, LeaveApplicationNotOpen, LeaveTypeNotActive, ShiftTypeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, LeaveTypeNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, AttendanceOnLeave, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, AttendanceRequestOverlaps, KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, AllocateeNotInCompany, AllocateeHasLeft, AllocationTypeNotInCompany, AllocationEndsBeforeStart, AllocationOverlaps, LeaveWithoutPayNotAllocated, NoLeavesAllocated, AllocationExceedsPeriod, ApplicantNotInCompany, ApplicantHasLeft, ApplicationTypeNotInCompany, LeaveEndsBeforeStart, LeaveBeforeJoining, NoAllocationCovers, LeaveAllHolidays, InsufficientLeaveBalance, LeaveOverlaps, LeaveTooLong, LeaveDayAttended, LeaveTypeNameTaken, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, LeaveAllocationNotDraft, LeaveApplicationNotOpen, LeaveTypeNotActive, ShiftTypeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, LeaveTypeNotFound, NotAllowed, IdempotencyConflict };

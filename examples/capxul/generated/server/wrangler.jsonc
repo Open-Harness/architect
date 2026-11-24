@@ -11,5 +11,6 @@
   "durable_objects": { "bindings": [{ "name": "WORLD", "class_name": "World" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["World"] }],
   // Where telemetry goes. `ortho prove` and `ortho dev --otlp` set it; unset, nothing is exported.
-  "vars": { "OTLP_URL": "" }
+  // Each environment's stepped or scaled clock (K23): the world's Durable Objects and the Worker's entry read it.
+  "vars": { "OTLP_URL": "", "ORTHO_CLOCKS": "{\"local\":{\"kind\":\"stepped\",\"starts\":\"2026-12-01T09:00:00.000Z\"}}" }
 }

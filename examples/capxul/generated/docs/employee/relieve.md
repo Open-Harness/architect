@@ -66,11 +66,29 @@ Starts from the world `an expense claim`.
 
 - **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
 
+### give interview feedback
+
+Starts from the world `an interview`.
+
+- **Ada relieves Cy on 3 December.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-12-03`, and gets back `2026-12-03`.
+
 ### leave stays in its company
 
 Starts from the world `a leave application`.
 
 - **Olga leaves on 31 March 2027.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2027-03-31`, and gets back `2027-03-31`.
+
+### schedule an interview
+
+Starts from the world `an outside employee`.
+
+- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### set up interview rounds
+
+Starts from the world `an outside employee`.
+
+- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
 
 ## How to call
 

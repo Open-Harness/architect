@@ -378,15 +378,15 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Holiday List | thing |  | 8 | `erpnext/erpnext/setup/doctype/holiday_list/holiday_list.json` |  |
 | Identification Document Type | thing |  | 1 | `hrms/hrms/hr/doctype/identification_document_type/identification_document_type.json` |  |
 | Interest | thing |  | 1 | `hrms/hrms/hr/doctype/interest/interest.json` |  |
-| Interview | thing | SUB | 14 | `hrms/hrms/hr/doctype/interview/interview.json` |  |
-| Interview Feedback | thing | SUB | 8 | `hrms/hrms/hr/doctype/interview_feedback/interview_feedback.json` |  |
-| Interview Round | thing |  | 4 | `hrms/hrms/hr/doctype/interview_round/interview_round.json` |  |
+| Interview | thing | SUB | 14 | `hrms/hrms/hr/doctype/interview/interview.json` | an applicant's interview at a round of the same company, on a day between two times (to after from), with interviewers who are employees still at work; one per applicant per round in every state; pending, then cleared or rejected by the owner, not by feedback. Under Review, rating and reminders come later; overlapping interviewers' times wait on #764 |
+| Interview Feedback | thing | SUB | 8 | `hrms/hrms/hr/doctype/interview_feedback/interview_feedback.json` | one per interviewer per interview (a unique rule), given by one of the interview's interviewers signed in as themselves, not before the interview's day by the world's clock; Cleared or Rejected. A leaver may still give it. Skill assessments and rating come later |
+| Interview Round | thing |  | 4 | `hrms/hrms/hr/doctype/interview_round/interview_round.json` | its name unique within the company, with the employees who interview at it (none to ten, in the company, not leavers). Designation, interview type and expected skills come later |
 | Interview Type | thing |  | 1 | `hrms/hrms/hr/doctype/interview_type/interview_type.json` |  |
-| Job Applicant | thing |  | 18 | `hrms/hrms/hr/doctype/job_applicant/job_applicant.json` |  |
+| Job Applicant | thing |  | 18 | `hrms/hrms/hr/doctype/job_applicant/job_applicant.json` | a name, an email (not unique: HRMS lets one email apply again) and the opening, whose company it takes; none for a closed opening. Open, hold, rejected or accepted; accepted only once its offer is (a second call until #972) |
 | Job Applicant Source | thing |  | 2 | `hrms/hrms/hr/doctype/job_applicant_source/job_applicant_source.json` |  |
-| Job Offer | thing | SUB | 13 | `hrms/hrms/hr/doctype/job_offer/job_offer.json` |  |
+| Job Offer | thing | SUB | 13 | `hrms/hrms/hr/doctype/job_offer/job_offer.json` | one per applicant in every state (a unique rule), under a job title of the applicant's company; awaiting, then accepted or rejected. HRMS moves the applicant in the same call; here it is a second call until #972 (CX-recruitment). Terms, pay (USDC base units when it comes) and the staffing plan's vacancy check come later |
 | Job Offer Term Template | thing |  | 1 | `hrms/hrms/hr/doctype/job_offer_term_template/job_offer_term_template.json` |  |
-| Job Opening | thing |  | 25 | `hrms/hrms/hr/doctype/job_opening/job_opening.json` |  |
+| Job Opening | thing |  | 25 | `hrms/hrms/hr/doctype/job_opening/job_opening.json` | under a job title, whose company it takes, for at least one person; open, then closed by the owner (never by itself). Staffing plan, requisition, salary range and closing day come later (CX-recruitment) |
 | Job Opening Template | thing |  | 5 | `hrms/hrms/hr/doctype/job_opening_template/job_opening_template.json` |  |
 | Job Requisition | thing |  | 17 | `hrms/hrms/hr/doctype/job_requisition/job_requisition.json` |  |
 | KRA | thing |  | 2 | `hrms/hrms/hr/doctype/kra/kra.json` |  |

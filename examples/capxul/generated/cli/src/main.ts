@@ -52,6 +52,26 @@ import { get as holidayGet } from "./holiday/get.ts";
 import { addWeeklyOff as holidayListAddWeeklyOff } from "./holiday-list/add-weekly-off.ts";
 import { create as holidayListCreate } from "./holiday-list/create.ts";
 import { get as holidayListGet } from "./holiday-list/get.ts";
+import { clear as interviewClear } from "./interview/clear.ts";
+import { create as interviewCreate } from "./interview/create.ts";
+import { get as interviewGet } from "./interview/get.ts";
+import { reject as interviewReject } from "./interview/reject.ts";
+import { get as interviewFeedbackGet } from "./interview-feedback/get.ts";
+import { give as interviewFeedbackGive } from "./interview-feedback/give.ts";
+import { create as interviewRoundCreate } from "./interview-round/create.ts";
+import { get as interviewRoundGet } from "./interview-round/get.ts";
+import { accept as jobApplicantAccept } from "./job-applicant/accept.ts";
+import { create as jobApplicantCreate } from "./job-applicant/create.ts";
+import { get as jobApplicantGet } from "./job-applicant/get.ts";
+import { hold as jobApplicantHold } from "./job-applicant/hold.ts";
+import { reject as jobApplicantReject } from "./job-applicant/reject.ts";
+import { accept as jobOfferAccept } from "./job-offer/accept.ts";
+import { create as jobOfferCreate } from "./job-offer/create.ts";
+import { get as jobOfferGet } from "./job-offer/get.ts";
+import { reject as jobOfferReject } from "./job-offer/reject.ts";
+import { close as jobOpeningClose } from "./job-opening/close.ts";
+import { create as jobOpeningCreate } from "./job-opening/create.ts";
+import { get as jobOpeningGet } from "./job-opening/get.ts";
 import { create as leaveAllocationCreate } from "./leave-allocation/create.ts";
 import { get as leaveAllocationGet } from "./leave-allocation/get.ts";
 import { submit as leaveAllocationSubmit } from "./leave-allocation/submit.ts";
@@ -85,13 +105,19 @@ const expenseClaim = Command.make("expense-claim").pipe(Command.withSubcommands(
 const expenseClaimType = Command.make("expense-claim-type").pipe(Command.withSubcommands([expenseClaimTypeCreate, expenseClaimTypeGet]));
 const holiday = Command.make("holiday").pipe(Command.withSubcommands([holidayAdd, holidayGet]));
 const holidayList = Command.make("holiday-list").pipe(Command.withSubcommands([holidayListAddWeeklyOff, holidayListCreate, holidayListGet]));
+const interview = Command.make("interview").pipe(Command.withSubcommands([interviewClear, interviewCreate, interviewGet, interviewReject]));
+const interviewFeedback = Command.make("interview-feedback").pipe(Command.withSubcommands([interviewFeedbackGet, interviewFeedbackGive]));
+const interviewRound = Command.make("interview-round").pipe(Command.withSubcommands([interviewRoundCreate, interviewRoundGet]));
+const jobApplicant = Command.make("job-applicant").pipe(Command.withSubcommands([jobApplicantAccept, jobApplicantCreate, jobApplicantGet, jobApplicantHold, jobApplicantReject]));
+const jobOffer = Command.make("job-offer").pipe(Command.withSubcommands([jobOfferAccept, jobOfferCreate, jobOfferGet, jobOfferReject]));
+const jobOpening = Command.make("job-opening").pipe(Command.withSubcommands([jobOpeningClose, jobOpeningCreate, jobOpeningGet]));
 const leaveAllocation = Command.make("leave-allocation").pipe(Command.withSubcommands([leaveAllocationCreate, leaveAllocationGet, leaveAllocationSubmit]));
 const leaveApplication = Command.make("leave-application").pipe(Command.withSubcommands([leaveApplicationApprove, leaveApplicationCancel, leaveApplicationCreate, leaveApplicationGet, leaveApplicationReject]));
 const leaveType = Command.make("leave-type").pipe(Command.withSubcommands([leaveTypeCreate, leaveTypeGet]));
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, leaveAllocation, leaveApplication, leaveType, shiftType]),
+  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, leaveAllocation, leaveApplication, leaveType, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

@@ -107,6 +107,12 @@ Starts from the world `a company`.
 
 - **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
+### set up interview rounds
+
+Starts from the world `an outside employee`.
+
+- **Dee sets up a company of her own.** `dee` (signed in) calls and sends companyName `Dee Ltd`, abbr `DL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
 ### set up leave types
 
 Starts from the world `an employee`.

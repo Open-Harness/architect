@@ -46,6 +46,26 @@ import { declaration as holidayGet } from "../../api/src/holiday/get.ts";
 import { declaration as holidayListAddWeeklyOff } from "../../api/src/holiday-list/add-weekly-off.ts";
 import { declaration as holidayListCreate } from "../../api/src/holiday-list/create.ts";
 import { declaration as holidayListGet } from "../../api/src/holiday-list/get.ts";
+import { declaration as interviewClear } from "../../api/src/interview/clear.ts";
+import { declaration as interviewCreate } from "../../api/src/interview/create.ts";
+import { declaration as interviewGet } from "../../api/src/interview/get.ts";
+import { declaration as interviewReject } from "../../api/src/interview/reject.ts";
+import { declaration as interviewFeedbackGet } from "../../api/src/interview-feedback/get.ts";
+import { declaration as interviewFeedbackGive } from "../../api/src/interview-feedback/give.ts";
+import { declaration as interviewRoundCreate } from "../../api/src/interview-round/create.ts";
+import { declaration as interviewRoundGet } from "../../api/src/interview-round/get.ts";
+import { declaration as jobApplicantAccept } from "../../api/src/job-applicant/accept.ts";
+import { declaration as jobApplicantCreate } from "../../api/src/job-applicant/create.ts";
+import { declaration as jobApplicantGet } from "../../api/src/job-applicant/get.ts";
+import { declaration as jobApplicantHold } from "../../api/src/job-applicant/hold.ts";
+import { declaration as jobApplicantReject } from "../../api/src/job-applicant/reject.ts";
+import { declaration as jobOfferAccept } from "../../api/src/job-offer/accept.ts";
+import { declaration as jobOfferCreate } from "../../api/src/job-offer/create.ts";
+import { declaration as jobOfferGet } from "../../api/src/job-offer/get.ts";
+import { declaration as jobOfferReject } from "../../api/src/job-offer/reject.ts";
+import { declaration as jobOpeningClose } from "../../api/src/job-opening/close.ts";
+import { declaration as jobOpeningCreate } from "../../api/src/job-opening/create.ts";
+import { declaration as jobOpeningGet } from "../../api/src/job-opening/get.ts";
 import { declaration as leaveAllocationCreate } from "../../api/src/leave-allocation/create.ts";
 import { declaration as leaveAllocationGet } from "../../api/src/leave-allocation/get.ts";
 import { declaration as leaveAllocationSubmit } from "../../api/src/leave-allocation/submit.ts";
@@ -107,6 +127,26 @@ export const catalog = {
   "holiday-list.add-weekly-off": { description: "Make every given weekday in a holiday list a day off. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListAddWeeklyOff, states: ["active"], move: {"key":"addWeeklyOff","from":["active"],"to":["active"],"emits":"WeeklyOffAdded"} },
   "holiday-list.create": { description: "Start a company's list of days off, between two days. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"HolidayListCreated"} },
   "holiday-list.get": { description: "Read one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.", operation: holidayListGet, states: ["active"] },
+  "interview.clear": { description: "Mark an interview cleared. Refuses InterviewAlreadyScheduled when another interview holds this job applicant and interview round.", operation: interviewClear, states: ["pending","cleared","rejected"], move: {"key":"clear","from":["pending"],"to":["cleared"],"emits":"InterviewCleared"} },
+  "interview.create": { description: "Schedule an applicant's interview at a round, on a day, with the employees who interview. Refuses InterviewAlreadyScheduled when another interview holds this job applicant and interview round.", operation: interviewCreate, states: ["pending","cleared","rejected"], move: {"key":"create","from":[],"to":["pending"],"emits":"InterviewScheduled"} },
+  "interview.get": { description: "Read one interview by its id: company, jobApplicant, interviewRound, scheduledOn, fromTime, toTime, interviewers, state.", operation: interviewGet, states: ["pending","cleared","rejected"] },
+  "interview.reject": { description: "Mark an interview rejected. Refuses InterviewAlreadyScheduled when another interview holds this job applicant and interview round.", operation: interviewReject, states: ["pending","cleared","rejected"], move: {"key":"reject","from":["pending"],"to":["rejected"],"emits":"InterviewRejected"} },
+  "interview-feedback.get": { description: "Read one interview-feedback by its id: company, interview, interviewer, result, state.", operation: interviewFeedbackGet, states: ["given"] },
+  "interview-feedback.give": { description: "Give an interviewer's feedback on an interview: cleared or rejected. Refuses FeedbackAlreadyGiven when another interview feedback holds this interview and interviewer.", operation: interviewFeedbackGive, states: ["given"], move: {"key":"give","from":[],"to":["given"],"emits":"InterviewFeedbackGiven"} },
+  "interview-round.create": { description: "Add a stage of hiring to a company, with the employees who interview at it. Refuses RoundNameTaken when another interview round holds this company and round name.", operation: interviewRoundCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"InterviewRoundCreated"} },
+  "interview-round.get": { description: "Read one interview-round by its id: company, roundName, interviewers, state.", operation: interviewRoundGet, states: ["active"] },
+  "job-applicant.accept": { description: "Mark an applicant accepted, once they have accepted their job offer.", operation: jobApplicantAccept, states: ["open","hold","rejected","accepted"], move: {"key":"accept","from":["open","hold"],"to":["accepted"],"emits":"JobApplicantAccepted"} },
+  "job-applicant.create": { description: "Add a person who applied for a job opening.", operation: jobApplicantCreate, states: ["open","hold","rejected","accepted"], move: {"key":"create","from":[],"to":["open"],"emits":"JobApplicantCreated"} },
+  "job-applicant.get": { description: "Read one job-applicant by its id: company, jobOpening, applicantName, email, state.", operation: jobApplicantGet, states: ["open","hold","rejected","accepted"] },
+  "job-applicant.hold": { description: "Put an applicant on hold.", operation: jobApplicantHold, states: ["open","hold","rejected","accepted"], move: {"key":"hold","from":["open"],"to":["hold"],"emits":"JobApplicantHeld"} },
+  "job-applicant.reject": { description: "Turn an applicant down.", operation: jobApplicantReject, states: ["open","hold","rejected","accepted"], move: {"key":"reject","from":["open","hold"],"to":["rejected"],"emits":"JobApplicantRejected"} },
+  "job-offer.accept": { description: "Record that the applicant accepted the offer. Refuses OfferAlreadyMade when another job offer holds this job applicant.", operation: jobOfferAccept, states: ["awaiting","accepted","rejected"], move: {"key":"accept","from":["awaiting"],"to":["accepted"],"emits":"JobOfferAccepted"} },
+  "job-offer.create": { description: "Offer an applicant a job, under one of the company's job titles. Refuses OfferAlreadyMade when another job offer holds this job applicant.", operation: jobOfferCreate, states: ["awaiting","accepted","rejected"], move: {"key":"create","from":[],"to":["awaiting"],"emits":"JobOfferMade"} },
+  "job-offer.get": { description: "Read one job-offer by its id: company, jobApplicant, designation, offerDate, state.", operation: jobOfferGet, states: ["awaiting","accepted","rejected"] },
+  "job-offer.reject": { description: "Record that the applicant rejected the offer. Refuses OfferAlreadyMade when another job offer holds this job applicant.", operation: jobOfferReject, states: ["awaiting","accepted","rejected"], move: {"key":"reject","from":["awaiting"],"to":["rejected"],"emits":"JobOfferRejected"} },
+  "job-opening.close": { description: "Close a job opening to new applicants.", operation: jobOpeningClose, states: ["open","closed"], move: {"key":"close","from":["open"],"to":["closed"],"emits":"JobOpeningClosed"} },
+  "job-opening.create": { description: "Open a job under one of a company's job titles, for some number of people.", operation: jobOpeningCreate, states: ["open","closed"], move: {"key":"create","from":[],"to":["open"],"emits":"JobOpeningCreated"} },
+  "job-opening.get": { description: "Read one job-opening by its id: company, designation, jobTitle, vacancies, state.", operation: jobOpeningGet, states: ["open","closed"] },
   "leave-allocation.create": { description: "Give an employee leave days of one type, between two days, as a draft.", operation: leaveAllocationCreate, states: ["draft","submitted"], move: {"key":"create","from":[],"to":["draft"],"emits":"LeaveAllocationCreated"} },
   "leave-allocation.get": { description: "Read one leave-allocation by its id: company, employee, leaveType, fromDate, toDate, newLeavesAllocated, state.", operation: leaveAllocationGet, states: ["draft","submitted"] },
   "leave-allocation.submit": { description: "Submit an allocation, so its leave days can be taken.", operation: leaveAllocationSubmit, states: ["draft","submitted"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"LeaveAllocationSubmitted"} },
