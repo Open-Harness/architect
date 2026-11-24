@@ -135,7 +135,7 @@ that can list records (#764), which Goal 16 now builds (`decisions/CX-takeover.m
 and bank accounts). Their handlers are built as well (#787, d0f02a2b). Slice 8c, holiday lists, is built: its checks are #914 (4f5cefaf), and a separate
 builder made them green (#918, 15c79143). Branch and Employee Grade are built: checks #924 (19c24f88), handlers #927 (64492ea4).
 Expense claims are built, in USDC, the one dollar asset every Capxul company uses for now (Aaron, 24 November 2026;
-`CX-grill.md`, section 3): checks #937 (2b5805e3), after five hostile passes, and a separate builder's handlers #955
+`CX-grill.md`, section 3): checks #937 (2b5805e3) and a separate builder's handlers #955
 (f955265a), so `prove` passes all 30 journeys in `goal/capxul`. A leaver can't start a claim but can finish one
 (`decisions/CX-expense-leavers.md`). The generated Bridge
 adapter waits on the five generator gaps in #739, which Goal 16 builds on `goal/superagent`. Goal 16 has claimed two
