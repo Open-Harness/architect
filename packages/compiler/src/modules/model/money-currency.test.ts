@@ -18,7 +18,7 @@ afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
 let n = 0;
 /** A project with one thing, Claim, whose `amount` counts the asset its `held` field holds. */
-const project = (held: string): string => {
+const project = (held: string, extra: Record<string, string> = {}): string => {
   if (typeof (Blueprint as unknown as { readonly currency?: unknown }).currency !== "function") {
     throw new Error("Blueprint.currency is not there: Company currency (#882) adds it");
   }
@@ -28,6 +28,7 @@ const project = (held: string): string => {
 const held = ${held};
 export const Claim = Blueprint.thing({ description: "An amount claimed.", code: "CL", fields: { id: Blueprint.id("clm"), held, amount: Blueprint.money.of(held) } });
 `,
+    ...extra,
   };
   for (const [path, text] of Object.entries(files)) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
@@ -61,6 +62,20 @@ describe("Company currency: the compiler and a row's currency", () => {
     const fields = Exit.isSuccess(exit) ? (exit.value as Model).things["claim"]?.fields : undefined;
     expect(fields?.["held"]?.value).toEqual({ type: "currency" });
     expect(fields?.["amount"]?.value).toEqual({ type: "money", bits: 128, signed: false, asset: { field: "held" } });
+  });
+
+  it("counts the row's currency when an error names it as the thing's field, as an operation or event does", async () => {
+    const exit = await modelOf(project("Blueprint.currency()", {
+      "blueprint/things/claim/errors.ts": `import { Blueprint } from "orthograph";
+import { Claim } from "./thing.ts";
+export class ClaimTooLarge extends Blueprint.error({ over: Blueprint.money.of(Claim.fields.held) }, { exit: 41 }) {}
+`,
+    }));
+    expect(said(exit)).toBe("");
+    type Errors = Record<string, { readonly fields: Record<string, { readonly value: unknown }> }>;
+    const claim = Exit.isSuccess(exit) ? (exit.value as { readonly things: Record<string, { readonly errors?: Errors }> }).things["claim"] : undefined;
+    const over = claim?.errors?.["ClaimTooLarge"]?.fields["over"]?.value;
+    expect(over).toEqual({ type: "money", bits: 128, signed: false, asset: { field: "held" } });
   });
 
   it("still refuses money of a field that holds no asset: text, a whole number, a moment, a day, an id or money", async () => {
