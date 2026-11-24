@@ -5,11 +5,11 @@ milestone: "Goal 16: Capxul on Orthograph"
 release: "1.0"
 branch: goal/capxul
 base: main
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: amp         # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-23    # the date it started
 done_check: the journeys of Capxul's books, HR and payroll, and of KYC, KYB and a bank account through Bridge, green in Capxul's staging (K42, section 6)
 owns:
   - examples/capxul/
@@ -17,17 +17,18 @@ owns:
   - design/decisions/M7-capxul.md
   - design/decisions/K43-capxul-core.md
   - design/goals/16-capxul.md
+  - design/decisions/CX-grill.md
 slices:
   - "1 · Capxul's plugins mapped, the first map"
   - "2 · The first feature: one person gets paid (after 6)"
   - "3 · The grill: core, modules, the paid services and the licence, with Aaron"
   - "4 · Spike: scaffold Orthograph things from ERPNext's record types"
   - "5 · Spike: the Bridge adapter from its published API description"
-  - "6 · The provisional map: books, HR, payroll, CRM, Bridge and the paid services (after 1, 3, 4, 5)"
+  - "6 · The provisional map: books, HR, payroll, CRM and Bridge (after 1, 3, 4, 5)"
   - "7 · The books (after 2)"
   - "8 · HR (after 6)"
   - "9 · Payroll (after 7, 8)"
-  - "10 · The paid services: KYC and KYB, bank accounts through Bridge, incorporation (after 5, 6)"
+  - "10 · Bridge in full: KYC and KYB, bank accounts and incorporation, through Capxul's own Bridge account (after 5, 6)"
   - "11 · The CRM, a module switched on later (after 9)"
 ---
 # Goal 16: Capxul core, rebuilt on Orthograph
@@ -52,8 +53,8 @@ and run it." Nothing else is needed.
 - **It isn't:** Frappe or ERPNext running underneath. Their logic is translated, not run.
 - **Done when:** the tests for the books, HR, payroll, the identity checks and the bank account pass in Capxul's own
   test copy on the internet.
-- **Waits on:** Aaron, for the first design conversation. A lawyer's read on the licence comes afterwards and holds
-  nothing up.
+- **Waits on:** nobody: slice 3's grill is decided (CX-grill). A lawyer's read on the licence comes afterwards and
+  holds nothing up.
 - **Words used:**
   - Capxul: a business app for small companies, being rebuilt here; its core is the free books, HR, payroll and Bridge;
   - the books: accounting (invoices, payments, the ledger); HR and payroll: a company's people, and paying them;
@@ -73,8 +74,10 @@ and run it." Nothing else is needed.
 
 ## The slices
 
-Slices 7 to 11 are provisional. Slice 6 rewrites them from what slices 3 to 5 find (K42, section 2). Slices 1 and 2
-keep the numbers their issues already have.
+Slices 7 to 11 are provisional. Slice 6 rewrote them on 23 November 2026 from slices 3 to 5: the grill
+(`decisions/CX-grill.md`), the doctype spike (#743, its gaps in #742) and the Bridge spike (#744, its gaps in #739). The
+record types each takes are in `examples/capxul/doctypes.md` (K42, section 2). Slices 1 and 2 keep the numbers their
+issues already have.
 
 | # | Slice | After |
 |---|---|---|
@@ -83,8 +86,12 @@ keep the numbers their issues already have.
 | 3 | The grill, with Aaron by voice: what is core, what is a module, what is paid and how a self-hosted Capxul reaches it, which licence Capxul carries, and K43's open list. A lawyer's read on the licence comes afterwards, by Aaron's call, and blocks nothing | — |
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |
-| 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge and the paid services as board items, each at its stage | 1, 3, 4, 5 |
-| 7 to 11 | The books, HR, payroll, the paid services and the CRM, as slice 6 writes them | as the front matter lists |
+| 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge as board items, each at its stage, with every record type Capxul takes in one catalogue (CX-grill) | 1, 3, 4, 5 |
+| 7 | The books, 284 record types: first the chart of accounts, parties, sales and purchase invoices, payments, journal entries, the ledger and fiscal years, on Capxul's Company with company-wide roles; then taxes, payment terms, pricing, POS and subscriptions; then fixed assets, budgets, period closing and the reports. Pulls #742's columns, wide things, values and company roles | 2 |
+| 8 | HR, 124 record types: employees, departments and designations first, then leave, attendance and shifts, expense claims, recruitment and appraisals | 6 |
+| 9 | Payroll, 37 record types: salary components and structures, their assignment, pay runs and slips, each run posting to the books' journal; India's tax-exemption shapes generalised. A scheduled run pulls timers and workflows, the superagent's share | 7, 8 |
+| 10 | Bridge, built in full through Capxul's own Bridge account: the adapter from #744 (its gaps in #739), customers, KYC and KYB, virtual accounts and transfers into Bank Account and Bank Transaction, then help with incorporation. How it is sold comes later (CX-grill, section 4) | 5, 6 |
+| 11 | The CRM, 40 Frappe CRM record types, as a module a running Capxul mounts. Pulls mounting a plugin into an app that already holds data (K43, section 2) | 9 |
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
@@ -119,6 +126,23 @@ two apps (K42, section 3); organisations are separate, and Capxul's companies ar
 
 ## Where it stands
 
-23 November 2026: rewritten under K43. Slice 1 lands with #487. Slice 3 waits on Aaron. Slices 4 and 5 can start now.
-The lead first merges `main` into `goal/capxul`, so this brief replaces the branch's old one. The lead rewrites this
-section at every slice merge.
+24 November 2026 (rewritten under K43 on 23 November). Slice 1 is done: the first map landed by #487. Slice 5 is done: the Bridge spike
+landed in `main` by #744 (727bc47a). Slice 4 is done: the ERPNext doctype spike landed in `main` by #743 (26c3ce32).
+Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctypes.md` (485), and Goal 16 keeps its board rows
+(#749, closed by #791). Slice 8a is built: Capxul's app and its Company (#757) and employees, departments and job
+titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) waits on handlers
+that can list records (#764), which Goal 16 now builds (`decisions/CX-takeover.md`). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
+and bank accounts). Their handlers are built as well (#787, d0f02a2b). Slice 8c, holiday lists, is built: its checks are #914 (4f5cefaf), and a separate
+builder made them green (#918, 15c79143). Branch and Employee Grade's checks are in (#924, 19c24f88), and a separate builder made them green (#927, 64492ea4), so `prove` passes all 26 journeys in `goal/capxul`. Expense claims are in USDC, the one
+dollar asset every Capxul company uses for now (Aaron, 24 November 2026; `CX-grill.md`, section 3), so they wait on
+nothing; their checks are Goal 16's next slice (draft #937). The generated Bridge
+adapter waits on the five generator gaps in #739, which Goal 16 builds on `goal/superagent`. Goal 16 has claimed two
+framework gaps under K42's case 3: #761's access part, landed in `main` by #768 and merged into `goal/capxul` by #773,
+and #759 (a check on extra writes), which Goal 16 builds after #764 and #920, now that an unset `writes` means the operation's own thing only (`decisions/CX-takeover.md`). It has also claimed Dates (#866) under case 3, and held Company currency (#882) until Aaron's call parked it, both
+chiefly in `packages/orthograph/src/modules/values`. Dates' checks landed in `main` by #915 (bf3c60bf);
+Dates is built in `main` by #917 (9afb7efd), and Capxul's `Day` runs on it (#922, 8939289b). Company currency (#882) is
+parked by Aaron's one-dollar-asset call and unclaimed while parked; its checks (#923) stay an unmerged draft. Snag #920 (the unique check at commit asks the store once per row) is Goal 16's too. Slice 3 is decided
+(`decisions/CX-grill.md`): AGPL-3.0; every record type in one catalogue; base units; Bridge served by Capxul to its
+customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
+`goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at
+every slice merge.

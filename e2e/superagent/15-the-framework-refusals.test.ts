@@ -196,9 +196,9 @@ describe("15 actor: (GOAL17-source-from) the role compares the call's superagent
 
 // ---- id: a reference's prefix ----------------------------------------------------------------------------------------------------
 describe("15 id: (GOAL17-executor-slots) a reference names a prefix some thing owns", () => {
-  it("`Blueprint.id(\"sag\")` is Superagent's own prefix; a prefix no thing owns is refused, naming it", () => {
+  it("an assignment's `superagent` references Superagent's id (GOAL17-dead-role-paths); a prefix no thing owns, planted there, is refused, naming it", () => {
     const root = copyApp();
-    swapPlugin(root, "tickets", (dir) => edit(dir, "blueprint/things/assignment/thing.ts", (t) => t.replace(/Blueprint\.id\("sag"\)/, `Blueprint.id("zzz")`)));
+    swapPlugin(root, "tickets", (dir) => edit(dir, "blueprint/things/assignment/thing.ts", (t) => t.replace(/superagent: Superagent\.fields\.id/, `superagent: Blueprint.id("zzz")`)));
     refused(root, "zzz");
   });
 });

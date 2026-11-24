@@ -58,7 +58,7 @@ const roleOn = (role: Role, path: string | undefined, payloadFields: Fields, pay
     // On a payload `id` (a read by id, or a list filtered by `id`, which fails closed), a first key that is none of
     // the subject's fields names the subject's own thing (`membership.organization`), the way the same words name the
     // payload's subject field on an operation (#761). Only there: on an operation such a key is a typo, and it still
-    // admits nobody. Until #767, `check` doesn't catch a typo on a read.
+    // admits nobody. `ortho check` holds a read to the thing's own name in camel case, so a typo there is refused (#767).
     const namesSubject = !fromPayload && subject === "id" && own !== undefined && first !== undefined && !(first in own.fields);
     const target = yield* walk(origin, fromPayload || namesSubject ? keys.slice(1) : keys);
     if (!target || target.thing !== role.thing) return false;
