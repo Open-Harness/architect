@@ -1,4 +1,0 @@
-# #742 item 7 is not built: a `Blueprint.todo` inside `allowed` crashes the compiler (internal/allowed.ts). Clears with its build.
-src/modules/model/allowed-blank.test.ts > a Blueprint.todo inside allowed is a blank (#742, item 7) > lists a read's only entry as a blank, not served until it is filled
-src/modules/model/allowed-blank.test.ts > a Blueprint.todo inside allowed is a blank (#742, item 7) > lists an entry beside a role as a blank, not served until it is filled
-src/modules/model/allowed-blank.test.ts > a Blueprint.todo inside allowed is a blank (#742, item 7) > lists an operation's only entry as a blank, not served until it is filled
