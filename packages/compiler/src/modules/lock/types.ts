@@ -9,6 +9,7 @@ export type LockValue =
   | { readonly value: "text"; readonly max: number }
   | { readonly value: "account" }
   | { readonly value: "instant" }
+  | { readonly value: "day" }
   | { readonly value: "schema" }
   | { readonly value: "money"; readonly bits: number; readonly signed: boolean; readonly asset: { readonly token: string } | { readonly currency: string } | { readonly field: string } };
 
