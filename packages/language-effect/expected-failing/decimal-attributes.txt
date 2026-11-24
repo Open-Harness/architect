@@ -1,0 +1,4 @@
+# Exact decimals' runtime (#742, item 5, after #943) is not built: a decimal reaches a span as the BigDecimal object's JSON, not its wire text. Clears with the decimal runtime build.
+src/modules/handler/internal/decimal-attributes.test.ts > Exact decimals: a decimal reads on a span as it travels > writes a payload's decimal as its wire text
+src/modules/handler/internal/decimal-attributes.test.ts > Exact decimals: a decimal reads on a span as it travels > writes an answer's decimal as its wire text
+src/modules/handler/internal/decimal-attributes.test.ts > Exact decimals: a decimal reads on a span as it travels > writes each decimal of a list's items as its wire text
