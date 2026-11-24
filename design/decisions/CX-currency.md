@@ -17,8 +17,8 @@ count a fixed asset or the token an `account()` field of its row holds. Part one
 **Part two** is exchange rates: a rate is an exact decimal (#742, item 5) held on a day (`dates`, landed by #917), and
 converting between a row's currency and the company's. Its checks come after part one is built.
 
-**Not covered here:** a chain-stored thing with a currency field. A currency has no chain binding (M6-money refusal b),
-and the refusal of a currency field on a chain store comes with part two's checks.
+**On a chain store** a currency has no chain binding (M6-money refusal b), so a chain-stored thing refuses a currency
+field, and refuses money of one, naming the field. Part one opens that door, so it closes it too.
 
 ## Evidence
 
@@ -27,5 +27,7 @@ and the refusal of a currency field on a chain store comes with part two's check
 - Checks: `packages/orthograph/src/modules/values/currency.test.ts`, `packages/compiler/src/modules/model/money-currency.test.ts`.
 
 ## Supersedes
+
+- design/decisions/M6-money.md: "A per-row currency is later" → "a row's currency is CX-currency (a dated record: its words stay, with a note beside them)"
 
 - design/later.md: "a currency taken from a field on the row, and the portal's formatting, are later." → "a currency taken from a field on the row is CX-currency (#882), and the portal's formatting is later."

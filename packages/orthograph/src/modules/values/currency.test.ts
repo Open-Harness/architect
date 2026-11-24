@@ -32,8 +32,8 @@ describe("Company currency: a currency is a value", () => {
     for (const good of ["KES", "USD", "EUR", "JPY", "BHD"]) expect(decode(good), good).toBe("Success");
   });
 
-  it("refuses a code ISO 4217 lacks, a lower-case or short code, empty text and a number", () => {
-    for (const bad of ["ZZZ", "QQQ", "kes", "Usd", "US", "USDC", " USD", ""]) expect(decode(bad), JSON.stringify(bad)).toBe("Failure");
+  it("refuses a code ISO 4217 lacks, a name every object has, a lower-case or short code, empty text and a number", () => {
+    for (const bad of ["ZZZ", "QQQ", "toString", "constructor", "__proto__", "hasOwnProperty", "kes", "Usd", "US", "USDC", " USD", ""]) expect(decode(bad), JSON.stringify(bad)).toBe("Failure");
     expect(decode(840)).toBe("Failure");
   });
 

@@ -1,4 +1,6 @@
-# Company currency, part one (#882), is not built: there is no `Blueprint.currency`, money.of takes only an account() field, and the lock knows no currency. Clears with the Company currency build.
+# Company currency, part one (#882), is not built: there is no `Blueprint.currency`, money.of takes only an account() field, the lock knows no currency, and a chain store doesn't refuse one. Clears with the Company currency build.
 src/modules/model/money-currency.test.ts > Company currency: the compiler and a row's currency > carries a currency field as a currency, and money of it as money of that field
-src/modules/model/money-currency.test.ts > Company currency: the compiler and a row's currency > still refuses money of a field that holds no asset, such as text
+src/modules/model/money-currency.test.ts > Company currency: the compiler and a row's currency > still refuses money of a field that holds no asset: text, a whole number, a moment, a day, an id or money
 src/modules/model/money-currency.test.ts > Company currency: the compiler and a row's currency > records a currency error field in the refusals lock as its own kind, not as text
+src/modules/model/money-currency.test.ts > Company currency: the compiler and a row's currency > refuses a currency field on a chain-stored thing, which a contract cannot hold
+src/modules/model/money-currency.test.ts > Company currency: the compiler and a row's currency > refuses money of a row's currency on a chain-stored thing, since a currency has no chain binding
