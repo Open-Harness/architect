@@ -13,7 +13,7 @@ import {
   CHECK_ON_PR, COMMENT_CREATED, githubSchemaOf, githubSpec, type Obj, COMMENT_EDITED, ISSUE_OPENED, PR_CLOSED, REVIEW_COMMENT_CREATED, REVIEW_SUBMITTED, githubSignature, setAt, slackSignature,
 } from "./connections.ts";
 import { problems } from "./schema.ts";
-import { github, journalOf, openDoor, slack, trace, type Door } from "./door.ts";
+import { github, journalOf, openDoor, slack, trace, worldSeconds, type Door } from "./door.ts";
 import { githubLegacySignature } from "./connections.ts";
 import { APP_MENTION, SLACK_ENVELOPES, THREAD_REPLY, USER_MESSAGE } from "./slack-events.ts";
 
@@ -197,7 +197,7 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
     const door = await world();
     const sent = message("Ev0BAD0003", "1700000000.000250");
     const raw = JSON.stringify(sent);
-    const now = Math.floor(Date.now() / 1000);
+    const now = await worldSeconds(door);
     expect(said(await slack(door, sent))).toEqual(ACCEPTED);
     for (const [what, options] of [
       ["a wrong secret", { signature: slackSignature("not-the-secret", now, raw) }], ["a stale time", { at: now - 3600 }], ["no header", { signature: null }],
@@ -230,7 +230,8 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
   it("a bad signature on the URL verification challenge is refused too, and the challenge is not echoed", async () => {
     const door = await world();
     const challenge = SLACK_ENVELOPES[0]!.payload;
-    for (const options of [{ signature: null }, { signature: slackSignature("not-the-secret", Math.floor(Date.now() / 1000), JSON.stringify(challenge)) }, { at: Math.floor(Date.now() / 1000) - 3600 }] as const) {
+    const now = await worldSeconds(door);
+    for (const options of [{ signature: null }, { signature: slackSignature("not-the-secret", now, JSON.stringify(challenge)) }, { at: now - 3600 }] as const) {
       const a = await slack(door, challenge, options);
       expect([a.status, a.body], JSON.stringify(Object.keys(options))).toEqual(BAD);
       expect(a.text.includes(String(challenge["challenge"]))).toBe(false);
@@ -241,7 +242,7 @@ describe("63 slack: a delivery signed as Slack signs it", () => {
     const door = await world();
     const payload = message("Ev0BAD0001", "1700000000.000200");
     const raw = JSON.stringify(payload);
-    const now = Math.floor(Date.now() / 1000);
+    const now = await worldSeconds(door);
     const cases: ReadonlyArray<readonly [string, string, { signature?: string | null; at?: number; stamp?: number | null }]> = [
       ["no signature", raw, { signature: null }],
       ["no timestamp", raw, { stamp: null }],

@@ -64,10 +64,17 @@ export const github = (door: Door, event: string, payload: Obj | string, options
   }).then(answer);
 };
 
-/** POST a Slack Events API delivery to `/_in/slack`: signed `v0` at `at` (seconds) unless `signature` says otherwise. */
-export const slack = (door: Door, payload: Obj | string, options: { readonly signature?: string | null; readonly at?: number; readonly stamp?: number | null; readonly retry?: number; readonly trace?: string } = {}) => {
+/** The world's instant in whole seconds, from its clock door (`GET /_world/clock`). A stand-in for a sender stamps with this, never with the
+ * wall: the door judges freshness on the world's `Clock` (host-cloudflare inbound verify), and a stepped world stands a week from the wall. */
+export const worldSeconds = async (door: Pick<Door, "url">): Promise<number> => {
+  const reading = (await fetch(`${door.url}/_world/clock`).then((r) => r.json())) as { readonly now: string };
+  return Math.floor(Date.parse(reading.now) / 1000);
+};
+
+/** POST a Slack Events API delivery to `/_in/slack`: signed `v0` at `at` (seconds, the world's instant unless given) unless `signature` says otherwise. */
+export const slack = async (door: Door, payload: Obj | string, options: { readonly signature?: string | null; readonly at?: number; readonly stamp?: number | null; readonly retry?: number; readonly trace?: string } = {}) => {
   const raw = typeof payload === "string" ? payload : JSON.stringify(payload);
-  const at = options.at ?? Math.floor(Date.now() / 1000);
+  const at = options.at ?? await worldSeconds(door);
   const signature = options.signature === undefined ? slackSignature(door.secrets.slack, at, raw) : options.signature;
   const stamp = options.stamp === undefined ? at : options.stamp;
   return fetch(`${door.url}/_in/slack`, {
