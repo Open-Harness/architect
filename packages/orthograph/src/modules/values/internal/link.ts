@@ -24,6 +24,7 @@ export const link = <F extends Field>(to: () => F, description: string | undefin
     of: () => from().of, key: () => from().key, value: () => from().value, from, visibility: () => from().visibility,
     description: () => from().description, traced: () => from().traced, issued: () => from().issued,
   });
-  links.set(made, to);
+  // The reach a copy builds on: with a sentence, the described field, so a link wrapped after `described` keeps it.
+  links.set(made, description === undefined ? to : () => describe(to(), description));
   return made;
 };
