@@ -7,4 +7,6 @@ src/modules/values/day.test.ts > Dates: a calendar day is a value > travels on t
 src/modules/values/day.test.ts > Dates: a day's arithmetic needs no clock > names a day's weekday as ERPNext does, Sunday included
 src/modules/values/day.test.ts > Dates: a day's arithmetic needs no clock > adds whole days across a month's, a leap year's and a year's end, back and forth
 src/modules/values/day.test.ts > Dates: a day's arithmetic needs no clock > counts the days between two days, negative when the second comes first
+src/modules/values/day.test.ts > Dates: a day's arithmetic needs no clock > keeps the Gregorian leap rule: 2100 is a common year
+src/modules/values/day.test.ts > Dates: a day's arithmetic needs no clock > works on days before 1970, as a birthday may be
 src/modules/values/day.test.ts > Dates: a day's arithmetic needs no clock > answers the same in a zone whose clocks change: a day that is 25 hours long there is still one day

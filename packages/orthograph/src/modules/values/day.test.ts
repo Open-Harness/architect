@@ -8,7 +8,9 @@
 //  2. `Days`, exported by `orthograph` beside `Blueprint`, does a day's arithmetic without a clock, so a handler never
 //     reaches for `Date` (AGENTS.md): `Days.weekday(day)` names its weekday as ERPNext does ("Monday" to "Sunday"),
 //     `Days.add(day, n)` moves it by whole days (n may be negative), and `Days.between(from, to)` counts the days from one
-//     to the other (negative when `to` comes first). Each answers the same in every time zone.
+//     to the other (negative when `to` comes first). Each answers the same in every time zone. Its inputs are days a
+//     `Blueprint.day()` field already holds and whole counts, so what it does with an impossible day or a fraction is
+//     not checked here.
 //  3. Fiscal years and periods are ERPNext doctypes (Fiscal Year, Accounting Period), so they are Capxul's things on this
 //     value, in Goal 16's slice 7, not values of their own.
 //
@@ -112,6 +114,20 @@ describe("Dates: a day's arithmetic needs no clock", () => {
     expect(between("2027-12-31", "2027-01-01")).toBe(-364);
     expect(between("2027-06-13", "2027-06-13")).toBe(0);
     expect(between("2024-02-28", "2024-03-01")).toBe(2);
+  });
+
+  it("keeps the Gregorian leap rule: 2100 is a common year", () => {
+    const { add, between, weekday } = days();
+    expect(add("2100-02-28", 1)).toBe("2100-03-01");
+    expect(between("2100-01-01", "2101-01-01")).toBe(365);
+    expect(weekday("2100-03-01")).toBe("Monday");
+  });
+
+  it("works on days before 1970, as a birthday may be", () => {
+    const { add, weekday } = days();
+    expect(weekday("1969-12-27")).toBe("Saturday");
+    expect(weekday("1900-03-01")).toBe("Thursday");
+    expect(add("1970-01-01", -1)).toBe("1969-12-31");
   });
 
   it("answers the same in a zone whose clocks change: a day that is 25 hours long there is still one day", () => {
