@@ -177,7 +177,7 @@ describe("3. header parameters are kept, and Idempotency-Key is sent on each cal
       req("POST", "/notes", { "x-request-source": "app", "x-trace": "t-9" }, { body: { text: "b" } }),
       req("POST", "/search", {}, { query: "?q=a", body: { text: "b" } }),
     ]);
-    expect(s.seen.map((x) => x.headers["content-type"])).toEqual(s.seen.map(() => expect.stringMatching(/^application\/json/)));
+    expect(s.seen.map((x) => x.headers["content-type"])).toEqual(s.seen.map(() => expect.stringMatching(/^application\/json(;|$)/)));
   });
 
   it("refuses before sending a header missing, a header that doesn't fit, and a header and a body field of one name", async () => {

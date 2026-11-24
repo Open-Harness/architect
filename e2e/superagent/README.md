@@ -30,8 +30,8 @@ so a check can read them. A builder who needs one changed stops and asks its aut
    under the project root. It reads JSON or YAML (PostHog's own URL, `https://us.posthog.com/api/schema/`, serves YAML;
    `?format=json` serves JSON), OpenAPI 3.x or Swagger 2.0. Its last line of output, exactly:
    `generated adapter <name>: <n> calls, <m> events from <title> <version>`, with `n` the spec's operations that have an
-   `operationId` (#739 adds the rest: every operation, named from its method and path when it has none), and `m` its events (below). It refuses, exit not 0 and nothing written, with these words in its
-   message: a file it can't read (`could not read <file>`), one that isn't JSON or YAML (`could not parse <file>`), a
+   `operationId` (#739 adds the rest: every operation, named from its method and path when it has none), and `m` its
+   events (below). It refuses, exit not 0 and nothing written, with these words in its message: a file it can't read (`could not read <file>`), one that isn't JSON or YAML (`could not parse <file>`), a
    document that isn't OpenAPI or Swagger (`not an OpenAPI or Swagger description`), a spec with no operations
    (`no operations`), a missing `--from-openapi` (naming the flag), a name that isn't lower case words joined by dashes
    (`lower case words`).
@@ -55,11 +55,10 @@ so a check can read them. A builder who needs one changed stops and asks its aut
    have (its calls: ...)`, and `includes the event issueComent, which ... doesn't have (its events: ...)`.
 5. **The client.** `import { client } from "@orthograph/<name>/client"`;
    `client({ baseUrl, token? }).calls.<group>.<call>(input)` is a promise of the answer's JSON, as it came. The
-   input is one flat object of the spec's path, query and body fields under the spec's names (and, after #739, its header
-   fields, `token` aside). `baseUrl` is the origin
-   (Slack's `basePath` `/api` is added by the client). The token is sent as `Authorization: Bearer <token>` (after #739, in the header an `apiKey` scheme names, when the
-   spec has one) and never as
-   a field (Slack's spec lists it as one); none given, no header. It refuses before sending anything: a missing
+   input is one flat object of the spec's path, query and body fields under the spec's names (and, after #739, its
+   header fields, `token` aside). `baseUrl` is the origin (Slack's `basePath` `/api` is added by the client). The token
+   is sent as `Authorization: Bearer <token>` (after #739, in the header an `apiKey` scheme names, when the spec has
+   one) and never as a field (Slack's spec lists it as one); none given, no header. It refuses before sending anything: a missing
    required field, a field of the wrong kind, a field the spec doesn't have, no input. It refuses an answer that
    doesn't fit the spec's success schema. It fails with an object that has a string `_tag` and: `status` for an HTTP
    status of 400 or more; for Slack's `ok: false` answers (HTTP 200), `code` set to Slack's `error`. One spec
