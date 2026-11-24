@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/attendance-request/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { AttendanceRequest } from "../../blueprint/things/attendance-request/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/attendance-request/create.handler.ts";
 
@@ -52,41 +53,44 @@ const { RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, Request
  *   once it answers, it writes AttendanceRequested: attendanceRequest from the answer, company and employee from the payload;
  *   the call is the span attendance-request.create, and its commit attendance-request.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employee, fromDate, toDate, reason }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span attendance-request.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
+    // Step load: database, span attendance-request.create.load. The runtime read the employee for the role check and
+    // hands it in, so this step only takes it; a missing one never reaches here.
+    const requester = yield* steps.load(Effect.succeed(refs.employee));
+    if (!requester) return yield* Effect.die(new Error(`employee ${employee} was read for the role check and then not found`));
+
+    // Refusal order (errors.ts): RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining.
     // RequesterNotInCompany: exit 41, AQ-001.
-    if (yield* Handlers.blank<boolean>("refuse RequesterNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RequesterNotInCompany was refused"));
+    if (requester["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new RequesterNotInCompany({});
     }
 
-    // RequesterHasLeft: exit 42, AQ-002.
-    if (yield* Handlers.blank<boolean>("refuse RequesterHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RequesterHasLeft was refused"));
+    // RequesterHasLeft: exit 42, AQ-002. Judged on create only (CX-expense-leavers): a request opened before the
+    // employee left can still be approved.
+    if (requester.state !== "active") {
+      yield* Effect.logInfo(`the employee is ${requester.state ?? "in no state"}, not active`);
       return yield* new RequesterHasLeft({});
     }
 
-    // RequestEndsBeforeStart: exit 43, AQ-003.
-    if (yield* Handlers.blank<boolean>("refuse RequestEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RequestEndsBeforeStart was refused"));
-      return yield* new RequestEndsBeforeStart({
-        fromDate: yield* Handlers.blank("RequestEndsBeforeStart.fromDate, a Day"),
-      });
+    // RequestEndsBeforeStart: exit 43, AQ-003. Days are YYYY-MM-DD, so they compare as text; one day is allowed.
+    if (toDate < fromDate) {
+      yield* Effect.logInfo("the request's last day is before its first");
+      return yield* new RequestEndsBeforeStart({ fromDate });
     }
 
-    // RequestBeforeJoining: exit 44, AQ-004.
-    if (yield* Handlers.blank<boolean>("refuse RequestBeforeJoining when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RequestBeforeJoining was refused"));
-      return yield* new RequestBeforeJoining({
-        dateOfJoining: yield* Handlers.blank("RequestBeforeJoining.dateOfJoining, a Day"),
-      });
+    // RequestBeforeJoining: exit 44, AQ-004. Judged on the first day; the joining day itself is allowed.
+    const dateOfJoining = requester["dateOfJoining"] as typeof fromDate;
+    if (fromDate < dateOfJoining) {
+      yield* Effect.logInfo("the request starts before the employee joined");
+      return yield* new RequestBeforeJoining({ dateOfJoining });
     }
 
     // Step insert: database, span attendance-request.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    yield* steps.insert(records.insert(AttendanceRequest, { id, company, employee, fromDate, toDate, reason }));
 
     // The move create, to draft.
     yield* move();

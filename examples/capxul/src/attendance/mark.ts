@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/attendance/verbs/mark.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { Attendance } from "../../blueprint/things/attendance/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/attendance/mark.handler.ts";
 
@@ -47,33 +48,39 @@ const { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining } = Error
  *   once it answers, it writes AttendanceMarked: attendance from the answer, employee, attendanceDate and status from the payload;
  *   the call is the span attendance.mark, and its commit attendance.mark.commit.
  */
-const mark: Handler = (_payload, { steps, move, id }) =>
+const mark: Handler = ({ company, employee, attendanceDate, status }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span attendance.mark.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
+    // Step load: database, span attendance.mark.load. The runtime read the employee and hands it in, so this step only
+    // takes it; a missing one never reaches here.
+    const attendee = yield* steps.load(Effect.succeed(refs.employee));
+    if (!attendee) return yield* Effect.die(new Error(`employee ${employee} was read and then not found`));
+
+    // Refusal order (errors.ts): AttendeeNotInCompany, then AttendeeHasLeft, then AttendanceBeforeJoining.
     // AttendeeNotInCompany: exit 41, AN-001.
-    if (yield* Handlers.blank<boolean>("refuse AttendeeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AttendeeNotInCompany was refused"));
+    if (attendee["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new AttendeeNotInCompany({});
     }
 
-    // AttendeeHasLeft: exit 42, AN-002.
-    if (yield* Handlers.blank<boolean>("refuse AttendeeHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AttendeeHasLeft was refused"));
+    // AttendeeHasLeft: exit 42, AN-002. A new attendance is only for an employee still at work (CX-expense-leavers).
+    if (attendee.state !== "active") {
+      yield* Effect.logInfo(`the employee is ${attendee.state ?? "in no state"}, not active`);
       return yield* new AttendeeHasLeft({});
     }
 
-    // AttendanceBeforeJoining: exit 43, AN-003.
-    if (yield* Handlers.blank<boolean>("refuse AttendanceBeforeJoining when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AttendanceBeforeJoining was refused"));
-      return yield* new AttendanceBeforeJoining({
-        dateOfJoining: yield* Handlers.blank("AttendanceBeforeJoining.dateOfJoining, a Day"),
-      });
+    // AttendanceBeforeJoining: exit 43, AN-003. Days are YYYY-MM-DD, so they compare as text; the joining day itself is
+    // allowed. There's no future-day check, as HRMS has none.
+    const dateOfJoining = attendee["dateOfJoining"] as typeof attendanceDate;
+    if (attendanceDate < dateOfJoining) {
+      yield* Effect.logInfo("the day is before the employee joined");
+      return yield* new AttendanceBeforeJoining({ dateOfJoining });
     }
 
-    // Step insert: database, span attendance.mark.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span attendance.mark.insert. A day already marked is the runtime's refusal
+    // (oneAttendancePerDay).
+    yield* steps.insert(records.insert(Attendance, { id, company, employee, attendanceDate, status }));
 
     // The move mark, to marked.
     yield* move();
