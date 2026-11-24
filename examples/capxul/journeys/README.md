@@ -42,6 +42,10 @@ record types are listed in `../doctypes.md`.
   `company` and `holidayList`.
 - `a sunday holiday`, from `a holiday list`: Ada makes Sunday 2027-01-03 a holiday, Founders' Day. It gives `company`,
   `holidayList` and `holiday`.
+- `an attendance`, from `an employee`: Ada marks Olga absent on Tuesday 2026-11-24. It gives `company`, `employee` and
+  `attendance`.
+- `an attendance request`, from `an attendance`: Olga asks to work from home from Monday 2026-11-23 to Friday 2026-11-27.
+  It gives those and `attendanceRequest`.
 
 A world can hand on only the answer of its latest call (`s.last`), so most add one record; `two kybs started` and
 `a reopened account` make two calls and hand on what the first gave through the second's payload or the world.
@@ -76,6 +80,13 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `weekly-offs` | `a sunday holiday` | Ada (owner), Bo (signed in) | `holiday-list.add-weekly-off` makes every given weekday between the list's ends a holiday: Sunday adds 51 (2027 has 52, one held already, which keeps its name), Friday 53 (2027 starts and ends on one), and Friday again adds 0, each with `WeeklyOffAdded` and the exact total. The days it added are then taken, first, middle and last; another weekday's day isn't. Bo can't run it (`NotAllowed`) |
 | `a-one-day-list` | `a one-day list` | Ada (owner) | On a list of one day, the day before and the day after are `HolidayOutsideList`; Sunday adds 0 and Monday adds its one day, total 1; that day is then `HolidayDateTaken`, and the list counts one. A check on the year alone, or a walk past `toDate`, fails here |
 | `every-weekday` | `a leap fortnight` | Ada (owner) | Each of the seven weekdays is made a weekly off once on a fifteen-day list across 29 February: Tuesday adds 3 (the leap day among them), every other weekday 2, totals 3, 5, 7, 9, 11, 13 and 15. The leap day and the first, second and fourth of March are then taken. A wrong weekday table or a walk that skips the leap day fails here |
+| `set-up-employment-types` | `three companies` | Ada (owner of two), Bo (owner of one) | `employment-type.create` answers an `ety_` id, emits `EmploymentTypeCreated` with the company, `active`, with the `insert` span. Two read back under their own names; a name taken in the company is `EmploymentTypeNameTaken`. Bo can't add to Ada's company or read hers, and each company may reuse the name |
+| `set-up-shift-types` | `three companies` | Ada (owner of two), Bo (owner of one) | `shift-type.create` answers an `sht_` id, emits `ShiftTypeCreated`, `active`. Each reads back with its times: a night shift ending at six, one a minute long, one exactly twelve hours long and one a minute short of a day. A start equal to its end, midnight too, is `ShiftStartsWhenItEnds` (before `insert`, and before a taken name); a taken name is `ShiftTypeNameTaken`. Bo can't add to Ada's company |
+| `mark-attendance` | `an employee` | Ada (owner), Olga, Bo (signed in) | `attendance.mark` answers an `att_` id and emits `AttendanceMarked` with the employee, day and status, `marked`, with the `load` and `insert` spans. Each of the four statuses reads back. A day marked already is `AttendanceAlreadyMarked`, even with another status. The day before joining, a year's last day and a day later in its month a year earlier are `AttendanceBeforeJoining` (carrying the joining day); the joining day and a day still to come are allowed. Only the owner marks. The list holds every day as marked. A second employee joining later is judged by his own joining day, and may be marked on a day Olga was |
+| `request-attendance` | `an employee` | Ada (owner), Olga, Bo (signed in) | `attendance-request.create`, by the employee or the owner, answers an `arq_` id, emits `AttendanceRequested`, `draft`, and reads back as typed. An end before the start, across a day, a month and a year, is `RequestEndsBeforeStart` (carrying `fromDate`); a start before joining is `RequestBeforeJoining`, judged after the dates' order. The joining day and days still to come are allowed. A draft marks nothing |
+| `approve-an-attendance-request` | `an attendance request` | Ada (owner), Olga, Bo (signed in) | Only the owner approves. Approving marks every day of the request, Work From Home or Present by its reason: new days are `marked`, a day with another status (Absent, Present, Half Day) is `changed` (the same attendance), a day with the same status is left, Present under On Duty too; days outside the request stay as they were. It can't be approved or rejected again, and its days can't be marked again. Requests across a weekend, a month's end, a year's end, a February with no leap day and a leap day mark exactly their days |
+| `reject-an-attendance-request` | `an attendance request` | Ada (owner), Olga, Bo (signed in) | Only the owner rejects (`AttendanceRequestRejected`, `rejected`, the `update` span). A rejected request can't be approved or rejected again, marks nothing, and leaves the absent and present days in its range as they were |
+| `attendance-stays-in-its-company` | `an attendance request` | Ada (owner), Olga, Bo (signed in) | Bo's company can't mark Olga or take a request for her (`AttendeeNotInCompany`, `RequesterNotInCompany`, judged first). Once she has left, a new attendance or request is `AttendeeHasLeft` or `RequesterHasLeft`, judged before the dates; the request she made before leaving is still approved, and every day it marks is hers, in Ada's company |
 
 ## Where the docs were silent
 
@@ -157,3 +168,15 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
   references (#742); until then no employee names either. A journey hands on only its latest answer, so the records
   read back after a later create come from starting worlds, each name journey makes its one create (Bo's) after them,
   and each set-up journey makes only one.
+- **Attendance and leavers.** HRMS's `validate_active_employee` and `validate_employee_status` refuse only an Inactive
+  employee, which Capxul's employees can't be. Attendance follows `decisions/CX-expense-leavers.md`: a new attendance
+  or request for an employee who has left is refused (`AttendeeHasLeft`, `RequesterHasLeft`), and a request opened
+  before they left can still be approved and mark its days. HRMS's relieving-day bound on a request waits on a stored
+  relieving day (#742, item 5).
+- **A day still to come.** HRMS at `46b38904` has no future-day check on Attendance (`validate_attendance_date` checks
+  only the joining day), and calls `validate_dates` on a request with `restrict_future_dates` off. So neither refuses a
+  day still to come, and no check here needs the clock.
+- **A request marks a range in one call.** Approving marks every day from `fromDate` to `toDate` in its `mark` step, as
+  `holiday-list.add-weekly-off` does, finding each day's attendance through the unique rule (`findBy`); it needs no
+  workflow and no list. The journeys read the result back with `attendance.list`, a read by `employee` and
+  `attendanceDate`.
