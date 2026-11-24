@@ -85,23 +85,32 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-23 November 2026, 18:30 UTC. The lead is the Amp lander loop, which runs a round every 30 minutes for Aaron (the
-thread in `lead:`). A second lead in Claude Code started this goal and owns #707, which it is working. The Amp lead's
-comment on #707 (18:22) gives each pull request one owner. If #707 goes a round with no activity from its lead, the Amp
-lead takes it over and says so there. The Claude Code lead hasn't replied yet.
+24 November 2026, about 09:50 UTC. Two leads run this goal. The Amp lander loop (the thread in `lead:`) runs a round
+every 30 minutes for Aaron. The Claude Code lead started the goal and took slice 1. Each pull request has one owner,
+agreed on #707.
 
-- **Slice 1, `goal/stage-1` into `main`: under way.** #690 (secrets by declaration) and #697 (the map) are in
-  `goal/stage-1`, at f6462537. #707 (owned by the Claude Code lead) has merged both and `main` at 7f87cc28, and is
-  ready, in CI.
-- **`e2e-portal-next` would turn `main` red.** It is green on `main` and red on `goal/stage-1` since #697. The parity
-  self-test expects `ERROR:` where GitHub Actions prints `::error::`, and 39 monitor checks now pass but are still on
-  the parity list. The fix is #754 into `goal/stage-1` (the lander's, as a draft, 🔍 running). Once it merges,
-  `goal/stage-1` is merged into #707 again. The job isn't required.
-- **Protections.** `e2e-stage1` runs its steps and is green on `main`'s push runs (7f87cc28, 727bc47a). Adding it to
-  `main`'s required checks waits on Aaron's written yes (CI-main-stage1 has the command; the token gets 403).
-- **#696 (Goal 9, timers) may still make it.** Goal 9 pushed 56d17af3 at 18:27 and resolved both Codex P1s. Its 🔍
-  passed at 18:28, and Codex was clean at 18:30. Its CI is pending, and `e2e-m0` was last red at ce83e6d4. If it merges
-  into `goal/stage-1` before #707 lands, it comes along. If not, it is retargeted to `main` once `goal/stage-1` retires.
-  #737 (Goal 3 parks) is open into `goal/stage-1`.
-- **Next:** land #754, then #707. Ask Aaron to retire `goal/stage-1`, then tell every goal to base on `main`. Slice 2
-  starts with `goal/time`.
+- **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`, with all ten required checks green.
+  `goal/stage-1` is retired: it is locked read-only with its protections kept, and not deleted. `main` requires all ten
+  checks, `e2e-stage1` among them (CI-main-stage1). Every goal bases on `main` and merges it in, never by rebasing
+  (CI-stage-1-retired). Codex's two findings on #707 are Snags #765 and #766.
+- **Slice 2 is done.** Every parked goal's finished work is in `main`, and each of their branches is 0 commits ahead of
+  it. `goal/time` came in with #707, through #696. Then, in order: #294 (Goal 7's spike, for the record), #777
+  (workflows, wallets and club), #774 (portal), #778 (on-chain), #785 (ui-layer, which also runs `e2e-ui-layer` on
+  `main`, not required: CI-main-ui-layer), #789 (release), #793 (agents) and #794 (events). #793 and #794 applied K40's
+  fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
+  sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
+  drafts (#490, #498, #497 and #708) stay on their branches.
+- **Slice 3, the landing loop, is running.** Two Capxul rounds have landed: #832 (`goal/capxul` through #786) at
+  `1770ffad`, and #913 (#787, slice 10's Bridge build, and #911, Goal 16's brief) at `5027d6a8`. `goal/capxul` is 0
+  commits ahead of `main`. #887 lands `goal/superagent` through #790 and stays a draft, with `main` merged in at
+  `dfcd6760`. Its merge, ratchet and checks hold, but two things block it. 18 of its 26 pull requests have no 🔍 pass
+  recorded on GitHub, and Goal 17 is asked on #563 to link them. The 🔍's review of the three builds that change
+  framework code found three fixes, filed for Goal 17 as Snags #899 (#670: the generated SDK types optional fields as
+  required), #900 (#756: `versioned.ts` writes "StaleRevision" as a string) and #901 (#747: the door answers a same-id,
+  different-payload delivery `seen`, not `in.mismatch`). Goal 17 had not answered by 09:50; Goal 18 is asked on #718 to
+  rank them. #781 (the superagent's agents build) is still open on its branch.
+- **Snags filed for Goal 18:** #762 (a flaky port check in `portal.test.ts`), #788 (`examples/budgets` imports
+  `receipts`, which `orthograph` does not export), #898 (the board sync takes over closed Asks)
+  and #908 (`e2e-layer1` check 4 fails at random; it turned `main` red once at `06877509`, and a rerun passed).
+- **Next:** land #887 once Goal 17 has fixed #899, #900 and #901 and every slice in it has a 🔍 pass. Each round
+  lands what the app branches have merged since, and tells every running goal after each landing.

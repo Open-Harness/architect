@@ -1,8 +1,11 @@
 const ENTITIES: Readonly<Record<string, string>> = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": "\"", "&#39;": "'" };
 const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+/** What a page shows is not what a `<script>` or a `<style>` holds (the ⌘K index, a stylesheet): their contents are not text a person reads. */
+const shown = (html: string): string => html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, " ");
+
 export const htmlText = (html: string): string =>
-  html.replace(/<[^>]*>/g, " ").replace(/&(?:amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e] ?? e).replace(/\s+/g, " ").trim();
+  shown(html).replace(/<[^>]*>/g, " ").replace(/&(?:amp|lt|gt|quot|#39);/g, (e) => ENTITIES[e] ?? e).replace(/\s+/g, " ").trim();
 
 export const portalOwn = (html: string): string => {
   const docs = html.indexOf("<h2>Docs</h2>");
@@ -39,5 +42,5 @@ export const htmlHeadings = (html: string, level: number): ReadonlyArray<string>
  * definition's `dd`, a table cell) is flattened to a space, so the full text of the entry stays on its line, however the markup is laid out.
  */
 export const htmlLines = (html: string): ReadonlyArray<string> =>
-  html.replace(/\s+/g, " ").replace(/<\/t[dh]>/g, " | ").replace(/<(?:li|dt)\b[^>]*>/g, "\n- ").replace(/<tr\b[^>]*>/g, "\n| ").replace(/<h[1-6]\b[^>]*>/g, "\n# ")
+  shown(html).replace(/\s+/g, " ").replace(/<\/t[dh]>/g, " | ").replace(/<(?:li|dt)\b[^>]*>/g, "\n- ").replace(/<tr\b[^>]*>/g, "\n| ").replace(/<h[1-6]\b[^>]*>/g, "\n# ")
     .split("\n").map((line) => htmlText(line).replace(/(?: \|)+$/, "").trim()).filter((line) => line !== "" && !/^[-|#]$/.test(line));

@@ -1,61 +1,54 @@
 # Goal 4: state
 
-Updated 23 November 2026 by the Goal 4 lead. Check against GitHub before acting (the skill's resume step 6).
+Updated 23 November 2026 by the Goal 4 lead, on parking the goal under K42. Check against GitHub before acting (the skill's resume step 6).
 
 ## Hand-over in one line
 
-Lead Goal 4: read this file, then the goal-4 skill's "Resume in this order". Next action: take the relayer (slice 9,
-branch `goal-4/m607-build`) and the follower (slice 10, `goal-4/m609-build`) from their builders through a 🔍 and CI
-into `goal/on-chain`; then land M6.09 early into `goal/stage-1` (K38, Ask #442), and start slice 4's checks author.
+Goal 4 is parked (K42, section 7). Nothing is in review. Whoever picks up an open slice from the board should read
+this file and the brief's "Where it stands", merge `goal/stage-1` into `goal/on-chain` (by a merge), and start from
+the slice's check.
 
 ## Where it stands
 
+- **Parked, 23 November 2026.** K42 named #679 and #677 to land first. Both are merged, and the lead stopped there.
 - **Landed on `goal/on-chain`:**
-  - Slices 0, 1b and 2: the plan, the chain decision, and the budgets example with its done check ([#275](https://github.com/Open-Harness/orthograph/pull/275),
-    [#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)).
-  - Money, M6-money ([#287](https://github.com/Open-Harness/orthograph/pull/287)). Slice 3's checks ([#283](https://github.com/Open-Harness/orthograph/pull/283)). Two lock calls in M6-chain item 4 ([#332](https://github.com/Open-Harness/orthograph/pull/332)).
-  - Slice 3, M6.10: the chain store, values and money, and the refusals lock ([#331](https://github.com/Open-Harness/orthograph/pull/331), `d93a16ca`). Codex's two
-    fixes went in with it: an asset change a money field uses is major, and a changed prefix keeps the codes that
-    shipped.
-  - The relayer and follower decision, M6-chain item 12 ([#518](https://github.com/Open-Harness/orthograph/pull/518), `d1e045cd`).
-  - The relayer and follower checks ([#513](https://github.com/Open-Harness/orthograph/pull/513), `c0ccbb28`). Thirteen tests fail on the empty seam, and each is
-    listed in the ratchet.
-  - `goal/stage-1` again, up to `dc471c87` ([#663](https://github.com/Open-Harness/orthograph/pull/663), `0494d896`). It brought CI that goes by a pull request's live
-    draft state, the faster gate for goal branches, Goal 3's timing-test fix ([#528](https://github.com/Open-Harness/orthograph/pull/528)) and its monitor history fix
-    ([#552](https://github.com/Open-Harness/orthograph/pull/552)).
-  - The merge with slice 3 made two calls. A chain operation's `allowed` refuses `.via`/`.notVia`, `Blueprint.system`
-    and a service role (M6-chain item 1). The refusals lock records an `instant` as its own kind (M6-chain item 4).
-- **Landed on `goal/stage-1` (K38):** slice 3b, `chain-evm`'s ABI codec and `ChainPort.read`, for Goal 12 (checks
-  [#509](https://github.com/Open-Harness/orthograph/pull/509), `e1bcb79a`; build [#521](https://github.com/Open-Harness/orthograph/pull/521), `b0673ee8`). Ask #471 is closed.
-- **Running (subagents of this lead, each in its own worktree):** the relayer builder (slice 9, M6.07) and the
-  follower builder (slice 10, M6.09). Each builds a Durable Object in its own `host-cloudflare` module and pushes
-  its `-build` branch; the lead opens the pull request.
-- **CI since 23 November:** a pull request into `goal/on-chain` runs only `check`, `builder-paths` and
-  `e2e-on-chain`. The other required jobs pass without running. The lead runs the rest locally and posts the result in
-  the pull request. To watch CI, copy the watcher from `main` until this branch has it:
-  `git show origin/main:tools/ci/watch-required.sh > tmp/watch-required.sh`, then run `tmp/watch-required.sh <n>` in
-  the background after each push. Wait a minute after a push before `gh pr ready`.
-- **Order (K38):** slices 9 and 10 before 4 to 8. M6.09 lands early into `goal/stage-1` for Goal 9 (Ask #442). The
-  follower calls Goal 11's `Inbox.accept` per `Confirmed` and per `Corrected` with `wasConfirmed: true`, never for an
-  unconfirmed take-back, or a `FollowerSink` port until `Inbox` is on `goal/stage-1` (Ask #481, answered; narrowed by
-  M6-chain item 12).
-- **Slice 1:** held until M2.05 is ✅ on `goal/stage-1`.
-- **Slices 4 to 8, 11 and 12:** not started. Slice 4's checks author starts when a builder slot frees (at most three
-  builders). Slice 4's decision step takes snag S-12 (`execTransactionFromModuleReturnData`).
-- **Asks out:** #541 to Goal 3 (fixed by #552); #674 to Goal 9 (a recast actor changes how a starting world's setup
-  runs in `prove`; Codex on #663).
-- **Closed issues:** #333, #335, #336 and #337 (slices 0, 1b, 2 and 3), #300, #349, #471.
+  - Slices 0, 1b and 2 ([#275](https://github.com/Open-Harness/orthograph/pull/275), [#276](https://github.com/Open-Harness/orthograph/pull/276), [#279](https://github.com/Open-Harness/orthograph/pull/279)).
+  - Money ([#287](https://github.com/Open-Harness/orthograph/pull/287)).
+  - Slice 3, M6.10 ([#283](https://github.com/Open-Harness/orthograph/pull/283), [#331](https://github.com/Open-Harness/orthograph/pull/331)).
+  - Item 12 ([#518](https://github.com/Open-Harness/orthograph/pull/518)).
+  - The actor checks ([#513](https://github.com/Open-Harness/orthograph/pull/513)).
+  - `goal/stage-1` again ([#663](https://github.com/Open-Harness/orthograph/pull/663)).
+  - The state rewrite ([#675](https://github.com/Open-Harness/orthograph/pull/675)).
+  - **The follower**, slice 10, M6.09 ([#679](https://github.com/Open-Harness/orthograph/pull/679), `22eff2cf`):
+    - It hands the sink only `Confirmed` events, and `Corrected` with `wasConfirmed: true`.
+    - It has an outbox: the checkpoint and its pending entries are stored together before delivery, so a change the
+      sink took survives a reorg (a Codex P1).
+    - `health()` reports the last fault.
+  - **The relayer**, slice 9, M6.07 ([#677](https://github.com/Open-Harness/orthograph/pull/677), `a6bf2701`):
+    - It writes each row right after reserving the nonce. It never releases a nonce itself; the allocator prunes it.
+    - The port alone decides whether a refusal is final.
+    - A dropped transaction is sent again byte for byte. A refused resend keeps the call and retries quietly.
+    - Only a call refused on its first relay becomes a fill, and the caller is told.
+    - Every open row has an alarm coming, from relay, startup and `configure`.
+    - `status` runs under the lock, and terminal rows are guarded in SQL.
+    - `health()` names nonces pending past `stuckAfterMs`.
+    - Fee-bump replacement and the reorg re-check were cut to `design/later.md` (`decisions/M6-relayer-rebroadcast.md`,
+      the conductor's call under Aaron's standing authority). The stuck-nonce cost is snag #700.
+- **Landed on `goal/stage-1` (K38):**
+  - Slice 3b ([#509](https://github.com/Open-Harness/orthograph/pull/509), [#521](https://github.com/Open-Harness/orthograph/pull/521)).
+  - Goal 4 up to the follower ([#701](https://github.com/Open-Harness/orthograph/pull/701), `42b3b155`). That closed Ask #442 for Goal 9.
+- **Open, for the board:**
+  - Slice 1, held on M2.05.
+  - Slices 4 to 8, 11 and 12, not started. Slice 4's decision step takes S-12.
+  - Snags S-01 to S-12 and #700.
+  - Ask #674 (with Goal 9).
+  - `03-snags.test.ts` must read Snag issues before the goal lands.
+  - Two `05-m6-11` cases pass in the local ratchet run; confirm in CI, then take them off the ratchet.
+- **Closed issues:** #333, #335, #336, #337, #343, #344, #300, #349, #442, #471.
 
-## Open pull requests, in merge order
+## Open pull requests
 
-| PR | Branch | What | Waiting on |
-|---|---|---|---|
-| this one | `goal-4/where-it-stands-nov23` | brief and state after #331, #518, #513, #663 | 🔍, CI |
-| (to open) | `goal-4/m607-build` | slice 9, the relayer | the builder, a 🔍, CI |
-| (to open) | `goal-4/m609-build` | slice 10, the follower | the builder, a 🔍, CI |
-
-`goal/on-chain` and `goal/stage-1` require their CI jobs and every thread resolved. Neither requires the branch to be
-up to date (`strict=false`).
+None. This parking pull request is the last.
 
 ## Waiting on Aaron
 
@@ -141,3 +134,8 @@ issue in the milestone closed or parked, before the goal lands.
   the newest run on the head really ran its jobs before merging.
 - A merge of `goal/stage-1` after a slice that rebuilt shared code is real integration: give it a 🔍 of its own. On
   #663 that 🔍 found stage-1's `.via` hiding an entry from slice 3's chain checks.
+- When review rounds keep finding faults of one kind, look for two owners of one fact. The relayer's five nonce
+  rounds all came from the relayer guessing state that only the port knew; cutting the guessing code ended them.
+  Count rounds, and cut scope at the third rather than patch a fourth.
+- Codex reviews each new head and often finds a new real fault after a 🔍 pass. Budget one more round per pull
+  request for it.

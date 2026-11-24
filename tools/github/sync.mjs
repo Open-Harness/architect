@@ -1,6 +1,9 @@
 #!/usr/bin/env node
-// The goals, mirrored on GitHub (K33). The briefs are the truth; this makes GitHub hold the same: the labels, a
-// milestone per goal, a goal issue per goal and a sub-issue per slice. Dry run by default; `--apply` writes.
+// The goals, mirrored on GitHub (K33), and the board (K42). The briefs are the truth; this makes GitHub hold the same:
+// the labels, a milestone per goal, a goal issue per goal and a sub-issue per slice. With `--board`, the capability map
+// in docs/canon/status.md is the truth of the items: one issue per row, in the milestone of the first app milestone that
+// pulls it, and (with `--project`) the Project's Stage, Pulled by, Release, Lane and Kind. Dry run by default;
+// `--apply` writes.
 //
 //   node tools/github/sync.mjs                         plan, from design/goals/*.md in this checkout
 //   node tools/github/sync.mjs --brief origin/goal/on-chain:design/goals/04-on-chain.md
@@ -9,21 +12,45 @@
 //                                                      (a goal found on one branch only; on two, it is skipped)
 //   node tools/github/sync.mjs --migrate               also move open issues and pull requests from goal-<n>
 //                                                      labels and release milestones to goal milestones and labels
+//   node tools/github/sync.mjs --board --dry-run       also the board: print the plan for the status page's rows,
+//                                                      and the counts by stage and by who pulled them
+//   node tools/github/sync.mjs --board --project       also the Project's fields for those rows, and the roadmap's dates
+//   node tools/github/sync.mjs --board --bootstrap --apply
+//                                                      once, locally, with a token that has admin:org: makes the issue
+//                                                      types and nothing else. The workflow's board step never does, and
+//                                                      warns and writes nothing while a type is missing
 //   node tools/github/sync.mjs --apply                 do it
+//
+// A row adopts an existing issue (`issue #531` in its Evidence cell) and folds duplicates into it (`folds #533`);
+// docs/canon/status.md's column legend says how. Writes are paced (pace.mjs) and a rate-limit refusal is waited out.
 //
 // It needs `gh`, signed in with the `repo` scope (in CI, GH_TOKEN). It never deletes anything. Run one at a time: two
 // runs at once can both create the same issue, so the workflow (.github/workflows/goals.yml) runs it in one queue.
 import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
+import { applySteps } from "./applyGh.mjs";
+import { parseBoard } from "./board.mjs";
+import { adoptionProblems, boardPlan } from "./boardPlan.mjs";
 import { readGoal } from "./frontmatter.mjs";
-import { plan } from "./plan.mjs";
+import { gate } from "./gate.mjs";
+import { withRetry } from "./pace.mjs";
+import { plan, typeOf } from "./plan.mjs";
 import { projectPlan } from "./project.mjs";
 import { applyProject, hasProjectScope, readProject, tokenScopes } from "./projectGh.mjs";
+import { boardReport, projectReport } from "./report.mjs";
+import { readRoadmap } from "./roadmapGh.mjs";
 
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
 const migrate = args.includes("--migrate");
 const withProject = args.includes("--project");
+const withBoard = args.includes("--board");
+const dryRun = args.includes("--dry-run");
+const bootstrap = args.includes("--bootstrap");
+if (apply && dryRun) {
+  process.stderr.write("--apply and --dry-run say opposite things; pass one.\n");
+  process.exit(1);
+}
 const goalBranches = args.includes("--goal-branches");
 const extra = args.flatMap((a, i) => (a === "--brief" ? [args[i + 1]] : []));
 const git = (...argv) => execFileSync("git", argv, { encoding: "utf8" });
@@ -33,7 +60,7 @@ const isBrief = (f) => briefName.test(f) && !f.endsWith("-snags.md");
 const gh = (path, { method = "GET", body } = {}) => {
   const argv = ["api", "-H", "Accept: application/vnd.github+json", "-X", method, path];
   if (body) argv.push("--input", "-");
-  const out = execFileSync("gh", argv, { input: body ? JSON.stringify(body) : undefined, encoding: "utf8", maxBuffer: 64 << 20 });
+  const out = withRetry(() => execFileSync("gh", argv, { input: body ? JSON.stringify(body) : undefined, encoding: "utf8", maxBuffer: 64 << 20, stdio: ["pipe", "pipe", "pipe"] }));
   return out.trim() === "" ? null : JSON.parse(out);
 };
 const ghAll = (path) => {
@@ -122,7 +149,7 @@ return {
   ownerId: owner_.repositoryOwner.id,
   types: (owner_.repository.issueTypes?.nodes ?? []).map((x) => x.name),
   labels: ghAll(`repos/${repo}/labels?per_page=100`).map((l) => ({ name: l.name, color: l.color, description: l.description ?? "" })),
-  milestones: ghAll(`repos/${repo}/milestones?state=all&per_page=100`).map((m) => ({ number: m.number, title: m.title, description: m.description ?? "" })),
+  milestones: ghAll(`repos/${repo}/milestones?state=all&per_page=100`).map((m) => ({ number: m.number, title: m.title, description: m.description ?? "", dueOn: m.due_on ? m.due_on.slice(0, 10) : null })),
   issues: issues.map((i) => ({
     number: i.number,
     id: i.id,
@@ -146,50 +173,62 @@ return {
 };
 const state = readState();
 
-const steps = plan({ goals: live, state, briefUrl, migrate });
-for (const s of steps) process.stdout.write(`${apply ? "do" : "would"} ${s.do} ${s.title ?? s.name ?? s.number ?? ""}${s.child ? ` ← ${s.child}` : ""}\n`);
-const say = (line) => process.stdout.write(`${line}\n`);
-// An organization's issue types need `admin:org`: stop before writing anything rather than halfway through.
-if (apply && steps.some((s) => s.do === "createIssueType") && !["admin:org", "user"].some((x) => tokenScopes().has(x))) {
-  process.stderr.write("Making the issue types needs the admin:org scope, so nothing was written. Run: gh auth refresh -s admin:org\n");
-  process.exit(3);
+// The board: the status page's rows. A page whose rows don't read stops the run before any step, so a typo can't drop
+// an item from the board.
+let rows = null;
+if (withBoard) {
+  const parsed = parseBoard(readFileSync("docs/canon/status.md", "utf8"));
+  if (parsed.errors.length) {
+    process.stderr.write(`docs/canon/status.md: the capability map does not read:\n${parsed.errors.map((e) => `  ${e}`).join("\n")}\n`);
+    process.exit(2);
+  }
+  rows = parsed.rows;
+  // An adoption that cannot be planned (no such issue, a pull request, another row's) stops the run before any write.
+  const problems = adoptionProblems(rows, state.issues);
+  if (problems.length) {
+    process.stderr.write(`docs/canon/status.md: adoptions that cannot be planned:\n${problems.map((e) => `  ${e}`).join("\n")}\n`);
+    process.exit(2);
+  }
 }
+// The roadmap (K42, section 5): actual dates from the pull requests and the claims, the rest forecast. Read-only.
+const roadmap = rows ? readRoadmap({ repo, rows }) : null;
+const statusUrl = `https://github.com/${repo}/blob/main/docs/canon/status.md`;
+const steps = [
+  ...plan({ goals: live, state, briefUrl, migrate }),
+  ...(rows ? boardPlan({ rows, state, statusUrl, typeOf, due: roadmap.due }) : []),
+];
+const say = (line) => process.stdout.write(`${line}\n`);
+const show = (list, verb) => list.forEach((s) => say(`${verb} ${s.do} ${s.title ?? s.name ?? s.number ?? ""}${s.child ? ` ← ${s.child}` : ""}`));
+if (rows) boardReport({ steps, rows, roadmap, say });
 if (!apply) {
-  if (withProject) {
+  show(bootstrap ? gate({ steps, board: withBoard, bootstrap, scopes: new Set(["admin:org"]) }).steps : steps, "would");
+  if (withProject && !bootstrap) {
     const project = projectScope ? readProject(owner, repo).project : null;
     if (!projectScope) say("(no project scope: the Project's plan from nothing; run gh auth refresh -s project)");
-    const pSteps = projectPlan({ goals: live, issues: state.issues, project });
-    for (const s of pSteps) say(`would ${s.do} ${s.title ?? s.name ?? ""}`);
-    say(`${pSteps.length} Project step(s), not counting the items for issues this run would create.`);
+    const pSteps = projectPlan({ goals: live, issues: state.issues, project, rows, dates: roadmap?.dates });
+    projectReport({ pSteps, steps, rows, roadmap, live, say });
   }
   say(`${steps.length} step(s). Dry run: nothing written. Add --apply to write.`);
   process.exit();
 }
 
-const milestones = new Map(state.milestones.map((m) => [m.title, m.number]));
-const created = new Map();
-const issueRef = (x) => (typeof x === "number" ? { number: x, id: state.issues.find((i) => i.number === x).id } : created.get(x));
-for (const s of steps) {
-  if (s.do === "createLabel") gh(`repos/${repo}/labels`, { method: "POST", body: { name: s.name, color: s.color, description: s.description } });
-  if (s.do === "updateLabel") gh(`repos/${repo}/labels/${encodeURIComponent(s.name)}`, { method: "PATCH", body: { color: s.color, description: s.description } });
-  if (s.do === "createMilestone") milestones.set(s.title, gh(`repos/${repo}/milestones`, { method: "POST", body: { title: s.title, description: s.description } }).number);
-  if (s.do === "updateMilestone") gh(`repos/${repo}/milestones/${s.number}`, { method: "PATCH", body: { description: s.description } });
-  if (s.do === "createIssue") {
-    const i = gh(`repos/${repo}/issues`, { method: "POST", body: { title: s.title, body: s.body, labels: s.labels, milestone: milestones.get(s.milestone), type: s.type } });
-    created.set(s.key, { number: i.number, id: i.id });
-  }
-  if (s.do === "updateIssue") gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { title: s.title, ...(s.body ? { body: s.body } : {}) } });
-  if (s.do === "createIssueType") {
-    const q = "mutation($o:ID!,$n:String!,$c:IssueTypeColor!,$d:String!){createIssueType(input:{ownerId:$o,name:$n,color:$c,description:$d,isEnabled:true}){issueType{id}}}";
-    execFileSync("gh", ["api", "graphql", "-f", `query=${q}`, "-f", `o=${state.ownerId}`, "-f", `n=${s.name}`, "-f", `c=${s.color}`, "-f", `d=${s.description}`], { encoding: "utf8" });
-  }
-  if (s.do === "setType") gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { type: s.type } });
-  if (s.do === "addBlockedBy") gh(`repos/${repo}/issues/${issueRef(s.issue).number}/dependencies/blocked_by`, { method: "POST", body: { issue_id: issueRef(s.blocker).id } });
-  if (s.do === "addSubIssue") gh(`repos/${repo}/issues/${issueRef(s.parent).number}/sub_issues`, { method: "POST", body: { sub_issue_id: issueRef(s.child).id } });
-  if (s.do === "moveIssue") {
-    if (s.milestone) gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { milestone: milestones.get(s.milestone) } });
-    if (s.addLabels.length) gh(`repos/${repo}/issues/${s.number}/labels`, { method: "POST", body: { labels: s.addLabels } });
-  }
+// Issue types need `admin:org` (gate.mjs): made once by --bootstrap, never by the workflow's board step.
+const scopes = steps.some((st) => st.do === "createIssueType") ? tokenScopes() : null;
+const gated = gate({ steps, board: withBoard, bootstrap, scopes });
+if (gated.action === "stop") {
+  process.stderr.write(`${gated.message}\n`);
+  process.exit(gated.code);
 }
-say(`${steps.length} step(s) written to ${repo}.`);
-if (withProject) say(`The Project: ${applyProject({ owner, repo, goals: live, issues: readState().issues, log: say })}`);
+if (gated.action !== "run") {
+  say(gated.message);
+  process.exit();
+}
+show(gated.steps, "do");
+applySteps({ steps: gated.steps, state, repo, rowById: new Map((rows ?? []).map((r) => [r.id, r])), gh, ghAll });
+say(`${gated.steps.length} step(s) written to ${repo}.`);
+if (withProject && !bootstrap) {
+  const { url, skipped } = applyProject({ owner, repo, goals: live, issues: readState().issues, log: say, rows: rows ?? undefined, dates: roadmap?.dates });
+  say(`The Project: ${url}`);
+  // A value the Project had no option for was skipped: the rest is written, but the run ends red until it is fixed.
+  if (skipped) { process.stderr.write(`skipped ${skipped} Project value(s) with no matching option\n`); process.exitCode = 2; }
+}
