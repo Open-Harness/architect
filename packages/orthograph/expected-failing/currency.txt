@@ -1,0 +1,6 @@
+# Company currency, part one (#882), is not built: there is no `Blueprint.currency`. Clears with the Company currency build.
+src/modules/values/currency.test.ts > Company currency: a currency is a value > describes itself for the model as a currency, public, and keeps that when named
+src/modules/values/currency.test.ts > Company currency: a currency is a value > holds an ISO 4217 code, whatever its places: two, none or three
+src/modules/values/currency.test.ts > Company currency: a currency is a value > refuses a code ISO 4217 lacks, a lower-case or short code, empty text and a number
+src/modules/values/currency.test.ts > Company currency: a currency is a value > travels on the wire exactly as written
+src/modules/values/currency.test.ts > Company currency: a currency is a value > is what an amount of the row's own currency counts
