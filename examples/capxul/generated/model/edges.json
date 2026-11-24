@@ -1,5 +1,25 @@
 [
   {
+    "from": "attendance.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance-request.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance-request.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
     "from": "bank-account.company",
     "to": "company.id",
     "kind": "refers"
@@ -50,6 +70,11 @@
     "kind": "refers"
   },
   {
+    "from": "employment-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "expense.expenseClaim",
     "to": "expense-claim.id",
     "kind": "refers"
@@ -83,6 +108,121 @@
     "from": "holiday-list.company",
     "to": "company.id",
     "kind": "refers"
+  },
+  {
+    "from": "shift-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance.get",
+    "to": "attendance",
+    "kind": "reads"
+  },
+  {
+    "from": "attendance.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.list",
+    "to": "attendance",
+    "kind": "reads"
+  },
+  {
+    "from": "attendance.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.mark",
+    "to": "attendance",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance.mark",
+    "to": "attendance.AttendanceMarked",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance.mark",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.approve",
+    "to": "attendance-request",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance-request.approve",
+    "to": "attendance-request.AttendanceRequestApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance-request.approve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "attendance-request",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "attendance-request.AttendanceRequested",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.get",
+    "to": "attendance-request",
+    "kind": "reads"
+  },
+  {
+    "from": "attendance-request.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.reject",
+    "to": "attendance-request",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance-request.reject",
+    "to": "attendance-request.AttendanceRequestRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance-request.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
   },
   {
     "from": "bank-account.close",
@@ -375,6 +515,31 @@
     "kind": "allowed-by"
   },
   {
+    "from": "employment-type.create",
+    "to": "employment-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employment-type.create",
+    "to": "employment-type.EmploymentTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "employment-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employment-type.get",
+    "to": "employment-type",
+    "kind": "reads"
+  },
+  {
+    "from": "employment-type.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "expense.add",
     "to": "expense",
     "kind": "acts-on"
@@ -551,6 +716,31 @@
   },
   {
     "from": "holiday-list.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "shift-type.create",
+    "to": "shift-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "shift-type.create",
+    "to": "shift-type.ShiftTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "shift-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "shift-type.get",
+    "to": "shift-type",
+    "kind": "reads"
+  },
+  {
+    "from": "shift-type.get",
     "to": "company.owner",
     "kind": "allowed-by"
   }

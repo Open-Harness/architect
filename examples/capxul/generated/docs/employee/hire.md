@@ -70,6 +70,12 @@ Starts from the world `a team`.
 
 - **Ada can't give Olga Bo's job title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.
 
+### approve an attendance request
+
+Starts from the world `an attendance request`.
+
+- **Ada hires Bo too.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
 ### hire an employee
 
 Starts from the world `a team`.
@@ -79,6 +85,12 @@ Starts from the world `a team`.
 - **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.
 - **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.
 - **Ada may hire Bo on the day he was born, which ERPNext allows.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-06-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
+### mark attendance
+
+Starts from the world `an employee`.
+
+- **Ada hires Bo, joining on 1 February.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
 
 ## How to call
 

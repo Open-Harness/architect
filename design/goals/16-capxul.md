@@ -130,12 +130,15 @@ two apps (K42, section 3); organisations are separate, and Capxul's companies ar
 landed in `main` by #744 (727bc47a). Slice 4 is done: the ERPNext doctype spike landed in `main` by #743 (26c3ce32).
 Slice 6 has begun: every record type Capxul takes is in `examples/capxul/doctypes.md` (485), and Goal 16 keeps its board rows
 (#749, closed by #791). Slice 8a is built: Capxul's app and its Company (#757) and employees, departments and job
-titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) waits on handlers
-that can list records (#764), which Goal 16 now builds (`decisions/CX-takeover.md`). Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
+titles (#763) have their checks, and a builder that wrote none of them made them green (#786, 57d43997). Leave (8b) needed handlers
+that can list records (#764); Goal 16 built them (#968, 947d1919), and #973 brings them into `goal/capxul`. Slice 10's checks are in too (#769: Bridge customers, KYC, KYB
 and bank accounts). Their handlers are built as well (#787, d0f02a2b). Slice 8c, holiday lists, is built: its checks are #914 (4f5cefaf), and a separate
-builder made them green (#918, 15c79143). Branch and Employee Grade's checks are in (#924, 19c24f88), and a separate builder made them green (#927, 64492ea4), so `prove` passes all 26 journeys in `goal/capxul`. Expense claims are in USDC, the one
-dollar asset every Capxul company uses for now (Aaron, 24 November 2026; `CX-grill.md`, section 3), so they wait on
-nothing; their checks are Goal 16's next slice (draft #937). The generated Bridge
+builder made them green (#918, 15c79143). Branch and Employee Grade are built: checks #924 (19c24f88), handlers #927 (64492ea4).
+Expense claims are built, in USDC, the one dollar asset every Capxul company uses for now (Aaron, 24 November 2026;
+`CX-grill.md`, section 3): checks #937 (2b5805e3) and a separate builder's handlers #955
+(f955265a). Attendance and shifts (8d) are built: checks #964 (52833e9b), handlers #970 (363e02f6), so `prove` passes
+all 37 journeys in `goal/capxul`. A leaver can't start a new HR record but can finish an open one
+(`decisions/CX-expense-leavers.md`). The generated Bridge
 adapter waits on the five generator gaps in #739, which Goal 16 builds on `goal/superagent`. Goal 16 has claimed two
 framework gaps under K42's case 3: #761's access part, landed in `main` by #768 and merged into `goal/capxul` by #773,
 and #759 (a check on extra writes), which Goal 16 builds after #764 and #920, now that an unset `writes` means the operation's own thing only (`decisions/CX-takeover.md`). It has also claimed Dates (#866) under case 3, and held Company currency (#882) until Aaron's call parked it, both
