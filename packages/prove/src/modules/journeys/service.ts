@@ -14,7 +14,7 @@ import { subjectId } from "./internal/subject.ts";
 import { runChecks, show } from "./internal/checks.ts";
 import { standsUsed } from "./internal/uses.ts";
 import { bind, namesNoPerson, type Bound } from "./internal/bind.ts";
-import { recordOf, runnerDoor, standDoor, worldDoor } from "./internal/doors.ts";
+import { journalAfter, markOf, recordOf, runnerDoor, standDoor, worldDoor, type Mark } from "./internal/doors.ts";
 import { WorldClock } from "#modules/world-clock/service.js";
 
 /** A call that runs an operation, or lists the tools: what a starting world makes and `make` makes. */
@@ -32,6 +32,10 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     const lineage: Array<StartingWorld> = [];
     for (let w = world; w && !lineage.includes(w); w = w.from === undefined ? undefined : project.startingWorlds.get(w.from)) lineage.unshift(w);
     const missingParent = lineage[0]?.from;
+    let baseline: Mark | undefined;
+    // The journal rows (by `seq`) some step already holds: a call's own entries, and what an earlier clock step found.
+    const seen = new Set<number>();
+    const seqOf = (e: object) => (e as { readonly seq?: number }).seq ?? -1;
     const calls: Array<CallRecord> = [];
     const steps: Array<StepResult> = [];
     const skipped: Array<{ readonly step: string; readonly operation: string; readonly file: string }> = [];
@@ -84,6 +88,10 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     const moveClock = (step: string, call: Extract<AnyCall, { readonly kind: "clock-call" }>) =>
       Effect.gen(function* () {
         const moved = yield* WorldClock.move(url, call.move);
+        // The step's journal: every entry written since the journey began that no earlier step's own journal holds. So the work the world did between
+        // steps (a drain that ran as a call ended) and while this one waited, the drain's included, is the move's.
+        const wrote = baseline === undefined ? [] : (yield* journalAfter(url, baseline.seq)).filter((e) => !seen.has(seqOf(e)));
+        for (const e of wrote) seen.add(seqOf(e));
         const answer = moved.body as { readonly now?: unknown } | null;
         if (moved.status === 200) env["last"] = moved.body;
         // Whatever the status: a refusal that came after the clock had moved (a wake that failed, a world that never went quiet) carries the
@@ -91,7 +99,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         if (typeof answer?.now === "string" && Number.isFinite(Date.parse(answer.now))) env["clock"] = { now: answer.now };
         const record: CallRecord = {
           journey: journey.name, step, actor: "clock", person: "", operation: "clock", payload: { ...call.move }, status: moved.status, body: moved.body,
-          trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], clock: true,
+          trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: wrote, clock: true,
         };
         calls.push(record);
         return record;
@@ -166,6 +174,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
           trace: r.trace, parent: r.parent, mayCall: may, journal: r.journal, stored: typeof state === "string" ? state : undefined,
         };
         calls.push(record);
+        for (const e of record.journal) seen.add(seqOf(e));
         if (r.status === 200) {
           env["last"] = yield* Schema.decodeUnknownEffect(call.operation.answerSchema as unknown as Codec)(r.body).pipe(Effect.orElseSucceed(() => r.body));
         }
@@ -202,7 +211,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         }
         if (call.kind === "stand-call" || call.kind === "world-call") {
           const args = Scripting.resolve(call.args, env);
-          const record = yield* (call.kind === "stand-call" ? standDoor(harness, journey.name, title, call, args.value) : worldDoor(url, journey.name, title, call, args.value));
+          const record = yield* (call.kind === "stand-call" ? standDoor(harness, journey.name, title, call, args.value) : worldDoor(url, journey.name, title, call, args.value, baseline));
           if (record.status === 200) env["last"] = record.body;
           return { record, missing: args.missing };
         }
@@ -216,6 +225,8 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         return yield* make(title, call as Doable);
       });
 
+    // The journey's baseline: the journal's mark when its first step begins (after its starting worlds), which `afterSeq: "journey"` reads.
+    baseline = yield* markOf(url);
     for (const step of journey.steps(Scripting.script(journey.cast))) {
       if (step.call.kind === "clock-call") {
         const record = yield* moveClock(step.title, step.call);

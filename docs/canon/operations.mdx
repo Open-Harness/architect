@@ -210,7 +210,7 @@ Three rules decide what a step is (K5, seam 3):
 
 ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=183-191
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
-  attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
+  attempt(payload, principal, key, key === undefined ? undefined : (request ?? delivery), number, callId).pipe(
     Effect.catch((e) =>
       !(e instanceof Conflict) ? Effect.fail(e)
       : number < ATTEMPTS ? loop(number + 1, callId)

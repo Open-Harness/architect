@@ -1,6 +1,6 @@
 // Generated from the blueprint. Do not edit.
 // The Worker: each operation's route runs its handler through the runtime's wrapper; /_world/* goes to the world.
-import { Clock, Context, Effect, Layer } from "effect";
+import { Context, Effect, Layer } from "effect";
 import { ManagedRuntime, Tracer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
@@ -365,11 +365,11 @@ const drainOutbox = (env: Env) =>
     }),
   });
 
-/** A call that committed may have written rows: the drain is due now. A timer set once while one is pending, so a burst of calls is one wake. */
-const kickOutbox = Effect.gen(function* () {
-  const at = yield* Clock.currentTimeMillis;
-  yield* (yield* DurableTimers).set(at, "outbox", "kick", { kind: "outbox", payload: null });
-});
+/**
+ * A request that wrote may have written rows: the drain is due now. It is started as work of its own, counted before the response is sent, so a world
+ * that is quiet has delivered what was due at this instant. Rows due later wait for their timer.
+ */
+const kickOutbox = (env: Env) => runtimeOf(env).runPromise(drainOutbox(env));
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -383,7 +383,7 @@ const call = <P extends object>(served: { readonly run: Run; readonly operation:
   Effect.flatMap(Principals, (principals) => principals.of(headers["authorization"])).pipe(
     Effect.withTracerEnabled(false),
     // The caller's idempotency key: for an operation declared `idempotent: "request"`, the same key is one call.
-    Effect.flatMap((principal: Principal) => served.run(payload as never, principal, headers["idempotency-key"]).pipe(shown(served, payload, principal), Effect.tap(() => (served.operation as { readonly kind?: string }).kind === "operation" ? kickOutbox : Effect.void))),
+    Effect.flatMap((principal: Principal) => served.run(payload as never, principal, headers["idempotency-key"]).pipe(shown(served, payload, principal))),
     refusals,
   ) as Effect.Effect<never, never, Services>;
 
@@ -684,10 +684,10 @@ export default WorldEntry.entry<Env>({
       return Effect.runPromise(AuthD1.oauth.discovery(routesOf(env), request)).then((found) => found ?? Response.json({ error: "not found" }, { status: 404 }));
     }
     if (new URL(request.url).pathname === "/mcp") {
-      return Telemetry.serve({ url: env.OTLP_URL || undefined, sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT, service: "superagent", handler: (req, context) => mcp(env, req, context), waitUntil: (p) => ctx.waitUntil(p) }, request);
+      return Telemetry.serve({ url: env.OTLP_URL || undefined, sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT, service: "superagent", handler: (req, context) => mcp(env, req, context), waitUntil: (p) => ctx.waitUntil(p) }, request).then((response) => (request.method === "GET" ? response : kickOutbox(env).then(() => response)));
     }
     const app = (built ??= build(env));
     Telemetry.configure({ sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT });
-    return Telemetry.serve({ url: env.OTLP_URL || undefined, service: "superagent", handler: app.handler, waitUntil: (p) => ctx.waitUntil(p) }, request);
+    return Telemetry.serve({ url: env.OTLP_URL || undefined, service: "superagent", handler: app.handler, waitUntil: (p) => ctx.waitUntil(p) }, request).then((response) => (request.method === "GET" ? response : kickOutbox(env).then(() => response)));
   },
 });

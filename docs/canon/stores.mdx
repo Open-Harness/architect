@@ -133,19 +133,25 @@ Every update carries the version this call read. The commit lands only if the st
 kind enforces it in its own way. The `database` kind turns a stale version into a NULL on a NOT NULL column, which
 fails D1's whole batch:
 
-```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=24-25
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=26-27
 // The guard: a stale version becomes NULL on a NOT NULL column, which fails the whole batch (D2 #36).
 const guard = sql`"version" = CASE WHEN "version" = ${w.version} THEN "version" + 1 ELSE NULL END`;
 ```
 
-```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=33-41
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=35-49
 return Effect.gen(function* () {
   const keep = request ? [sql`INSERT INTO "_requests" ${sql.insert({ key: request.key, answer: request.answer })}`] : [];
-  const statements = [...(yield* Effect.forEach(writes, statementOf)), ...entries.map(journalOf), ...keep];
+  // Each entry's journal row, then the outbox rows of its hops: the rows are selected from the journal row just written, in the same batch.
+  const due = outbox === undefined ? 0 : yield* Clock.currentTimeMillis;
+  const journalled = entries.flatMap((e) => [journalOf(e), ...(outbox === undefined ? [] : Outbox.fanout(sql, e, outbox.hops, outbox.prefix, due))]);
+  const statements = [...(yield* Effect.forEach(writes, statementOf)), ...journalled, ...keep];
   if (statements.length === 0) return "committed" as const;
   return yield* d1.batch(statements).pipe(
     Effect.as("committed" as const),
-    Effect.catch((e) => (lostGuard(e) || lostUnique(e, writes, tableOf, rules) ? Effect.succeed("conflict" as const) : Effect.die(e))),
+    Effect.catch((e) => (lostGuard(e) || lostUnique(e, writes, tableOf, rules)
+      // A commit that lost its race is counted, for a check that bounds how many writers may lose (`outbox.mark`); the batch wrote nothing, so this is its own statement.
+      ? sql`INSERT INTO "_stats" ("key", "n") VALUES ('conflicts', 1) ON CONFLICT ("key") DO UPDATE SET "n" = "n" + 1`.pipe(Effect.ignore, Effect.as("conflict" as const))
+      : Effect.die(e))),
   );
 });
 ```
@@ -168,7 +174,7 @@ times:
 
 ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=183-190
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
-  attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
+  attempt(payload, principal, key, key === undefined ? undefined : (request ?? delivery), number, callId).pipe(
     Effect.catch((e) =>
       !(e instanceof Conflict) ? Effect.fail(e)
       : number < ATTEMPTS ? loop(number + 1, callId)
@@ -230,7 +236,7 @@ The rule isn't about which software it is. It is about whether a place can take 
 A call's writes all land in its thing's store. The host refuses a commit that writes to more than one store, at run
 time:
 
-```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=58-59
+```ts file=packages/host-cloudflare/src/modules/store/service.ts name=StoreD1 lines=60-61
 const owners = new Set(commit.writes.map((w) => ownerOf(w.thing)));
 if (owners.size > 1) return Effect.die(new Error("a call wrote to more than one store: one call commits to one store, and work across stores is a workflow (K3 item 5)"));
 ```

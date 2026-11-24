@@ -34,16 +34,32 @@ export const standDoor = (harness: Harness | undefined, journey: string, step: s
     return recordOf(journey, step, operation, (args ?? {}) as Record<string, unknown>, r.status, r.body);
   });
 
-/** A route under `/_world/`: a GET carries its arguments in the query, a POST in its body. */
-export const worldDoor = (url: string, journey: string, step: string, call: WorldCall, args: unknown) =>
+/** The journal's high-water mark and the count of lost commits, when the world has an outbox: the baseline of a journey, and of a clock step. */
+export interface Mark { readonly seq: number; readonly conflicts: number }
+
+export const markOf = (url: string): Effect.Effect<Mark | undefined> =>
+  ask(`${url}/_world/outbox/mark`, { method: "GET" }).pipe(
+    Effect.map((r) => (r.status === 200 && typeof r.body === "object" && r.body !== null ? (r.body as Mark) : undefined)),
+  );
+
+/** The default database's journal entries after `seq`: what was written meanwhile, by whoever. */
+export const journalAfter = (url: string, seq: number) =>
+  ask(`${url}/_world/facts/journal?after=${seq}`, { method: "GET" }).pipe(
+    Effect.map((r) => (r.status === 200 && Array.isArray(r.body) ? (r.body as unknown as CallRecord["journal"]) : [])),
+  );
+
+/** A route under `/_world/`: a GET carries its arguments in the query, a POST in its body. `"journey"` in `afterSeq` and `since` is the baseline taken when the journey's first step began. */
+export const worldDoor = (url: string, journey: string, step: string, call: WorldCall, args: unknown, baseline?: Mark) =>
   Effect.gen(function* () {
-    const values = (args ?? {}) as Record<string, unknown>;
+    const asked = (args ?? {}) as Record<string, unknown>;
+    const values = asked["afterSeq"] === "journey" ? { ...asked, afterSeq: baseline?.seq ?? 0 } : asked;
     const query = new URLSearchParams(Object.entries(values).flatMap(([k, v]) => (v === undefined ? [] : [[k, typeof v === "string" ? v : json(v)] as [string, string]])));
     const at = `${url}/_world/${call.route}`;
     const r = call.method === "GET"
       ? yield* ask(query.size === 0 ? at : `${at}?${query.toString()}`, { method: "GET" })
       : yield* ask(at, { method: "POST", headers: { "content-type": "application/json" }, body: json(values) });
-    return recordOf(journey, step, `world.${call.route}`, values, r.status, r.body);
+    const since = asked["since"] === "journey" && baseline !== undefined && typeof r.body === "object" && r.body !== null ? { ...(r.body as Mark), conflicts: (r.body as Mark).conflicts - baseline.conflicts } : r.body;
+    return recordOf(journey, step, `world.${call.route}`, values, r.status, since);
   });
 
 /** The runner of a world prove started: a world it did not start has none, and the step says so. */

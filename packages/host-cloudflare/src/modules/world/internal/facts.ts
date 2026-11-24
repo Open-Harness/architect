@@ -29,6 +29,11 @@ export const facts = ({ db, tables, stores = [], actors, actorTables = [] }: Whe
       const row = yield* Effect.promise(() => holder.prepare(`SELECT * FROM "${table}" WHERE "id" = ?`).bind(q("id")).first());
       return json(row ?? null);
     }
+    // Every entry the default database's journal gained after `after`: what a step that makes no call of its own (a clock move) wrote while it ran.
+    if (url.pathname === "/_world/facts/journal" && /^\d+$/.test(q("after"))) {
+      const found = yield* Effect.promise(() => db.prepare(`SELECT * FROM "_journal" WHERE "seq" > ? ORDER BY "seq"`).bind(Number(q("after"))).all<{ fields: string }>());
+      return json(found.results.map((r) => ({ ...r, fields: JSON.parse(r.fields) as unknown })));
+    }
     if (url.pathname === "/_world/facts/journal") {
       const each = yield* Effect.forEach([db, ...stores.map((s) => s.db)], (d) =>
         Effect.promise(() => d.prepare(`SELECT * FROM "_journal" WHERE "trace" = ? ORDER BY "seq"`).bind(q("trace")).all<{ fields: string }>()));

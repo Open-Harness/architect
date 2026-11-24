@@ -21,9 +21,10 @@ Goal 11 is parked; Goal 17 claimed the board item `outbox` (K42 section 3). The 
   calls the hop as `{ kind: "system" }`, and records the outcome only where its claim is its own. Retry is 1 s doubling to an hour, 15 attempts, then `failed`.
   A refusal is `refused` and not retried. A hop's declared `onRefused` error ends the row `delivered` with the error's tag as `outcome`, no attempt counted,
   and calls the named operation with the event's fields.
-- **Time**: the pass is counted work and reads the world's clock. When it ends it says when a row is next due; the generated Worker sets a durable timer
-  (`outbox/wake`) for it, and sets `outbox/kick` at the current instant after each committed operation. A stepped world's clock move fires them (the
-  controller of M8.07), a real world's alarm fires them. No wall clock, no `setTimeout`. `fired` in a clock answer lists these wakes beside other durable timers.
+- **Time**: the pass is counted work and reads the world's clock. A request that may have written (any call but a GET) runs one pass before it answers,
+  so a world that is quiet has delivered what was due at that instant (GOAL17-check-harness call 3: "the post-commit kick delivers each row due at the
+  current instant"). When a pass ends it says when a row is next due, and the generated Worker sets a durable timer (`outbox/wake`) for it, which a stepped
+  world's clock move fires and a real world's alarm fires. No wall clock, no `setTimeout`. `fired` in a clock answer lists these wakes beside other durable timers.
 - **Holds**: `hold` and `hold_by` on the row, written at fan-out from the event field the compiler names (`held[].field` in the model). The claim and the
   next-wake query skip a row whose hold's view lists its key. A held row stays `pending`, keeps its place (an earlier pending row blocks later rows of its
   subject) and has no attempt. The compiler already refuses a delivery in neither list.
@@ -42,8 +43,16 @@ Goal 11 is parked; Goal 17 claimed the board item `outbox` (K42 section 3). The 
 
 ## Prove
 
-A clock step's journal is the entries written during the step, the drain's included, and `afterSeq: "journey"` and `since: "journey"` read the baseline
-taken when the journey's first step began. See "Prove" below once built.
+Both changes are `prove`'s, because they are what makes the outbox observable to a check.
+
+- **A clock step's journal** is every entry the default database's journal gained since the journey's first step that no earlier step's own journal holds
+  (`GET /_world/facts/journal?after=<seq>` gives the rows; prove keeps the set it has seen). So what the world delivered between two steps, and while a
+  `settle` or `advance` waited, is the clock step's, and `emits(AssignmentStarted)` on a `settle` reads the drain's entries. A call's journal is still its trace's.
+- **`afterSeq: "journey"` and `since: "journey"`** read the baseline `GET /_world/outbox/mark` gave when the journey's first step began (after its starting
+  worlds): rows with a `seq` above it, and `conflicts` counted from it.
+
+An attempt to run the pass as detached work (`Busy.spawn`) left the world never quiet, so the pass runs inside the request that kicked it. A delivery that
+waits a long time (an agent's turn) would hold that request; `agent.tell` must enqueue, not run the turn.
 
 ## Supersedes
 

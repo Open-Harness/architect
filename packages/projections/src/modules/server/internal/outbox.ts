@@ -43,15 +43,17 @@ export const outboxOf = (model: Model, mountVar: (mount: string) => string, impo
       "    }),",
       "  });",
       "",
-      "/** A call that committed may have written rows: the drain is due now. A timer set once while one is pending, so a burst of calls is one wake. */",
-      "const kickOutbox = Effect.gen(function* () {",
-      "  const at = yield* Clock.currentTimeMillis;",
-      "  yield* (yield* DurableTimers).set(at, \"outbox\", \"kick\", { kind: \"outbox\", payload: null });",
-      "});",
+      "/**",
+      " * A request that wrote may have written rows: the drain is due now. It is started as work of its own, counted before the response is sent, so a world",
+      " * that is quiet has delivered what was due at this instant. Rows due later wait for their timer.",
+      " */",
+      "const kickOutbox = (env: Env) => runtimeOf(env).runPromise(drainOutbox(env));",
       "",
     ],
     /** The world's door on the rows: only where the server hosts worlds, which `toWorld` is. */
     world: !on ? "" : `, outbox: [${dbs}]`,
     option: on ? ", outbox: hopTable" : "",
+    /** After a request that may write: start the drain, then answer. */
+    after: on ? ".then((response) => (request.method === \"GET\" ? response : kickOutbox(env).then(() => response)))" : "",
   };
 };
