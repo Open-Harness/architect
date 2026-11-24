@@ -1,0 +1,5 @@
+# #900 (from #756): red until the compiler finds a versioned save's stale refusal from the blueprint, puts it in the model and refuses a versioned save or restore that declares none, and the server reads it there, not by the name "StaleRevision".
+superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a stale save and restore are refused with the app's own error when it is not named StaleRevision
+superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a versioned save that declares no stale refusal is refused by `ortho check`, naming policy.save
+superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > a versioned restore that declares no stale refusal is refused by `ortho check`, naming policy.restore
+superagent/25-a-stale-save-in-any-app.test.ts > 25 a stale save in any app > no framework package writes the superagent's error name as a string
