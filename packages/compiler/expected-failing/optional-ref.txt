@@ -1,7 +1,0 @@
-# #742 item 5, part two: an optional reference, a wrapped link, the lock's optional refusal field, a decimal in a message. Remove each line as the build makes it pass.
-src/modules/model/optional-ref.test.ts > A decimal named in a message > names a decimal with its places, so two decimals of different places read differently
-src/modules/model/optional-ref.test.ts > A wrapped link across two thing.ts files that import each other > optional: loads, and the model keeps the edge and the mark
-src/modules/model/optional-ref.test.ts > A wrapped link across two thing.ts files that import each other > traced: loads, and the model keeps the edge and the mark
-src/modules/model/optional-ref.test.ts > A wrapped link across two thing.ts files that import each other > visibility.secret: loads, and the model keeps the edge and the mark
-src/modules/model/optional-ref.test.ts > An optional reference in the model > keeps a thing's optional reference as an edge to the other thing that may be left out
-src/modules/model/optional-ref.test.ts > The refusals lock and a field that may be left out > records that a refusal field may be left out, and records a required one as before
