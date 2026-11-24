@@ -92,6 +92,12 @@ describe("27 a repeat that differs is not silent: github", () => {
     await repeat(gh("pull_request_review"), "github", review, edited, true);
   });
 
+  it("the same review delivered again with its body and submitted_at, so its id, but another state says in.mismatch", async () => {
+    // Not only the body is compared: the review's whole object is (GOAL17-repeat-mismatch).
+    const kept = setAt(setAt(REVIEW_SUBMITTED, "review.id", 7703), "review.state", "commented");
+    await repeat(gh("pull_request_review"), "github", kept, setAt(kept, "review.state", "changes_requested"), true);
+  });
+
   it("a comment delivered again with the same id and change time but another body says in.mismatch", async () => {
     const comment = setAt(COMMENT_CREATED, "comment.id", 9701);
     await repeat(gh("issue_comment"), "github", comment, setAt(comment, "comment.body", "@agent never mind"), true);
@@ -121,6 +127,11 @@ describe("27 a repeat that differs is not silent: slack", () => {
     const first = setAt(setAt(USER_MESSAGE, "event.ts", ts(10)), "event_id", "Ev27A");
     const other = setAt(setAt(first, "event_id", "Ev27B"), "event.text", "Never mind the slug parser.");
     await repeat(sl, "slack", first, other, true);
+  });
+
+  it("a message delivered again for one ts and text but in another thread says in.mismatch", async () => {
+    const first = setAt(setAt(USER_MESSAGE, "event.ts", ts(30)), "event_id", "Ev27E");
+    await repeat(sl, "slack", first, setAt(setAt(first, "event_id", "Ev27F"), "event.thread_ts", "1700000027.000001"), true);
   });
 
   it("one message delivered as a message and then as an app mention, each as Slack sends it, is one event: no in.mismatch", async () => {

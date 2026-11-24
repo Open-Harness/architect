@@ -4,7 +4,7 @@
 // 1. On a copy whose Policy save and restore declare `PolicyOutOfDate { current }` in place of `StaleRevision`, `ortho prove` runs
 //    `e2e/fixtures/superagent/stale-elsewhere/journeys/`, and each stale save and restore is refused with `PolicyOutOfDate`.
 // 2. A versioned save or restore that declares no stale refusal, or only an error with no `current`, is refused by `ortho check`, naming
-//    the operation (one copy for each). An unrelated error, `PolicyTooLarge { limit }`, is declared first, so the first error is not the stale one.
+//    the operation (one copy for each). The stale refusal is in the middle of save's errors and first in restore's, beside one-field errors.
 // 3. No framework package writes the superagent's error name as a string (AGENTS.md: a declared name is never a string outside `generated/`).
 // CONTROLS: the copies are the app but for the one edit each plants, and the renamed copy passes `ortho generate` and `ortho check`,
 // so a red here is the stale refusal and nothing else.
@@ -25,10 +25,11 @@ const renamed = (more: (intake: string) => void = () => {}) => {
   const root = copyApp();
   swapPlugins(root, (dirs) => {
     const intake = dirs["intake"]!;
-    // An unrelated error is declared first, so a server that takes the first declared error, or any one, is caught.
-    writeFileSync(join(intake, policy, "errors.ts"), `import { Blueprint } from "orthograph";\n\n/** A policy with more rules than a superagent may hold. */\nexport class PolicyTooLarge extends Blueprint.error({ limit: Blueprint.uint(32) }, { exit: 90 }) {}\n/** A save made from a version that is no longer the current one. */\nexport class PolicyOutOfDate extends Blueprint.error({ current: Blueprint.uint(32) }, { exit: 91 }) {}\n`);
-    for (const verb of ["save", "restore"]) {
-      edit(intake, `${policy}/verbs/${verb}.ts`, (t) => t.replace(`import { StaleRevision } from "@orthograph/superagent/blueprint/things/superagent/errors.ts";`, `import { PolicyTooLarge, PolicyOutOfDate } from "../errors.ts";`).replace("errors: [StaleRevision],", "errors: [PolicyTooLarge, PolicyOutOfDate],"));
+    // The stale refusal sits in the middle of save's errors and first in restore's, beside errors of one field each, so a server or a compiler
+    // that finds it by its place (first, last) or takes any one-field error is caught: it is found by what it carries, `current`.
+    writeFileSync(join(intake, policy, "errors.ts"), `import { Blueprint } from "orthograph";\n\n/** A policy with more rules than a superagent may hold. */\nexport class PolicyTooLarge extends Blueprint.error({ limit: Blueprint.uint(32) }, { exit: 90 }) {}\n/** A save made from a version that is no longer the current one. */\nexport class PolicyOutOfDate extends Blueprint.error({ current: Blueprint.uint(32) }, { exit: 91 }) {}\n/** A policy a person has locked against changes. */\nexport class PolicyLocked extends Blueprint.error({ reason: Blueprint.text({ max: 200 }) }, { exit: 92 }) {}\n`);
+    for (const [verb, errors] of [["save", "PolicyTooLarge, PolicyOutOfDate, PolicyLocked"], ["restore", "PolicyOutOfDate, PolicyTooLarge"]] as const) {
+      edit(intake, `${policy}/verbs/${verb}.ts`, (t) => t.replace(`import { StaleRevision } from "@orthograph/superagent/blueprint/things/superagent/errors.ts";`, `import { PolicyTooLarge, PolicyOutOfDate, PolicyLocked } from "../errors.ts";`).replace("errors: [StaleRevision],", `errors: [${errors}],`));
     }
     more(intake);
   });
@@ -63,7 +64,7 @@ describe("25 a stale save in any app", () => {
 
   for (const verb of ["save", "restore"]) {
     it(`a versioned ${verb} that declares no stale refusal is refused by \`ortho check\`, naming policy.${verb}`, () => {
-      const root = renamed((intake) => edit(intake, `${policy}/verbs/${verb}.ts`, (t) => t.replace("errors: [PolicyTooLarge, PolicyOutOfDate],", "errors: [],")));
+      const root = renamed((intake) => edit(intake, `${policy}/verbs/${verb}.ts`, (t) => t.replace(/errors: \[[^\]]*\],/, "errors: [],")));
       const generated = run(root, ["generate"]);
       const checked = generated.status === 0 ? run(root, ["check"]) : generated;
       expect(checked.status, `ortho generate and check accepted policy.${verb} with no stale refusal:\n${checked.out}`).not.toBe(0);
@@ -71,7 +72,7 @@ describe("25 a stale save in any app", () => {
     });
 
     it(`a versioned ${verb} whose only declared error carries no \`current\` is refused by \`ortho check\`, naming policy.${verb}`, () => {
-      const root = renamed((intake) => edit(intake, `${policy}/verbs/${verb}.ts`, (t) => t.replace("errors: [PolicyTooLarge, PolicyOutOfDate],", "errors: [PolicyTooLarge],")));
+      const root = renamed((intake) => edit(intake, `${policy}/verbs/${verb}.ts`, (t) => t.replace(/errors: \[[^\]]*\],/, "errors: [PolicyTooLarge, PolicyLocked],")));
       const generated = run(root, ["generate"]);
       const checked = generated.status === 0 ? run(root, ["check"]) : generated;
       expect(checked.status, `ortho generate and check accepted policy.${verb} with no stale refusal among its errors:\n${checked.out}`).not.toBe(0);

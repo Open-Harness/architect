@@ -24,6 +24,10 @@ A repeat whose object differs is still answered `seen`, writes nothing and keeps
 span `in.mismatch` with its `defect` attribute set (a sentence naming the mount and the event's id, never the payload), as every defect on a
 span is written, so trace trees and `watch` show it as one. Where the object lives is the adapter's to say (beside its `id`), so the door compares without knowing GitHub or Slack.
 
+The whole object is compared, not its body alone: the same review sent again with another `state` is a mismatch. A `dismissed` review
+never reaches the comparison today, because the GitHub adapter does not take that action and the door answers `ignored`. If it ever
+takes it, the dismissal keeps the review's id and is recorded as `in.mismatch`: that is Q2.2 working as written, not a fault in the door.
+
 Making an edited review a new event was weighed and not chosen: GOAL17-connections A fixes the review's version as `submitted_at`, and
 check 61 judges that nothing else changes the id. If reviews must see edits, that is a change to call A, not to the door.
 

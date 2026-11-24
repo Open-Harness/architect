@@ -2,3 +2,5 @@
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: github > an edited review keeps its submitted_at, so its id: the edit is seen, and says in.mismatch (the reviewer's live case)
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: github > a comment delivered again with the same id and change time but another body says in.mismatch
 superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts with other text says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: github > the same review delivered again with its body and submitted_at, so its id, but another state says in.mismatch
+superagent/27-a-repeat-that-differs-is-not-silent.test.ts > 27 a repeat that differs is not silent: slack > a message delivered again for one ts and text but in another thread says in.mismatch
