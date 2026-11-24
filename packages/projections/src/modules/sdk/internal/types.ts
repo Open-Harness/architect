@@ -11,7 +11,8 @@ export const comment = (text: string) => text.replace(/\*\//g, "*\\/").replace(/
 const members = (fields: FieldsModel, source: string, of: string, extra: ReadonlyArray<string> = []): ReadonlyArray<string> => [
   ...Object.entries(fields).flatMap(([k, f]) => [
     ...(f.description === undefined ? [] : [`  /** ${comment(f.description)} */`]),
-    `  readonly ${JSON.stringify(k)}${f.visibility === undefined ? "" : "?"}: ${of}<${source}[${JSON.stringify(k)}]>;`,
+    // A field may be missing when the blueprint makes it optional, or when not every caller is shown it.
+    `  readonly ${JSON.stringify(k)}${f.optional === true || f.visibility !== undefined ? "?" : ""}: ${of}<${source}[${JSON.stringify(k)}]>;`,
   ]),
   ...extra,
 ];

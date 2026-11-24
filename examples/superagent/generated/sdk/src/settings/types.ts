@@ -15,7 +15,7 @@ export type Settings = {
   readonly "revision": Of<Declared["revision"]>;
   readonly "variables": Of<Declared["variables"]>;
   readonly "blocked": Of<Declared["blocked"]>;
-  readonly "saved": Of<Declared["saved"]>;
+  readonly "saved"?: Of<Declared["saved"]>;
   readonly "state": SettingsState;
 };
 

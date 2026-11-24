@@ -15,6 +15,10 @@ Ask the main agent to judge a trigger again.
 
 (none)
 
+## Steps
+
+- `trigger.reevaluate.release` (database)
+
 ## Refusals
 
 | refusal | exit | code | when |

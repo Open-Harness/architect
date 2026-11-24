@@ -5258,7 +5258,7 @@
         "version": "0.0.0",
         "thing": "eval"
       },
-      "description": "Give up on an eval that ran out of time: it is unavailable, and its triggers wait for another.",
+      "description": "Give up on an eval that ran out of time: it is unavailable, and keeps its triggers until a person reevaluates one.",
       "payload": {
         "eval": {
           "value": {
@@ -5303,7 +5303,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "34fb4eb71fe4941c"
+      "hash": "fbc92212ea424307"
     },
     "eval.read": {
       "kind": "operation",
@@ -6523,12 +6523,13 @@
         }
       ],
       "agentTool": true,
+      "stale": "StaleRevision",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "d4ace5c00b4f0164"
+      "hash": "7b4bf59640393b8e"
     },
     "policy.save": {
       "kind": "operation",
@@ -6631,12 +6632,13 @@
         }
       ],
       "agentTool": true,
+      "stale": "StaleRevision",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "33c292fd382278c6"
+      "hash": "8a6519b3b07e834e"
     },
     "policy.sync": {
       "kind": "operation",
@@ -6937,12 +6939,13 @@
         }
       ],
       "agentTool": true,
+      "stale": "StaleRevision",
       "steps": {},
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "c383858d3e28f40c"
+      "hash": "183a8f8ca3111599"
     },
     "proposal.approve": {
       "kind": "operation",
@@ -10157,7 +10160,9 @@
       "answer": {},
       "move": null,
       "errors": [],
-      "breaks": [],
+      "breaks": [
+        "eval.oneLiveEvalPerThread"
+      ],
       "refusals": [
         "TriggerNotFound",
         "NotAllowed"
@@ -10174,12 +10179,20 @@
       "notFound": {
         "trigger": "TriggerNotFound"
       },
-      "steps": {},
+      "steps": {
+        "release": {
+          "name": "trigger.reevaluate.release",
+          "type": "database",
+          "writes": [
+            "eval"
+          ]
+        }
+      },
       "idempotent": null,
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "a077bd7019d7759b"
+      "hash": "781e162cc5f46135"
     },
     "trigger.requeue": {
       "kind": "operation",
@@ -14397,7 +14410,7 @@
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-avoLugTweK7BqobqMag/Lct/AHFitGucGB8SBDeXG6U=",
+      "integrity": "sha256-ba3ErXBMiGDIAjKA3OM44h+FFm/hwyHl5REAqPztVmI=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14425,23 +14438,23 @@
       "door": {
         "secret": "GITHUB_WEBHOOK_SIGNING"
       },
-      "hash": "01bddde185e0942b"
+      "hash": "571cdb521d8ac077"
     },
     "intake": {
       "kind": "feature",
       "file": "blueprint/features/intake.ts",
       "package": "@orthograph/intake",
       "version": "0.0.0",
-      "integrity": "sha256-ZIAhRWmfb75mbi+6xBAAJtf4qRPVlNsywVCvKuqO1Lc=",
+      "integrity": "sha256-50XlvRmF1GW2EDpSZT+5Hixs0MrpNX+4UyjDTGEb4Ak=",
       "chosen": {},
-      "hash": "6cd4dbc0883d6532"
+      "hash": "ef29f74ace12494e"
     },
     "posthog": {
       "kind": "adapter",
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-+AXQyW0NBkBjRx1yDhYK+KXEgXb7aKNcXceaaHnLuJg=",
+      "integrity": "sha256-MK1RozS7HLi1q08jkzy0aJLSPoaxyzQIyJ2Ji+FOXWs=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
@@ -14456,7 +14469,7 @@
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "bf82ea95529f783a"
+      "hash": "898d80e4bb914e20"
     },
     "prompts": {
       "kind": "feature",
@@ -14472,7 +14485,7 @@
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-znZ/ZEin6uv/edBwlPRBYM9rq+OlrWA/Ts8B89hUrhY=",
+      "integrity": "sha256-vOiFWmc38LMY037A7VMwgra4peAVPSa+NQnbeNtlMJM=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
@@ -14490,7 +14503,7 @@
       "door": {
         "secret": "SLACK_WEBHOOK_SIGNING"
       },
-      "hash": "c8ba2e613cf7f4ff"
+      "hash": "e688b83c8ae0b8d2"
     },
     "superagent": {
       "kind": "feature",

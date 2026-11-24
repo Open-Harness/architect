@@ -85,12 +85,18 @@ export interface AdapterEvent<P = unknown> {
   readonly id?: (payload: P) => string;
   /** The outside account that sent it, or `undefined` for none (K40 fix 1). */
   readonly actor?: (payload: P) => EventActor | undefined;
+  /**
+   * The thing the event is about (the review, the comment, the message), without what the service wraps around it. A repeat of a kept id is
+   * compared on it, and one that differs is a defect on the span, `in.mismatch` (GOAL17-repeat-mismatch). None: a repeat is not compared.
+   */
+  readonly object?: (payload: P) => unknown;
 }
 
-/** What `Blueprint.incoming` is given beside the schema: both are pure functions of the decoded payload. */
+/** What `Blueprint.incoming` is given beside the schema: each is a pure function of the decoded payload. */
 export interface EventIdentity<P> {
   readonly id: (payload: P) => string;
   readonly actor: (payload: P) => EventActor | undefined;
+  readonly object?: (payload: P) => unknown;
 }
 
 /** What an adapter's `calls` answers for a name it has no call by (dotted, inside a group): a mount's `include` and a step name it, and the compiler refuses. */

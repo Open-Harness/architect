@@ -10,7 +10,8 @@ import type { Assertion, Journey } from "orthograph";
 
 type Json = unknown;
 export interface StepData { readonly answer?: Json; readonly events?: ReadonlyArray<readonly [unknown, Record<string, unknown>]> }
-export interface Plant { readonly name: string; readonly step: string; readonly with: (good: StepData) => StepData }
+/** `follows`: the earlier step (its title or `#<n>`) whose wrong output this plant is the later sign of, as a change applied as well as recorded shows only when a person later makes it herself (#934). */
+export interface Plant { readonly name: string; readonly step: string; readonly follows?: string; readonly with: (good: StepData) => StepData }
 export interface Tape { readonly world: Record<string, unknown>; readonly steps: Readonly<Record<string, StepData>>; readonly plants: ReadonlyArray<Plant> }
 export interface StepResult { readonly title: string; readonly ok: boolean; readonly why: string }
 

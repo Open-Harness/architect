@@ -17,7 +17,7 @@ export type Eval = {
   readonly "triggers": Of<Declared["triggers"]>;
   readonly "activeAtStart": Of<Declared["activeAtStart"]>;
   readonly "timeoutMs": Of<Declared["timeoutMs"]>;
-  readonly "deliveredAt": Of<Declared["deliveredAt"]>;
+  readonly "deliveredAt"?: Of<Declared["deliveredAt"]>;
   readonly "state": EvalState;
 };
 

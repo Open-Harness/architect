@@ -13,7 +13,7 @@ const TIMEOUT_MS = 600_000n;
 const PAGE = 100;
 const LIVE = ["queued", "delivered"];
 
-const all = (superagent: unknown, thing: typeof Eval | typeof Trigger | typeof Thread, order: "newest" | "oldest") =>
+export const all = (superagent: unknown, thing: typeof Eval | typeof Trigger | typeof Thread, order: "newest" | "oldest") =>
   Effect.flatMap(Store, (store) =>
     Effect.gen(function* () {
       const rows: Array<Instance> = [];
@@ -27,8 +27,9 @@ const all = (superagent: unknown, thing: typeof Eval | typeof Trigger | typeof T
     }));
 
 /**
- * One pass of the eval clock. An eval that was told to the main agent and ran out of time is given up on (`unavailable`). Then each
- * thread with a trigger no eval covers and no eval running makes one, batching all of them: a trigger that arrives meanwhile waits.
+ * One pass of the eval clock. An eval that was told to the main agent and ran out of time is given up on (`unavailable`), and it keeps
+ * its triggers until a person reevaluates them. Then each thread with a trigger no eval covers and no eval running makes one, batching
+ * all of them: a trigger that arrives meanwhile waits.
  * What waits is read from the triggers and evals, never stored twice. Answers the evals it made.
  *
  * Nothing in the framework lets one operation call another, so this writes what `eval.start` and `eval.expire` write, in its own commit,
@@ -44,9 +45,10 @@ const due: Handler<typeof declaration, Records | Store> = ({ superagent }) =>
     const evals = yield* all(superagent, Eval, "oldest");
     const overdue = (e: Instance) => e.state === "delivered" && e["deliveredAt"] !== undefined && (e["deliveredAt"] as bigint) + (e["timeoutMs"] as bigint) <= now;
     for (const e of evals.filter(overdue)) yield* records.update(Eval, String(e["id"]), {}, "unavailable");
-    const standing = evals.filter((e) => !overdue(e));
-    const covered = new Set(standing.filter((e) => e.state !== "unavailable").flatMap((e) => e["triggers"] as ReadonlyArray<string>));
-    const running = new Set(standing.filter((e) => LIVE.includes(String(e.state))).map((e) => e["thread"] as string));
+    // Every eval covers its triggers, the unavailable ones (and the ones this pass gives up on) too: a trigger the main agent let time out
+    // waits for a person, and `trigger.reevaluate` takes it out of its unavailable eval (#935). A trigger no eval names waits for the next.
+    const covered = new Set(evals.flatMap((e) => e["triggers"] as ReadonlyArray<string>));
+    const running = new Set(evals.filter((e) => !overdue(e) && LIVE.includes(String(e.state))).map((e) => e["thread"] as string));
     const threads = new Map((yield* all(superagent, Thread, "oldest")).map((t) => [t["key"] as string, t["id"] as string]));
     const waiting = new Map<string, Array<string>>();
     for (const t of yield* all(superagent, Trigger, "oldest")) {

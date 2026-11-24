@@ -227,7 +227,7 @@ The GitHub stand-in's own commands, which slice 11 builds and slices 8 and 10 re
 export const github = {
   ...Stand.common("github"),
   comment: Stand.command<{ repo: string; issue: number; as: string; body: string }, { id: number; url: string }>("github", "comment"),   // makes a comment in the stand-in; sends nothing
-  deliver: Stand.command<{ event: "issue_comment" | "issues" | "pull_request" | "pull_request_review"; of: Json; again?: boolean; signed?: "wrongly" | "late" }, { delivery: string; status: number }>("github", "deliver"),   // POSTs the signed webhook to the world's door (signed with the adapter's test secret); `again` re-sends the same delivery; `signed` is M5-checks call 6's pair (`"wrongly"`: another secret; `"late"`: the right secret, ten minutes before the world's now), so the door must answer 401 and store nothing
+  deliver: Stand.command<{ event: "issue_comment" | "issues" | "pull_request" | "pull_request_review"; of: Json; again?: boolean; signed?: "wrongly" | "late" }, { delivery: string; status: number }>("github", "deliver"),   // POSTs the signed webhook to the world's door (signed with the adapter's test secret); `again` re-sends the same delivery (Superseded by GOAL17-deliver-last, 24 November 2026: `of` may be left out, to send the event of what the stand-in made last, and `again` re-sends its last delivery as it was, with no `of`); `signed` is M5-checks call 6's pair (`"wrongly"`: another secret; `"late"`: the right secret, ten minutes before the world's now), so the door must answer 401 and store nothing
   refs:    Stand.command<{ branch?: string }, { updates: ReadonlyArray<{ branch: string; from: string; to: string }> }>("github", "refs"),     // every ref update the bare repository took
   pulls:   Stand.command<{}, { pulls: ReadonlyArray<{ number: number; head: string; state: string }> }>("github", "pulls"),
   /** The reply-shaped read: what the agent posted on one issue or pull request, in the order the stand-in took it. `key` is the request's natural key (the trigger it answers). */
@@ -590,8 +590,8 @@ export default Blueprint.journey("a webhook and a catch-up poll of one comment m
       spans({ present: ["account.seen"] }), emits(TriggerReceived, { thread: "issue/12" })),
     s.step("the poll finds the same comment five minutes later", s.clock.advance("5 minutes"), noEvents()),   // no second TriggerReceived
     s.step("still one", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
-    s.step("the same webhook again changes nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, again: true }), expect((a) => a.status).toBe(200)),
-    s.step("a webhook signed with another secret is refused and stores nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "wrongly" }), expect((a) => a.status).toBe(401)),
+    s.step("the same webhook again changes nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, again: true }), expect((a) => a.status).toBe(200)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`; the step leaves out `of`
+    s.step("a webhook signed with another secret is refused and stores nothing", github.deliver({ event: "issue_comment", of: { comment: s.world.comment }, signed: "wrongly" }), expect((a) => a.status).toBe(401)),   // Superseded by GOAL17-deliver-last, 24 November 2026: no world gives `comment`; the step leaves out `of`
     s.step("nothing was written for it", outbox.rows({ name: "TriggerReceived" }), expect((a) => a.rows.length).toBe(1)),
   ],
 });
