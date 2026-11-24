@@ -14,13 +14,13 @@ import add from "../blueprint/things/expense/verbs/add.ts";
 import getExpense from "../blueprint/things/expense/verbs/get.ts";
 
 export default Blueprint.journey("claim expenses", {
-  // Olga works at Acme Trading; Ada runs it; Bo is signed in and has nothing to do with either.
+  // Olga works at Acme Trading and has started a claim; Ada runs it; Bo is signed in and has nothing to do with either.
   cast: { ada: owner, olga: Blueprint.signedIn, bo: Blueprint.signedIn },
-  starts: "an expense type",
+  starts: "an expense claim",
   steps: (s) => [
     s.step(
-      "Olga starts a claim of her own",
-      s.olga.run(create, { company: s.world.company, employee: s.world.employee, postingDate: "2026-11-20" }),
+      "Olga can start another claim of her own",
+      s.olga.run(create, { company: s.world.company, employee: s.world.employee, postingDate: "2026-11-21" }),
       expect((a) => a.expenseClaim).toMatch(/^ecl_[0-9a-z]+$/),
       emits(ExpenseClaimCreated, { expenseClaim: s.last.expenseClaim, company: s.world.company, employee: s.world.employee }),
       claims.isIn(s.last.expenseClaim, "draft"),
@@ -28,7 +28,7 @@ export default Blueprint.journey("claim expenses", {
     ),
     s.step(
       "it reads back with nothing claimed yet",
-      s.olga.run(getClaim, { id: s.last.expenseClaim }),
+      s.olga.run(getClaim, { id: s.world.expenseClaim }),
       expect((a) => [a.company, a.employee, a.postingDate, a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([
         s.world.company,
         s.world.employee,
@@ -48,14 +48,14 @@ export default Blueprint.journey("claim expenses", {
     ),
     s.step(
       "Bo can't read Olga's claim",
-      s.bo.run(getClaim, { id: s.last.expenseClaim }),
+      s.bo.run(getClaim, { id: s.world.expenseClaim }),
       refuses(Blueprint.NotAllowed),
       noEvents(),
     ),
     s.step(
       "Ada can't sanction more than was spent",
       s.ada.run(add, {
-        expenseClaim: s.last.expenseClaim,
+        expenseClaim: s.world.expenseClaim,
         expenseDate: "2026-11-18",
         expenseType: s.world.expenseClaimType,
         amount: 45000000n,
@@ -68,7 +68,7 @@ export default Blueprint.journey("claim expenses", {
     s.step(
       "Ada adds a 45 USDC taxi, sanctioned in full",
       s.ada.run(add, {
-        expenseClaim: s.last.expenseClaim,
+        expenseClaim: s.world.expenseClaim,
         expenseDate: "2026-11-18",
         expenseType: s.world.expenseClaimType,
         amount: 45000000n,
@@ -76,7 +76,7 @@ export default Blueprint.journey("claim expenses", {
       }),
       expect((a) => [a.totalClaimedAmount, a.totalSanctionedAmount]).toEqual([45000000n, 45000000n]),
       expect((a) => a.expense).toMatch(/^exp_[0-9a-z]+$/),
-      emits(ExpenseAdded, { expense: s.last.expense, expenseClaim: s.last.expenseClaim, amount: 45000000n, totalClaimedAmount: 45000000n }),
+      emits(ExpenseAdded, { expense: s.last.expense, expenseClaim: s.world.expenseClaim, amount: 45000000n, totalClaimedAmount: 45000000n }),
       spans({ present: ["expense.add", "expense.add.load", "expense.add.insert"] }),
     ),
     s.step(
@@ -94,7 +94,7 @@ export default Blueprint.journey("claim expenses", {
     s.step(
       "Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it",
       s.ada.run(add, {
-        expenseClaim: s.last.expenseClaim,
+        expenseClaim: s.world.expenseClaim,
         expenseDate: "2026-11-19",
         expenseType: s.world.expenseClaimType,
         amount: 120500000n,
@@ -104,29 +104,40 @@ export default Blueprint.journey("claim expenses", {
       emits(ExpenseAdded, { amount: 120500000n, totalClaimedAmount: 165500000n }),
     ),
     s.step(
+      "the hotel reads back with what was spent and what was sanctioned",
+      s.ada.run(getExpense, { id: s.last.expense }),
+      expect((a) => [a.expenseClaim, a.expenseDate, a.amount, a.sanctionedAmount]).toEqual([
+        s.world.expenseClaim,
+        "2026-11-19",
+        120500000n,
+        100000000n,
+      ]),
+      noEvents(),
+    ),
+    s.step(
       "the claim reads back with both totals",
-      s.olga.run(getClaim, { id: s.last.expenseClaim }),
+      s.olga.run(getClaim, { id: s.world.expenseClaim }),
       expect((a) => [a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([165500000n, 145000000n, "draft"]),
       noEvents(),
     ),
     s.step(
       "Olga can't approve her own claim",
-      s.olga.run(approve, { expenseClaim: s.last.expenseClaim }),
+      s.olga.run(approve, { expenseClaim: s.world.expenseClaim }),
       refuses(Blueprint.NotAllowed),
       noEvents(),
-      claims.isIn(s.last.expenseClaim, "draft"),
+      claims.isIn(s.world.expenseClaim, "draft"),
     ),
     s.step(
       "Ada approves it, owing Olga 145 USDC",
-      s.ada.run(approve, { expenseClaim: s.last.expenseClaim }),
-      expect((a) => [a.expenseClaim, a.totalSanctionedAmount]).toEqual([s.last.expenseClaim, 145000000n]),
-      emits(ExpenseClaimApproved, { expenseClaim: s.last.expenseClaim, totalSanctionedAmount: 145000000n }),
-      claims.isIn(s.last.expenseClaim, "approved"),
+      s.ada.run(approve, { expenseClaim: s.world.expenseClaim }),
+      expect((a) => [a.expenseClaim, a.totalSanctionedAmount]).toEqual([s.world.expenseClaim, 145000000n]),
+      emits(ExpenseClaimApproved, { expenseClaim: s.world.expenseClaim, totalSanctionedAmount: 145000000n }),
+      claims.isIn(s.world.expenseClaim, "approved"),
     ),
     s.step(
       "an approved claim takes no more expenses",
       s.ada.run(add, {
-        expenseClaim: s.last.expenseClaim,
+        expenseClaim: s.world.expenseClaim,
         expenseDate: "2026-11-19",
         expenseType: s.world.expenseClaimType,
         amount: 1000000n,
@@ -137,13 +148,13 @@ export default Blueprint.journey("claim expenses", {
     ),
     s.step(
       "nor is it approved twice",
-      s.ada.run(approve, { expenseClaim: s.last.expenseClaim }),
+      s.ada.run(approve, { expenseClaim: s.world.expenseClaim }),
       refuses(claims.notFrom, { state: "approved" }),
       noEvents(),
     ),
     s.step(
       "it still reads back with what was approved",
-      s.olga.run(getClaim, { id: s.last.expenseClaim }),
+      s.olga.run(getClaim, { id: s.world.expenseClaim }),
       expect((a) => [a.totalClaimedAmount, a.totalSanctionedAmount, a.state]).toEqual([165500000n, 145000000n, "approved"]),
       noEvents(),
     ),

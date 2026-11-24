@@ -20,6 +20,13 @@ export default Blueprint.journey("expense claims stay in their company", {
       expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
     ),
     s.step(
+      "Bo can't file a claim in his company for Olga, who works for Ada",
+      s.bo.run(create, { company: s.last.company, employee: s.world.employee, postingDate: "2026-11-20" }),
+      refuses(EmployeeNotInCompany),
+      noEvents(),
+      spans({ absent: ["expense-claim.create.insert"] }),
+    ),
+    s.step(
       "Bo adds an expense type to it",
       s.bo.run(createType, { company: s.last.company, expenseType: "Travel" }),
       expect((a) => a.expenseClaimType).toMatch(/^ect_[0-9a-z]+$/),
@@ -36,13 +43,6 @@ export default Blueprint.journey("expense claims stay in their company", {
       refuses(ExpenseTypeNotInCompany),
       noEvents(),
       spans({ absent: ["expense.add.insert"] }),
-    ),
-    s.step(
-      "Bo can't file a claim in his company for Olga, who works for Ada",
-      s.bo.run(create, { company: s.last.company, employee: s.world.employee, postingDate: "2026-11-20" }),
-      refuses(EmployeeNotInCompany),
-      noEvents(),
-      spans({ absent: ["expense-claim.create.insert"] }),
     ),
     s.step(
       "Ada relieves Olga on 30 November",

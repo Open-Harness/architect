@@ -9851,10 +9851,10 @@
           "kind": "signed-in"
         }
       },
-      "starts": "an expense type",
+      "starts": "an expense claim",
       "steps": [
         {
-          "title": "Olga starts a claim of her own",
+          "title": "Olga can start another claim of her own",
           "call": {
             "actor": "olga",
             "operation": "expense-claim.create",
@@ -9871,7 +9871,7 @@
                   "employee"
                 ]
               },
-              "postingDate": "2026-11-20"
+              "postingDate": "2026-11-21"
             }
           },
           "checks": [
@@ -9933,7 +9933,7 @@
             "payload": {
               "id": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               }
@@ -10014,7 +10014,7 @@
             "payload": {
               "id": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               }
@@ -10039,7 +10039,7 @@
             "payload": {
               "expenseClaim": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               },
@@ -10082,7 +10082,7 @@
             "payload": {
               "expenseClaim": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               },
@@ -10122,7 +10122,7 @@
                 },
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10184,7 +10184,7 @@
             "payload": {
               "expenseClaim": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               },
@@ -10218,6 +10218,40 @@
           ]
         },
         {
+          "title": "the hotel reads back with what was spent and what was sanctioned",
+          "call": {
+            "actor": "ada",
+            "operation": "expense.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expense"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "expenseClaim"
+                  ]
+                },
+                "2026-11-19",
+                "120500000",
+                "100000000"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "the claim reads back with both totals",
           "call": {
             "actor": "olga",
@@ -10225,7 +10259,7 @@
             "payload": {
               "id": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               }
@@ -10253,7 +10287,7 @@
             "payload": {
               "expenseClaim": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               }
@@ -10273,7 +10307,7 @@
               "thing": "expense-claim",
               "id": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               },
@@ -10289,7 +10323,7 @@
             "payload": {
               "expenseClaim": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               }
@@ -10301,7 +10335,7 @@
               "value": [
                 {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10314,7 +10348,7 @@
               "fields": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10326,7 +10360,7 @@
               "thing": "expense-claim",
               "id": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               },
@@ -10342,7 +10376,7 @@
             "payload": {
               "expenseClaim": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               },
@@ -10376,7 +10410,7 @@
             "payload": {
               "expenseClaim": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               }
@@ -10403,7 +10437,7 @@
             "payload": {
               "id": {
                 "ref": [
-                  "last",
+                  "world",
                   "expenseClaim"
                 ]
               }
@@ -10424,7 +10458,7 @@
           ]
         }
       ],
-      "sourceHash": "4767857e316eba6707e5c0bdf1177306404e326f87dde3e01ece1f4f98d61b3a"
+      "sourceHash": "930dd9620a7d96d7b0bca17484b9560deb8e553e5bd320087b603ea6e5343ce0"
     },
     "journeys/companies-are-kept-apart.ts": {
       "name": "companies are kept apart",
@@ -11078,6 +11112,45 @@
           ]
         },
         {
+          "title": "Bo can't file a claim in his company for Olga, who works for Ada",
+          "call": {
+            "actor": "bo",
+            "operation": "expense-claim.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "postingDate": "2026-11-20"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "EmployeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "expense-claim.create.insert"
+              ]
+            }
+          ]
+        },
+        {
           "title": "Bo adds an expense type to it",
           "call": {
             "actor": "bo",
@@ -11137,45 +11210,6 @@
               "present": [],
               "absent": [
                 "expense.add.insert"
-              ]
-            }
-          ]
-        },
-        {
-          "title": "Bo can't file a claim in his company for Olga, who works for Ada",
-          "call": {
-            "actor": "bo",
-            "operation": "expense-claim.create",
-            "payload": {
-              "company": {
-                "ref": [
-                  "last",
-                  "company"
-                ]
-              },
-              "employee": {
-                "ref": [
-                  "world",
-                  "employee"
-                ]
-              },
-              "postingDate": "2026-11-20"
-            }
-          },
-          "checks": [
-            {
-              "kind": "refuses",
-              "error": "EmployeeNotInCompany",
-              "fields": {}
-            },
-            {
-              "kind": "no-events"
-            },
-            {
-              "kind": "spans",
-              "present": [],
-              "absent": [
-                "expense-claim.create.insert"
               ]
             }
           ]
@@ -11242,7 +11276,7 @@
           ]
         }
       ],
-      "sourceHash": "691ebc1fc1b5569d9edc9e77da7cebe85999fc355c83613d7cedb909c89d3cb4"
+      "sourceHash": "f277eaab20cbf69488ae4edcc724f2a36b3a7721dd526d359a1ccc96adee7316"
     },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
@@ -13915,6 +13949,31 @@
           ]
         },
         {
+          "title": "Bo can't read Ada's type",
+          "call": {
+            "actor": "bo",
+            "operation": "expense-claim-type.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "expenseClaimType"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Calls reads back as Calls",
           "call": {
             "actor": "ada",
@@ -13941,31 +14000,6 @@
                 "Calls",
                 "active"
               ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Bo can't read Ada's type",
-          "call": {
-            "actor": "bo",
-            "operation": "expense-claim-type.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "expenseClaimType"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "refuses",
-              "error": "NotAllowed",
-              "fields": {}
             },
             {
               "kind": "no-events"
@@ -14007,7 +14041,7 @@
           ]
         }
       ],
-      "sourceHash": "52858d87f729e6af18ad8d9c6aef1c1e24c5456a62148d8e410637506299c8ff"
+      "sourceHash": "01f1974fdbc99056f5b71220d3d795dceef307620e9964410e0afdaaf7a04133"
     },
     "journeys/set-up-grades.ts": {
       "name": "set up grades",

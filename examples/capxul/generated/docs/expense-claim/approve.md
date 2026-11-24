@@ -44,11 +44,11 @@ Approve a claim, owing the employee what was sanctioned.
 
 ### claim expenses
 
-Starts from the world `an expense type`.
+Starts from the world `an expense claim`.
 
-- **Olga can't approve her own claim.** `olga` (signed in) calls and sends expenseClaim the last call's expenseClaim, and is refused with NotAllowed, AR-001.
-- **Ada approves it, owing Olga 145 USDC.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, and gets back [the last call's expenseClaim, `145000000`].
-- **nor is it approved twice.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `approved`.
+- **Olga can't approve her own claim.** `olga` (signed in) calls and sends expenseClaim the world's expenseClaim, and is refused with NotAllowed, AR-001.
+- **Ada approves it, owing Olga 145 USDC.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and gets back [the world's expenseClaim, `145000000`].
+- **nor is it approved twice.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `approved`.
 
 ### reject an expense claim
 

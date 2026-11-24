@@ -51,12 +51,12 @@ Add one expense to a claim still in draft.
 
 ### claim expenses
 
-Starts from the world `an expense type`.
+Starts from the world `an expense claim`.
 
-- **Ada can't sanction more than was spent.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000001`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `45000000`.
-- **Ada adds a 45 USDC taxi, sanctioned in full.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000000`, and gets back [`45000000`, `45000000`] and gets back an answer matching `^exp_[0-9a-z]+$`.
-- **Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `120500000`, sanctionedAmount `100000000`, and gets back [`165500000`, `145000000`].
-- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.
+- **Ada can't sanction more than was spent.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000001`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `45000000`.
+- **Ada adds a 45 USDC taxi, sanctioned in full.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000000`, and gets back [`45000000`, `45000000`] and gets back an answer matching `^exp_[0-9a-z]+$`.
+- **Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `120500000`, sanctionedAmount `100000000`, and gets back [`165500000`, `145000000`].
+- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.
 
 ### expense claims stay in their company
 

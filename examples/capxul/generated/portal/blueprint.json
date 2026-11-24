@@ -9855,10 +9855,10 @@
             "kind": "signed-in"
           }
         },
-        "starts": "an expense type",
+        "starts": "an expense claim",
         "steps": [
           {
-            "title": "Olga starts a claim of her own",
+            "title": "Olga can start another claim of her own",
             "call": {
               "actor": "olga",
               "operation": "expense-claim.create",
@@ -9875,7 +9875,7 @@
                     "employee"
                   ]
                 },
-                "postingDate": "2026-11-20"
+                "postingDate": "2026-11-21"
               }
             },
             "checks": [
@@ -9937,7 +9937,7 @@
               "payload": {
                 "id": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 }
@@ -10018,7 +10018,7 @@
               "payload": {
                 "id": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 }
@@ -10043,7 +10043,7 @@
               "payload": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10086,7 +10086,7 @@
               "payload": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10126,7 +10126,7 @@
                   },
                   "expenseClaim": {
                     "ref": [
-                      "last",
+                      "world",
                       "expenseClaim"
                     ]
                   },
@@ -10188,7 +10188,7 @@
               "payload": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10222,6 +10222,40 @@
             ]
           },
           {
+            "title": "the hotel reads back with what was spent and what was sanctioned",
+            "call": {
+              "actor": "ada",
+              "operation": "expense.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expense"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "world",
+                      "expenseClaim"
+                    ]
+                  },
+                  "2026-11-19",
+                  "120500000",
+                  "100000000"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "the claim reads back with both totals",
             "call": {
               "actor": "olga",
@@ -10229,7 +10263,7 @@
               "payload": {
                 "id": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 }
@@ -10257,7 +10291,7 @@
               "payload": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 }
@@ -10277,7 +10311,7 @@
                 "thing": "expense-claim",
                 "id": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10293,7 +10327,7 @@
               "payload": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 }
@@ -10305,7 +10339,7 @@
                 "value": [
                   {
                     "ref": [
-                      "last",
+                      "world",
                       "expenseClaim"
                     ]
                   },
@@ -10318,7 +10352,7 @@
                 "fields": {
                   "expenseClaim": {
                     "ref": [
-                      "last",
+                      "world",
                       "expenseClaim"
                     ]
                   },
@@ -10330,7 +10364,7 @@
                 "thing": "expense-claim",
                 "id": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10346,7 +10380,7 @@
               "payload": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 },
@@ -10380,7 +10414,7 @@
               "payload": {
                 "expenseClaim": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 }
@@ -10407,7 +10441,7 @@
               "payload": {
                 "id": {
                   "ref": [
-                    "last",
+                    "world",
                     "expenseClaim"
                   ]
                 }
@@ -10428,7 +10462,7 @@
             ]
           }
         ],
-        "sourceHash": "4767857e316eba6707e5c0bdf1177306404e326f87dde3e01ece1f4f98d61b3a"
+        "sourceHash": "930dd9620a7d96d7b0bca17484b9560deb8e553e5bd320087b603ea6e5343ce0"
       },
       "journeys/companies-are-kept-apart.ts": {
         "name": "companies are kept apart",
@@ -11082,6 +11116,45 @@
             ]
           },
           {
+            "title": "Bo can't file a claim in his company for Olga, who works for Ada",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim.create",
+              "payload": {
+                "company": {
+                  "ref": [
+                    "last",
+                    "company"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "postingDate": "2026-11-20"
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "EmployeeNotInCompany",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "expense-claim.create.insert"
+                ]
+              }
+            ]
+          },
+          {
             "title": "Bo adds an expense type to it",
             "call": {
               "actor": "bo",
@@ -11141,45 +11214,6 @@
                 "present": [],
                 "absent": [
                   "expense.add.insert"
-                ]
-              }
-            ]
-          },
-          {
-            "title": "Bo can't file a claim in his company for Olga, who works for Ada",
-            "call": {
-              "actor": "bo",
-              "operation": "expense-claim.create",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "last",
-                    "company"
-                  ]
-                },
-                "employee": {
-                  "ref": [
-                    "world",
-                    "employee"
-                  ]
-                },
-                "postingDate": "2026-11-20"
-              }
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "EmployeeNotInCompany",
-                "fields": {}
-              },
-              {
-                "kind": "no-events"
-              },
-              {
-                "kind": "spans",
-                "present": [],
-                "absent": [
-                  "expense-claim.create.insert"
                 ]
               }
             ]
@@ -11246,7 +11280,7 @@
             ]
           }
         ],
-        "sourceHash": "691ebc1fc1b5569d9edc9e77da7cebe85999fc355c83613d7cedb909c89d3cb4"
+        "sourceHash": "f277eaab20cbf69488ae4edcc724f2a36b3a7721dd526d359a1ccc96adee7316"
       },
       "journeys/grade-names-are-the-companys.ts": {
         "name": "grade names are the company's",
@@ -13919,6 +13953,31 @@
             ]
           },
           {
+            "title": "Bo can't read Ada's type",
+            "call": {
+              "actor": "bo",
+              "operation": "expense-claim-type.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "expenseClaimType"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "Calls reads back as Calls",
             "call": {
               "actor": "ada",
@@ -13945,31 +14004,6 @@
                   "Calls",
                   "active"
                 ]
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo can't read Ada's type",
-            "call": {
-              "actor": "bo",
-              "operation": "expense-claim-type.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "last",
-                    "expenseClaimType"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "NotAllowed",
-                "fields": {}
               },
               {
                 "kind": "no-events"
@@ -14011,7 +14045,7 @@
             ]
           }
         ],
-        "sourceHash": "52858d87f729e6af18ad8d9c6aef1c1e24c5456a62148d8e410637506299c8ff"
+        "sourceHash": "01f1974fdbc99056f5b71220d3d795dceef307620e9964410e0afdaaf7a04133"
       },
       "journeys/set-up-grades.ts": {
         "name": "set up grades",
@@ -20357,15 +20391,15 @@
     "employee/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee\n\nA person a company employs.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| person | id | The person employed, who signs in as themselves. |\n| firstName | Name |  |\n| gender | Gender |  |\n| dateOfBirth | Day |  |\n| dateOfJoining | Day |  |\n| department | department.id |  |\n| designation | designation.id |  |\n\n## Machine\n\nStates: active, left. A move from the wrong state is refused EmployeeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| hire | (creates) | active | EmployeeHired |\n| relieve | active | left | EmployeeRelieved |\n\n## Invariants\n\n- `employee.onePlacePerPerson`: another active employee holds this company and person. Unique on company, person, while active; refused EmployeeAlreadyHired.\n\n## Events\n\n- `EmployeeHired`: carries employee (employee.id), company (employee.company), person (employee.person: The person employed, who signs in as themselves.); emitted by the move hire\n- `EmployeeRelieved`: carries employee (employee.id), relievingDate (Day); emitted by the move relieve\n\n## Roles\n\n- self\n\n## Operations\n\n- [employee.get](get.md): Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.\n- [employee.hire](hire.md): Hire a person into a company, placed in one of its departments under one of its job titles.\n- [employee.relieve](relieve.md): Record that an employee has left the company, on the day they were relieved.\n",
     "employee/relieve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee.relieve\n\nRecord that an employee has left the company, on the day they were relieved.\n\n**Who may call:** the owner of its employee.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Answer\n\n| field | value |\n|---|---|\n| employee | employee.id |\n| relievingDate | Day |\n\n## Move\n\n`relieve`: from active to left, emitting EmployeeRelieved.\n\n## Steps\n\n- `employee.relieve.load` (database)\n- `employee.relieve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RelievedBeforeJoined | 45 | EM-005 | declared in errors.ts, carrying dateOfJoining |\n| EmployeeNotActive | 40 | EM-900 | the employee is in a state relieve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its employee.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### an employee leaves\n\nStarts from the world `an employee`.\n\n- **Olga can't relieve herself.** `olga` (signed in) calls and sends employee the world's employee, relievingDate `2026-11-30`, and is refused with NotAllowed, AR-001.\n- **Ada can't relieve her the day before she joined.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-01-04`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2026-01-05`.\n- **Ada relieves her on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back [the world's employee, `2026-11-30`].\n- **she can't be relieved twice.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-12-01`, and is refused with EmployeeNotActive, EM-900, carrying state `left`.\n- **the new employee can't be relieved the day before rejoining.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-01-31`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2027-02-01`.\n- **but may be relieved on the day of rejoining itself.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-02-01`, and gets back `2027-02-01`.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.\n\n## How to call\n\n```sh\ncapxul employee relieve --employee <employee> --relievingDate <relievingDate>\n```\n\nHTTP: `POST /employee/relieve` with the payload as JSON. SDK: `Sdk.employee.relieve(payload)`.\n",
     "expense-claim-type/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim-type.create\n\nAdd a kind of expense a company pays back.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | expense-claim-type.company |\n| expenseType | expense-claim-type.expenseType |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaimType | expense-claim-type.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting ExpenseClaimTypeCreated.\n\n## Steps\n\n- `expense-claim-type.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ExpenseTypeTaken | 41 | ET-001 | another expense claim type holds this company and expense type; by the rule expense-claim-type.oneNamePerCompany, carrying expenseType |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Bo adds an expense type to it.** `bo` (signed in) calls and sends company the last call's company, expenseType `Travel`, and gets back an answer matching `^ect_[0-9a-z]+$`.\n\n### set up expense types\n\nStarts from the world `a company`.\n\n- **Ada adds Travel.** `ada` (role company.owner) calls and sends company the world's company, expenseType `Travel`, and gets back an answer matching `^ect_[0-9a-z]+$`.\n- **a second type can't take its name.** `ada` (role company.owner) calls and sends company the world's company, expenseType `Travel`, and is refused with ExpenseTypeTaken, ET-001, carrying expenseType `Travel`.\n- **Ada adds Calls, which is its own type.** `ada` (role company.owner) calls and sends company the world's company, expenseType `Calls`, and gets back an answer matching `^ect_[0-9a-z]+$`.\n- **Bo can't add a type to Ada's company.** `bo` (signed in) calls and sends company the world's company, expenseType `Bo's lunches`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul expense-claim-type create --company <company> --expenseType <expenseType>\n```\n\nHTTP: `POST /expense-claim-type/create` with the payload as JSON. SDK: `Sdk.expense-claim-type.create(payload)`.\n",
-    "expense-claim-type/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim-type.get\n\nRead one expense-claim-type by its id: company, expenseType, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense-claim-type.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | expense-claim-type.company |\n| expenseType | expense-claim-type.expenseType |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up expense types\n\nStarts from the world `a company`.\n\n- **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's expenseClaimType, and gets back [the world's company, `Travel`, `active`].\n- **Calls reads back as Calls.** `ada` (role company.owner) calls and sends id the last call's expenseClaimType, and gets back [the world's company, `Calls`, `active`].\n- **Bo can't read Ada's type.** `bo` (signed in) calls and sends id the last call's expenseClaimType, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul expense-claim-type get --id <id>\n```\n\nHTTP: `POST /expense-claim-type/get` with the payload as JSON. SDK: `Sdk.expense-claim-type.get(payload)`.\n",
+    "expense-claim-type/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim-type.get\n\nRead one expense-claim-type by its id: company, expenseType, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense-claim-type.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | expense-claim-type.company |\n| expenseType | expense-claim-type.expenseType |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up expense types\n\nStarts from the world `a company`.\n\n- **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's expenseClaimType, and gets back [the world's company, `Travel`, `active`].\n- **Bo can't read Ada's type.** `bo` (signed in) calls and sends id the last call's expenseClaimType, and is refused with NotAllowed, AR-001.\n- **Calls reads back as Calls.** `ada` (role company.owner) calls and sends id the last call's expenseClaimType, and gets back [the world's company, `Calls`, `active`].\n\n## How to call\n\n```sh\ncapxul expense-claim-type get --id <id>\n```\n\nHTTP: `POST /expense-claim-type/get` with the payload as JSON. SDK: `Sdk.expense-claim-type.get(payload)`.\n",
     "expense-claim-type/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim-type\n\nA kind of expense a company pays back, such as travel.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| expenseType | ExpenseTypeName |\n\n## Machine\n\nStates: active. A move from the wrong state is refused ExpenseClaimTypeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | ExpenseClaimTypeCreated |\n\n## Invariants\n\n- `expense-claim-type.oneNamePerCompany`: another expense claim type holds this company and expense type. Unique on company, expenseType, in every state; refused ExpenseTypeTaken.\n\n## Events\n\n- `ExpenseClaimTypeCreated`: carries expenseClaimType (expense-claim-type.id), company (expense-claim-type.company); emitted by the move create\n\n## Operations\n\n- [expense-claim-type.create](create.md): Add a kind of expense a company pays back.\n- [expense-claim-type.get](get.md): Read one expense-claim-type by its id: company, expenseType, state.\n",
-    "expense-claim/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.approve\n\nApprove a claim, owing the employee what was sanctioned.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n\n## Move\n\n`approve`: from draft to approved, emitting ExpenseClaimApproved.\n\n## Steps\n\n- `expense-claim.approve.load` (database)\n- `expense-claim.approve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ClaimHasNoExpenses | 43 | EC-003 | declared in errors.ts |\n| ExpenseClaimNotDraft | 40 | EC-900 | the expense-claim is in a state approve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **Olga can't approve her own claim.** `olga` (signed in) calls and sends expenseClaim the last call's expenseClaim, and is refused with NotAllowed, AR-001.\n- **Ada approves it, owing Olga 145 USDC.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, and gets back [the last call's expenseClaim, `145000000`].\n- **nor is it approved twice.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `approved`.\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **a claim with no expenses can't be approved.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ClaimHasNoExpenses, EC-003.\n- **nor can it then be approved.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul expense-claim approve --expenseClaim <expenseClaim>\n```\n\nHTTP: `POST /expense-claim/approve` with the payload as JSON. SDK: `Sdk.expense-claim.approve(payload)`.\n",
-    "expense-claim/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.create\n\nStart an employee's claim for expenses the company pays back.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | expense-claim.company |\n| employee | expense-claim.employee |\n| postingDate | expense-claim.postingDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting ExpenseClaimCreated.\n\n## Steps\n\n- `expense-claim.create.load` (database)\n- `expense-claim.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ClaimantNotActive | 41 | EC-001 | declared in errors.ts |\n| EmployeeNotInCompany | 42 | EC-002 | declared in errors.ts |\n| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **Olga starts a claim of her own.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and gets back an answer matching `^ecl_[0-9a-z]+$`.\n- **Bo can't start a claim for Olga.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and is refused with NotAllowed, AR-001.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Bo can't file a claim in his company for Olga, who works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, postingDate `2026-11-20`, and is refused with EmployeeNotInCompany, EC-002.\n- **a claim can't be started for an employee who has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, postingDate `2026-12-01`, and is refused with ClaimantNotActive, EC-001.\n\n## How to call\n\n```sh\ncapxul expense-claim create --company <company> --employee <employee> --postingDate <postingDate>\n```\n\nHTTP: `POST /expense-claim/create` with the payload as JSON. SDK: `Sdk.expense-claim.create(payload)`.\n",
-    "expense-claim/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.get\n\nRead one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | expense-claim.company |\n| employee | expense-claim.employee |\n| postingDate | expense-claim.postingDate |\n| totalClaimedAmount | expense-claim.totalClaimedAmount |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **it reads back with nothing claimed yet.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `0`, `0`, `draft`].\n- **Bo can't read Olga's claim.** `bo` (signed in) calls and sends id the last call's expenseClaim, and is refused with NotAllowed, AR-001.\n- **the claim reads back with both totals.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [`165500000`, `145000000`, `draft`].\n- **it still reads back with what was approved.** `olga` (signed in) calls and sends id the last call's expenseClaim, and gets back [`165500000`, `145000000`, `approved`].\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **a rejected claim sanctions nothing, and keeps what was claimed.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`30000000`, `0`, `rejected`].\n\n## How to call\n\n```sh\ncapxul expense-claim get --id <id>\n```\n\nHTTP: `POST /expense-claim/get` with the payload as JSON. SDK: `Sdk.expense-claim.get(payload)`.\n",
+    "expense-claim/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.approve\n\nApprove a claim, owing the employee what was sanctioned.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n\n## Move\n\n`approve`: from draft to approved, emitting ExpenseClaimApproved.\n\n## Steps\n\n- `expense-claim.approve.load` (database)\n- `expense-claim.approve.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ClaimHasNoExpenses | 43 | EC-003 | declared in errors.ts |\n| ExpenseClaimNotDraft | 40 | EC-900 | the expense-claim is in a state approve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense claim`.\n\n- **Olga can't approve her own claim.** `olga` (signed in) calls and sends expenseClaim the world's expenseClaim, and is refused with NotAllowed, AR-001.\n- **Ada approves it, owing Olga 145 USDC.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and gets back [the world's expenseClaim, `145000000`].\n- **nor is it approved twice.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `approved`.\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **a claim with no expenses can't be approved.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ClaimHasNoExpenses, EC-003.\n- **nor can it then be approved.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and is refused with ExpenseClaimNotDraft, EC-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul expense-claim approve --expenseClaim <expenseClaim>\n```\n\nHTTP: `POST /expense-claim/approve` with the payload as JSON. SDK: `Sdk.expense-claim.approve(payload)`.\n",
+    "expense-claim/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.create\n\nStart an employee's claim for expenses the company pays back.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | expense-claim.company |\n| employee | expense-claim.employee |\n| postingDate | expense-claim.postingDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting ExpenseClaimCreated.\n\n## Steps\n\n- `expense-claim.create.load` (database)\n- `expense-claim.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ClaimantNotActive | 41 | EC-001 | declared in errors.ts |\n| EmployeeNotInCompany | 42 | EC-002 | declared in errors.ts |\n| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense claim`.\n\n- **Olga can start another claim of her own.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-21`, and gets back an answer matching `^ecl_[0-9a-z]+$`.\n- **Bo can't start a claim for Olga.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and is refused with NotAllowed, AR-001.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Bo can't file a claim in his company for Olga, who works for Ada.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, postingDate `2026-11-20`, and is refused with EmployeeNotInCompany, EC-002.\n- **a claim can't be started for an employee who has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, postingDate `2026-12-01`, and is refused with ClaimantNotActive, EC-001.\n\n## How to call\n\n```sh\ncapxul expense-claim create --company <company> --employee <employee> --postingDate <postingDate>\n```\n\nHTTP: `POST /expense-claim/create` with the payload as JSON. SDK: `Sdk.expense-claim.create(payload)`.\n",
+    "expense-claim/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.get\n\nRead one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | expense-claim.company |\n| employee | expense-claim.employee |\n| postingDate | expense-claim.postingDate |\n| totalClaimedAmount | expense-claim.totalClaimedAmount |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense claim`.\n\n- **it reads back with nothing claimed yet.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [the world's company, the world's employee, `2026-11-20`, `0`, `0`, `draft`].\n- **Bo can't read Olga's claim.** `bo` (signed in) calls and sends id the world's expenseClaim, and is refused with NotAllowed, AR-001.\n- **the claim reads back with both totals.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`165500000`, `145000000`, `draft`].\n- **it still reads back with what was approved.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`165500000`, `145000000`, `approved`].\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **a rejected claim sanctions nothing, and keeps what was claimed.** `olga` (signed in) calls and sends id the world's expenseClaim, and gets back [`30000000`, `0`, `rejected`].\n\n## How to call\n\n```sh\ncapxul expense-claim get --id <id>\n```\n\nHTTP: `POST /expense-claim/get` with the payload as JSON. SDK: `Sdk.expense-claim.get(payload)`.\n",
     "expense-claim/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim\n\nWhat an employee asks the company to pay back.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| employee | employee.id |\n| postingDate | Day |\n| totalClaimedAmount | Amount |\n| totalSanctionedAmount | Amount |\n\n## Machine\n\nStates: draft, approved, rejected. A move from the wrong state is refused ExpenseClaimNotDraft (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | draft | ExpenseClaimCreated |\n| approve | draft | approved | ExpenseClaimApproved |\n| reject | draft | rejected | ExpenseClaimRejected |\n\n## Events\n\n- `ExpenseClaimApproved`: carries expenseClaim (expense-claim.id), totalSanctionedAmount (expense-claim.totalSanctionedAmount); emitted by the move approve\n- `ExpenseClaimCreated`: carries expenseClaim (expense-claim.id), company (expense-claim.company), employee (expense-claim.employee); emitted by the move create\n- `ExpenseClaimRejected`: carries expenseClaim (expense-claim.id); emitted by the move reject\n\n## Operations\n\n- [expense-claim.approve](approve.md): Approve a claim, owing the employee what was sanctioned.\n- [expense-claim.create](create.md): Start an employee's claim for expenses the company pays back.\n- [expense-claim.get](get.md): Read one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.\n- [expense-claim.reject](reject.md): Reject a claim, so nothing of it is paid back.\n",
     "expense-claim/reject.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense-claim.reject\n\nReject a claim, so nothing of it is paid back.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense-claim.id |\n\n## Move\n\n`reject`: from draft to rejected, emitting ExpenseClaimRejected.\n\n## Steps\n\n- `expense-claim.reject.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ExpenseClaimNotDraft | 40 | EC-900 | the expense-claim is in a state reject can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **Olga can't reject her own claim.** `olga` (signed in) calls and sends expenseClaim the world's expenseClaim, and is refused with NotAllowed, AR-001.\n- **Ada rejects it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, and gets back the world's expenseClaim.\n\n## How to call\n\n```sh\ncapxul expense-claim reject --expenseClaim <expenseClaim>\n```\n\nHTTP: `POST /expense-claim/reject` with the payload as JSON. SDK: `Sdk.expense-claim.reject(payload)`.\n",
-    "expense/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.add\n\nAdd one expense to a claim still in draft.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n\n## Answer\n\n| field | value |\n|---|---|\n| expense | expense.id |\n| totalClaimedAmount | expense-claim.totalClaimedAmount |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting ExpenseAdded.\n\n## Steps\n\n- `expense.add.load` (database)\n- `expense.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SanctionedOverClaimed | 41 | EX-001 | declared in errors.ts, carrying amount |\n| ExpenseTypeNotInCompany | 42 | EX-002 | declared in errors.ts |\n| ClaimNotDraft | 43 | EX-003 | declared in errors.ts |\n| ExpenseClaimTypeNotFound | 4 | ET-901 | nothing has the id in expenseType; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **Ada can't sanction more than was spent.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000001`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `45000000`.\n- **Ada adds a 45 USDC taxi, sanctioned in full.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000000`, and gets back [`45000000`, `45000000`] and gets back an answer matching `^exp_[0-9a-z]+$`.\n- **Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `120500000`, sanctionedAmount `100000000`, and gets back [`165500000`, `145000000`].\n- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Ada can't put Bo's expense type on Olga's claim.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `5000000`, sanctionedAmount `5000000`, and is refused with ExpenseTypeNotInCompany, EX-002.\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **Ada adds 30 USDC of lunches.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `30000000`, sanctionedAmount `30000000`, and gets back [`30000000`, `30000000`].\n\n## How to call\n\n```sh\ncapxul expense add --expenseClaim <expenseClaim> --expenseDate <expenseDate> --expenseType <expenseType> --amount <amount> --sanctionedAmount <sanctionedAmount>\n```\n\nHTTP: `POST /expense/add` with the payload as JSON. SDK: `Sdk.expense.add(payload)`.\n",
-    "expense/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.get\n\nRead one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense type`.\n\n- **the taxi reads back as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-11-18`, the world's expenseClaimType, `45000000`, `45000000`, `active`].\n\n## How to call\n\n```sh\ncapxul expense get --id <id>\n```\n\nHTTP: `POST /expense/get` with the payload as JSON. SDK: `Sdk.expense.get(payload)`.\n",
+    "expense/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.add\n\nAdd one expense to a claim still in draft.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n\n## Answer\n\n| field | value |\n|---|---|\n| expense | expense.id |\n| totalClaimedAmount | expense-claim.totalClaimedAmount |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting ExpenseAdded.\n\n## Steps\n\n- `expense.add.load` (database)\n- `expense.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SanctionedOverClaimed | 41 | EX-001 | declared in errors.ts, carrying amount |\n| ExpenseTypeNotInCompany | 42 | EX-002 | declared in errors.ts |\n| ClaimNotDraft | 43 | EX-003 | declared in errors.ts |\n| ExpenseClaimTypeNotFound | 4 | ET-901 | nothing has the id in expenseType; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense claim`.\n\n- **Ada can't sanction more than was spent.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000001`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `45000000`.\n- **Ada adds a 45 USDC taxi, sanctioned in full.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000000`, and gets back [`45000000`, `45000000`] and gets back an answer matching `^exp_[0-9a-z]+$`.\n- **Ada adds a 120.50 USDC hotel, sanctioning 100 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `120500000`, sanctionedAmount `100000000`, and gets back [`165500000`, `145000000`].\n- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `1000000`, and is refused with ClaimNotDraft, EX-003.\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Ada can't put Bo's expense type on Olga's claim.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `5000000`, sanctionedAmount `5000000`, and is refused with ExpenseTypeNotInCompany, EX-002.\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **Ada adds 30 USDC of lunches.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `30000000`, sanctionedAmount `30000000`, and gets back [`30000000`, `30000000`].\n\n## How to call\n\n```sh\ncapxul expense add --expenseClaim <expenseClaim> --expenseDate <expenseDate> --expenseType <expenseType> --amount <amount> --sanctionedAmount <sanctionedAmount>\n```\n\nHTTP: `POST /expense/add` with the payload as JSON. SDK: `Sdk.expense.add(payload)`.\n",
+    "expense/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.get\n\nRead one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense claim`.\n\n- **the taxi reads back as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-11-18`, the world's expenseClaimType, `45000000`, `45000000`, `active`].\n- **the hotel reads back with what was spent and what was sanctioned.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, `120500000`, `100000000`].\n\n## How to call\n\n```sh\ncapxul expense get --id <id>\n```\n\nHTTP: `POST /expense/get` with the payload as JSON. SDK: `Sdk.expense.get(payload)`.\n",
     "expense/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense\n\nOne expense in a claim.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| expenseClaim | expense-claim.id |\n| expenseDate | Day |\n| expenseType | expense-claim-type.id |\n| amount | Amount |\n| sanctionedAmount | Amount |\n\n## Machine\n\nStates: active. A move from the wrong state is refused ExpenseNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | ExpenseAdded |\n\n## Events\n\n- `ExpenseAdded`: carries expense (expense.id), expenseClaim (expense.expenseClaim), amount (expense.amount), totalClaimedAmount (expense-claim.totalClaimedAmount); emitted by the move add\n\n## Operations\n\n- [expense.add](add.md): Add one expense to a claim still in draft.\n- [expense.get](get.md): Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.\n",
     "holiday-list/add-weekly-off.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.add-weekly-off\n\nMake every given weekday in a holiday list a day off.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n| added | HolidayCount |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`addWeeklyOff`: from active to active, emitting WeeklyOffAdded.\n\n## Steps\n\n- `holiday-list.add-weekly-off.load` (database)\n- `holiday-list.add-weekly-off.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| HolidayListNotActive | 40 | HL-900 | the holiday-list is in a state addWeeklyOff can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **a weekday the list doesn't hold adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`0`, `0`].\n- **its own weekday adds its one day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`1`, `1`].\n\n### every weekday\n\nStarts from the world `a leap fortnight`.\n\n- **the weekday the list starts and ends on adds three, the leap day among them.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Tuesday`, and gets back [`3`, `3`].\n- **the day after it adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Wednesday`, and gets back [`2`, `5`].\n- **the third weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Thursday`, and gets back [`2`, `7`].\n- **the fourth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`2`, `9`].\n- **the fifth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Saturday`, and gets back [`2`, `11`].\n- **the sixth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`2`, `13`].\n- **the last weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`2`, `15`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **Bo can't add a weekly off to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, weekday `Sunday`, and is refused with NotAllowed, AR-001.\n- **Ada makes a weekday a day off, and the day the list already held is skipped.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [the world's holidayList, `Sunday`, `51`, `52`].\n- **a weekday that falls on both the first and the last day counts both.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`Friday`, `53`, `105`].\n- **asking for the same weekday again adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`0`, `105`].\n\n## How to call\n\n```sh\ncapxul holiday-list add-weekly-off --holidayList <holidayList> --weekday <weekday>\n```\n\nHTTP: `POST /holiday-list/add-weekly-off` with the payload as JSON. SDK: `Sdk.holiday-list.add-weekly-off(payload)`.\n",
     "holiday-list/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.create\n\nStart a company's list of days off, between two days.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | holiday-list.company |\n| holidayListName | holiday-list.holidayListName |\n| fromDate | holiday-list.fromDate |\n| toDate | holiday-list.toDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting HolidayListCreated.\n\n## Steps\n\n- `holiday-list.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayListEndsBeforeStart | 44 | HL-002 | declared in errors.ts, carrying fromDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set up a holiday list\n\nStarts from the world `a company`.\n\n- **Ada starts a list for a year.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2027-01-01`, toDate `2027-12-31`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n- **a list can't end before it starts.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards`, fromDate `2028-01-01`, toDate `2027-12-31`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2028-01-01`.\n- **nor end a day before it starts, inside one month.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Backwards again`, fromDate `2028-08-15`, toDate `2028-08-14`, and is refused with HolidayListEndsBeforeStart, HL-002, carrying fromDate `2028-08-15`.\n- **a second list can't take the first one's name.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Kenya 2027`, fromDate `2028-01-01`, toDate `2028-12-31`, and is refused with HolidayListNameTaken, HL-001, carrying holidayListName `Kenya 2027`.\n- **Bo can't start a list in Ada's company.** `bo` (signed in) calls and sends company the world's company, holidayListName `Bo's days`, fromDate `2027-01-01`, toDate `2027-12-31`, and is refused with NotAllowed, AR-001.\n- **a list may start and end on the same day.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `Shutdown`, fromDate `2028-08-14`, toDate `2028-08-14`, and gets back an answer matching `^hls_[0-9a-z]+$`.\n\n## How to call\n\n```sh\ncapxul holiday-list create --company <company> --holidayListName <holidayListName> --fromDate <fromDate> --toDate <toDate>\n```\n\nHTTP: `POST /holiday-list/create` with the payload as JSON. SDK: `Sdk.holiday-list.create(payload)`.\n",
@@ -20389,5 +20423,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "dc8af4dbbddf342180c1e293c38eafdc3569883d881b1412ab9ac2b40f05dff2"
+  "digest": "ba98b56524dc3b0b7ddb612f5b9c474ece073ebca76edea107c7e1b9b534202c"
 }

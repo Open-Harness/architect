@@ -36,9 +36,10 @@ Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanc
 
 ### claim expenses
 
-Starts from the world `an expense type`.
+Starts from the world `an expense claim`.
 
 - **the taxi reads back as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-11-18`, the world's expenseClaimType, `45000000`, `45000000`, `active`].
+- **the hotel reads back with what was spent and what was sanctioned.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, `120500000`, `100000000`].
 
 ## How to call
 

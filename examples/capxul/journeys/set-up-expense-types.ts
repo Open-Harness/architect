@@ -40,15 +40,15 @@ export default Blueprint.journey("set up expense types", {
       emits(ExpenseClaimTypeCreated, { expenseClaimType: s.last.expenseClaimType, company: s.world.company }),
     ),
     s.step(
-      "Calls reads back as Calls",
-      s.ada.run(get, { id: s.last.expenseClaimType }),
-      expect((a) => [a.company, a.expenseType, a.state]).toEqual([s.world.company, "Calls", "active"]),
-      noEvents(),
-    ),
-    s.step(
       "Bo can't read Ada's type",
       s.bo.run(get, { id: s.last.expenseClaimType }),
       refuses(Blueprint.NotAllowed),
+      noEvents(),
+    ),
+    s.step(
+      "Calls reads back as Calls",
+      s.ada.run(get, { id: s.last.expenseClaimType }),
+      expect((a) => [a.company, a.expenseType, a.state]).toEqual([s.world.company, "Calls", "active"]),
       noEvents(),
     ),
     s.step(

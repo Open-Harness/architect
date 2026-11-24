@@ -47,9 +47,9 @@ Start an employee's claim for expenses the company pays back.
 
 ### claim expenses
 
-Starts from the world `an expense type`.
+Starts from the world `an expense claim`.
 
-- **Olga starts a claim of her own.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and gets back an answer matching `^ecl_[0-9a-z]+$`.
+- **Olga can start another claim of her own.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-21`, and gets back an answer matching `^ecl_[0-9a-z]+$`.
 - **Bo can't start a claim for Olga.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, postingDate `2026-11-20`, and is refused with NotAllowed, AR-001.
 
 ### expense claims stay in their company
