@@ -5,7 +5,7 @@
 // (G11). Every expectation is read from the description here, never from what the generator made. The naming rule is
 // gaps.test.ts's.
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { BRIDGE, bridge, bridgeSha, callAt, callNames, generate, plugin, removePlugins, settle, standIn, wire, type Calls, type Made, type Node, type StandIn } from "./testing.ts";
+import { BRIDGE, UUID, bridge, bridgeSha, callAt, callNames, generate, plugin, removePlugins, settle, standIn, wire, type Calls, type Made, type Node, type StandIn } from "./testing.ts";
 
 const spec = bridge();
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
@@ -87,7 +87,7 @@ describe("Bridge's published description", () => {
       reached.push(o);
       // the whole request: no field was given for the body, so none is sent, and no header but the key and the Idempotency-Key
       expect(wire(sent[0]), o.name).toEqual({ method: o.method.toUpperCase(), ...o.sent, body: undefined,
-        headers: { "api-key": TOKEN, ...(o.idempotent ? { "idempotency-key": expect.stringMatching(/\S/) } : {}) } });
+        headers: { "api-key": TOKEN, ...(o.idempotent ? { "idempotency-key": expect.stringMatching(UUID) } : {}) } });
     }
     // a call with no required body field reaches the stand-in from its path and query alone: every GET and DELETE among them
     expect(reached.filter((o) => o.method === "get" || o.method === "delete").length).toBe(operations.filter((o) => o.method === "get" || o.method === "delete").length);
@@ -122,7 +122,7 @@ describe("Capxul's first calls against a stand-in answering with Bridge's own ex
       answer = { status: name === "rfis.responses.create" ? 201 : 200, body: {} };
       expect((await settle(call(calls, name)(input))).tag, name).toBe("ok");
     }
-    expect(s.seen.map((x) => [x.path, x.body, x.headers["api-key"], typeof x.headers["idempotency-key"]])).toEqual(steps.map(([, , path, sent]) => [path, sent, TOKEN, "string"]));
+    expect(s.seen.map((x) => [x.path, x.body, x.headers["api-key"], x.headers["idempotency-key"]])).toEqual(steps.map(([, , path, sent]) => [path, sent, TOKEN, expect.stringMatching(UUID)]));
   });
 
   it("a transfer answered as Bridge publishes it is refused when strict, and returned whole with its misfit reported when lenient", async () => {

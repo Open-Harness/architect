@@ -86,6 +86,9 @@ export const wire = (x: Seen) => ({
   headers: Object.fromEntries(Object.entries(x.headers).filter(([k]) => !TRANSPORT.has(k)).sort(([a], [b]) => (a < b ? -1 : 1))),
 });
 
+/** A fresh Idempotency-Key: a random (version 4) UUID, so a key never comes round again after a restart. */
+export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 /** A server on a free port that records each request and answers what `answer` says. */
 export const standIn = (answer: (seen: Seen) => { readonly status: number; readonly body: unknown }): Promise<StandIn> =>
   new Promise((ready) => {

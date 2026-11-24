@@ -2,10 +2,11 @@
 // author before the build; red on today's generator, listed in packages/generators/expected-failing/bodies-and-answers.txt
 // (G11). The contract:
 //   4. A `oneOf` or `anyOf` request body takes the fields of any of its alternatives, sent in the body as given, and the
-//      input is judged against the whole body schema, so it is refused before sending when it fits none.
+//      input is judged against the whole body schema, so it is refused before sending when it fits none. No body field
+//      given, no body sent (an optional body stays unsent).
 //   5. `client({ ..., answers: "lenient", onMisfit })` returns an answer it would otherwise refuse as `AnswerRefused`,
 //      a JSON body that misfits its status's schema or a 2xx status the operation doesn't document, as it came, and calls
-//      `onMisfit({ call, status, problems })` exactly once for it, with every problem found. Without `answers`, with
+//      `onMisfit({ call, status, problems })` exactly once for it, with every problem found (an undocumented status is one problem, naming it). Without `answers`, with
 //      `answers: "strict"`, or with only `onMisfit`, such an answer is `AnswerRefused` and `onMisfit` is never called.
 //      Lenient is for answers only: inputs are refused and failures fail as before.
 import { afterAll, afterEach, describe, expect, it } from "vitest";

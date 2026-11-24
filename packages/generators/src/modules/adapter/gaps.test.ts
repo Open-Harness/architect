@@ -14,9 +14,11 @@
 //   3. Header parameters are fields of the input under the spec's name, sent only as headers, judged like any field (a
 //      required one missing, or a value that doesn't fit, is refused before sending), and a header and a body field of
 //      one name are refused like a path and a body field. `Idempotency-Key` (any case) is the exception: a call that
-//      declares it, on the operation or its path, sends the caller's key as given, else a fresh one on every call.
+//      declares it, on the operation or its path, sends the caller's key as given, else a fresh random UUID on every
+//      call. A parameter named `token` outside the path stays the client's credential and is never a field, as today
+//      (Slack declares it as a header). A body is sent as `content-type: application/json`; no body field given, no body.
 import { afterAll, afterEach, describe, expect, it } from "vitest";
-import { callAt, callNames, generate, plugin, removePlugins, settle, standIn, wire, type Calls, type Node, type StandIn } from "./testing.ts";
+import { UUID, callAt, callNames, generate, plugin, removePlugins, settle, standIn, wire, type Calls, type Node, type StandIn } from "./testing.ts";
 
 afterAll(removePlugins);
 const servers: Array<StandIn> = [];
@@ -128,8 +130,9 @@ describe("3. header parameters are kept, and Idempotency-Key is sent on each cal
     "/notes": { post: op({ parameters: [{ name: "X-Request-Source", in: "header", required: true, schema: { type: "string", enum: ["app", "cli"] } }, { name: "X-Trace", in: "header", schema: { type: "string" } }], ...body(text) }) },
     "/search": { post: op({ parameters: [{ name: "q", in: "query", schema: { type: "string" } }], ...body(text) }) },
     "/clash": { post: op({ parameters: [{ name: "text", in: "header", schema: { type: "string" } }], ...body(text) }) },
+    "/chat.postMessage": { post: op({ operationId: "chat_postMessage", parameters: [{ name: "token", in: "header", required: true, schema: { type: "string" } }], ...body(text) }) },
   }, { components: { parameters: { Idem: { name: "Idempotency-Key", in: "header", required: true, schema: { type: "string" } } } } });
-  const fresh = expect.stringMatching(/\S/);
+  const fresh = expect.stringMatching(UUID);
 
   it("sends a fresh key on each call, even of the same input, and only as a header", async () => {
     const s = await serve();
@@ -174,6 +177,7 @@ describe("3. header parameters are kept, and Idempotency-Key is sent on each cal
       req("POST", "/notes", { "x-request-source": "app", "x-trace": "t-9" }, { body: { text: "b" } }),
       req("POST", "/search", {}, { query: "?q=a", body: { text: "b" } }),
     ]);
+    expect(s.seen.map((x) => x.headers["content-type"])).toEqual(s.seen.map(() => expect.stringMatching(/^application\/json/)));
   });
 
   it("refuses before sending a header missing, a header that doesn't fit, and a header and a body field of one name", async () => {
@@ -188,5 +192,13 @@ describe("3. header parameters are kept, and Idempotency-Key is sent on each cal
       expect([got.tag, (got.failure?.["problems"] ?? []).some((p: string) => names.test(p))], JSON.stringify(input)).toEqual(["InputRefused", true]);
     }
     expect(s.seen).toEqual([]);
+  });
+
+  it("keeps a header called token as the client's credential, never a field", async () => {
+    const s = await serve();
+    const post = called(await clientOf(spec, s, { token: "xoxb-1" }), "chatPostMessage");
+    expect((await settle(post({ text: "hi" }))).tag).toBe("ok");
+    expect((await settle(post({ text: "hi", token: "other" }))).tag).toBe("InputRefused");
+    expect(s.seen.map(wire)).toEqual([req("POST", "/chat.postMessage", { authorization: "Bearer xoxb-1" }, { body: { text: "hi" } })]);
   });
 });
