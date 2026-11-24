@@ -7,8 +7,8 @@
 // The endpoint and the client are built in process as `renderApi` and the SDK build them (`decimal-wire.test.ts`,
 // assumption 1, says how), so this file reads no generated project.
 //
-// Not judged here: the words of the API's 400. Its body is empty for every payload it refuses, a decimal or not (#981
-// records it); naming the field there would change the API for every value, so it is not this check's.
+// Not judged here: the words of the API's 400. Its body is empty for every payload it refuses, a decimal or not (snag
+// #988); naming the field there would change the API for every value, so it is not this check's.
 // Not judged here either: whether a decimal made in code whose extra places are zeros (`1.230`, as `1.23 × 1.0` makes it)
 // has more places than its field holds. Every decimal below is made from text spelling its places exactly; the text
 // `1.230` itself is refused at the API, being written with three. Exactly the declared places, and fewer, keep their
