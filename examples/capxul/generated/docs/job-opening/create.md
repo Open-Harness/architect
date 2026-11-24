@@ -46,7 +46,7 @@ Open a job under one of a company's job titles, for some number of people.
 
 Starts from the world `a technical round`.
 
-- **Ada opens Backend Engineer for one person.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `Backend Engineer`, vacancies `1`, and gets back an answer matching `^jop_[0-9a-z]+$`.
+- **Ada opens the engineering job for one person.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `Backend Engineer`, vacancies `1`, and gets back an answer matching `^jop_[0-9a-z]+$`.
 
 ### open a job
 
@@ -55,7 +55,7 @@ Starts from the world `a job applicant`.
 - **Bo can't open a job under Ada's job title.** `bo` (signed in) calls and sends designation the world's designation, jobTitle `Data Analyst`, vacancies `1`, and is refused with NotAllowed, AR-001.
 - **nor can Olga, who works there.** `olga` (signed in) calls and sends designation the world's designation, jobTitle `Data Analyst`, vacancies `1`, and is refused with NotAllowed, AR-001.
 - **Ada can't open a job for nobody.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `Data Analyst`, vacancies `0`, and is refused with OpeningWithoutVacancies, JO-001.
-- **Ada opens data analyst, in lower case, for one person.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `data analyst`, vacancies `1`, and gets back an answer matching `^jop_[0-9a-z]+$`.
+- **Ada opens an analyst's job, in lower case, for one person.** `ada` (role company.owner) calls and sends designation the world's designation, jobTitle `data analyst`, vacancies `1`, and gets back an answer matching `^jop_[0-9a-z]+$`.
 
 ## How to call
 

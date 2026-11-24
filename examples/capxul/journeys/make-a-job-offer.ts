@@ -48,7 +48,7 @@ export default Blueprint.journey("make a job offer", {
       noEvents(),
     ),
     s.step(
-      "Ada adds the job title Dispatcher to Acme Logistics",
+      "Ada adds a dispatcher's job title to Acme Logistics",
       s.ada.run(createDesignation, { company: s.world.otherCompany, designationName: "Dispatcher" }),
       expect((a) => a.designation).toMatch(/^dsg_[0-9a-z]+$/),
     ),

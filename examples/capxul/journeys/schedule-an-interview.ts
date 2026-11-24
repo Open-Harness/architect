@@ -83,7 +83,7 @@ export default Blueprint.journey("schedule an interview", {
       noEvents(),
     ),
     s.step(
-      "Ada adds the round Technical to Acme Logistics",
+      "Ada adds a technical round to Acme Logistics",
       s.ada.run(createRound, { company: s.world.otherCompany, roundName: "Technical", interviewers: [s.world.outsider] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
     ),
@@ -101,7 +101,7 @@ export default Blueprint.journey("schedule an interview", {
       noEvents(),
     ),
     s.step(
-      "Ada schedules Pat's Technical with Cy and Olga, ten to half past",
+      "Ada schedules Pat's technical interview with Cy and Olga, ten to half past",
       s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.world.interviewRound, ...at("2026-12-03", "10:00", "10:30"), interviewers: [s.world.secondEmployee, s.world.employee] }),
       expect((a) => a.interview).toMatch(/^ivw_[0-9a-z]+$/),
       emits(InterviewScheduled, { interview: s.last.interview, jobApplicant: s.world.jobApplicant, interviewRound: s.world.interviewRound }),
@@ -115,7 +115,7 @@ export default Blueprint.journey("schedule an interview", {
       noEvents(),
     ),
     s.step(
-      "Ada can't schedule Pat's Technical twice",
+      "Ada can't schedule Pat's technical interview twice",
       s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.world.interviewRound, ...at("2026-12-04", "14:00", "15:00"), interviewers: [s.world.secondEmployee] }),
       refuses(InterviewAlreadyScheduled),
       noEvents(),
@@ -163,13 +163,13 @@ export default Blueprint.journey("schedule an interview", {
       noEvents(),
     ),
     s.step(
-      "Pat's Technical still can't be scheduled again, now the first is rejected",
+      "Pat's technical interview still can't be scheduled again, now the first is rejected",
       s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.world.interviewRound, ...at("2026-12-04", "14:00", "15:00"), interviewers: [s.world.secondEmployee] }),
       refuses(InterviewAlreadyScheduled),
       noEvents(),
     ),
     s.step(
-      "Ada adds the round Culture, with nobody",
+      "Ada adds a culture round, with nobody",
       s.ada.run(createRound, { company: s.world.company, roundName: "Culture", interviewers: [] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
     ),
@@ -205,7 +205,7 @@ export default Blueprint.journey("schedule an interview", {
       expect((a) => a.relievingDate).toBe("2026-11-30"),
     ),
     s.step(
-      "Ada adds the round Final, with Cy",
+      "Ada adds the final round, with Cy",
       s.ada.run(createRound, { company: s.world.company, roundName: "Final", interviewers: [s.world.secondEmployee] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
     ),
@@ -229,7 +229,7 @@ export default Blueprint.journey("schedule an interview", {
       noEvents(),
     ),
     s.step(
-      "Cy alone may interview Pat at Final, on a day still to come",
+      "Cy alone may interview Pat at the final round, on a day still to come",
       s.ada.run(schedule, { jobApplicant: s.world.jobApplicant, interviewRound: s.last.interviewRound, ...at("2027-01-11", "09:00", "17:00"), interviewers: [s.world.secondEmployee] }),
       expect((a) => a.interview).toMatch(/^ivw_[0-9a-z]+$/),
       emits(InterviewScheduled, { interview: s.last.interview, jobApplicant: s.world.jobApplicant }),

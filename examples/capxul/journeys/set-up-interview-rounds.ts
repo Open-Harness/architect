@@ -19,7 +19,7 @@ export default Blueprint.journey("set up interview rounds", {
   starts: "an outside employee",
   steps: (s) => [
     s.step(
-      "Technical reads back with Olga",
+      "the technical round reads back with Olga",
       s.ada.run(get, { id: s.world.interviewRound }),
       expect((a) => [a.company, a.roundName, a.interviewers, a.state]).toEqual([s.world.company, "Technical", [s.world.employee], "active"]),
       noEvents(),
@@ -38,13 +38,13 @@ export default Blueprint.journey("set up interview rounds", {
       spans({ absent: ["interview-round.create", "interview-round.create.insert"] }),
     ),
     s.step(
-      "Ada can't add a second Technical",
+      "Ada can't add a second technical round",
       s.ada.run(create, { company: s.world.company, roundName: "Technical", interviewers: [s.world.secondEmployee] }),
       refuses(RoundNameTaken, { roundName: "Technical" }),
       noEvents(),
     ),
     s.step(
-      "Ada adds Panel, with Cy then Olga",
+      "Ada adds a panel round, with Cy then Olga",
       s.ada.run(create, { company: s.world.company, roundName: "Panel", interviewers: [s.world.secondEmployee, s.world.employee] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
       emits(InterviewRoundCreated, { interviewRound: s.last.interviewRound, company: s.world.company }),
@@ -63,7 +63,7 @@ export default Blueprint.journey("set up interview rounds", {
       noEvents(),
     ),
     s.step(
-      "Ada adds culture, in lower case, with nobody yet",
+      "Ada adds a culture round, in lower case, with nobody yet",
       s.ada.run(create, { company: s.world.company, roundName: "culture", interviewers: [] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
       emits(InterviewRoundCreated, { interviewRound: s.last.interviewRound, company: s.world.company }),
@@ -75,7 +75,7 @@ export default Blueprint.journey("set up interview rounds", {
       noEvents(),
     ),
     s.step(
-      "Acme Logistics may have its own Technical, with Bo",
+      "Acme Logistics may have its own technical round, with Bo",
       s.ada.run(create, { company: s.world.otherCompany, roundName: "Technical", interviewers: [s.world.outsider] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
       emits(InterviewRoundCreated, { interviewRound: s.last.interviewRound, company: s.world.otherCompany }),
@@ -92,7 +92,7 @@ export default Blueprint.journey("set up interview rounds", {
       expect((a) => a.company).toMatch(/^com_[0-9a-z]+$/),
     ),
     s.step(
-      "Dee's company may have its own Technical too",
+      "Dee's company may have its own technical round too",
       s.dee.run(create, { company: s.last.company, roundName: "Technical", interviewers: [] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
     ),
@@ -140,13 +140,13 @@ export default Blueprint.journey("set up interview rounds", {
       noEvents(),
     ),
     s.step(
-      "Final, with Cy alone, is taken",
+      "the final round, with Cy alone, is taken",
       s.ada.run(create, { company: s.world.company, roundName: "Final", interviewers: [s.world.secondEmployee] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
       emits(InterviewRoundCreated, { interviewRound: s.last.interviewRound, company: s.world.company }),
     ),
     s.step(
-      "Technical still reads back with Olga, who was on it before she left",
+      "the technical round still reads back with Olga, who was on it before she left",
       s.ada.run(get, { id: s.world.interviewRound }),
       expect((a) => [a.roundName, a.interviewers]).toEqual(["Technical", [s.world.employee]]),
       noEvents(),

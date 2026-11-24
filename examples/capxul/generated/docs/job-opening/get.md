@@ -45,7 +45,7 @@ Starts from the world `a job applicant`.
 
 - **Bo can't read it.** `bo` (signed in) calls and sends id the last call's jobOpening, and is refused with NotAllowed, AR-001.
 - **the opening Sam applied for reads back in Acme Trading, the job title's company, as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's jobOpening, and gets back [the world's company, the world's designation, `data analyst`, `1`, `open`].
-- **Backend Engineer reads back for two.** `ada` (role company.owner) calls and sends id the world's jobOpening, and gets back [`Backend Engineer`, `2`, `open`].
+- **the engineering job reads back for two.** `ada` (role company.owner) calls and sends id the world's jobOpening, and gets back [`Backend Engineer`, `2`, `open`].
 - **it reads back closed.** `ada` (role company.owner) calls and sends id the world's jobOpening, and gets back [the world's company, `Backend Engineer`, `2`, `closed`].
 
 ## How to call

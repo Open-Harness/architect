@@ -46,7 +46,7 @@ Starts from the world `an interview`.
 
 Starts from the world `a technical round`.
 
-- **the interview reads back cleared, Pat's, at Technical.** `ada` (role company.owner) calls and sends id the last call's interview, and gets back [the world's company, the world's interviewRound, `2026-12-01`, `14:00`, `15:00`, [the world's employee], `cleared`].
+- **the interview reads back cleared, Pat's, at the technical round.** `ada` (role company.owner) calls and sends id the last call's interview, and gets back [the world's company, the world's interviewRound, `2026-12-01`, `14:00`, `15:00`, [the world's employee], `cleared`].
 
 ### schedule an interview
 

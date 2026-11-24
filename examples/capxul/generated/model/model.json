@@ -19235,7 +19235,7 @@
           ]
         },
         {
-          "title": "Ada adds the round Culture",
+          "title": "Ada adds a culture round",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -19259,7 +19259,7 @@
           ]
         },
         {
-          "title": "and schedules Pat's Culture for Saturday 5 December, with Olga and Cy",
+          "title": "and schedules Pat's culture interview for Saturday 5 December, with Olga and Cy",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -19372,7 +19372,7 @@
           ]
         },
         {
-          "title": "Ada adds the round Final",
+          "title": "Ada adds the final round",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -19396,7 +19396,7 @@
           ]
         },
         {
-          "title": "and schedules Pat's Final for today, with Olga alone",
+          "title": "and schedules Pat's final interview for today, with Olga alone",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -19467,7 +19467,7 @@
           ]
         },
         {
-          "title": "Olga, who gave feedback on Technical, may give it on Final too",
+          "title": "Olga, who gave feedback on the technical round, may give it on the final round too",
           "call": {
             "actor": "olga",
             "operation": "interview-feedback.give",
@@ -19553,7 +19553,7 @@
           ]
         },
         {
-          "title": "Ada marks the Technical interview rejected, though Olga cleared Pat",
+          "title": "Ada marks the technical interview rejected, though Olga cleared Pat",
           "call": {
             "actor": "ada",
             "operation": "interview.reject",
@@ -19612,7 +19612,7 @@
           ]
         },
         {
-          "title": "Cy, who has left, still gives her feedback on the Technical interview she was on, now decided",
+          "title": "Cy, who has left, still gives her feedback on the technical interview she was on, now decided",
           "call": {
             "actor": "cy",
             "operation": "interview-feedback.give",
@@ -19754,7 +19754,7 @@
           ]
         }
       ],
-      "sourceHash": "e2c71f8368efb4a38b6cf4025638e58fe864a2930dc4d8eac5314b71d6963a08"
+      "sourceHash": "ed7d946a96ccbbabf97a1c9e23b521c4d94878bad23b3232e44b41923a3f6c69"
     },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
@@ -20742,7 +20742,7 @@
       "starts": "a technical round",
       "steps": [
         {
-          "title": "Ada opens Backend Engineer for one person",
+          "title": "Ada opens the engineering job for one person",
           "call": {
             "actor": "ada",
             "operation": "job-opening.create",
@@ -20849,7 +20849,7 @@
           ]
         },
         {
-          "title": "Ada schedules Pat's Technical with Olga, this afternoon from two to three",
+          "title": "Ada schedules Pat's technical interview with Olga, this afternoon from two to three",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -21049,7 +21049,7 @@
           ]
         },
         {
-          "title": "the interview reads back cleared, Pat's, at Technical",
+          "title": "the interview reads back cleared, Pat's, at the technical round",
           "call": {
             "actor": "ada",
             "operation": "interview.get",
@@ -21437,7 +21437,7 @@
           ]
         }
       ],
-      "sourceHash": "a201cf807d5188e7ee943543a464af9f73e3eac019de7ccad95e7fefd95c68bc"
+      "sourceHash": "687dd11e7827fecd2747b27d741a92e496ae25b98ee8ad9d88bcbead7af981d1"
     },
     "journeys/make-a-job-offer.ts": {
       "name": "make a job offer",
@@ -21561,7 +21561,7 @@
           ]
         },
         {
-          "title": "Ada adds the job title Dispatcher to Acme Logistics",
+          "title": "Ada adds a dispatcher's job title to Acme Logistics",
           "call": {
             "actor": "ada",
             "operation": "designation.create",
@@ -22624,7 +22624,7 @@
           ]
         }
       ],
-      "sourceHash": "40de855fc5f7d23080f8ae79a6242e69c0f4736dc02f28e747e0491fe0041006"
+      "sourceHash": "caaa5053e19a9cb14cd33338092f19b8c44440edd9a2beafa68303ea4375806e"
     },
     "journeys/mark-attendance.ts": {
       "name": "mark attendance",
@@ -23897,7 +23897,7 @@
           ]
         },
         {
-          "title": "Ada opens data analyst, in lower case, for one person",
+          "title": "Ada opens an analyst's job, in lower case, for one person",
           "call": {
             "actor": "ada",
             "operation": "job-opening.create",
@@ -24112,7 +24112,7 @@
           ]
         },
         {
-          "title": "Backend Engineer reads back for two",
+          "title": "the engineering job reads back for two",
           "call": {
             "actor": "ada",
             "operation": "job-opening.get",
@@ -24365,7 +24365,7 @@
           ]
         }
       ],
-      "sourceHash": "96863d892e928a5a024173f8692193a33362c22aafa0531cf1511df133e68cf4"
+      "sourceHash": "b854ab08ecffc38a0e7ff28dd409efbcd7e8c3eeef7d1c680c1a6cb09b4fae82"
     },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
@@ -26382,7 +26382,7 @@
           ]
         },
         {
-          "title": "Ada adds the round Technical to Acme Logistics",
+          "title": "Ada adds a technical round to Acme Logistics",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -26504,7 +26504,7 @@
           ]
         },
         {
-          "title": "Ada schedules Pat's Technical with Cy and Olga, ten to half past",
+          "title": "Ada schedules Pat's technical interview with Cy and Olga, ten to half past",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -26618,7 +26618,7 @@
           ]
         },
         {
-          "title": "Ada can't schedule Pat's Technical twice",
+          "title": "Ada can't schedule Pat's technical interview twice",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -26861,7 +26861,7 @@
           ]
         },
         {
-          "title": "Pat's Technical still can't be scheduled again, now the first is rejected",
+          "title": "Pat's technical interview still can't be scheduled again, now the first is rejected",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -26903,7 +26903,7 @@
           ]
         },
         {
-          "title": "Ada adds the round Culture, with nobody",
+          "title": "Ada adds a culture round, with nobody",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -27123,7 +27123,7 @@
           ]
         },
         {
-          "title": "Ada adds the round Final, with Cy",
+          "title": "Ada adds the final round, with Cy",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -27299,7 +27299,7 @@
           ]
         },
         {
-          "title": "Cy alone may interview Pat at Final, on a day still to come",
+          "title": "Cy alone may interview Pat at the final round, on a day still to come",
           "call": {
             "actor": "ada",
             "operation": "interview.create",
@@ -27510,7 +27510,7 @@
           ]
         }
       ],
-      "sourceHash": "f936bb005afa0e41cbeeae66b66d15389dfc2c3a89e4e702d7dafc704ce2c3d9"
+      "sourceHash": "0138b3772b31040da7d7ffa9c824bf14d6a9a7b2bd96161976f2f4f6e807345d"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -29784,7 +29784,7 @@
       "starts": "an outside employee",
       "steps": [
         {
-          "title": "Technical reads back with Olga",
+          "title": "the technical round reads back with Olga",
           "call": {
             "actor": "ada",
             "operation": "interview-round.get",
@@ -29885,7 +29885,7 @@
           ]
         },
         {
-          "title": "Ada can't add a second Technical",
+          "title": "Ada can't add a second technical round",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -29921,7 +29921,7 @@
           ]
         },
         {
-          "title": "Ada adds Panel, with Cy then Olga",
+          "title": "Ada adds a panel round, with Cy then Olga",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -30043,7 +30043,7 @@
           ]
         },
         {
-          "title": "Ada adds culture, in lower case, with nobody yet",
+          "title": "Ada adds a culture round, in lower case, with nobody yet",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -30112,7 +30112,7 @@
           ]
         },
         {
-          "title": "Acme Logistics may have its own Technical, with Bo",
+          "title": "Acme Logistics may have its own technical round, with Bo",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -30221,7 +30221,7 @@
           ]
         },
         {
-          "title": "Dee's company may have its own Technical too",
+          "title": "Dee's company may have its own technical round too",
           "call": {
             "actor": "dee",
             "operation": "interview-round.create",
@@ -30509,7 +30509,7 @@
           ]
         },
         {
-          "title": "Final, with Cy alone, is taken",
+          "title": "the final round, with Cy alone, is taken",
           "call": {
             "actor": "ada",
             "operation": "interview-round.create",
@@ -30558,7 +30558,7 @@
           ]
         },
         {
-          "title": "Technical still reads back with Olga, who was on it before she left",
+          "title": "the technical round still reads back with Olga, who was on it before she left",
           "call": {
             "actor": "ada",
             "operation": "interview-round.get",
@@ -30592,7 +30592,7 @@
           ]
         }
       ],
-      "sourceHash": "f49490b702fa59ae742e3493a2910c4d392d4d33c3345fc93017e48c64ffda22"
+      "sourceHash": "7184788a9391e1786b679de1db9e1f55998d5fa2d92aca4f96330618a12cb2c8"
     },
     "journeys/set-up-shift-types.ts": {
       "name": "set up shift types",

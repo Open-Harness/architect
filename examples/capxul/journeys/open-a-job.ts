@@ -41,7 +41,7 @@ export default Blueprint.journey("open a job", {
       spans({ absent: ["job-opening.create.insert"] }),
     ),
     s.step(
-      "Ada opens data analyst, in lower case, for one person",
+      "Ada opens an analyst's job, in lower case, for one person",
       s.ada.run(create, { designation: s.world.designation, jobTitle: "data analyst", vacancies: 1n }),
       expect((a) => a.jobOpening).toMatch(/^jop_[0-9a-z]+$/),
       emits(JobOpeningCreated, { jobOpening: s.last.jobOpening, company: s.world.company, vacancies: 1n }),
@@ -80,7 +80,7 @@ export default Blueprint.journey("open a job", {
       noEvents(),
     ),
     s.step(
-      "Backend Engineer reads back for two",
+      "the engineering job reads back for two",
       s.ada.run(get, { id: s.world.jobOpening }),
       expect((a) => [a.jobTitle, a.vacancies, a.state]).toEqual(["Backend Engineer", 2n, "open"]),
       noEvents(),

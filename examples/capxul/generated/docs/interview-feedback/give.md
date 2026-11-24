@@ -61,8 +61,8 @@ Starts from the world `an interview`.
 - **Olga can't give feedback on that one yet: its own day is judged.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-05`.
 - **nor Cy.** `cy` (signed in) calls and sends interview the last call's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackBeforeInterview, IF-002, carrying scheduledOn `2026-12-05`.
 - **Cy can't give feedback on it: she isn't one of its interviewers.** `cy` (signed in) calls and sends interview the last call's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackGiverNotInterviewer, IF-001.
-- **Olga, who gave feedback on Technical, may give it on Final too.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.
-- **Cy, who has left, still gives her feedback on the Technical interview she was on, now decided.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.
+- **Olga, who gave feedback on the technical round, may give it on the final round too.** `olga` (signed in) calls and sends interview the last call's interview, interviewer the world's employee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.
+- **Cy, who has left, still gives her feedback on the technical interview she was on, now decided.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Rejected`, and gets back an answer matching `^ifb_[0-9a-z]+$`.
 - **Cy can't give a second.** `cy` (signed in) calls and sends interview the world's interview, interviewer the world's secondEmployee, result `Cleared`, and is refused with FeedbackAlreadyGiven, IF-003.
 
 ### hire from a job opening

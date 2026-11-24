@@ -36,12 +36,12 @@ Read one interview-round by its id: company, roundName, interviewers, state.
 
 Starts from the world `an outside employee`.
 
-- **Technical reads back with Olga.** `ada` (role company.owner) calls and sends id the world's interviewRound, and gets back [the world's company, `Technical`, [the world's employee], `active`].
+- **the technical round reads back with Olga.** `ada` (role company.owner) calls and sends id the world's interviewRound, and gets back [the world's company, `Technical`, [the world's employee], `active`].
 - **Olga can't read it.** `olga` (signed in) calls and sends id the world's interviewRound, and is refused with NotAllowed, AR-001.
 - **it reads back with both, in the order given.** `ada` (role company.owner) calls and sends id the last call's interviewRound, and gets back [the world's company, `Panel`, [the world's secondEmployee, the world's employee], `active`].
 - **it reads back as she typed it, with nobody.** `ada` (role company.owner) calls and sends id the last call's interviewRound, and gets back [`culture`, []].
 - **it reads back in Acme Logistics.** `ada` (role company.owner) calls and sends id the last call's interviewRound, and gets back [the world's otherCompany, `Technical`, [the world's outsider]].
-- **Technical still reads back with Olga, who was on it before she left.** `ada` (role company.owner) calls and sends id the world's interviewRound, and gets back [`Technical`, [the world's employee]].
+- **the technical round still reads back with Olga, who was on it before she left.** `ada` (role company.owner) calls and sends id the world's interviewRound, and gets back [`Technical`, [the world's employee]].
 
 ## How to call
 

@@ -118,12 +118,12 @@ export default Blueprint.journey("give interview feedback", {
       noEvents(),
     ),
     s.step(
-      "Ada adds the round Culture",
+      "Ada adds a culture round",
       s.ada.run(createRound, { company: s.world.company, roundName: "Culture", interviewers: [] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
     ),
     s.step(
-      "and schedules Pat's Culture for Saturday 5 December, with Olga and Cy",
+      "and schedules Pat's culture interview for Saturday 5 December, with Olga and Cy",
       s.ada.run(schedule, {
         jobApplicant: s.world.jobApplicant,
         interviewRound: s.last.interviewRound,
@@ -147,12 +147,12 @@ export default Blueprint.journey("give interview feedback", {
       noEvents(),
     ),
     s.step(
-      "Ada adds the round Final",
+      "Ada adds the final round",
       s.ada.run(createRound, { company: s.world.company, roundName: "Final", interviewers: [] }),
       expect((a) => a.interviewRound).toMatch(/^irn_[0-9a-z]+$/),
     ),
     s.step(
-      "and schedules Pat's Final for today, with Olga alone",
+      "and schedules Pat's final interview for today, with Olga alone",
       s.ada.run(schedule, {
         jobApplicant: s.world.jobApplicant,
         interviewRound: s.last.interviewRound,
@@ -170,7 +170,7 @@ export default Blueprint.journey("give interview feedback", {
       noEvents(),
     ),
     s.step(
-      "Olga, who gave feedback on Technical, may give it on Final too",
+      "Olga, who gave feedback on the technical round, may give it on the final round too",
       s.olga.run(give, { interview: s.last.interview, interviewer: s.world.employee, result: "Rejected" }),
       expect((a) => a.interviewFeedback).toMatch(/^ifb_[0-9a-z]+$/),
       emits(InterviewFeedbackGiven, { interviewFeedback: s.last.interviewFeedback, interviewer: s.world.employee, result: "Rejected" }),
@@ -182,7 +182,7 @@ export default Blueprint.journey("give interview feedback", {
       noEvents(),
     ),
     s.step(
-      "Ada marks the Technical interview rejected, though Olga cleared Pat",
+      "Ada marks the technical interview rejected, though Olga cleared Pat",
       s.ada.run(rejectInterview, { interview: s.world.interview }),
       expect((a) => a.interview).toBe(s.world.interview),
       interviews.isIn(s.world.interview, "rejected"),
@@ -193,7 +193,7 @@ export default Blueprint.journey("give interview feedback", {
       expect((a) => a.relievingDate).toBe("2026-12-03"),
     ),
     s.step(
-      "Cy, who has left, still gives her feedback on the Technical interview she was on, now decided",
+      "Cy, who has left, still gives her feedback on the technical interview she was on, now decided",
       s.cy.run(give, { interview: s.world.interview, interviewer: s.world.secondEmployee, result: "Rejected" }),
       expect((a) => a.interviewFeedback).toMatch(/^ifb_[0-9a-z]+$/),
       emits(InterviewFeedbackGiven, { interviewFeedback: s.last.interviewFeedback, interview: s.world.interview, interviewer: s.world.secondEmployee, result: "Rejected" }),

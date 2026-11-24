@@ -44,7 +44,7 @@ Mark an interview rejected.
 
 Starts from the world `an interview`.
 
-- **Ada marks the Technical interview rejected, though Olga cleared Pat.** `ada` (role company.owner) calls and sends interview the world's interview, and gets back the world's interview.
+- **Ada marks the technical interview rejected, though Olga cleared Pat.** `ada` (role company.owner) calls and sends interview the world's interview, and gets back the world's interview.
 
 ### schedule an interview
 

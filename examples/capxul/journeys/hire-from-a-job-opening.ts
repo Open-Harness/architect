@@ -36,7 +36,7 @@ export default Blueprint.journey("hire from a job opening", {
   starts: "a technical round",
   steps: (s) => [
     s.step(
-      "Ada opens Backend Engineer for one person",
+      "Ada opens the engineering job for one person",
       s.ada.run(openJob, { designation: s.world.designation, jobTitle: "Backend Engineer", vacancies: 1n }),
       expect((a) => a.jobOpening).toMatch(/^jop_[0-9a-z]+$/),
       emits(JobOpeningCreated, { jobOpening: s.last.jobOpening, company: s.world.company, vacancies: 1n }),
@@ -50,7 +50,7 @@ export default Blueprint.journey("hire from a job opening", {
       applicants.isIn(s.last.jobApplicant, "open"),
     ),
     s.step(
-      "Ada schedules Pat's Technical with Olga, this afternoon from two to three",
+      "Ada schedules Pat's technical interview with Olga, this afternoon from two to three",
       s.ada.run(schedule, {
         jobApplicant: s.last.jobApplicant,
         interviewRound: s.world.interviewRound,
@@ -83,7 +83,7 @@ export default Blueprint.journey("hire from a job opening", {
       interviews.isIn(s.last.interview, "cleared"),
     ),
     s.step(
-      "the interview reads back cleared, Pat's, at Technical",
+      "the interview reads back cleared, Pat's, at the technical round",
       s.ada.run(getInterview, { id: s.last.interview }),
       expect((a) => [a.company, a.interviewRound, a.scheduledOn, a.fromTime, a.toTime, a.interviewers, a.state]).toEqual([
         s.world.company,
