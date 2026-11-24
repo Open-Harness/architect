@@ -112,8 +112,9 @@ said no Claude-led goal is running now.
   Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
   it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
   #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
-  `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. #939 and #928 (CX-takeover)
-  landed the same way. #928's board rows turned the `goals` sync red on `main` at `2cdfa9b3`: `webhook-doors` and Goal
+  `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
+  way: #939 (`check` refuses a role path that walks to nothing, and a `Blueprint.todo` in `allowed` is a blank), #943
+  (exact decimals and two-way links, the build) and #928 (CX-takeover). #928's board rows turned the `goals` sync red on `main` at `2cdfa9b3`: `webhook-doors` and Goal
   16's rows overlapped in `packages/host-cloudflare/src/modules/store`. #948 narrowed `webhook-doors`' Touches to
   `inbound/`, as CX-takeover says ("inbound/ stays Goal 17's"), and the sync is green again at `f72338b2`. The row
   still leaves out the doors' other homes from #747 (`projections/src/modules/server`, compiler mounts and the
