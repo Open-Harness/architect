@@ -152,6 +152,22 @@
       },
       "earlier": []
     },
+    "CO-901": {
+      "name": "CompanyNotFound",
+      "owner": "company",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "com"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyNotFound"
+        }
+      },
+      "earlier": []
+    },
     "DE-001": {
       "name": "DepartmentNameTaken",
       "owner": "department",
@@ -246,6 +262,58 @@
       "wire": {
         "effect": {
           "tag": "DesignationNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "EC-001": {
+      "name": "ClaimantNotActive",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimantNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "EC-002": {
+      "name": "EmployeeNotInCompany",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "EmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EC-003": {
+      "name": "ClaimHasNoExpenses",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimHasNoExpenses"
+        }
+      },
+      "earlier": []
+    },
+    "EC-900": {
+      "name": "ExpenseClaimNotDraft",
+      "owner": "expense-claim",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimNotDraft"
         }
       },
       "earlier": []
@@ -368,6 +436,132 @@
       "wire": {
         "effect": {
           "tag": "EmployeeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "EM-901": {
+      "name": "EmployeeNotFound",
+      "owner": "employee",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "emp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "ET-001": {
+      "name": "ExpenseTypeTaken",
+      "owner": "expense-claim-type",
+      "from": "blueprint/things/expense-claim-type/errors.ts",
+      "fields": {
+        "expenseType": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseTypeTaken"
+        }
+      },
+      "earlier": []
+    },
+    "ET-900": {
+      "name": "ExpenseClaimTypeNotActive",
+      "owner": "expense-claim-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "ET-901": {
+      "name": "ExpenseClaimTypeNotFound",
+      "owner": "expense-claim-type",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "ect"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimTypeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "EX-001": {
+      "name": "SanctionedOverClaimed",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {
+        "amount": {
+          "value": "money",
+          "bits": 128,
+          "signed": false,
+          "asset": {
+            "token": "usdc"
+          }
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SanctionedOverClaimed"
+        }
+      },
+      "earlier": []
+    },
+    "EX-002": {
+      "name": "ExpenseTypeNotInCompany",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ExpenseTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EX-003": {
+      "name": "ClaimNotDraft",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "EX-900": {
+      "name": "ExpenseNotActive",
+      "owner": "expense",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseNotActive"
         }
       },
       "earlier": []

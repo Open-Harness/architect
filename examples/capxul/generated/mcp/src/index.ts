@@ -24,6 +24,14 @@ import { declaration as employeeHire } from "../../api/src/employee/hire.ts";
 import { declaration as employeeRelieve } from "../../api/src/employee/relieve.ts";
 import { declaration as employeeGradeCreate } from "../../api/src/employee-grade/create.ts";
 import { declaration as employeeGradeGet } from "../../api/src/employee-grade/get.ts";
+import { declaration as expenseAdd } from "../../api/src/expense/add.ts";
+import { declaration as expenseGet } from "../../api/src/expense/get.ts";
+import { declaration as expenseClaimApprove } from "../../api/src/expense-claim/approve.ts";
+import { declaration as expenseClaimCreate } from "../../api/src/expense-claim/create.ts";
+import { declaration as expenseClaimGet } from "../../api/src/expense-claim/get.ts";
+import { declaration as expenseClaimReject } from "../../api/src/expense-claim/reject.ts";
+import { declaration as expenseClaimTypeCreate } from "../../api/src/expense-claim-type/create.ts";
+import { declaration as expenseClaimTypeGet } from "../../api/src/expense-claim-type/get.ts";
 import { declaration as holidayAdd } from "../../api/src/holiday/add.ts";
 import { declaration as holidayGet } from "../../api/src/holiday/get.ts";
 import { declaration as holidayListAddWeeklyOff } from "../../api/src/holiday-list/add-weekly-off.ts";
@@ -56,6 +64,14 @@ export const catalog = {
   "employee.relieve": { description: "Record that an employee has left the company, on the day they were relieved.", operation: employeeRelieve, states: ["active","left"], move: {"key":"relieve","from":["active"],"to":["left"],"emits":"EmployeeRelieved"} },
   "employee-grade.create": { description: "Add a grade to a company. Refuses EmployeeGradeNameTaken when another employee grade holds this company and grade name.", operation: employeeGradeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmployeeGradeCreated"} },
   "employee-grade.get": { description: "Read one employee-grade by its id: company, gradeName, state.", operation: employeeGradeGet, states: ["active"] },
+  "expense.add": { description: "Add one expense to a claim still in draft.", operation: expenseAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"ExpenseAdded"} },
+  "expense.get": { description: "Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.", operation: expenseGet, states: ["active"] },
+  "expense-claim.approve": { description: "Approve a claim, owing the employee what was sanctioned.", operation: expenseClaimApprove, states: ["draft","approved","rejected"], move: {"key":"approve","from":["draft"],"to":["approved"],"emits":"ExpenseClaimApproved"} },
+  "expense-claim.create": { description: "Start an employee's claim for expenses the company pays back.", operation: expenseClaimCreate, states: ["draft","approved","rejected"], move: {"key":"create","from":[],"to":["draft"],"emits":"ExpenseClaimCreated"} },
+  "expense-claim.get": { description: "Read one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.", operation: expenseClaimGet, states: ["draft","approved","rejected"] },
+  "expense-claim.reject": { description: "Reject a claim, so nothing of it is paid back.", operation: expenseClaimReject, states: ["draft","approved","rejected"], move: {"key":"reject","from":["draft"],"to":["rejected"],"emits":"ExpenseClaimRejected"} },
+  "expense-claim-type.create": { description: "Add a kind of expense a company pays back. Refuses ExpenseTypeTaken when another expense claim type holds this company and expense type.", operation: expenseClaimTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ExpenseClaimTypeCreated"} },
+  "expense-claim-type.get": { description: "Read one expense-claim-type by its id: company, expenseType, state.", operation: expenseClaimTypeGet, states: ["active"] },
   "holiday.add": { description: "Add one day off to a holiday list. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"HolidayAdded"} },
   "holiday.get": { description: "Read one holiday by its id: holidayList, holidayDate, description, state.", operation: holidayGet, states: ["active"] },
   "holiday-list.add-weekly-off": { description: "Make every given weekday in a holiday list a day off. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListAddWeeklyOff, states: ["active"], move: {"key":"addWeeklyOff","from":["active"],"to":["active"],"emits":"WeeklyOffAdded"} },
