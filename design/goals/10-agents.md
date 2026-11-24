@@ -5,7 +5,7 @@ milestone: "Goal 10: agents"
 release: "1.0"
 branch: goal/agents
 base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: null        # claude | codex | opencode | amp, set by the lead when it starts
   model: null          # the model id it runs on
@@ -14,8 +14,11 @@ done_check: nx run e2e:agents
 owns:
   - packages/agents/
   - packages/anthropic/
+  - packages/openai/
   - packages/stand-in-model/
   - e2e/agents/
+  - e2e/fixtures/agents/
+  - packages/prove/src/modules/agent-world/
   - design/decisions/M4-agents.md
   - design/goals/10-agents.md
 slices:
@@ -28,7 +31,7 @@ slices:
   - "7 · Tools made from an app's operations (after 4)"
   - "8 · Run telemetry (after 4)"
   - "9 · One host per run, resumed after eviction (after 4)"
-  - "10 · The agents feature (after 2, 9)"
+  - "10 · The agents feature (after 2, 8, 9)"
   - "11 · The portal's chat on a durable agent (after 10)"
   - "12 · Agent waits on the world's clock (after 9)"
 ---
@@ -48,8 +51,8 @@ Branch `goal/agents`, cut from `goal/stage-1`. Written 21 November 2026 by the �
 ## The goal, in plain words
 
 - **In one sentence:** Let an app run an AI agent that keeps going through crashes and restarts, uses the app's own actions as its tools, and is checked by the same rules as a person.
-- **Why:** The vault's agent spends under its own role, the portal needs a chat, and both need a run that never loses its place or repeats a paid model call.
-- **When it's done, you can:** start an agent on a task, stop the machine in the middle of its turn, and watch it resume with no second model call; and chat with an app in its portal.
+- **Why:** The vault's agent spends under its own role, the portal needs a chat, and both need a run that never loses its place or pays twice for a model answer it already has.
+- **When it's done, you can:** start an agent on a task, stop the machine in the middle of its turn, and watch it resume without asking the model again for any answer it already had; and chat with an app in its portal.
 - **It is:** the durable agent run, adapters for real models and a free local stand-in, tools made from the app's actions, and the portal's chat built on it.
 - **It isn't:** the builder's own agents or the bench (they come later), or any change to who may do what: an agent is a caller like any other.
 - **Done when:** the agents tests pass, a chat resumes after eviction, and an agent's retry moves when a test world's clock is moved.
@@ -77,7 +80,7 @@ table. "After" names this goal's own earlier slices; "Waits on" names work anoth
 | 7 | Tools made from an app's operations | M4.07 | 4 | — |
 | 8 | Run telemetry | M4.08 | 4 | — |
 | 9 | One host per run, resumed after eviction | M4.09 | 4 | — |
-| 10 | The agents feature | M4.10 | 2, 9 | — |
+| 10 | The agents feature | M4.10 | 2, 8, 9 | — |
 | 11 | The portal's chat on a durable agent | M4.16 | 10 | M1.24 (Goal 3); M1.34 is ✅ on `goal/stage-1`; mounting it in the portal client is an ask to Goal 6 |
 | 12 | Agent waits on the world's clock | M4.26 | 9 | `Timers` across processes, M8.07 (Goal 9) |
 
@@ -116,4 +119,21 @@ The rules every goal shares, so this brief stays short. Where they and this file
 
 ## Where it stands
 
-Not started: brief written and branch cut on 21 November 2026. The lead rewrites this section at every slice merge.
+23 November 2026, parked under K42 (section 7). The lead stopped before updating this after K42, so the lander updated
+it at the `goal/agents` landing (#793). Its open slices are board items at their stage; no lead holds them.
+
+- **Landed in `main`** with #793: the sync with stage 1 (#460) and slice 1, `design/decisions/M4-agents.md` (#469).
+  K40 (22 November) has since changed M4-agents calls 1 and 2. An agent is its own thing, `Agent`, living in its own
+  actor and fed through the outbox, not a run that only a person starts. The M4.10 row now reads that way, and Ask
+  #535 is answered by those edits.
+- **Open, as board items:**
+  - Slice 2's journeys, #490 (draft). Its review passed after three blockers. Two are fixed in the decision, and the
+    request-key journey is still to fix (the same key with another payload or another caller). Its proofs 2 and 3 wait
+    on M4.10 (Snag #489). They also need rewriting to K40's `Agent` shape.
+  - Slices 3 and 4's checks, part-written and unreviewed, saved as WIP on `goal-10/s3-runner-check` and
+    `goal-10/s4-durable-check` (no pull requests). The `e2e/agents/` scaffolding (`goal-10/e2e-scaffold`) rides in
+    with #490.
+  - Slice 6 needs a 640 MB model and llama.cpp downloaded into a cache. Ask before downloading.
+- **Who picks it up.** Under K42 the superagent (Goal 17) takes agents first, since it pulls them for its
+  Tickets-and-agents and main-agent slices (K40). A goal that resumes this work bases on `main`, not `goal/stage-1`,
+  which is retired.

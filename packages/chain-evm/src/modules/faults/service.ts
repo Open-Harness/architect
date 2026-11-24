@@ -56,6 +56,16 @@ export const decodeRevert = (
     });
   });
 
+const DEFINITE: ReadonlySet<string> = new Set(["funds", "rejected", "revert", "panic", "signing", "configuration", "unsupported"]);
+
+/**
+ * Whether a failure of `submit` or `fill` is final for that call: the node refused it (or it never could be sent), so sending the same
+ * bytes again cannot help, and a port built with `keepOnReject` has left the nonce held by its owner. A transport error or a timeout is
+ * not: the transaction may be on the node. The port alone decides this; callers do not classify errors themselves.
+ */
+export const isDefinite = (error: unknown): boolean =>
+  error instanceof ChainRefusal || (error instanceof ChainFault && DEFINITE.has(error.kind));
+
 export const mapRpcError = (
   error: unknown,
   program?: Address,

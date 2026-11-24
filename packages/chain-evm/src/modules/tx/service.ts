@@ -6,6 +6,7 @@ import { rpcFault, validateRefusalLock } from "../faults/service.ts";
 import { ChainFault } from "../faults/types.ts";
 import { makeTransactionManager } from "./internal/manager.ts";
 import { makeRpc } from "./internal/rpc.ts";
+import { probeSubmission } from "./internal/probe.ts";
 import { trackTransaction } from "./internal/tracker.ts";
 import type { ChainPort, ChainPortOptions } from "./types.ts";
 
@@ -34,5 +35,6 @@ export const makeChainPort = (options: ChainPortOptions): Effect.Effect<ChainPor
       intent === undefined ? undefined : follow(intent.source, level),
       "depth" in level ? level.depth : undefined,
     );
-    return { prepare: manager.prepare, simulate: manager.simulate, read: manager.read, sign: manager.sign, submit: manager.submit, replace: manager.replace, track, follow, release: manager.release };
+    return { prepare: manager.prepare, simulate: manager.simulate, read: manager.read, sign: manager.sign, submit: manager.submit, replace: manager.replace, track, follow, release: manager.release, resume: manager.resume, hold: manager.hold, fill: manager.fill, reservationOf: manager.reservationOf,
+      probe: (submission) => probeSubmission(rpc, timers, manager.nonces.nonceAtHead, submission) };
   });

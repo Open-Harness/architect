@@ -324,6 +324,7 @@ import { PluggedIn } from "../../generated/sdk/src/index.ts";
 import { PluggedInHost } from "../../generated/web/react.tsx";
 import { App } from "./app.tsx";
 
+// Superseded by WEB-host-seam, 23 November 2026: `WebHost.make({ client: PluggedIn.layer({ url: location.origin }), ask })`, and the next line's ask takes `{ action, description, args }`.
 const host = WebHost.make({ client: PluggedIn.layer({ baseUrl: location.origin }), session: WebHost.session.cookie });
 const agent = createAgent({ allow: (step, { signal }) => (step.confirm ? host.ask(step.confirm, { signal }) : true) });
 registerTools(agent, { allow: () => true });

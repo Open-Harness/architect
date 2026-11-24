@@ -386,7 +386,7 @@ The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m
 `11-m6-09-follower.test.ts`: two Durable Object classes, `Relayer` and `Follower`, exported from
 `@orthograph/host-cloudflare`. What follows settles what that seam left open.
 
-- **The relayer replaces a dropped transaction on its own.** Its alarm notices a submission the node no longer holds
+- **The relayer replaces a dropped transaction on its own.** (Superseded by M6-relayer-rebroadcast, 23 November 2026: it rebroadcasts the same bytes; replacement is later.) Its alarm notices a submission the node no longer holds
   and resends it at the same nonce with a higher fee. `reconcile` does the same work on call, but a relayer that only
   replaces when `reconcile` is called is wrong. Each actor's alarm runs at the `pollIntervalMs` its `configure` is given;
   an actor configured with none sets no alarm, so a check that drives `poll` or `reconcile` by hand is never raced.
@@ -407,6 +407,9 @@ The actors' seam is the checks author's, stated at the top of `e2e/on-chain/10-m
   23 November 2026). A replay after a restart may call the sink again with an id it has taken; `seen` is harmless, and
   what may never happen twice is `accepted` for one id.
 - **A follower configured for another source starts over, and shows its faults.** `configure` keeps the checkpoint when the source is the same (chain, contract, event and starting block) and clears it when the source differs, since that is a new stream; a new `rpcUrl` or `depth` for the same source keeps it. A failed step keeps the checkpoint, and `health()` reports the last fault (its tag and kind, never a URL or key), how many in a row and when, until a step succeeds (🔍 on #679, 23 November 2026).
+- **The relayer writes before it sends, and never leaves a gap.** A submission is stored, with its signed bytes, before it is sent, so a crash cannot orphan it; the alarm retries anything whose send was uncertain, and a nonce left unusable by a definite failure is filled with a zero-value transfer to the relayer itself, so the nonces after it still go through (🔍 on #677, 23 November 2026).
+- **The relayer's store owns its nonces.** A nonce is reserved for exactly one stored submission from the moment it is taken, before anything that can fail; only that submission's reservation is ever released or replaced, and only once the node has passed the nonce (review-loop reset on #677, 23 November 2026).
+- **The port alone decides whether a refusal is definite.** `chain-evm`'s `submit` returns a refusal it has acted on (the nonce reset or left held by its owner) as a `ChainFault` of kind `rejected`, or another final kind, and `isDefinite` says which kinds are final; the relayer never classifies an error itself (round 5 on #677, 23 November 2026).
 
 ## The budgets example, as the journey author will write it
 

@@ -70,7 +70,7 @@ export const Secret = Blueprint.visibility.secret(Blueprint.text({ max: 512 }));
 A value is a schema with a name and a visibility. Orthograph gives you five makers, and `Blueprint.value` names
 anything else, such as an Effect `Schema.Literals`:
 
-```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=58-82
+```ts file=packages/orthograph/src/modules/values/types.ts name=ValuesApi lines=59-85
 export interface ValuesApi {
   /** Name a type: `export const Amount = Blueprint.value(Blueprint.uint(128))`. */
   readonly value: <S extends Schema.Constraint>(schema: S | Value<S>) => Value<S>;
@@ -82,6 +82,8 @@ export interface ValuesApi {
   readonly text: (options?: { readonly max?: number }) => Value<Schema.String>;
   /** A moment: stored as a UTC instant, written on the wire, in answers, events and reads as ISO 8601 with milliseconds (`"2027-01-10T09:00:00.000Z"`). A move made by time anchors on a field of this type (M8-checks, call 1). */
   readonly instant: () => Value<Schema.String>;
+  /** A calendar day with no time and no zone: `YYYY-MM-DD` in code and on the wire, a day the calendar has (`"2024-02-29"`). `Days` does its arithmetic. */
+  readonly day: () => Value<Schema.String>;
   /** A reference carrying a thing’s declaration name and the id of one instance. */
   readonly refAny: () => Value<Schema.Struct<{ readonly declaration: Schema.String; readonly id: Schema.String }>>;
   /**
@@ -97,6 +99,11 @@ export interface ValuesApi {
   readonly email: () => Value<Schema.String>;
 }
 ```
+
+A day is not a moment. `Blueprint.day()` holds a calendar day as `YYYY-MM-DD`, in code and on the wire, so a due day or
+a birthday never shifts with the zone it is read in. `Days`, imported beside `Blueprint`, does a day's arithmetic
+without a clock: `Days.weekday("2027-01-04")` is `"Monday"`, `Days.add(day, 30)` moves it, and `Days.between(from, to)`
+counts the days from one to the other. A chain store can't hold a day, as it can't hold an instant.
 
 Values are named for three reasons:
 

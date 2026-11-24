@@ -2,6 +2,7 @@ import { DateTime, Option, Schema } from "effect";
 import type { Field } from "#modules/things/types.js";
 import type { MoneyApi, MoneyOptions, Value, ValueMeta, ValuesApi } from "./types.ts";
 import { whole } from "./internal/wire.ts";
+import { Days, isRealDay } from "./internal/days.ts";
 
 const isValue = (x: unknown): x is Value =>
   typeof x === "object" && x !== null && (x as { kind?: unknown }).kind === "value";
@@ -51,6 +52,7 @@ export const Values: ValuesApi = {
     return described(Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(max)), { type: "text", max });
   },
   instant: () => described(Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/), Schema.makeFilter(isRealInstant, { description: "a real instant, ISO 8601 with milliseconds" })), { type: "instant" }),
+  day: () => described(Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}$/), Schema.makeFilter(isRealDay, { description: "a day the calendar has, YYYY-MM-DD" })), { type: "day" }),
   account: () => described(Schema.String.check(Schema.isPattern(CAIP10)), { type: "account" }),
   money,
   refAny: () =>
@@ -61,4 +63,4 @@ export const Values: ValuesApi = {
   email: () => Object.freeze({ ...described(Schema.String.check(Schema.isMaxLength(254), Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)), { type: "text", max: 254 }), format: "email" as const }),
 };
 
-export { isValue };
+export { isValue, Days };

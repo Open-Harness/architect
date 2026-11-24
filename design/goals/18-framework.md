@@ -59,7 +59,7 @@ Milestone `Goal 18: the framework`, label `release:1.0`.
 - K42, then K43 (what Capxul is), K39 and K40 (the superagent), K38 (early landing), `docs/canon/status.md` and
   `.agents/skills/kanban/STATE.md`.
 - The `conductor`, `threads`, `github` and `reviewer` skills. Use the conductor's steps for starting, briefing and
-  landing threads; where the conductor skill and K42 disagree, K42 wins, and slice 2 rewrites the skill whole.
+  landing threads; where the conductor skill and K42 disagree, K42 wins (the skill follows K42 since slice 2).
 
 ## The slices
 
@@ -101,32 +101,32 @@ Each round:
 
 ## Where it stands
 
-23 November 2026, about 16:40 UTC. Running since 23 November in Claude Code (claude-opus-5-5), in the session that was
-the 🎼 conductor. The lander, Goal 19, runs as its own thread.
+24 November 2026, about 00:30 UTC. Running since 23 November in Claude Code (claude-opus-5-5), in the session that was
+the 🎼 conductor. The lander, Goal 19, runs as its own thread and in Amp.
 
-**Slice 1, the goals K42 stops, wound down: under way.**
+**Slice 1, the goals K42 stops, wound down: done.**
 
-- **The stop message** went to each goal K42 section 7 winds down: to the leads' threads of Goals 3, 4, 6, 8, 9, 10,
-  11, 12 and 14, and as a comment on the goal issues of Goals 5 (#309) and 15 (#416), whose leads aren't reachable from
-  this harness. Goals 8, 10, 11 and 12 are parked (#472, #469, #726, #499). Goals 3, 4, 6, 9 and 14 are landing what K42
-  names for them first.
-- **The 34 open Ask issues are sorted** (33 at K42's count, and #727 since):
-  - 12 the superagent builds (case 3), moved to Goal 17's milestone: #476 (the web projection, for its pages), #477,
-    #480, #531 to #536, #538, #595 and #596.
-  - 4 Capxul builds (case 3), moved to Goal 16's milestone: #475 (the chain slices M6.02 and M6.15), #484, #485 and #486.
-  - 6 Goal 18 keeps as items: #462 (the workflow decision, still to reach `main`), #474 (adapters from an ABI), #542 (the
-    npm publish hand-over), #623 (two slow M1 checks), and two snags: #493, the one snag for staging prefixes that
-    collide (#501 and #727 closed as its duplicates), and #674, a recast actor changing how a starting world's setup
-    runs in `prove`.
-  - 3 closed as done: #465, #473 and #481.
-  - 3 closed as no longer applying: #495 and #496 (stage 4 on Aztec, parked with Goal 14), and #478, whose wallet
-    linking is carried by #486.
-  - 4 stay open until the winding-down pull request that answers them lands: #680 (#697), #662 (#692), and #464 and
-    #467 (#704).
-  Until slice 2's board exists, an open issue is an item's only record, so nothing with work left in it is closed.
-  None is case 2: no two running goals have overlapping claims yet.
-- **Goal 7's spike (#294)** goes to the lander to land in `main` for the record, because Capxul pulls Safe (K43).
-- **Left for slice 1:** each winding-down goal's last pull request merged and its brief parked; the lander lands their
-  finished work (its slice 2).
+- Every goal K42 section 7 names is parked on `main`: Goals 3, 4, 6, 8, 9, 10, 11, 12 and 14 by their leads; Goals 5, 13
+  and 15 by Goal 18 (#779), since their leads stopped without parking and had nothing in review. Goal 7 is done.
+- The lander brought their finished work into `main`: #771 (stage 1 retired), #774 (the portal), #777 (workflows, wallets,
+  the club), #778 (the relayer, kept at building by snag #784) and #785 (the UI layer).
+- The 34 Ask issues open on 23 November are sorted: case 3 to Goals 17 and 16, Goal 18's own as board items, the rest closed as done or
+  no longer applying. With the board live, the asks that describe an item were adopted or folded into its issue (below),
+  and #475, #486 and #749 closed with pointers.
 
-**Slice 2, the board:** not started.
+**Slice 2, the board: done.**
+
+- `docs/canon/status.md`'s capability map is 116 rows, one per item: stage, who pulled it, release, milestone, lane,
+  Touches, Needs and evidence (#780, #791). "Built" is K42's: proved by an app's journeys (Plugged In's for the core).
+- `tools/github/sync.mjs --board` writes one issue per row, found by its marker; a row adopts a `kind:ask` issue or folds
+  duplicates into it, never a snag, claim or decision (#791, #792). The `goals` workflow runs it on every push to `main`
+  and every three hours; its first run wrote the 116 issues, adopted 16 asks and folded 3 duplicates.
+- The Project "Orthograph" (https://github.com/orgs/Open-Harness/projects/1) has Stage, Pulled by, Release, Lane, Kind,
+  Status, Start and End, a view per goal, and each app milestone's due date as a forecast recomputed every run.
+- The workflow has no Project token (no `ORTHOGRAPH_PROJECT_TOKEN` secret), so the Project's fields are filled by Goal 18's
+  local `--goal-branches --board --project --apply` each round, until Aaron grants one. The first fill stopped on a
+  `claude-code` harness; #902 maps it and skips, red, any value the Project has no option for.
+- The `conductor` and `github` skills say K42's loop, claims and board (#792).
+
+**Slice 3, the loop: next.** The first round ranks `ortho new` for an app (M2.09), `ortho add` (M2.14, M2.15), adapters
+from an ABI (#474) and the npm preview (M1.51), against what Goals 17 and 16 wait on now.
