@@ -118,6 +118,11 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
 - **What prove does with it.** prove posts `args` as JSON to `<ORTHO_STAND_<MOUNT>>/_stand/<name>`. A 2xx JSON answer is
   the step's answer (`s.last`). A non-2xx fails the step, naming the mount, the command and the status. So does a mount with
   no stand-in running.
+- **Its edges** (#995 gap 3's checks, 25 November 2026). `args` are resolved as an operation's payload is, so a later step
+  can send what an earlier one answered (`s.last.token`), and they go once, as `application/json`, to the mount's own
+  stand-in. The step's checks judge the answer, as an operation step's do. A stand-call runs no operation, so, like a clock
+  step, it expects no span, and the compiler's journey reader skips it as it skips a clock step. A mount with no stand-in
+  running sends nothing anywhere.
 
 Gap 4's call, an event to an app operation, is made after gap 1's checks are clear, and is added here.
 

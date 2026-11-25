@@ -1,0 +1,5 @@
+# #995 gap 3's checks (09-journey-stand-calls.test.ts, G16-adapter-mounts call 4), red until a journey reaches a mount's stand-in with Stand.command; they also need gap 2's stand-ins (call 3). A builder only deletes lines (G9).
+m2/09-journey-stand-calls.test.ts > 09 a journey reaches a mount's stand-in > a mount with no stand-in running fails the step, naming the mount and the command, and nothing is sent
+m2/09-journey-stand-calls.test.ts > 09 a journey reaches a mount's stand-in > a non-2xx answer fails the step, naming the mount, the command and the status
+m2/09-journey-stand-calls.test.ts > 09 a journey reaches a mount's stand-in > a stand-call POSTs its args as JSON to the mount's own stand-in at /_stand/<name>; the answer is judged and is s.last for the next step
+m2/09-journey-stand-calls.test.ts > 09 a journey reaches a mount's stand-in > a stand-call's checks judge its answer: one the answer does not meet fails the step
