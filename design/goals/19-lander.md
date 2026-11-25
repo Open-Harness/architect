@@ -85,7 +85,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-25 November 2026, about 01:10 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
+25 November 2026, about 04:25 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
 minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
 said no Claude-led goal is running now.
 
@@ -100,8 +100,8 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Nine Capxul rounds have landed. `goal/capxul` is ahead of `main` only by
-  #991, Goal 16's merge of `main` into it:
+- **Slice 3, the landing loop, is running.** Ten Capxul rounds have landed, and `goal/capxul` is 0 commits ahead of
+  `main`:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -117,6 +117,9 @@ said no Claude-led goal is running now.
   - #990 brought slice 8e's recruitment, at `2a22de48`: #982, the checks, and #985, the build. #982 had no 🔍 posted,
     so the lander's 🔍 tested it: all six recruitment journeys fail on blank handlers, and each of 12 planted wrong
     builds fails a named step.
+  - #1013 brought slice 8f's employee moves, at `160f7893`: #1000, the checks (with CX-employee-moves), and #1009, the
+    build, with #991 and #1005 (Goal 16's merges of `main`). #1000 had no 🔍 posted either, so the lander's 🔍 tested it:
+    on blank handlers only the four 8f journeys fail, and each of 13 planted wrong builds fails a named step.
 
   Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
   it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
@@ -153,9 +156,12 @@ said no Claude-led goal is running now.
   #908 (`e2e-layer1` check 4 fails at random; it turned `main` red at `06877509` and #919 red at `3822d439`,
   and a rerun passed each time) and #944 (host-cloudflare `entry.test.ts` "a spawn has a token of its own" fails at
   random). Two tests in that file fail at random: "a spawn has a token of its own" (at `4068d588`, on `main` at
-  `6f77a26a` and on #993 at `e5087506`) and "is counted from arrival …" (at `9a8601a6`, and on #993's rerun at
-  `e5087506`). Reruns passed at `4068d588`, `9a8601a6` and, on the second rerun, `e5087506`; `main` went green again
-  on its next commit after `6f77a26a`. The lander asked Goal 18 on #718 to rank #944 up. `logbook`'s
-  `local/routes.test.ts` failed once on #948 and passed on rerun.
+  `6f77a26a` and on #993 at `e5087506`) and "is counted from arrival …" (at `9a8601a6`, on #993's rerun at
+  `e5087506`, and on `main` at `85ee3707` and `765ee8dd`). Reruns passed at `4068d588`, `9a8601a6`, `765ee8dd` and, on
+  the second rerun, `e5087506`; `main` went green again on its next commit after `6f77a26a` and after
+  `85ee3707`. The lander asked Goal 18 on #718 to rank #944 up. #1008: projections' `decimal-doors.test.ts` makes
+  scratch folders inside `packages/projections/.ortho/`, and `compiler`'s role-paths test, reading that package through
+  acme, failed on one that had gone, on `main` at `765ee8dd`. `logbook`'s `local/routes.test.ts` failed once on #948
+  and passed on rerun.
 - **Next:** each round lands what the app branches have merged since, and tells every running goal after each
   landing.
