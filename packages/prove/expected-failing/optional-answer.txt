@@ -1,3 +1,4 @@
-# #1018's checks (optional-answer.test.ts): red until prove's answer-shape eval accepts an optional answer field with no value. A builder only deletes lines (G11).
-src/modules/evals/optional-answer.test.ts > answer shape: an optional answer field with no value (#1018) > passes a root account whose answer and span have neither optional field
+# #1018's checks (optional-answer.test.ts): red until prove's answer-shape eval, recorded and live, accepts an optional answer field with no value. A builder only deletes lines (G11).
+src/modules/evals/optional-answer.test.ts > answer shape: an optional answer field with no value (#1018) > passes a root whose answer and span have neither optional field
 src/modules/evals/optional-answer.test.ts > answer shape: an optional answer field with no value (#1018) > passes an answer with one optional field and not the other
+src/modules/evals/optional-answer.test.ts > answer shape: an optional answer field with no value (#1018) > passes it live, from the span alone, with no response
