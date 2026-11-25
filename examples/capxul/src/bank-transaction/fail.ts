@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/bank-transaction/verbs/fail.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bank-transaction/fail.handler.ts";
 
 /**
@@ -42,17 +41,14 @@ import type { Handler } from "../../generated/api/src/bank-transaction/fail.hand
  *   once it answers, it writes TransferFailed: transaction from the answer, state from the payload;
  *   the call is the span bank-transaction.fail, and its commit bank-transaction.fail.commit.
  */
-const fail: Handler = (_payload, { steps, move }) =>
+const fail: Handler = ({ transaction }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bank-transaction.fail.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
+    // Step update: database, span bank-transaction.fail.update. Bridge couldn't pay the transfer: the
+    // state changes, and how it ended travels in the event alone.
     // The move fail, from pending, to failed.
-    yield* move();
+    yield* steps.update(move());
 
-    return {
-      transaction: yield* Handlers.blank("transaction, a bank-transaction.id"),
-    };
+    return { transaction };
   });
 
 export default fail;

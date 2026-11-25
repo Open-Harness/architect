@@ -1,10 +1,15 @@
 // Scaffolded from blueprint/things/bank-transaction/verbs/send.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Clock, Effect } from "effect";
+import { Days } from "orthograph";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/bank-transaction/send.handler.ts";
+import { BankAccount } from "../../blueprint/things/bank-account/thing.ts";
+import { BankTransaction } from "../../blueprint/things/bank-transaction/thing.ts";
 
 const { AccountClosed, CurrencyNotHeld, NothingToSend } = Errors.declared;
+
+const DAY_MS = 86_400_000;
 
 /**
  * bank-transaction.send: Send money out of a company's bank account to a payee, through Bridge.
@@ -49,35 +54,53 @@ const { AccountClosed, CurrencyNotHeld, NothingToSend } = Errors.declared;
  *   once it answers, it writes TransferSent: transaction from the answer, account from the payload, withdrawal from the bank-transaction as the call left it;
  *   the call is the span bank-transaction.send, and its commit bank-transaction.send.commit.
  */
-const send: Handler = (_payload, { steps, move, id }) =>
+const send: Handler = ({ account, amount, currency, party }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span bank-transaction.send.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Step load: database, span bank-transaction.send.load. The account the money leaves: its state, its currency and
+    // its company.
+    const held = yield* steps.load(records.find(BankAccount, account));
+    if (!held) return yield* Effect.die(new Error(`bank account ${account} was read for the role check and then not found`));
 
-    // AccountClosed: exit 41, BT-001.
-    if (yield* Handlers.blank<boolean>("refuse AccountClosed when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AccountClosed was refused"));
-      return yield* new AccountClosed({
-        account: yield* Handlers.blank("AccountClosed.account, a bank-transaction.account"),
-      });
+    // The refusals in CX-bridge's order: a closed account before its currency, its currency before the amount.
+    // AccountClosed: exit 41, BT-001. Bridge has deactivated the virtual account.
+    if (held.state === "closed") {
+      yield* Effect.logInfo(`bank account ${account} is closed`);
+      return yield* new AccountClosed({ account });
     }
 
-    // CurrencyNotHeld: exit 42, BT-002.
-    if (yield* Handlers.blank<boolean>("refuse CurrencyNotHeld when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why CurrencyNotHeld was refused"));
-      return yield* new CurrencyNotHeld({
-        currency: yield* Handlers.blank("CurrencyNotHeld.currency, a bank-transaction.currency"),
-      });
+    // CurrencyNotHeld: exit 42, BT-002. Each Bridge virtual account takes one currency.
+    if (held["currency"] !== currency) {
+      yield* Effect.logInfo(`bank account ${account} holds ${String(held["currency"])}, not ${currency}`);
+      return yield* new CurrencyNotHeld({ currency });
     }
 
     // NothingToSend: exit 43, BT-003.
-    if (yield* Handlers.blank<boolean>("refuse NothingToSend when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NothingToSend was refused"));
+    if (!BigDecimal.isPositive(amount)) {
+      yield* Effect.logInfo(`a transfer of ${BigDecimal.format(amount)} dollars sends nothing`);
       return yield* new NothingToSend({});
     }
 
-    // Step insert: database, span bank-transaction.send.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Until #995 lets a step reach the Bridge adapter (transfers.create, with an Idempotency-Key from this call's request
+    // key), the transfer's reference is Capxul's own, drawn from the transaction's id (CX-bridge, "Who speaks for
+    // Bridge"), and prefixed so it is never taken for one of Bridge's `tr_…`. Its day is the world clock's UTC day.
+    const reference = `capxul_${id.slice(id.indexOf("_") + 1)}`;
+    const today = Days.add("1970-01-01", Math.floor((yield* Clock.currentTimeMillis) / DAY_MS));
+
+    // Step insert: database, span bank-transaction.send.insert. The amount is USDC base units exactly, as in land.
+    yield* steps.insert(
+      records.insert(BankTransaction, {
+        id,
+        company: held["company"] as never,
+        account,
+        date: today as never,
+        deposit: 0n,
+        withdrawal: BigDecimal.scale(amount, 6).value,
+        currency,
+        reference: reference as never,
+        party,
+      }),
+    );
 
     // The move send, to pending.
     yield* move();
@@ -85,7 +108,7 @@ const send: Handler = (_payload, { steps, move, id }) =>
     return {
       // TransferSent needs transaction, and only the answer can give it.
       transaction: id,
-      reference: yield* Handlers.blank("reference, a bank-transaction.reference"),
+      reference: reference as never,
     };
   });
 
