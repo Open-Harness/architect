@@ -28,7 +28,9 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
 - **Where they come from.** A generated adapter (one with `src/client.ts`, no `src/calls/`) declares two stored runtime
   secrets in its own `blueprint/secrets.ts`:
   - `baseUrl`, always;
-  - `apiKey`, when its description declares any security scheme.
+  - `apiKey`, when its description requires security: a requirement naming a scheme, at the top or on any operation. A
+    scheme that no requirement names, or only the anonymous requirement `[{}]`, requires none, so no key is listed as missing
+    that no call would send. (Refined from "declares any security scheme" by #995 gap 1's checks, 25 November 2026.)
 
   By M2-04-secrets-readings' rule they're named per mount: `<MOUNT>_BASE_URL` and `<MOUNT>_API_KEY` (`BRIDGE_BASE_URL`,
   `BRIDGE_API_KEY`). So `ortho secrets` lists them, `ortho secrets set` takes them, and `promote` refuses an environment that
@@ -121,4 +123,5 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 
 ## Supersedes
 
+- G16-adapter-mounts call 1, as merged in #1003: "`apiKey`, when its description declares any security scheme" → "`apiKey`, when its description requires security"
 - GOAL17-adapters-from-spec: "Declared error classes per response are not generated yet: `Blueprint.call()` is given none." → "every generated call is `Blueprint.call({ errors: [<Adapter>ApiFailure, <Adapter>InputRefused, <Adapter>AnswerRefused, <Adapter>Unreachable] })`"
