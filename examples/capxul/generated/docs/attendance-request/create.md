@@ -80,6 +80,8 @@ Starts from the world `a leave application`.
 - **Olga asks to work from home Friday 26 February to Thursday 4 March, around her open leave.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-26`, toDate `2027-03-04`, reason `Work From Home`, with the request key `around`, and is answered.
 - **Olga sends the request around it again, and gets it back.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-26`, toDate `2027-03-04`, reason `Work From Home`, with the request key `around`, and is answered.
 - **she asks to work from home on the 15th.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-15`, toDate `2027-03-15`, reason `Work From Home`, with the request key `open-leave`, and is answered.
+- **Bo asks to work from home 1 to 3 March.** `bo` (signed in) calls and sends company the world's company, employee the last call's employee, fromDate `2027-03-01`, toDate `2027-03-03`, reason `Work From Home`, and is answered.
+- **Olga asks to work from home on the 22nd.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-22`, toDate `2027-03-22`, reason `Work From Home`, with the request key `cancelled-leave`, and is answered.
 
 ### attendance stays in its company
 

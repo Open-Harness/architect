@@ -15,6 +15,10 @@ import rejectRequest from "../blueprint/things/attendance-request/verbs/reject.t
 import approveLeave from "../blueprint/things/leave-application/verbs/approve.ts";
 import apply from "../blueprint/things/leave-application/verbs/create.ts";
 import hire from "../blueprint/things/employee/verbs/hire.ts";
+import cancel from "../blueprint/things/leave-application/verbs/cancel.ts";
+import mark from "../blueprint/things/attendance/verbs/mark.ts";
+import { machine as applications } from "../blueprint/things/leave-application/machine.ts";
+import { daysOf } from "../blueprint/values/leave-journeys.ts";
 import list from "../blueprint/things/attendance/verbs/list.ts";
 
 type Item = { readonly attendanceDate: string; readonly status: string };
@@ -31,6 +35,11 @@ export default Blueprint.journey("attendance requests and leave", {
   steps: (s) => {
     const ask = (fromDate: string, toDate: string, request: string, reason: string = WFH) =>
       s.olga.run(create, { company: s.world.company, employee: s.world.employee, fromDate, toDate, reason: reason as never }, { request });
+    const hireBo = () =>
+      s.ada.run(hire, {
+        company: s.world.company, person: s.bo.person, firstName: "Bo Mwangi", gender: "Male", dateOfBirth: "1990-07-01", dateOfJoining: "2026-02-01",
+        department: s.world.department, designation: s.world.designation,
+      }, { request: "hire-bo" });
     return [
       s.step("Olga asks to work from home Monday 8 to Wednesday 10 March", ask("2027-03-08", "2027-03-10", "a"), requests.isIn(s.last.attendanceRequest, "draft")),
       s.step("she can't ask for 10 to 11 March too: it shares the 10th", ask("2027-03-10", "2027-03-11", "b"), refuses(AttendanceRequestOverlaps), noEvents()),
@@ -48,7 +57,7 @@ export default Blueprint.journey("attendance requests and leave", {
         s.ada.run(hire, {
           company: s.world.company, person: s.bo.person, firstName: "Bo Mwangi", gender: "Male", dateOfBirth: "1990-07-01", dateOfJoining: "2026-02-01",
           department: s.world.department, designation: s.world.designation,
-        }),
+        }, { request: "hire-bo" }),
         expect((a) => a.employee).toMatch(/^emp_[0-9a-z]+$/),
       ),
       s.step(
@@ -89,12 +98,52 @@ export default Blueprint.journey("attendance requests and leave", {
         "Olga asks for leave on Monday 15 March, and it stays open",
         s.olga.run(apply, { company: s.world.company, employee: s.world.employee, leaveType: s.world.leaveType, fromDate: "2027-03-15", toDate: "2027-03-15", reason: "Rest" }),
         expect((a) => a.leaveApplication).toMatch(/^lap_[0-9a-z]+$/),
+        applications.isIn(s.last.leaveApplication, "open"),
       ),
       s.step("she asks to work from home on the 15th", ask("2027-03-15", "2027-03-15", "open-leave"), requests.isIn(s.last.attendanceRequest, "draft")),
       s.step(
         "Ada approves it: the open leave doesn't stop it",
         s.ada.run(approveRequest, { attendanceRequest: s.last.attendanceRequest }),
         expect((a) => [a.marked, a.changed]).toEqual([1n, 0n]),
+      ),
+      // Olga's leave is hers alone: Bo can be marked on its days, and his request marks them.
+      s.step("Ada sends Bo's hiring again, to find him", hireBo(), expect((a) => a.employee).toMatch(/^emp_[0-9a-z]+$/)),
+      s.step(
+        "Ada marks Bo present on 2 March, a day of Olga's approved leave",
+        s.ada.run(mark, { company: s.world.company, employee: s.last.employee, attendanceDate: "2027-03-02", status: "Present" }),
+        expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/),
+      ),
+      s.step("Ada sends Bo's hiring again, to find him once more", hireBo(), expect((a) => a.employee).toMatch(/^emp_[0-9a-z]+$/)),
+      s.step(
+        "Bo asks to work from home 1 to 3 March",
+        s.bo.run(create, { company: s.world.company, employee: s.last.employee, fromDate: "2027-03-01", toDate: "2027-03-03", reason: WFH }),
+        requests.isIn(s.last.attendanceRequest, "draft"),
+      ),
+      s.step(
+        "Ada approves it: Olga's leave doesn't stop his days, two new and his present Tuesday changed",
+        s.ada.run(approveRequest, { attendanceRequest: s.last.attendanceRequest }),
+        expect((a) => [a.marked, a.changed]).toEqual([2n, 1n]),
+      ),
+      s.step("Ada sends Bo's hiring again, a third time", hireBo(), expect((a) => a.employee).toMatch(/^emp_[0-9a-z]+$/)),
+      s.step("Ada marks Bo present on 29 March", s.ada.run(mark, { company: s.world.company, employee: s.last.employee, attendanceDate: "2027-03-29", status: "Present" }), expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/)),
+      s.step(
+        "Olga can take leave on 29 March: Bo's day at work isn't hers",
+        s.olga.run(apply, { company: s.world.company, employee: s.world.employee, leaveType: s.world.leaveType, fromDate: "2027-03-29", toDate: "2027-03-29", reason: "Rest" }),
+        expect((a) => daysOf(a.totalLeaveDays)).toEqual("1"),
+      ),
+      // A cancelled leave doesn't stop a request marking its days.
+      s.step(
+        "Olga asks for leave on Monday 22 March",
+        s.olga.run(apply, { company: s.world.company, employee: s.world.employee, leaveType: s.world.leaveType, fromDate: "2027-03-22", toDate: "2027-03-22", reason: "Rest" }),
+        applications.isIn(s.last.leaveApplication, "open"),
+      ),
+      s.step("Ada approves it, again", s.ada.run(approveLeave, { leaveApplication: s.last.leaveApplication }), expect((a) => [a.marked, a.changed]).toEqual([1n, 0n])),
+      s.step("and cancels it", s.ada.run(cancel, { leaveApplication: s.last.leaveApplication }), applications.isIn(s.last.leaveApplication, "cancelled")),
+      s.step("Olga asks to work from home on the 22nd", ask("2027-03-22", "2027-03-22", "cancelled-leave"), requests.isIn(s.last.attendanceRequest, "draft")),
+      s.step(
+        "Ada approves it: the cancelled leave's On Leave day changes to working from home",
+        s.ada.run(approveRequest, { attendanceRequest: s.last.attendanceRequest }),
+        expect((a) => [a.marked, a.changed]).toEqual([0n, 1n]),
       ),
     ];
   },

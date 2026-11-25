@@ -49,6 +49,7 @@ Starts from the world `a leave application`.
 
 Starts from the world `a leave allocation`.
 
+- **nor can Olga reject it.** `olga` (signed in) calls and sends leaveApplication the last call's leaveApplication, and is refused with NotAllowed, AR-001.
 - **nor rejected once approved.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is refused with LeaveApplicationNotOpen, LP-900, carrying state `approved`.
 - **Ada rejects it: no day is marked.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and gets back an answer matching `^lap_[0-9a-z]+$`.
 

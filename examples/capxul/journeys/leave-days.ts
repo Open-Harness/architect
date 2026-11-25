@@ -169,6 +169,12 @@ export default Blueprint.journey("leave days", {
       ),
       // Days she was at work.
       s.step("Ada marks Olga present on Monday 5 July 2027", markAs("2027-07-05", "Present"), expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/)),
+      s.step(
+        "5 to 10 July is refused as too long before the day she was at work",
+        ask("2027-07-05", "2027-07-10", "jul-5-long"),
+        refuses(LeaveTooLong, { maxContinuousDaysAllowed: 5n }),
+        noEvents(),
+      ),
       s.step("Olga can't take 5 to 6 July: she was at work on the 5th", ask("2027-07-05", "2027-07-06", "jul-5"), refuses(LeaveDayAttended, { attendanceDate: "2027-07-05" }), noEvents()),
       s.step("Ada marks her working from home on Tuesday 6 July", markAs("2027-07-06", "Work From Home"), expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/)),
       s.step("Ada marks her present on Thursday 8 July", markAs("2027-07-08", "Present"), expect((a) => a.attendance).toMatch(/^att_[0-9a-z]+$/)),

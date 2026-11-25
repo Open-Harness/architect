@@ -7,7 +7,7 @@
 // applications neither overlap nor run on. LeaveOverlaps is judged before LeaveTooLong.
 import { Blueprint, expect, noEvents, refuses } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
-import { LeaveOverlaps, LeaveTooLong } from "../blueprint/things/leave-application/errors.ts";
+import { LeaveOverlaps, LeaveTooLong, NoAllocationCovers } from "../blueprint/things/leave-application/errors.ts";
 import { machine as applications } from "../blueprint/things/leave-application/machine.ts";
 import apply from "../blueprint/things/leave-application/verbs/create.ts";
 import approve from "../blueprint/things/leave-application/verbs/approve.ts";
@@ -133,6 +133,12 @@ export default Blueprint.journey("overlapping leave", {
       // Another employee's leave doesn't overlap Olga's.
       s.step("Ada hires Bo", hireBo(), expect((a) => a.employee).toMatch(/^emp_[0-9a-z]+$/)),
       s.step(
+        "Bo can't take Annual Leave yet: Olga's allocation doesn't cover him",
+        s.bo.run(apply, { company: s.world.company, employee: s.last.employee, leaveType: s.world.leaveType, fromDate: "2027-04-05", toDate: "2027-04-05", reason: "Rest" }),
+        refuses(NoAllocationCovers),
+        noEvents(),
+      ),
+      s.step(
         "and gives him 5 days of Annual Leave for 2027",
         s.ada.run(allocate, {
           company: s.world.company, employee: s.last.employee, leaveType: s.world.leaveType, fromDate: "2027-01-01", toDate: "2027-12-31", newLeavesAllocated: days("5"),
@@ -146,6 +152,26 @@ export default Blueprint.journey("overlapping leave", {
         s.bo.run(apply, { company: s.world.company, employee: s.last.employee, leaveType: s.world.leaveType, fromDate: "2027-03-02", toDate: "2027-03-02", reason: "Rest" }),
         expect((a) => daysOf(a.totalLeaveDays)).toEqual("1"),
         applications.isIn(s.last.leaveApplication, "open"),
+      ),
+      // One employee's approved days don't take another's balance.
+      s.step("Olga sends 15 to 19 March again under its request key", ask("2027-03-15", "2027-03-19", "five"), applications.isIn(s.last.leaveApplication, "open")),
+      s.step(
+        "Ada approves Olga's 5 days",
+        s.ada.run(approve, { leaveApplication: s.last.leaveApplication }),
+        applications.isIn(s.last.leaveApplication, "approved"),
+      ),
+      s.step("Ada sends Bo's hiring again, to find him", hireBo(), expect((a) => a.employee).toMatch(/^emp_[0-9a-z]+$/)),
+      s.step(
+        "Bo asks for the same 15 to 19 March, all 5 of his days: Olga's approved days aren't his",
+        s.bo.run(apply, { company: s.world.company, employee: s.last.employee, leaveType: s.world.leaveType, fromDate: "2027-03-15", toDate: "2027-03-19", reason: "Rest" }),
+        expect((a) => daysOf(a.totalLeaveDays)).toEqual("5"),
+        applications.isIn(s.last.leaveApplication, "open"),
+      ),
+      s.step(
+        "and Ada approves them",
+        s.ada.run(approve, { leaveApplication: s.last.leaveApplication }),
+        expect((a) => [a.marked, a.changed]).toEqual([5n, 0n]),
+        applications.isIn(s.last.leaveApplication, "approved"),
       ),
     ];
   },

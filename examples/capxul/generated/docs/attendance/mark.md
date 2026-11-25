@@ -64,6 +64,13 @@ Starts from the world `an attendance request`.
 - **Ada marks Olga a half day on Saturday 5 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2026-12-05`, status `Half Day`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **Ada marks Olga working from home on 29 February 2028.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2028-02-29`, status `Work From Home`, and gets back an answer matching `^att_[0-9a-z]+$`.
 
+### attendance requests and leave
+
+Starts from the world `a leave application`.
+
+- **Ada marks Bo present on 2 March, a day of Olga's approved leave.** `ada` (role company.owner) calls and sends company the world's company, employee the last call's employee, attendanceDate `2027-03-02`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
+- **Ada marks Bo present on 29 March.** `ada` (role company.owner) calls and sends company the world's company, employee the last call's employee, attendanceDate `2027-03-29`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
+
 ### attendance stays in its company
 
 Starts from the world `an attendance request`.
@@ -136,6 +143,8 @@ Starts from the world `a leave allocation`.
 - **Ada can still mark her that day while it is open.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2027-03-08`, status `Absent`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **Ada can mark Olga present on that Tuesday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2027-03-09`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
 - **Ada can mark Olga present on that Wednesday.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2027-03-10`, status `Present`, and gets back an answer matching `^att_[0-9a-z]+$`.
+- **Wednesday 3 March is still marked: a cancelled leave doesn't refuse it, the day's attendance does.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2027-03-03`, status `Present`, and is refused with AttendanceAlreadyMarked, AN-004, carrying attendanceDate `2027-03-03`.
+- **Ada can't mark Olga on 2 March: the refusal names this leave, not the Monday's.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, attendanceDate `2027-03-02`, status `Present`, and is refused with AttendanceOnLeave, AN-005, carrying leaveApplication the last call's leaveApplication.
 
 ## How to call
 

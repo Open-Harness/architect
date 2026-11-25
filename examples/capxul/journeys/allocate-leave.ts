@@ -80,7 +80,7 @@ export default Blueprint.journey("allocate leave", {
         noEvents(),
       ),
       s.step(
-        "nor give Olga leave in Acme Trading",
+        "Bo can't give Olga leave in Acme Trading",
         s.bo.run(create, {
           company: s.world.company, employee: s.world.employee, leaveType: s.world.leaveType, fromDate: "2027-07-01", toDate: "2027-12-31", newLeavesAllocated: days("1"),
         }),
@@ -257,7 +257,7 @@ export default Blueprint.journey("allocate leave", {
         noEvents(),
       ),
       s.step(
-        "nor with more leaves than days",
+        "nor with more leaves than days, which it is refused for first",
         s.ada.run(create, {
           company: s.world.company, employee: s.world.employee, leaveType: s.last.leaveType, fromDate: "2027-01-01", toDate: "2027-01-02", newLeavesAllocated: days("9"),
         }),

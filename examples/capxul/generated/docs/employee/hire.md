@@ -86,7 +86,10 @@ Starts from the world `an attendance request`.
 
 Starts from the world `a leave application`.
 
-- **Ada hires Bo.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada hires Bo.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, to find him.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, to find him once more.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, a third time.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
 
 ### hire an employee
 
@@ -116,6 +119,7 @@ Starts from the world `a leave application`.
 
 - **Ada hires Bo.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
 - **Ada sends Bo's hiring again under its request key, and gets him back.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, to find him.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
 
 ## How to call
 

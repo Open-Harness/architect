@@ -36,7 +36,8 @@ Numbered as they were put to the lead.
    `leave-application.approve` refuses `InsufficientLeaveBalance` (counting the approved days as they are then) and
    `LeaveDayAttended`. Without it, two open applications that each fit the balance could both be approved, since the
    balance counts approved days only (`get_leave_balance_on(..., for_consumption=True)` reads the ledger, which holds
-   submitted applications only).
+   submitted applications only). HRMS's `validate` also counts `total_leave_days` again; Capxul keeps the count made at
+   create, so a holiday added between create and approve doesn't change it (**Capxul's own**, a known limit).
 3. **HRMS rules core's scope didn't list, added:**
    - Allocation: `LeaveWithoutPayNotAllocated` (`validate_lwp`); `NoLeavesAllocated` for 0 (`set_total_leaves_allocated`:
      "Total leaves allocated is mandatory"), and **Capxul's own** for below 0; `AllocationExceedsPeriod`, more leaves
@@ -58,23 +59,25 @@ Numbered as they were put to the lead.
    Core's scope has `attendance.mark` refuse `AttendanceOnLeave` (carrying the application) for any day an approved
    application covers, holidays inside it included, so On Leave is only ever marked by a leave's approval.
 6. **Attendance request overlap. HRMS's** `validate_request_overlap`, which exists at `46b38904`:
-   `AttendanceRequestOverlaps` on create, against the employee's draft or approved requests. HRMS's `docstatus < 2`
-   also holds a request rejected on submit; Capxul's rejected request doesn't overlap (**Capxul's own**), since nothing
-   it asked for was marked. The shift filter waits on shifts on requests.
+   `AttendanceRequestOverlaps` on create, against the employee's draft or approved requests. HRMS's Attendance Request
+   has no rejected state: a request it drops is a deleted draft or cancelled (`docstatus` 2), and neither overlaps.
+   Capxul's rejected request (its own move, from 8d) follows that and doesn't overlap. The shift filter waits on shifts
+   on requests.
 7. **Not before joining. Capxul's own.** HRMS's leave application checks the joining day only through
    `applicable_after`, which is out of scope. `LeaveBeforeJoining` (carrying the joining day, which is allowed) follows
    attendance's `AttendanceBeforeJoining`.
 8. **Leave types are per company. Capxul's own.** HRMS's types are site-wide. Capxul's companies are separate
    organisations (K42, call 10), so an allocation or application naming another company's type is refused
    (`AllocationTypeNotInCompany`, `ApplicationTypeNotInCompany`).
-9. **Leave days are decimals.** `newLeavesAllocated` and `totalLeaveDays` are `Blueprint.decimal({ places: 2 })`, which
+9. **Leave days are decimals. HRMS's Float, held exactly; the decimal type is Capxul's own.** `newLeavesAllocated` and `totalLeaveDays` are `Blueprint.decimal({ places: 2 })`, which
    admits HRMS's earned-leave rounding of 0.25. Half days are out of scope, so today `totalLeaveDays` is always whole.
    The decimals travel the generated API (#959, through #973); the generated CLI's printing of them is #969's.
-10. **A holiday already marked. Known limit.** HRMS's `update_attendance` cancels and deletes an attendance on a holiday
+10. **A holiday already marked. Capxul's own, a known limit.** HRMS's `update_attendance` cancels and deletes an attendance on a holiday
     inside an approved leave that doesn't count holidays. Capxul can't delete an attendance yet, so approve leaves that
     day as it is.
-11. **Cancel and reject.** Cancel is by the owner only, from open or approved; reject from open only. HRMS cancels a
-    submitted application and deletes a draft; Capxul's cancel covers both. Cancelling an approved application gives its
+11. **Cancel and reject. HRMS's permissions, with one Capxul call.** Cancel is by the owner only, from open or approved;
+    reject from open only. That follows HRMS, where an employee can't submit or cancel. HRMS cancels a submitted
+    application and deletes a draft; cancelling an open one is **Capxul's own**. Cancelling an approved application gives its
     days back to the balance and leaves the days it marked On Leave as they are (HRMS's `cancel_attendance` cancels
     them; that waits on cancelling an attendance). *Known limit.*
 
@@ -103,5 +106,5 @@ all.
 Leave Policy and Policy Assignment, Leave Period, Leave Ledger Entry (the balance is computed from lists), Encashment,
 Compensatory Leave, Block List, half days, carry-forward and expiry, `applicable_after`, `max_leaves_allowed`,
 `allow_negative`, optional leave, the leave approver, back-dated restrictions and salary-processed days. Shift overlap
-waits on optional references (#967). An attendance's leave type and application wait on #967 too. The two limits in
-calls 1, 10 and 11 above.
+waits on optional references (#967). An attendance's leave type and application wait on #967 too. The three limits in
+calls 1, 10 and 11 above, and the count kept from create in call 2.

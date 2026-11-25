@@ -14037,7 +14037,7 @@
           ]
         },
         {
-          "title": "nor give Olga leave in Acme Trading",
+          "title": "Bo can't give Olga leave in Acme Trading",
           "call": {
             "actor": "bo",
             "operation": "leave-allocation.create",
@@ -15721,7 +15721,7 @@
           ]
         },
         {
-          "title": "nor with more leaves than days",
+          "title": "nor with more leaves than days, which it is refused for first",
           "call": {
             "actor": "ada",
             "operation": "leave-allocation.create",
@@ -15764,7 +15764,7 @@
           ]
         }
       ],
-      "sourceHash": "29423433e84d3de012bca668497758234a0fda4698611dbd26e1c7f01f365967"
+      "sourceHash": "b6fafe53cc9404a7d3ce28de31bfffd9f62256cc31d6f7bff2c2a72b0a4d7b89"
     },
     "journeys/an-employee-leaves.ts": {
       "name": "an employee leaves",
@@ -18684,7 +18684,8 @@
                   "designation"
                 ]
               }
-            }
+            },
+            "request": "hire-bo"
           },
           "checks": [
             {
@@ -18962,6 +18963,17 @@
               "kind": "expect",
               "match": "^lap_[0-9a-z]+$",
               "flags": ""
+            },
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "open"
             }
           ]
         },
@@ -19026,9 +19038,461 @@
               ]
             }
           ]
+        },
+        {
+          "title": "Ada sends Bo's hiring again, to find him",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.hire",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "person": {
+                "ref": [
+                  "cast",
+                  "bo",
+                  "person"
+                ]
+              },
+              "firstName": "Bo Mwangi",
+              "gender": "Male",
+              "dateOfBirth": "1990-07-01",
+              "dateOfJoining": "2026-02-01",
+              "department": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              },
+              "designation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            },
+            "request": "hire-bo"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^emp_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada marks Bo present on 2 March, a day of Olga's approved leave",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2027-03-02",
+              "status": "Present"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^att_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada sends Bo's hiring again, to find him once more",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.hire",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "person": {
+                "ref": [
+                  "cast",
+                  "bo",
+                  "person"
+                ]
+              },
+              "firstName": "Bo Mwangi",
+              "gender": "Male",
+              "dateOfBirth": "1990-07-01",
+              "dateOfJoining": "2026-02-01",
+              "department": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              },
+              "designation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            },
+            "request": "hire-bo"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^emp_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo asks to work from home 1 to 3 March",
+          "call": {
+            "actor": "bo",
+            "operation": "attendance-request.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "fromDate": "2027-03-01",
+              "toDate": "2027-03-03",
+              "reason": "Work From Home"
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "attendance-request",
+              "id": {
+                "ref": [
+                  "last",
+                  "attendanceRequest"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "Ada approves it: Olga's leave doesn't stop his days, two new and his present Tuesday changed",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance-request.approve",
+            "payload": {
+              "attendanceRequest": {
+                "ref": [
+                  "last",
+                  "attendanceRequest"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2",
+                "1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada sends Bo's hiring again, a third time",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.hire",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "person": {
+                "ref": [
+                  "cast",
+                  "bo",
+                  "person"
+                ]
+              },
+              "firstName": "Bo Mwangi",
+              "gender": "Male",
+              "dateOfBirth": "1990-07-01",
+              "dateOfJoining": "2026-02-01",
+              "department": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              },
+              "designation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            },
+            "request": "hire-bo"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^emp_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada marks Bo present on 29 March",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2027-03-29",
+              "status": "Present"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^att_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Olga can take leave on 29 March: Bo's day at work isn't hers",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-29",
+              "toDate": "2027-03-29",
+              "reason": "Rest"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "title": "Olga asks for leave on Monday 22 March",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-22",
+              "toDate": "2027-03-22",
+              "reason": "Rest"
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "Ada approves it, again",
+          "call": {
+            "actor": "ada",
+            "operation": "leave-application.approve",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1",
+                "0"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and cancels it",
+          "call": {
+            "actor": "ada",
+            "operation": "leave-application.cancel",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "cancelled"
+            }
+          ]
+        },
+        {
+          "title": "Olga asks to work from home on the 22nd",
+          "call": {
+            "actor": "olga",
+            "operation": "attendance-request.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "fromDate": "2027-03-22",
+              "toDate": "2027-03-22",
+              "reason": "Work From Home"
+            },
+            "request": "cancelled-leave"
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "attendance-request",
+              "id": {
+                "ref": [
+                  "last",
+                  "attendanceRequest"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "Ada approves it: the cancelled leave's On Leave day changes to working from home",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance-request.approve",
+            "payload": {
+              "attendanceRequest": {
+                "ref": [
+                  "last",
+                  "attendanceRequest"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "1"
+              ]
+            }
+          ]
         }
       ],
-      "sourceHash": "8d5017f0a43489f8628816a47b125c19f8c0657402ae869188850e5b4ad1b7b6"
+      "sourceHash": "7385505ac7152842fbbb6e8f6403f889e502308a02e304256acfe5778c7c74af"
     },
     "journeys/attendance-stays-in-its-company.ts": {
       "name": "attendance stays in its company",
@@ -27849,7 +28313,7 @@
           ]
         },
         {
-          "title": "and approves it: all 10 days are taken",
+          "title": "Ada approves it: all 10 days are taken",
           "call": {
             "actor": "ada",
             "operation": "leave-application.approve",
@@ -27928,7 +28392,7 @@
           ]
         },
         {
-          "title": "she can't approve it now: no day is left",
+          "title": "Ada can't approve it now: no day is left",
           "call": {
             "actor": "ada",
             "operation": "leave-application.approve",
@@ -28005,6 +28469,47 @@
           ]
         },
         {
+          "title": "a day inside the third week is refused for the balance before its overlap",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-17",
+              "toDate": "2027-03-17",
+              "reason": "Rest"
+            },
+            "request": "inside-third-week"
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "InsufficientLeaveBalance",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Olga sends the third week again under its request key, again",
           "call": {
             "actor": "olga",
@@ -28049,7 +28554,7 @@
           ]
         },
         {
-          "title": "and cancels it, approved: its 5 days are given back",
+          "title": "Ada cancels it, approved: its 5 days are given back",
           "call": {
             "actor": "ada",
             "operation": "leave-application.cancel",
@@ -28121,7 +28626,7 @@
           ]
         },
         {
-          "title": "and approves it now: the 5 days fit exactly",
+          "title": "Ada approves it now: the 5 days fit exactly",
           "call": {
             "actor": "ada",
             "operation": "leave-application.approve",
@@ -28315,7 +28820,7 @@
           ]
         },
         {
-          "title": "Olga can't take 3 days of it, 5 to 7 April: her Annual Leave doesn't count toward it",
+          "title": "Olga can't take 3 days of it, 5 to 7 April: only two and a half are given",
           "call": {
             "actor": "olga",
             "operation": "leave-application.create",
@@ -28383,7 +28888,7 @@
           ]
         },
         {
-          "title": "Olga takes 2, 5 and 6 April",
+          "title": "Olga takes two days of it, 5 and 6 April: her Annual Leave taken doesn't count toward it",
           "call": {
             "actor": "olga",
             "operation": "leave-application.create",
@@ -28991,7 +29496,7 @@
           ]
         }
       ],
-      "sourceHash": "30eb07392c71955276e0f54a74c198130f576fd23389baf347dd43ea64fc711d"
+      "sourceHash": "2204055fbbebe17d602730268d99bc4cd4ba4308ffd86f6b72cddbf4923ec26f"
     },
     "journeys/leave-days.ts": {
       "name": "leave days",
@@ -30212,6 +30717,49 @@
           ]
         },
         {
+          "title": "5 to 10 July is refused as too long before the day she was at work",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-07-05",
+              "toDate": "2027-07-10",
+              "reason": "Rest"
+            },
+            "request": "jul-5-long"
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "LeaveTooLong",
+              "fields": {
+                "maxContinuousDaysAllowed": "5"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Olga can't take 5 to 6 July: she was at work on the 5th",
           "call": {
             "actor": "olga",
@@ -30624,7 +31172,7 @@
           ]
         }
       ],
-      "sourceHash": "1abed4e8427d72b816f0a7e75bb450fe289dd1a604671a4a08c7126b15cdc106"
+      "sourceHash": "fecfb1467f43bd256c13790487ed904c6ee1183edd1102457fdfc343dab51722"
     },
     "journeys/leave-stays-in-its-company.ts": {
       "name": "leave stays in its company",
@@ -36826,6 +37374,46 @@
           ]
         },
         {
+          "title": "Bo can't take Annual Leave yet: Olga's allocation doesn't cover him",
+          "call": {
+            "actor": "bo",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-04-05",
+              "toDate": "2027-04-05",
+              "reason": "Rest"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NoAllocationCovers",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "and gives him 5 days of Annual Leave for 2027",
           "call": {
             "actor": "ada",
@@ -36979,9 +37567,209 @@
               "state": "open"
             }
           ]
+        },
+        {
+          "title": "Olga sends 15 to 19 March again under its request key",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-15",
+              "toDate": "2027-03-19",
+              "reason": "Rest"
+            },
+            "request": "five"
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "Ada approves Olga's 5 days",
+          "call": {
+            "actor": "ada",
+            "operation": "leave-application.approve",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "approved"
+            }
+          ]
+        },
+        {
+          "title": "Ada sends Bo's hiring again, to find him",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.hire",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "person": {
+                "ref": [
+                  "cast",
+                  "bo",
+                  "person"
+                ]
+              },
+              "firstName": "Bo Mwangi",
+              "gender": "Male",
+              "dateOfBirth": "1990-07-01",
+              "dateOfJoining": "2026-02-01",
+              "department": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              },
+              "designation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            },
+            "request": "hire-bo"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^emp_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo asks for the same 15 to 19 March, all 5 of his days: Olga's approved days aren't his",
+          "call": {
+            "actor": "bo",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "last",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-15",
+              "toDate": "2027-03-19",
+              "reason": "Rest"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "5"
+            },
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "and Ada approves them",
+          "call": {
+            "actor": "ada",
+            "operation": "leave-application.approve",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "5",
+                "0"
+              ]
+            },
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "approved"
+            }
+          ]
         }
       ],
-      "sourceHash": "3e8f7b0f7f93d2eeac043fdb2adc01619d73f397a63115c169ea1cdeb652d183"
+      "sourceHash": "160d0f7a6ca9535a5229f693fdac4eb83cfee52041c1c26d07ff9bf4f527c45b"
     },
     "journeys/promote-an-employee.ts": {
       "name": "promote an employee",
@@ -48000,7 +48788,32 @@
           ]
         },
         {
-          "title": "nor can Olga reject or cancel it",
+          "title": "nor can Olga reject it",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.reject",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor cancel it",
           "call": {
             "actor": "olga",
             "operation": "leave-application.cancel",
@@ -48541,7 +49354,8 @@
               "fromDate": "2027-03-08",
               "toDate": "2027-03-08",
               "reason": "Errands"
-            }
+            },
+            "request": "march-8"
           },
           "checks": [
             {
@@ -49066,9 +49880,322 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Olga sends her first leave once more, and gets it back approved",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-01",
+              "toDate": "2027-03-04",
+              "reason": "Family visit"
+            },
+            "request": "first-leave"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^lap_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada cancels it, approved",
+          "call": {
+            "actor": "ada",
+            "operation": "leave-application.cancel",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "LeaveApplicationCancelled",
+              "fields": {}
+            },
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "cancelled"
+            }
+          ]
+        },
+        {
+          "title": "Wednesday 3 March is still marked: a cancelled leave doesn't refuse it, the day's attendance does",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2027-03-03",
+              "status": "Present"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendanceAlreadyMarked",
+              "fields": {
+                "attendanceDate": "2027-03-03"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga sends Monday 8 March again under its request key, still open",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-08",
+              "toDate": "2027-03-08",
+              "reason": "Errands"
+            },
+            "request": "march-8"
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "Ada approves it: the absent Monday changes to On Leave",
+          "call": {
+            "actor": "ada",
+            "operation": "leave-application.approve",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "1"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "LeaveApplicationApproved",
+              "fields": {
+                "marked": "0",
+                "changed": "1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Olga asks for 1 to 4 March again",
+          "call": {
+            "actor": "olga",
+            "operation": "leave-application.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "leaveType": {
+                "ref": [
+                  "world",
+                  "leaveType"
+                ]
+              },
+              "fromDate": "2027-03-01",
+              "toDate": "2027-03-04",
+              "reason": "Family visit, again"
+            },
+            "request": "second-leave"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "4"
+            },
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "Ada approves it: every day is On Leave already, so none is marked or changed",
+          "call": {
+            "actor": "ada",
+            "operation": "leave-application.approve",
+            "payload": {
+              "leaveApplication": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "LeaveApplicationApproved",
+              "fields": {
+                "marked": "0",
+                "changed": "0"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "leave-application",
+              "id": {
+                "ref": [
+                  "last",
+                  "leaveApplication"
+                ]
+              },
+              "state": "approved"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't mark Olga on 2 March: the refusal names this leave, not the Monday's",
+          "call": {
+            "actor": "ada",
+            "operation": "attendance.mark",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "attendanceDate": "2027-03-02",
+              "status": "Present"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AttendanceOnLeave",
+              "fields": {
+                "leaveApplication": {
+                  "ref": [
+                    "last",
+                    "leaveApplication"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "616d6d02c6461308287b1d51384a9ccf961d8584a4ec513d107ffd0a4f54b649"
+      "sourceHash": "ef0fb68bccf7ab72f8a744980385af09494c164e0c28ba8fbd6ef2d6374799a7"
     },
     "journeys/transfer-an-employee.ts": {
       "name": "transfer an employee",

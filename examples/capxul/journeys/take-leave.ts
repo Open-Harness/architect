@@ -5,7 +5,7 @@
 // attendance.mark refusing a day an approved leave covers (HRMS's check_leave_record).
 import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
-import { AttendanceOnLeave } from "../blueprint/things/attendance/errors.ts";
+import { AttendanceAlreadyMarked, AttendanceOnLeave } from "../blueprint/things/attendance/errors.ts";
 import { LeaveApplied, LeaveApplicationApproved, LeaveApplicationRejected, LeaveApplicationCancelled } from "../blueprint/things/leave-application/events.ts";
 import { machine as applications } from "../blueprint/things/leave-application/machine.ts";
 import apply from "../blueprint/things/leave-application/verbs/create.ts";
@@ -82,7 +82,13 @@ export default Blueprint.journey("take leave", {
         noEvents(),
       ),
       s.step(
-        "nor can Olga reject or cancel it",
+        "nor can Olga reject it",
+        s.olga.run(reject, { leaveApplication: s.last.leaveApplication }),
+        refuses(Blueprint.NotAllowed),
+        noEvents(),
+      ),
+      s.step(
+        "nor cancel it",
         s.olga.run(cancel, { leaveApplication: s.last.leaveApplication }),
         refuses(Blueprint.NotAllowed),
         noEvents(),
@@ -153,7 +159,7 @@ export default Blueprint.journey("take leave", {
       ),
       s.step(
         "Olga asks for Monday 8 March",
-        s.olga.run(apply, leave("2027-03-08", "2027-03-08", "Errands")),
+        s.olga.run(apply, leave("2027-03-08", "2027-03-08", "Errands"), { request: "march-8" }),
         expect((a) => daysOf(a.totalLeaveDays)).toEqual("1"),
         applications.isIn(s.last.leaveApplication, "open"),
       ),
@@ -227,6 +233,51 @@ export default Blueprint.journey("take leave", {
           ["2027-03-09", "Present"],
           ["2027-03-10", "Present"],
         ])),
+        noEvents(),
+      ),
+      // Cancelling an approved leave leaves its days On Leave (decisions/CX-leave.md, call 11). A second leave over
+      // them changes nothing, and a mark on them names the approved leave that covers the day.
+      again("Olga sends her first leave once more, and gets it back approved"),
+      s.step(
+        "Ada cancels it, approved",
+        s.ada.run(cancel, { leaveApplication: s.last.leaveApplication }),
+        emits(LeaveApplicationCancelled, {}),
+        applications.isIn(s.last.leaveApplication, "cancelled"),
+      ),
+      s.step(
+        "Wednesday 3 March is still marked: a cancelled leave doesn't refuse it, the day's attendance does",
+        s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2027-03-03", status: "Present" }),
+        refuses(AttendanceAlreadyMarked, { attendanceDate: "2027-03-03" }),
+        noEvents(),
+      ),
+      s.step(
+        "Olga sends Monday 8 March again under its request key, still open",
+        s.olga.run(apply, leave("2027-03-08", "2027-03-08", "Errands"), { request: "march-8" }),
+        applications.isIn(s.last.leaveApplication, "open"),
+      ),
+      s.step(
+        "Ada approves it: the absent Monday changes to On Leave",
+        s.ada.run(approve, { leaveApplication: s.last.leaveApplication }),
+        expect((a) => [a.marked, a.changed]).toEqual([0n, 1n]),
+        emits(LeaveApplicationApproved, { marked: 0n, changed: 1n }),
+      ),
+      s.step(
+        "Olga asks for 1 to 4 March again",
+        s.olga.run(apply, leave("2027-03-01", "2027-03-04", "Family visit, again"), { request: "second-leave" }),
+        expect((a) => daysOf(a.totalLeaveDays)).toEqual("4"),
+        applications.isIn(s.last.leaveApplication, "open"),
+      ),
+      s.step(
+        "Ada approves it: every day is On Leave already, so none is marked or changed",
+        s.ada.run(approve, { leaveApplication: s.last.leaveApplication }),
+        expect((a) => [a.marked, a.changed]).toEqual([0n, 0n]),
+        emits(LeaveApplicationApproved, { marked: 0n, changed: 0n }),
+        applications.isIn(s.last.leaveApplication, "approved"),
+      ),
+      s.step(
+        "Ada can't mark Olga on 2 March: the refusal names this leave, not the Monday's",
+        s.ada.run(mark, { company: s.world.company, employee: s.world.employee, attendanceDate: "2027-03-02", status: "Present" }),
+        refuses(AttendanceOnLeave, { leaveApplication: s.last.leaveApplication }),
         noEvents(),
       ),
     ];

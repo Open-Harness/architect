@@ -18,6 +18,6 @@ export class RequestEndsBeforeStart extends Blueprint.error({ fromDate: Day }, {
 export class RequestBeforeJoining extends Blueprint.error({ dateOfJoining: Day }, { exit: 44 }) {}
 /**
  * HRMS's `validate_request_overlap`: a draft or approved request of the employee shares a day with this one. A rejected
- * one doesn't (HRMS's `docstatus < 2` holds a rejected request too, which Capxul doesn't follow: `decisions/CX-leave.md`, call 6).
+ * one doesn't, as a request HRMS drops (a deleted draft, or cancelled) doesn't (`decisions/CX-leave.md`, call 6).
  */
 export class AttendanceRequestOverlaps extends Blueprint.error({}, { exit: 45 }) {}

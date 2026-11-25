@@ -50,15 +50,16 @@ Approve a leave, marking each of its days On Leave.
 Starts from the world `a leave application`.
 
 - **Ada approves her leave, 1 to 3 March.** `ada` (role company.owner) calls and sends leaveApplication the world's leaveApplication, and gets back [`3`, `0`].
+- **Ada approves it, again.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and gets back [`1`, `0`].
 
 ### leave balance
 
 Starts from the world `a leave allocation`.
 
 - **Ada approves it: 5 of her 10 days are taken.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
-- **and approves it: all 10 days are taken.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
-- **she can't approve it now: no day is left.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is refused with InsufficientLeaveBalance, LP-008.
-- **and approves it now: the 5 days fit exactly.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
+- **Ada approves it: all 10 days are taken.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
+- **Ada can't approve it now: no day is left.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is refused with InsufficientLeaveBalance, LP-008.
+- **Ada approves it now: the 5 days fit exactly.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
 - **Ada approves them.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
 - **and it is approved.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
 - **and it is approved, again.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
@@ -82,6 +83,8 @@ Starts from the world `a leave application`.
 Starts from the world `a leave application`.
 
 - **Ada approves 1 to 3 March.** `ada` (role company.owner) calls and sends leaveApplication the world's leaveApplication, and is answered.
+- **Ada approves Olga's 5 days.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
+- **and Ada approves them.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and gets back [`5`, `0`].
 
 ### take leave
 
@@ -93,6 +96,8 @@ Starts from the world `a leave allocation`.
 - **it can't be approved twice.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is refused with LeaveApplicationNotOpen, LP-900, carrying state `approved`.
 - **it can't be approved once rejected.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is refused with LeaveApplicationNotOpen, LP-900, carrying state `rejected`.
 - **it can't be approved once cancelled.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is refused with LeaveApplicationNotOpen, LP-900, carrying state `cancelled`.
+- **Ada approves it: the absent Monday changes to On Leave.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and gets back [`0`, `1`].
+- **Ada approves it: every day is On Leave already, so none is marked or changed.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and gets back [`0`, `0`].
 
 ## How to call
 

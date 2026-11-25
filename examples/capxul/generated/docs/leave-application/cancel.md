@@ -39,11 +39,17 @@ Cancel a leave, open or approved.
 
 ## Worked examples
 
+### attendance requests and leave
+
+Starts from the world `a leave application`.
+
+- **and cancels it.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
+
 ### leave balance
 
 Starts from the world `a leave allocation`.
 
-- **and cancels it, approved: its 5 days are given back.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
+- **Ada cancels it, approved: its 5 days are given back.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
 
 ### overlapping leave
 
@@ -55,9 +61,10 @@ Starts from the world `a leave application`.
 
 Starts from the world `a leave allocation`.
 
-- **nor can Olga reject or cancel it.** `olga` (signed in) calls and sends leaveApplication the last call's leaveApplication, and is refused with NotAllowed, AR-001.
+- **nor cancel it.** `olga` (signed in) calls and sends leaveApplication the last call's leaveApplication, and is refused with NotAllowed, AR-001.
 - **nor cancelled.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is refused with LeaveApplicationNotOpen, LP-900, carrying state `rejected`.
 - **Ada cancels it while open.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
+- **Ada cancels it, approved.** `ada` (role company.owner) calls and sends leaveApplication the last call's leaveApplication, and is answered.
 
 ## How to call
 
