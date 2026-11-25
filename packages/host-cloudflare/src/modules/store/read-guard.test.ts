@@ -199,8 +199,7 @@ describe("in D1, a row the call read, changed before its commit (#1045)", () => 
   const around = async (shape: Shape, changes: ReadonlyArray<ReadonlyArray<Change>>) => {
     const ids = fresh(), { real } = ids;
     await seed(ids);
-    const runs: Array<Run> = [];
-    const changed: Array<unknown> = [];
+    const runs: Array<Run> = [], changed: Array<unknown> = [];
     const exit = await Effect.runPromise(Effect.gen(function* () {
       const store = yield* Store;
       const between = (_id: string, attempt: number) => Effect.forEach(changes[attempt - 1] ?? [], (change) => Effect.gen(function* () {
@@ -227,7 +226,9 @@ describe("in D1, a row the call read, changed before its commit (#1045)", () => 
     ["a folder its handler found, closed", { plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_3")]], "fld_3", [["open", "open"], ["open", "closed"]]],
     ["the second folder it was handed, closed", { copy: "fld_10" }, [[shut("fld_10")]], "fld_10", [["open", "open"], ["open", "closed"]]],
     ["the third folder it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_3")]], "fld_3", [["open", "open", "open"], ["open", "open", "closed"]]],
+    // One of three closed, the others not, at each place: a guard on the first or last reads alone misses one.
     ["the first of three folders it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_1")]], "fld_1", [["open", "open", "open"], ["closed", "open", "open"]]],
+    ["the middle of three folders it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_10")]], "fld_10", [["open", "open", "open"], ["open", "closed", "open"]]],
     ["a shelf it found, which has no machine, labelled shut", { plan: { reads: [find("shelf", "shf_1")] } }, [[label(Shelf, "shf_1", "shut")]], "shf_1", [["open", "oak"], ["open", "shut"]]],
     ["another note it found, of the thing it writes, labelled shut", { plan: { reads: [find("note", "nte_9")] } }, [[label(Note, "nte_9", "shut")]], "nte_9", [["open", "keep"], ["open", "shut"]]],
     ["a folder found by an id another row holds, closed", { plan: { reads: [{ via: "nte_9" }] } }, [[shut("fld_3")]], "fld_3", [["open", "keep", "open"], ["open", "keep", "closed"]]],

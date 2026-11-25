@@ -219,8 +219,9 @@ describe("a row the call read, changed before its commit (#1045)", () => {
     ["the second folder it was handed, closed", { copy: "fld_10" }, [[shut("fld_10")]], "fld_10", [["open", "open"], ["open", "closed"]]],
     // A guard on the first reads alone misses the last.
     ["the third folder it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_3")]], "fld_3", [["open", "open", "open"], ["open", "open", "closed"]]],
-    // The first of three closed, the later two not: a guard on the last reads alone misses it.
+    // One of three closed, the others not, at each place: a guard on the first or last reads alone misses one.
     ["the first of three folders it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_1")]], "fld_1", [["open", "open", "open"], ["closed", "open", "open"]]],
+    ["the middle of three folders it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_10")]], "fld_10", [["open", "open", "open"], ["open", "closed", "open"]]],
     // A thing with no machine: a guard on rows with a state alone misses it.
     ["a shelf it found, which has no machine, labelled shut", { plan: { reads: [find("shelf", "shf_1")] } }, [[label(Shelf, "shf_1", "shut")]], "shf_1", [["open", "oak"], ["open", "shut"]]],
     // The thing the call writes: a guard on other things alone misses it.

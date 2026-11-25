@@ -5,6 +5,7 @@ src/modules/records/ref-race.test.ts > a row the call read, changed before its c
 src/modules/records/ref-race.test.ts > a row the call read, changed before its commit (#1045) > the second folder it was handed, closed: the call runs again, sees it, and is refused
 src/modules/records/ref-race.test.ts > a row the call read, changed before its commit (#1045) > the third folder it read, closed: the call runs again, sees it, and is refused
 src/modules/records/ref-race.test.ts > a row the call read, changed before its commit (#1045) > the first of three folders it read, closed: the call runs again, sees it, and is refused
+src/modules/records/ref-race.test.ts > a row the call read, changed before its commit (#1045) > the middle of three folders it read, closed: the call runs again, sees it, and is refused
 src/modules/records/ref-race.test.ts > a row the call read, changed before its commit (#1045) > a shelf it found, which has no machine, labelled shut: the call runs again, sees it, and is refused
 src/modules/records/ref-race.test.ts > a row the call read, changed before its commit (#1045) > another note it found, of the thing it writes, labelled shut: the call runs again, sees it, and is refused
 src/modules/records/ref-race.test.ts > a row the call read, changed before its commit (#1045) > a folder found by an id another row holds, closed: the call runs again, sees it, and is refused
