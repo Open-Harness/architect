@@ -73,6 +73,20 @@ CREATE TABLE "bank-account" (
 );
 CREATE UNIQUE INDEX "bank-account_oneAccountPerNumber" ON "bank-account" ("accountNumber");
 CREATE UNIQUE INDEX "bank-account_oneNamePerCompany" ON "bank-account" ("company", "accountName") WHERE "state" IN ('open');
+CREATE TABLE "bank-transaction" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "date" TEXT NOT NULL,
+  "deposit" TEXT NOT NULL,
+  "withdrawal" TEXT NOT NULL,
+  "currency" TEXT NOT NULL,
+  "reference" TEXT NOT NULL,
+  "party" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "bank-transaction_oneTransactionPerMovement" ON "bank-transaction" ("reference");
 CREATE TABLE "branch" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

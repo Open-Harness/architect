@@ -1,0 +1,20 @@
+{
+  "name": "@orthograph/bridge",
+  "version": "0.0.0",
+  "description": "Bridge API 1, as an Orthograph adapter, generated from its published description.",
+  "type": "module",
+  "orthograph": {
+    "kind": "adapter",
+    "blueprint": "blueprint"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "dependencies": {
+    "effect": "4.1.4"
+  },
+  "peerDependencies": {
+    "orthograph": "*"
+  }
+}
