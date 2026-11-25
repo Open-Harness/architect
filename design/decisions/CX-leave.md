@@ -69,17 +69,19 @@ Numbered as they were put to the lead.
 8. **Leave types are per company. Capxul's own.** HRMS's types are site-wide. Capxul's companies are separate
    organisations (K42, call 10), so an allocation or application naming another company's type is refused
    (`AllocationTypeNotInCompany`, `ApplicationTypeNotInCompany`).
-9. **Leave days are decimals. HRMS's Float, held exactly; the decimal type is Capxul's own.** `newLeavesAllocated` and `totalLeaveDays` are `Blueprint.decimal({ places: 2 })`, which
-   admits HRMS's earned-leave rounding of 0.25. Half days are out of scope, so today `totalLeaveDays` is always whole.
-   The decimals travel the generated API (#959, through #973); the generated CLI's printing of them is #969's.
-10. **A holiday already marked. Capxul's own, a known limit.** HRMS's `update_attendance` cancels and deletes an attendance on a holiday
-    inside an approved leave that doesn't count holidays. Capxul can't delete an attendance yet, so approve leaves that
-    day as it is.
+9. **Leave days are decimals. HRMS's Float, held exactly; the decimal type is Capxul's own.** `newLeavesAllocated` and
+   `totalLeaveDays` are `Blueprint.decimal({ places: 2 })`, which admits HRMS's earned-leave rounding of 0.25. Half days
+   are out of scope, so today `totalLeaveDays` is always whole. The decimals travel the generated API (#959, through
+   #973); the generated CLI's printing of them is #969's.
+10. **A holiday already marked. Capxul's own, a known limit.** HRMS's `update_attendance` cancels and deletes an
+    attendance on a holiday inside an approved leave that doesn't count holidays. Capxul can't delete an attendance yet,
+    so approve leaves that day as it is.
 11. **Cancel and reject. HRMS's permissions, with one Capxul call.** Cancel is by the owner only, from open or approved;
     reject from open only. That follows HRMS, where an employee can't submit or cancel. HRMS cancels a submitted
-    application and deletes a draft; cancelling an open one is **Capxul's own**. Cancelling an approved application gives its
-    days back to the balance and leaves the days it marked On Leave as they are (HRMS's `cancel_attendance` cancels
-    them; that waits on cancelling an attendance). *Known limit.*
+    application and deletes a draft. Its status has a Cancelled option, but `on_submit` refuses to submit one, so
+    cancelling an open application as a move is **Capxul's own**. Cancelling an approved application gives its days back
+    to the balance and leaves the days it marked On Leave as they are (HRMS's `cancel_attendance` cancels them; that
+    waits on cancelling an attendance). *Known limit.*
 
 ## Who does what
 
