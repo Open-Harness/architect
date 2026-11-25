@@ -5,18 +5,20 @@
 // and `open`, `Stand.none`. prove starts the two stand-ins (call 3, gap 2's checks, `08-prove-stand-ins.test.ts`). The stand-in
 // logs every request it takes to a file this check reads, and answers its own control routes:
 //   POST /_stand/seed   → 200 { token: "<plugin>-seed", plugin }
-//   POST /_stand/echo   → 200 { echoed: <the body as sent>, plugin }
-//   POST /_stand/refuse → 409 { error: "held" }
+//   POST /_stand/echo-back → 200 { echoed: <the body as sent>, plugin }  (a dash, so a build that rewrites the name is seen)
+//   POST /_stand/refuse    → 409 { error: "held" }
+//   POST /_stand/moved     → 307 {}, with no Location (fetch hands it back as is), so a build that takes a 3xx for success is seen
 //
 // The contract judged (G16-adapter-mounts call 4, GOAL17-check-harness call 0's `Stand.command`):
 //  - `Stand.command<Args, Answer>(mount, name)(args)` is a step's call; prove POSTs `args` as JSON to
 //    `<ORTHO_STAND_<MOUNT>>/_stand/<name>`, the mount's own stand-in, once;
 //  - a 2xx JSON answer is the step's answer: the step's checks judge it, and it is `s.last`, so a later step's args can name it;
-//  - a non-2xx fails the step, naming the mount, the command and the status; so does a mount with no stand-in running, and then
-//    nothing is sent anywhere.
+//  - a non-2xx fails the step, naming the mount, the command and the status, and leaves `s.last` as it was (the journey goes on,
+//    as after an operation's refusal); a mount with no stand-in running fails the step too, and then nothing is sent anywhere,
+//    even with an `ORTHO_STAND_<MOUNT>` in prove's own environment: the address is the world's, from the stand-in prove started.
 //
 // Real workerd, a port from the OS. Written by the checks author; a builder never edits this file.
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -53,8 +55,9 @@ const server = createServer((request, response) => {
     try { body = JSON.parse(raw); } catch {}
     const send = (status, answer) => { response.writeHead(status, { "content-type": "application/json" }); response.end(JSON.stringify(answer)); };
     if (request.method === "POST" && request.url === "/_stand/seed") return send(200, { token: ${JSON.stringify(`${plugin}-seed`)}, plugin: ${JSON.stringify(plugin)} });
-    if (request.method === "POST" && request.url === "/_stand/echo") return send(200, { echoed: body, plugin: ${JSON.stringify(plugin)} });
+    if (request.method === "POST" && request.url === "/_stand/echo-back") return send(200, { echoed: body, plugin: ${JSON.stringify(plugin)} });
     if (request.method === "POST" && request.url === "/_stand/refuse") return send(409, { error: "held" });
+    if (request.method === "POST" && request.url === "/_stand/moved") return send(307, {});
     return send(404, { error: "no such route" });
   });
 });
@@ -75,7 +78,7 @@ const JOURNEYS: Readonly<Record<string, string>> = {
   "the-stand-ins-answer": `import { Blueprint, Stand, expect } from "orthograph";
 
 const seed = Stand.command<{ pair: string }, { token: string; plugin: string }>("pricing", "seed");
-const echo = Stand.command<{ from: string; n: number }, { echoed: { from: string; n: number }; plugin: string }>("fx-backup", "echo");
+const echo = Stand.command<{ from: string; n: number }, { echoed: { from: string; n: number }; plugin: string }>("fx-backup", "echo-back");
 
 export default Blueprint.journey("the stand-ins answer", {
   cast: { visitor: Blueprint.anyone },
@@ -99,12 +102,27 @@ export default Blueprint.journey("a check on a stand-in is judged", {
 `,
   "a-stand-in-refuses": `import { Blueprint, Stand } from "orthograph";
 
-const refuse = Stand.command<{ why: string }, unknown>("pricing", "refuse");
+const seed = Stand.command<{ pair: string }, { token: string }>("pricing", "seed");
+const refuse = Stand.command<{ why: string }, { token: string }>("pricing", "refuse");
+const echo = Stand.command<{ from: string; n: number }, unknown>("fx-backup", "echo-back");
 
 export default Blueprint.journey("a stand-in refuses", {
   cast: { visitor: Blueprint.anyone },
   steps: (s) => [
+    s.step("pricing's stand-in seeds", seed({ pair: "EURUSD" })),
     s.step("a command the stand-in holds", refuse({ why: "held" })),
+    s.step("what came before the refusal is still s.last", echo({ from: s.last.token, n: 3 })),
+  ],
+});
+`,
+  "a-stand-in-moves": `import { Blueprint, Stand } from "orthograph";
+
+const moved = Stand.command<{ why: string }, unknown>("pricing", "moved");
+
+export default Blueprint.journey("a stand-in moves", {
+  cast: { visitor: Blueprint.anyone },
+  steps: (s) => [
+    s.step("a command the stand-in answers with a redirect", moved({ why: "moved" })),
   ],
 });
 `,
@@ -133,19 +151,20 @@ const entriesOf = (log: string): ReadonlyArray<Entry> =>
 
 interface App { readonly root: string; readonly log: string; readonly remove: () => void }
 const apps: Array<App> = [];
-afterEach(() => { for (const app of apps.splice(0)) app.remove(); });
+const stops: Array<() => void> = [];
+afterEach(() => { for (const stop of stops.splice(0)) stop(); for (const app of apps.splice(0)) app.remove(); });
 
-const ortho = (root: string, ...args: ReadonlyArray<string>) => {
-  const said = spawnSync(process.execPath, [cli, ...args, "--root", root], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 240_000 });
+const ortho = (root: string, args: ReadonlyArray<string>, env: Readonly<Record<string, string>> = {}) => {
+  const said = spawnSync(process.execPath, [cli, ...args, "--root", root], { cwd: root, env: { ...process.env, ...env }, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 240_000 });
   return { status: said.status, out: `${said.stdout}${said.stderr}` };
 };
 const succeeds = (root: string, ...args: ReadonlyArray<string>) => {
-  const said = ortho(root, ...args);
+  const said = ortho(root, args);
   expect(said.status, `ortho ${args.join(" ")}:\n${said.out}`).toBe(0);
   return said;
 };
 
-/** A copy of acme with the three adapters generated, installed and mounted, and the four journeys. */
+/** A copy of acme with the three adapters generated, installed and mounted, and the journeys. */
 const app = (): App => {
   const copy = copyOf(acme);
   const log = join(copy.root, "..", "stands.log");
@@ -186,7 +205,7 @@ const app = (): App => {
 };
 
 /** `ortho prove` of one journey. Its exit is acme's whole verdict (`--only` still judges every operation's evals), so a test reads the journey's own lines. */
-const prove = (root: string, journey: string) => ortho(root, "prove", "--env", "local", "--only", journey);
+const prove = (root: string, journey: string, env: Readonly<Record<string, string>> = {}) => ortho(root, ["prove", "--env", "local", "--only", journey], env);
 /** The journey's verdict line and what its step lines say (`  ✘ "<step>": <what>`, the title cut off, so a word in a title never counts). */
 const linesOf = (out: string, journey: string) => {
   const lines = out.split("\n");
@@ -204,7 +223,7 @@ describe("09 a journey reaches a mount's stand-in", () => {
     const asked = entriesOf(log).filter((e) => e.url.startsWith("/_stand/"));
     expect(asked.map((e) => ({ plugin: e.plugin, method: e.method, url: e.url, json: (e.type ?? "").startsWith("application/json"), body: JSON.parse(e.raw || "null") as unknown })), proved.out).toEqual([
       { plugin: "rates", method: "POST", url: "/_stand/seed", json: true, body: { pair: "EURUSD" } },
-      { plugin: "fx-rates", method: "POST", url: "/_stand/echo", json: true, body: { from: "rates-seed", n: 2 } },
+      { plugin: "fx-rates", method: "POST", url: "/_stand/echo-back", json: true, body: { from: "rates-seed", n: 2 } },
     ]);
     expect(linesOf(proved.out, "the stand-ins answer").verdict, proved.out).toBe("journey the stand-ins answer ✔ 2/2 steps");
     nothingRunning(root);
@@ -221,20 +240,45 @@ describe("09 a journey reaches a mount's stand-in", () => {
     nothingRunning(root);
   });
 
-  it("a non-2xx answer fails the step, naming the mount, the command and the status", () => {
+  it("a non-2xx answer fails the step, naming the mount, the command and the status, and leaves s.last as it was", () => {
     const { root, log } = app();
     const proved = prove(root, "a stand-in refuses");
-    expect(entriesOf(log).filter((e) => e.url === "/_stand/refuse").map((e) => e.plugin), proved.out).toEqual(["rates"]);
+    expect(entriesOf(log).filter((e) => e.url.startsWith("/_stand/")).map((e) => ({ plugin: e.plugin, url: e.url, body: JSON.parse(e.raw || "null") as unknown })), proved.out).toEqual([
+      { plugin: "rates", url: "/_stand/seed", body: { pair: "EURUSD" } },
+      { plugin: "rates", url: "/_stand/refuse", body: { why: "held" } },
+      // The refusal's body ({ error: "held" }) is not s.last: the seed's answer still is.
+      { plugin: "fx-rates", url: "/_stand/echo-back", body: { from: "rates-seed", n: 3 } },
+    ]);
     const { verdict, steps } = linesOf(proved.out, "a stand-in refuses");
-    expect(verdict, proved.out).toBe("journey a stand-in refuses ✘ 0/1 steps");
+    expect(verdict, proved.out).toBe("journey a stand-in refuses ✘ 2/3 steps");
     const named = steps.find((l) => l.includes("pricing") && l.includes("refuse") && l.includes("409"));
     expect(named, `a step line naming pricing, refuse and 409:\n${proved.out}`).toBeDefined();
     nothingRunning(root);
   });
 
-  it("a mount with no stand-in running fails the step, naming the mount and the command, and nothing is sent", () => {
+  it("a 3xx answer fails the step too, naming the mount, the command and the status: only a 2xx is an answer", () => {
     const { root, log } = app();
-    const proved = prove(root, "a mount with no stand-in");
+    const proved = prove(root, "a stand-in moves");
+    expect(entriesOf(log).filter((e) => e.url === "/_stand/moved").map((e) => e.plugin), proved.out).toEqual(["rates"]);
+    const { verdict, steps } = linesOf(proved.out, "a stand-in moves");
+    expect(verdict, proved.out).toBe("journey a stand-in moves ✘ 0/1 steps");
+    const named = steps.find((l) => l.includes("pricing") && l.includes("moved") && l.includes("307"));
+    expect(named, `a step line naming pricing, moved and 307:\n${proved.out}`).toBeDefined();
+    nothingRunning(root);
+  });
+
+  it("a mount with no stand-in running fails the step, naming the mount and the command, and nothing is sent, even to an ORTHO_STAND_<MOUNT> in prove's own environment", async () => {
+    const { root, log } = app();
+    // A live stand-in prove did not start, named in prove's own environment: a build that reads the address from there sends to it.
+    const stray = join(root, "..", "stray.mjs");
+    writeFileSync(stray, standInOf("stray", log));
+    const strayed = spawn(process.execPath, [stray, "--port", "0"], { stdio: ["ignore", "pipe", "ignore"] });
+    stops.push(() => strayed.kill("SIGKILL"));
+    const url = await new Promise<string>((said) => {
+      let out = "";
+      strayed.stdout.on("data", (c: Buffer) => { out += c.toString(); const m = /listening on (\S+)/.exec(out); if (m) said(m[1]!); });
+    });
+    const proved = prove(root, "a mount with no stand-in", { ORTHO_STAND_OPEN: url });
     expect(entriesOf(log).filter((e) => e.url.startsWith("/_stand/")), proved.out).toEqual([]);
     const { verdict, steps } = linesOf(proved.out, "a mount with no stand-in");
     expect(verdict, proved.out).toBe("journey a mount with no stand-in ✘ 0/1 steps");

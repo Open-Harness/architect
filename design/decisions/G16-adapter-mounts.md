@@ -142,6 +142,10 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
   stand-in. The step's checks judge the answer, as an operation step's do. A stand-call runs no operation, so, like a clock
   step, it expects no span, and the compiler's journey reader skips it as it skips a clock step. A mount with no stand-in
   running sends nothing anywhere.
+  Only a 2xx is an answer: a 3xx fails the step as a 4xx does. A failed stand-call leaves `s.last` as it was, and the
+  journey goes on, as after an operation's refusal. The address is the world's, from the stand-in prove started, never an
+  `ORTHO_STAND_<MOUNT>` in prove's own environment. The command's name goes into the path as written, dashes and all.
+  (Added from the hostile pass on #1025, 25 November 2026.)
 
 Gap 4's call, an event to an app operation, is made after gap 1's checks are clear, and is added here.
 
