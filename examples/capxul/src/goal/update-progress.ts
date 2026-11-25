@@ -18,15 +18,16 @@ const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
  *   progress  goal.progress
  *
  * Answer, from blueprint/things/goal/verbs/update-progress.ts:
- *   goal      goal.id
- *   progress  goal.progress
+ *   goal       goal.id
+ *   progress   goal.progress
+ *   appraisal  appraisal.id
  *
  * Refusals:
  *   GoalCycleCompleted      exit 41   GL-001  yours to refuse below; from blueprint/things/goal/errors.ts
  *   GoalIsGroup             exit 47   GL-009  yours to refuse below; from blueprint/things/goal/errors.ts
  *   ProgressOutOfRange      exit 46   GL-006  yours to refuse below; from blueprint/things/goal/errors.ts
  *   AppraisalAlreadyExists  exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
- *   GoalNotPending          exit 40   GL-900  the runtime's, when the goal isn't in pending or inProgress or completed, carrying state; from blueprint/things/goal/machine.ts
+ *   GoalNotPending          exit 40   GL-900  the runtime's, when the goal isn't in pending or inProgress or completed or archived or closed, carrying state; from blueprint/things/goal/machine.ts
  *   NotAllowed              exit 3    AR-001  the runtime's, when the caller isn't the self of its goal.employee, or the owner of its goal.company; from blueprint/things/employee/roles.ts
  *   IdempotencyConflict     exit 120  AR-002  the runtime's, when the same request key comes with another payload; from blueprint/things/goal/verbs/update-progress.ts
  *
@@ -41,12 +42,28 @@ const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
  *   ▶ pending     updateProgress  pending     GoalProgressUpdated
  *   ▶ pending     updateProgress  inProgress  GoalProgressUpdated
  *   ▶ pending     updateProgress  completed   GoalProgressUpdated
+ *   ▶ pending     updateProgress  archived    GoalProgressUpdated
+ *   ▶ pending     updateProgress  closed      GoalProgressUpdated
  *   ▶ inProgress  updateProgress  pending     GoalProgressUpdated
  *   ▶ inProgress  updateProgress  inProgress  GoalProgressUpdated
  *   ▶ inProgress  updateProgress  completed   GoalProgressUpdated
+ *   ▶ inProgress  updateProgress  archived    GoalProgressUpdated
+ *   ▶ inProgress  updateProgress  closed      GoalProgressUpdated
  *   ▶ completed   updateProgress  pending     GoalProgressUpdated
  *   ▶ completed   updateProgress  inProgress  GoalProgressUpdated
  *   ▶ completed   updateProgress  completed   GoalProgressUpdated
+ *   ▶ completed   updateProgress  archived    GoalProgressUpdated
+ *   ▶ completed   updateProgress  closed      GoalProgressUpdated
+ *   ▶ archived    updateProgress  pending     GoalProgressUpdated
+ *   ▶ archived    updateProgress  inProgress  GoalProgressUpdated
+ *   ▶ archived    updateProgress  completed   GoalProgressUpdated
+ *   ▶ archived    updateProgress  archived    GoalProgressUpdated
+ *   ▶ archived    updateProgress  closed      GoalProgressUpdated
+ *   ▶ closed      updateProgress  pending     GoalProgressUpdated
+ *   ▶ closed      updateProgress  inProgress  GoalProgressUpdated
+ *   ▶ closed      updateProgress  completed   GoalProgressUpdated
+ *   ▶ closed      updateProgress  archived    GoalProgressUpdated
+ *   ▶ closed      updateProgress  closed      GoalProgressUpdated
  *     pending     complete        completed   GoalCompleted
  *     inProgress  complete        completed   GoalCompleted
  *     pending     archive         archived    GoalArchived
@@ -64,7 +81,7 @@ const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
  *
  * What the runtime does, so this handler doesn't:
  *   before it runs, it refuses NotAllowed unless the caller is the self of its goal.employee, or the owner of its goal.company;
- *   before it runs, it refuses GoalNotPending unless the goal is in pending or inProgress or completed;
+ *   before it runs, it refuses GoalNotPending unless the goal is in pending or inProgress or completed or archived or closed;
  *   before it runs, it hands in the goal it read as subject, so this handler never reads it again;
  *   each step is its own span: goal.update-progress.load, goal.update-progress.update;
  *   once it answers, it sets the goal's state to the outcome given to move;
@@ -97,21 +114,26 @@ const updateProgress: Handler = (_payload, { steps, move }) =>
     // Step update: database, in the store goal, appraisal, span goal.update-progress.update.
     yield* steps.update(Handlers.blank("update: the work this step does"));
 
-    // The move updateProgress, from pending or inProgress or completed: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where updateProgress ends: pending or inProgress or completed");
+    // The move updateProgress, from pending or inProgress or completed or archived or closed: one branch per outcome. A new outcome won't compile until it has its branch.
+    const outcome = yield* Handlers.blank<Outcome>("where updateProgress ends: pending or inProgress or completed or archived or closed");
     yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed), complete (to completed), archive (to archived), close (to closed).
+      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
       Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed), complete (to completed), archive (to archived), close (to closed).
+      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
       Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed).
+      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed).
       Match.when("completed", () => move("completed")),
+      // To archived. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), close (to closed), unarchive (to pending or inProgress or completed).
+      Match.when("archived", () => move("archived")),
+      // To closed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), archive (to archived), reopen (to pending or inProgress or completed).
+      Match.when("closed", () => move("closed")),
       Match.exhaustive,
     );
 
     return {
       goal: yield* Handlers.blank("goal, a goal.id"),
       progress: yield* Handlers.blank("progress, a goal.progress"),
+      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
     };
   });
 

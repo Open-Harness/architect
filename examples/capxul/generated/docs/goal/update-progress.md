@@ -47,6 +47,13 @@ Set how far along a goal is, from 0 to 100.
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **she moves the UI to 70.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `70`, scale: 0 }, and gets back `70`.
+- **and no longer move.** `olga` (signed in) calls and sends goal the last call's items 2 id, progress { value: `100`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.
+
 ### set and track goals
 
 Starts from the world `a started manual cycle`.

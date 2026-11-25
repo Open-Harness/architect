@@ -48,6 +48,26 @@ Make an employee's appraisal in a cycle, by a template.
 
 ## Worked examples
 
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **she makes Olga's appraisal in it by hand.** `ada` (role company.owner) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
+
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **Olga can't make an appraisal.** `olga` (signed in) calls and sends employee the world's newHire, appraisalCycle the world's manualCycle, appraisalTemplate the world's appraisalTemplate, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends employee the world's newHire, appraisalCycle the world's manualCycle, appraisalTemplate the world's appraisalTemplate, and is refused with NotAllowed, AR-001.
+- **a second appraisal for Olga in H1 2027 is refused.** `ada` (role company.owner) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, appraisalTemplate the world's appraisalTemplate, and is refused with AppraisalAlreadyExists, AP-005.
+- **a template of Acme Logistics is judged before that.** `ada` (role company.owner) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisalTemplateNotInCompany, AP-004.
+- **Bo of Acme Logistics can't be appraised in Acme Trading's cycle.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's manualCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisedEmployeeNotInCompany, AP-001.
+- **Ada makes Dee's H1 2027 appraisal.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's manualCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
+- **but no new appraisal is made for her, judged before a template of Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisedEmployeeHasLeft, AP-002.
+- **no appraisal is made in it now, judged before a template of Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's manualCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisalCycleCompleted, AP-003.
+- **Cy's leaving is judged before the completed cycle.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, appraisalCycle the world's manualCycle, appraisalTemplate the world's appraisalTemplate, and is refused with AppraisedEmployeeHasLeft, AP-002.
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

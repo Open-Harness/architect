@@ -37,12 +37,28 @@ const { GoalCycleCompleted } = Errors.declared;
  *     pending     updateProgress  pending     GoalProgressUpdated
  *     pending     updateProgress  inProgress  GoalProgressUpdated
  *     pending     updateProgress  completed   GoalProgressUpdated
+ *     pending     updateProgress  archived    GoalProgressUpdated
+ *     pending     updateProgress  closed      GoalProgressUpdated
  *     inProgress  updateProgress  pending     GoalProgressUpdated
  *     inProgress  updateProgress  inProgress  GoalProgressUpdated
  *     inProgress  updateProgress  completed   GoalProgressUpdated
+ *     inProgress  updateProgress  archived    GoalProgressUpdated
+ *     inProgress  updateProgress  closed      GoalProgressUpdated
  *     completed   updateProgress  pending     GoalProgressUpdated
  *     completed   updateProgress  inProgress  GoalProgressUpdated
  *     completed   updateProgress  completed   GoalProgressUpdated
+ *     completed   updateProgress  archived    GoalProgressUpdated
+ *     completed   updateProgress  closed      GoalProgressUpdated
+ *     archived    updateProgress  pending     GoalProgressUpdated
+ *     archived    updateProgress  inProgress  GoalProgressUpdated
+ *     archived    updateProgress  completed   GoalProgressUpdated
+ *     archived    updateProgress  archived    GoalProgressUpdated
+ *     archived    updateProgress  closed      GoalProgressUpdated
+ *     closed      updateProgress  pending     GoalProgressUpdated
+ *     closed      updateProgress  inProgress  GoalProgressUpdated
+ *     closed      updateProgress  completed   GoalProgressUpdated
+ *     closed      updateProgress  archived    GoalProgressUpdated
+ *     closed      updateProgress  closed      GoalProgressUpdated
  *     pending     complete        completed   GoalCompleted
  *     inProgress  complete        completed   GoalCompleted
  *     pending     archive         archived    GoalArchived
@@ -84,11 +100,11 @@ const unarchive: Handler = (_payload, { steps, move }) =>
     // The move unarchive, from archived: one branch per outcome. A new outcome won't compile until it has its branch.
     const outcome = yield* Handlers.blank<Outcome>("where unarchive ends: pending or inProgress or completed");
     yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed), complete (to completed), archive (to archived), close (to closed).
+      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
       Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed), complete (to completed), archive (to archived), close (to closed).
+      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
       Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed).
+      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed).
       Match.when("completed", () => move("completed")),
       Match.exhaustive,
     );

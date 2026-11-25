@@ -23,7 +23,9 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *   parentGoal      goal.parentGoal (optional)
  *
  * Answer, from blueprint/things/goal/verbs/create.ts:
- *   goal  goal.id
+ *   goal            goal.id
+ *   appraisal       appraisal.id
+ *   appraisalCycle  goal.appraisalCycle
  *
  * Refusals:
  *   GoalCycleCompleted        exit 41   GL-001  yours to refuse below; from blueprint/things/goal/errors.ts
@@ -51,12 +53,28 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *     pending     updateProgress  pending     GoalProgressUpdated
  *     pending     updateProgress  inProgress  GoalProgressUpdated
  *     pending     updateProgress  completed   GoalProgressUpdated
+ *     pending     updateProgress  archived    GoalProgressUpdated
+ *     pending     updateProgress  closed      GoalProgressUpdated
  *     inProgress  updateProgress  pending     GoalProgressUpdated
  *     inProgress  updateProgress  inProgress  GoalProgressUpdated
  *     inProgress  updateProgress  completed   GoalProgressUpdated
+ *     inProgress  updateProgress  archived    GoalProgressUpdated
+ *     inProgress  updateProgress  closed      GoalProgressUpdated
  *     completed   updateProgress  pending     GoalProgressUpdated
  *     completed   updateProgress  inProgress  GoalProgressUpdated
  *     completed   updateProgress  completed   GoalProgressUpdated
+ *     completed   updateProgress  archived    GoalProgressUpdated
+ *     completed   updateProgress  closed      GoalProgressUpdated
+ *     archived    updateProgress  pending     GoalProgressUpdated
+ *     archived    updateProgress  inProgress  GoalProgressUpdated
+ *     archived    updateProgress  completed   GoalProgressUpdated
+ *     archived    updateProgress  archived    GoalProgressUpdated
+ *     archived    updateProgress  closed      GoalProgressUpdated
+ *     closed      updateProgress  pending     GoalProgressUpdated
+ *     closed      updateProgress  inProgress  GoalProgressUpdated
+ *     closed      updateProgress  completed   GoalProgressUpdated
+ *     closed      updateProgress  archived    GoalProgressUpdated
+ *     closed      updateProgress  closed      GoalProgressUpdated
  *     pending     complete        completed   GoalCompleted
  *     inProgress  complete        completed   GoalCompleted
  *     pending     archive         archived    GoalArchived
@@ -137,11 +155,11 @@ const create: Handler = (_payload, { steps, move, id }) =>
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
     const outcome = yield* Handlers.blank<Outcome>("where create ends: pending or inProgress or completed");
     yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed), complete (to completed), archive (to archived), close (to closed).
+      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
       Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed), complete (to completed), archive (to archived), close (to closed).
+      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
       Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed).
+      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed).
       Match.when("completed", () => move("completed")),
       Match.exhaustive,
     );
@@ -149,6 +167,8 @@ const create: Handler = (_payload, { steps, move, id }) =>
     return {
       // GoalCreated needs goal, and only the answer can give it.
       goal: id,
+      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
+      appraisalCycle: yield* Handlers.blank("appraisalCycle, a goal.appraisalCycle"),
     };
   });
 

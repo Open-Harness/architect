@@ -13,8 +13,9 @@ import type { Handler } from "../../generated/api/src/appraisal/submit.handler.t
  *   appraisal  appraisal.id
  *
  * Answer, from blueprint/things/appraisal/verbs/submit.ts:
- *   appraisal   appraisal.id
- *   finalScore  appraisal.finalScore
+ *   appraisal       appraisal.id
+ *   finalScore      appraisal.finalScore
+ *   appraisalCycle  appraisal.appraisalCycle
  *
  * Refusals:
  *   AppraisalAlreadyExists  exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
@@ -55,6 +56,7 @@ const submit: Handler = (_payload, { steps, move }) =>
     return {
       appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
       finalScore: yield* Handlers.blank("finalScore, an appraisal.finalScore"),
+      appraisalCycle: yield* Handlers.blank("appraisalCycle, an appraisal.appraisalCycle"),
     };
   });
 

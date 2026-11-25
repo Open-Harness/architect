@@ -35,6 +35,12 @@ Read one appraisal-cycle by its id: company, cycleName, startDate, endDate, kraE
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **FY 2027 reads back completed.** `ada` (role company.owner) calls and sends id the last call's items 0 appraisalCycle, and gets back [`FY 2027`, `Automated Based on Goal Progress`, 2, `completed`].
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

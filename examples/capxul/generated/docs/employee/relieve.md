@@ -72,6 +72,12 @@ Starts from the world `an interview`.
 
 - **Ada relieves Cy on 3 December.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-12-03`, and gets back `2026-12-03`.
 
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **Dee leaves.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-11-30`, and gets back the world's newHire.
+
 ### move an employee through the company
 
 Starts from the world `a new hire`.
@@ -84,6 +90,12 @@ Starts from the world `a second transfer`.
 
 - **Ada relieves Bo on 30 November.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
 - **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
 ### run a separation
 

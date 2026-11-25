@@ -44,7 +44,7 @@ Add something a company rates its people on.
 
 Starts from the world `three companies`.
 
-- **Ada adds the criteria Problem Solving to Acme Trading.** `ada` (role company.owner) calls and sends company the world's company, criteria `Problem Solving`, and gets back an answer matching `^efc_[0-9a-z]+$`.
+- **Ada adds a criteria to Acme Trading.** `ada` (role company.owner) calls and sends company the world's company, criteria `Problem Solving`, and gets back an answer matching `^efc_[0-9a-z]+$`.
 - **a name in lower case is kept as typed.** `ada` (role company.owner) calls and sends company the world's company, criteria `teamwork`, and gets back an answer matching `^efc_[0-9a-z]+$`.
 - **the same criteria can't be added to Acme Trading twice.** `ada` (role company.owner) calls and sends company the world's company, criteria `Problem Solving`, and is refused with CriteriaNameTaken, FC-001, carrying criteria `Problem Solving`.
 - **but Acme Logistics may have its own.** `ada` (role company.owner) calls and sends company the world's otherCompany, criteria `Problem Solving`, and gets back an answer matching `^efc_[0-9a-z]+$`.

@@ -44,6 +44,13 @@ Start a cycle, making an appraisal for each appraisee who has none yet.
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **Bo can't start it.** `bo` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **Ada starts it: an appraisal each for Olga and Cy.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and gets back 2.
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

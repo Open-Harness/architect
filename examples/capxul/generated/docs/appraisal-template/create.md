@@ -50,6 +50,12 @@ Make an appraisal template: KRAs and rating criteria, each with its weightage.
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **Ada makes the Platform template: Quality 60 and Development 40, rated on Problem Solving and Excellence, 50 each.** `ada` (role company.owner) calls and sends company the world's company, title `Platform team`, kras [{ kra: the world's kra, weightage: { value: `60`, scale: 0 } }, { kra: the world's otherKra, weightage: { value: `40`, scale: 0 } }], criteria [{ criteria: the world's criteria, weightage: { value: `50`, scale: 0 } }, { criteria: the world's otherCriteria, weightage: { value: `50`, scale: 0 } }], and gets back an answer matching `^apt_[0-9a-z]+$`.
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

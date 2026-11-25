@@ -31,6 +31,12 @@ Read one kra by its id: company, title, state.
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **Quality is Acme Trading's KRA.** `ada` (role company.owner) calls and sends id the world's kra, and gets back [the world's company, `Quality`].
+
 ### set up kras and criteria
 
 Starts from the world `three companies`.

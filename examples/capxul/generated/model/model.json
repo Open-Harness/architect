@@ -12768,13 +12768,12 @@
           },
           "ref": "appraisal.id"
         },
-        "parentGoal": {
+        "appraisalCycle": {
           "value": {
             "type": "id",
-            "prefix": "gol"
+            "prefix": "apc"
           },
-          "optional": true,
-          "ref": "goal.parentGoal"
+          "ref": "goal.appraisalCycle"
         }
       },
       "move": {
@@ -12863,7 +12862,7 @@
       "budget": {
         "p95Ms": 400
       },
-      "hash": "1e24199c9fdc5d16"
+      "hash": "070f00619dca8828"
     },
     "goal.get": {
       "kind": "read",
@@ -17240,6 +17239,1158 @@
         }
       ],
       "sourceHash": "4a4ab32fd007147f42b7c3140faeaedb8e860d70577b3001cc4af249f3933e53"
+    },
+    "journeys/appraise-a-year.ts": {
+      "name": "appraise a year",
+      "file": "journeys/appraise-a-year.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "olga": {
+          "kind": "signed-in"
+        },
+        "cy": {
+          "kind": "signed-in"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a second feedback criteria",
+      "steps": [
+        {
+          "title": "Quality is Acme Trading's KRA",
+          "call": {
+            "actor": "ada",
+            "operation": "kra.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Quality"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada makes the Platform template: Quality 60 and Development 40, rated on Problem Solving and Excellence, 50 each",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-template.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Platform team",
+              "kras": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "60",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "40",
+                    "scale": 0
+                  }
+                }
+              ],
+              "criteria": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "50",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "50",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apt_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "and FY 2027, scored from goals, appraising Olga and Cy by it",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "cycleName": "FY 2027",
+              "startDate": "2027-01-01",
+              "endDate": "2027-12-31",
+              "kraEvaluationMethod": "Automated Based on Goal Progress",
+              "appraisees": [
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "last",
+                      "appraisalTemplate"
+                    ]
+                  }
+                },
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "secondEmployee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "last",
+                      "appraisalTemplate"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apc_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal-cycle",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "state": "notStarted"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't start it",
+          "call": {
+            "actor": "bo",
+            "operation": "appraisal-cycle.start",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada starts it: an appraisal each for Olga and Cy",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.start",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 2
+            },
+            {
+              "kind": "emits",
+              "event": "AppraisalCycleStarted",
+              "fields": {
+                "appraisalCycle": {
+                  "ref": [
+                    "last",
+                    "appraisalCycle"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal-cycle",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "state": "inProgress"
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisals",
+                  "0"
+                ]
+              },
+              "state": "draft"
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisals",
+                  "1"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "Olga sets herself a group goal under Quality, Ship v2",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "Ship v2",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^gol_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "and under it the API, done: Ship v2 follows it to 100",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "API",
+              "progress": {
+                "value": "100",
+                "scale": 0
+              },
+              "isGroup": false,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "completed"
+            }
+          ]
+        },
+        {
+          "title": "Olga's goals: Ship v2 has followed the API to 100",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "Ship v2",
+                  "100",
+                  "completed"
+                ],
+                [
+                  "API",
+                  "100",
+                  "completed"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "she adds the UI under Ship v2, half done",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "UI",
+              "progress": {
+                "value": "50",
+                "scale": 0
+              },
+              "isGroup": false,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
+        },
+        {
+          "title": "she moves the UI to 70",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.update-progress",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "progress": {
+                "value": "70",
+                "scale": 0
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "70"
+            }
+          ]
+        },
+        {
+          "title": "Ship v2 is at 85, the average of 100 and 70, so Quality scores 85 and earns 51: a total of 2.55",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "60",
+                    "85",
+                    "51"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "40",
+                    "0",
+                    "0"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "50",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "50",
+                    "0"
+                  ]
+                ],
+                [
+                  "2.55",
+                  "0",
+                  "0",
+                  "0.85"
+                ],
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga sets a Development goal, Refactor, at 40: it earns 16, and the total is 3.35",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "otherKra"
+                ]
+              },
+              "goalName": "Refactoring",
+              "progress": {
+                "value": "40",
+                "scale": 0
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
+        },
+        {
+          "title": "Cy gives feedback on Olga's appraisal, 0.9 and 0.6: a total of 3.75",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "feedback": "Ship v2 landed well.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "9",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "6",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3.75"
+            }
+          ]
+        },
+        {
+          "title": "and submits it",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3.75"
+            }
+          ]
+        },
+        {
+          "title": "Olga rates herself 1 and 0.8: a self score of 4.5, and a final score of 3.87",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "4.5",
+                "3.87"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada submits Olga's appraisal",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3.87"
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "Cy's is still a draft, so FY 2027 can't be completed",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.complete",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisalsNotSubmitted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the cycle's appraisals: Olga's submitted, Cy's a draft",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "submitted"
+                ],
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "secondEmployee"
+                    ]
+                  },
+                  "draft"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada submits Cy's",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "1",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "title": "and completes FY 2027",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.complete",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "AppraisalCycleCompleted",
+              "fields": {
+                "appraisalCycle": {
+                  "ref": [
+                    "last",
+                    "appraisalCycle"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal-cycle",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "state": "completed"
+            }
+          ]
+        },
+        {
+          "title": "Olga's appraisal reads back submitted, every score as it stood",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "60",
+                    "85",
+                    "51"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "40",
+                    "40",
+                    "16"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "50",
+                    "1"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "50",
+                    "0.8"
+                  ]
+                ],
+                [
+                  "3.35",
+                  "4.5",
+                  "3.75",
+                  "3.87"
+                ],
+                "submitted"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her goals read back in the order she set them, the API and the UI under Ship v2",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "appraisalCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "Ship v2",
+                  {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "85",
+                  true,
+                  null,
+                  "inProgress"
+                ],
+                [
+                  "API",
+                  {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "100",
+                  false,
+                  0,
+                  "completed"
+                ],
+                [
+                  "UI",
+                  {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "70",
+                  false,
+                  0,
+                  "inProgress"
+                ],
+                [
+                  "Refactoring",
+                  {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "40",
+                  false,
+                  null,
+                  "inProgress"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and no longer move",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.update-progress",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "2",
+                  "id"
+                ]
+              },
+              "progress": {
+                "value": "100",
+                "scale": 0
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "GoalCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "FY 2027 reads back completed",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "FY 2027",
+                "Automated Based on Goal Progress",
+                2,
+                "completed"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "81c677f3bed10511e38b492fec8411584c44d56fd167de1917cdbfc1f294f100"
     },
     "journeys/approve-an-attendance-request.ts": {
       "name": "approve an attendance request",
@@ -25922,6 +27073,2134 @@
       ],
       "sourceHash": "afd05f0ef3e5a21ebe9997cb421a95b01f5812d06ec0fd8c075c26fccf999dbd"
     },
+    "journeys/give-performance-feedback.ts": {
+      "name": "give performance feedback",
+      "file": "journeys/give-performance-feedback.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "olga": {
+          "kind": "signed-in"
+        },
+        "cy": {
+          "kind": "signed-in"
+        },
+        "dee": {
+          "kind": "signed-in"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a manual cycle draft",
+      "steps": [
+        {
+          "title": "Cy's draft on Olga reads back: 0.8 × 5 × 70% and 0.7 × 5 × 30%, a total of 3.85",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "appraisal"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "appraisalCycle"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                "Olga explains her designs clearly.",
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0.8"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "0.7"
+                  ]
+                ],
+                "3.85",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads it",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-performance-feedback.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                "3.85"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga can't read what Cy wrote of her",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-performance-feedback.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Dee",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor Bo",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-performance-feedback.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a draft counts for nothing: Olga's appraisal has no feedback score",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0",
+                "0",
+                "0"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't give feedback in Cy's name",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-performance-feedback.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nor can Dee",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga can't give feedback on her own appraisal, judged before ratings that don't match",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "2",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackForOneself",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-performance-feedback.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Bo of Acme Logistics can't give feedback on Acme Trading's appraisal, judged before ratings that don't match",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "2",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ReviewerNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "ratings missing a criteria are refused, even out of range",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "2",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackRatingsDontMatchCriteria",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so are ratings naming a criteria twice",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackRatingsDontMatchCriteria",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and a criteria of Acme Logistics",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "outsideCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackRatingsDontMatchCriteria",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and every criteria with one more",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "outsideCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackRatingsDontMatchCriteria",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a rating over 1 is refused",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "101",
+                    "scale": 2
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackRatingOutOfRange",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and one below 0",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "-1",
+                    "scale": 2
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackRatingOutOfRange",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Dee rates Olga 0.2 and 1, in the other order: 0.7 and 1.5, a total of 2.2",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "2",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "last",
+                    "employeePerformanceFeedback"
+                  ]
+                },
+                "2.2"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^epf_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "PerformanceFeedbackDrafted",
+              "fields": {
+                "employeePerformanceFeedback": {
+                  "ref": [
+                    "last",
+                    "employeePerformanceFeedback"
+                  ]
+                },
+                "appraisal": {
+                  "ref": [
+                    "world",
+                    "appraisal"
+                  ]
+                },
+                "reviewer": {
+                  "ref": [
+                    "world",
+                    "newHire"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              },
+              "state": "draft"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "employee-performance-feedback.create",
+                "employee-performance-feedback.create.load",
+                "employee-performance-feedback.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Cy can't submit Dee's",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Ada",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Dee submits it: the average is 2.2, and Olga's final score 0.73",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2.2",
+                {
+                  "ref": [
+                    "world",
+                    "appraisal"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "PerformanceFeedbackSubmitted",
+              "fields": {
+                "employeePerformanceFeedback": {
+                  "ref": [
+                    "last",
+                    "employeePerformanceFeedback"
+                  ]
+                },
+                "appraisal": {
+                  "ref": [
+                    "world",
+                    "appraisal"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              },
+              "state": "submitted"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "employee-performance-feedback.submit",
+                "employee-performance-feedback.submit.load",
+                "employee-performance-feedback.submit.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "it can't be submitted twice",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "employee-performance-feedback.notFrom",
+              "fields": {
+                "state": "submitted"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "it reads back submitted, on the template's criteria in the template's order",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "appraisal"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "appraisalCycle"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "newHire"
+                  ]
+                },
+                "Steady work.",
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0.2"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "1"
+                  ]
+                ],
+                "2.2",
+                "submitted"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga's appraisal shows it",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0",
+                "2.2",
+                "0.73"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga can't submit Cy's draft",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Bo",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy submits hers: the average of 2.2 and 3.85 is 3.03 (3.025, rounded up), and the final score 1.01",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "feedbackDraft"
+                  ]
+                },
+                "3.03",
+                {
+                  "ref": [
+                    "world",
+                    "appraisal"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "PerformanceFeedbackSubmitted",
+              "fields": {
+                "employeePerformanceFeedback": {
+                  "ref": [
+                    "world",
+                    "feedbackDraft"
+                  ]
+                },
+                "appraisal": {
+                  "ref": [
+                    "world",
+                    "appraisal"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "world",
+                  "feedbackDraft"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "Cy may give Olga a second feedback, 1 and 0.5: a total of 4.25",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "5",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "4.25"
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "submitted, it averages with the other two: 10.3 ÷ 3 is 3.43, and the final score 1.14",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3.43"
+            }
+          ]
+        },
+        {
+          "title": "Olga's appraisal reads it back",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0",
+                "3.43",
+                "1.14"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy's own appraisal is untouched by feedback on Olga's: her Development goal at 50% earns 35, a total of 1.75",
+          "call": {
+            "actor": "cy",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "secondAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1.75",
+                "0",
+                "0",
+                "0.58"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada sets up Q3 2027, rated by hand, and doesn't start it",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "cycleName": "Q3 2027",
+              "startDate": "2027-07-01",
+              "endDate": "2027-09-30",
+              "kraEvaluationMethod": "Manual Rating",
+              "appraisees": [
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apc_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "she makes Olga's appraisal in it by hand",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apr_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "and Cy gives feedback on it",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "feedback": "Early thoughts.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "6",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "6",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3"
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "it reads back, a draft about Olga",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                "3",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Dee leaves",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "relievingDate": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "she may still submit her draft on Cy: 0.5 and 0.5, a total and average of 2.5",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "world",
+                  "deeDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2.5",
+                {
+                  "ref": [
+                    "world",
+                    "secondAppraisal"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "world",
+                  "deeDraft"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "Cy's appraisal shows it",
+          "call": {
+            "actor": "cy",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "secondAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1.75",
+                "0",
+                "2.5",
+                "1.42"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "but she starts no new feedback, judged before ratings that don't match",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "2",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ReviewerHasLeft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-performance-feedback.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada submits Olga's H1 2027 appraisal",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "and Cy's",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "secondManualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "and completes H1 2027",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.complete",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "Cy's draft there can't be submitted now",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "world",
+                  "manualDraft"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "world",
+                  "manualDraft"
+                ]
+              },
+              "state": "draft"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "employee-performance-feedback.submit.update"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nor any new feedback given there, judged before ratings that don't match",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "feedback": "Late.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "2",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the completed cycle is judged before feedback on oneself",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "feedback": "Late.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and before a reviewer who has left",
+          "call": {
+            "actor": "dee",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "feedback": "Late.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and a reviewer of Acme Logistics",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "feedback": "Late.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FeedbackCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga's H1 2027 appraisal has no feedback score",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "0"
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "51aa7614c0ff8399f2dbce74a21d5e4bd26a9aed5f03bae928ae2821f6d8a94a"
+    },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
       "file": "journeys/grade-names-are-the-companys.ts",
@@ -33423,6 +36702,2748 @@
       ],
       "sourceHash": "bd4552915692de5a0149388f7fb6e572ec7bfa7b72697c8284471e574866985e"
     },
+    "journeys/rate-an-appraisal.ts": {
+      "name": "rate an appraisal",
+      "file": "journeys/rate-an-appraisal.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "olga": {
+          "kind": "signed-in"
+        },
+        "cy": {
+          "kind": "signed-in"
+        },
+        "dee": {
+          "kind": "signed-in"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a manual cycle draft",
+      "steps": [
+        {
+          "title": "Olga's H1 2027 appraisal reads back by hand, every score 0",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "manualCycle"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "appraisalTemplate"
+                  ]
+                },
+                "Manual Rating",
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "0",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "0",
+                    "0"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "0"
+                  ]
+                ],
+                "0",
+                "0",
+                "0",
+                "0",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy can't read Olga's",
+          "call": {
+            "actor": "cy",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Bo",
+          "call": {
+            "actor": "bo",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga can't rate her own KRAs",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Bo",
+          "call": {
+            "actor": "bo",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "an appraisal scored from goals isn't rated by hand, even with a score out of range",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "6",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotRatedManually",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "appraisal.rate.update"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "scores missing a KRA are refused, even out of range",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "6",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ScoresDontMatchKras",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so are scores naming a KRA twice",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ScoresDontMatchKras",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and a KRA the appraisal doesn't have",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "outsideKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ScoresDontMatchKras",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and a score for each KRA with one more",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "outsideKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ScoresDontMatchKras",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a score over 5 is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "501",
+                    "scale": 2
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "KraScoreOutOfRange",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and one below 0",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "-1",
+                    "scale": 2
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "KraScoreOutOfRange",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada scores Quality 5 and Development 3: a total of 3.6",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "manualAppraisal"
+                  ]
+                },
+                "3.6",
+                "1.2"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "AppraisalRated",
+              "fields": {
+                "appraisal": {
+                  "ref": [
+                    "world",
+                    "manualAppraisal"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "state": "draft"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "appraisal.rate",
+                "appraisal.rate.load",
+                "appraisal.rate.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Quality earns 1.5 and Development 2.1, and the final score is 1.2",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "5",
+                    "1.5"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "3",
+                    "2.1"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "0"
+                  ]
+                ],
+                "3.6",
+                "0",
+                "0",
+                "1.2",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "scores given in the other order land on their own KRAs",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "0",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1.5",
+                "0.5"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a rating replaces the one before: 4.25 earns 1.275, rounded up to 1.28, and 3.15 earns 2.205, rounded up to 2.21",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "425",
+                    "scale": 2
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "315",
+                    "scale": 2
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "3.49",
+                "1.16"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "it reads back with those lines",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "4.25",
+                    "1.28"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "3.15",
+                    "2.21"
+                  ]
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "5 and 3 again",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "3",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3.6"
+            }
+          ]
+        },
+        {
+          "title": "Ada can't rate Olga for her",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Cy",
+          "call": {
+            "actor": "cy",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "ratings missing a criteria are refused, even out of range",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "2",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "SelfRatingsDontMatchCriteria",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "appraisal.self-rate.update"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and so are ratings naming a criteria twice",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "SelfRatingsDontMatchCriteria",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and a criteria of Acme Logistics",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "outsideCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "SelfRatingsDontMatchCriteria",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a rating over 1 is refused",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "101",
+                    "scale": 2
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "SelfRatingOutOfRange",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and one below 0",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "-1",
+                    "scale": 2
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "SelfRatingOutOfRange",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga rates herself 0.8 and 0.7: a self score of 3.85, and a final score of 2.48",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "manualAppraisal"
+                  ]
+                },
+                "3.85",
+                "2.48"
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "AppraisalSelfRated",
+              "fields": {
+                "appraisal": {
+                  "ref": [
+                    "world",
+                    "manualAppraisal"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "state": "draft"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "appraisal.self-rate",
+                "appraisal.self-rate.load",
+                "appraisal.self-rate.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "her ratings read back on their criteria, and Ada's scores stand",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "5",
+                    "1.5"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "3",
+                    "2.1"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0.8"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "0.7"
+                  ]
+                ],
+                "3.6",
+                "3.85",
+                "0",
+                "2.48",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "rating herself again, in the other order, 1 and 0, replaces it: a self score of 3.5",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "0",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "3.5",
+                "2.37"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "0.8 and 0.7 again",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3.85"
+            }
+          ]
+        },
+        {
+          "title": "Cy's appraisal is untouched by Olga's",
+          "call": {
+            "actor": "cy",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "secondManualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "0",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "0",
+                    "0"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "0"
+                  ]
+                ],
+                "0",
+                "0",
+                "0",
+                "0",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga can't make an appraisal",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "appraisal.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nor can Bo",
+          "call": {
+            "actor": "bo",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a second appraisal for Olga in H1 2027 is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisalAlreadyExists",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a template of Acme Logistics is judged before that",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "outsideTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisalTemplateNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo of Acme Logistics can't be appraised in Acme Trading's cycle",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "outsideTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisedEmployeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada makes Dee's H1 2027 appraisal",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "AppraisalCreated",
+              "fields": {
+                "appraisal": {
+                  "ref": [
+                    "last",
+                    "appraisal"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "newHire"
+                  ]
+                },
+                "appraisalCycle": {
+                  "ref": [
+                    "world",
+                    "manualCycle"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              },
+              "state": "draft"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "appraisal.create",
+                "appraisal.create.load",
+                "appraisal.create.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "it takes the cycle's company and method and the template's lines, every score 0",
+          "call": {
+            "actor": "dee",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "newHire"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "manualCycle"
+                  ]
+                },
+                "Manual Rating",
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "0",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "0",
+                    "0"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "0"
+                  ]
+                ],
+                "0",
+                "0",
+                "0",
+                "0",
+                "draft"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga can't submit her own",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Bo",
+          "call": {
+            "actor": "bo",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada submits Olga's, its final score 2.48",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "manualAppraisal"
+                  ]
+                },
+                "2.48",
+                {
+                  "ref": [
+                    "world",
+                    "manualCycle"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "AppraisalSubmitted",
+              "fields": {
+                "appraisal": {
+                  "ref": [
+                    "world",
+                    "manualAppraisal"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "state": "submitted"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "appraisal.submit",
+                "appraisal.submit.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "it can't be submitted twice",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "appraisal.notFrom",
+              "fields": {
+                "state": "submitted"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor rated",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "appraisal.notFrom",
+              "fields": {
+                "state": "submitted"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor rated by Olga",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "appraisal.notFrom",
+              "fields": {
+                "state": "submitted"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "it reads back submitted, every score as it stood",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "5",
+                    "1.5"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "3",
+                    "2.1"
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "criteria"
+                      ]
+                    },
+                    "70",
+                    "0.8"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherCriteria"
+                      ]
+                    },
+                    "30",
+                    "0.7"
+                  ]
+                ],
+                "3.6",
+                "3.85",
+                "0",
+                "2.48",
+                "submitted"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy leaves",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "relievingDate": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "she may still rate herself on her open appraisal",
+          "call": {
+            "actor": "cy",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "secondManualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "5",
+                "1.67"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and Ada may rate it",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "secondManualAppraisal"
+                ]
+              },
+              "scores": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "score": {
+                    "value": "0",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "score": {
+                    "value": "5",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "3.5",
+                "2.83"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and submit it",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "secondManualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "appraisal",
+              "id": {
+                "ref": [
+                  "world",
+                  "secondManualAppraisal"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "but no new appraisal is made for her, judged before a template of Acme Logistics",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "outsideTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisedEmployeeHasLeft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Dee's is the one draft left in H1 2027",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "newHire"
+                    ]
+                  },
+                  "draft"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada submits it",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.submit",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "and completes H1 2027",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.complete",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "no appraisal is made in it now, judged before a template of Acme Logistics",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "outsideTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisalCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy's leaving is judged before the completed cycle",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisedEmployeeHasLeft",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "6edf8aa0d145671ec29a145087ff61f09961b4ce124a3fa2bbf621a537ead155"
+    },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
       "file": "journeys/reject-an-attendance-request.ts",
@@ -40574,7 +46595,7 @@
                   "otherKra"
                 ]
               },
-              "goalName": "Platform",
+              "goalName": "Platform work",
               "progress": {
                 "value": "80",
                 "scale": 0
@@ -40585,15 +46606,12 @@
           "checks": [
             {
               "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "appraisal"
-                  ]
-                },
-                false
-              ]
+              "value": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              }
             },
             {
               "kind": "emits",
@@ -40665,7 +46683,7 @@
                   "otherKra"
                 ]
               },
-              "goalName": "Design API",
+              "goalName": "API design",
               "progress": {
                 "value": "100",
                 "scale": 0
@@ -40702,34 +46720,6 @@
           "title": "Platform follows its one child to 100, completed",
           "call": {
             "actor": "olga",
-            "operation": "goal.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "parentGoal"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                "Platform",
-                "100",
-                "completed"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Olga lists her goals to reach Platform",
-          "call": {
-            "actor": "olga",
             "operation": "goal.list",
             "payload": {
               "appraisalCycle": {
@@ -40749,7 +46739,15 @@
           "checks": [
             {
               "kind": "expect-equal",
-              "value": 3
+              "value": [
+                3,
+                "Platform work",
+                "100",
+                "completed"
+              ]
+            },
+            {
+              "kind": "no-events"
             }
           ]
         },
@@ -40777,7 +46775,7 @@
                   "otherKra"
                 ]
               },
-              "goalName": "Write docs",
+              "goalName": "Docs writing",
               "progress": {
                 "value": "25",
                 "scale": 0
@@ -40816,33 +46814,6 @@
           "title": "Platform is now 62.5, in progress",
           "call": {
             "actor": "olga",
-            "operation": "goal.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "parentGoal"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                "62.5",
-                "inProgress"
-              ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Olga lists them again",
-          "call": {
-            "actor": "olga",
             "operation": "goal.list",
             "payload": {
               "appraisalCycle": {
@@ -40862,7 +46833,14 @@
           "checks": [
             {
               "kind": "expect-equal",
-              "value": 4
+              "value": [
+                4,
+                "62.5",
+                "inProgress"
+              ]
+            },
+            {
+              "kind": "no-events"
             }
           ]
         },
@@ -40944,7 +46922,7 @@
                   "otherKra"
                 ]
               },
-              "goalName": "Guide one",
+              "goalName": "First guide",
               "progress": {
                 "value": "60",
                 "scale": 0
@@ -41013,21 +46991,21 @@
                   "inProgress"
                 ],
                 [
-                  "Platform",
+                  "Platform work",
                   "61.67",
                   true,
                   null,
                   "inProgress"
                 ],
                 [
-                  "Design API",
+                  "API design",
                   "100",
                   false,
                   1,
                   "completed"
                 ],
                 [
-                  "Write docs",
+                  "Docs writing",
                   "25",
                   false,
                   1,
@@ -41041,7 +47019,7 @@
                   "inProgress"
                 ],
                 [
-                  "Guide one",
+                  "First guide",
                   "60",
                   false,
                   4,
@@ -42082,17 +48060,17 @@
                   "inProgress"
                 ],
                 [
-                  "Platform",
+                  "Platform work",
                   "80",
                   "inProgress"
                 ],
                 [
-                  "Design API",
+                  "API design",
                   "100",
                   "completed"
                 ],
                 [
-                  "Write docs",
+                  "Docs writing",
                   "90",
                   "archived"
                 ],
@@ -42102,7 +48080,7 @@
                   "inProgress"
                 ],
                 [
-                  "Guide one",
+                  "First guide",
                   "60",
                   "inProgress"
                 ]
@@ -44597,7 +50575,7 @@
           ]
         }
       ],
-      "sourceHash": "8bc185ad27e427c0f799cbbf2c65d0e639e157ff6598b39c6ee512d373abb290"
+      "sourceHash": "954cd60d59f54f1903c7bde9534aa81b48ebcc5a84813f4d808b4872816450f4"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -49523,7 +55501,7 @@
           ]
         },
         {
-          "title": "Ada adds the criteria Problem Solving to Acme Trading",
+          "title": "Ada adds a criteria to Acme Trading",
           "call": {
             "actor": "ada",
             "operation": "employee-feedback-criteria.create",
@@ -49798,7 +55776,7 @@
           ]
         }
       ],
-      "sourceHash": "43344a31ae8f2cc4ba8764ea9f8b86645a172bdab80c7cb41a07ddd841ebb570"
+      "sourceHash": "2947337666914a47e210775d9539674aa222872d62b01226cfa86e919d02cca4"
     },
     "journeys/set-up-shift-types.ts": {
       "name": "set up shift types",
@@ -67293,6 +73271,16 @@
       }
     },
     {
+      "id": "verdict:appraise a year:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "appraise a year",
+        "severity": "page",
+        "owner": "journeys/appraise-a-year.ts"
+      }
+    },
+    {
       "id": "verdict:approve an attendance request:local",
       "kind": "verdict",
       "labels": {
@@ -67473,6 +73461,16 @@
       }
     },
     {
+      "id": "verdict:give performance feedback:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "give performance feedback",
+        "severity": "page",
+        "owner": "journeys/give-performance-feedback.ts"
+      }
+    },
+    {
       "id": "verdict:grade names are the company's:local",
       "kind": "verdict",
       "labels": {
@@ -67550,6 +73548,16 @@
         "journey": "promote an employee",
         "severity": "page",
         "owner": "journeys/promote-an-employee.ts"
+      }
+    },
+    {
+      "id": "verdict:rate an appraisal:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "rate an appraisal",
+        "severity": "page",
+        "owner": "journeys/rate-an-appraisal.ts"
       }
     },
     {

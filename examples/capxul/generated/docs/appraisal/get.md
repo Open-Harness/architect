@@ -40,6 +40,37 @@ Read one appraisal by its id: company, employee, appraisalCycle, appraisalTempla
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **Ship v2 is at 85, the average of 100 and 70, so Quality scores 85 and earns 51: a total of 2.55.** `olga` (signed in) calls and sends id the last call's appraisal, and gets back [[[the world's kra, `60`, `85`, `51`], [the world's otherKra, `40`, `0`, `0`]], [[the world's criteria, `50`, `0`], [the world's otherCriteria, `50`, `0`]], [`2.55`, `0`, `0`, `0.85`], `draft`].
+
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **a draft counts for nothing: Olga's appraisal has no feedback score.** `ada` (role company.owner) calls and sends id the world's appraisal, and gets back [`0`, `0`, `0`, `0`].
+- **Olga's appraisal shows it.** `olga` (signed in) calls and sends id the world's appraisal, and gets back [`0`, `0`, `2.2`, `0.73`].
+- **Olga's appraisal reads it back.** `olga` (signed in) calls and sends id the world's appraisal, and gets back [`0`, `0`, `3.43`, `1.14`].
+- **Cy's own appraisal is untouched by feedback on Olga's: her Development goal at 50% earns 35, a total of 1.75.** `cy` (signed in) calls and sends id the world's secondAppraisal, and gets back [`1.75`, `0`, `0`, `0.58`].
+- **Cy's appraisal shows it.** `cy` (signed in) calls and sends id the world's secondAppraisal, and gets back [`1.75`, `0`, `2.5`, `1.42`].
+- **Olga's H1 2027 appraisal has no feedback score.** `olga` (signed in) calls and sends id the world's manualAppraisal, and gets back `0`.
+
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **Olga's H1 2027 appraisal reads back by hand, every score 0.** `olga` (signed in) calls and sends id the world's manualAppraisal, and gets back [the world's company, the world's employee, the world's manualCycle, the world's appraisalTemplate, `Manual Rating`, [[the world's kra, `30`, `0`, `0`], [the world's otherKra, `70`, `0`, `0`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], `0`, `0`, `0`, `0`, `draft`].
+- **Cy can't read Olga's.** `cy` (signed in) calls and sends id the world's manualAppraisal, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends id the world's manualAppraisal, and is refused with NotAllowed, AR-001.
+- **Quality earns 1.5 and Development 2.1, and the final score is 1.2.** `ada` (role company.owner) calls and sends id the world's manualAppraisal, and gets back [[[the world's kra, `30`, `5`, `1.5`], [the world's otherKra, `70`, `3`, `2.1`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], `3.6`, `0`, `0`, `1.2`, `draft`].
+- **it reads back with those lines.** `ada` (role company.owner) calls and sends id the world's manualAppraisal, and gets back [[[the world's kra, `30`, `4.25`, `1.28`], [the world's otherKra, `70`, `3.15`, `2.21`]]].
+- **her ratings read back on their criteria, and Ada's scores stand.** `olga` (signed in) calls and sends id the world's manualAppraisal, and gets back [[[the world's kra, `30`, `5`, `1.5`], [the world's otherKra, `70`, `3`, `2.1`]], [[the world's criteria, `70`, `0.8`], [the world's otherCriteria, `30`, `0.7`]], `3.6`, `3.85`, `0`, `2.48`, `draft`].
+- **Cy's appraisal is untouched by Olga's.** `cy` (signed in) calls and sends id the world's secondManualAppraisal, and gets back [[[the world's kra, `30`, `0`, `0`], [the world's otherKra, `70`, `0`, `0`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], `0`, `0`, `0`, `0`, `draft`].
+- **it takes the cycle's company and method and the template's lines, every score 0.** `dee` (signed in) calls and sends id the last call's appraisal, and gets back [the world's company, the world's newHire, the world's manualCycle, `Manual Rating`, [[the world's kra, `30`, `0`, `0`], [the world's otherKra, `70`, `0`, `0`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], `0`, `0`, `0`, `0`, `draft`].
+- **it reads back submitted, every score as it stood.** `olga` (signed in) calls and sends id the world's manualAppraisal, and gets back [[[the world's kra, `30`, `5`, `1.5`], [the world's otherKra, `70`, `3`, `2.1`]], [[the world's criteria, `70`, `0.8`], [the world's otherCriteria, `30`, `0.7`]], `3.6`, `3.85`, `0`, `2.48`, `submitted`].
+
 ### set and track goals
 
 Starts from the world `a started manual cycle`.

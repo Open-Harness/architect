@@ -42,6 +42,25 @@ Mark a cycle completed once every appraisal in it is submitted.
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **Cy's is still a draft, so FY 2027 can't be completed.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and is refused with AppraisalsNotSubmitted, CY-007.
+- **and completes FY 2027.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and is answered.
+
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **and completes H1 2027.** `ada` (role company.owner) calls and sends appraisalCycle the world's manualCycle, and gets back the world's manualCycle.
+
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **and completes H1 2027.** `ada` (role company.owner) calls and sends appraisalCycle the world's manualCycle, and gets back the world's manualCycle.
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

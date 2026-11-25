@@ -48,7 +48,7 @@ const { FeedbackCycleCompleted, FeedbackForOneself, ReviewerNotInCompany, Review
  *   before it runs, it mints the employee-performance-feedback's new id and hands it in as id;
  *   each step is its own span: employee-performance-feedback.create.load, employee-performance-feedback.create.insert;
  *   once it answers, it sets the employee-performance-feedback's state to draft;
- *   once it answers, it writes PerformanceFeedbackDrafted: employeePerformanceFeedback and totalScore from the answer, appraisal and reviewer from the payload;
+ *   once it answers, it writes PerformanceFeedbackDrafted: employeePerformanceFeedback from the answer, appraisal and reviewer from the payload;
  *   the call is the span employee-performance-feedback.create, and its commit employee-performance-feedback.create.commit.
  */
 const create: Handler = (_payload, { steps, move, id }) =>

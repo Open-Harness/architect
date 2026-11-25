@@ -43,6 +43,31 @@ Submit an appraisal.
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **Ada submits Olga's appraisal.** `ada` (role company.owner) calls and sends appraisal the last call's appraisal, and gets back `3.87`.
+- **Ada submits Cy's.** `ada` (role company.owner) calls and sends appraisal the last call's items 1 id, and gets back `0`.
+
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **Ada submits Olga's H1 2027 appraisal.** `ada` (role company.owner) calls and sends appraisal the world's manualAppraisal, and gets back the world's manualCycle.
+- **and Cy's.** `ada` (role company.owner) calls and sends appraisal the world's secondManualAppraisal, and gets back the world's manualCycle.
+
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **Olga can't submit her own.** `olga` (signed in) calls and sends appraisal the world's manualAppraisal, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends appraisal the world's manualAppraisal, and is refused with NotAllowed, AR-001.
+- **Ada submits Olga's, its final score 2.48.** `ada` (role company.owner) calls and sends appraisal the world's manualAppraisal, and gets back [the world's manualAppraisal, `2.48`, the world's manualCycle].
+- **it can't be submitted twice.** `ada` (role company.owner) calls and sends appraisal the world's manualAppraisal, and is refused with AppraisalNotDraft, AP-900, carrying state `submitted`.
+- **and submit it.** `ada` (role company.owner) calls and sends appraisal the world's secondManualAppraisal, and is answered.
+- **Ada submits it.** `ada` (role company.owner) calls and sends appraisal the last call's items 0 id, and gets back the world's manualCycle.
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

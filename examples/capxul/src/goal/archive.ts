@@ -38,12 +38,28 @@ const { GoalCycleCompleted, GoalIsGroup } = Errors.declared;
  *     pending     updateProgress  pending     GoalProgressUpdated
  *     pending     updateProgress  inProgress  GoalProgressUpdated
  *     pending     updateProgress  completed   GoalProgressUpdated
+ *     pending     updateProgress  archived    GoalProgressUpdated
+ *     pending     updateProgress  closed      GoalProgressUpdated
  *     inProgress  updateProgress  pending     GoalProgressUpdated
  *     inProgress  updateProgress  inProgress  GoalProgressUpdated
  *     inProgress  updateProgress  completed   GoalProgressUpdated
+ *     inProgress  updateProgress  archived    GoalProgressUpdated
+ *     inProgress  updateProgress  closed      GoalProgressUpdated
  *     completed   updateProgress  pending     GoalProgressUpdated
  *     completed   updateProgress  inProgress  GoalProgressUpdated
  *     completed   updateProgress  completed   GoalProgressUpdated
+ *     completed   updateProgress  archived    GoalProgressUpdated
+ *     completed   updateProgress  closed      GoalProgressUpdated
+ *     archived    updateProgress  pending     GoalProgressUpdated
+ *     archived    updateProgress  inProgress  GoalProgressUpdated
+ *     archived    updateProgress  completed   GoalProgressUpdated
+ *     archived    updateProgress  archived    GoalProgressUpdated
+ *     archived    updateProgress  closed      GoalProgressUpdated
+ *     closed      updateProgress  pending     GoalProgressUpdated
+ *     closed      updateProgress  inProgress  GoalProgressUpdated
+ *     closed      updateProgress  completed   GoalProgressUpdated
+ *     closed      updateProgress  archived    GoalProgressUpdated
+ *     closed      updateProgress  closed      GoalProgressUpdated
  *     pending     complete        completed   GoalCompleted
  *     inProgress  complete        completed   GoalCompleted
  *   ▶ pending     archive         archived    GoalArchived

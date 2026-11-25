@@ -50,6 +50,18 @@ Set up an appraisal cycle: its days, how its KRAs are scored, and who is apprais
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **and FY 2027, scored from goals, appraising Olga and Cy by it.** `ada` (role company.owner) calls and sends company the world's company, cycleName `FY 2027`, startDate `2027-01-01`, endDate `2027-12-31`, kraEvaluationMethod `Automated Based on Goal Progress`, appraisees [{ employee: the world's employee, appraisalTemplate: the last call's appraisalTemplate }, { employee: the world's secondEmployee, appraisalTemplate: the last call's appraisalTemplate }], and gets back an answer matching `^apc_[0-9a-z]+$`.
+
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **Ada sets up Q3 2027, rated by hand, and doesn't start it.** `ada` (role company.owner) calls and sends company the world's company, cycleName `Q3 2027`, startDate `2027-07-01`, endDate `2027-09-30`, kraEvaluationMethod `Manual Rating`, appraisees [{ employee: the world's employee, appraisalTemplate: the world's appraisalTemplate }], and gets back an answer matching `^apc_[0-9a-z]+$`.
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

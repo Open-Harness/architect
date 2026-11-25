@@ -18,6 +18,7 @@ const { FeedbackCycleCompleted } = Errors.declared;
  * Answer, from blueprint/things/employee-performance-feedback/verbs/submit.ts:
  *   employeePerformanceFeedback  employee-performance-feedback.id
  *   avgFeedbackScore             appraisal.avgFeedbackScore
+ *   appraisal                    appraisal.id
  *
  * Refusals:
  *   FeedbackCycleCompleted               exit 41   PF-007  yours to refuse below; from blueprint/things/employee-performance-feedback/errors.ts
@@ -40,7 +41,7 @@ const { FeedbackCycleCompleted } = Errors.declared;
  *   before it runs, it hands in the employee-performance-feedback it read as subject, so this handler never reads it again;
  *   each step is its own span: employee-performance-feedback.submit.load, employee-performance-feedback.submit.update;
  *   once it answers, it sets the employee-performance-feedback's state to submitted;
- *   once it answers, it writes PerformanceFeedbackSubmitted: employeePerformanceFeedback from the answer, appraisal and totalScore from the employee-performance-feedback as the call left it;
+ *   once it answers, it writes PerformanceFeedbackSubmitted: employeePerformanceFeedback and appraisal from the answer;
  *   the call is the span employee-performance-feedback.submit, and its commit employee-performance-feedback.submit.commit.
  */
 const submit: Handler = (_payload, { steps, move }) =>
@@ -63,6 +64,7 @@ const submit: Handler = (_payload, { steps, move }) =>
     return {
       employeePerformanceFeedback: yield* Handlers.blank("employeePerformanceFeedback, an employee-performance-feedback.id"),
       avgFeedbackScore: yield* Handlers.blank("avgFeedbackScore, an appraisal.avgFeedbackScore"),
+      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
     };
   });
 

@@ -32,6 +32,19 @@ List appraisals, oldest first, 50 to a page, filtered by appraisalCycle, employe
 
 ## Worked examples
 
+### appraise a year
+
+Starts from the world `a second feedback criteria`.
+
+- **the cycle's appraisals: Olga's submitted, Cy's a draft.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and gets back [[the world's employee, `submitted`], [the world's secondEmployee, `draft`]].
+- **Olga's appraisal reads back submitted, every score as it stood.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and gets back [[[the world's kra, `60`, `85`, `51`], [the world's otherKra, `40`, `40`, `16`]], [[the world's criteria, `50`, `1`], [the world's otherCriteria, `50`, `0.8`]], [`3.35`, `4.5`, `3.75`, `3.87`], `submitted`].
+
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **Dee's is the one draft left in H1 2027.** `ada` (role company.owner) calls and sends appraisalCycle the world's manualCycle, employee the world's newHire, and gets back [[the world's newHire, `draft`]].
+
 ### run an appraisal cycle
 
 Starts from the world `a three-person cycle`.

@@ -44,8 +44,6 @@ Starts from the world `a started manual cycle`.
 - **Ada reads it too.** `ada` (role company.owner) calls and sends id the world's goal, and gets back `Ship the ledger`.
 - **Cy can't read Olga's goal.** `cy` (signed in) calls and sends id the world's goal, and is refused with NotAllowed, AR-001.
 - **nor can Bo.** `bo` (signed in) calls and sends id the world's goal, and is refused with NotAllowed, AR-001.
-- **Platform follows its one child to 100, completed.** `olga` (signed in) calls and sends id the last call's parentGoal, and gets back [`Platform`, `100`, `completed`].
-- **Platform is now 62.5, in progress.** `olga` (signed in) calls and sends id the last call's parentGoal, and gets back [`62.5`, `inProgress`].
 - **Olga's progress doesn't touch Cy's: Cy's goal still reads 50.** `cy` (signed in) calls and sends id the world's secondGoal, and gets back [`50`, `inProgress`].
 - **completing set its progress to 100.** `olga` (signed in) calls and sends id the last call's goal, and gets back [`100`, `completed`].
 - **it reads back at 0, a group.** `olga` (signed in) calls and sends id the last call's goal, and gets back [`0`, true, `pending`].
