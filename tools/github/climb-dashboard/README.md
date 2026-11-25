@@ -71,7 +71,7 @@ The two datasets, with the two blob URLs from step 3 and the current time:
 
 ```json
 {"title": "Climb history",
- "description": "Each build's capabilities by stage, tests and slices, at every commit that moved them, worked out by climb.mjs from git and GitHub.",
+ "description": "Each build's capabilities by stage, the alpha's check files green and red, Capxul's journeys written, and slices, at every commit that moved them, worked out by climb.mjs from git and GitHub.",
  "source": {"kind": "file", "url": "/_blob/<history id>", "name": "history.json", "format": "json"},
  "updated": {"at": "<ISO time>", "by": "climb.mjs"},
  "schedule": "Worked out again nightly", "staleAfterHours": 48}
@@ -79,7 +79,7 @@ The two datasets, with the two blob URLs from step 3 and the current time:
 
 ```json
 {"title": "Capabilities, suites and slices",
- "description": "Every board row in the two builds, the alpha's test suites, and Goals 16 and 18's slices, as they stand.",
+ "description": "Every board row in the two builds, the alpha's suites by check files, and Goals 16 and 18's slices, as they stand.",
  "source": {"kind": "file", "url": "/_blob/<items id>", "name": "items.json", "format": "json"},
  "updated": {"at": "<ISO time>", "by": "climb.mjs"},
  "schedule": "Worked out again nightly", "staleAfterHours": 48}
@@ -108,7 +108,7 @@ To refresh it:
 3. Upload the two files again (step 3).
 4. `update` each dataset's `source.url` and `updated.at`.
 5. Delete the two old uploads, so a nightly refresh doesn't pile them up: Artifact `delete` with the `url` and each old
-   blob's id as `path`.
+   blob's id as `path`. The id is the 32 hex characters after `/_blob/` in the `source.url` you read in 2.
 
 The page itself needn't change.
 
@@ -118,4 +118,5 @@ A nightly scheduled task can do this: a fresh cloud session on this repository w
 
 - **Capabilities:** each row in a build, by stage, from `docs/canon/status.md` in git, from 23 November, when the board was first whole. Progress weights the stages: provisional 0, spiked 0.2, scaffoldable 0.4, building 0.6, built and extracted 1 (`roadmap.mjs`'s `STAGE_SHARE`). A row climbs in the alpha when its milestone is `alpha`, and in Capxul when its milestone is on Capxul's path (`board.mjs`).
 - **Tests:** the alpha's check files in its suites (`ALPHA_SUITES` in `climb.mjs`), less the portal's graphs. A file is green when its own `expected-failing/<check>.txt` holds no key (G9), so the count is exact at every commit. A green file turns red again only when its author adds tests that fail first. `nx run e2e:totals` counts the tests inside them. The history is on `goal/stage-1` until Gate M1's suites reached `main` on 23 November, then on `main`. Capxul's journeys are counted as written on `goal/capxul`; they pass and fail once Goal 16's slice 13 runs them in CI.
+- **What the tests leave out:** `e2e/on-chain`'s lists are kept, but CI runs that suite only on `goal/on-chain` until Goal 18's slice 9, so its green files rest on their lists alone. The grid's reds live in `e2e/grid/expected-red.json`, not in a check file's list, so the grid's files count as green. The unit is GOAL18-climb-check-files'.
 - **Slices:** Goal 18's from slice 4 (the alpha), and Goal 16's (Capxul), opened and closed on GitHub.
