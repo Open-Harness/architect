@@ -1,4 +1,0 @@
-# #999 (invalid-payload-fields.test.ts): the SDK's InvalidPayload names every refused field, judged on acme's checked-in SDK. Red until a -build pull request closes them. A builder only deletes lines (G11).
-src/modules/sdk/invalid-payload-fields.test.ts > The SDK's InvalidPayload names every refused field > every field of a sign-up wrong: names email, password, name, and no value given, in the message or anywhere on the error
-src/modules/sdk/invalid-payload-fields.test.ts > The SDK's InvalidPayload names every refused field > one field left out and one wrong: names name, cap, and no value given, in the message or anywhere on the error
-src/modules/sdk/invalid-payload-fields.test.ts > The SDK's InvalidPayload names every refused field > two fields wrong at once: names name, cap, and no value given, in the message or anywhere on the error
