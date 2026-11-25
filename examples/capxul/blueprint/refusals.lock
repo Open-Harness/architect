@@ -810,6 +810,347 @@
       },
       "earlier": []
     },
+    "IF-001": {
+      "name": "FeedbackGiverNotInterviewer",
+      "owner": "interview-feedback",
+      "from": "blueprint/things/interview-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackGiverNotInterviewer"
+        }
+      },
+      "earlier": []
+    },
+    "IF-002": {
+      "name": "FeedbackBeforeInterview",
+      "owner": "interview-feedback",
+      "from": "blueprint/things/interview-feedback/errors.ts",
+      "fields": {
+        "scheduledOn": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FeedbackBeforeInterview"
+        }
+      },
+      "earlier": []
+    },
+    "IF-003": {
+      "name": "FeedbackAlreadyGiven",
+      "owner": "interview-feedback",
+      "from": "blueprint/things/interview-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackAlreadyGiven"
+        }
+      },
+      "earlier": []
+    },
+    "IF-900": {
+      "name": "InterviewFeedbackNotGiven",
+      "owner": "interview-feedback",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewFeedbackNotGiven"
+        }
+      },
+      "earlier": []
+    },
+    "IR-001": {
+      "name": "RoundNameTaken",
+      "owner": "interview-round",
+      "from": "blueprint/things/interview-round/errors.ts",
+      "fields": {
+        "roundName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RoundNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "IR-002": {
+      "name": "RoundInterviewerNotInCompany",
+      "owner": "interview-round",
+      "from": "blueprint/things/interview-round/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RoundInterviewerNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "IR-003": {
+      "name": "RoundInterviewerHasLeft",
+      "owner": "interview-round",
+      "from": "blueprint/things/interview-round/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RoundInterviewerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "IR-900": {
+      "name": "InterviewRoundNotActive",
+      "owner": "interview-round",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewRoundNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "IR-901": {
+      "name": "InterviewRoundNotFound",
+      "owner": "interview-round",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "irn"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewRoundNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "IV-001": {
+      "name": "ApplicantRejected",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantRejected"
+        }
+      },
+      "earlier": []
+    },
+    "IV-002": {
+      "name": "RoundNotInCompany",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RoundNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "IV-003": {
+      "name": "InterviewEndsBeforeStart",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "IV-004": {
+      "name": "InterviewerNotInCompany",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewerNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "IV-005": {
+      "name": "InterviewerHasLeft",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "IV-006": {
+      "name": "InterviewAlreadyScheduled",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewAlreadyScheduled"
+        }
+      },
+      "earlier": []
+    },
+    "IV-900": {
+      "name": "InterviewNotPending",
+      "owner": "interview",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "IV-901": {
+      "name": "InterviewNotFound",
+      "owner": "interview",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "ivw"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "JA-001": {
+      "name": "OpeningClosed",
+      "owner": "job-applicant",
+      "from": "blueprint/things/job-applicant/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OpeningClosed"
+        }
+      },
+      "earlier": []
+    },
+    "JA-002": {
+      "name": "OfferNotAccepted",
+      "owner": "job-applicant",
+      "from": "blueprint/things/job-applicant/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OfferNotAccepted"
+        }
+      },
+      "earlier": []
+    },
+    "JA-900": {
+      "name": "JobApplicantNotOpen",
+      "owner": "job-applicant",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JobApplicantNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "JF-001": {
+      "name": "OfferDesignationNotInCompany",
+      "owner": "job-offer",
+      "from": "blueprint/things/job-offer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OfferDesignationNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "JF-002": {
+      "name": "OfferAlreadyMade",
+      "owner": "job-offer",
+      "from": "blueprint/things/job-offer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OfferAlreadyMade"
+        }
+      },
+      "earlier": []
+    },
+    "JF-900": {
+      "name": "JobOfferNotAwaiting",
+      "owner": "job-offer",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JobOfferNotAwaiting"
+        }
+      },
+      "earlier": []
+    },
+    "JO-001": {
+      "name": "OpeningWithoutVacancies",
+      "owner": "job-opening",
+      "from": "blueprint/things/job-opening/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OpeningWithoutVacancies"
+        }
+      },
+      "earlier": []
+    },
+    "JO-900": {
+      "name": "JobOpeningNotOpen",
+      "owner": "job-opening",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JobOpeningNotOpen"
+        }
+      },
+      "earlier": []
+    },
     "KB-001": {
       "name": "KybAlreadyStarted",
       "owner": "bridge-business",
