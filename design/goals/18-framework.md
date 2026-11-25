@@ -128,7 +128,9 @@ Each round:
 25 November 2026: given the alpha by K44 (slices 4 to 12), and waiting for a lead. Aaron starts it with the line above.
 Slice 4, the board re-sorted, is K45's pull request: the alpha's milestone and Capxul's path, the release rule, the 30
 rows the superagent pulled re-sorted, Goal 17's claims released, the parked goals' issues hidden by a `parked` label, and
-the Project's views. K45 adds slice 13, the climb.
+the Project's views; it merged as #1071. K45 adds slice 13, the climb. Its script and kit are in
+`tools/github/climb.mjs` and `tools/github/climb-dashboard/`; the dashboard is a claude.ai Data artifact, made and
+refreshed by the kit's README in any account.
 The history below is from before K44.
 
 24 November 2026, about 00:30 UTC (before K44). Running since 23 November in Claude Code, in the session that was

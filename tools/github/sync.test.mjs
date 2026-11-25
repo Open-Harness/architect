@@ -164,6 +164,9 @@ test("a parked goal's own plan carries `parked`; its snags, a shared, claimed or
   const resumed = readGoal("design/goals/06-portal.md", brief).goal;
   assert.deepEqual(parkedSteps([resumed, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [[50, false]], "it comes off when the goal resumes");
   assert.deepEqual(parkedSteps([parkedGoal, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [], "made once");
+  const closedWhileParked = { ...issues[0], state: "closed", labels: [...issues[0].labels, "parked"] };
+  assert.deepEqual(parkedSteps([parkedGoal, other], [closedWhileParked]), [[50, false]], "a closed slice comes back to the main views");
+  assert.deepEqual(parkedSteps([resumed, other], [closedWhileParked]), [[50, false]], "and after its goal resumes");
 });
 
 test("the goal page: the plain card, the progress, what is stuck and on whom, and where it stands", () => {
