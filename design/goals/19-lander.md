@@ -100,8 +100,9 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Eleven Capxul rounds have landed. `goal/capxul` is ahead of `main` only by
-  checks that wait for their builds, #1017 (the ledger) and #1030 (appraisals), and by Goal 16's merges of `main`:
+- **Slice 3, the landing loop, is running.** Eleven Capxul rounds have landed. `goal/capxul` is ahead of `main` by the
+  ledger, #1017's checks with #1043's build, which the next round lands; by #1030 (appraisals' checks), which waits
+  for its build; and by Goal 16's merges of `main` (#1036, #1039):
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -123,7 +124,7 @@ said no Claude-led goal is running now.
   - #1033 brought Bridge part one, at `2dfa8d90`: #1007, the checks, and #1027, the build. The lander's 🔍 first
     blocked it at `96d20c17`: the Bridge plugin was generated before #994 and #1021 changed `main`'s generator, so
     regenerating it from the pinned spec gave a different `src/index.ts`, `src/runtime/client.ts` and two new
-    scaffolds. Goal 16 regenerated it (`4ab55270`), the lander merged that commit without #1017, whose build has not
+    scaffolds. Goal 16 regenerated it (`4ab55270`), the lander merged that commit without #1017, whose build had not
     landed, and the 🔍 passed `56be9a16`: the regenerated plugin matches byte for byte, and `prove` gives 56/56 moves,
     54/54 outcomes and 70/70 refusals.
 
