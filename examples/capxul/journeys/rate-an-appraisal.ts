@@ -130,14 +130,20 @@ export default Blueprint.journey("rate an appraisal", {
         expect((a) => [n(a.totalScore), n(a.finalScore)]).toEqual(["1.5", "0.5"]),
       ),
       s.step(
-        "a rating replaces the one before: 4.25 earns 1.275, rounded up to 1.28, and 3.15 earns 2.205, rounded up to 2.21",
-        s.ada.run(rate, { appraisal: s.world.manualAppraisal, scores: scores("4.25", "3.15") as never }),
-        expect((a) => [n(a.totalScore), n(a.finalScore)]).toEqual(["3.49", "1.16"]),
+        "they read back in the template's order",
+        s.ada.run(get, { id: s.world.manualAppraisal }),
+        expect((a) => scored(a).slice(0, 1)).toEqual([[[q, "30", "5", "1.5"], [dev, "70", "0", "0"]]]),
+        noEvents(),
       ),
       s.step(
-        "it reads back with those lines",
+        "a rating replaces the one before: 4.25 earns 1.275 and 3.15 earns 2.205, a total of 3.48, summed before rounding as HRMS does",
+        s.ada.run(rate, { appraisal: s.world.manualAppraisal, scores: scores("4.25", "3.15") as never }),
+        expect((a) => [n(a.totalScore), n(a.finalScore)]).toEqual(["3.48", "1.16"]),
+      ),
+      s.step(
+        "its lines read back rounded half up, 1.28 and 2.21, and the total stays 3.48",
         s.ada.run(get, { id: s.world.manualAppraisal }),
-        expect((a) => scored(a).slice(0, 1)).toEqual([[[q, "30", "4.25", "1.28"], [dev, "70", "3.15", "2.21"]]]),
+        expect((a) => [...scored(a).slice(0, 1), n(a.totalScore)]).toEqual([[[q, "30", "4.25", "1.28"], [dev, "70", "3.15", "2.21"]], "3.48"]),
         noEvents(),
       ),
       s.step(
@@ -188,6 +194,17 @@ export default Blueprint.journey("rate an appraisal", {
         "rating herself again, in the other order, 1 and 0, replaces it: a self score of 3.5",
         s.olga.run(selfRate, { appraisal: s.world.manualAppraisal, ratings: [{ criteria: ex, rating: d("0") }, { criteria: ps, rating: d("1") }] as never }),
         expect((a) => [n(a.selfScore), n(a.finalScore)]).toEqual(["3.5", "2.37"]),
+      ),
+      s.step(
+        "they read back in the template's order",
+        s.olga.run(get, { id: s.world.manualAppraisal }),
+        expect((a) => scored(a)[1]).toEqual([[ps, "70", "1"], [ex, "30", "0"]]),
+        noEvents(),
+      ),
+      s.step(
+        "0.33 and 0.33: 1.155 and 0.495, a self score of 1.65, summed before rounding, and a final score of 1.75",
+        s.olga.run(selfRate, { appraisal: s.world.manualAppraisal, ratings: ratings("0.33", "0.33") as never }),
+        expect((a) => [n(a.selfScore), n(a.finalScore)]).toEqual(["1.65", "1.75"]),
       ),
       s.step("0.8 and 0.7 again", s.olga.run(selfRate, { appraisal: s.world.manualAppraisal, ratings: ratings("0.8", "0.7") as never }), expect((a) => n(a.selfScore)).toBe("3.85")),
       s.step("Cy's appraisal is untouched by Olga's", s.cy.run(get, { id: s.world.secondManualAppraisal }), expect(scored).toEqual(fresh), noEvents()),
@@ -275,6 +292,14 @@ export default Blueprint.journey("rate an appraisal", {
         "but no new appraisal is made for her, judged before a template of Acme Logistics",
         s.ada.run(create, { employee: s.world.secondEmployee, appraisalCycle: s.world.appraisalCycle, appraisalTemplate: s.world.outsideTemplate }),
         refuses(AppraisedEmployeeHasLeft),
+        noEvents(),
+      ),
+
+      s.step("Bo leaves Acme Logistics", s.ada.run(relieve, { employee: s.world.outsider, relievingDate: "2026-11-30" }), expect((a) => a.employee).toBe(s.world.outsider)),
+      s.step(
+        "Bo is judged as outside Acme Trading before as a leaver",
+        s.ada.run(create, { employee: s.world.outsider, appraisalCycle: s.world.appraisalCycle, appraisalTemplate: s.world.outsideTemplate }),
+        refuses(AppraisedEmployeeNotInCompany),
         noEvents(),
       ),
 

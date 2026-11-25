@@ -151,6 +151,14 @@ export default Blueprint.journey("appraise a year", {
         expect((a) => [n(a.selfScore), n(a.finalScore)]).toEqual(["4.5", "3.87"]),
       ),
 
+      s.step("Olga's appraisal, to reach the cycle", s.olga.run(getAppraisal, { id: s.last.appraisal }), expect((a) => n(a.finalScore)).toBe("3.87"), noEvents()),
+      s.step("her goals", s.olga.run(listGoals, { appraisalCycle: s.last.appraisalCycle, employee: s.world.employee }), expect((p) => p.items[3].goalName).toBe("Refactoring"), noEvents()),
+      s.step(
+        "she sets Refactoring to 40 again: the feedback and self scores stand",
+        s.olga.run(updateProgress, { goal: s.last.items[3].id, progress: d("40") } as never),
+        expect((g) => n(g.progress)).toBe("40"),
+      ),
+
       // ── Submitting and completing
       s.step(
         "Ada submits Olga's appraisal",

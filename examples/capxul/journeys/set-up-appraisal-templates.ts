@@ -163,6 +163,17 @@ export default Blueprint.journey("set up appraisal templates", {
       noEvents(),
     ),
     s.step(
+      "a line over 100 is refused as out of range, judged before the KRAs' total",
+      s.ada.run(create, {
+        company: s.world.company,
+        title: "Too heavy",
+        kras: [{ kra: s.world.kra, weightage: d("150") }],
+        criteria: [],
+      }),
+      refuses(TemplateWeightageOutOfRange),
+      noEvents(),
+    ),
+    s.step(
       "a line of weightage 0 is refused, though the total is 100",
       s.ada.run(create, {
         company: s.world.company,

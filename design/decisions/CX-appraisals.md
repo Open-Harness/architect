@@ -38,16 +38,20 @@ each journey has one such caller per move.
 
 ## Scores (HRMS's formulas)
 
-- Manual Rating: a KRA line earns score × weightage ÷ 100; the total is the earned scores summed (out of 5).
+- Manual Rating: a KRA line earns score × weightage ÷ 100, stored rounded; the total sums the unrounded earned scores
+  and rounds once (out of 5), as HRMS's loop does (`total += flt(entry.score_earned)` with no precision). So 4.25 × 30%
+  and 3.15 × 70% read back as lines of 1.28 and 2.21 but total 3.48, not 3.49.
 - Automated Based on Goal Progress: a KRA's score is the average progress of its top-level goals that aren't archived;
   a line earns score × weightage ÷ 100; the total is their sum ÷ 20.
 - A group goal's progress is the average of its children that aren't archived, and its status follows unless it is
   archived or closed; this climbs to the root.
-- Self and feedback scores are Σ rating × 5 × weightage ÷ 100. The average feedback score covers submitted feedback
+- Self and feedback scores are Σ rating × 5 × weightage ÷ 100, summed unrounded and rounded once (0.33 and 0.33 give
+  1.155 + 0.495 = 1.65). The average feedback score covers submitted feedback
   only. The final score is (total + self + average feedback) ÷ 3.
 - Each score is rounded to two places, half up (Frappe's `flt` at precision 2).
 
-The journeys pin the arithmetic with hand-worked numbers, including half-up cases (1.275 → 1.28, 3.025 → 3.03).
+The journeys pin the arithmetic with hand-worked numbers, including half-up cases (1.275 → 1.28, 3.025 → 3.03) and
+the rounding points above.
 
 ## Writes
 
@@ -109,4 +113,16 @@ Nothing reads the clock. Cycle days are typed in, and no journey steps the clock
 
 ## What the checks leave open
 
-See the hostile-pass results in the pull request; survivors are listed there and below once the pass settles.
+32 planted wrong builds are all caught, among them weightages that don't total 100 accepted, feedback on oneself
+allowed and two appraisals per employee per cycle. A hostile pass then tried 33 more and 20 survived. New steps catch
+19 of them: refusal order between a leaver and another company, given order kept on rate and self-rate, each rating
+line rounded, `appraisal.create` not copying the cycle's method, start giving every row the first row's template or
+refusing a start that makes nothing, feedback, goals and progress refused before a cycle starts, a feedback average
+across cycles, a KRA the company has but the appraisal doesn't, a closed child left out of its group, a group
+averaging its leaves, and goal moves dropping the feedback score. Each was rerun and caught.
+
+One survives and can't be caught: a final score that uses the unrounded feedback average. The two always round to
+the same final score, because the gap is at most 0.005 and lands exactly on a rounding boundary only where both round up.
+
+The pass also found a rounding difference from HRMS: its manual total sums unrounded line scores. The journeys now
+follow HRMS (Scores, above).

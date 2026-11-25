@@ -206,9 +206,21 @@ export default Blueprint.journey("give performance feedback", {
         feedbacks.isIn(s.last.employeePerformanceFeedback, "draft"),
       ),
       s.step(
-        "it reads back, a draft about Olga",
+        "and submits it before the cycle starts: the average of this appraisal's one feedback is 3",
+        s.cy.run(submit, { employeePerformanceFeedback: s.last.employeePerformanceFeedback }),
+        expect((f) => n(f.avgFeedbackScore)).toBe("3"),
+        feedbacks.isIn(s.last.employeePerformanceFeedback, "submitted"),
+      ),
+      s.step(
+        "it reads back submitted, about Olga",
         s.cy.run(get, { id: s.last.employeePerformanceFeedback }),
-        expect((f) => [f.employee, f.reviewer, n(f.totalScore), f.state]).toEqual([s.world.employee, s.world.secondEmployee, "3", "draft"]),
+        expect((f) => [f.employee, f.reviewer, n(f.totalScore), f.state]).toEqual([s.world.employee, s.world.secondEmployee, "3", "submitted"]),
+        noEvents(),
+      ),
+      s.step(
+        "Olga's Q3 2027 appraisal counts only its own feedback, not H2 2026's: a final score of 1",
+        s.ada.run(getAppraisal, { id: s.last.appraisal }),
+        expect(scores).toEqual(["0", "0", "3", "1"]),
         noEvents(),
       ),
 
@@ -227,6 +239,13 @@ export default Blueprint.journey("give performance feedback", {
         refuses(ReviewerHasLeft),
         noEvents(),
         spans({ absent: ["employee-performance-feedback.create.insert"] }),
+      ),
+      s.step("Bo leaves Acme Logistics", s.ada.run(relieve, { employee: s.world.outsider, relievingDate: "2026-11-30" }), expect((a) => a.employee).toBe(s.world.outsider)),
+      s.step(
+        "Bo is judged as outside Acme Trading before as a leaver",
+        s.bo.run(create, onOlga(s.world.outsider, ratings("1", "1"))),
+        refuses(ReviewerNotInCompany),
+        noEvents(),
       ),
 
       // ── A completed cycle takes none

@@ -36,6 +36,10 @@ import submitAppraisal from "../blueprint/things/appraisal/verbs/submit.ts";
 import listAppraisals from "../blueprint/things/appraisal/verbs/list.ts";
 import createTemplate from "../blueprint/things/appraisal-template/verbs/create.ts";
 import relieve from "../blueprint/things/employee/verbs/relieve.ts";
+import getAppraisal from "../blueprint/things/appraisal/verbs/get.ts";
+import { machine as goals } from "../blueprint/things/goal/machine.ts";
+import createGoal from "../blueprint/things/goal/verbs/create.ts";
+import updateProgress from "../blueprint/things/goal/verbs/update-progress.ts";
 
 const d = BigDecimal.fromStringUnsafe;
 const n = (x: BigDecimal.BigDecimal) => BigDecimal.format(BigDecimal.normalize(x));
@@ -261,6 +265,12 @@ export default Blueprint.journey("run an appraisal cycle", {
         expect((a) => a.appraisal).toMatch(/^apr_[0-9a-z]+$/),
       ),
       s.step(
+        "Dee's takes the cycle's method, scored from goals, and the template's lines",
+        s.ada.run(listAppraisals, { appraisalCycle: s.world.appraisalCycle, employee: s.world.newHire }),
+        expect(rows).toEqual([fresh(s.world.newHire, "draft")]),
+        noEvents(),
+      ),
+      s.step(
         "the cycle's settings read back unchanged",
         s.ada.run(get, { id: s.world.appraisalCycle }),
         expect((a) => [a.cycleName, a.startDate, a.endDate, a.kraEvaluationMethod, a.appraisees, a.state]).toEqual([
@@ -273,6 +283,12 @@ export default Blueprint.journey("run an appraisal cycle", {
         s.ada.run(createAppraisal, { employee: s.world.employee, appraisalCycle: s.world.threePersonCycle, appraisalTemplate: s.world.appraisalTemplate }),
         expect((a) => a.appraisal).toMatch(/^apr_[0-9a-z]+$/),
       ),
+      s.step(
+        "Olga may set a goal in Q1 2027 before it starts: HRMS refuses only a completed cycle",
+        s.olga.run(createGoal, { employee: s.world.employee, appraisalCycle: s.world.threePersonCycle, kra: s.world.kra, goalName: "Early start", progress: d("20"), isGroup: false } as never),
+        goals.isIn(s.last.goal, "inProgress"),
+      ),
+      s.step("and move it to 40", s.olga.run(updateProgress, { goal: s.last.goal, progress: d("40") } as never), expect((g) => n(g.progress)).toBe("40")),
       s.step(
         "Dee leaves",
         s.ada.run(relieve, { employee: s.world.newHire, relievingDate: "2026-11-30" }),
@@ -323,6 +339,43 @@ export default Blueprint.journey("run an appraisal cycle", {
           [s.world.secondEmployee, "Manual Rating", "draft"],
         ]),
         noEvents(),
+      ),
+
+      // ── Each appraisee by their own template
+      s.step(
+        "Ada makes the template Quality only: Quality 100, no criteria",
+        s.ada.run(createTemplate, { company: s.world.company, title: "Quality only", kras: [{ kra: s.world.kra, weightage: d("100") }], criteria: [] }),
+        expect((a) => a.appraisalTemplate).toMatch(/^apt_[0-9a-z]+$/),
+      ),
+      s.step(
+        "and Mixed 2027, appraising Olga by Engineers and Cy by Quality only",
+        s.ada.run(create, cycle("Mixed 2027", "2027-04-01", "2027-06-30", [olga, { employee: s.world.secondEmployee, appraisalTemplate: s.last.appraisalTemplate }])),
+        expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/),
+      ),
+      s.step("she starts it: two appraisals", s.ada.run(start, { appraisalCycle: s.last.appraisalCycle }), expect((a) => a.appraisals.length).toBe(2)),
+      s.step(
+        "each takes the lines of their own row's template",
+        s.ada.run(listAppraisals, { appraisalCycle: s.last.appraisalCycle }),
+        expect((a) => a.items.map((i: Item) => [i.employee, i.kras.map((k) => [k.kra, n(k.weightage)]), i.selfRatings.length])).toEqual([
+          [s.world.employee, [[s.world.kra, "30"], [s.world.otherKra, "70"]], 2],
+          [s.world.secondEmployee, [[s.world.kra, "100"]], 0],
+        ]),
+        noEvents(),
+      ),
+
+      // ── A start that makes nothing still starts
+      s.step("Ada sets up Spring 2027 for Olga", s.ada.run(create, cycle("Spring 2027", "2027-03-01", "2027-05-31", [olga])), expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/)),
+      s.step(
+        "and makes Olga's appraisal in it by hand",
+        s.ada.run(createAppraisal, { employee: s.world.employee, appraisalCycle: s.last.appraisalCycle, appraisalTemplate: s.world.appraisalTemplate }),
+        expect((a) => a.appraisal).toMatch(/^apr_[0-9a-z]+$/),
+      ),
+      s.step("it reads back in Spring 2027", s.ada.run(getAppraisal, { id: s.last.appraisal }), expect((a) => a.employee).toBe(s.world.employee), noEvents()),
+      s.step(
+        "starting Spring 2027 makes nothing, since Olga has hers, and the cycle is in progress",
+        s.ada.run(start, { appraisalCycle: s.last.appraisalCycle }),
+        expect((a) => a.appraisals.length).toBe(0),
+        cycles.isIn(s.last.appraisalCycle, "inProgress"),
       ),
     ];
   },

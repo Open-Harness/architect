@@ -42,6 +42,7 @@ import getAppraisal from "../blueprint/things/appraisal/verbs/get.ts";
 import submitAppraisal from "../blueprint/things/appraisal/verbs/submit.ts";
 import completeCycle from "../blueprint/things/appraisal-cycle/verbs/complete.ts";
 import relieve from "../blueprint/things/employee/verbs/relieve.ts";
+import createKra from "../blueprint/things/kra/verbs/create.ts";
 
 const d = BigDecimal.fromStringUnsafe;
 const n = (x: BigDecimal.BigDecimal) => BigDecimal.format(BigDecimal.normalize(x));
@@ -232,6 +233,20 @@ export default Blueprint.journey("set and track goals", {
         refuses(GoalEmployeeNotInCompany),
         noEvents(),
       ),
+      s.step("Bo leaves Acme Logistics", s.ada.run(relieve, { employee: s.world.outsider, relievingDate: "2026-11-30" }), expect((a) => a.employee).toBe(s.world.outsider)),
+      s.step(
+        "Bo is judged as outside Acme Trading before as a leaver",
+        s.ada.run(create, { employee: s.world.outsider, appraisalCycle: s.world.appraisalCycle, kra: s.world.outsideKra, goalName: "Drive", progress: d("0"), isGroup: false }),
+        refuses(GoalEmployeeNotInCompany),
+        noEvents(),
+      ),
+      s.step("Ada adds the KRA Mentoring to Acme Trading", s.ada.run(createKra, { company: s.world.company, title: "Mentoring" }), expect((k) => k.kra).toMatch(/^kra_[0-9a-z]+$/)),
+      s.step(
+        "a KRA of Acme Trading that Olga's appraisal doesn't hold is refused",
+        s.olga.run(create, olgaGoal(s.last.kra, "Mentor", "0")),
+        refuses(GoalKraNotInAppraisal),
+        noEvents(),
+      ),
       s.step(
         "Cy can't set Olga a goal",
         s.cy.run(create, olgaGoal(q, "Cy's idea", "0")),
@@ -417,6 +432,30 @@ export default Blueprint.journey("set and track goals", {
         goals.isIn(s.last.goal, "pending"),
       ),
       s.step("it reads back at 0, a group", s.olga.run(get, { id: s.last.goal }), expect((a) => [n(a.progress), a.isGroup, a.state]).toEqual(["0", true, "pending"]), noEvents()),
+      s.step("a group, Pair", s.olga.run(create, { ...(manual(q, "Pair", "0") as object), isGroup: true } as never), goals.isIn(s.last.goal, "pending")),
+      s.step("under it, Left at 40", s.olga.run(create, { ...(manual(q, "Left", "40") as object), parentGoal: s.last.goal } as never), goals.isIn(s.last.goal, "inProgress")),
+      s.step("Olga lists H1 2027's goals to reach Pair", s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }), expect((a) => [a.items.length, a.items[6].goalName]).toEqual([8, "Pair"])),
+      s.step("under Pair, Right at 80", s.olga.run(create, { ...(manual(q, "Right", "80") as object), parentGoal: s.last.items[6].id } as never), goals.isIn(s.last.goal, "inProgress")),
+      s.step("she closes Right", s.olga.run(close, { goal: s.last.goal }), goals.isIn(s.last.goal, "closed")),
+      s.step(
+        "a closed child still counts: Pair is 60, the average of 40 and 80",
+        s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }),
+        expect((a) => [a.items[6].goalName, n(a.items[6].progress), a.items[6].state]).toEqual(["Pair", "60", "inProgress"]),
+        noEvents(),
+      ),
+      s.step("a group, Outer", s.olga.run(create, { ...(manual(dev, "Outer", "0") as object), isGroup: true } as never), goals.isIn(s.last.goal, "pending")),
+      s.step("under it, a group, Inner", s.olga.run(create, { ...(manual(dev, "Inner", "0") as object), isGroup: true, parentGoal: s.last.goal } as never), goals.isIn(s.last.goal, "pending")),
+      s.step("under Inner, Alpha at 60", s.olga.run(create, { ...(manual(dev, "Alpha", "60") as object), parentGoal: s.last.goal } as never), goals.isIn(s.last.goal, "inProgress")),
+      s.step("Olga lists them to reach Outer and Inner", s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }), expect((a) => [a.items[9].goalName, a.items[10].goalName]).toEqual(["Outer", "Inner"])),
+      s.step("under Inner, Beta at 0: Inner is 30", s.olga.run(create, { ...(manual(dev, "Beta", "0") as object), parentGoal: s.last.items[10].id } as never), goals.isIn(s.last.goal, "pending")),
+      s.step("Olga lists them again", s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }), expect((a) => a.items.length).toBe(13)),
+      s.step("under Outer, Gamma at 100", s.olga.run(create, { ...(manual(dev, "Gamma", "100") as object), parentGoal: s.last.items[9].id } as never), goals.isIn(s.last.goal, "completed")),
+      s.step(
+        "Outer averages its children, Inner's 30 and Gamma's 100, not its leaves: 65",
+        s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }),
+        expect((a) => [9, 10].map((i) => [a.items[i].goalName, n(a.items[i].progress), a.items[i].state])).toEqual([["Outer", "65", "inProgress"], ["Inner", "30", "inProgress"]]),
+        noEvents(),
+      ),
       s.step(
         "H1 2027 is rated by hand, so none of these goals scores Olga's appraisal there",
         s.olga.run(getAppraisal, { id: s.world.manualAppraisal }),
