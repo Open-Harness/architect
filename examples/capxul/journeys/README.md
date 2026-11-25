@@ -72,6 +72,26 @@ record types are listed in `../doctypes.md`.
   world's clock starts. They add `secondPromotion` and `secondTransfer`.
 - `a separation`, from `a second transfer`: Ada starts Olga's separation, from her letter of 2026-11-20, beginning
   2026-12-01. It adds `employeeSeparation`.
+- `a kra`, from `a new hire`, then `a second kra`, `a feedback criteria`, `a second feedback criteria`, `an outside kra`,
+  `an outside criteria`, each from the one before: Ada adds the KRAs Quality and Development and the criteria Problem
+  Solving and Excellence to Acme Trading, and Bo adds a KRA and a criteria to Acme Logistics. They add `kra`,
+  `otherKra`, `criteria`, `otherCriteria`, `outsideKra` and `outsideCriteria`.
+- `an appraisal template`, from `an outside criteria`: Engineers, Quality 30 and Development 70, rated on Problem
+  Solving 70 and Excellence 30. It adds `appraisalTemplate`.
+- `an appraisal cycle`, from `an appraisal template`: H2 2026, scored from goals, appraising Olga then Cy by Engineers;
+  not started. It adds `appraisalCycle`. `a three-person cycle`, from it: Q1 2027, rated by hand, adding Dee; not
+  started. It adds `threePersonCycle`.
+- `a started cycle`, from `an appraisal cycle`: Ada starts H2 2026. It adds `appraisal` (Olga's) and `secondAppraisal`
+  (Cy's).
+- `a goal`, from `a started cycle`: Olga's Quality goal at 0. It adds `goal`. `a feedback draft`, from it: Cy's draft on
+  Olga's appraisal, 0.8 and 0.7. It adds `feedbackDraft`. `a colleague's goal`, from it: Cy's Development goal at 50.
+  It adds `secondGoal`.
+- `a manual cycle` and `a started manual cycle`, from `a colleague's goal`: H1 2027, rated by hand, started. They add
+  `manualCycle`, `manualAppraisal` (Olga's) and `secondManualAppraisal` (Cy's).
+- `an outside template`, from `a started manual cycle`: Bo's Drivers. It adds `outsideTemplate`.
+- `a newcomer's draft`, from `an outside template`: Dee's draft on Cy's H2 2026 appraisal, 0.5 and 0.5. It adds
+  `deeDraft`. `a manual cycle draft`, from it: Cy's draft on Olga's H1 2027 appraisal, 0.4 and 0.9. It adds
+  `manualDraft`.
 
 Capxul's local world's clock stands at Tuesday 2026-12-01 09:00 UTC until a journey moves it. One `prove` run shares
 that clock across every journey, it never goes back, and journeys run in file-name order, so a journey that moves it
@@ -130,6 +150,13 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `transfer-an-employee` | `a second transfer` | Ada (owner), Olga, Cy, Bo (signed in) | The same for a department, from 8 December (`TransferNotYetDue`, `DepartmentUnchanged`, `TransferredEmployeeNotInCompany`, `TransferredEmployeeHasLeft`, `NewDepartmentNotInCompany`); another company's department is refused, so a transfer stays in its company |
 | `run-a-separation` | `a separation` | Ada (owner), Olga, Bo (signed in) | A separation reads back pending, to the owner only, and the owner marks it in process, then completed, or completes it straight from pending; none of those twice. One open separation per employee (`SeparationAlreadyOpen`), judged after `SeparatedEmployeeNotInCompany`; once completed, another may start. Completing one doesn't relieve the employee, and one may start for an employee who has already left. Only the owner moves one |
 | `move-an-employee-through-the-company` | `a new hire` | Ada (owner), Dee (signed in) | End to end: Dee is hired, promoted, transferred, separated and then relieved, and reads herself back after each step |
+| `set-up-kras-and-criteria` | `three companies` | Ada (owner of two), Bo (owner of one) | `kra.create` and `employee-feedback-criteria.create` answer `kra_` and `efc_` ids, emit their events with the company, `active`. Each reads back as typed. A title taken in the company is `KraTitleTaken` or `CriteriaNameTaken`; another company may reuse it. Bo can't add to Ada's company or read hers |
+| `set-up-appraisal-templates` | `an outside criteria` | Ada (owner), Bo (signed in) | `appraisal-template.create` answers an `apt_` id and reads back with its lines in order. Every refusal, and the order between each pair: no KRA lines, a KRA or criteria of another company, a line repeated, a weightage of 0 or over 100, KRA weightages not totalling 100 (99.99 and 100.01), criteria not totalling 100; none is allowed. A title taken is `TemplateTitleTaken`. Bo can't make or read one |
+| `run-an-appraisal-cycle` | `a three-person cycle` | Ada (owner), Olga, Bo (signed in) | A cycle's create refusals in order (end before start, an appraisee outside the company, one who has left, a template outside, one listed twice; one day allowed; `CycleNameTaken`). Start refuses a cycle without appraisees, makes one appraisal per appraisee with the template's lines and the cycle's method, skips one that exists and a leaver. Complete waits on every appraisal (`AppraisalsNotSubmitted`, carrying the drafts); reopen goes back. Olga reads only her own; Bo and Olga move nothing |
+| `set-and-track-goals` | `a started manual cycle` | Ada (owner), Olga, Cy, Dee, Bo (signed in) | Goals by the employee or the owner, their status from progress, archive, close, unarchive, reopen and complete. A group's progress follows its children two levels up, archived children left out. Under the automated method the appraisal's KRA scores and total follow top-level goals; under manual rating they don't. Every refusal and its order, a leaver's old goal still moving, a completed cycle refusing every move |
+| `rate-an-appraisal` | `a manual cycle draft` | Ada (owner), Olga, Cy, Dee, Bo (signed in) | Rating by hand: the owner only, not an automated appraisal, each KRA once, 0 to 5, half-up rounding (1.275 → 1.28). Self-rating by the employee only, each criteria once, 0 to 1. Scores against HRMS's own test numbers. A second appraisal in a cycle is `AppraisalAlreadyExists`; create's refusals in order. Submit by the owner, then nothing moves. A leaver's open appraisal is still rated and submitted, but no new one is made |
+| `give-performance-feedback` | `a manual cycle draft` | Ada (owner), Olga, Cy, Dee, Bo (signed in) | Feedback by the reviewer only, never on oneself, never from another company, each criteria once, 0 to 1. The average covers submitted feedback only (3.025 → 3.03) and moves the final score; one reviewer may give two. A cycle not started takes feedback. A leaver submits her draft but starts none. A completed cycle refuses submit and create, judged first |
+| `appraise-a-year` | `a second feedback criteria` | Ada (owner), Olga, Cy, Bo (signed in) | End to end: a template, a cycle scored from goals, its start, a goal tree whose group follows its children, feedback, a self rating, submit, `AppraisalsNotSubmitted` while one is a draft, complete, and every score read back. Goals no longer move |
 
 ## Where the docs were silent
 
