@@ -1,8 +1,0 @@
-# #981 items 1 and 3 (decimal-doors.test.ts): a decimal inside an Option prints as its text in the generated CLI's --json, and a refusal's undeclared field named like an Object.prototype member is left out. Red until a -build pull request closes them. A builder only deletes lines (G11).
-src/modules/cli/decimal-doors.test.ts > 1. A decimal inside an Option prints as its text in a --json answer > Option.none() prints as an Option's toJSON makes it, beside a Some
-src/modules/cli/decimal-doors.test.ts > 1. A decimal inside an Option prints as its text in a --json answer > Option.some of a decimal prints as its text with no exponent, in a list's items and beside a bare one
-src/modules/cli/decimal-doors.test.ts > 1. A decimal inside an Option prints as its text in a --json answer > Option.some of a decimal prints the decimal's text inside the Option's own shape
-src/modules/cli/decimal-doors.test.ts > 1. A decimal inside an Option prints as its text in a --json answer > a decimal anywhere inside an Option prints as its text: in an object, in a list, in an Option
-src/modules/cli/decimal-doors.test.ts > 1. A decimal inside an Option prints as its text in a --json answer > prints exactly the text an Option's own toJSON would, its keys in their order
-src/modules/cli/decimal-doors.test.ts > 3. A declared refusal's fields are written by the CLI, a decimal as its text and a token never > a decimal inside an Option in a refusal's field prints as its text, the Option keeping its shape
-src/modules/cli/decimal-doors.test.ts > 3. A declared refusal's fields are written by the CLI, a decimal as its text and a token never > a field a refusal does not declare is left out, whatever its name
