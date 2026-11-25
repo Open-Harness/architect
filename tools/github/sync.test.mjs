@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { readGoal, splitFrontMatter } from "./frontmatter.mjs";
 import { ISSUE_TYPES, LABELS, unwrap, goalBody, goalMarker, goalView, plan, sliceMarker } from "./plan.mjs";
+import { laneLabel } from "./boardPlan.mjs";
 
 const brief = `---
 goal: 6
@@ -146,7 +147,7 @@ test("a link between two slices that the brief no longer orders is removed befor
 });
 
 test("every label fits GitHub's limits: a name of at most 50 characters, a description of at most 100", () => {
-  for (const l of LABELS) {
+  for (const l of [...LABELS, laneLabel("goal-123")]) {
     assert.ok(l.name.length <= 50, l.name);
     assert.ok(l.description.length <= 100, `${l.name}: ${l.description.length} characters`);
   }
