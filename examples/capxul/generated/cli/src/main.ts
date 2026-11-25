@@ -16,6 +16,12 @@ import { reject as attendanceRequestReject } from "./attendance-request/reject.t
 import { close as bankAccountClose } from "./bank-account/close.ts";
 import { get as bankAccountGet } from "./bank-account/get.ts";
 import { open as bankAccountOpen } from "./bank-account/open.ts";
+import { fail as bankTransactionFail } from "./bank-transaction/fail.ts";
+import { get as bankTransactionGet } from "./bank-transaction/get.ts";
+import { land as bankTransactionLand } from "./bank-transaction/land.ts";
+import { list as bankTransactionList } from "./bank-transaction/list.ts";
+import { send as bankTransactionSend } from "./bank-transaction/send.ts";
+import { settle as bankTransactionSettle } from "./bank-transaction/settle.ts";
 import { create as branchCreate } from "./branch/create.ts";
 import { get as branchGet } from "./branch/get.ts";
 import { approve as bridgeBusinessApprove } from "./bridge-business/approve.ts";
@@ -103,6 +109,7 @@ declare const ORTHO_VERSION: string | undefined;
 const attendance = Command.make("attendance").pipe(Command.withSubcommands([attendanceGet, attendanceList, attendanceMark]));
 const attendanceRequest = Command.make("attendance-request").pipe(Command.withSubcommands([attendanceRequestApprove, attendanceRequestCreate, attendanceRequestGet, attendanceRequestReject]));
 const bankAccount = Command.make("bank-account").pipe(Command.withSubcommands([bankAccountClose, bankAccountGet, bankAccountOpen]));
+const bankTransaction = Command.make("bank-transaction").pipe(Command.withSubcommands([bankTransactionFail, bankTransactionGet, bankTransactionLand, bankTransactionList, bankTransactionSend, bankTransactionSettle]));
 const branch = Command.make("branch").pipe(Command.withSubcommands([branchCreate, branchGet]));
 const bridgeBusiness = Command.make("bridge-business").pipe(Command.withSubcommands([bridgeBusinessApprove, bridgeBusinessGet, bridgeBusinessReject, bridgeBusinessStart]));
 const bridgeIndividual = Command.make("bridge-individual").pipe(Command.withSubcommands([bridgeIndividualApprove, bridgeIndividualGet, bridgeIndividualReject, bridgeIndividualStart]));
@@ -132,7 +139,7 @@ const leaveType = Command.make("leave-type").pipe(Command.withSubcommands([leave
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, leaveAllocation, leaveApplication, leaveType, shiftType]),
+  Command.withSubcommands([attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, leaveAllocation, leaveApplication, leaveType, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

@@ -63,6 +63,12 @@ Starts from the world `an attendance request`.
 - **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 - **Bo sets up a second company.** `bo` (signed in) calls and sends companyName `Bo Ventures`, abbr `BV`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
+### bridge: a bank account, end to end
+
+Starts from an empty world.
+
+- **Ada sets up her company.** `ada` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, with the request key `acme`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
 ### companies are kept apart
 
 Starts from the world `a company`.

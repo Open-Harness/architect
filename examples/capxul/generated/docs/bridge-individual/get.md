@@ -34,6 +34,12 @@ Read one bridge-individual by its id: person, fullName, email, kycLink, tosLink,
 
 ## Worked examples
 
+### bridge: a bank account, end to end
+
+Starts from an empty world.
+
+- **she reads her KYC back approved, as she started it.** `ada` (signed in) calls and sends id the last call's individual, and gets back [the cast's ada person, `Ada Wanjiru Kamau`, `ada@acme-trading.test`, `approved`].
+
 ### bridge: a kyc keeps what bridge gave
 
 Starts from the world `kyc started`.
