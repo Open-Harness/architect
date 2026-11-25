@@ -174,7 +174,7 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 
 ## Supersedes
 
-- ST1-24-warm-world: "or a model whose plugins run on a device (they need a chain of their own) never reuses" → "a model whose plugins run on a device, or a model with a process stand-in, never reuses" (also `packages/prove/src/modules/prove/README.md`)
+- ST1-24-warm-world: "or a model whose plugins run on a device (they need a chain of their own) never reuses" → "a model whose plugins run on a device, or a model with a process stand-in, never reuses"
 - G16-adapter-mounts call 1, as merged in #1003: "`apiKey`, when its description declares any security scheme" → "`apiKey`, when its description requires security"
 - G16-adapter-mounts call 1, as merged in #1010: "and an app can't set `code` on a generated file" → "unless the plugin's scaffolded `src/written.ts` exports a `code`, which the generated `thing.ts` reads"
 - GOAL17-adapters-from-spec: "Declared error classes per response are not generated yet: `Blueprint.call()` is given none." → "every generated call is `Blueprint.call({ errors: [<Adapter>ApiFailure, <Adapter>InputRefused, <Adapter>AnswerRefused, <Adapter>Unreachable] })`"

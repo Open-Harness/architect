@@ -59,7 +59,8 @@ const spec = (title: string) => ({
 /**
  * The stand-in for `plugin`, writing to `log`. It behaves as a real one may, so a build that leans on a tidy one is seen: it says
  * other things first, waits, and says its line in two writes split mid-line; it then writes a megabyte to stdout and stderr each
- * (Linux pipes block, so a build that stops reading after the line stalls it); and it and its child ignore SIGTERM. `refuse`
+ * and answers no request until prove has taken all of it, so a build that stops reading after the line leaves its
+ * calls unanswered; and it and its child ignore SIGTERM. `refuse`
  * makes it exit with that code before it listens; `silent`, listen and never say where.
  */
 type Fault = { readonly refuse: number } | { readonly silent: true };
@@ -75,8 +76,12 @@ ${fault !== undefined && "refuse" in fault ? `write({ event: "refused", pid: pro
 // A process of its own, never stopped by this stand-in, which also ignores SIGTERM: prove stops everything a stand-in started.
 const child = spawn(process.execPath, ["-e", "process.on('SIGTERM', () => {}); setInterval(() => {}, 1 << 30)"], { stdio: "ignore" });
 write({ event: "start", at: Date.now(), args, cwd: process.cwd(), pid: process.pid, child: child.pid, dirThere: dir !== undefined && existsSync(dir) });
+// It answers only once both streams' flood has been taken by prove (each last write's callback, which waits on every write
+// before it): a prove that stops reading leaves it unanswered, and its call fails.
+let drained = false;
 const server = createServer((request, response) => {
-  write({ event: "request", method: request.method, url: request.url, authorization: request.headers.authorization ?? null, dirThere: dir !== undefined && existsSync(dir) });
+  write({ event: "request", method: request.method, url: request.url, authorization: request.headers.authorization ?? null, dirThere: dir !== undefined && existsSync(dir), drained });
+  if (!drained) { response.writeHead(503, { "content-type": "application/json" }); response.end(JSON.stringify({ error: "not drained" })); return; }
   const pair = /\\/quotes\\/([^/?]+)/.exec(request.url ?? "")?.[1];
   response.writeHead(200, { "content-type": "application/json" });
   response.end(JSON.stringify({ pair, rate: ${JSON.stringify(`${plugin}-stand-1.0842`)} }));
@@ -90,8 +95,11 @@ ${fault !== undefined && "silent" in fault ? '    write({ event: "silent", pid: 
     setTimeout(() => {
       process.stdout.write(".0.1:" + server.address().port + "\\n");
       const filler = ".".repeat(1023) + "\\n";
-      for (let i = 0; i < 1024; i++) { process.stdout.write(filler); process.stderr.write(filler); }
-      write({ event: "flooded" });
+      for (let i = 0; i < 1023; i++) { process.stdout.write(filler); process.stderr.write(filler); }
+      let left = 2;
+      const done = () => { left -= 1; if (left === 0) { drained = true; write({ event: "flooded" }); } };
+      process.stdout.write(filler, done);
+      process.stderr.write(filler, done);
     }, 300);
 `}  }, 2500);
 });
