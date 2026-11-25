@@ -110,9 +110,11 @@ party, against, remarks, fiscal year and currency columns; closing a year; accou
 
 A balance on a day in no fiscal year is left out on purpose. ERPNext's `get_balance_on` answers 0 for such a day up to
 today, and for a later day refuses or counts every line depending on whether today is in a year: its answer reads
-today's date. Capxul's balance reads no clock ("Time", below; snag #1001), so it counts every line on any day.
-Every account counts every line, Profit and Loss included: ERPNext dropped the P&L year bound from `get_balance_on` in
-frappe/erpnext@0bd4de45 (7 June 2023). Its lines at a6f54f9c are in `get_count_on` (snag #1046, closed as not planned).
+today's date. Capxul's balance reads no clock ("Time", below), and following ERPNext would bring one in, with snag
+#1001's limits on stepping it in journeys. So it counts the same lines on any day, in a fiscal year or not. Every
+account counts those lines, Profit and Loss included: ERPNext dropped the P&L year bound from `get_balance_on` in
+frappe/erpnext@0bd4de45 (7 June 2023). The same bound survives at a6f54f9c only in `get_count_on` (lines 336–337),
+which snag #1046 misread as `get_balance_on`; #1046 was closed as not planned.
 
 ## Time
 
