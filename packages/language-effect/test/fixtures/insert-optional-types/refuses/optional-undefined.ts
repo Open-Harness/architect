@@ -1,11 +1,11 @@
-// Must be a type error that names 'accountType': an optional field is left out, never passed as undefined (exactOptionalPropertyTypes; the store encodes an absent key, not undefined).
+// Refused. Fault: 'accountType'. An optional field is left out, never passed as undefined (exactOptionalPropertyTypes; the store encodes an absent key, not undefined).
+// The statement marked below is a shape accepts.ts holds, with only this fault; the error must be there and name the field (or point at it).
 import { Effect } from "effect";
 import { Records } from "../../../../src/modules/records/types.ts";
-import { Account, company, id, parent } from "../thing.ts";
+import { Account, Company, Gauge, company, gauge, id, parent, tag } from "../thing.ts";
 
 export const program = Effect.gen(function* () {
   const records = yield* Records;
-  void parent;
-  void company;
-  yield* records.insert(Account, { id, company, accountName: "Bank", reportType: "Balance Sheet", accountType: undefined }, "ledger");
+  void [Account, Company, Gauge, company, gauge, id, parent, tag];
+  yield* records.insert(Account, { id, company, accountName: "Bank", reportType: "Balance Sheet", accountType: undefined }, "ledger"); // ← the fault
 });
