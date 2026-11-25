@@ -71,10 +71,10 @@ import { spawn } from "node:child_process";
 const write = (entry) => appendFileSync(${JSON.stringify(log)}, JSON.stringify({ plugin: ${JSON.stringify(plugin)}, ...entry }) + "\\n");
 const args = process.argv.slice(2);
 const dir = args.includes("--dir") ? args[args.indexOf("--dir") + 1] : undefined;
-${fault !== undefined && "refuse" in fault ? `write({ event: "refused", pid: process.pid });\nprocess.exit(${fault.refuse});\n` : ""}process.on("SIGTERM", () => {});
+${fault !== undefined && "refuse" in fault ? `write({ event: "refused", pid: process.pid, at: Date.now() });\nprocess.exit(${fault.refuse});\n` : ""}process.on("SIGTERM", () => {});
 // A process of its own, never stopped by this stand-in, which also ignores SIGTERM: prove stops everything a stand-in started.
 const child = spawn(process.execPath, ["-e", "process.on('SIGTERM', () => {}); setInterval(() => {}, 1 << 30)"], { stdio: "ignore" });
-write({ event: "start", args, cwd: process.cwd(), pid: process.pid, child: child.pid, dirThere: dir !== undefined && existsSync(dir) });
+write({ event: "start", at: Date.now(), args, cwd: process.cwd(), pid: process.pid, child: child.pid, dirThere: dir !== undefined && existsSync(dir) });
 const server = createServer((request, response) => {
   write({ event: "request", method: request.method, url: request.url, authorization: request.headers.authorization ?? null, dirThere: dir !== undefined && existsSync(dir) });
   const pair = /\\/quotes\\/([^/?]+)/.exec(request.url ?? "")?.[1];
@@ -244,6 +244,7 @@ interface Entry {
   readonly cwd?: string;
   readonly args?: ReadonlyArray<string>;
   readonly pid?: number;
+  readonly at?: number;
   readonly child?: number;
   readonly dirThere?: boolean;
   readonly method?: string;
@@ -293,9 +294,12 @@ describe("08 prove stands up a mount's process stand-in", () => {
     const proved = prove(root, "health is up");
     expect(proved.out).toMatch(HEALTH);
     const starts = entriesOf(log).filter((e) => e.event === "start");
-    expect(starts.map((e) => ({ plugin: e.plugin, args: e.args, dirThere: e.dirThere })).sort((a, b) => a.plugin.localeCompare(b.plugin)), proved.out).toEqual([
-      { plugin: "fx-rates", args: ["--port", "0", "--dir", join(root, ".ortho/prove/stands/fx-backup")], dirThere: true },
-      { plugin: "rates", args: ["--port", "0", "--dir", join(root, ".ortho/prove/stands/pricing")], dirThere: true },
+    // Both sides resolved, so a build that resolves the project's path (macOS's /var is /private/var) is judged the same.
+    const real = (path: string) => (existsSync(path) ? realpathSync(path) : path);
+    const argsOf = (args: ReadonlyArray<string>) => args.map((a, i) => (args[i - 1] === "--dir" ? real(a) : a));
+    expect(starts.map((e) => ({ plugin: e.plugin, args: argsOf(e.args ?? []), dirThere: e.dirThere })).sort((a, b) => a.plugin.localeCompare(b.plugin)), proved.out).toEqual([
+      { plugin: "fx-rates", args: ["--port", "0", "--dir", join(realpathSync(root), ".ortho/prove/stands/fx-backup")], dirThere: true },
+      { plugin: "rates", args: ["--port", "0", "--dir", join(realpathSync(root), ".ortho/prove/stands/pricing")], dirThere: true },
     ]);
     // Each runs in its own package's folder, as `e2e/superagent/servers.ts` runs one.
     expect(Object.fromEntries(starts.map((e) => [e.plugin, e.cwd])), proved.out).toEqual({ "fx-rates": realpathSync(join(root, "plugins/fx-rates")), rates: realpathSync(join(root, "plugins/rates")) });
@@ -317,16 +321,16 @@ describe("08 prove stands up a mount's process stand-in", () => {
   for (const { plugin, mount, exit } of [{ plugin: "rates", mount: "pricing", exit: 3 }, { plugin: "fx-rates", mount: "fx-backup", exit: 0 }]) {
     it(`a stand-in that exits ${exit} before it says where it listens fails prove at once, naming the mount (${mount}), and leaves nothing running`, () => {
       const { root, log } = app({ fault: { plugin, refuse: exit } });
-      const began = performance.now();
       const proved = prove(root, "health is up");
-      const seconds = (performance.now() - began) / 1000;
-      expect(entriesOf(log).filter((e) => e.event === "refused").map((e) => e.plugin), proved.out).toEqual([plugin]);
+      const ended = performance.timeOrigin + performance.now();
+      const refused = entriesOf(log).filter((e) => e.event === "refused");
+      expect(refused.map((e) => e.plugin), proved.out).toEqual([plugin]);
       // No world ran without its stand-in: the journey never ran, and what prove said names the mount (no other line here does).
       expect(proved.status, proved.out).not.toBe(0);
       expect(proved.out).not.toMatch(/^journey health is up/m);
       expect(proved.out).toContain(mount);
-      // The exit itself fails prove, not the 60 s wait for a stand-in that says nothing (about 13 s here).
-      expect(seconds, proved.out).toBeLessThan(45);
+      // The exit itself fails prove, not the 60 s wait for a stand-in that says nothing: prove is done within 30 s of it.
+      expect((ended - refused[0]!.at!) / 1000, proved.out).toBeLessThan(30);
       const left = entriesOf(log).filter((e) => e.event === "start").flatMap((e) => [e.pid!, e.child!]).filter(alive);
       for (const pid of left) process.kill(pid, "SIGKILL");
       expect(left, "processes still running after prove failed (their ids, now killed)").toEqual([]);
@@ -336,15 +340,15 @@ describe("08 prove stands up a mount's process stand-in", () => {
 
   it("a stand-in that never says where it listens fails prove within 60 s of starting it, naming the mount, and leaves nothing running", () => {
     const { root, log } = app({ fault: { plugin: "rates", silent: true } });
-    const began = performance.now();
     const proved = prove(root, "health is up");
-    const seconds = (performance.now() - began) / 1000;
+    const ended = performance.timeOrigin + performance.now();
     expect(entriesOf(log).filter((e) => e.event === "silent").map((e) => e.plugin), proved.out).toEqual(["rates"]);
     expect(proved.status, proved.out).not.toBe(0);
     expect(proved.out).not.toMatch(/^journey health is up/m);
     expect(proved.out).toContain("pricing");
-    // 60 s for the stand-in, and room for the rest of a prove that never ran a journey.
-    expect(seconds, proved.out).toBeLessThan(150);
+    // 60 s from the stand-in's start, and 30 s for stopping it and the rest of a prove that never ran a journey.
+    const started = entriesOf(log).find((e) => e.event === "start" && e.plugin === "rates")!;
+    expect((ended - started.at!) / 1000, proved.out).toBeLessThan(90);
     const left = entriesOf(log).filter((e) => e.event === "start").flatMap((e) => [e.pid!, e.child!]).filter(alive);
     for (const pid of left) process.kill(pid, "SIGKILL");
     expect(left, "processes still running after prove failed (their ids, now killed)").toEqual([]);

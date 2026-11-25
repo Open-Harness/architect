@@ -138,7 +138,8 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
   (Added from the hostile pass on #1016, 25 November 2026.)
 - **Known limit: the key is judged only where a call reaches it.** No check sees that a `Stand.vendor` or `Stand.none` mount
   is not given `world-<mount>`; the contract says the key is for "each mount it stood up".
-- **A world of its own** (signed off by the lead on #995, 25 November 2026). A model with a process stand-in makes prove take
+- **A world of its own** (signed off by Goal 16's lead, https://ampcode.com/threads/T-01a2093c-8643-7794-9ce7-5dbc110ce4aa,
+  25 November 2026; recorded on #995). A model with a process stand-in makes prove take
   a world of its own, as a device chain does (`needsDevice`): a warm `ortho dev` world is not reused, and every run starts
   with fresh stand-in state.
 - **Known limit: no stand-ins under `ortho dev`.** Its world starts none, so a generated call there fails on the missing
@@ -167,6 +168,7 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 
 ## Supersedes
 
+- ST1-24-warm-world: "or a model whose plugins run on a device (they need a chain of their own) never reuses" → "a model whose plugins run on a device, or a model with a process stand-in, never reuses" (also `packages/prove/src/modules/prove/README.md`)
 - G16-adapter-mounts call 1, as merged in #1003: "`apiKey`, when its description declares any security scheme" → "`apiKey`, when its description requires security"
 - G16-adapter-mounts call 1, as merged in #1010: "and an app can't set `code` on a generated file" → "unless the plugin's scaffolded `src/written.ts` exports a `code`, which the generated `thing.ts` reads"
 - GOAL17-adapters-from-spec: "Declared error classes per response are not generated yet: `Blueprint.call()` is given none." → "every generated call is `Blueprint.call({ errors: [<Adapter>ApiFailure, <Adapter>InputRefused, <Adapter>AnswerRefused, <Adapter>Unreachable] })`"

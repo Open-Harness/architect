@@ -244,3 +244,4 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
   call 3), so a generated call in `ortho dev`'s world fails on the missing `<MOUNT>_BASE_URL`. Dev's world would start the
   stand-ins too, and `Warm.reset` would restart them so a reused world starts with fresh stand-in state; prove could then
   reuse a warm world for a model with stand-ins. **Trigger:** a developer needs a generated call to answer under `ortho dev`.
+  Check 08's world-of-its-own test counts stand-in starts assuming dev starts none; its author changes that count then.
