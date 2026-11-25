@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/employee-promotion/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { EmployeePromotion } from "../../blueprint/things/employee-promotion/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee-promotion/create.handler.ts";
 
@@ -51,37 +52,50 @@ const { PromotedEmployeeNotInCompany, PromotedEmployeeHasLeft, NewDesignationNot
  *   once it answers, it writes EmployeePromotionDrafted: employeePromotion from the answer, employee from the payload;
  *   the call is the span employee-promotion.create, and its commit employee-promotion.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employee, promotionDate, newDesignation }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span employee-promotion.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // PromotedEmployeeNotInCompany: exit 41, PM-001.
-    if (yield* Handlers.blank<boolean>("refuse PromotedEmployeeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PromotedEmployeeNotInCompany was refused"));
+    // Step load: database, span employee-promotion.create.load. The runtime read the employee and the new designation and hands
+    // them in, so this step only takes them; a missing one never reaches here.
+    const { held, wanted } = yield* steps.load(Effect.succeed({ held: refs.employee, wanted: refs.newDesignation }));
+    if (!held) return yield* Effect.die(new Error(`employee ${employee} was read and then not found`));
+    if (!wanted) return yield* Effect.die(new Error(`designation ${newDesignation} was read and then not found`));
+
+    // Refusal order (errors.ts): PromotedEmployeeNotInCompany, then PromotedEmployeeHasLeft, then NewDesignationNotInCompany, then
+    // DesignationUnchanged (CX-employee-moves).
+    // PromotedEmployeeNotInCompany: exit 41, PM-001. HRMS copies the company from the employee; here it must match.
+    if (held["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new PromotedEmployeeNotInCompany({});
     }
 
-    // PromotedEmployeeHasLeft: exit 42, PM-002.
-    if (yield* Handlers.blank<boolean>("refuse PromotedEmployeeHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PromotedEmployeeHasLeft was refused"));
+    // PromotedEmployeeHasLeft: exit 42, PM-002. A new promotion is only for an employee still at work, judged on create
+    // only (CX-expense-leavers).
+    if (held.state !== "active") {
+      yield* Effect.logInfo(`the employee is ${held.state ?? "in no state"}, not active`);
       return yield* new PromotedEmployeeHasLeft({});
     }
 
-    // NewDesignationNotInCompany: exit 43, PM-003.
-    if (yield* Handlers.blank<boolean>("refuse NewDesignationNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NewDesignationNotInCompany was refused"));
+    // NewDesignationNotInCompany: exit 43, PM-003. The new designation must be the company's, which also keeps the promotion
+    // inside it.
+    if (wanted["company"] !== company) {
+      yield* Effect.logInfo("the new designation belongs to another company");
       return yield* new NewDesignationNotInCompany({});
     }
 
-    // DesignationUnchanged: exit 44, PM-004.
-    if (yield* Handlers.blank<boolean>("refuse DesignationUnchanged when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why DesignationUnchanged was refused"));
+    // DesignationUnchanged: exit 44, PM-004. HRMS's property dialog: "Nothing to change".
+    const currentDesignation = held["designation"] as typeof newDesignation;
+    if (newDesignation === currentDesignation) {
+      yield* Effect.logInfo("the employee already holds the new designation");
       return yield* new DesignationUnchanged({});
     }
 
-    // Step insert: database, span employee-promotion.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span employee-promotion.create.insert. The current designation is copied from the employee, never
+    // typed, as HRMS's Employee Property History line takes its `current`.
+    yield* steps.insert(
+      records.insert(EmployeePromotion, { id, company, employee, promotionDate, currentDesignation, newDesignation }),
+    );
 
     // The move create, to draft.
     yield* move();
