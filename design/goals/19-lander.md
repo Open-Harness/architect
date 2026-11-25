@@ -145,15 +145,17 @@ said no Claude-led goal is running now.
   #993 landed `goal/superagent` at `446fb6dd` in `main`, at `71e55caa`: #946, the adapter generator's build for #739,
   which Capxul's Bridge adapter (#716) needs. The merge was mechanical: #975's build had not yet changed
   `runtime/client.ts` on `main`, and `embed-runtime.ts` and `ortho generate` left no diff. The 🔍 rebuilt all 24
-  adapter plugin files from the pinned specs, byte for byte. Codex found that the generator drops body fields of a
-  `oneOf`/`anyOf` nested in another alternative. No pinned spec has that shape, so it is Snag #996 for Goal 16, not a
-  block.
+  generated adapter plugin files from the pinned specs, byte for byte. Codex found that the generator drops body
+  fields of a `oneOf`/`anyOf` nested in another alternative. No pinned spec has that shape, so it is Snag #996 for
+  Goal 16, not a block.
 - **Snags filed for Goal 18:** #762 (a flaky port check in `portal.test.ts`), #788 (`examples/budgets` imports
   `receipts`, which `orthograph` does not export), #898 (the board sync takes over closed Asks),
   #908 (`e2e-layer1` check 4 fails at random; it turned `main` red at `06877509` and #919 red at `3822d439`,
   and a rerun passed each time) and #944 (host-cloudflare `entry.test.ts` "a spawn has a token of its own" fails at
-  random; a rerun passed at `4068d588`. Three different tests in that file have failed: at `9a8601a6`, on `main` at
-  `6f77a26a`, and twice on #993 at `e5087506`, and a rerun passed each time. The lander asked Goal 18 on #718 to rank
-  it up). `logbook`'s `local/routes.test.ts` failed once on #948 and passed on rerun.
+  random). Two tests in that file fail at random: "a spawn has a token of its own" (at `4068d588`, on `main` at
+  `6f77a26a` and on #993 at `e5087506`) and "is counted from arrival …" (at `9a8601a6`, and on #993's rerun at
+  `e5087506`). Reruns passed at `4068d588`, `9a8601a6` and, on the second rerun, `e5087506`; `main` went green again
+  on its next commit after `6f77a26a`. The lander asked Goal 18 on #718 to rank #944 up. `logbook`'s
+  `local/routes.test.ts` failed once on #948 and passed on rerun.
 - **Next:** each round lands what the app branches have merged since, and tells every running goal after each
   landing.
