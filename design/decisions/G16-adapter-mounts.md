@@ -62,7 +62,9 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
 
 ### 2. Bridge's signature at the door (gap 5)
 
-`AdapterDoor.verify` gains a second form:
+`AdapterDoor.verify` gains a second form. M5-reach-out's call 1 left a sender that doesn't sign with HMAC to "the adapter's own
+verifier in its `src/`". This form is built in instead, because `AdapterDoor` is pure data the compiler reads and the Worker runs
+(`door-types.ts`), and Bridge's scheme is one more senders can share:
 
 ```ts
 verify: { scheme: "rsa-pkcs1-sha256", header: "x-webhook-signature", within: 600 }
@@ -115,4 +117,4 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 
 ## Supersedes
 
-Nothing yet: no live doc names a mount's base URL or key, or the door's RSA form.
+- GOAL17-adapters-from-spec: "Declared error classes per response are not generated yet: `Blueprint.call()` is given none." → "every generated call is `Blueprint.call({ errors: [<Adapter>ApiFailure, <Adapter>InputRefused, <Adapter>AnswerRefused, <Adapter>Unreachable] })`"
