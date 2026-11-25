@@ -55,7 +55,9 @@ Starts from the world `a three-person cycle`.
 - **Bo can't list the cycle's.** `bo` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.
 - **nor Olga's.** `bo` (signed in) calls and sends employee the world's employee, and is refused with NotAllowed, AR-001.
 - **Ada lists them again.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and gets back [`submitted`, `draft`].
+- **Dee's takes the cycle's method, scored from goals, and the template's lines.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, employee the world's newHire, and gets back [[the world's company, the world's newHire, the world's appraisalCycle, the world's appraisalTemplate, `Automated Based on Goal Progress`, `draft`, [[the world's kra, `30`, `0`, `0`], [the world's otherKra, `70`, `0`, `0`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], [`0`, `0`, `0`, `0`]]].
 - **Q1 2027 holds Olga's and Cy's, rated by hand, and none of Dee's.** `ada` (role company.owner) calls and sends appraisalCycle the world's threePersonCycle, and gets back [[the world's employee, `Manual Rating`, `draft`], [the world's secondEmployee, `Manual Rating`, `draft`]].
+- **each takes the lines of their own row's template.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and gets back [[the world's employee, [[the world's kra, `30`], [the world's otherKra, `70`]], 2], [the world's secondEmployee, [[the world's kra, `100`]], 0]].
 
 ## How to call
 

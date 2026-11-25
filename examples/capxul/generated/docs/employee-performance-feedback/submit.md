@@ -62,6 +62,7 @@ Starts from the world `a manual cycle draft`.
 - **nor can Bo.** `bo` (signed in) calls and sends employeePerformanceFeedback the world's feedbackDraft, and is refused with NotAllowed, AR-001.
 - **Cy submits hers: the average of 2.2 and 3.85 is 3.03 (3.025, rounded up), and the final score 1.01.** `cy` (signed in) calls and sends employeePerformanceFeedback the world's feedbackDraft, and gets back [the world's feedbackDraft, `3.03`, the world's appraisal].
 - **submitted, it averages with the other two: 10.3 ÷ 3 is 3.43, and the final score 1.14.** `cy` (signed in) calls and sends employeePerformanceFeedback the last call's employeePerformanceFeedback, and gets back `3.43`.
+- **and submits it before the cycle starts: the average of this appraisal's one feedback is 3.** `cy` (signed in) calls and sends employeePerformanceFeedback the last call's employeePerformanceFeedback, and gets back `3`.
 - **she may still submit her draft on Cy: 0.5 and 0.5, a total and average of 2.5.** `dee` (signed in) calls and sends employeePerformanceFeedback the world's deeDraft, and gets back [`2.5`, the world's secondAppraisal].
 - **Cy's draft there can't be submitted now.** `cy` (signed in) calls and sends employeePerformanceFeedback the world's manualDraft, and is refused with FeedbackCycleCompleted, PF-007.
 

@@ -52,7 +52,14 @@ Set how far along a goal is, from 0 to 100.
 Starts from the world `a second feedback criteria`.
 
 - **she moves the UI to 70.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `70`, scale: 0 }, and gets back `70`.
+- **she sets Refactoring to 40 again: the feedback and self scores stand.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `40`, scale: 0 }, and gets back `40`.
 - **and no longer move.** `olga` (signed in) calls and sends goal the last call's items 2 id, progress { value: `100`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.
+
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **and move it to 40.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `40`, scale: 0 }, and gets back `40`.
 
 ### set and track goals
 

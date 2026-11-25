@@ -47,7 +47,7 @@ Starts from the world `a manual cycle draft`.
 - **nor can Dee.** `dee` (signed in) calls and sends id the world's feedbackDraft, and is refused with NotAllowed, AR-001.
 - **nor Bo.** `bo` (signed in) calls and sends id the world's feedbackDraft, and is refused with NotAllowed, AR-001.
 - **it reads back submitted, on the template's criteria in the template's order.** `dee` (signed in) calls and sends id the last call's employeePerformanceFeedback, and gets back [the world's company, the world's appraisal, the world's appraisalCycle, the world's employee, the world's newHire, `Steady work.`, [[the world's criteria, `70`, `0.2`], [the world's otherCriteria, `30`, `1`]], `2.2`, `submitted`].
-- **it reads back, a draft about Olga.** `cy` (signed in) calls and sends id the last call's employeePerformanceFeedback, and gets back [the world's employee, the world's secondEmployee, `3`, `draft`].
+- **it reads back submitted, about Olga.** `cy` (signed in) calls and sends id the last call's employeePerformanceFeedback, and gets back [the world's employee, the world's secondEmployee, `3`, `submitted`].
 
 ## How to call
 

@@ -77,6 +77,7 @@ Starts from the world `an interview`.
 Starts from the world `a manual cycle draft`.
 
 - **Dee leaves.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-11-30`, and gets back the world's newHire.
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
 
 ### move an employee through the company
 
@@ -96,6 +97,7 @@ Starts from the world `a second transfer`.
 Starts from the world `a manual cycle draft`.
 
 - **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
 
 ### run a separation
 
@@ -119,6 +121,7 @@ Starts from the world `an outside employee`.
 
 Starts from the world `a started manual cycle`.
 
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
 - **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
 ### set up interview rounds

@@ -65,6 +65,7 @@ Starts from the world `a manual cycle draft`.
 - **Bo of Acme Logistics can't be appraised in Acme Trading's cycle.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's manualCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisedEmployeeNotInCompany, AP-001.
 - **Ada makes Dee's H1 2027 appraisal.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's manualCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
 - **but no new appraisal is made for her, judged before a template of Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisedEmployeeHasLeft, AP-002.
+- **Bo is judged as outside Acme Trading before as a leaver.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisedEmployeeNotInCompany, AP-001.
 - **no appraisal is made in it now, judged before a template of Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's manualCycle, appraisalTemplate the world's outsideTemplate, and is refused with AppraisalCycleCompleted, AP-003.
 - **Cy's leaving is judged before the completed cycle.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, appraisalCycle the world's manualCycle, appraisalTemplate the world's appraisalTemplate, and is refused with AppraisedEmployeeHasLeft, AP-002.
 
@@ -75,6 +76,7 @@ Starts from the world `a three-person cycle`.
 - **no appraisal is made in it now.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's appraisalCycle, appraisalTemplate the world's appraisalTemplate, and is refused with AppraisalCycleCompleted, AP-003.
 - **and may then add Dee's appraisal by hand.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's appraisalCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
 - **Ada makes Olga's Q1 2027 appraisal by hand before it starts.** `ada` (role company.owner) calls and sends employee the world's employee, appraisalCycle the world's threePersonCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
+- **and makes Olga's appraisal in it by hand.** `ada` (role company.owner) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
 
 ## How to call
 

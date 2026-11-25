@@ -56,6 +56,7 @@ Starts from the world `a started manual cycle`.
 - **she closes it from in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
 - **nor closed.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.
 - **closed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **she closes Right.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
 - **nothing closed.** `ada` (role company.owner) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GL-001.
 
 ## How to call

@@ -40,6 +40,12 @@ Add a key result area to a company.
 
 ## Worked examples
 
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **Ada adds the KRA Mentoring to Acme Trading.** `ada` (role company.owner) calls and sends company the world's company, title `Mentoring`, and gets back an answer matching `^kra_[0-9a-z]+$`.
+
 ### set up kras and criteria
 
 Starts from the world `three companies`.

@@ -37,6 +37,7 @@ List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.
 Starts from the world `a second feedback criteria`.
 
 - **Olga's goals: Ship v2 has followed the API to 100.** `olga` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, employee the world's employee, and gets back [[`Ship v2`, `100`, `completed`], [`API`, `100`, `completed`]].
+- **her goals.** `olga` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, employee the world's employee, and gets back `Refactoring`.
 - **her goals read back in the order she set them, the API and the UI under Ship v2.** `olga` (signed in) calls and sends appraisalCycle the last call's items 0 appraisalCycle, employee the world's employee, and gets back [[`Ship v2`, the world's kra, `85`, true, null, `inProgress`], [`API`, the world's kra, `100`, false, 0, `completed`], [`UI`, the world's kra, `70`, false, 0, `inProgress`], [`Refactoring`, the world's otherKra, `40`, false, null, `inProgress`]].
 
 ### set and track goals
@@ -53,6 +54,11 @@ Starts from the world `a started manual cycle`.
 - **Platform leaves it out: the average of 100 and 60 is 80.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [[`Ship the ledger`, `50`, `inProgress`], [`Platform work`, `80`, `inProgress`], [`API design`, `100`, `completed`], [`Docs writing`, `90`, `archived`], [`Guides`, `60`, `inProgress`], [`First guide`, `60`, `inProgress`]].
 - **Olga lists her goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.
 - **Olga lists H1 2027's goals.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back 2.
+- **Olga lists H1 2027's goals to reach Pair.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [8, `Pair`].
+- **a closed child still counts: Pair is 60, the average of 40 and 80.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [`Pair`, `60`, `inProgress`].
+- **Olga lists them to reach Outer and Inner.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [`Outer`, `Inner`].
+- **Olga lists them again.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back 13.
+- **Outer averages its children, Inner's 30 and Gamma's 100, not its leaves: 65.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [[`Outer`, `65`, `inProgress`], [`Inner`, `30`, `inProgress`]].
 - **Olga lists her H2 2026 goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.
 
 ## How to call

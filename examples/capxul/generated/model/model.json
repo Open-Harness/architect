@@ -18002,6 +18002,87 @@
           ]
         },
         {
+          "title": "Olga's appraisal, to reach the cycle",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3.87"
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "her goals",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "Refactoring"
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "she sets Refactoring to 40 again: the feedback and self scores stand",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.update-progress",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "3",
+                  "id"
+                ]
+              },
+              "progress": {
+                "value": "40",
+                "scale": 0
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "40"
+            }
+          ]
+        },
+        {
           "title": "Ada submits Olga's appraisal",
           "call": {
             "actor": "ada",
@@ -18390,7 +18471,7 @@
           ]
         }
       ],
-      "sourceHash": "81c677f3bed10511e38b492fec8411584c44d56fd167de1917cdbfc1f294f100"
+      "sourceHash": "6ab9661646d7a91dd43e295aca2692bab45acd8676cc35b00b3f5793a48ca4f6"
     },
     "journeys/approve-an-attendance-request.ts": {
       "name": "approve an attendance request",
@@ -28646,7 +28727,39 @@
           ]
         },
         {
-          "title": "it reads back, a draft about Olga",
+          "title": "and submits it before the cycle starts: the average of this appraisal's one feedback is 3",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.submit",
+            "payload": {
+              "employeePerformanceFeedback": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "3"
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-performance-feedback",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePerformanceFeedback"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "it reads back submitted, about Olga",
           "call": {
             "actor": "cy",
             "operation": "employee-performance-feedback.get",
@@ -28676,7 +28789,36 @@
                   ]
                 },
                 "3",
-                "draft"
+                "submitted"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga's Q3 2027 appraisal counts only its own feedback, not H2 2026's: a final score of 1",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0",
+                "3",
+                "1"
               ]
             },
             {
@@ -28830,6 +28972,91 @@
               "absent": [
                 "employee-performance-feedback.create.insert"
               ]
+            }
+          ]
+        },
+        {
+          "title": "Bo leaves Acme Logistics",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "relievingDate": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "Bo is judged as outside Acme Trading before as a leaver",
+          "call": {
+            "actor": "bo",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "feedback": "Steady work.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "1",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ReviewerNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
             }
           ]
         },
@@ -29199,7 +29426,7 @@
           ]
         }
       ],
-      "sourceHash": "51aa7614c0ff8399f2dbce74a21d5e4bd26a9aed5f03bae928ae2821f6d8a94a"
+      "sourceHash": "da55de873807423a6fc734a134bb33324d015fd7cc11dd8e3ad5367574cfb8a5"
     },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
@@ -37557,7 +37784,56 @@
           ]
         },
         {
-          "title": "a rating replaces the one before: 4.25 earns 1.275, rounded up to 1.28, and 3.15 earns 2.205, rounded up to 2.21",
+          "title": "they read back in the template's order",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "kra"
+                      ]
+                    },
+                    "30",
+                    "5",
+                    "1.5"
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "otherKra"
+                      ]
+                    },
+                    "70",
+                    "0",
+                    "0"
+                  ]
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a rating replaces the one before: 4.25 earns 1.275 and 3.15 earns 2.205, a total of 3.48, summed before rounding as HRMS does",
           "call": {
             "actor": "ada",
             "operation": "appraisal.rate",
@@ -37600,14 +37876,14 @@
             {
               "kind": "expect-equal",
               "value": [
-                "3.49",
+                "3.48",
                 "1.16"
               ]
             }
           ]
         },
         {
-          "title": "it reads back with those lines",
+          "title": "its lines read back rounded half up, 1.28 and 2.21, and the total stays 3.48",
           "call": {
             "actor": "ada",
             "operation": "appraisal.get",
@@ -37647,7 +37923,8 @@
                     "3.15",
                     "2.21"
                   ]
-                ]
+                ],
+                "3.48"
               ]
             },
             {
@@ -38264,6 +38541,101 @@
               "value": [
                 "3.5",
                 "2.37"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "they read back in the template's order",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "70",
+                  "1"
+                ],
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "30",
+                  "0"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "0.33 and 0.33: 1.155 and 0.495, a self score of 1.65, summed before rounding, and a final score of 1.75",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.self-rate",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "manualAppraisal"
+                ]
+              },
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "33",
+                    "scale": 2
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "33",
+                    "scale": 2
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "1.65",
+                "1.75"
               ]
             }
           ]
@@ -39274,6 +39646,70 @@
           ]
         },
         {
+          "title": "Bo leaves Acme Logistics",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "relievingDate": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "Bo is judged as outside Acme Trading before as a leaver",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "outsideTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AppraisedEmployeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Dee's is the one draft left in H1 2027",
           "call": {
             "actor": "ada",
@@ -39442,7 +39878,7 @@
           ]
         }
       ],
-      "sourceHash": "6edf8aa0d145671ec29a145087ff61f09961b4ce124a3fa2bbf621a537ead155"
+      "sourceHash": "cb3a2956cb3f7dfe2fe0f859cd4790304ef36c2d1ea8d06e4d889a70341a8cb3"
     },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
@@ -43824,6 +44260,117 @@
           ]
         },
         {
+          "title": "Dee's takes the cycle's method, scored from goals, and the template's lines",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "newHire"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "newHire"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "appraisalCycle"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  },
+                  "Automated Based on Goal Progress",
+                  "draft",
+                  [
+                    [
+                      {
+                        "ref": [
+                          "world",
+                          "kra"
+                        ]
+                      },
+                      "30",
+                      "0",
+                      "0"
+                    ],
+                    [
+                      {
+                        "ref": [
+                          "world",
+                          "otherKra"
+                        ]
+                      },
+                      "70",
+                      "0",
+                      "0"
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "ref": [
+                          "world",
+                          "criteria"
+                        ]
+                      },
+                      "70",
+                      "0"
+                    ],
+                    [
+                      {
+                        "ref": [
+                          "world",
+                          "otherCriteria"
+                        ]
+                      },
+                      "30",
+                      "0"
+                    ]
+                  ],
+                  [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                  ]
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "the cycle's settings read back unchanged",
           "call": {
             "actor": "ada",
@@ -43914,6 +44461,77 @@
               "kind": "expect",
               "match": "^apr_[0-9a-z]+$",
               "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Olga may set a goal in Q1 2027 before it starts: HRMS refuses only a completed cycle",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "threePersonCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "Early start",
+              "progress": {
+                "value": "20",
+                "scale": 0
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
+        },
+        {
+          "title": "and move it to 40",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.update-progress",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "progress": {
+                "value": "40",
+                "scale": 0
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "40"
             }
           ]
         },
@@ -44322,9 +44940,335 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Ada makes the template Quality only: Quality 100, no criteria",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-template.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Quality only",
+              "kras": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "100",
+                    "scale": 0
+                  }
+                }
+              ],
+              "criteria": []
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apt_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "and Mixed 2027, appraising Olga by Engineers and Cy by Quality only",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "cycleName": "Mixed 2027",
+              "startDate": "2027-04-01",
+              "endDate": "2027-06-30",
+              "kraEvaluationMethod": "Manual Rating",
+              "appraisees": [
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  }
+                },
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "secondEmployee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "last",
+                      "appraisalTemplate"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apc_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "she starts it: two appraisals",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.start",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "title": "each takes the lines of their own row's template",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  [
+                    [
+                      {
+                        "ref": [
+                          "world",
+                          "kra"
+                        ]
+                      },
+                      "30"
+                    ],
+                    [
+                      {
+                        "ref": [
+                          "world",
+                          "otherKra"
+                        ]
+                      },
+                      "70"
+                    ]
+                  ],
+                  2
+                ],
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "secondEmployee"
+                    ]
+                  },
+                  [
+                    [
+                      {
+                        "ref": [
+                          "world",
+                          "kra"
+                        ]
+                      },
+                      "100"
+                    ]
+                  ],
+                  0
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada sets up Spring 2027 for Olga",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "cycleName": "Spring 2027",
+              "startDate": "2027-03-01",
+              "endDate": "2027-05-31",
+              "kraEvaluationMethod": "Manual Rating",
+              "appraisees": [
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apc_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "and makes Olga's appraisal in it by hand",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "appraisalTemplate": {
+                "ref": [
+                  "world",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^apr_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "it reads back in Spring 2027",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "starting Spring 2027 makes nothing, since Olga has hers, and the cycle is in progress",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-cycle.start",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 0
+            },
+            {
+              "kind": "is-in",
+              "thing": "appraisal-cycle",
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
         }
       ],
-      "sourceHash": "927ea350c06beb6ede9b5104e7dc33e75e83058e3ca09a8c1ac1499d99e9dd3a"
+      "sourceHash": "365bd6ba4ee818897c0c112ed6287c4effe1dd7fffebb6f02c88aee3112b72fa"
     },
     "journeys/schedule-an-interview.ts": {
       "name": "schedule an interview",
@@ -47556,6 +48500,142 @@
           ]
         },
         {
+          "title": "Bo leaves Acme Logistics",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "relievingDate": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "Bo is judged as outside Acme Trading before as a leaver",
+          "call": {
+            "actor": "ada",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "outsider"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "outsideKra"
+                ]
+              },
+              "goalName": "Drive",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "GoalEmployeeNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada adds the KRA Mentoring to Acme Trading",
+          "call": {
+            "actor": "ada",
+            "operation": "kra.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Mentoring"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kra_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "a KRA of Acme Trading that Olga's appraisal doesn't hold is refused",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "last",
+                  "kra"
+                ]
+              },
+              "goalName": "Mentor",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "GoalKraNotInAppraisal",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Cy can't set Olga a goal",
           "call": {
             "actor": "cy",
@@ -50136,6 +51216,606 @@
           ]
         },
         {
+          "title": "a group, Pair",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "Pair",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "under it, Left at 40",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "Left",
+              "progress": {
+                "value": "40",
+                "scale": 0
+              },
+              "isGroup": false,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
+        },
+        {
+          "title": "Olga lists H1 2027's goals to reach Pair",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                8,
+                "Pair"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "under Pair, Right at 80",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "Right",
+              "progress": {
+                "value": "80",
+                "scale": 0
+              },
+              "isGroup": false,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "6",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
+        },
+        {
+          "title": "she closes Right",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.close",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "closed"
+            }
+          ]
+        },
+        {
+          "title": "a closed child still counts: Pair is 60, the average of 40 and 80",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Pair",
+                "60",
+                "inProgress"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a group, Outer",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "otherKra"
+                ]
+              },
+              "goalName": "Outer",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "under it, a group, Inner",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "otherKra"
+                ]
+              },
+              "goalName": "Inner",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": true,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "under Inner, Alpha at 60",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "otherKra"
+                ]
+              },
+              "goalName": "Alpha",
+              "progress": {
+                "value": "60",
+                "scale": 0
+              },
+              "isGroup": false,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
+        },
+        {
+          "title": "Olga lists them to reach Outer and Inner",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "Outer",
+                "Inner"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "under Inner, Beta at 0: Inner is 30",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "otherKra"
+                ]
+              },
+              "goalName": "Beta",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": false,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "10",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "Olga lists them again",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 13
+            }
+          ]
+        },
+        {
+          "title": "under Outer, Gamma at 100",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "otherKra"
+                ]
+              },
+              "goalName": "Gamma",
+              "progress": {
+                "value": "100",
+                "scale": 0
+              },
+              "isGroup": false,
+              "parentGoal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "9",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "completed"
+            }
+          ]
+        },
+        {
+          "title": "Outer averages its children, Inner's 30 and Gamma's 100, not its leaves: 65",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "Outer",
+                  "65",
+                  "inProgress"
+                ],
+                [
+                  "Inner",
+                  "30",
+                  "inProgress"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "H1 2027 is rated by hand, so none of these goals scores Olga's appraisal there",
           "call": {
             "actor": "olga",
@@ -50575,7 +52255,7 @@
           ]
         }
       ],
-      "sourceHash": "954cd60d59f54f1903c7bde9534aa81b48ebcc5a84813f4d808b4872816450f4"
+      "sourceHash": "a476f03595a6ef5c23b116d41de28994b34f4f7d8ea0d2dda429652ec08b6fc9"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -52028,6 +53708,47 @@
           ]
         },
         {
+          "title": "a line over 100 is refused as out of range, judged before the KRAs' total",
+          "call": {
+            "actor": "ada",
+            "operation": "appraisal-template.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Too heavy",
+              "kras": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "150",
+                    "scale": 0
+                  }
+                }
+              ],
+              "criteria": []
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "TemplateWeightageOutOfRange",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "a line of weightage 0 is refused, though the total is 100",
           "call": {
             "actor": "ada",
@@ -52698,7 +54419,7 @@
           ]
         }
       ],
-      "sourceHash": "eb3d2468057bdac7c5889f0fc4ad5121e6eec44bf16faaae85ada03335a60f5d"
+      "sourceHash": "3a23b0ac56adf63b93bb680e5e80150996dfa30e369a9c156147835c069abf24"
     },
     "journeys/set-up-branches.ts": {
       "name": "set up branches",
