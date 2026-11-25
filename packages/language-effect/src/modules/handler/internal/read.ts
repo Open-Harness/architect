@@ -21,7 +21,8 @@ const byId = (read: Read<any, any, any>, payload: ReadPayload, unit: UnitOf) =>
   Effect.gen(function* () {
     const found = yield* unit.read(read.thing, String(payload["id"]));
     if (!found) return yield* new NotAllowed();
-    return Object.fromEntries(read.fields.map((f) => [f, f === "state" ? (found.state ?? "none") : found[f]])) as ReadAnswer;
+    // An optional field with no value is left out, never answered as `undefined` under its key (#1018).
+    return Object.fromEntries(read.fields.map((f) => [f, f === "state" ? (found.state ?? "none") : found[f]]).filter(([, v]) => v !== undefined)) as ReadAnswer;
   });
 
 /** One instance by its id, and what its derive adds; a missing one is `NotAllowed` as well. */
