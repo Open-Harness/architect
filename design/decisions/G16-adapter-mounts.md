@@ -66,6 +66,12 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
 - **No base URL at all is a defect,** not a refusal: the operation answers 500, nothing is sent, and the defect on its span
   names `<MOUNT>_BASE_URL`. There is no default from the description's `servers`, which would send a test environment to
   production (Bridge's is `https://api.bridge.xyz/v0`).
+- **Known limits** (#995 gap 1's checks, 25 November 2026):
+  - The four errors' thing takes the compiler's default refusal prefix, its name's first two letters. Two generated adapters
+    whose names share them (`open` and `optional`, `github` and `gitlab`) can't be mounted together, and an app can't set
+    `code` on a generated file. Snag #1012: `ortho new adapter --code`.
+  - The key is the adapter's, not the mount's calls': a mount that includes only calls needing no key still lists one, and so
+    does a description whose every operation overrides its top-level requirement with `security: []`.
 
 ### 2. Bridge's signature at the door (gap 5)
 
