@@ -12,6 +12,9 @@ import * as Department from "../../../blueprint/things/department/errors.ts";
 import * as Designation from "../../../blueprint/things/designation/errors.ts";
 import * as Employee from "../../../blueprint/things/employee/errors.ts";
 import * as EmployeeGrade from "../../../blueprint/things/employee-grade/errors.ts";
+import * as EmployeePromotion from "../../../blueprint/things/employee-promotion/errors.ts";
+import * as EmployeeSeparation from "../../../blueprint/things/employee-separation/errors.ts";
+import * as EmployeeTransfer from "../../../blueprint/things/employee-transfer/errors.ts";
 import * as EmploymentType from "../../../blueprint/things/employment-type/errors.ts";
 import * as Expense from "../../../blueprint/things/expense/errors.ts";
 import * as ExpenseClaim from "../../../blueprint/things/expense-claim/errors.ts";
@@ -51,6 +54,18 @@ export const refusals = {
   JoinedBeforeBorn: { code: "EM-004", exit: 44, status: 422 },
   RelievedBeforeJoined: { code: "EM-005", exit: 45, status: 422 },
   EmployeeGradeNameTaken: { code: "EG-001", exit: 41, status: 422 },
+  PromotedEmployeeNotInCompany: { code: "PM-001", exit: 41, status: 422 },
+  PromotedEmployeeHasLeft: { code: "PM-002", exit: 42, status: 422 },
+  NewDesignationNotInCompany: { code: "PM-003", exit: 43, status: 422 },
+  DesignationUnchanged: { code: "PM-004", exit: 44, status: 422 },
+  PromotionNotYetDue: { code: "PM-005", exit: 45, status: 422 },
+  SeparatedEmployeeNotInCompany: { code: "SP-001", exit: 41, status: 422 },
+  SeparationAlreadyOpen: { code: "SP-002", exit: 42, status: 422 },
+  TransferredEmployeeNotInCompany: { code: "TR-001", exit: 41, status: 422 },
+  TransferredEmployeeHasLeft: { code: "TR-002", exit: 42, status: 422 },
+  NewDepartmentNotInCompany: { code: "TR-003", exit: 43, status: 422 },
+  DepartmentUnchanged: { code: "TR-004", exit: 44, status: 422 },
+  TransferNotYetDue: { code: "TR-005", exit: 45, status: 422 },
   EmploymentTypeNameTaken: { code: "TY-001", exit: 41, status: 422 },
   SanctionedOverClaimed: { code: "EX-001", exit: 41, status: 422 },
   ExpenseTypeNotInCompany: { code: "EX-002", exit: 42, status: 422 },
@@ -93,6 +108,9 @@ export const refusals = {
   DesignationNotActive: { code: "DS-900", exit: 40, status: 409 },
   EmployeeNotActive: { code: "EM-900", exit: 40, status: 409 },
   EmployeeGradeNotActive: { code: "EG-900", exit: 40, status: 409 },
+  EmployeePromotionNotDraft: { code: "PM-900", exit: 40, status: 409 },
+  EmployeeSeparationNotPending: { code: "SP-900", exit: 40, status: 409 },
+  EmployeeTransferNotDraft: { code: "TR-900", exit: 40, status: 409 },
   EmploymentTypeNotActive: { code: "TY-900", exit: 40, status: 409 },
   ExpenseNotActive: { code: "EX-900", exit: 40, status: 409 },
   ExpenseClaimNotDraft: { code: "EC-900", exit: 40, status: 409 },
@@ -166,6 +184,30 @@ ErrorNames.name(Employee.RelievedBeforeJoined, "RelievedBeforeJoined");
 export class RelievedBeforeJoined extends Schema.TaggedError<RelievedBeforeJoined>()("RelievedBeforeJoined", { code: Schema.Literal(refusals.RelievedBeforeJoined.code), ...wireStruct(Employee.RelievedBeforeJoined.fields).fields }, { httpApiStatus: refusals.RelievedBeforeJoined.status }) { static readonly code = refusals.RelievedBeforeJoined.code; }
 ErrorNames.name(EmployeeGrade.EmployeeGradeNameTaken, "EmployeeGradeNameTaken");
 export class EmployeeGradeNameTaken extends Schema.TaggedError<EmployeeGradeNameTaken>()("EmployeeGradeNameTaken", { code: Schema.Literal(refusals.EmployeeGradeNameTaken.code), ...wireStruct(EmployeeGrade.EmployeeGradeNameTaken.fields).fields }, { httpApiStatus: refusals.EmployeeGradeNameTaken.status }) { static readonly code = refusals.EmployeeGradeNameTaken.code; }
+ErrorNames.name(EmployeePromotion.PromotedEmployeeNotInCompany, "PromotedEmployeeNotInCompany");
+export class PromotedEmployeeNotInCompany extends Schema.TaggedError<PromotedEmployeeNotInCompany>()("PromotedEmployeeNotInCompany", { code: Schema.Literal(refusals.PromotedEmployeeNotInCompany.code), ...wireStruct(EmployeePromotion.PromotedEmployeeNotInCompany.fields).fields }, { httpApiStatus: refusals.PromotedEmployeeNotInCompany.status }) { static readonly code = refusals.PromotedEmployeeNotInCompany.code; }
+ErrorNames.name(EmployeePromotion.PromotedEmployeeHasLeft, "PromotedEmployeeHasLeft");
+export class PromotedEmployeeHasLeft extends Schema.TaggedError<PromotedEmployeeHasLeft>()("PromotedEmployeeHasLeft", { code: Schema.Literal(refusals.PromotedEmployeeHasLeft.code), ...wireStruct(EmployeePromotion.PromotedEmployeeHasLeft.fields).fields }, { httpApiStatus: refusals.PromotedEmployeeHasLeft.status }) { static readonly code = refusals.PromotedEmployeeHasLeft.code; }
+ErrorNames.name(EmployeePromotion.NewDesignationNotInCompany, "NewDesignationNotInCompany");
+export class NewDesignationNotInCompany extends Schema.TaggedError<NewDesignationNotInCompany>()("NewDesignationNotInCompany", { code: Schema.Literal(refusals.NewDesignationNotInCompany.code), ...wireStruct(EmployeePromotion.NewDesignationNotInCompany.fields).fields }, { httpApiStatus: refusals.NewDesignationNotInCompany.status }) { static readonly code = refusals.NewDesignationNotInCompany.code; }
+ErrorNames.name(EmployeePromotion.DesignationUnchanged, "DesignationUnchanged");
+export class DesignationUnchanged extends Schema.TaggedError<DesignationUnchanged>()("DesignationUnchanged", { code: Schema.Literal(refusals.DesignationUnchanged.code), ...wireStruct(EmployeePromotion.DesignationUnchanged.fields).fields }, { httpApiStatus: refusals.DesignationUnchanged.status }) { static readonly code = refusals.DesignationUnchanged.code; }
+ErrorNames.name(EmployeePromotion.PromotionNotYetDue, "PromotionNotYetDue");
+export class PromotionNotYetDue extends Schema.TaggedError<PromotionNotYetDue>()("PromotionNotYetDue", { code: Schema.Literal(refusals.PromotionNotYetDue.code), ...wireStruct(EmployeePromotion.PromotionNotYetDue.fields).fields }, { httpApiStatus: refusals.PromotionNotYetDue.status }) { static readonly code = refusals.PromotionNotYetDue.code; }
+ErrorNames.name(EmployeeSeparation.SeparatedEmployeeNotInCompany, "SeparatedEmployeeNotInCompany");
+export class SeparatedEmployeeNotInCompany extends Schema.TaggedError<SeparatedEmployeeNotInCompany>()("SeparatedEmployeeNotInCompany", { code: Schema.Literal(refusals.SeparatedEmployeeNotInCompany.code), ...wireStruct(EmployeeSeparation.SeparatedEmployeeNotInCompany.fields).fields }, { httpApiStatus: refusals.SeparatedEmployeeNotInCompany.status }) { static readonly code = refusals.SeparatedEmployeeNotInCompany.code; }
+ErrorNames.name(EmployeeSeparation.SeparationAlreadyOpen, "SeparationAlreadyOpen");
+export class SeparationAlreadyOpen extends Schema.TaggedError<SeparationAlreadyOpen>()("SeparationAlreadyOpen", { code: Schema.Literal(refusals.SeparationAlreadyOpen.code), ...wireStruct(EmployeeSeparation.SeparationAlreadyOpen.fields).fields }, { httpApiStatus: refusals.SeparationAlreadyOpen.status }) { static readonly code = refusals.SeparationAlreadyOpen.code; }
+ErrorNames.name(EmployeeTransfer.TransferredEmployeeNotInCompany, "TransferredEmployeeNotInCompany");
+export class TransferredEmployeeNotInCompany extends Schema.TaggedError<TransferredEmployeeNotInCompany>()("TransferredEmployeeNotInCompany", { code: Schema.Literal(refusals.TransferredEmployeeNotInCompany.code), ...wireStruct(EmployeeTransfer.TransferredEmployeeNotInCompany.fields).fields }, { httpApiStatus: refusals.TransferredEmployeeNotInCompany.status }) { static readonly code = refusals.TransferredEmployeeNotInCompany.code; }
+ErrorNames.name(EmployeeTransfer.TransferredEmployeeHasLeft, "TransferredEmployeeHasLeft");
+export class TransferredEmployeeHasLeft extends Schema.TaggedError<TransferredEmployeeHasLeft>()("TransferredEmployeeHasLeft", { code: Schema.Literal(refusals.TransferredEmployeeHasLeft.code), ...wireStruct(EmployeeTransfer.TransferredEmployeeHasLeft.fields).fields }, { httpApiStatus: refusals.TransferredEmployeeHasLeft.status }) { static readonly code = refusals.TransferredEmployeeHasLeft.code; }
+ErrorNames.name(EmployeeTransfer.NewDepartmentNotInCompany, "NewDepartmentNotInCompany");
+export class NewDepartmentNotInCompany extends Schema.TaggedError<NewDepartmentNotInCompany>()("NewDepartmentNotInCompany", { code: Schema.Literal(refusals.NewDepartmentNotInCompany.code), ...wireStruct(EmployeeTransfer.NewDepartmentNotInCompany.fields).fields }, { httpApiStatus: refusals.NewDepartmentNotInCompany.status }) { static readonly code = refusals.NewDepartmentNotInCompany.code; }
+ErrorNames.name(EmployeeTransfer.DepartmentUnchanged, "DepartmentUnchanged");
+export class DepartmentUnchanged extends Schema.TaggedError<DepartmentUnchanged>()("DepartmentUnchanged", { code: Schema.Literal(refusals.DepartmentUnchanged.code), ...wireStruct(EmployeeTransfer.DepartmentUnchanged.fields).fields }, { httpApiStatus: refusals.DepartmentUnchanged.status }) { static readonly code = refusals.DepartmentUnchanged.code; }
+ErrorNames.name(EmployeeTransfer.TransferNotYetDue, "TransferNotYetDue");
+export class TransferNotYetDue extends Schema.TaggedError<TransferNotYetDue>()("TransferNotYetDue", { code: Schema.Literal(refusals.TransferNotYetDue.code), ...wireStruct(EmployeeTransfer.TransferNotYetDue.fields).fields }, { httpApiStatus: refusals.TransferNotYetDue.status }) { static readonly code = refusals.TransferNotYetDue.code; }
 ErrorNames.name(EmploymentType.EmploymentTypeNameTaken, "EmploymentTypeNameTaken");
 export class EmploymentTypeNameTaken extends Schema.TaggedError<EmploymentTypeNameTaken>()("EmploymentTypeNameTaken", { code: Schema.Literal(refusals.EmploymentTypeNameTaken.code), ...wireStruct(EmploymentType.EmploymentTypeNameTaken.fields).fields }, { httpApiStatus: refusals.EmploymentTypeNameTaken.status }) { static readonly code = refusals.EmploymentTypeNameTaken.code; }
 ErrorNames.name(Expense.SanctionedOverClaimed, "SanctionedOverClaimed");
@@ -239,6 +281,9 @@ export class DepartmentNotActive extends Schema.TaggedError<DepartmentNotActive>
 export class DesignationNotActive extends Schema.TaggedError<DesignationNotActive>()("DesignationNotActive", { code: Schema.Literal(refusals.DesignationNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DesignationNotActive.status }) { static readonly code = refusals.DesignationNotActive.code; }
 export class EmployeeNotActive extends Schema.TaggedError<EmployeeNotActive>()("EmployeeNotActive", { code: Schema.Literal(refusals.EmployeeNotActive.code), ...{ state: Schema.Literals(["active", "left"]) } }, { httpApiStatus: refusals.EmployeeNotActive.status }) { static readonly code = refusals.EmployeeNotActive.code; }
 export class EmployeeGradeNotActive extends Schema.TaggedError<EmployeeGradeNotActive>()("EmployeeGradeNotActive", { code: Schema.Literal(refusals.EmployeeGradeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.EmployeeGradeNotActive.status }) { static readonly code = refusals.EmployeeGradeNotActive.code; }
+export class EmployeePromotionNotDraft extends Schema.TaggedError<EmployeePromotionNotDraft>()("EmployeePromotionNotDraft", { code: Schema.Literal(refusals.EmployeePromotionNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted", "cancelled"]) } }, { httpApiStatus: refusals.EmployeePromotionNotDraft.status }) { static readonly code = refusals.EmployeePromotionNotDraft.code; }
+export class EmployeeSeparationNotPending extends Schema.TaggedError<EmployeeSeparationNotPending>()("EmployeeSeparationNotPending", { code: Schema.Literal(refusals.EmployeeSeparationNotPending.code), ...{ state: Schema.Literals(["pending", "inProcess", "completed"]) } }, { httpApiStatus: refusals.EmployeeSeparationNotPending.status }) { static readonly code = refusals.EmployeeSeparationNotPending.code; }
+export class EmployeeTransferNotDraft extends Schema.TaggedError<EmployeeTransferNotDraft>()("EmployeeTransferNotDraft", { code: Schema.Literal(refusals.EmployeeTransferNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted", "cancelled"]) } }, { httpApiStatus: refusals.EmployeeTransferNotDraft.status }) { static readonly code = refusals.EmployeeTransferNotDraft.code; }
 export class EmploymentTypeNotActive extends Schema.TaggedError<EmploymentTypeNotActive>()("EmploymentTypeNotActive", { code: Schema.Literal(refusals.EmploymentTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.EmploymentTypeNotActive.status }) { static readonly code = refusals.EmploymentTypeNotActive.code; }
 export class ExpenseNotActive extends Schema.TaggedError<ExpenseNotActive>()("ExpenseNotActive", { code: Schema.Literal(refusals.ExpenseNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ExpenseNotActive.status }) { static readonly code = refusals.ExpenseNotActive.code; }
 export class ExpenseClaimNotDraft extends Schema.TaggedError<ExpenseClaimNotDraft>()("ExpenseClaimNotDraft", { code: Schema.Literal(refusals.ExpenseClaimNotDraft.code), ...{ state: Schema.Literals(["draft", "approved", "rejected"]) } }, { httpApiStatus: refusals.ExpenseClaimNotDraft.status }) { static readonly code = refusals.ExpenseClaimNotDraft.code; }
@@ -295,6 +340,18 @@ export const declared = {
   JoinedBeforeBorn: Employee.JoinedBeforeBorn,
   RelievedBeforeJoined: Employee.RelievedBeforeJoined,
   EmployeeGradeNameTaken: EmployeeGrade.EmployeeGradeNameTaken,
+  PromotedEmployeeNotInCompany: EmployeePromotion.PromotedEmployeeNotInCompany,
+  PromotedEmployeeHasLeft: EmployeePromotion.PromotedEmployeeHasLeft,
+  NewDesignationNotInCompany: EmployeePromotion.NewDesignationNotInCompany,
+  DesignationUnchanged: EmployeePromotion.DesignationUnchanged,
+  PromotionNotYetDue: EmployeePromotion.PromotionNotYetDue,
+  SeparatedEmployeeNotInCompany: EmployeeSeparation.SeparatedEmployeeNotInCompany,
+  SeparationAlreadyOpen: EmployeeSeparation.SeparationAlreadyOpen,
+  TransferredEmployeeNotInCompany: EmployeeTransfer.TransferredEmployeeNotInCompany,
+  TransferredEmployeeHasLeft: EmployeeTransfer.TransferredEmployeeHasLeft,
+  NewDepartmentNotInCompany: EmployeeTransfer.NewDepartmentNotInCompany,
+  DepartmentUnchanged: EmployeeTransfer.DepartmentUnchanged,
+  TransferNotYetDue: EmployeeTransfer.TransferNotYetDue,
   EmploymentTypeNameTaken: EmploymentType.EmploymentTypeNameTaken,
   SanctionedOverClaimed: Expense.SanctionedOverClaimed,
   ExpenseTypeNotInCompany: Expense.ExpenseTypeNotInCompany,
@@ -329,4 +386,4 @@ export const declared = {
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, ShiftTypeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, PromotedEmployeeNotInCompany, PromotedEmployeeHasLeft, NewDesignationNotInCompany, DesignationUnchanged, PromotionNotYetDue, SeparatedEmployeeNotInCompany, SeparationAlreadyOpen, TransferredEmployeeNotInCompany, TransferredEmployeeHasLeft, NewDepartmentNotInCompany, DepartmentUnchanged, TransferNotYetDue, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, EmployeePromotionNotDraft, EmployeeSeparationNotPending, EmployeeTransferNotDraft, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, ShiftTypeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, NotAllowed, IdempotencyConflict };

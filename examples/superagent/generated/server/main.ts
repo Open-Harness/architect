@@ -3,7 +3,7 @@
 import { Context, Effect, Layer } from "effect";
 import { ManagedRuntime, Tracer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
-import { HttpApiBuilder } from "effect/http-api";
+import { HttpApi, HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
 import { AuthD1, Database, Inbound, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
@@ -309,7 +309,8 @@ const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("a
 const doors = [{ mount: "github", adapter: githubMount.plugin, events: ["checkRun","issueComment","issues","pullRequest","pullRequestReview","pullRequestReviewComment"], sources: [githubSource], secret: "GITHUB_WEBHOOK_SIGNING" }, { mount: "slack", adapter: slackMount.plugin, events: ["appMention","message"], sources: [slackSource], secret: "SLACK_WEBHOOK_SIGNING" }];
 
 const refusals = Wire.refusals(Errors.wire);
-const CallApi = Api.middleware(CallTelemetry);
+// A refused payload names every field it was refused for, not only the first (#988).
+const CallApi = Api.middleware(CallTelemetry).annotate(HttpApi.PayloadParseOptions, { errors: "all" });
 type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth;
 
 /** Who is calling, then the operation or read, its refusals sent as their wire classes. */
