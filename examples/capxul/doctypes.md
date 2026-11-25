@@ -337,9 +337,9 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 |---|---|---|---|---|---|
 | Appointment Letter | thing |  | 7 | `hrms/hrms/hr/doctype/appointment_letter/appointment_letter.json` |  |
 | Appointment Letter Template | thing |  | 3 | `hrms/hrms/hr/doctype/appointment_letter_template/appointment_letter_template.json` |  |
-| Appraisal | thing | SUB | 20 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` |  |
-| Appraisal Cycle | thing |  | 12 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` |  |
-| Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` |  |
+| Appraisal | thing | SUB | 20 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` | one per employee per cycle (a unique rule), made by the cycle's start or by the owner; KRA and self-rating lines copied from the template. The owner rates by hand under Manual Rating, the employee rates themselves; HRMS's scores, rounded half up (`decisions/CX-appraisals.md`) |
+| Appraisal Cycle | thing |  | 12 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` | the owner's: notStarted, inProgress, completed (and reopened). Start makes the appraisals; complete waits on every one submitted. Branch, department and job-title filters come later |
+| Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` | the company's, unique by title; KRA weightages total 100, criteria too when there are any |
 | Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` | one per employee per day (a unique rule), in the employee's company, not before joining, not for a leaver; Present, Absent, Half Day or Work From Home. On Leave and the check against leave come with leave (8b, #764); its shift waits on optional references (#742, item 5). HRMS has no future-day check at `46b38904` |
 | Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` | a draft, then approved or rejected; approving marks every day from its first to its last in one call (found through the attendance rule with `findBy`), changing a day marked with another status. Half days, shift, holidays and the overlap check wait on optional fields, holiday lists per employee and #764 |
 | Branch | thing |  | 1 | `erpnext/erpnext/setup/doctype/branch/branch.json` | a place a company works from, its name unique within the company |
@@ -353,14 +353,14 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Employee Advance | thing | SUB FX | 19 | `hrms/hrms/hr/doctype/employee_advance/employee_advance.json` |  |
 | Employee Attendance Tool | job |  | 12 | `hrms/hrms/hr/doctype/employee_attendance_tool/employee_attendance_tool.json` |  |
 | Employee Checkin | thing |  | 16 | `hrms/hrms/hr/doctype/employee_checkin/employee_checkin.json` |  |
-| Employee Feedback Criteria | thing |  | 1 | `hrms/hrms/hr/doctype/employee_feedback_criteria/employee_feedback_criteria.json` |  |
+| Employee Feedback Criteria | thing |  | 1 | `hrms/hrms/hr/doctype/employee_feedback_criteria/employee_feedback_criteria.json` | the company's, unique by name |
 | Employee Grade | thing |  | 3 | `hrms/hrms/hr/doctype/employee_grade/employee_grade.json` | a level employees are placed at, its name unique within the company; its salary structure, base pay and currency come with payroll |
 | Employee Grievance | thing | SUB | 19 | `hrms/hrms/hr/doctype/employee_grievance/employee_grievance.json` |  |
 | Employee Group | thing |  | 1 | `erpnext/erpnext/setup/doctype/employee_group/employee_group.json` |  |
 | Employee Health Insurance | thing |  | 1 | `hrms/hrms/hr/doctype/employee_health_insurance/employee_health_insurance.json` |  |
 | Employee Onboarding | thing | SUB | 16 | `hrms/hrms/hr/doctype/employee_onboarding/employee_onboarding.json` |  |
 | Employee Onboarding Template | thing |  | 5 | `hrms/hrms/hr/doctype/employee_onboarding_template/employee_onboarding_template.json` |  |
-| Employee Performance Feedback | thing | SUB | 15 | `hrms/hrms/hr/doctype/employee_performance_feedback/employee_performance_feedback.json` |  |
+| Employee Performance Feedback | thing | SUB | 15 | `hrms/hrms/hr/doctype/employee_performance_feedback/employee_performance_feedback.json` | given by a colleague signed in as themselves, never on oneself, refused only against a completed cycle; any number per reviewer. A leaver may submit a draft but start none |
 | Employee Promotion | thing | SUB | 9 | `hrms/hrms/hr/doctype/employee_promotion/employee_promotion.json` | the job title only, as one property line: the current one copied from the employee on create and a new one of the company's; draft, submitted on or after its day by the world's clock (setting the employee's job title), cancelled (putting the old one back). Not for a leaver, judged on create. Grade, branch and pay (`revised_ctc`) come later (CX-employee-moves) |
 | Employee Referral | thing | SUB | 20 | `hrms/hrms/hr/doctype/employee_referral/employee_referral.json` |  |
 | Employee Separation | thing | SUB | 14 | `hrms/hrms/hr/doctype/employee_separation/employee_separation.json` | the resignation letter's day and the day it begins; pending, in process, completed, moved by the owner. One open separation per employee (a unique rule, Capxul's own). It doesn't relieve the employee. Activities, template, project and tasks, exit interview and Full and Final come later (CX-employee-moves) |
@@ -372,7 +372,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Expense Claim | thing | SUB | 26 | `hrms/hrms/hr/doctype/expense_claim/expense_claim.json` |  |
 | Expense Claim Type | thing |  | 3 | `hrms/hrms/hr/doctype/expense_claim_type/expense_claim_type.json` |  |
 | Full and Final Statement | thing | SUB | 13 | `hrms/hrms/hr/doctype/full_and_final_statement/full_and_final_statement.json` |  |
-| Goal | thing |  | 17 | `hrms/hrms/hr/doctype/goal/goal.json` |  |
+| Goal | thing |  | 17 | `hrms/hrms/hr/doctype/goal/goal.json` | pending, inProgress, completed, archived, closed; a group's progress follows its children, and under the automated method goals score the appraisal. Always in a cycle |
 | Grievance Type | thing |  | 1 | `hrms/hrms/hr/doctype/grievance_type/grievance_type.json` |  |
 | HR Settings | settings |  | 34 | `hrms/hrms/hr/doctype/hr_settings/hr_settings.json` |  |
 | Holiday List | thing |  | 8 | `erpnext/erpnext/setup/doctype/holiday_list/holiday_list.json` |  |
@@ -389,7 +389,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Job Opening | thing |  | 25 | `hrms/hrms/hr/doctype/job_opening/job_opening.json` | under a job title, whose company it takes, for at least one person; open, then closed by the owner (never by itself). Staffing plan, requisition, salary range and closing day come later (CX-recruitment) |
 | Job Opening Template | thing |  | 5 | `hrms/hrms/hr/doctype/job_opening_template/job_opening_template.json` |  |
 | Job Requisition | thing |  | 17 | `hrms/hrms/hr/doctype/job_requisition/job_requisition.json` |  |
-| KRA | thing |  | 2 | `hrms/hrms/hr/doctype/kra/kra.json` |  |
+| KRA | thing |  | 2 | `hrms/hrms/hr/doctype/kra/kra.json` | the company's, unique by title |
 | Leave Allocation | thing | SUB | 21 | `hrms/hrms/hr/doctype/leave_allocation/leave_allocation.json` |  |
 | Leave Application | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_application/leave_application.json` |  |
 | Leave Block List | thing |  | 4 | `hrms/hrms/hr/doctype/leave_block_list/leave_block_list.json` |  |
