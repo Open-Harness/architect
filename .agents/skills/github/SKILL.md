@@ -27,7 +27,7 @@ Two truths feed GitHub, and the sync reads both:
 | A snag (your goal's own) | an issue, type Snag, `kind:snag`, in your goal's milestone | you, with the Snag form |
 | A case-2 ask | an issue, type Ask, `kind:ask`: two goals' claims overlap, so Goal 18 settles who builds it (K42, section 3) | you, with the Ask form |
 | A grill | an issue, type Decision, `kind:decision`, labelled **`needs-aaron`** | you, with the Decision form |
-| A release (K28, K42 section 6) | a label: `release:preview`, `release:beta` (what the superagent proves), `release:1.0` (what Capxul core proves) | the sync |
+| A release (K28, K42 section 6) | a label: `release:preview`, `release:beta` (what Capxul's books, HR and payroll prove, K44), `release:1.0` (what Capxul core proves) | the sync |
 | Who did it | labels `role:<role>` and `harness:<harness>`, and the template's lines | you, on every pull request |
 | What waits on what | a **blocked-by** link from the slice to the snag or ask that stops it | you (below) |
 | Blocked | the label `blocked`; `needs-aaron` when only Aaron can unblock it | you |

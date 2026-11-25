@@ -46,7 +46,7 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
    right? Whatever application is first and needs it, it builds it ... some of this stuff ... it's important to do, but
    it's not the highest urgency thing ... the whole point of doing the projects first is that it's like a forcing
    function ... how do we know that plugins work? ... We're supposed to be building it all like that."
-9. **Split the shared pieces; the superagent goes first.** "It's not a blanket rule, but what we should do is we
+9. **Split the shared pieces; the superagent goes first.** (Superseded by K44, 25 November 2026: the superagent is parked; two things are built, the Orthograph alpha and Capxul.) "It's not a blanket rule, but what we should do is we
    should split the pieces up amongst them ... we want to get the super agent done first because it's gonna help build
    capsule."
 10. **Organisations are separate.** Asked whether organisations belong to the superagent's launch or to Capxul's
@@ -63,6 +63,8 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
 ## The decision
 
 ### 1. Four goals
+
+(Superseded by K44, 25 November 2026: Goals 17 and 18 are parked; Goal 20, the Orthograph alpha, and Goal 16, Capxul, build; the lander keeps running.)
 
 - **The framework goal (Goal 18)** always runs. It owns the engine and every package no app goal has claimed, the
   board, the roadmap and the releases. It takes over the 🎼 conductor's loop: it decides what runs next.
@@ -165,7 +167,7 @@ release once an app has pulled it, proved it with its journeys, and it has been 
 A piece still inside an app's `plugins/` is not part of the framework yet.
 
 - **Preview** stays as K28 has it: the framework on npm under `next`, the baseline every app builds on.
-- **Beta:** every framework piece the superagent pulled to work end to end, extracted into Orthograph's packages and
+- **Beta** (superseded by K44, 25 November 2026: the framework Capxul's books, HR and payroll prove): every framework piece the superagent pulled to work end to end, extracted into Orthograph's packages and
   published, with the superagent running on that published framework. The superagent's launch is not part of it.
 - **1.0:** the same for every piece Capxul core pulled (the books, HR and payroll in ERPNext's shapes, and the paid
   services, as K43 sets out), plus the release slices (M7.01 to M7.04, M7.06 and M7.13). This is Aaron's call 7.

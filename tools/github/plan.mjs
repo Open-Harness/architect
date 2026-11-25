@@ -10,7 +10,7 @@ export const LABELS = [
   ["kind:capability", "0052cc", "A row of the capability map in docs/canon/status.md: one item, written by the board sync (K42)"],
   ["kind:decision", "0e8a16", "A call to be made; closed by the pull request that records it in design/decisions/"],
   ["release:preview", "bfd4f2", "Ships in the preview (K28)"],
-  ["release:beta", "bfd4f2", "Ships in the beta: the framework the superagent proves (K42)"],
+  ["release:beta", "bfd4f2", "Ships in the beta: the framework Capxul's books, HR and payroll prove (K44)"],
   ["release:1.0", "bfd4f2", "Ships in 1.0 (K28)"],
   ["role:lead", "ededed", "Opened by a goal's lead"],
   ["role:author", "ededed", "Journeys and checks, written first (the author skill)"],

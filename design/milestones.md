@@ -5,9 +5,9 @@ Written 17 November 2026, from [the frame's `delta.md`](history/retired-2026-11-
 [`build-plan.md`](build-plan.md), its decision steps D4 to D6, the work steps W1 to W3 and the agent track A0 to A9.
 Layers 1 and 2 stay in the build plan as the record of what was built.
 
-Aaron's intent (K42, 23 November 2026): the framework is built by the apps that dogfood it. The superagent goes first,
-then Capxul; each builds the framework pieces it needs, the lander brings them into `main`, and the releases are cut
-from there: the beta is what the superagent proved, 1.0 what Capxul core proved. The milestones below keep their
+Aaron's intent (K42, 23 November 2026; K44, 25 November): the framework is built by the apps that dogfood it. Two things are built now (K44): the Orthograph alpha and Capxul,
+which builds the framework pieces it needs; the lander brings them into `main`, and the releases are cut
+from there: the alpha is the npm preview, the beta what Capxul's books, HR and payroll proved, 1.0 the rest of Capxul core. The milestones below keep their
 slices and ids; an app pulls each slice when it needs it.
 
 ## What exists on `main`
@@ -62,7 +62,7 @@ adds the slices no milestone had (ids `ST<stage>.<n>`), and gives each stage its
 Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md).
 
 **Three releases** ([`decisions/K28-releases.md`](decisions/K28-releases.md), Aaron, 21 November 2026). The **preview** is Gate M1 on `main` and
-the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is the framework with every piece the superagent pulled, extracted and published, the superagent running on it (K42). **v1.0** is
+the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is the framework with every piece Capxul's books, HR and payroll pulled, extracted and published, Capxul running on it (K44). **v1.0** is
 the same for every piece Capxul core pulled (K43), plus the release (K42), as the next paragraph says.
 
 **v1.0** is the framework with every piece Capxul core pulled, extracted and published (K42, K43), plus the release: M7.01 to M7.04, M7.06 and M7.13 (the cloud passes for staging and for the release, the npm
@@ -634,7 +634,7 @@ M1.34 (portal-ui) ────────────────────�
 The M1 and M2 gates need every slice, so the side slices must land before them.
 
 **After workable (K9), as planned before K42:** stage 2 (wallets) next, then stage 3 (the vault), stage 4 (the club)
-and the release. K42 and K43 replaced this order: the superagent goes first, then Capxul, starting with getting paid.
+and the release. K44 replaced this order: the Orthograph alpha and Capxul, starting with the books, HR and payroll.
 Time (M8, K23) is built beside stage 2, from the same gate; stage 3's gate waits on Gate M8. Its decision and checks
 (M8.01 to M8.04) may land before then.
 

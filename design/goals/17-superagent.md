@@ -2,10 +2,10 @@
 goal: 17
 title: the superagent, an always-on agent for any job, built on Orthograph
 milestone: "Goal 17: the superagent"
-release: beta           # K42: the beta is every framework piece the superagent proves
+release: null           # parked by K44
 branch: goal/superagent
 base: main
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
   model: claude-opus-5-5  # the model id it runs on
@@ -35,6 +35,10 @@ slices:
   - "15 · The launch: real sign-in, teams, a live deploy, a sandbox and a model off the Mac (after 14)"
 ---
 # Goal 17: the superagent
+
+> **Parked by K44** (25 November 2026, `design/decisions/K44-two-builds.md`). Two things are built now, the Orthograph alpha
+> and Capxul. This goal stops where it stands; its open drafts stay drafts and the lander doesn't land them. The notes
+> below are K42's and stand for when it resumes.
 
 > **An app goal under K42, and the first** (23 November 2026, `design/decisions/K42-goals-are-agents.md`). It goes
 > before Capxul, because once it works its coding agent helps build Capxul. It takes most framework pieces the two

@@ -5,7 +5,7 @@ milestone: "Goal 18: the framework"
 release: "1.0"
 branch: main
 base: main
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
   model: claude-opus-5-5 # the model id it runs on
@@ -25,6 +25,10 @@ slices:
 ---
 # Goal 18: the framework, always running
 
+> **Parked by K44** (25 November 2026, `design/decisions/K44-two-builds.md`). With two builds, the Orthograph alpha (Goal
+> 20) and Capxul (Goal 16) each rank their own slices and Aaron sets the order between them. Slices 1 and 2 are done; the
+> board stays, written by the sync on every push to `main`. Slice 3, the loop, waits for this goal to resume.
+
 Branch `main`. Written 23 November 2026 from K42 (`design/decisions/K42-goals-are-agents.md`), with Aaron, by voice (#694).
 Milestone `Goal 18: the framework`, label `release:1.0`.
 
@@ -35,7 +39,7 @@ Milestone `Goal 18: the framework`, label `release:1.0`.
 
 - **In one sentence:** Keep Orthograph moving as a whole. Every round, find what can be built right now, start the most
   important pieces in parallel, and keep the board and the roadmap accurate.
-- **Why:** The apps (the superagent first, then Capxul) find what the framework is missing. Something has to see all
+- **Why:** The apps find what the framework is missing. Something has to see all
   of it at once and make sure the pieces an app is stuck on get built first.
 - **When it's done, you can:** it is never done. At any moment, the board shows where every piece stands, how close
   1.0 is, and which agent is on what.

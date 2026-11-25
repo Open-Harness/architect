@@ -5,6 +5,9 @@ description: Goal 18's loop for building Orthograph, in any agent (K42). Use it 
 
 # 🎼 Conductor: Goal 18's loop
 
+> **Parked by K44 (25 November 2026).** Two goals build now, the Orthograph alpha (Goal 20) and Capxul (Goal 16), each
+> ranking its own slices; the lander keeps running. This loop is kept for when Goal 18 resumes.
+
 Since K42 (23 November 2026) the conductor is **Goal 18, the framework goal**: one long-running agent that always runs
 and decides what runs next. It writes no feature code. Its brief is `design/goals/18-framework.md`, its rules are
 `design/decisions/K42-goals-are-agents.md`, and where this skill and K42 disagree, K42 wins. The thread types, their
@@ -21,7 +24,7 @@ emojis, their finish lines and your agent's word for each action are in the `thr
 
 A goal is a long-running agent, today a thread that manages other threads. It exists while it runs; when it stops it
 rewrites "Where it stands", releases its claims, and its open items go back to the board. The beta is the framework as
-the superagent proves it; 1.0 is the framework as Capxul core proves it (K42, section 6). Plugins are built when an app
+Capxul's books, HR and payroll prove it; 1.0 is the framework as the rest of Capxul core proves it (K44). Plugins are built when an app
 first needs them, never ahead of an app.
 
 ## The loop

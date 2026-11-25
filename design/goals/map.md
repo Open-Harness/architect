@@ -1,6 +1,6 @@
 # The goals
 
-Rewritten 23 November 2026 by K42 (`design/decisions/K42-goals-are-agents.md`), with Aaron. A goal is one
+Rewritten 23 November 2026 by K42 (`design/decisions/K42-goals-are-agents.md`) and 25 November by K44 (`K44-two-builds.md`), with Aaron. A goal is one
 long-running agent: today a thread in Claude Code, Codex, OpenCode or Amp that manages other threads, later a
 superagent. A goal exists while its agent runs. The map of 21 November, with seventeen goals and the needs between them,
 is kept in git: `git show 990d4a17:design/goals/map.md`. Its needs move onto the board with Goal 18's slice 2.
@@ -9,12 +9,12 @@ is kept in git: `git show 990d4a17:design/goals/map.md`. Its needs move onto the
 
 | Goal | Kind | What it builds | Brief |
 |---|---|---|---|
-| 18 · The framework | framework, always running | the engine and every package no app goal has claimed, the board, the roadmap and the releases; it ranks what can run now and starts it | `18-framework.md` |
-| 19 · The lander | landing, always running | nothing new: it brings each app's green slices into `main` as reviewed pull requests, and keeps `main` green | `19-lander.md` |
-| 17 · The superagent | app, first | an always-on agent stored as data, and most framework pieces the two apps share (K39, K40, K42); its coding agent then helps build Capxul. What it proves is the beta | `17-superagent.md` |
-| 16 · Capxul core | app, the north star | Capxul as one product on Orthograph: the books, HR and payroll in ERPNext's shapes, then the CRM; Bridge; the paid services (K43). What it proves is 1.0 | `16-capxul.md` |
+| 20 · The Orthograph alpha | framework | the npm preview: TypeScript end to end, the chain basics, a command that creates an app, publishing that works (K44) | `20-alpha.md` |
+| 16 · Capxul core | app, the north star | Capxul as one product on Orthograph: the books in double entry, HR and payroll in ERPNext's shapes, then Bridge, budgets and the Safe (K43, K44). What its books, HR and payroll prove is the beta | `16-capxul.md` |
+| 19 · The lander | landing, always running | nothing new: it brings Capxul's green slices into `main` as reviewed pull requests, and keeps `main` green | `19-lander.md` |
 
-Every other goal is winding down (K42, section 7). Each lands the pull request it has in review, rewrites "Where it
+Two goals build now (K44): the alpha and Capxul. The superagent (Goal 17) and the framework goal (Goal 18) are parked,
+and every goal K42 stopped stays parked (K42, section 7). Each lands the pull request it has in review, rewrites "Where it
 stands", sets `status: parked` and stops. Its open slices become items on the board.
 
 ## How a piece of work moves
@@ -35,7 +35,7 @@ An app goal owns every gap it finds, big or small. Before starting one, it reads
    in this goal's own slice.
 
 The two apps split the pieces they share: each goes to the app that needs it first in the order they run, and the
-superagent runs first (K42, section 3). Organisations are not shared; each app has its own.
+Capxul is the one app building now (K44). Organisations are not shared; each app has its own.
 
 ## Into `main`
 

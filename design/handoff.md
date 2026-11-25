@@ -16,7 +16,7 @@ for the same picture in a page; this file keeps the standing directions, the lin
 listed under "Every open line", and Gate M1 (M1.15) is not run yet. Plugged In's seven journeys run green in CI, in
 local and in test (`e2e-stage1`, a required check), and the climb is green: 331 of 331 cell-and-subject pairs. Goal 4 (on-chain)
 has started on `goal/on-chain`. K28 (21 November) cut three releases: the preview (Gate M1 on `main` plus npm under
-`next`, slice M1.51), the beta (the framework the superagent proves, K42) and 1.0 (Capxul core, K42). K29 (`design/decisions/K29-*.md`, PR #272) decides the UI layer, under Aaron's standing authority of 21 November; Goal 5 builds from it.
+`next`, slice M1.51), the beta (the framework Capxul's books, HR and payroll prove, K44) and 1.0 (Capxul core, K42). K29 (`design/decisions/K29-*.md`, PR #272) decides the UI layer, under Aaron's standing authority of 21 November; Goal 5 builds from it.
 
 **Renamed by K15** (19 November 2026, Aaron): the example app is **Plugged In** (`plugged-in`), no longer `links`. Rows below that say `links` predate it;
 `milestones.md` is renamed in place ([`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md)).
@@ -47,7 +47,7 @@ thread's branch, its PR, its PR comments. To steer a thread, comment on its PR, 
 
 ### The goal
 
-**The framework, built by the apps that dogfood it (K42):** the superagent goes first, then Capxul core. Each pulls the
+**The framework, built by the apps that dogfood it (K42):** two builds now, the Orthograph alpha and Capxul (K44). Each pulls the
 framework pieces it needs, the lander brings them into `main`, and the releases are cut from there: the beta is what the
 superagent proved, 1.0 what Capxul core proved. Under K28 this was workable at the end of M2 (plugins mounted and
 proved, auth and organizations as plugins, the new principals, secrets by declaration). Everything below is judged by
@@ -209,13 +209,14 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | K41 | the canon map applied: eight clashes settled; the frame, the old docs page, the walkthrough and the sign-up sheet retired; scope, the package map and the model draft merged into the canon | `main`, by the conductor's canon-map session |
 | K42 | a goal is a long-running agent; the framework goal (18) and the lander (19) always run; the apps dogfood the framework, the superagent first; the releases are the framework's | decided with Aaron, 23 November (#694) |
 | K43 | Capxul core: free software in ERPNext's shapes; verification, bank accounts and incorporation are paid | decided with Aaron, 23 November (#694) |
+| K44 | two builds, the Orthograph alpha (Goal 20) and Capxul (Goal 16); the superagent and the experiments park | decided with Aaron, 25 November |
 
 **Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (five plugin kinds), K29
 (the UI layer, #272), K30 (where the core ends, the repositories, declaring what you know, #185), G12 (a slice that changes acme's wire lands as a pair, #263),
 G9 to G11 (`goal/stage-1`), `M2-auth` (#263, #267), `M6-chain` (#275, #276, #279), `M7-03-infra-projection` (#282). `ST1-25-flakes` is a
 decision file; K29's ST1.25 is a slice id, and the two are unrelated.
 
-**Next free:** D5, E2, F10, G13, H3, K44, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
+**Next free:** D5, E2, F10, G13, H3, K45, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
 milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
 belongs to one goal and no milestone.
