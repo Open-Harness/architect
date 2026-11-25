@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { readGoal, splitFrontMatter } from "./frontmatter.mjs";
 import { ISSUE_TYPES, LABELS, unwrap, goalBody, goalMarker, goalView, plan, sliceMarker } from "./plan.mjs";
+import { laneLabel } from "./boardPlan.mjs";
 
 const brief = `---
 goal: 6
@@ -145,6 +146,13 @@ test("a link between two slices that the brief no longer orders is removed befor
   assert.deepEqual(links, [["removeBlockedBy", 12, 11], ["addBlockedBy", 11, 13]], "the stale 2-after-1 goes first; the snag's link and another goal's slice stay");
 });
 
+test("every label fits GitHub's limits: a name of at most 50 characters, a description of at most 100", () => {
+  for (const l of [...LABELS, laneLabel("goal-123")]) {
+    assert.ok(l.name.length <= 50, l.name);
+    assert.ok(l.description.length <= 100, `${l.name}: ${l.description.length} characters`);
+  }
+});
+
 test("a parked goal's own plan carries `parked`; its snags, a shared, claimed or board issue never do, and it comes off on resuming", () => {
   const parkedGoal = readGoal("design/goals/06-portal.md", brief.replace("status: ready", "status: parked")).goal;
   const other = readGoal("design/goals/07-x.md", brief.replace("goal: 6", "goal: 7").replace('"Goal 6: the new portal"', '"Goal 7: x"')).goal;
@@ -164,6 +172,9 @@ test("a parked goal's own plan carries `parked`; its snags, a shared, claimed or
   const resumed = readGoal("design/goals/06-portal.md", brief).goal;
   assert.deepEqual(parkedSteps([resumed, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [[50, false]], "it comes off when the goal resumes");
   assert.deepEqual(parkedSteps([parkedGoal, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [], "made once");
+  const closedWhileParked = { ...issues[0], state: "closed", labels: [...issues[0].labels, "parked"] };
+  assert.deepEqual(parkedSteps([parkedGoal, other], [closedWhileParked]), [[50, false]], "a closed slice comes back to the main views");
+  assert.deepEqual(parkedSteps([resumed, other], [closedWhileParked]), [[50, false]], "and after its goal resumes");
 });
 
 test("the goal page: the plain card, the progress, what is stuck and on whom, and where it stands", () => {

@@ -31,7 +31,7 @@ Two truths feed GitHub, and the sync reads both:
 | Who did it | labels `role:<role>` and `harness:<harness>`, and the template's lines | you, on every pull request |
 | What waits on what | a **blocked-by** link from the slice to the snag or ask that stops it | you (below) |
 | Blocked | the label `blocked`; `needs-aaron` when only Aaron can unblock it | you |
-| Parked | the label `parked` on a parked goal's own open goal issue and slices, unless a running goal shares or claims one; the Project's views leave them out, nothing is closed, and it comes off when the goal resumes. Its snags, asks and decisions stay in view for Goal 18 to sort (K45). One item is parked by hand through the Project's Status, `Parked` | the sync |
+| Parked | the label `parked` on a parked goal's own open goal issue and slices, unless a running goal shares or claims one; the Project's views leave them out, nothing is closed, and it comes off when the goal resumes or the issue closes. Its snags, asks and decisions stay in view for Goal 18 to sort (K45). One item is parked by hand through the Project's Status, `Parked` | the sync |
 | Where a goal is | the **goal issue's body**: card, progress, snags, waits, lead, "Where it stands" | the sync, rerun by the `goals` workflow |
 | Every item and goal at once | the **"Orthograph" Project**: Stage, Pulled by, Release, Lane, Status, Start and End on each item; views "All goals", "By status" and "Roadmap" without the parked issues, "The alpha", "Capxul's path", "Parked", and one per running goal (K45; filter by field for the rest). The sync never deletes a view, so a parked goal's old view stays until someone deletes it in the Project | the sync, `--project` |
 

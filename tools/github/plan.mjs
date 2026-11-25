@@ -25,7 +25,7 @@ export const LABELS = [
   ["harness:opencode", "f9d0c4", "Worked in OpenCode"],
   ["blocked", "b60205", "Waiting on something outside its goal; the body says what"],
   ["needs-aaron", "e99695", "Only Aaron can unblock it: money, a credential, production, or the goal itself"],
-  ["parked", "d4c5f9", "A parked goal's own goal issue or slice: left out of the board's views, never closed, and taken off if the goal resumes (K45)"],
+  ["parked", "d4c5f9", "A parked goal's open goal issue or slice: hidden from the board's views, never closed (K45)"],
 ].map(([name, color, description]) => ({ name, color, description }));
 
 // A kind is its own issue type in an organization (Aaron, 2A); a person's repository has only the native three, so
@@ -234,19 +234,21 @@ export const plan = ({ goals, state, briefUrl, migrate = false }) => {
   }
 
   // K45: a parked goal's own plan, its open goal issue and slices, carries `parked`, so the board's views leave it out;
-  // nothing is closed, and the label comes off when the goal resumes. Its snags, asks and decisions stay in view for the
+  // nothing is closed, and the label comes off when the goal resumes or the issue closes, so finished work stays in the
+  // main views. Its snags, asks and decisions stay in view for the
   // framework goal to sort (K44's alpha takes some), and so does anything a running goal shares, claims or files in its
   // own milestone. A board row and a pull request are never parked.
   const parked = new Set(goals.filter((g) => g.status === "parked").map((g) => g.number));
   const running = new Set(goals.filter((g) => g.status !== "parked").map((g) => g.number));
   const parkedMilestones = new Set(goals.filter((g) => parked.has(g.number)).map((g) => g.milestone));
   for (const i of state.issues) {
-    if (i.pullRequest || i.trusted === false || (i.state && i.state !== "open")) continue;
+    if (i.pullRequest || i.trusted === false) continue;
+    const open = !i.state || i.state === "open";
     const of = (prefix) => i.labels.filter((l) => new RegExp(`^${prefix}\\d+$`).test(l)).map((l) => Number(l.slice(prefix.length)));
     const goalsOf = of("goal-");
     const ownPlan = i.labels.includes("kind:goal") || i.labels.includes("kind:slice");
     const inOwnMilestone = !i.milestone || parkedMilestones.has(i.milestone);
-    const want = ownPlan && inOwnMilestone && !i.labels.some((l) => BOARD_KINDS.includes(l)) && goalsOf.length > 0 && goalsOf.every((n) => parked.has(n)) && !of("lane:goal-").some((n) => running.has(n));
+    const want = open && ownPlan && inOwnMilestone && !i.labels.some((l) => BOARD_KINDS.includes(l)) && goalsOf.length > 0 && goalsOf.every((n) => parked.has(n)) && !of("lane:goal-").some((n) => running.has(n));
     const has = i.labels.includes("parked");
     if (want !== has) steps.push({ do: "setParked", number: i.number, parked: want, title: `#${i.number} ${want ? "parked" : "no longer parked"}` });
   }
