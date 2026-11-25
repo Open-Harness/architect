@@ -57,7 +57,8 @@ the company's. A separation's company check comes before the rule's refusal at c
   `before_submit` only compares with today. So none is refused here.
 - **No revert-only-if-unchanged check on cancel.** The outline left it out "unless the source makes it simple". HRMS
   has none: `update_employee_work_history(..., cancel=True)` writes each line's `current` back unconditionally. Capxul
-  does the same, and the journeys don't settle a cancel after a later change.
+  does the same. A journey cancels a promotion after a later change, but with two titles it can't tell
+  that from a revert-only-if-unchanged build (below).
 - **A transfer's leaver refusal is stricter than HRMS's server.** HRMS's `EmployeeTransfer` doesn't call
   `validate_active_employee`; only its form filters to Active employees. Capxul refuses on create, as the outline asked,
   following CX-expense-leavers.
@@ -74,7 +75,7 @@ The submit rules read the world's clock, so they run against Capxul's stepped lo
 and journeys run in file-name order. So a journey that moves the clock keeps its days after those of the journeys
 before it: `give-interview-feedback` 3 December, `promote-an-employee` 7 December, `transfer-an-employee` 8 December. A clock step also stays within seven days of its journey's start: further, and
 every call is refused `NotAllowed`, which looks like the cast's sessions expiring (Better Auth's default lasts seven
-days).
+days); snag #1002).
 The end-to-end journey uses days already due on 1 December and never moves the clock. A new journey that moves the
 clock picks days after the last of these, or a name that sorts before them.
 
