@@ -108,7 +108,7 @@ An app goal owns every gap it finds, big or small. Before it starts one, it read
    is one.
 
 **The two apps split the shared pieces** (Aaron's call 9). A piece both apps need goes to the app that needs it first
-in the order the apps run, and the superagent runs first, so it takes most of them; the other app mounts the piece
+in the order the apps run, and the superagent runs first (superseded by K44, 25 November 2026: the superagent is parked; Capxul is the one app building), so it takes most of them; the other app mounts the piece
 once it is extracted. The framework goal records the split on the board and settles any piece both want. The split
 on 23 November is in `docs/canon/status.md` once Goal 18's slice 2 writes it: the superagent takes versions, timers,
 safe repeats, events in and the outbox, secrets, webhook doors, the pages, sign-in and the live deploy; Capxul takes
@@ -128,7 +128,7 @@ Each round:
 2. **What can run now:** items whose needs have landed and that are unclaimed, or claimed by the framework goal.
 3. **What runs first**, in this order:
    1. an app goal is waiting on it now;
-   2. it is on the superagent's next slice, then on Capxul's next feature (call 9);
+   2. it is on the superagent's next slice, then on Capxul's next feature (call 9) (superseded by K44, 25 November 2026: the alpha's next slice, or Capxul's next feature);
    3. it makes scaffolding better for every app (today: `ortho new` for an app, M2.09; `ortho add` for events,
       errors, roles and moves, M2.14 and M2.15; adapters from an ABI, #474);
    4. it keeps `main` green and CI fast;

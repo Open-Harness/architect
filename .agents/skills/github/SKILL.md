@@ -108,7 +108,8 @@ node --test tools/github/                                                 # its 
 ```
 
 It finds each issue by a marker in its body, never by title, takes only issues the owner, a collaborator or the workflow
-opened, and **never deletes anything**: a row removed from the page leaves its issue where it is. You rarely run it: the
+opened, and **never deletes an issue, label or milestone**: a row removed from the page leaves its issue where it is. It removes
+only a blocked-by link between two of a goal's own slices that the brief no longer gives (K44). You rarely run it: the
 `goals` workflow runs it, one run at a time. The goal pages run on issue events, on a push to `main`, every three hours
 and on dispatch; the board runs only on a push to `main`, on the three-hourly schedule and on `workflow_dispatch`. The
 organization's issue types need `admin:org`, which the workflow's token lacks, so they are made once by

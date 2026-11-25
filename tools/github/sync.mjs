@@ -24,7 +24,8 @@
 // A row adopts an existing issue (`issue #531` in its Evidence cell) and folds duplicates into it (`folds #533`);
 // docs/canon/status.md's column legend says how. Writes are paced (pace.mjs) and a rate-limit refusal is waited out.
 //
-// It needs `gh`, signed in with the `repo` scope (in CI, GH_TOKEN). It never deletes anything. Run one at a time: two
+// It needs `gh`, signed in with the `repo` scope (in CI, GH_TOKEN). It never deletes an issue, label or milestone; it removes only a blocked-by link between two of a goal's own slices that
+// the brief no longer gives (K44). Run one at a time: two
 // runs at once can both create the same issue, so the workflow (.github/workflows/goals.yml) runs it in one queue.
 import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";

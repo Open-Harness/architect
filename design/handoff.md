@@ -150,7 +150,7 @@ plugins and extensions; most won't stick, the kept ones are refactored, and prod
 
 ### Next on the critical path
 
-The superagent's next slice is the critical path (K42). Goal 3 lands #683 and #690 and stops; the lander's slice 1
+Two builds are the critical path (K44): the Orthograph alpha, by Goal 18, and Capxul's books, HR and payroll. Goal 3 lands #683 and #690 and stops; the lander's slice 1
 lands `goal/stage-1` in `main` and retires it; M1.51's publish stays Aaron's. The M2 slices wait until an app pulls
 them (K42, sections 6 and 7).
 

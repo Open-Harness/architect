@@ -184,6 +184,11 @@ Parked means the code stays in the repository untouched and its goal stops; noth
 - `design/milestones.md`: "K42 and K43 replaced this order: the superagent goes first, then Capxul, starting with getting paid." → "K44 replaced this order: the Orthograph alpha and Capxul, starting with the books, HR and payroll."
 - `design/handoff.md`: "the beta (the framework the superagent proves, K42)" → "the beta (the framework Capxul's books, HR and payroll prove, K44)"
 - `design/handoff.md`: "the superagent goes first, then Capxul core." → "two builds now, the Orthograph alpha and Capxul (K44)."
+- `design/handoff.md`: "The superagent's next slice is the critical path (K42)." → "Two builds are the critical path (K44)"
+- `design/milestones.md`: "Since K42 the critical path is the superagent's next slice" → "Since K44 the critical path is the Orthograph alpha and Capxul's next feature"
+- `design/milestones.md`: "`npm create orthograph` is M2.09, the beta" → "`npm create orthograph` is M2.09's create-app part, which K44 puts in the alpha"
+- `.agents/skills/conductor/SKILL.md`: "it is on the superagent's next slice, then on Capxul's next feature" → "it is the alpha's next slice, or on Capxul's next feature"
+- `.agents/skills/github/SKILL.md`: "never deletes anything" → "never deletes an issue, label or milestone"
 - `design/handoff.md`: "superagent proved, 1.0 what Capxul core proved." → "preview, the beta what Capxul's books, HR and payroll prove, 1.0 what the rest of Capxul core proves."
 - `design/milestones.md`: "then Capxul's first feature running on Orthograph." → "then Capxul's books, HR and payroll running on Orthograph (K44)."
 - `design/milestones.md`: "Capxul's first feature runs in its staging." → "Capxul's books, HR and payroll run in its staging (K44)."
@@ -197,14 +202,23 @@ Parked means the code stays in the repository untouched and its goal stops; noth
 
 - **Briefs:** Goal 18's gains the alpha as slices 4 to 12, and its loop ranks the alpha and Capxul's next feature.
   Goal 16's slices take section 3's order, with a new slice 12 (budgets, the accounting side) and slice 13 (Capxul's
-  journeys in CI); its release label becomes `beta`. Goal 17's is set to `parked` on `main` with a K44 note. The goal map lists the three running goals.
-- **Labels, by hand at merge:** the sync sets a release label only when it makes an issue, so Goal 16's existing goal
-  and slice issues (#426 to #717) move from `release:1.0` to `release:beta`, and Goal 17's lose `release:beta`.
+  journeys in CI); its release label becomes `beta`. Goal 17's is set to `parked` on `main` with a K44 note. The goal
+  map lists the three goals that build or land.
+- **Labels, by hand at merge:** the sync sets a release label only when it makes an issue, and a slice's label is its
+  goal's. So, by hand: Goal 16's goal issue (#426) and its slices for the beta (1, 3 to 9) move from `release:1.0` to
+  `release:beta`; its slices 2, 10 and 12 (the Safe and getting paid, Bridge, budgets) carry `release:1.0`, the new
+  slice 12 included; slice 11, the CRM, loses its release label (a module, not core). Goal 18's existing issues (#718 to
+  #721) move from `release:1.0` to `release:preview`, and Goal 17's lose `release:beta`.
 - **The board's links:** the sync now removes a "blocked by" link between two of a goal's slices that its brief no
   longer gives, before it adds any, so Goal 16's reordered slices leave no stale link (#713 blocked by #428) and no
-  cycle.
-- **Dated records:** K42 gains "Superseded by K44" beside its call 9, its section 1's goals and its section 6's beta;
-  K43 beside its section 3's first feature.
+  cycle. Links to snags, asks and other goals' slices stay.
+- **Parked goals' pages:** the sync now keeps a goal parked on `main` parked, whatever its branch says. Besides Goal
+  17, that shows Goals 5, 9 and 15 as parked on GitHub (#309, #356, #416), as their briefs on `main` already say, and
+  writes Goals 10 and 11's pages (#373, #386) from `main`'s newer "Where it stands".
+- **Goal 17's claims:** its 11 rows on the board are set to `none`, so the issues lose `lane:goal-17`.
+- **Dated records:** K42 gains "Superseded by K44" beside its call 9, its section 1's goals, its section 3's "the
+  superagent runs first", its section 4's second rank and its section 6's beta; K43 beside its section 3's first
+  feature; `M7-capxul.md` beside its section 4; K33 beside "never deletes".
 - **The board:** Goal 18's slice 4 re-sorts it: the rows the superagent pulled go to the alpha, to Capxul or to "Not yet
   needed", the chain basics to the alpha, and `board.mjs`'s release rule, pulled-by list and app milestones, and
   `roadmap.mjs`'s ranking, follow section 4. Until then the board's release rule is K42's, and a K44 note says so.

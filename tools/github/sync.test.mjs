@@ -135,13 +135,14 @@ test("a link between two slices that the brief no longer orders is removed befor
     milestones: [],
     issues: [
       { number: 11, title: "Goal 6 · 1 · The theme", body: sliceMarker(6, 1), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [] },
-      { number: 12, title: "Goal 6 · 2 · The checks", body: sliceMarker(6, 2), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [11, 20] },
+      { number: 12, title: "Goal 6 · 2 · The checks", body: sliceMarker(6, 2), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [11, 20, 21] },
       { number: 13, title: "Goal 6 · 3 · The docs", body: sliceMarker(6, 3), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [12] },
       { number: 20, title: "a snag", body: "", state: "open", labels: ["kind:snag"] },
+      { number: 21, title: "Goal 7 · 1 · Another goal's slice", body: sliceMarker(7, 1), state: "open", labels: ["kind:slice"] },
     ],
   };
   const links = plan({ goals: [goal], state, briefUrl: url }).filter((s) => /BlockedBy$/.test(s.do)).map((s) => [s.do, s.issue, s.blocker]);
-  assert.deepEqual(links, [["removeBlockedBy", 12, 11], ["addBlockedBy", 11, 13]], "the stale 2-after-1 goes first, the snag's link stays");
+  assert.deepEqual(links, [["removeBlockedBy", 12, 11], ["addBlockedBy", 11, 13]], "the stale 2-after-1 goes first; the snag's link and another goal's slice stay");
 });
 
 test("the goal page: the plain card, the progress, what is stuck and on whom, and where it stands", () => {

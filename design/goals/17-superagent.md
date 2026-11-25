@@ -628,7 +628,7 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 ## Where it stands
 
 25 November 2026: parked by K44, with Goal 17's work as it stood on `goal/superagent` at midnight
-(446fb6dd). Nothing of it is deleted; its 11 claims on the board are released by Goal 18's slice 4. The history
+(446fb6dd). Nothing of it is deleted; its 11 claims on the board are released by K44. The history
 below is from before K44, and the branch's own copy of this brief has the latest of it.
 
 23 November 2026. Slice 1 is on `main` (#515), and K40 is decided (#529). The lead is Claude Code on `claude-opus-5-5`.

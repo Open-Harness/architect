@@ -14,8 +14,9 @@ is kept in git: `git show 990d4a17:design/goals/map.md`. Its needs move onto the
 | 19 · The lander | landing, always running | nothing new: it brings Capxul's green slices into `main` as reviewed pull requests, and keeps `main` green | `19-lander.md` |
 
 Two things are built now (K44): the alpha, by the framework goal, and Capxul. The superagent (Goal 17) is parked, and
-every goal K42 stopped stays parked (K42, section 7). Each lands the pull request it has in review, rewrites "Where it
-stands", sets `status: parked` and stops. Its open slices become items on the board.
+every goal K42 stopped stays parked (K42, section 7). Each goal K42 stopped landed the pull request it had in review,
+rewrote "Where it stands", set `status: parked` and stopped; the superagent's pull requests stay open and unmerged
+(K44, section 5). A parked goal's open slices become items on the board.
 
 ## How a piece of work moves
 
