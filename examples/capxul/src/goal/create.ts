@@ -163,8 +163,9 @@ const create: Handler = ({ employee, appraisalCycle, kra, goalName, progress, is
       return yield* new ParentGoalMismatch({});
     }
 
-    // ProgressOutOfRange: exit 46, GO-006. HRMS's validate_progress; below 0 is Capxul's.
-    if (!inPercent(progress)) {
+    // ProgressOutOfRange: exit 46, GO-006. HRMS's validate_progress; below 0 is Capxul's. A group's progress isn't
+    // typed (it follows its children), so what is sent for one is set aside below rather than judged.
+    if (!isGroup && !inPercent(progress)) {
       yield* Effect.logInfo("the progress isn't between 0 and 100");
       return yield* new ProgressOutOfRange({});
     }
