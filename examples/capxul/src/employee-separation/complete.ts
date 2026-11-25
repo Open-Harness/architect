@@ -41,7 +41,8 @@ import type { Handler } from "../../generated/api/src/employee-separation/comple
 const complete: Handler = ({ employeeSeparation }, { steps, move }) =>
   Effect.gen(function* () {
     // Step update: database, span employee-separation.complete.update. No field changes, only the state, which the
-    // runtime sets once this answers. It doesn't relieve the employee: `employee.relieve` stays its own call (CX-employee-moves).
+    // runtime sets once this answers. It doesn't relieve the employee: `employee.relieve` stays its own call
+    // (CX-employee-moves).
     yield* steps.update(Effect.void);
 
     // The move complete, from pending or inProcess, to completed.
