@@ -66,8 +66,9 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
 ### 2. Bridge's signature at the door (gap 5)
 
 `AdapterDoor.verify` gains a second form. M5-reach-out's call 1 left a sender that doesn't sign with HMAC to "the adapter's own
-verifier in its `src/`". This form is built in instead, because `AdapterDoor` is pure data the compiler reads and the Worker runs
-(`door-types.ts`), and Bridge's scheme is one more senders can share:
+verifier in its `src/`". That route stays open, and is still not built; this adds a second, built-in form beside the HMAC one,
+because `AdapterDoor` is pure data the compiler reads and the Worker runs (`door-types.ts`), and Bridge's scheme is one more
+senders can share. Nothing of M5-reach-out is superseded:
 
 ```ts
 verify: { scheme: "rsa-pkcs1-sha256", header: "x-webhook-signature", within: 600 }
