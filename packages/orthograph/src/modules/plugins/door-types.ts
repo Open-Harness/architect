@@ -15,15 +15,26 @@ export interface EventActor {
  */
 export interface AdapterDoor {
   readonly signing: SecretDeclaration;
-  readonly verify: {
-    /** The header holding the signature: `prefix` then HMAC-SHA256 in lowercase hex. */
-    readonly header: string;
-    readonly prefix: string;
-    /** What is signed: the raw bytes of the body, or `<version>:<timestamp>:<body>` (Slack's v0). */
-    readonly signs: "body" | { readonly version: string };
-    /** A request signed more than `within` seconds from the door's clock, either way, is refused. Needed when `signs` has a timestamp. */
-    readonly timestamp?: { readonly header: string; readonly within: number };
-  };
+  readonly verify:
+    | {
+        /** The header holding the signature: `prefix` then HMAC-SHA256 in lowercase hex. */
+        readonly header: string;
+        readonly prefix: string;
+        /** What is signed: the raw bytes of the body, or `<version>:<timestamp>:<body>` (Slack's v0). */
+        readonly signs: "body" | { readonly version: string };
+        /** A request signed more than `within` seconds from the door's clock, either way, is refused. Needed when `signs` has a timestamp. */
+        readonly timestamp?: { readonly header: string; readonly within: number };
+      }
+    | {
+        /**
+         * Bridge's form (G16-adapter-mounts call 2): `header` holds `t=<ms>,v0=<base64>`, RSASSA-PKCS1-v1_5 (SHA-256) over
+         * SHA256("<t>.<raw body>") under the public key whose PEM is the door's secret. A `t` more than `within` seconds from
+         * the door's clock, either way, is refused (`within` is in seconds; `t` is milliseconds).
+         */
+        readonly scheme: "rsa-pkcs1-sha256";
+        readonly header: string;
+        readonly within: number;
+      };
   /** Where the event's name is, as the sender writes it (`issue_comment`); the adapter's name for it is the camel case (`issueComment`). */
   readonly event: { readonly header: string } | { readonly path: ReadonlyArray<string> };
   /** Top-level parts of the body that say who delivered it, not what it says (GitHub's `installation`): left out when the event is judged, kept in what is stored. */

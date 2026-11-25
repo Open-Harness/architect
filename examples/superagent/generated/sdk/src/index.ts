@@ -26,14 +26,17 @@ export type { Attention, AttentionState, AttentionRaised } from "./attention/typ
 export type { Correlation } from "./correlation/types.ts";
 export type { Decision, DecisionState, DecisionDismissed, DecisionRecorded } from "./decision/types.ts";
 export type { Eval, EvalState, EvalDecided, EvalDelivered, EvalExpired, EvalStarted } from "./eval/types.ts";
+export type { Github } from "./github/types.ts";
 export type { Input, InputState, InputDelivered, InputFailed, InputRouted, InputStored } from "./input/types.ts";
 export type { Mandate, MandateState, MandateHeld, MandateRevalidated, MandateWithdrawn } from "./mandate/types.ts";
 export type { OutgoingMessage, OutgoingMessageState, ReplyQueued, ReplySettled, ReplyWithdrawn } from "./outgoing-message/types.ts";
 export type { Policy, PolicyState, PolicyChanged } from "./policy/types.ts";
+export type { Posthog } from "./posthog/types.ts";
 export type { PromptSet } from "./prompt-set/types.ts";
 export type { Proposal, ProposalState, ProposalApproved, ProposalRecorded, ProposalRejected } from "./proposal/types.ts";
 export type { Report, ReportState, ReportMade } from "./report/types.ts";
 export type { Settings, SettingsState, SettingsSaved } from "./settings/types.ts";
+export type { Slack } from "./slack/types.ts";
 export type { Source, SourceState, SourceDisabled, SourceEnabled, SourceFailed, SourcePositionAdvanced, SourceSaved } from "./source/types.ts";
 export type { Subscription, SubscriptionState, SubscriptionEnded, SubscriptionStarted } from "./subscription/types.ts";
 export type { Superagent, SuperagentState, SuperagentCreated, SuperagentPaused, SuperagentResumed, SuperagentRetired, SuperagentWentLive } from "./superagent/types.ts";

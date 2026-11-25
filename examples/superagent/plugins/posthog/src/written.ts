@@ -43,3 +43,6 @@ export const standIn = Stand.process("a small server over project 1 and three er
 
 /** PostHog documents no signature for a webhook destination, so it has no door until a record says how one verifies (GOAL17-connections, open risks). */
 export const door: AdapterDoor | undefined = undefined;
+
+/** Its errors' refusal code prefix: `PO`, the default, is intake's policy's. */
+export const code: string | undefined = "PH";
