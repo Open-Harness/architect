@@ -27,7 +27,8 @@ things outside the database it commits to (another declared store, or a commit t
 and committed in that store's D1 binding, with its own `_journal` and `_requests`; a thing in no store is in the default
 database (`SqlClient`). One call commits to one store: writes to two die (`stores.test.ts`, two real D1 databases in
 workerd). `answered(key)` asks every database. A field whose encoded form is an array or a struct is its JSON text in
-its column and is read back by the field's schema (`internal/rows.ts`, STO-23; `store.test.ts`).
+its column and is read back by the field's schema (`internal/rows.ts`, STO-23; `store.test.ts`). The column rules
+themselves are `toColumn` and `fromColumns` in `orthograph/server`, shared with prove's world reader.
 
 The thing the identity keeps (`people`: the `per_`-id thing and the identity's users table, both named by the generated
 server) is read by id from that table, only its own fields decoded, never from a table of its own, so the runtime finds

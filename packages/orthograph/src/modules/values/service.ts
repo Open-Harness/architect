@@ -51,6 +51,19 @@ const describedAs = <const X extends Value | Field>(x: X, description: string): 
   return (to === undefined ? Object.freeze({ ...x, description }) : link(to, description, describedAs)) as X;
 };
 
+/** A link whose field, once read, is `wrap` of the linked field: it stays lazy, keeps its edge and takes the wrapper's mark. */
+const wrappedLink = <X extends Value | Field>(x: X, wrap: (f: Field) => Field): X | undefined => {
+  const to = linkTo(x);
+  return to === undefined ? undefined : (link(() => wrap(to()), undefined, describedAs) as Field as X);
+};
+
+/** A value that may be left out; a field becomes a copy holding that value, so a field taken from it keeps the edge. */
+const optional = <X extends Value | Field>(x: X): X => {
+  const ofValue = (v: Value): Value => Object.freeze({ ...v, schema: Schema.optionalKey(v.schema), optional: true as const });
+  const ofField = (f: Field): Field => Object.freeze({ ...f, value: ofValue(f.value) });
+  return (wrappedLink(x, ofField) ?? (x.kind === "field" ? ofField(x) : ofValue(x))) as X;
+};
+
 export const Values: ValuesApi = {
   value,
   described: describedAs,
@@ -81,8 +94,8 @@ export const Values: ValuesApi = {
     const fields = (item.schema as { readonly fields?: object }).fields;
     return described(Schema.Array(item.schema), { type: "schema", format: "list", ...(fields === undefined ? {} : { fields: Object.keys(fields) }) });
   },
-  optional: (v) => Object.freeze({ ...v, schema: Schema.optionalKey(v.schema), optional: true as const }),
+  optional: optional as ValuesApi["optional"],
   email: () => Object.freeze({ ...described(Schema.String.check(Schema.isMaxLength(254), Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)), { type: "text", max: 254 }), format: "email" as const }),
 };
 
-export { isValue, Days, lazy, linkTo, decimalText };
+export { isValue, Days, lazy, linkTo, wrappedLink, decimalText };

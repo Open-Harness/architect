@@ -1,5 +1,12 @@
 // Generated from the blueprint. Do not edit.
 import type { McpEntry } from "@orthograph/language-effect";
+import { declaration as attendanceGet } from "../../api/src/attendance/get.ts";
+import { declaration as attendanceList } from "../../api/src/attendance/list.ts";
+import { declaration as attendanceMark } from "../../api/src/attendance/mark.ts";
+import { declaration as attendanceRequestApprove } from "../../api/src/attendance-request/approve.ts";
+import { declaration as attendanceRequestCreate } from "../../api/src/attendance-request/create.ts";
+import { declaration as attendanceRequestGet } from "../../api/src/attendance-request/get.ts";
+import { declaration as attendanceRequestReject } from "../../api/src/attendance-request/reject.ts";
 import { declaration as bankAccountClose } from "../../api/src/bank-account/close.ts";
 import { declaration as bankAccountGet } from "../../api/src/bank-account/get.ts";
 import { declaration as bankAccountOpen } from "../../api/src/bank-account/open.ts";
@@ -24,6 +31,8 @@ import { declaration as employeeHire } from "../../api/src/employee/hire.ts";
 import { declaration as employeeRelieve } from "../../api/src/employee/relieve.ts";
 import { declaration as employeeGradeCreate } from "../../api/src/employee-grade/create.ts";
 import { declaration as employeeGradeGet } from "../../api/src/employee-grade/get.ts";
+import { declaration as employmentTypeCreate } from "../../api/src/employment-type/create.ts";
+import { declaration as employmentTypeGet } from "../../api/src/employment-type/get.ts";
 import { declaration as expenseAdd } from "../../api/src/expense/add.ts";
 import { declaration as expenseGet } from "../../api/src/expense/get.ts";
 import { declaration as expenseClaimApprove } from "../../api/src/expense-claim/approve.ts";
@@ -37,9 +46,18 @@ import { declaration as holidayGet } from "../../api/src/holiday/get.ts";
 import { declaration as holidayListAddWeeklyOff } from "../../api/src/holiday-list/add-weekly-off.ts";
 import { declaration as holidayListCreate } from "../../api/src/holiday-list/create.ts";
 import { declaration as holidayListGet } from "../../api/src/holiday-list/get.ts";
+import { declaration as shiftTypeCreate } from "../../api/src/shift-type/create.ts";
+import { declaration as shiftTypeGet } from "../../api/src/shift-type/get.ts";
 
 /** One tool per operation and read, named as the operation is. */
 export const catalog = {
+  "attendance.get": { description: "Read one attendance by its id: company, employee, attendanceDate, status, state.", operation: attendanceGet, states: ["marked"] },
+  "attendance.list": { description: "List attendances, oldest first, 50 to a page, filtered by employee, attendanceDate.", operation: attendanceList, states: ["marked"] },
+  "attendance.mark": { description: "Mark whether an employee was at work on a day. Refuses AttendanceAlreadyMarked when another attendance holds this employee and attendance date.", operation: attendanceMark, states: ["marked"], move: {"key":"mark","from":[],"to":["marked"],"emits":"AttendanceMarked"} },
+  "attendance-request.approve": { description: "Approve a request, marking each of its days. Refuses AttendanceAlreadyMarked when another attendance holds this employee and attendance date.", operation: attendanceRequestApprove, states: ["draft","approved","rejected"], move: {"key":"approve","from":["draft"],"to":["approved"],"emits":"AttendanceRequestApproved"} },
+  "attendance-request.create": { description: "Ask for an employee to be marked at work, from one day to another, and why.", operation: attendanceRequestCreate, states: ["draft","approved","rejected"], move: {"key":"create","from":[],"to":["draft"],"emits":"AttendanceRequested"} },
+  "attendance-request.get": { description: "Read one attendance-request by its id: company, employee, fromDate, toDate, reason, state.", operation: attendanceRequestGet, states: ["draft","approved","rejected"] },
+  "attendance-request.reject": { description: "Reject a request, marking none of its days.", operation: attendanceRequestReject, states: ["draft","approved","rejected"], move: {"key":"reject","from":["draft"],"to":["rejected"],"emits":"AttendanceRequestRejected"} },
   "bank-account.close": { description: "Close a company's bank account; it takes no more deposits.", operation: bankAccountClose, states: ["open","closed"], move: {"key":"close","from":["open"],"to":["closed"],"emits":"BankAccountClosed"} },
   "bank-account.get": { description: "Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.", operation: bankAccountGet, states: ["open","closed"] },
   "bank-account.open": { description: "Open a bank account for a company whose KYB Bridge approved: answers where to send deposits. Refuses BankAccountNameTaken when another open bank account holds this company and account name.", operation: bankAccountOpen, states: ["open","closed"], move: {"key":"open","from":[],"to":["open"],"emits":"BankAccountOpened"} },
@@ -64,6 +82,8 @@ export const catalog = {
   "employee.relieve": { description: "Record that an employee has left the company, on the day they were relieved.", operation: employeeRelieve, states: ["active","left"], move: {"key":"relieve","from":["active"],"to":["left"],"emits":"EmployeeRelieved"} },
   "employee-grade.create": { description: "Add a grade to a company. Refuses EmployeeGradeNameTaken when another employee grade holds this company and grade name.", operation: employeeGradeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmployeeGradeCreated"} },
   "employee-grade.get": { description: "Read one employee-grade by its id: company, gradeName, state.", operation: employeeGradeGet, states: ["active"] },
+  "employment-type.create": { description: "Add a way a company employs people. Refuses EmploymentTypeNameTaken when another employment type holds this company and employment type name.", operation: employmentTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmploymentTypeCreated"} },
+  "employment-type.get": { description: "Read one employment-type by its id: company, employmentTypeName, state.", operation: employmentTypeGet, states: ["active"] },
   "expense.add": { description: "Add one expense to a claim still in draft.", operation: expenseAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"ExpenseAdded"} },
   "expense.get": { description: "Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.", operation: expenseGet, states: ["active"] },
   "expense-claim.approve": { description: "Approve a claim, owing the employee what was sanctioned.", operation: expenseClaimApprove, states: ["draft","approved","rejected"], move: {"key":"approve","from":["draft"],"to":["approved"],"emits":"ExpenseClaimApproved"} },
@@ -77,4 +97,6 @@ export const catalog = {
   "holiday-list.add-weekly-off": { description: "Make every given weekday in a holiday list a day off. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListAddWeeklyOff, states: ["active"], move: {"key":"addWeeklyOff","from":["active"],"to":["active"],"emits":"WeeklyOffAdded"} },
   "holiday-list.create": { description: "Start a company's list of days off, between two days. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"HolidayListCreated"} },
   "holiday-list.get": { description: "Read one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.", operation: holidayListGet, states: ["active"] },
+  "shift-type.create": { description: "Add a working shift to a company, from its start time to its end time. Refuses ShiftTypeNameTaken when another shift type holds this company and shift type name.", operation: shiftTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ShiftTypeCreated"} },
+  "shift-type.get": { description: "Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.", operation: shiftTypeGet, states: ["active"] },
 } as const satisfies { readonly [name: string]: McpEntry };

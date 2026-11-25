@@ -340,8 +340,8 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Appraisal | thing | SUB | 20 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` |  |
 | Appraisal Cycle | thing |  | 12 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` |  |
 | Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` |  |
-| Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` |  |
-| Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` |  |
+| Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` | one per employee per day (a unique rule), in the employee's company, not before joining, not for a leaver; Present, Absent, Half Day or Work From Home. On Leave and the check against leave come with leave (8b, #764); its shift waits on optional references (#742, item 5). HRMS has no future-day check at `46b38904` |
+| Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` | a draft, then approved or rejected; approving marks every day from its first to its last in one call (found through the attendance rule with `findBy`), changing a day marked with another status. Half days, shift, holidays and the overlap check wait on optional fields, holiday lists per employee and #764 |
 | Branch | thing |  | 1 | `erpnext/erpnext/setup/doctype/branch/branch.json` | a place a company works from, its name unique within the company |
 | Compensatory Leave Request | thing | SUB | 11 | `hrms/hrms/hr/doctype/compensatory_leave_request/compensatory_leave_request.json` |  |
 | Daily Work Summary | thing |  | 3 | `hrms/hrms/hr/doctype/daily_work_summary/daily_work_summary.json` |  |
@@ -367,7 +367,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Employee Separation Template | thing |  | 5 | `hrms/hrms/hr/doctype/employee_separation_template/employee_separation_template.json` |  |
 | Employee Skill Map | thing |  | 3 | `hrms/hrms/hr/doctype/employee_skill_map/employee_skill_map.json` |  |
 | Employee Transfer | thing | SUB | 10 | `hrms/hrms/hr/doctype/employee_transfer/employee_transfer.json` |  |
-| Employment Type | thing |  | 1 | `hrms/hrms/hr/doctype/employment_type/employment_type.json` |  |
+| Employment Type | thing |  | 1 | `hrms/hrms/hr/doctype/employment_type/employment_type.json` | a way a company employs people, its name unique within the company |
 | Exit Interview | thing | SUB | 18 | `hrms/hrms/hr/doctype/exit_interview/exit_interview.json` |  |
 | Expense Claim | thing | SUB | 26 | `hrms/hrms/hr/doctype/expense_claim/expense_claim.json` |  |
 | Expense Claim Type | thing |  | 3 | `hrms/hrms/hr/doctype/expense_claim_type/expense_claim_type.json` |  |
@@ -408,7 +408,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Shift Request | thing | SUB | 10 | `hrms/hrms/hr/doctype/shift_request/shift_request.json` |  |
 | Shift Schedule | thing | SUB | 3 | `hrms/hrms/hr/doctype/shift_schedule/shift_schedule.json` |  |
 | Shift Schedule Assignment | thing |  | 8 | `hrms/hrms/hr/doctype/shift_schedule_assignment/shift_schedule_assignment.json` |  |
-| Shift Type | thing |  | 19 | `hrms/hrms/hr/doctype/shift_type/shift_type.json` |  |
+| Shift Type | thing |  | 19 | `hrms/hrms/hr/doctype/shift_type/shift_type.json` | its name unique within the company, a start and an end time (`HH:MM`) that differ; an end before the start runs past midnight. HRMS's 22-hour limit (its default check-in buffers), check-in rules and auto attendance come with check-ins |
 | Skill | thing |  | 2 | `hrms/hrms/hr/doctype/skill/skill.json` |  |
 | Staffing Plan | thing | SUB | 6 | `hrms/hrms/hr/doctype/staffing_plan/staffing_plan.json` |  |
 | Training Event | thing | SUB | 18 | `hrms/hrms/hr/doctype/training_event/training_event.json` |  |
