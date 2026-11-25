@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/employee-separation/verbs/begin.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/employee-separation/begin.handler.ts";
 
 /**
@@ -40,17 +39,16 @@ import type { Handler } from "../../generated/api/src/employee-separation/begin.
  *   once it answers, it writes EmployeeSeparationBegun: employeeSeparation from the answer;
  *   the call is the span employee-separation.begin, and its commit employee-separation.begin.commit.
  */
-const begin: Handler = (_payload, { steps, move }) =>
+const begin: Handler = ({ employeeSeparation }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span employee-separation.begin.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span employee-separation.begin.update. No field changes, only the state, which the
+    // runtime sets once this answers. HRMS moves `boarding_status` by its project's tasks, which are out (CX-employee-moves), so the owner moves it.
+    yield* steps.update(Effect.void);
 
     // The move begin, from pending, to inProcess.
     yield* move();
 
-    return {
-      employeeSeparation: yield* Handlers.blank("employeeSeparation, an employee-separation.id"),
-    };
+    return { employeeSeparation };
   });
 
 export default begin;

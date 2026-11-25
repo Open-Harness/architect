@@ -1,10 +1,14 @@
 // Scaffolded from blueprint/things/employee-transfer/verbs/submit.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Clock, Effect } from "effect";
+import { Days } from "orthograph";
+import { Records } from "@orthograph/language-effect";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee-transfer/submit.handler.ts";
 
 const { TransferNotYetDue } = Errors.declared;
+
+const DAY_MS = 86_400_000;
 
 /**
  * employee-transfer.submit: Submit a transfer on or after its day, giving the employee the new department.
@@ -45,27 +49,38 @@ const { TransferNotYetDue } = Errors.declared;
  *   once it answers, it writes EmployeeTransferred: employeeTransfer, employee and department from the answer;
  *   the call is the span employee-transfer.submit, and its commit employee-transfer.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ employeeTransfer }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // TransferNotYetDue: exit 45, TR-005.
-    if (yield* Handlers.blank<boolean>("refuse TransferNotYetDue when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TransferNotYetDue was refused"));
-      return yield* new TransferNotYetDue({
-        transferDate: yield* Handlers.blank("TransferNotYetDue.transferDate, a Day"),
-      });
+    const records = yield* Records;
+
+    // The runtime read the transfer for its role and state checks and hands it in. The employee isn't judged again: one
+    // drafted before they left can still be submitted (CX-expense-leavers).
+    if (!subject) return yield* Effect.die(new Error(`transfer ${employeeTransfer} was checked and then not found`));
+    const transferDate = subject["transferDate"] as string;
+    const employee = subject["employee"] as string;
+    const newDepartment = subject["newDepartment"] as string;
+
+    // TransferNotYetDue: exit 45, TR-005. HRMS's `before_submit`, by the world's clock: Effect's Clock reads it,
+    // stepped in the local world. Today is its UTC day; the transfer's day itself is allowed.
+    const today = Days.add("1970-01-01", Math.floor((yield* Clock.currentTimeMillis) / DAY_MS));
+    if (today < transferDate) {
+      yield* Effect.logInfo("the transfer's day hasn't come yet");
+      return yield* new TransferNotYetDue({ transferDate: transferDate as never });
     }
 
-    // Step update: database, in the store employee-transfer, employee, span employee-transfer.submit.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, in the store employee-transfer, employee, span employee-transfer.submit.update. The employee
+    // takes the new department, as HRMS's `on_submit` does through `update_employee_work_history`. The transfer's own
+    // change is only its state, which the runtime sets once this answers.
+    yield* steps.update(records.update(Employee, employee, { department: newDepartment as never }));
 
     // The move submit, from draft, to submitted.
     yield* move();
 
     return {
-      employeeTransfer: yield* Handlers.blank("employeeTransfer, an employee-transfer.id"),
-      employee: yield* Handlers.blank("employee, an employee-transfer.employee"),
+      employeeTransfer,
+      employee: employee as never,
       // EmployeeTransferred needs department, and only the answer can give it.
-      department: yield* Handlers.blank("department, an employee-transfer.newDepartment"),
+      department: newDepartment as never,
     };
   });
 

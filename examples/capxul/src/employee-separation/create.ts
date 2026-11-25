@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/employee-separation/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { EmployeeSeparation } from "../../blueprint/things/employee-separation/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee-separation/create.handler.ts";
 
@@ -48,19 +49,27 @@ const { SeparatedEmployeeNotInCompany } = Errors.declared;
  *   once it answers, it writes EmployeeSeparationStarted: employeeSeparation from the answer, employee from the payload;
  *   the call is the span employee-separation.create, and its commit employee-separation.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employee, resignationLetterDate, boardingBeginsOn }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span employee-separation.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // SeparatedEmployeeNotInCompany: exit 41, SP-001.
-    if (yield* Handlers.blank<boolean>("refuse SeparatedEmployeeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SeparatedEmployeeNotInCompany was refused"));
+    // Step load: database, span employee-separation.create.load. The runtime read the employee and hands it in, so this
+    // step only takes it. Its state isn't judged: a separation may start for an employee who has already left, as
+    // HRMS's Employee Separation judges neither status nor days (CX-employee-moves).
+    const held = yield* steps.load(Effect.succeed(refs.employee));
+    if (!held) return yield* Effect.die(new Error(`employee ${employee} was read and then not found`));
+
+    // SeparatedEmployeeNotInCompany: exit 41, SP-001. Judged here, before the runtime's SeparationAlreadyOpen at commit.
+    if (held["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new SeparatedEmployeeNotInCompany({});
     }
 
-    // Step insert: database, span employee-separation.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span employee-separation.create.insert. A second open one for this employee is the
+    // runtime's refusal (oneOpenSeparationPerEmployee).
+    yield* steps.insert(
+      records.insert(EmployeeSeparation, { id, company, employee, resignationLetterDate, boardingBeginsOn }),
+    );
 
     // The move create, to pending.
     yield* move();

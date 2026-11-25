@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/employee-separation/verbs/complete.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/employee-separation/complete.handler.ts";
 
 /**
@@ -39,17 +38,16 @@ import type { Handler } from "../../generated/api/src/employee-separation/comple
  *   once it answers, it writes EmployeeSeparationCompleted: employeeSeparation from the answer;
  *   the call is the span employee-separation.complete, and its commit employee-separation.complete.commit.
  */
-const complete: Handler = (_payload, { steps, move }) =>
+const complete: Handler = ({ employeeSeparation }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span employee-separation.complete.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span employee-separation.complete.update. No field changes, only the state, which the
+    // runtime sets once this answers. It doesn't relieve the employee: `employee.relieve` stays its own call (CX-employee-moves).
+    yield* steps.update(Effect.void);
 
     // The move complete, from pending or inProcess, to completed.
     yield* move();
 
-    return {
-      employeeSeparation: yield* Handlers.blank("employeeSeparation, an employee-separation.id"),
-    };
+    return { employeeSeparation };
   });
 
 export default complete;
