@@ -1,5 +1,5 @@
 {
- "note": "sha256 of every file of examples/acme/generated, before M2.04's build (first captured at goal/stage-1 dc471c87; recaptured at M1.51's licence change on goal-3/m1-51-licence-check, hash lines only: the package hashes and digest in generated/model/model.json and generated/portal/blueprint.json). M2.04 must leave every one as it is (milestones.md, M2.04): checks 12, 14 and 21 stay green with no baseline recaptured. Recaptured again at the goal/ui-layer landing (Goal 19, #785): Goal 5 actions projection adds the 15 files of generated/actions/ and the actions entries (and hashes) in generated/model/model.json and generated/portal/blueprint.json; no secrets section, nothing removed. Recaptured again for #969 (#742 item 5, the CLI's --json answer writes a decimal as its text): the hash of generated/cli/src/output.ts only. Recaptured again for #981 (the CLI's --json writes a decimal inside an Option as its text, and a refusal shows only its own declared fields): the hash of generated/cli/src/output.ts only. Recaptured again for #988 (the API answers a refused payload with { _tag: InvalidPayload, message }, decoding every field): the hash of generated/server/main.ts only.",
+ "note": "sha256 of every file of examples/acme/generated, before M2.04's build (first captured at goal/stage-1 dc471c87; recaptured at M1.51's licence change on goal-3/m1-51-licence-check, hash lines only: the package hashes and digest in generated/model/model.json and generated/portal/blueprint.json). M2.04 must leave every one as it is (milestones.md, M2.04): checks 12, 14 and 21 stay green with no baseline recaptured. Recaptured again at the goal/ui-layer landing (Goal 19, #785): Goal 5 actions projection adds the 15 files of generated/actions/ and the actions entries (and hashes) in generated/model/model.json and generated/portal/blueprint.json; no secrets section, nothing removed. Recaptured again for #969 (#742 item 5, the CLI's --json answer writes a decimal as its text): the hash of generated/cli/src/output.ts only. Recaptured again for #981 (the CLI's --json writes a decimal inside an Option as its text, and a refusal shows only its own declared fields): the hash of generated/cli/src/output.ts only. Recaptured again for #988 (the API answers a refused payload with { _tag: InvalidPayload, message }, decoding every field): the hash of generated/server/main.ts only. Recaptured again for #999 (the CLI's plain answer prints an Option.some of a decimal as its text, a tag named like an Object.prototype member is no refusal, and the SDK's InvalidPayload names every refused field): the hashes of generated/cli/src/output.ts and generated/sdk/src/client.ts only.",
  "files": {
   "generated/actions/allowance/get.ts": "f9b17700ddccee631952845163a63d481adcbfd72575ecf47b98ee8764e69ee5",
   "generated/actions/allowance/grant.ts": "40bbd92716a6833785adae76353e5aaf6a0e11aad8272b447bbe08a6c59d615e",
@@ -58,7 +58,7 @@
   "generated/cli/src/membership/get.ts": "c6e43ec137cc72374b5a383a34f7b0eee4bfa245444c8f2c75b85d6065e04d24",
   "generated/cli/src/organization/create.ts": "fdc2d1de6b5e93ccd9ea96391c5c965cfeadd75306f7476a2329a59df1685a39",
   "generated/cli/src/organization/get.ts": "035449c21444347164996ee3fdd2a2e57f7ce943b0171f18f15e801c73989725",
-  "generated/cli/src/output.ts": "1fc79675ae941706e1db81364c21bd1272467ce4fd38867fa3235836f2c71401",
+  "generated/cli/src/output.ts": "d0ec02f10ec7f5db86dcc8d0053302d0ec8a09b57584e12d9b7d0192b57bd3a2",
   "generated/cli/src/person/sign-up.ts": "7bf1ac33bd9f14bdc0dcaf71955b2cabfd38523a25d4845563acc277af64fbf2",
   "generated/cli/src/session/device.ts": "a0cb1eab0fdac63eb3dd38960bcb0fcba19bad6a5214140e51a65c86502e1a15",
   "generated/cli/src/session/show.ts": "dd0ee614529a9a862d6cfc3b616fed8df981766dbe872b7f81e72e2e76b8c431",
@@ -101,7 +101,7 @@
   "generated/sdk/src/api-key/create.ts": "3fd23be3e132240fcc8eb27e80122b39651f834fda5903b318b10c5828ec05b9",
   "generated/sdk/src/api-key/index.ts": "4f29d3428d2bba484a877633ca0f8cf3de3b3576a5634841e61a43ee1f958a8d",
   "generated/sdk/src/api-key/types.ts": "0d0d74bf8207deeca0b092e6376c1de85b4e41afec5cd3eb134b723d42252edb",
-  "generated/sdk/src/client.ts": "0e4796be1a43088b2dbd9550e9c25ecd23f3b3d1ae9751b240bbd67ea4d7c98c",
+  "generated/sdk/src/client.ts": "6f138e955e53e562f915f49a16feb3b1f8c1d7d5370f73e1f02288be0e162e85",
   "generated/sdk/src/index.ts": "13cd26fa2f8f201bcf154c714f9f65bf525589b595af739527c6fb9d15b51baf",
   "generated/sdk/src/invitation/accept.ts": "1005cc9fda36589b873cadcef471201e3554ad8c14c0ad6bc9cf6421953b62f2",
   "generated/sdk/src/invitation/index.ts": "c83ba5143c0dcea2d6e7d03269cf4fcf727e67be71d0df23aa370fc8b2ae3604",
