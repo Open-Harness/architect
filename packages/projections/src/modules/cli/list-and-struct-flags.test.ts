@@ -14,7 +14,8 @@
 //     flag's value is also accepted). Which words say why are the build's.
 //  3. `--help` says the flag takes JSON (in its metavar or its description), and a text flag's line does not.
 //
-// Not judged: an optional list or struct left out (as today, not sent), and a list or struct in an answer.
+// Not judged: an optional list or struct left out (as today, not sent), a list or struct in an answer, and whether a
+// refusal's message repeats the value given.
 // Written by #1034's checks author. The red cases are listed in packages/projections/expected-failing/list-and-struct-flags.txt (G11).
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -59,7 +60,22 @@ import { Schema } from "effect";
 import { Entry } from "../thing.ts";
 export default Blueprint.operation(Entry, {
   description: "Note an entry.",
-  payload: { memo: Entry.fields.memo, name: Blueprint.value(Schema.String.check(Schema.isMaxLength(30))), about: Blueprint.refAny() },
+  payload: { memo: Entry.fields.memo, name: Blueprint.value(Schema.String.check(Schema.isMaxLength(30))), about: Blueprint.refAny(), blob: Blueprint.value(Schema.fromJsonString(Schema.Struct({ n: Schema.Number }))) },
+  answer: { entry: Entry.fields.id },
+  allowed: [Blueprint.anyone],
+});
+`;
+// The edges: an optional list given, and a struct that may be null (a union where it travels).
+const FILE = `import { Blueprint } from "orthograph";
+import { Schema } from "effect";
+import { Entry } from "../thing.ts";
+export default Blueprint.operation(Entry, {
+  description: "File an entry.",
+  payload: {
+    memo: Entry.fields.memo,
+    opt: Blueprint.optional(Blueprint.list(Blueprint.text({ max: 20 }))),
+    maybe: Blueprint.value(Schema.NullOr(Schema.Struct({ city: Schema.String }))),
+  },
   answer: { entry: Entry.fields.id },
   allowed: [Blueprint.anyone],
 });
@@ -71,12 +87,12 @@ const SDK = `import { Effect } from "effect";
 export const Errors = { refusals: {}, codes: {}, declared: {} };
 export const given: Array<unknown> = [];
 const take = (payload: unknown) => Effect.sync(() => { given.push(payload); return { entry: "ent_1" }; });
-export const entry = { post: take, note: take };
+export const entry = { post: take, note: take, file: take };
 `;
 
 type ExitCodeKey = Context.Key<unknown, { readonly set: (code: number) => Effect.Effect<void> }>;
 type Verb = Command.Command<string, unknown, unknown, unknown, unknown>;
-type Project = { readonly ExitCode: ExitCodeKey; readonly post: Verb; readonly note: Verb; readonly given: Array<unknown> };
+type Project = { readonly ExitCode: ExitCodeKey; readonly post: Verb; readonly note: Verb; readonly file: Verb; readonly given: Array<unknown> };
 
 const write = (root: string, path: string, content: string) => {
   mkdirSync(join(root, path, ".."), { recursive: true });
@@ -89,19 +105,21 @@ const load = (): Promise<Project> => (project ??= (async () => {
   write(root, "blueprint/things/entry/thing.ts", THING);
   write(root, "blueprint/things/entry/verbs/post.ts", VERB);
   write(root, "blueprint/things/entry/verbs/note.ts", NOTE);
+  write(root, "blueprint/things/entry/verbs/file.ts", FILE);
   // The model as `ortho generate` reads it: the compiler, in a fresh process.
   const model = JSON.parse(execFileSync(process.execPath, [resolve(repo, "packages/compiler/src/main.ts"), root], { encoding: "utf8" })) as Model;
   const files = renderCli(model, "books");
-  for (const path of ["generated/cli/src/output.ts", "generated/cli/src/entry/post.ts", "generated/cli/src/entry/note.ts"]) {
+  for (const path of ["generated/cli/src/output.ts", "generated/cli/src/entry/post.ts", "generated/cli/src/entry/note.ts", "generated/cli/src/entry/file.ts"]) {
     const file = files.find((f) => f.path === path);
     if (file === undefined) throw new Error(`renderCli wrote no ${path}`);
     write(root, path, file.content);
   }
   write(root, "generated/api/src/entry/post.ts", api("post"));
   write(root, "generated/api/src/entry/note.ts", api("note"));
+  write(root, "generated/api/src/entry/file.ts", api("file"));
   write(root, "generated/sdk/src/index.ts", SDK);
   const output = (await import(join(root, "generated/cli/src/output.ts"))) as Pick<Project, "ExitCode">;
-  const command = { ...(await import(join(root, "generated/cli/src/entry/post.ts"))), ...(await import(join(root, "generated/cli/src/entry/note.ts"))) } as Pick<Project, "post" | "note">;
+  const command = { ...(await import(join(root, "generated/cli/src/entry/post.ts"))), ...(await import(join(root, "generated/cli/src/entry/note.ts"))), ...(await import(join(root, "generated/cli/src/entry/file.ts"))) } as Pick<Project, "post" | "note" | "file">;
   const sdk = (await import(join(root, "generated/sdk/src/index.ts"))) as Pick<Project, "given">;
   return { ...output, ...command, ...sdk };
 })());
@@ -119,7 +137,7 @@ const CliTest = Layer.mergeAll(
 );
 
 /** `books entry <verb> <args>`: what it writes, stdout and stderr apart, the exit code it sets, and what reached the SDK. */
-const ran = async (args: ReadonlyArray<string>, verb: "post" | "note" = "post") => {
+const ran = async (args: ReadonlyArray<string>, verb: "post" | "note" | "file" = "post") => {
   const p = await load();
   p.given.length = 0;
   const out: Array<string> = [];
@@ -174,6 +192,7 @@ const REFUSED: ReadonlyArray<readonly [string, Partial<Record<keyof typeof base,
   ["51 lines, over the limit", { lines: JSON.stringify(Array.from({ length: 51 }, (_, i) => ({ account: `acc_${i}`, debit: "1" }))) }, "lines", false],
   ["malformed JSON in --where", { where: '{"city":' }, "where", true],
   ["a list of numbers where --tags wants text", { tags: "[1,2]" }, "tags", false],
+  ["text after the JSON in --where", { where: '{"city":"Lagos"} oops' }, "where", true],
 ];
 
 describe("2. Malformed or misshapen JSON is refused with a message, before the SDK", () => {
@@ -190,14 +209,30 @@ describe("2. Malformed or misshapen JSON is refused with a message, before the S
   }
 });
 
+describe("1. The edges: an optional list given, and a struct that may be null", () => {
+  const file = ["--memo", "m", "--maybe", '{"city":"Lagos"}'];
+
+  it("an optional list, when given, is taken as JSON", async () => {
+    const r = await ran([...file, "--opt", '["a","b"]'], "file");
+    expect([r.stderr, r.given.map((g) => g["opt"])]).toEqual(["", [["a", "b"]]]);
+  });
+
+  it("a struct that may be null takes its JSON object, and null", async () => {
+    const some = await ran(file, "file");
+    const none = await ran(["--memo", "m", "--maybe", "null"], "file");
+    expect([some.stderr, some.given.map((g) => g["maybe"]), none.stderr, none.given.map((g) => g["maybe"])]).toEqual(["", [{ city: "Lagos" }], "", [null]]);
+  });
+});
+
+// A field that already travels as a JSON string (`Schema.fromJsonString`) is text where it travels: handed on as written, parsed once.
 describe("The controls, on a verb with no list or struct: text flags are still taken as written", () => {
   it("a thing's text field and a raw Schema.String value take `{}` and `[1]` as text, never as JSON; a refAny takes its JSON object", async () => {
-    const r = await ran(["--memo", "{}", "--name", "[1]", "--about", '{"declaration":"entry","id":"ent_2"}'], "note");
-    expect(r.given).toEqual([{ memo: "{}", name: "[1]", about: { declaration: "entry", id: "ent_2" } }]);
+    const r = await ran(["--memo", "{}", "--name", "[1]", "--about", '{"declaration":"entry","id":"ent_2"}', "--blob", '{"n":1}'], "note");
+    expect(r.given).toEqual([{ memo: "{}", name: "[1]", about: { declaration: "entry", id: "ent_2" }, blob: { n: 1 } }]);
   });
 
   it("a raw Schema.String value takes `\"quoted\"` and `42` as written", async () => {
-    const r = await ran(["--memo", "42", "--name", '"quoted"', "--about", ABOUT], "note");
+    const r = await ran(["--memo", "42", "--name", '"quoted"', "--about", ABOUT, "--blob", '{"n":2}'], "note");
     expect(r.given.map((g) => [g["memo"], g["name"]])).toEqual([["42", '"quoted"']]);
   });
 });
@@ -220,6 +255,12 @@ describe("3. --help says a list or struct flag takes JSON, in its metavar and it
       expect([h.metavar, h.description]).toEqual([expect.stringMatching(/json/i), expect.stringMatching(/json/i)]);
     });
   }
+
+  it("--lines says it takes a list, and --where an object", async () => {
+    const help = (await ran(["--help"])).stdout;
+    expect([helpFor(help, "lines").description, helpFor(help, "where").description]).toEqual([expect.stringMatching(/\blist\b/i), expect.not.stringMatching(/\blist\b/i)]);
+    expect(helpFor(help, "where").description).toMatch(/\bobject\b/i);
+  });
 
   it("--lines keeps its own description, and says it no longer takes text", async () => {
     const h = helpFor((await ran(["--help"])).stdout, "lines");
