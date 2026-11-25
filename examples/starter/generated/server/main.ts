@@ -3,7 +3,7 @@
 import { Context, Effect, Layer } from "effect";
 import { ManagedRuntime, Tracer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
-import { HttpApiBuilder } from "effect/http-api";
+import { HttpApi, HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
 import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
@@ -58,7 +58,8 @@ const systemHealthServed = Handlers.serve({ name: "system.health", operation: sy
 const tables = [[thingIn(apiKeyThing), "api-key"], [thingIn(invitationThing), "invitation"], [thingIn(membershipThing), "membership"], [thingIn(organizationThing), "organization"], [thingIn(personThing), "person"], [thingIn(sessionThing), "session"], [thingIn(systemThing), "system"]] as const;
 
 const refusals = Wire.refusals(Errors.wire);
-const CallApi = Api.middleware(CallTelemetry);
+// A refused payload names every field it was refused for, not only the first (#988).
+const CallApi = Api.middleware(CallTelemetry).annotate(HttpApi.PayloadParseOptions, { errors: "all" });
 type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth;
 
 /** Who is calling, then the operation or read, its refusals sent as their wire classes. */
