@@ -6,6 +6,19 @@ import { Effect, Layer } from "effect";
 import { CliOutput, Command } from "effect/cli";
 import * as Sdk from "../../sdk/src/index.ts";
 import { ExitCode } from "./output.ts";
+import { create as appraisalCreate } from "./appraisal/create.ts";
+import { get as appraisalGet } from "./appraisal/get.ts";
+import { list as appraisalList } from "./appraisal/list.ts";
+import { rate as appraisalRate } from "./appraisal/rate.ts";
+import { selfRate as appraisalSelfRate } from "./appraisal/self-rate.ts";
+import { submit as appraisalSubmit } from "./appraisal/submit.ts";
+import { complete as appraisalCycleComplete } from "./appraisal-cycle/complete.ts";
+import { create as appraisalCycleCreate } from "./appraisal-cycle/create.ts";
+import { get as appraisalCycleGet } from "./appraisal-cycle/get.ts";
+import { reopen as appraisalCycleReopen } from "./appraisal-cycle/reopen.ts";
+import { start as appraisalCycleStart } from "./appraisal-cycle/start.ts";
+import { create as appraisalTemplateCreate } from "./appraisal-template/create.ts";
+import { get as appraisalTemplateGet } from "./appraisal-template/get.ts";
 import { get as attendanceGet } from "./attendance/get.ts";
 import { list as attendanceList } from "./attendance/list.ts";
 import { mark as attendanceMark } from "./attendance/mark.ts";
@@ -35,8 +48,13 @@ import { get as designationGet } from "./designation/get.ts";
 import { get as employeeGet } from "./employee/get.ts";
 import { hire as employeeHire } from "./employee/hire.ts";
 import { relieve as employeeRelieve } from "./employee/relieve.ts";
+import { create as employeeFeedbackCriteriaCreate } from "./employee-feedback-criteria/create.ts";
+import { get as employeeFeedbackCriteriaGet } from "./employee-feedback-criteria/get.ts";
 import { create as employeeGradeCreate } from "./employee-grade/create.ts";
 import { get as employeeGradeGet } from "./employee-grade/get.ts";
+import { create as employeePerformanceFeedbackCreate } from "./employee-performance-feedback/create.ts";
+import { get as employeePerformanceFeedbackGet } from "./employee-performance-feedback/get.ts";
+import { submit as employeePerformanceFeedbackSubmit } from "./employee-performance-feedback/submit.ts";
 import { cancel as employeePromotionCancel } from "./employee-promotion/cancel.ts";
 import { create as employeePromotionCreate } from "./employee-promotion/create.ts";
 import { get as employeePromotionGet } from "./employee-promotion/get.ts";
@@ -59,6 +77,14 @@ import { get as expenseClaimGet } from "./expense-claim/get.ts";
 import { reject as expenseClaimReject } from "./expense-claim/reject.ts";
 import { create as expenseClaimTypeCreate } from "./expense-claim-type/create.ts";
 import { get as expenseClaimTypeGet } from "./expense-claim-type/get.ts";
+import { archive as goalArchive } from "./goal/archive.ts";
+import { close as goalClose } from "./goal/close.ts";
+import { complete as goalComplete } from "./goal/complete.ts";
+import { create as goalCreate } from "./goal/create.ts";
+import { get as goalGet } from "./goal/get.ts";
+import { reopen as goalReopen } from "./goal/reopen.ts";
+import { unarchive as goalUnarchive } from "./goal/unarchive.ts";
+import { updateProgress as goalUpdateProgress } from "./goal/update-progress.ts";
 import { add as holidayAdd } from "./holiday/add.ts";
 import { get as holidayGet } from "./holiday/get.ts";
 import { addWeeklyOff as holidayListAddWeeklyOff } from "./holiday-list/add-weekly-off.ts";
@@ -84,12 +110,17 @@ import { reject as jobOfferReject } from "./job-offer/reject.ts";
 import { close as jobOpeningClose } from "./job-opening/close.ts";
 import { create as jobOpeningCreate } from "./job-opening/create.ts";
 import { get as jobOpeningGet } from "./job-opening/get.ts";
+import { create as kraCreate } from "./kra/create.ts";
+import { get as kraGet } from "./kra/get.ts";
 import { create as shiftTypeCreate } from "./shift-type/create.ts";
 import { get as shiftTypeGet } from "./shift-type/get.ts";
 
 // The release version is stamped in when the CLI is published (`ortho publish`); run from source, it says 0.0.0.
 declare const ORTHO_VERSION: string | undefined;
 
+const appraisal = Command.make("appraisal").pipe(Command.withSubcommands([appraisalCreate, appraisalGet, appraisalList, appraisalRate, appraisalSelfRate, appraisalSubmit]));
+const appraisalCycle = Command.make("appraisal-cycle").pipe(Command.withSubcommands([appraisalCycleComplete, appraisalCycleCreate, appraisalCycleGet, appraisalCycleReopen, appraisalCycleStart]));
+const appraisalTemplate = Command.make("appraisal-template").pipe(Command.withSubcommands([appraisalTemplateCreate, appraisalTemplateGet]));
 const attendance = Command.make("attendance").pipe(Command.withSubcommands([attendanceGet, attendanceList, attendanceMark]));
 const attendanceRequest = Command.make("attendance-request").pipe(Command.withSubcommands([attendanceRequestApprove, attendanceRequestCreate, attendanceRequestGet, attendanceRequestReject]));
 const bankAccount = Command.make("bank-account").pipe(Command.withSubcommands([bankAccountClose, bankAccountGet, bankAccountOpen]));
@@ -100,7 +131,9 @@ const company = Command.make("company").pipe(Command.withSubcommands([companyCre
 const department = Command.make("department").pipe(Command.withSubcommands([departmentCreate, departmentGet]));
 const designation = Command.make("designation").pipe(Command.withSubcommands([designationCreate, designationGet]));
 const employee = Command.make("employee").pipe(Command.withSubcommands([employeeGet, employeeHire, employeeRelieve]));
+const employeeFeedbackCriteria = Command.make("employee-feedback-criteria").pipe(Command.withSubcommands([employeeFeedbackCriteriaCreate, employeeFeedbackCriteriaGet]));
 const employeeGrade = Command.make("employee-grade").pipe(Command.withSubcommands([employeeGradeCreate, employeeGradeGet]));
+const employeePerformanceFeedback = Command.make("employee-performance-feedback").pipe(Command.withSubcommands([employeePerformanceFeedbackCreate, employeePerformanceFeedbackGet, employeePerformanceFeedbackSubmit]));
 const employeePromotion = Command.make("employee-promotion").pipe(Command.withSubcommands([employeePromotionCancel, employeePromotionCreate, employeePromotionGet, employeePromotionSubmit]));
 const employeeSeparation = Command.make("employee-separation").pipe(Command.withSubcommands([employeeSeparationBegin, employeeSeparationComplete, employeeSeparationCreate, employeeSeparationGet]));
 const employeeTransfer = Command.make("employee-transfer").pipe(Command.withSubcommands([employeeTransferCancel, employeeTransferCreate, employeeTransferGet, employeeTransferSubmit]));
@@ -108,6 +141,7 @@ const employmentType = Command.make("employment-type").pipe(Command.withSubcomma
 const expense = Command.make("expense").pipe(Command.withSubcommands([expenseAdd, expenseGet]));
 const expenseClaim = Command.make("expense-claim").pipe(Command.withSubcommands([expenseClaimApprove, expenseClaimCreate, expenseClaimGet, expenseClaimReject]));
 const expenseClaimType = Command.make("expense-claim-type").pipe(Command.withSubcommands([expenseClaimTypeCreate, expenseClaimTypeGet]));
+const goal = Command.make("goal").pipe(Command.withSubcommands([goalArchive, goalClose, goalComplete, goalCreate, goalGet, goalReopen, goalUnarchive, goalUpdateProgress]));
 const holiday = Command.make("holiday").pipe(Command.withSubcommands([holidayAdd, holidayGet]));
 const holidayList = Command.make("holiday-list").pipe(Command.withSubcommands([holidayListAddWeeklyOff, holidayListCreate, holidayListGet]));
 const interview = Command.make("interview").pipe(Command.withSubcommands([interviewClear, interviewCreate, interviewGet, interviewReject]));
@@ -116,10 +150,11 @@ const interviewRound = Command.make("interview-round").pipe(Command.withSubcomma
 const jobApplicant = Command.make("job-applicant").pipe(Command.withSubcommands([jobApplicantAccept, jobApplicantCreate, jobApplicantGet, jobApplicantHold, jobApplicantReject]));
 const jobOffer = Command.make("job-offer").pipe(Command.withSubcommands([jobOfferAccept, jobOfferCreate, jobOfferGet, jobOfferReject]));
 const jobOpening = Command.make("job-opening").pipe(Command.withSubcommands([jobOpeningClose, jobOpeningCreate, jobOpeningGet]));
+const kra = Command.make("kra").pipe(Command.withSubcommands([kraCreate, kraGet]));
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, shiftType]),
+  Command.withSubcommands([appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, kra, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

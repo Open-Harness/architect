@@ -1,5 +1,18 @@
 // Generated from the blueprint. Do not edit.
 import { HttpApi, HttpApiGroup } from "effect/http-api";
+import * as appraisalCreate from "./appraisal/create.ts";
+import * as appraisalGet from "./appraisal/get.ts";
+import * as appraisalList from "./appraisal/list.ts";
+import * as appraisalRate from "./appraisal/rate.ts";
+import * as appraisalSelfRate from "./appraisal/self-rate.ts";
+import * as appraisalSubmit from "./appraisal/submit.ts";
+import * as appraisalCycleComplete from "./appraisal-cycle/complete.ts";
+import * as appraisalCycleCreate from "./appraisal-cycle/create.ts";
+import * as appraisalCycleGet from "./appraisal-cycle/get.ts";
+import * as appraisalCycleReopen from "./appraisal-cycle/reopen.ts";
+import * as appraisalCycleStart from "./appraisal-cycle/start.ts";
+import * as appraisalTemplateCreate from "./appraisal-template/create.ts";
+import * as appraisalTemplateGet from "./appraisal-template/get.ts";
 import * as attendanceGet from "./attendance/get.ts";
 import * as attendanceList from "./attendance/list.ts";
 import * as attendanceMark from "./attendance/mark.ts";
@@ -29,8 +42,13 @@ import * as designationGet from "./designation/get.ts";
 import * as employeeGet from "./employee/get.ts";
 import * as employeeHire from "./employee/hire.ts";
 import * as employeeRelieve from "./employee/relieve.ts";
+import * as employeeFeedbackCriteriaCreate from "./employee-feedback-criteria/create.ts";
+import * as employeeFeedbackCriteriaGet from "./employee-feedback-criteria/get.ts";
 import * as employeeGradeCreate from "./employee-grade/create.ts";
 import * as employeeGradeGet from "./employee-grade/get.ts";
+import * as employeePerformanceFeedbackCreate from "./employee-performance-feedback/create.ts";
+import * as employeePerformanceFeedbackGet from "./employee-performance-feedback/get.ts";
+import * as employeePerformanceFeedbackSubmit from "./employee-performance-feedback/submit.ts";
 import * as employeePromotionCancel from "./employee-promotion/cancel.ts";
 import * as employeePromotionCreate from "./employee-promotion/create.ts";
 import * as employeePromotionGet from "./employee-promotion/get.ts";
@@ -53,6 +71,14 @@ import * as expenseClaimGet from "./expense-claim/get.ts";
 import * as expenseClaimReject from "./expense-claim/reject.ts";
 import * as expenseClaimTypeCreate from "./expense-claim-type/create.ts";
 import * as expenseClaimTypeGet from "./expense-claim-type/get.ts";
+import * as goalArchive from "./goal/archive.ts";
+import * as goalClose from "./goal/close.ts";
+import * as goalComplete from "./goal/complete.ts";
+import * as goalCreate from "./goal/create.ts";
+import * as goalGet from "./goal/get.ts";
+import * as goalReopen from "./goal/reopen.ts";
+import * as goalUnarchive from "./goal/unarchive.ts";
+import * as goalUpdateProgress from "./goal/update-progress.ts";
 import * as holidayAdd from "./holiday/add.ts";
 import * as holidayGet from "./holiday/get.ts";
 import * as holidayListAddWeeklyOff from "./holiday-list/add-weekly-off.ts";
@@ -78,9 +104,14 @@ import * as jobOfferReject from "./job-offer/reject.ts";
 import * as jobOpeningClose from "./job-opening/close.ts";
 import * as jobOpeningCreate from "./job-opening/create.ts";
 import * as jobOpeningGet from "./job-opening/get.ts";
+import * as kraCreate from "./kra/create.ts";
+import * as kraGet from "./kra/get.ts";
 import * as shiftTypeCreate from "./shift-type/create.ts";
 import * as shiftTypeGet from "./shift-type/get.ts";
 
+export class Appraisal extends HttpApiGroup.make("appraisal").add(appraisalCreate.endpoint).add(appraisalGet.endpoint).add(appraisalList.endpoint).add(appraisalRate.endpoint).add(appraisalSelfRate.endpoint).add(appraisalSubmit.endpoint) {}
+export class AppraisalCycle extends HttpApiGroup.make("appraisal-cycle").add(appraisalCycleComplete.endpoint).add(appraisalCycleCreate.endpoint).add(appraisalCycleGet.endpoint).add(appraisalCycleReopen.endpoint).add(appraisalCycleStart.endpoint) {}
+export class AppraisalTemplate extends HttpApiGroup.make("appraisal-template").add(appraisalTemplateCreate.endpoint).add(appraisalTemplateGet.endpoint) {}
 export class Attendance extends HttpApiGroup.make("attendance").add(attendanceGet.endpoint).add(attendanceList.endpoint).add(attendanceMark.endpoint) {}
 export class AttendanceRequest extends HttpApiGroup.make("attendance-request").add(attendanceRequestApprove.endpoint).add(attendanceRequestCreate.endpoint).add(attendanceRequestGet.endpoint).add(attendanceRequestReject.endpoint) {}
 export class BankAccount extends HttpApiGroup.make("bank-account").add(bankAccountClose.endpoint).add(bankAccountGet.endpoint).add(bankAccountOpen.endpoint) {}
@@ -91,7 +122,9 @@ export class Company extends HttpApiGroup.make("company").add(companyCreate.endp
 export class Department extends HttpApiGroup.make("department").add(departmentCreate.endpoint).add(departmentGet.endpoint) {}
 export class Designation extends HttpApiGroup.make("designation").add(designationCreate.endpoint).add(designationGet.endpoint) {}
 export class Employee extends HttpApiGroup.make("employee").add(employeeGet.endpoint).add(employeeHire.endpoint).add(employeeRelieve.endpoint) {}
+export class EmployeeFeedbackCriteria extends HttpApiGroup.make("employee-feedback-criteria").add(employeeFeedbackCriteriaCreate.endpoint).add(employeeFeedbackCriteriaGet.endpoint) {}
 export class EmployeeGrade extends HttpApiGroup.make("employee-grade").add(employeeGradeCreate.endpoint).add(employeeGradeGet.endpoint) {}
+export class EmployeePerformanceFeedback extends HttpApiGroup.make("employee-performance-feedback").add(employeePerformanceFeedbackCreate.endpoint).add(employeePerformanceFeedbackGet.endpoint).add(employeePerformanceFeedbackSubmit.endpoint) {}
 export class EmployeePromotion extends HttpApiGroup.make("employee-promotion").add(employeePromotionCancel.endpoint).add(employeePromotionCreate.endpoint).add(employeePromotionGet.endpoint).add(employeePromotionSubmit.endpoint) {}
 export class EmployeeSeparation extends HttpApiGroup.make("employee-separation").add(employeeSeparationBegin.endpoint).add(employeeSeparationComplete.endpoint).add(employeeSeparationCreate.endpoint).add(employeeSeparationGet.endpoint) {}
 export class EmployeeTransfer extends HttpApiGroup.make("employee-transfer").add(employeeTransferCancel.endpoint).add(employeeTransferCreate.endpoint).add(employeeTransferGet.endpoint).add(employeeTransferSubmit.endpoint) {}
@@ -99,6 +132,7 @@ export class EmploymentType extends HttpApiGroup.make("employment-type").add(emp
 export class Expense extends HttpApiGroup.make("expense").add(expenseAdd.endpoint).add(expenseGet.endpoint) {}
 export class ExpenseClaim extends HttpApiGroup.make("expense-claim").add(expenseClaimApprove.endpoint).add(expenseClaimCreate.endpoint).add(expenseClaimGet.endpoint).add(expenseClaimReject.endpoint) {}
 export class ExpenseClaimType extends HttpApiGroup.make("expense-claim-type").add(expenseClaimTypeCreate.endpoint).add(expenseClaimTypeGet.endpoint) {}
+export class Goal extends HttpApiGroup.make("goal").add(goalArchive.endpoint).add(goalClose.endpoint).add(goalComplete.endpoint).add(goalCreate.endpoint).add(goalGet.endpoint).add(goalReopen.endpoint).add(goalUnarchive.endpoint).add(goalUpdateProgress.endpoint) {}
 export class Holiday extends HttpApiGroup.make("holiday").add(holidayAdd.endpoint).add(holidayGet.endpoint) {}
 export class HolidayList extends HttpApiGroup.make("holiday-list").add(holidayListAddWeeklyOff.endpoint).add(holidayListCreate.endpoint).add(holidayListGet.endpoint) {}
 export class Interview extends HttpApiGroup.make("interview").add(interviewClear.endpoint).add(interviewCreate.endpoint).add(interviewGet.endpoint).add(interviewReject.endpoint) {}
@@ -107,9 +141,10 @@ export class InterviewRound extends HttpApiGroup.make("interview-round").add(int
 export class JobApplicant extends HttpApiGroup.make("job-applicant").add(jobApplicantAccept.endpoint).add(jobApplicantCreate.endpoint).add(jobApplicantGet.endpoint).add(jobApplicantHold.endpoint).add(jobApplicantReject.endpoint) {}
 export class JobOffer extends HttpApiGroup.make("job-offer").add(jobOfferAccept.endpoint).add(jobOfferCreate.endpoint).add(jobOfferGet.endpoint).add(jobOfferReject.endpoint) {}
 export class JobOpening extends HttpApiGroup.make("job-opening").add(jobOpeningClose.endpoint).add(jobOpeningCreate.endpoint).add(jobOpeningGet.endpoint) {}
+export class Kra extends HttpApiGroup.make("kra").add(kraCreate.endpoint).add(kraGet.endpoint) {}
 export class ShiftType extends HttpApiGroup.make("shift-type").add(shiftTypeCreate.endpoint).add(shiftTypeGet.endpoint) {}
-export class Api extends HttpApi.make("capxul").add(Attendance).add(AttendanceRequest).add(BankAccount).add(Branch).add(BridgeBusiness).add(BridgeIndividual).add(Company).add(Department).add(Designation).add(Employee).add(EmployeeGrade).add(EmployeePromotion).add(EmployeeSeparation).add(EmployeeTransfer).add(EmploymentType).add(Expense).add(ExpenseClaim).add(ExpenseClaimType).add(Holiday).add(HolidayList).add(Interview).add(InterviewFeedback).add(InterviewRound).add(JobApplicant).add(JobOffer).add(JobOpening).add(ShiftType) {}
+export class Api extends HttpApi.make("capxul").add(Appraisal).add(AppraisalCycle).add(AppraisalTemplate).add(Attendance).add(AttendanceRequest).add(BankAccount).add(Branch).add(BridgeBusiness).add(BridgeIndividual).add(Company).add(Department).add(Designation).add(Employee).add(EmployeeFeedbackCriteria).add(EmployeeGrade).add(EmployeePerformanceFeedback).add(EmployeePromotion).add(EmployeeSeparation).add(EmployeeTransfer).add(EmploymentType).add(Expense).add(ExpenseClaim).add(ExpenseClaimType).add(Goal).add(Holiday).add(HolidayList).add(Interview).add(InterviewFeedback).add(InterviewRound).add(JobApplicant).add(JobOffer).add(JobOpening).add(Kra).add(ShiftType) {}
 
 export * as Errors from "./errors.ts";
 export * as Events from "./events.ts";
-export const operations = { "attendance.get": attendanceGet, "attendance.list": attendanceList, "attendance.mark": attendanceMark, "attendance-request.approve": attendanceRequestApprove, "attendance-request.create": attendanceRequestCreate, "attendance-request.get": attendanceRequestGet, "attendance-request.reject": attendanceRequestReject, "bank-account.close": bankAccountClose, "bank-account.get": bankAccountGet, "bank-account.open": bankAccountOpen, "branch.create": branchCreate, "branch.get": branchGet, "bridge-business.approve": bridgeBusinessApprove, "bridge-business.get": bridgeBusinessGet, "bridge-business.reject": bridgeBusinessReject, "bridge-business.start": bridgeBusinessStart, "bridge-individual.approve": bridgeIndividualApprove, "bridge-individual.get": bridgeIndividualGet, "bridge-individual.reject": bridgeIndividualReject, "bridge-individual.start": bridgeIndividualStart, "company.create": companyCreate, "company.get": companyGet, "department.create": departmentCreate, "department.get": departmentGet, "designation.create": designationCreate, "designation.get": designationGet, "employee.get": employeeGet, "employee.hire": employeeHire, "employee.relieve": employeeRelieve, "employee-grade.create": employeeGradeCreate, "employee-grade.get": employeeGradeGet, "employee-promotion.cancel": employeePromotionCancel, "employee-promotion.create": employeePromotionCreate, "employee-promotion.get": employeePromotionGet, "employee-promotion.submit": employeePromotionSubmit, "employee-separation.begin": employeeSeparationBegin, "employee-separation.complete": employeeSeparationComplete, "employee-separation.create": employeeSeparationCreate, "employee-separation.get": employeeSeparationGet, "employee-transfer.cancel": employeeTransferCancel, "employee-transfer.create": employeeTransferCreate, "employee-transfer.get": employeeTransferGet, "employee-transfer.submit": employeeTransferSubmit, "employment-type.create": employmentTypeCreate, "employment-type.get": employmentTypeGet, "expense.add": expenseAdd, "expense.get": expenseGet, "expense-claim.approve": expenseClaimApprove, "expense-claim.create": expenseClaimCreate, "expense-claim.get": expenseClaimGet, "expense-claim.reject": expenseClaimReject, "expense-claim-type.create": expenseClaimTypeCreate, "expense-claim-type.get": expenseClaimTypeGet, "holiday.add": holidayAdd, "holiday.get": holidayGet, "holiday-list.add-weekly-off": holidayListAddWeeklyOff, "holiday-list.create": holidayListCreate, "holiday-list.get": holidayListGet, "interview.clear": interviewClear, "interview.create": interviewCreate, "interview.get": interviewGet, "interview.reject": interviewReject, "interview-feedback.get": interviewFeedbackGet, "interview-feedback.give": interviewFeedbackGive, "interview-round.create": interviewRoundCreate, "interview-round.get": interviewRoundGet, "job-applicant.accept": jobApplicantAccept, "job-applicant.create": jobApplicantCreate, "job-applicant.get": jobApplicantGet, "job-applicant.hold": jobApplicantHold, "job-applicant.reject": jobApplicantReject, "job-offer.accept": jobOfferAccept, "job-offer.create": jobOfferCreate, "job-offer.get": jobOfferGet, "job-offer.reject": jobOfferReject, "job-opening.close": jobOpeningClose, "job-opening.create": jobOpeningCreate, "job-opening.get": jobOpeningGet, "shift-type.create": shiftTypeCreate, "shift-type.get": shiftTypeGet } as const;
+export const operations = { "appraisal.create": appraisalCreate, "appraisal.get": appraisalGet, "appraisal.list": appraisalList, "appraisal.rate": appraisalRate, "appraisal.self-rate": appraisalSelfRate, "appraisal.submit": appraisalSubmit, "appraisal-cycle.complete": appraisalCycleComplete, "appraisal-cycle.create": appraisalCycleCreate, "appraisal-cycle.get": appraisalCycleGet, "appraisal-cycle.reopen": appraisalCycleReopen, "appraisal-cycle.start": appraisalCycleStart, "appraisal-template.create": appraisalTemplateCreate, "appraisal-template.get": appraisalTemplateGet, "attendance.get": attendanceGet, "attendance.list": attendanceList, "attendance.mark": attendanceMark, "attendance-request.approve": attendanceRequestApprove, "attendance-request.create": attendanceRequestCreate, "attendance-request.get": attendanceRequestGet, "attendance-request.reject": attendanceRequestReject, "bank-account.close": bankAccountClose, "bank-account.get": bankAccountGet, "bank-account.open": bankAccountOpen, "branch.create": branchCreate, "branch.get": branchGet, "bridge-business.approve": bridgeBusinessApprove, "bridge-business.get": bridgeBusinessGet, "bridge-business.reject": bridgeBusinessReject, "bridge-business.start": bridgeBusinessStart, "bridge-individual.approve": bridgeIndividualApprove, "bridge-individual.get": bridgeIndividualGet, "bridge-individual.reject": bridgeIndividualReject, "bridge-individual.start": bridgeIndividualStart, "company.create": companyCreate, "company.get": companyGet, "department.create": departmentCreate, "department.get": departmentGet, "designation.create": designationCreate, "designation.get": designationGet, "employee.get": employeeGet, "employee.hire": employeeHire, "employee.relieve": employeeRelieve, "employee-feedback-criteria.create": employeeFeedbackCriteriaCreate, "employee-feedback-criteria.get": employeeFeedbackCriteriaGet, "employee-grade.create": employeeGradeCreate, "employee-grade.get": employeeGradeGet, "employee-performance-feedback.create": employeePerformanceFeedbackCreate, "employee-performance-feedback.get": employeePerformanceFeedbackGet, "employee-performance-feedback.submit": employeePerformanceFeedbackSubmit, "employee-promotion.cancel": employeePromotionCancel, "employee-promotion.create": employeePromotionCreate, "employee-promotion.get": employeePromotionGet, "employee-promotion.submit": employeePromotionSubmit, "employee-separation.begin": employeeSeparationBegin, "employee-separation.complete": employeeSeparationComplete, "employee-separation.create": employeeSeparationCreate, "employee-separation.get": employeeSeparationGet, "employee-transfer.cancel": employeeTransferCancel, "employee-transfer.create": employeeTransferCreate, "employee-transfer.get": employeeTransferGet, "employee-transfer.submit": employeeTransferSubmit, "employment-type.create": employmentTypeCreate, "employment-type.get": employmentTypeGet, "expense.add": expenseAdd, "expense.get": expenseGet, "expense-claim.approve": expenseClaimApprove, "expense-claim.create": expenseClaimCreate, "expense-claim.get": expenseClaimGet, "expense-claim.reject": expenseClaimReject, "expense-claim-type.create": expenseClaimTypeCreate, "expense-claim-type.get": expenseClaimTypeGet, "goal.archive": goalArchive, "goal.close": goalClose, "goal.complete": goalComplete, "goal.create": goalCreate, "goal.get": goalGet, "goal.reopen": goalReopen, "goal.unarchive": goalUnarchive, "goal.update-progress": goalUpdateProgress, "holiday.add": holidayAdd, "holiday.get": holidayGet, "holiday-list.add-weekly-off": holidayListAddWeeklyOff, "holiday-list.create": holidayListCreate, "holiday-list.get": holidayListGet, "interview.clear": interviewClear, "interview.create": interviewCreate, "interview.get": interviewGet, "interview.reject": interviewReject, "interview-feedback.get": interviewFeedbackGet, "interview-feedback.give": interviewFeedbackGive, "interview-round.create": interviewRoundCreate, "interview-round.get": interviewRoundGet, "job-applicant.accept": jobApplicantAccept, "job-applicant.create": jobApplicantCreate, "job-applicant.get": jobApplicantGet, "job-applicant.hold": jobApplicantHold, "job-applicant.reject": jobApplicantReject, "job-offer.accept": jobOfferAccept, "job-offer.create": jobOfferCreate, "job-offer.get": jobOfferGet, "job-offer.reject": jobOfferReject, "job-opening.close": jobOpeningClose, "job-opening.create": jobOpeningCreate, "job-opening.get": jobOpeningGet, "kra.create": kraCreate, "kra.get": kraGet, "shift-type.create": shiftTypeCreate, "shift-type.get": shiftTypeGet } as const;
