@@ -307,6 +307,10 @@
     "EvalNotFound": "EV-901",
     "EvalNotQueued": "EV-900",
     "ExecutorAlreadyQueued": "AS-003",
+    "GithubAnswerRefused": "GI-003",
+    "GithubApiFailure": "GI-001",
+    "GithubInputRefused": "GI-002",
+    "GithubUnreachable": "GI-004",
     "IdempotencyConflict": "AR-002",
     "InputNotFound": "IN-901",
     "InputNotWaiting": "IN-900",
@@ -316,12 +320,20 @@
     "OutgoingMessageNotFound": "OU-901",
     "OutgoingMessageNotPending": "OU-900",
     "PolicyNotCurrent": "PO-900",
+    "PosthogAnswerRefused": "PH-003",
+    "PosthogApiFailure": "PH-001",
+    "PosthogInputRefused": "PH-002",
+    "PosthogUnreachable": "PH-004",
     "ProposalNotFound": "PP-901",
     "ProposalNotWaiting": "PP-900",
     "ReadNotServed": "AR-008",
     "ReportNotProgress": "RE-900",
     "SeatTaken": "AS-002",
     "SettingsNotCurrent": "SE-900",
+    "SlackAnswerRefused": "SL-003",
+    "SlackApiFailure": "SL-001",
+    "SlackInputRefused": "SL-002",
+    "SlackUnreachable": "SL-004",
     "SlotsOutOfRange": "SU-001",
     "SourceNotFound": "SO-901",
     "SourceNotSetup": "SO-900",
@@ -1548,6 +1560,69 @@
       },
       "hash": "bc42f0b1a8f2e36f"
     },
+    "github": {
+      "name": "github",
+      "identifier": "Github",
+      "code": "GI",
+      "description": "What GitHub v3 REST API fails with.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "github"
+          }
+        }
+      },
+      "lives": "database",
+      "machine": null,
+      "events": {},
+      "errors": {
+        "GithubApiFailure": {
+          "fields": {
+            "status": {
+              "value": {
+                "type": "uint",
+                "bits": 16
+              }
+            },
+            "code": {
+              "value": {
+                "type": "text",
+                "max": 200
+              },
+              "optional": true
+            }
+          },
+          "exit": 81,
+          "code": "GI-001"
+        },
+        "GithubInputRefused": {
+          "fields": {},
+          "exit": 82,
+          "code": "GI-002"
+        },
+        "GithubAnswerRefused": {
+          "fields": {},
+          "exit": 83,
+          "code": "GI-003"
+        },
+        "GithubUnreachable": {
+          "fields": {},
+          "exit": 84,
+          "code": "GI-004"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "feature",
+        "mount": "github",
+        "package": "@orthograph/github",
+        "version": "0.0.0",
+        "thing": "github"
+      },
+      "hash": "2f5fd43e9b11adc2"
+    },
     "input": {
       "name": "input",
       "identifier": "Input",
@@ -2248,6 +2323,69 @@
       },
       "hash": "f467cbf59f3e8c68"
     },
+    "posthog": {
+      "name": "posthog",
+      "identifier": "Posthog",
+      "code": "PH",
+      "description": "What PostHog API fails with.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "posthog"
+          }
+        }
+      },
+      "lives": "database",
+      "machine": null,
+      "events": {},
+      "errors": {
+        "PosthogApiFailure": {
+          "fields": {
+            "status": {
+              "value": {
+                "type": "uint",
+                "bits": 16
+              }
+            },
+            "code": {
+              "value": {
+                "type": "text",
+                "max": 200
+              },
+              "optional": true
+            }
+          },
+          "exit": 81,
+          "code": "PH-001"
+        },
+        "PosthogInputRefused": {
+          "fields": {},
+          "exit": 82,
+          "code": "PH-002"
+        },
+        "PosthogAnswerRefused": {
+          "fields": {},
+          "exit": 83,
+          "code": "PH-003"
+        },
+        "PosthogUnreachable": {
+          "fields": {},
+          "exit": 84,
+          "code": "PH-004"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "feature",
+        "mount": "posthog",
+        "package": "@orthograph/posthog",
+        "version": "0.0.0",
+        "thing": "posthog"
+      },
+      "hash": "e574d77238db5207"
+    },
     "prompt-set": {
       "name": "prompt-set",
       "identifier": "PromptSet",
@@ -2651,6 +2789,69 @@
         "kind": "app"
       },
       "hash": "21618af26da198bf"
+    },
+    "slack": {
+      "name": "slack",
+      "identifier": "Slack",
+      "code": "SL",
+      "description": "What Slack Web API fails with.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "slack"
+          }
+        }
+      },
+      "lives": "database",
+      "machine": null,
+      "events": {},
+      "errors": {
+        "SlackApiFailure": {
+          "fields": {
+            "status": {
+              "value": {
+                "type": "uint",
+                "bits": 16
+              }
+            },
+            "code": {
+              "value": {
+                "type": "text",
+                "max": 200
+              },
+              "optional": true
+            }
+          },
+          "exit": 81,
+          "code": "SL-001"
+        },
+        "SlackInputRefused": {
+          "fields": {},
+          "exit": 82,
+          "code": "SL-002"
+        },
+        "SlackAnswerRefused": {
+          "fields": {},
+          "exit": 83,
+          "code": "SL-003"
+        },
+        "SlackUnreachable": {
+          "fields": {},
+          "exit": 84,
+          "code": "SL-004"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "feature",
+        "mount": "slack",
+        "package": "@orthograph/slack",
+        "version": "0.0.0",
+        "thing": "slack"
+      },
+      "hash": "19b9312c082f5171"
     },
     "source": {
       "name": "source",
@@ -10445,6 +10646,68 @@
   },
   "journeys": {},
   "startingWorlds": {},
+  "secrets": {
+    "GITHUB_BASE_URL": {
+      "how": "stored",
+      "kind": "runtime",
+      "export": "baseUrl",
+      "from": {
+        "kind": "adapter",
+        "mount": "github",
+        "package": "@orthograph/github",
+        "version": "0.0.0"
+      },
+      "describe": "Where the service answers, its base path included"
+    },
+    "POSTHOG_API_KEY": {
+      "how": "stored",
+      "kind": "runtime",
+      "export": "apiKey",
+      "from": {
+        "kind": "adapter",
+        "mount": "posthog",
+        "package": "@orthograph/posthog",
+        "version": "0.0.0"
+      },
+      "describe": "The key the service is called with"
+    },
+    "POSTHOG_BASE_URL": {
+      "how": "stored",
+      "kind": "runtime",
+      "export": "baseUrl",
+      "from": {
+        "kind": "adapter",
+        "mount": "posthog",
+        "package": "@orthograph/posthog",
+        "version": "0.0.0"
+      },
+      "describe": "Where the service answers, its base path included"
+    },
+    "SLACK_API_KEY": {
+      "how": "stored",
+      "kind": "runtime",
+      "export": "apiKey",
+      "from": {
+        "kind": "adapter",
+        "mount": "slack",
+        "package": "@orthograph/slack",
+        "version": "0.0.0"
+      },
+      "describe": "The key the service is called with"
+    },
+    "SLACK_BASE_URL": {
+      "how": "stored",
+      "kind": "runtime",
+      "export": "baseUrl",
+      "from": {
+        "kind": "adapter",
+        "mount": "slack",
+        "package": "@orthograph/slack",
+        "version": "0.0.0"
+      },
+      "describe": "Where the service answers, its base path included"
+    }
+  },
   "environments": {
     "local": {
       "name": "local",
@@ -10454,7 +10717,13 @@
       "lifetimeMs": null,
       "cloud": null,
       "database": "d1-local",
-      "secrets": {},
+      "secrets": {
+        "GITHUB_BASE_URL": "stored",
+        "POSTHOG_API_KEY": "stored",
+        "POSTHOG_BASE_URL": "stored",
+        "SLACK_API_KEY": "stored",
+        "SLACK_BASE_URL": "stored"
+      },
       "promotesFrom": null,
       "telemetry": [
         {
@@ -10463,7 +10732,7 @@
       ],
       "deploy": {},
       "publish": {},
-      "hash": "0f14705e03d3bc97"
+      "hash": "f159c223a458f43d"
     },
     "test": {
       "name": "test",
@@ -10476,11 +10745,17 @@
         "database": "d1"
       },
       "database": null,
-      "secrets": {},
+      "secrets": {
+        "GITHUB_BASE_URL": "stored",
+        "POSTHOG_API_KEY": "stored",
+        "POSTHOG_BASE_URL": "stored",
+        "SLACK_API_KEY": "stored",
+        "SLACK_BASE_URL": "stored"
+      },
       "promotesFrom": null,
       "deploy": {},
       "publish": {},
-      "hash": "e264584f19862db6"
+      "hash": "36367a55bc598f97"
     }
   },
   "alertRules": [
@@ -10675,6 +10950,46 @@
       }
     },
     {
+      "id": "anomaly:GI-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "GI-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/github/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:GI-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "GI-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/github/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:GI-003",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "GI-003",
+        "severity": "ticket",
+        "owner": "blueprint/things/github/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:GI-004",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "GI-004",
+        "severity": "ticket",
+        "owner": "blueprint/things/github/errors.ts"
+      }
+    },
+    {
       "id": "anomaly:IN-900",
       "kind": "anomaly",
       "labels": {
@@ -10722,6 +11037,46 @@
         "code": "OU-901",
         "severity": "ticket",
         "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:PH-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "PH-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/posthog/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:PH-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "PH-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/posthog/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:PH-003",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "PH-003",
+        "severity": "ticket",
+        "owner": "blueprint/things/posthog/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:PH-004",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "PH-004",
+        "severity": "ticket",
+        "owner": "blueprint/things/posthog/errors.ts"
       }
     },
     {
@@ -10792,6 +11147,46 @@
         "code": "SE-900",
         "severity": "ticket",
         "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:SL-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "SL-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/slack/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:SL-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "SL-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/slack/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:SL-003",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "SL-003",
+        "severity": "ticket",
+        "owner": "blueprint/things/slack/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:SL-004",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "SL-004",
+        "severity": "ticket",
+        "owner": "blueprint/things/slack/errors.ts"
       }
     },
     {
@@ -14586,7 +14981,7 @@
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-ba3ErXBMiGDIAjKA3OM44h+FFm/hwyHl5REAqPztVmI=",
+      "integrity": "sha256-zcA+cNm9pb0nZfp3Y8dCDWXe60EFIuiI3Frf0mifS90=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -14614,7 +15009,7 @@
       "door": {
         "secret": "GITHUB_WEBHOOK_SIGNING"
       },
-      "hash": "571cdb521d8ac077"
+      "hash": "c917b0962e8c972e"
     },
     "intake": {
       "kind": "feature",
@@ -14630,7 +15025,7 @@
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-MK1RozS7HLi1q08jkzy0aJLSPoaxyzQIyJ2Ji+FOXWs=",
+      "integrity": "sha256-pYEvDW+FoGcRS/K/YqvAIk1a4VZhuLg33LEodx//JkI=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
@@ -14645,7 +15040,7 @@
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "898d80e4bb914e20"
+      "hash": "51cd82f85481058d"
     },
     "prompts": {
       "kind": "feature",
@@ -14661,7 +15056,7 @@
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-vOiFWmc38LMY037A7VMwgra4peAVPSa+NQnbeNtlMJM=",
+      "integrity": "sha256-kXm5btB7zqazNZ2c8aD48tmO/CzJ26VLXo8fRZSEzlY=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
@@ -14679,7 +15074,7 @@
       "door": {
         "secret": "SLACK_WEBHOOK_SIGNING"
       },
-      "hash": "e688b83c8ae0b8d2"
+      "hash": "1eaad71437d5bdfd"
     },
     "superagent": {
       "kind": "feature",

@@ -11,7 +11,8 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./blueprint/*.js": "./blueprint/*.ts"
   },
   "dependencies": {
     "effect": "4.1.4",

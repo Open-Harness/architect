@@ -42,7 +42,18 @@ const intake = (root: string, change: (t: string) => string, file = GITHUB) => s
 const STRAY = `import { Blueprint as StrayBlueprint } from "orthograph";\nclass Stray extends StrayBlueprint.error({}, { exit: 99 }) {}\n`;
 /** `Gone`, an error `issues.createComment` declares, exported by the GitHub plugin, and the source importing it. */
 const declareGone = (root: string, on: string, change: (t: string) => string) => swapPlugins(root, (dirs) => {
-  edit(dirs["github"]!, "src/index.ts", (t) => t.replace("export default Blueprint.adapter({", `export class Gone extends Blueprint.error({}, { exit: 98 }) {}\n\nexport default Blueprint.adapter({`).replace(`"${on}": Blueprint.call(),`, `"${on}": Blueprint.call({ errors: [Gone as never] }),`));
+  // A generated call is `Blueprint.call()` before G16-adapter-mounts call 1 and `Blueprint.call({ errors })` (the adapter's four)
+  // after it; either way `Gone` joins what the call declares. A planting that matches nothing would make the refusals below
+  // pass for the wrong reason, so it must match once.
+  edit(dirs["github"]!, "src/index.ts", (t) => {
+    const forms = [`"${on}": Blueprint.call(),`, `"${on}": Blueprint.call({ errors }),`];
+    const found = forms.reduce((n, form) => n + t.split(form).length - 1, 0);
+    expect(found, `github's src/index.ts declares "${on}" as \`Blueprint.call()\` or \`Blueprint.call({ errors })\`, once`).toBe(1);
+    const before = forms.filter((form) => t.includes(form));
+    const declared = before[0]!.includes("{ errors }") ? "[...errors, Gone as never]" : "[Gone as never]";
+    return t.replace("export default Blueprint.adapter({", `export class Gone extends Blueprint.error({}, { exit: 98 }) {}\n\nexport default Blueprint.adapter({`)
+      .replace(before[0]!, `"${on}": Blueprint.call({ errors: ${declared} }),`);
+  });
   edit(dirs["intake"]!, GITHUB, (t) => change(t.replace(`import github from "@orthograph/github";`, `import github, { Gone } from "@orthograph/github";`)));
 });
 const FILE = /sources\/(github|slack)\.ts/;

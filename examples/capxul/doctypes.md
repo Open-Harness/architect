@@ -44,7 +44,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
-| Account | thing |  | 17 | `erpnext/erpnext/accounts/doctype/account/account.json` |  |
+| Account | thing |  | 17 | `erpnext/erpnext/accounts/doctype/account/account.json` | a tree: its company, name, an optional parent group, root type (a child carries its parent's), report type (worked out), account type (Bank, Cash, Receivable, Payable, Tax, or none). Group or ledger is its state; a group with nothing under it can become a ledger. Number, currency, freezing and the way back to a group come later (CX-ledger) |
 | Account Closing Balance | thing |  | 13 | `erpnext/erpnext/accounts/doctype/account_closing_balance/account_closing_balance.json` |  |
 | Accounting Dimension | thing |  | 4 | `erpnext/erpnext/accounts/doctype/accounting_dimension/accounting_dimension.json` |  |
 | Accounting Dimension Filter | thing |  | 6 | `erpnext/erpnext/accounts/doctype/accounting_dimension_filter/accounting_dimension_filter.json` |  |
@@ -86,7 +86,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Chart of Accounts Importer | job |  | 2 | `erpnext/erpnext/accounts/doctype/chart_of_accounts_importer/chart_of_accounts_importer.json` |  |
 | Cheque Print Template | thing |  | 26 | `erpnext/erpnext/accounts/doctype/cheque_print_template/cheque_print_template.json` |  |
 | Company | thing |  | 81 | `erpnext/erpnext/setup/doctype/company/company.json` | Capxul's companies, its own organisations (K42, call 10) |
-| Cost Center | thing |  | 9 | `erpnext/erpnext/accounts/doctype/cost_center/cost_center.json` |  |
+| Cost Center | thing |  | 9 | `erpnext/erpnext/accounts/doctype/cost_center/cost_center.json` | a tree like Account: company, name, an optional parent group; group or ledger is its state (CX-ledger) |
 | Cost Center Allocation | thing | SUB | 4 | `erpnext/erpnext/accounts/doctype/cost_center_allocation/cost_center_allocation.json` |  |
 | Coupon Code | thing |  | 11 | `erpnext/erpnext/accounts/doctype/coupon_code/coupon_code.json` |  |
 | Currency Exchange | thing | FX | 6 | `erpnext/erpnext/setup/doctype/currency_exchange/currency_exchange.json` | a rate between two currencies: money-units question (CX-grill §3) |
@@ -98,8 +98,8 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Email Digest | job |  | 29 | `erpnext/erpnext/setup/doctype/email_digest/email_digest.json` |  |
 | Exchange Rate Revaluation | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/exchange_rate_revaluation/exchange_rate_revaluation.json` | money-units question (CX-grill §3) |
 | Finance Book | thing |  | 1 | `erpnext/erpnext/accounts/doctype/finance_book/finance_book.json` |  |
-| Fiscal Year | thing |  | 6 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` |  |
-| GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit (spike #710) |
+| Fiscal Year | thing |  | 6 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` | per company, not site-wide with a Fiscal Year Company table: name, first and last day, short year. A year not marked short is exactly a year less a day; a short one no longer; no overlap with the company's other years (CX-ledger) |
+| GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit, and by its cancel as a reversal with debit and credit swapped, both lines marked `isCancelled`. No machine and no operation of its own; read by account (CX-ledger) |
 | Global Defaults | settings |  | 8 | `erpnext/erpnext/setup/doctype/global_defaults/global_defaults.json` |  |
 | Incoterm | thing |  | 3 | `erpnext/erpnext/setup/doctype/incoterm/incoterm.json` |  |
 | Industry Type | thing |  | 1 | `erpnext/erpnext/selling/doctype/industry_type/industry_type.json` |  |
@@ -109,7 +109,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Item Group | thing |  | 7 | `erpnext/erpnext/setup/doctype/item_group/item_group.json` |  |
 | Item Price | thing |  | 19 | `erpnext/erpnext/stock/doctype/item_price/item_price.json` |  |
 | Item Tax Template | thing |  | 3 | `erpnext/erpnext/accounts/doctype/item_tax_template/item_tax_template.json` |  |
-| Journal Entry | thing | SUB | 41 | `erpnext/erpnext/accounts/doctype/journal_entry/journal_entry.json` |  |
+| Journal Entry | thing | SUB | 41 | `erpnext/erpnext/accounts/doctype/journal_entry/journal_entry.json` | draft, submitted, cancelled: company, posting day, remark and its totals, in USDC; created with its lines in one call; submit refuses unbalanced and outside every fiscal year, and posts one GL Entry per line, unmerged (CX-ledger) |
 | Journal Entry Template | thing |  | 6 | `erpnext/erpnext/accounts/doctype/journal_entry_template/journal_entry_template.json` |  |
 | Ledger Health | job |  | 5 | `erpnext/erpnext/accounts/doctype/ledger_health/ledger_health.json` |  |
 | Ledger Health Monitor | job |  | 4 | `erpnext/erpnext/accounts/doctype/ledger_health_monitor/ledger_health_monitor.json` |  |
@@ -238,7 +238,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Item Tax | line |  | 5 | `erpnext/erpnext/stock/doctype/item_tax/item_tax.json` |  |
 | Item Tax Template Detail | line |  | 3 | `erpnext/erpnext/accounts/doctype/item_tax_template_detail/item_tax_template_detail.json` |  |
 | Item Variant Attribute | line |  | 8 | `erpnext/erpnext/stock/doctype/item_variant_attribute/item_variant_attribute.json` |  |
-| Journal Entry Account | line | FX | 23 | `erpnext/erpnext/accounts/doctype/journal_entry_account/journal_entry_account.json` |  |
+| Journal Entry Account | line | FX | 23 | `erpnext/erpnext/accounts/doctype/journal_entry_account/journal_entry_account.json` | its line number, account, cost center, debit and credit in USDC; written only by its entry's create; party, reference and currency fields left out (CX-ledger) |
 | Journal Entry Template Account | line |  | 1 | `erpnext/erpnext/accounts/doctype/journal_entry_template_account/journal_entry_template_account.json` |  |
 | Ledger Health Monitor Company | line |  | 1 | `erpnext/erpnext/accounts/doctype/ledger_health_monitor_company/ledger_health_monitor_company.json` |  |
 | Ledger Merge Accounts | line |  | 3 | `erpnext/erpnext/accounts/doctype/ledger_merge_accounts/ledger_merge_accounts.json` |  |

@@ -1,9 +1,9 @@
 import { Effect } from "effect";
 import { AdapterRefused, type AdapterApi, type PluginFile } from "./types.ts";
 import { clientFile, componentsFile, eventsFile, generatedLine, indexFile, operationsFile, treeOf } from "./internal/emit.ts";
-import { componentsOf, eventsOf, operationsOf, type Description, type Node } from "./internal/extract.ts";
+import { componentsOf, eventsOf, operationsOf, requiresKey, type Description, type Node } from "./internal/extract.ts";
 import { isName } from "./internal/names.ts";
-import { blueprintReadme, packageJson, runtimeFiles, writtenFile } from "./internal/templates.ts";
+import { blueprintReadme, errorsFile, packageJson, runtimeFiles, secretsFile, thingFile, writtenFile } from "./internal/templates.ts";
 
 const isRecord = (x: unknown): x is Node => typeof x === "object" && x !== null && !Array.isArray(x);
 
@@ -25,7 +25,10 @@ const generate: AdapterApi["generate"] = ({ name, spec }) =>
       { path: "package.json", content: packageJson(name, title, version), how: "scaffold" },
       { path: "blueprint/README.md", content: blueprintReadme(name), how: "scaffold" },
       { path: "src/written.ts", content: writtenFile(), how: "scaffold" },
-      generated("src/index.ts", indexFile(head, title, version, tree, events)),
+      generated("blueprint/secrets.ts", secretsFile(head, requiresKey(d))),
+      generated(`blueprint/things/${name}/thing.ts`, thingFile(head, name, title)),
+      generated(`blueprint/things/${name}/errors.ts`, errorsFile(head, name)),
+      generated("src/index.ts", indexFile(head, name, title, version, tree, events)),
       generated("src/client.ts", clientFile(head)),
       generated("src/spec/operations.ts", `${head}\n${operationsFile(ops)}`),
       generated("src/spec/components.ts", `${head}\n${componentsFile(components)}`),

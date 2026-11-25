@@ -68,7 +68,8 @@ export const Mounts: MountsApi = {
       const files = yield* source.pluginFiles(plugin.name).pipe(Effect.result);
       if (files._tag === "Failure") { problems.push(`${file}: ${files.failure.message}`); continue; }
       // A plugin's `blueprint/secrets.ts`, whatever its kind: its name in an environment comes from this mount and the export.
-      const declared = readLayout(files.success.files.filter((f) => f.path === "secrets.js"), (path) => `${plugin.name}/blueprint/${path}`);
+      // A built plugin has `secrets.js`; a workspace one (every generated adapter in an app's `plugins/`) has `secrets.ts`.
+      const declared = readLayout(files.success.files.filter((f) => f.path === "secrets.js" || f.path === "secrets.ts"), (path) => `${plugin.name}/blueprint/${path}`);
       problems.push(...declared.problems);
       for (const s of declared.secrets.values()) secrets.push({ ...s, mount: name, kind: me.kind as MountSecret["kind"], mountFile: file, package: plugin.name, version: plugin.version });
       let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "events" | "door" | "layer" | "standIn"> = {};
