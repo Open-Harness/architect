@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, test } from "node:test";
 import { parse } from "yaml";
-import { RUNS, STORY } from "./runs.mjs";
+import { RUNS, STORY, judgedProblems } from "./runs.mjs";
 import { evaluate, problems, shape, walk } from "./workflow.mjs";
 
 const real = readFileSync(join(import.meta.dirname, "../../.github/workflows/staging.yml"), "utf8");
@@ -21,7 +21,7 @@ const swap = (from, to) => {
 const TOKEN = "CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}";
 const DESTROY_HEAD = "        id: destroy\n";
 const UP = "        id: up\n        continue-on-error: true\n        run: $ORTHO env up staging --run \"$RUN\" --root \"$ROOT\"\n        env:\n          ";
-const UPLOAD = "          path: |\n            tmp/staging/journeys.txt\n            tmp/staging/plan.json\n            tmp/staging/story.txt\n            tmp/staging/verdict.txt\n            tmp/staging/during-run.json\n            tmp/staging/after-run.json\n";
+const UPLOAD = "          path: |\n            tmp/staging/journeys.txt\n            tmp/staging/plan.json\n            tmp/staging/story.txt\n            tmp/staging/story.json\n            tmp/staging/verdict.txt\n            tmp/staging/during-run.json\n            tmp/staging/after-run.json\n";
 const MKDIR = "mkdir -p \"$EVIDENCE/private\"\n";
 
 describe("the staging workflow", () => {
@@ -87,7 +87,7 @@ describe("the judge fails each planted wrong workflow", () => {
     ["up that only echoes", () => swap('run: $ORTHO env up staging --run "$RUN"', 'run: echo $ORTHO env up staging --run "$RUN"'), /up: its script/],
     ["no continue-on-error on up (a failed up would stop the job before destroy only if destroy were not always)", () => swap("        id: up\n        continue-on-error: true\n", "        id: up\n"), /up: continue-on-error/],
     ["a story that runs another environment", () => swap("prove --env staging", "prove --env local"), /story: its script/],
-    ["a story that hides its failure", () => swap('; exit "${PIPESTATUS[0]}"\n\n      # Destroy', "\n\n      # Destroy"), /story: its script/],
+    ["a story that hides its failure", () => swap('; exit "${PIPESTATUS[0]}"\n\n      # The story judged', "\n\n      # The story judged"), /story: its script/],
     ["a story that never runs", () => swap("        id: story\n        continue-on-error: true\n        if: steps.up.outcome == 'success'\n", "        id: story\n        continue-on-error: true\n        if: false\n"), /story: its `if`/],
     ["no step ids on up and the story (their outcomes would be empty)", () => swap("        id: up\n", "").replace("        id: story\n", ""), /no step with id up/],
     ["destroy before the story", () => swap("      - name: the story\n", `      - name: destroy early\n        id: destroy\n        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n        env:\n          ${TOKEN}\n          CLOUDFLARE_ACCOUNT_ID: \${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n      - name: the story\n`).replace("      - name: destroy\n        id: destroy\n", "      - name: destroy\n        id: destroyed\n"), /not in the order|no step with id destroy/],
@@ -193,17 +193,20 @@ describe("the judge fails each planted wrong workflow", () => {
 });
 
 // ---- CX-staging, check 1: the workflow takes the run's root and its journeys, and by default runs exactly today's commands ----
-// The steps that call `ortho` are run as the runner runs them (bash -e -o pipefail, $GITHUB_ENV read between steps), with $ORTHO a stand-in that writes down its arguments and prints a plan.
+// The steps that call `ortho` are run as the runner runs them (`bash -e`, GitHub's shell for a step with no `shell:`; $GITHUB_ENV read between steps), with $ORTHO a stand-in that writes down its arguments and prints a plan.
 // Nothing reaches the cloud: no credential is given and no step but select, plan, up, the story and destroy is run.
 const repo = join(import.meta.dirname, "../..");
 const scratch = mkdtempSync(join(tmpdir(), "ortho-staging-run-"));
 after(() => rmSync(scratch, { recursive: true, force: true }));
 const RUN_ID = "77";
-/** Today's four commands, as `.github/workflows/staging.yml` on main (a8294d08) ran them for Plugged In: the default run must be these, argument for argument. */
+/**
+ * Today's four commands, as `.github/workflows/staging.yml` on main (a8294d08) ran them for Plugged In: the default run must be these, argument for argument, with one addition, `--report <file>` on
+ * the story, which only writes prove's report for the step that checks the list was judged (CX-staging). Its path is written `<report>` here.
+ */
 const TODAY = [
   ["env", "up", "staging", "--plan", "--run", RUN_ID, "--root", "examples/plugged-in"],
   ["env", "up", "staging", "--run", RUN_ID, "--root", "examples/plugged-in"],
-  ["prove", "--env", "staging", "--run", RUN_ID, "--root", "examples/plugged-in", "--only", "a person claims a page and shares it"],
+  ["prove", "--env", "staging", "--run", RUN_ID, "--root", "examples/plugged-in", "--only", "a person claims a page and shares it", "--report", "<report>"],
   ["env", "destroy", "staging", "--run", RUN_ID, "--root", "examples/plugged-in"],
 ];
 let n = 0;
@@ -223,9 +226,10 @@ const calls = (source, app) => {
     const step = doc.jobs.staging.steps.find((s) => s.id === id);
     const own = Object.fromEntries(Object.entries(step?.env ?? {}).map(([k, v]) => [k, v === "${{ inputs.app }}" ? chosen : "not-used-here"]));
     for (const line of readFileSync(files.GITHUB_ENV, "utf8").split("\n").filter(Boolean)) { const at = line.indexOf("="); env[line.slice(0, at)] = line.slice(at + 1); }
-    exits[id] = spawnSync("bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", String(step?.run ?? "exit 3")], { cwd: repo, env: { ...env, ...own }, encoding: "utf8" }).status;
+    exits[id] = spawnSync("bash", ["-e", "-c", String(step?.run ?? "exit 3")], { cwd: repo, env: { ...env, ...own }, encoding: "utf8" }).status;
   }
-  const made = existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
+  const made = (existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [])
+    .map((args) => args.map((a, i) => (args[i - 1] === "--report" && a === join(env.EVIDENCE, "story.json") ? "<report>" : a)));
   return { made, exits };
 };
 const onlys = (args) => args.flatMap((a, i) => (args[i - 1] === "--only" ? [a] : []));
@@ -244,7 +248,7 @@ describe("CX-staging 1: the run's root and journeys come from the run chosen, an
     for (const a of made) assert.equal(a[a.indexOf("--root") + 1], "examples/capxul");
     assert.deepEqual(onlys(made[2]), RUNS.capxul.journeys);
     assert.ok(onlys(made[2]).includes("bridge: a bank account, end to end") && onlys(made[2]).includes("branch names are the company's"));
-    assert.deepEqual(made[2].filter((a) => !RUNS.capxul.journeys.includes(a)), ["prove", "--env", "staging", "--run", RUN_ID, "--root", "examples/capxul", ...RUNS.capxul.journeys.map(() => "--only")]);
+    assert.deepEqual(made[2].filter((a) => !RUNS.capxul.journeys.includes(a)), ["prove", "--env", "staging", "--run", RUN_ID, "--root", "examples/capxul", ...RUNS.capxul.journeys.map(() => "--only"), "--report", "<report>"]);
   });
   test("an app that is not a run stops at select, and the story would refuse to prove an empty list", () => {
     const { made, exits } = calls(real, "nonesuch");
@@ -311,4 +315,41 @@ describe("CX-staging 5: the run's shape, whatever step fails", () => {
       assert.match(found, say);
     });
   }
+});
+
+// ---- CX-staging: the story judged exactly the run's list (read from prove's own report) ----
+describe("CX-staging: the story's report holds every journey of the list, once, and no other", () => {
+  const list = "a\nb, c\nd's\n";
+  const report = (names) => JSON.stringify({ journeys: names.map((name) => ({ name, verdict: "pass" })) });
+  test("the right report passes", () => assert.deepEqual(judgedProblems(list, report(["a", "b, c", "d's"])), []));
+  for (const [name, text, say] of [
+    ["one journey left out (a prove that kept only the last --only)", report(["d's"]), /never judged "a"/],
+    ["a name split at its comma", report(["a", "b", " c", "d's"]), /never judged "b, c"/],
+    ["a journey not on the list", report(["a", "b, c", "d's", "e"]), /judged "e", which the run does not list/],
+    ["a journey judged twice", report(["a", "a", "b, c", "d's"]), /more than once/],
+    ["no report (prove refused or crashed)", "", /no --report document/],
+    ["a report with no journeys", "{}", /no list of journeys/],
+  ]) test(`fails ${name}`, () => assert.match(judgedProblems(list, text).join("\n"), say));
+  test("the command: exit 0 on the right report, 1 naming the missing one", () => {
+    const dir = mkdtempSync(join(scratch, "judged-"));
+    writeFileSync(join(dir, "list"), list);
+    writeFileSync(join(dir, "ok.json"), report(["a", "b, c", "d's"]));
+    writeFileSync(join(dir, "short.json"), report(["a"]));
+    const run = (f) => spawnSync(process.execPath, [join(import.meta.dirname, "runs.mjs"), "judged", join(dir, "list"), join(dir, f)], { encoding: "utf8" });
+    assert.equal(run("ok.json").status, 0);
+    const short = run("short.json");
+    assert.deepEqual([short.status, /never judged "b, c"/.test(short.stderr)], [1, true]);
+  });
+  test("the step runs whenever the story ran, pass or fail, and fails the job when the list was not judged", () => {
+    assert.ok(walk(real, new Set(["story"])).ran.includes("judged"));
+    assert.ok(!walk(real, new Set(["up"])).ran.includes("judged"));
+    const w = walk(real, new Set(["judged"]));
+    assert.deepEqual([w.failed, w.destroys], [true, 1]);
+  });
+  for (const [name, make] of [
+    ["the step skipped when the story failed", () => swap("if: always() && steps.story.outcome != 'skipped'", "if: steps.story.outcome == 'success'")],
+    ["the step allowed to fail", () => swap("        id: judged\n", "        id: judged\n        continue-on-error: true\n")],
+    ["no report written by the story", () => swap(' --report "$EVIDENCE/story.json"', "")],
+    ["the step gone", () => swap("        id: judged\n", "        id: judgd\n")],
+  ]) test(`the workflow judge fails ${name}`, () => assert.notEqual(said(make()), ""));
 });

@@ -45,6 +45,7 @@ Red today on one reason: `ortho env` has `up`, `down` and `status` for a long-li
 | snapshot while up | token, account | what the account holds with the run up |
 | subdomain | token, account | `subdomain.mjs`: the account's workers.dev subdomain, written as `subdomain=<name>` to the step output and nothing else |
 | the story | token, account | `ortho prove --env staging --run <id> --root "$ROOT"` with one `--only` per journey of the chosen run, with `ORTHO_STAGING_SUBDOMAIN` from the step above; allowed to fail, still fails the job |
+| the story judged the list | none | `runs.mjs judged`: the story's `--report` holds every journey of `journeys.txt` once and no other; runs whenever the story ran, pass or fail |
 | destroy | token, account | `ortho env destroy staging --run <id>`, **`if: always()`** |
 | snapshot after | token, account | the listing after destroy, **`if: always()`** |
 | judge | none | from the files alone, **`if: always()`**; see below |
@@ -65,11 +66,11 @@ count (`REMOVED 2 workers (not this run's)`), never by name. The run id is `${{ 
 first attempt's leftovers; the job names `environment: staging`, which GitHub can restrict to protected branches (its rule is set on GitHub, not here).
 
 `workflow.mjs` judges the workflow's own text (by hand only; destroy, the listing and the judge always; the two credentials only in the four steps that talk to Cloudflare, and only as `secrets.CLOUDFLARE_API_TOKEN` and
-`vars.CLOUDFLARE_ACCOUNT_ID`; nothing prints the environment; the evidence is those five named files, never wrangler's log or a whole-account listing). Both its tests and the lister's run in `nx run e2e:test`.
+`vars.CLOUDFLARE_ACCOUNT_ID`; nothing prints the environment; the evidence is those seven named files, never wrangler's log or a whole-account listing). Both its tests and the lister's run in `nx run e2e:test`.
 
-**What is not checked here, and why.** The story step calls `ortho prove --env staging --run <id> --only "a person claims a page and shares it"` (the journey's own name; `"the story"` matched no journey). M7.04 owns that command
+**What is not checked here, and why.** The story step calls `ortho prove --env staging --run <id> --root "$ROOT"` with one `--only` per journey of the chosen run (by default the story alone, by its own name; `"the story"` matched no journey), and `--report`, which the `judged` step reads to check every journey of the list was judged once (CX-staging). M7.04 owns that command
 (`design/decisions/M7-cloud.md`, addendum of 21 November 2026) and check 41 ([`e2e/m1/41-m7-04-prove-staging.test.ts`](../m1/41-m7-04-prove-staging.test.ts), 97 tests: 64 controls pass today, 33 are red in `e2e/m1/expected-failing/41-m7-04-prove-staging.txt`)
-pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check 37's name) on `ORTHO_STAGING_SUBDOMAIN`, the output of the `subdomain` step before the story (it holds the token and reads the account's subdomain with [`subdomain.mjs`](subdomain.mjs), writing only `subdomain=<name>`, never the response; the story step holds none); `ORTHO_STAGING_ORIGIN` points the same code at a world served on this machine. What it cannot judge is the cloud itself: https, and a Worker whose `/_world` is closed so D1's own API must be read for facts (spike snags 15 and 16). The first real run is that proof.
+pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check 37's name) on `ORTHO_STAGING_SUBDOMAIN`, the output of the `subdomain` step before the story (it holds the token and reads the account's subdomain with [`subdomain.mjs`](subdomain.mjs), writing only `subdomain=<name>`, never the response; the story step holds the two credentials only to read the run's D1 databases, M7-04-story-reads-d1); `ORTHO_STAGING_ORIGIN` points the same code at a world served on this machine. What it cannot judge is the cloud itself: https, and a Worker whose `/_world` is closed so D1's own API must be read for facts (spike snags 15 and 16). The first real run is that proof.
 
 ## The lister's own tests
 

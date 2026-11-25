@@ -18,12 +18,18 @@ typed at dispatch reaches a script; a root or a list typed at dispatch is refuse
   journey names hold commas and apostrophes (`add, order and remove a link`, `branch names are the company's`). It refuses
   an empty list (`test "${#only[@]}" -gt 0`): an empty `--only` list would prove every journey.
 - The journeys file is uploaded with the evidence. It holds only journey names.
-- With nothing chosen the run is Plugged In's story, and the four commands are today's, argument for argument
-  (`e2e/staging/workflow.test.mjs` runs the steps with a stand-in `ortho` and compares).
+- The story writes prove's report (`--report "$EVIDENCE/story.json"`), and a step after it, `judged`, fails the job
+  unless the report holds every journey of the list once and no other (`runs.mjs judged`). It runs whenever the story
+  ran, pass or fail. A prove that keeps one name, splits a name at its comma, or honours several names only against a
+  local origin fails the live run here, whatever it printed.
+- With nothing chosen the run is Plugged In's story, and the four commands are today's, argument for argument, with
+  one addition: `--report <file>` on the story (`e2e/staging/workflow.test.mjs` runs the steps with a stand-in `ortho`
+  and compares). It changes what is written, not what is proved.
 
-`ortho prove --env staging --only` takes the flag any number of times and judges each named journey once. A failing
-journey fails the run and every other named journey is still run and reported. A name that is no journey is refused,
-exit 2, before any journey runs. `--env local` and `--env test` are unchanged.
+`ortho prove --env staging --only` takes the flag any number of times and judges each named journey once (a name given
+twice is judged once). A failing journey fails the run and every other named journey is still run and reported. A
+name that is no journey is refused, exit 2, before anything is asked of the world. `--env local` keeps one `--only`;
+several there are refused, exit 2, naming `--only`, so none is dropped without a word. `--env test` is unchanged.
 
 `examples/capxul` declares `blueprint/environments/staging.ts`, a Worker on Cloudflare `workers.dev` with D1, as Plugged
 In's does. Its plan is the model's: one Worker, one database, the `World` namespace, every name under
@@ -49,6 +55,12 @@ evaluates each step's `if` as GitHub does and walks the job with each step faili
 exactly once, up at most once, and up never runs after `select`, the plan or the first listing failed. The job fails on
 any failure. A Capxul run makes the same three resources Plugged In's does and lives for one job of at most 30 minutes,
 so the $10 a day cap (AGENTS.md) holds as it did for Goal 3's staging. Runs never overlap (`concurrency: staging`).
+When `select` fails no `ROOT` is set, so the destroy that always runs fails on an empty root: nothing was made, and the
+job is already red.
+
+What is judged only by the first live run, not offline: that `up` deploys what its plan says (the listing judge,
+`made`) and that `destroy` touches only its own run (`untouched`). A build whose real `up` or `destroy` differs from
+its `--plan` passes check 47 and fails there.
 
 ## 4. Open: two calls for Aaron
 
@@ -74,4 +86,7 @@ These are not decided here, and nothing in this change depends on them:
 ## Supersedes
 
 - `e2e/staging/workflow.mjs`: "workflow_dispatch takes no inputs: the run is named by its id" → "workflow_dispatch takes exactly one input, app"
-- `e2e/staging/README.md`: "`ortho prove --env staging --run <id> --only \"a person claims a page and shares it\"`" → "`ortho prove --env staging --run <id> --root \"$ROOT\"` with one `--only` per journey of the chosen run"
+- `e2e/staging/README.md`: "The story step calls `ortho prove --env staging --run <id> --only \"a person claims a page and shares it\"`" → "The story step calls `ortho prove --env staging --run <id> --root \"$ROOT\"` with one `--only` per journey of the chosen run"
+- `e2e/staging/README.md`: "the evidence is those five named files" → "the evidence is those seven named files"
+- `e2e/staging/README.md`, the story's row: "| the story | none |" → "| the story | token, account |" (the story has held them since M7-04-story-reads-d1)
+- `.github/workflows/staging.yml`: "It plans, deploys Plugged In to Cloudflare `workers.dev`, runs the story" → "It plans, deploys the chosen app to Cloudflare `workers.dev`, runs its journeys"

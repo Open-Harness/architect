@@ -4,6 +4,8 @@
 //   node e2e/staging/runs.mjs select <app> <journeys-file>
 //     Prints `ROOT=<root>` (the workflow appends it to $GITHUB_ENV, so every later step has it as $ROOT) and writes the run's journeys to <journeys-file>, one name per line, each line ended. An app that is not
 //     here, or a run with no journeys, exits 2 and writes nothing: an empty `--only` list would prove every journey, which is not the run anyone chose.
+//   node e2e/staging/runs.mjs judged <journeys-file> <report.json>
+//     Exit 0 when the story's report judged exactly the journeys in the file, each once; 1, naming each one missing, extra or repeated, otherwise (CX-staging). No network, no credential.
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -115,6 +117,23 @@ export const listProblems = (journeys, root) => {
   return out;
 };
 
+/**
+ * What the story's report judged against the run's list: every journey of the list once, and no other. Problems as lines; empty is a pass. A report that is not prove's `--report` document is a
+ * problem, never a pass: the step that calls this runs whenever the story ran, so a story that refused or crashed is named here too.
+ */
+export const judgedProblems = (listText, reportText) => {
+  const want = listText.split("\n").filter((l) => l !== "");
+  let report;
+  try { report = JSON.parse(reportText); } catch { return ["the story wrote no --report document"]; }
+  const journeys = Array.isArray(report?.journeys) ? report.journeys.map((j) => j?.name) : undefined;
+  if (journeys === undefined) return ["the story's report has no list of journeys"];
+  const out = [];
+  for (const name of want) if (!journeys.includes(name)) out.push(`the story never judged ${JSON.stringify(name)}`);
+  for (const name of journeys) if (!want.includes(name)) out.push(`the story judged ${JSON.stringify(name)}, which the run does not list`);
+  for (const name of new Set(journeys.filter((x, i) => journeys.indexOf(x) !== i))) out.push(`the story judged ${JSON.stringify(name)} more than once`);
+  return out;
+};
+
 /** What `select` does, as data: the root and the file's text, or why it cannot. */
 export const select = (app) => {
   const run = Object.hasOwn(RUNS, app) ? RUNS[app] : undefined;
@@ -125,8 +144,15 @@ export const select = (app) => {
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const [verb, app, file] = process.argv.slice(2);
+  if (verb === "judged" && app !== undefined && file !== undefined) {
+    const read = (f) => { try { return readFileSync(f, "utf8"); } catch { return ""; } };
+    const found = judgedProblems(read(app), read(file));
+    for (const line of found) console.error(line);
+    if (found.length === 0) console.log("the story judged every journey of the run, each once, and no other");
+    process.exit(found.length === 0 ? 0 : 1);
+  }
   if (verb !== "select" || app === undefined || file === undefined) {
-    console.error("usage: node e2e/staging/runs.mjs select <app> <journeys-file>");
+    console.error("usage: node e2e/staging/runs.mjs select <app> <journeys-file> | judged <journeys-file> <report.json>");
     process.exit(2);
   }
   const chosen = select(app);

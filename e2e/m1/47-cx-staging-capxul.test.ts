@@ -18,7 +18,7 @@
 // page) passes. Journeys run in the order of their files, so the passing one runs after a failing one: a prove that stops at the first failure leaves it out. Plugged In and not Capxul,
 // because the promise is prove's and Plugged In's journeys are the ones check 41 already proves fair; Capxul's names reach prove through the same flag.
 //
-// Red today (8 tests, `expected-failing/47-cx-staging-capxul.txt`) on two reasons: `--only` takes at most one value ("Invalid value for flag --only"), and Capxul declares no `staging`
+// Red today (9 tests, `expected-failing/47-cx-staging-capxul.txt`) on two reasons: `--only` takes at most one value ("Invalid value for flag --only"), and Capxul declares no `staging`
 // environment ("no environment \"staging\""). Controls, true today (26): the journeys chosen call and order what the check says; the judge of a several-journey run passes a right run and
 // fails each planted wrong one; the destroy judgement passes a destroy of what up made and fails each planted wrong one.
 import { readFileSync, writeFileSync } from "node:fs";
@@ -28,7 +28,7 @@ import * as L from "./loop.ts";
 import { freePorts } from "../ports.ts";
 import { copyOf } from "../layer1/support.ts";
 import { repo } from "./support.ts";
-import { DENIED, plan, planOf, problems as planProblems, prefixOf, quiet, type Plan, type PlanModel } from "./staging-plan.ts";
+import { DENIED, ortho, plan, planOf, problems as planProblems, prefixOf, quiet, type Plan, type PlanModel } from "./staging-plan.ts";
 import { modelOf as planModelOf } from "./staging-plan.ts";
 import { recorder, routeOf, staged, startDev, stopDev, type Ran, type Recorder } from "./prove-staging.ts";
 import { callsOf, modelOf, type JourneyMap } from "./prove-speed.ts";
@@ -40,6 +40,8 @@ const STORY = "a person claims a page and shares it";
 const ONCE = "a name is claimed once";
 const CLAIM = "claim a handle";
 const ANYONE = "anyone reads a public page";
+/** A name with a comma, as Capxul's "bridge: a bank account, end to end": a build that splits --only at commas loses it. */
+const ADD = "add, order and remove a link";
 const PORTS = freePorts("good", "bad", "badText", "goodProxy", "badProxy", "badTextProxy");
 const example = join(repo, "examples/plugged-in");
 const capxul = join(repo, "examples/capxul");
@@ -152,6 +154,7 @@ describe("47: the staging run takes Capxul's finish line (CX-staging)", () => {
       expect([...callsOf(map, ONCE)].sort()).toEqual(["handle.claim", "handle.resolve"]);
       expect([...callsOf(map, CLAIM)]).toContain("profile.get");
       expect([...callsOf(map, ANYONE)]).toContain("profile.get");
+      expect([...callsOf(map, ADD)].sort()).toEqual(["handle.claim", "link.add", "link.order", "link.remove", "profile.get"]);
       const named = new Set([STORY, ONCE, CLAIM, ANYONE].flatMap((n) => [...callsOf(map, n)]));
       expect(Object.keys(map.operations).filter((o) => !named.has(o)).sort()).toEqual(["handle.release", "link.order", "link.remove"]);
     });
@@ -209,10 +212,10 @@ describe("47: the staging run takes Capxul's finish line (CX-staging)", () => {
   });
 
   describe("2: several --only, each journey judged and reported", () => {
-    it("three names against a good world: exactly those three judged, each passing, exit 0, and nothing an unnamed journey calls asked", async () => {
+    it("three names against a good world, one with a comma and one given twice: exactly those three judged, each once, each passing, exit 0, and nothing an unnamed journey calls asked", async () => {
       const before = good.heard().length;
-      const ran = await against(good, [...onlys(STORY, ONCE, CLAIM), "--json"]);
-      expect(several(ran, map, { [STORY]: "pass", [ONCE]: "pass", [CLAIM]: "pass" }, good.heard().slice(before))).toEqual([]);
+      const ran = await against(good, [...onlys(STORY, ONCE, ADD, ONCE), "--json"]);
+      expect(several(ran, map, { [STORY]: "pass", [ONCE]: "pass", [ADD]: "pass" }, good.heard().slice(before))).toEqual([]);
     }, 300_000);
 
     it("a failing journey fails the run, and the journeys after it still run and are reported: against a world that reverses a page's links, anyone reads a public page fails, claim a handle (an empty page) passes after it, the story fails last, exit 1", async () => {
@@ -222,11 +225,13 @@ describe("47: the staging run takes Capxul's finish line (CX-staging)", () => {
     }, 300_000);
 
     it("without --json, prove's own lines name each journey with its result, and the verdict is last", async () => {
-      const ran = await against(badText, onlys(CLAIM, ANYONE));
+      // A passing journey runs first (file order), so a verdict or exit taken from the first journey is caught.
+      const ran = await against(badText, onlys(ANYONE, CLAIM, ONCE));
       const lines = ran.out.trim().split("\n");
       expect([ran.status, ran.worlds.size, ran.err.includes(DENIED)], said(ran)).toEqual([1, 0, false]);
       expect(lines.some((l) => l.startsWith(`journey ${ANYONE} ✘`)), ran.out).toBe(true);
       expect(lines.some((l) => l.startsWith(`journey ${CLAIM} ✔`)), ran.out).toBe(true);
+      expect(lines.some((l) => l.startsWith(`journey ${ONCE} ✔`)), ran.out).toBe(true);
       expect(lines.at(-1)).toMatch(/^prove ✘ [1-9]\d* failing$/);
     }, 300_000);
 
@@ -234,8 +239,13 @@ describe("47: the staging run takes Capxul's finish line (CX-staging)", () => {
       const before = good.heard().length;
       const ran = await against(good, [...onlys(STORY, "no such journey", ONCE), "--json"]);
       expect([ran.status, /no journey named "no such journey"/.test(`${ran.out}${ran.err}`), ran.out.includes(`"journeys"`)], said(ran)).toEqual([2, true, false]);
-      expect(good.heard().slice(before).filter((h) => h.startsWith("POST /handle") || h.startsWith("POST /link") || h.startsWith("POST /profile"))).toEqual([]);
+      expect(good.heard().slice(before), "the refusal comes before anything is asked of the world").toEqual([]);
     }, 300_000);
+
+    it("several --only stay a staging thing: `ortho prove --env local --only a --only b` is refused naming --only (exit 2), never one name silently dropped", () => {
+      const ran = ortho(judged.root, ["prove", "--only", ONCE, "--only", CLAIM, "--json"]);
+      expect([ran.status, /--only/.test(`${ran.out}${ran.err}`), ran.out.includes(`"journeys"`)], `${ran.err}${ran.out}`.slice(0, 200)).toEqual([2, true, false]);
+    }, 120_000);
   });
 
   describe("3: Capxul's staging plan, with no credential and no network, and a destroy that removes what up made", () => {

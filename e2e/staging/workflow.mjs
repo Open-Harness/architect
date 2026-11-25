@@ -20,7 +20,7 @@ const USES = /^(actions\/checkout|pnpm\/action-setup|actions\/setup-node|actions
  * The only files the evidence upload may name (the repository is public, so anyone can download them): the plan, the story, the verdict, and the listings cut to the run's prefix. The whole-account
  * listings (`tmp/staging/private/`) hold every Worker, database, namespace and bucket of the account, other apps' included, and are never uploaded.
  */
-const EVIDENCE = new Set(["tmp/staging/journeys.txt", "tmp/staging/plan.json", "tmp/staging/story.txt", "tmp/staging/verdict.txt", "tmp/staging/during-run.json", "tmp/staging/after-run.json"]);
+const EVIDENCE = new Set(["tmp/staging/journeys.txt", "tmp/staging/plan.json", "tmp/staging/story.json", "tmp/staging/story.txt", "tmp/staging/verdict.txt", "tmp/staging/during-run.json", "tmp/staging/after-run.json"]);
 const UPLOAD_WITH = ["name", "path", "if-no-files-found", "retention-days"];
 /** An `if`, with its `${{ }}` taken off. */
 const cond = (step) => (step.if === undefined ? undefined : String(step.if).replace(/^\s*\$\{\{\s*|\s*\}\}\s*$/g, "").trim());
@@ -37,7 +37,9 @@ const STEPS = [
   { id: "up", run: '$ORTHO env up staging --run "$RUN" --root "$ROOT"', credentials: true, continues: true },
   { id: "during", run: SNAPSHOT("during"), credentials: true, if: UPSTREAM },
   { id: "subdomain", run: 'node e2e/staging/subdomain.mjs "$GITHUB_OUTPUT"', credentials: true, if: UPSTREAM },
-  { id: "story", run: 'only=(); while IFS= read -r name; do only+=(--only "$name"); done < "$EVIDENCE/journeys.txt"\ntest "${#only[@]}" -gt 0\n$ORTHO prove --env staging --run "$RUN" --root "$ROOT" "${only[@]}" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"', continues: true, if: UPSTREAM, env: { ORTHO_STAGING_SUBDOMAIN: SUBDOMAIN, ...CREDENTIALS } },
+  { id: "story", run: 'only=(); while IFS= read -r name; do only+=(--only "$name"); done < "$EVIDENCE/journeys.txt"\ntest "${#only[@]}" -gt 0\n$ORTHO prove --env staging --run "$RUN" --root "$ROOT" "${only[@]}" --report "$EVIDENCE/story.json" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"', continues: true, if: UPSTREAM, env: { ORTHO_STAGING_SUBDOMAIN: SUBDOMAIN, ...CREDENTIALS } },
+  // CX-staging: the story's report judged exactly the run's list. Whenever the story ran, pass or fail; it fails the job itself (no continue-on-error), and destroy still runs after it.
+  { id: "judged", if: "always() && steps.story.outcome != 'skipped'", run: 'node e2e/staging/runs.mjs judged "$EVIDENCE/journeys.txt" "$EVIDENCE/story.json"' },
   { id: "destroy", run: '$ORTHO env destroy staging --run "$RUN" --root "$ROOT"', credentials: true, if: "always()" },
   { id: "after", run: SNAPSHOT("after"), credentials: true, if: "always()" },
   { id: "judge", if: "always()", env: { PREFIX: "${{ steps.plan.outputs.prefix }}", UP: "${{ steps.up.outcome }}" },
@@ -190,7 +192,7 @@ export const walk = (source, failing = new Set()) => {
 };
 
 /** The steps a run can fail at: every step before the upload. */
-const FAIL_AT = ["select", "plan", "before", "up", "during", "subdomain", "story", "destroy", "after", "judge", "evidence"];
+const FAIL_AT = ["select", "plan", "before", "up", "during", "subdomain", "story", "judged", "destroy", "after", "judge", "evidence"];
 
 /** Everything wrong with the run's shape: whatever one step fails, up runs at most once (and never after the plan or the first listing failed), destroy runs exactly once, and the job fails. */
 export const shape = (source) => {

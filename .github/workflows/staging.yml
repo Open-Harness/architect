@@ -133,7 +133,13 @@ jobs:
         run: |
           only=(); while IFS= read -r name; do only+=(--only "$name"); done < "$EVIDENCE/journeys.txt"
           test "${#only[@]}" -gt 0
-          $ORTHO prove --env staging --run "$RUN" --root "$ROOT" "${only[@]}" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"
+          $ORTHO prove --env staging --run "$RUN" --root "$ROOT" "${only[@]}" --report "$EVIDENCE/story.json" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"
+
+      # The story judged exactly the run's list, each journey once: read from prove's own report, so a prove that judges fewer journeys than it was named fails here, whatever it printed.
+      - name: the story judged the list
+        id: judged
+        if: always() && steps.story.outcome != 'skipped'
+        run: node e2e/staging/runs.mjs judged "$EVIDENCE/journeys.txt" "$EVIDENCE/story.json"
 
       # Destroy always runs: after a failed up, a failed story, a failed before-snapshot, or a plan that never printed. It deletes by the run's prefix, so it needs nothing from `up`.
       - name: destroy
@@ -193,6 +199,7 @@ jobs:
             tmp/staging/journeys.txt
             tmp/staging/plan.json
             tmp/staging/story.txt
+            tmp/staging/story.json
             tmp/staging/verdict.txt
             tmp/staging/during-run.json
             tmp/staging/after-run.json
