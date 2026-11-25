@@ -1,0 +1,293 @@
+<meta name="dash-one-writer">
+<meta name="dash-form" content="dashboard">
+<style>
+  .oc { display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 1100px; }
+  .oc h1 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); text-wrap: balance; }
+  .oc h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); text-wrap: balance; }
+  .oc h3 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+  .oc p { margin: 0; }
+  .oc-lede { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+  .oc-take { font-size: var(--cds-font-size-heading); line-height: 1.5; max-width: 70ch; }
+  .oc-take b, .oc-num { font-variant-numeric: tabular-nums; font-weight: var(--cds-font-weight-medium); }
+  .oc-sub { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); max-width: 72ch; line-height: 1.5; }
+  .oc-lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: var(--cds-gap-lg); }
+  .oc-lane { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-md); min-width: 0; }
+  .oc-dims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-gap-md); }
+  .oc-dim { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .oc-dim .oc-k { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .oc-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * 1.15); line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .oc-of { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .oc-sec { display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+  .oc-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: var(--cds-gap-lg); }
+  .oc-chart { position: relative; min-height: 220px; }
+  .oc-chart.short { min-height: 120px; }
+  .oc-chart svg { display: block; overflow: visible; }
+  .oc-chart text { font-family: var(--font-anthropic-sans); }
+  .oc-chart .lbl { fill: var(--color-fg); font-size: var(--cds-font-size-caption); }
+  .oc-chart .val { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .oc-chart .axis text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); }
+  .oc-chart .axis path, .oc-chart .axis line { stroke: var(--cds-chart-axis); }
+  .oc-key { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .oc-key span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--sw); }
+  .oc-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+  .oc-empty { min-height: 120px; display: grid; place-items: center; text-align: center; color: var(--color-fg-muted); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+  .oc-table-wrap { overflow-x: auto; }
+  .oc table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+  .oc th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .oc td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .oc td.id { font-family: ui-monospace, "SF Mono", Menlo, monospace; white-space: nowrap; }
+  .oc-filter { display: flex; gap: var(--cds-gap-sm); flex-wrap: wrap; align-items: center; }
+  @media (max-width: 520px) { .oc-dims { grid-template-columns: 1fr 1fr; } }
+</style>
+
+<article class="oc">
+  <header class="oc-lede" id="summary">
+    <h1>Orthograph climb</h1>
+    <p class="oc-take">The alpha has <b data-draw="a-pass" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=green">—</b> of its <b data-draw="a-tests" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=all">—</b> check files fully green, and its capabilities are <b data-draw="a-prog" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=progress">—</b>% of the way up. Capxul's capabilities are <b data-draw="c-prog" data-source="latest" data-field="value" data-where="lane=Capxul&amp;series=progress">—</b>% of the way, with <b data-draw="c-written" data-source="latest" data-field="value" data-where="lane=Capxul&amp;series=written">—</b> journeys written.</p>
+    <p class="oc-sub">Two builds (K44), three dimensions each (K45). Capabilities are the board's rows weighted by stage: provisional 0, spiked 0.2, scaffoldable 0.4, building 0.6, built 1. A check file is green when none of its tests is on its suite's expected-failing list; it turns red again only when its author adds tests that fail first. Last worked out <span data-draw="made">—</span>.</p>
+  </header>
+
+  <section class="oc-lanes" id="lanes">
+    <div class="oc-lane" id="lane-alpha">
+      <h2>The alpha</h2>
+      <p class="oc-sub">Orthograph on npm, TypeScript end to end, with the chain basics. Built by Goal 18.</p>
+      <div class="oc-dims">
+        <div class="oc-dim"><span class="oc-k">Capabilities</span><span class="oc-big"><span data-draw="a-prog2" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=progress">—</span>%</span><span class="oc-of"><span data-draw="a-built" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=built">—</span> of <span data-draw="a-rows" data-source="latestTotals" data-field="rows" data-where="lane=alpha">—</span> rows built</span></div>
+        <div class="oc-dim"><span class="oc-k">Check files green</span><span class="oc-big" data-draw="a-pass2" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=green">—</span><span class="oc-of"><span data-draw="a-fail" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=red">—</span> with tests still failing</span></div>
+        <div class="oc-dim"><span class="oc-k">Slices done</span><span class="oc-big" data-draw="a-done" data-source="latest" data-field="value" data-where="lane=alpha&amp;series=done">—</span><span class="oc-of">of <span data-draw="a-slices" data-source="latestTotals" data-field="slices" data-where="lane=alpha">—</span></span></div>
+      </div>
+    </div>
+    <div class="oc-lane" id="lane-capxul">
+      <h2>Capxul</h2>
+      <p class="oc-sub">The books in double entry, HR and payroll first; then banking, budgets and the chain. Built by Goal 16.</p>
+      <div class="oc-dims">
+        <div class="oc-dim"><span class="oc-k">Capabilities</span><span class="oc-big"><span data-draw="c-prog2" data-source="latest" data-field="value" data-where="lane=Capxul&amp;series=progress">—</span>%</span><span class="oc-of"><span data-draw="c-built" data-source="latest" data-field="value" data-where="lane=Capxul&amp;series=built">—</span> of <span data-draw="c-rows" data-source="latestTotals" data-field="rows" data-where="lane=Capxul">—</span> rows built</span></div>
+        <div class="oc-dim"><span class="oc-k">Journeys written</span><span class="oc-big" data-draw="c-written2" data-source="latest" data-field="value" data-where="lane=Capxul&amp;series=written">—</span><span class="oc-of">pass and fail once CI runs them</span></div>
+        <div class="oc-dim"><span class="oc-k">Slices done</span><span class="oc-big" data-draw="c-done" data-source="latest" data-field="value" data-where="lane=Capxul&amp;series=done">—</span><span class="oc-of">of <span data-draw="c-slices" data-source="latestTotals" data-field="slices" data-where="lane=Capxul">—</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="oc-sec" id="tests">
+    <h2>Tests over time</h2>
+    <p class="oc-sub">The alpha: its suites' check files, green under the dashed line of all of them, from Goal 3's branch until Gate M1 reached main on 23 November, then main. Capxul: journeys written on its branch.</p>
+    <div class="oc-pair">
+      <div class="oc-sec"><h3>The alpha</h3><div class="oc-chart" data-draw="t-alpha" data-source="history"></div></div>
+      <div class="oc-sec"><h3>Capxul</h3><div class="oc-chart" data-draw="t-capxul" data-source="history"></div></div>
+    </div>
+  </section>
+
+  <section class="oc-sec" id="capabilities">
+    <h2>Capabilities by stage</h2>
+    <p class="oc-sub">Each milestone's rows, darker as they climb from provisional to built. The board's rows were written on 23 November, so their history starts there.</p>
+    <div class="oc-key"><span class="oc-sw0">Provisional</span><span class="oc-sw1">Spiked</span><span class="oc-sw2">Scaffoldable</span><span class="oc-sw3">Building</span><span class="oc-sw4">Built</span></div>
+    <div class="oc-chart short" data-draw="ms-chart" data-source="byMilestone"></div>
+    <div class="oc-pair">
+      <div class="oc-sec"><h3>The alpha's progress</h3><div class="oc-chart short" data-draw="p-alpha" data-source="history"></div></div>
+      <div class="oc-sec"><h3>Capxul's progress</h3><div class="oc-chart short" data-draw="p-capxul" data-source="history"></div></div>
+    </div>
+  </section>
+
+  <section class="oc-sec" id="items">
+    <h2>Every capability, suite and slice</h2>
+    <div class="oc-filter">
+      <select class="dash-select" data-draw="lane-pick" aria-label="Build"></select>
+      <select class="dash-select" data-draw="dim-pick" aria-label="Dimension"></select>
+    </div>
+    <div class="oc-table-wrap">
+      <table data-source="items" data-row-key="id">
+        <thead><tr><th data-field="lane">Build</th><th data-field="dimension">Dimension</th><th data-field="group">Where</th><th data-field="id">Id</th><th data-field="name">What</th><th data-field="status">Stands</th></tr></thead>
+        <tbody data-draw="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</article>
+
+<script>
+  dash.calc('latest', {
+    title: 'Where each climb stands',
+    description: 'The latest value of each series in each build.',
+    inputs: ['history'],
+    fn: (history) => {
+      const last = new Map();
+      for (const r of history) last.set(`${r.lane}|${r.series}`, r);
+      return [...last.values()].map((r) => ({ lane: r.lane, dimension: r.dimension, series: r.series, value: +r.value, at: r.at }));
+    },
+  });
+  dash.calc('latestTotals', {
+    title: 'Totals per build',
+    description: 'Rows on the board and slices in each build.',
+    inputs: ['items'],
+    fn: (items) => ['alpha', 'Capxul'].map((lane) => {
+      const mine = items.filter((i) => i.lane === lane);
+      return {
+        lane,
+        rows: mine.filter((i) => i.dimension === 'capabilities').length,
+        slices: mine.filter((i) => i.dimension === 'slices').length,
+      };
+    }),
+  });
+  dash.calc('byMilestone', {
+    title: 'Rows per milestone by stage',
+    description: 'How many of each milestone\'s rows are at each stage.',
+    inputs: ['items'],
+    fn: (items) => ['alpha', 'books', 'people and payroll', 'banking', 'budgets', 'getting paid'].map((group) => {
+      const mine = items.filter((i) => i.dimension === 'capabilities' && i.group === group);
+      const row = { group, total: mine.length };
+      for (const s of ['provisional', 'spiked', 'scaffoldable', 'building', 'built']) row[s] = mine.filter((i) => (i.status === 'extracted' ? 'built' : i.status) === s).length;
+      return row;
+    }),
+  });
+</script>
+
+<script>
+  const STAGES = ['provisional', 'spiked', 'scaffoldable', 'building', 'built'];
+  const OC_SW = (k) => `color-mix(in srgb, ${dash.colors[0]} ${[14, 32, 52, 74, 100][k]}%, var(--color-bg))`;
+  document.querySelectorAll('.oc-key span').forEach((s, k) => s.style.setProperty('--sw', OC_SW(k)));
+  const pick = (lane, series) => {
+    const d = dash.data('latest');
+    return d.status === 'ok' ? d.data.find((r) => r.lane === lane && r.series === series) : null;
+  };
+  const tot = (lane, key) => {
+    const d = dash.data('latestTotals');
+    return d.status === 'ok' ? d.data.find((r) => r.lane === lane)?.[key] : null;
+  };
+  const fmt = d3.format(',');
+  const num = (get) => (el) => { const v = get(); el.textContent = v == null ? '—' : fmt(v); };
+  for (const [name, lane, series] of [['a-pass', 'alpha', 'green'], ['a-tests', 'alpha', 'all'], ['a-pass2', 'alpha', 'green'], ['a-fail', 'alpha', 'red'], ['a-prog', 'alpha', 'progress'], ['a-prog2', 'alpha', 'progress'], ['a-built', 'alpha', 'built'], ['a-done', 'alpha', 'done'], ['c-prog', 'Capxul', 'progress'], ['c-prog2', 'Capxul', 'progress'], ['c-built', 'Capxul', 'built'], ['c-written', 'Capxul', 'written'], ['c-written2', 'Capxul', 'written'], ['c-done', 'Capxul', 'done']]) {
+    dash.draw(name, num(() => pick(lane, series)?.value));
+  }
+  for (const [name, lane, key] of [['a-rows', 'alpha', 'rows'], ['a-slices', 'alpha', 'slices'], ['c-rows', 'Capxul', 'rows'], ['c-slices', 'Capxul', 'slices']]) {
+    dash.draw(name, num(() => tot(lane, key)));
+  }
+  dash.draw('made', (el) => {
+    const d = dash.data('history');
+    const at = d.status === 'ok' && d.meta ? (d.meta.find?.((m) => m.label === 'Made') || {}).value : null;
+    el.textContent = at ? d3.utcFormat('%-d %b %Y, %H:%M UTC')(new Date(at)) : '—';
+  });
+
+  function ocTip(el) {
+    const tip = document.createElement('div'); tip.className = 'oc-tip'; tip.hidden = true; el.append(tip);
+    return {
+      show(text, x, y) { tip.hidden = false; tip.textContent = text; tip.style.left = Math.max(0, Math.min(x + 8, el.clientWidth - tip.offsetWidth)) + 'px'; tip.style.top = Math.max(0, y - 36) + 'px'; },
+      hide() { tip.hidden = true; },
+    };
+  }
+  const series = (lane, name) => {
+    const d = dash.data('history');
+    return d.status === 'ok' ? d.data.filter((r) => r.lane === lane && r.series === name).map((r) => ({ at: new Date(r.at), v: +r.value })) : null;
+  };
+  function ocLine(el, lines, opts) {
+    el.replaceChildren();
+    if (!lines) { el.textContent = '—'; return; }
+    const pts = lines.flatMap((l) => l.points);
+    if (pts.length < 2) { const b = document.createElement('div'); b.className = 'oc-empty'; b.textContent = opts.empty; el.append(b); return; }
+    const w = Math.max(280, el.clientWidth), h = opts.h || 220, m = { t: 14, r: 56, b: 26, l: 44 };
+    const now = new Date();
+    const x = d3.scaleTime().domain([d3.min(pts, (p) => p.at), now]).range([m.l, w - m.r]);
+    const y = d3.scaleLinear().domain([opts.min ?? 0, opts.max ?? d3.max(pts, (p) => p.v)]).nice().range([h - m.b, m.t]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${h}`).attr('role', 'img').attr('aria-label', opts.label);
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${h - m.b})`).call(d3.axisBottom(x).ticks(Math.max(2, Math.floor(w / 110))).tickFormat(d3.utcFormat('%-d %b')));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(opts.tick || d3.format(',')));
+    const tip = ocTip(el);
+    const ends = [];
+    for (const l of lines) {
+      if (!l.points.length) continue;
+      const p = [...l.points, { at: now, v: l.points[l.points.length - 1].v }];
+      if (l.area) svg.append('path').datum(p).attr('d', d3.area().curve(d3.curveStepAfter).x((d) => x(d.at)).y0(y(opts.min ?? 0)).y1((d) => y(d.v))).style('fill', `color-mix(in srgb, ${l.color} 22%, transparent)`);
+      svg.append('path').datum(p).attr('fill', 'none').attr('d', d3.line().curve(d3.curveStepAfter).x((d) => x(d.at)).y((d) => y(d.v))).style('stroke', l.color).style('stroke-width', l.dash ? 1.5 : 2.5).style('stroke-dasharray', l.dash ? '4 4' : null);
+      const lastP = p[p.length - 1];
+      ends.push({ x: x(lastP.at) + 6, y: y(lastP.v) + 4, text: (opts.tick || fmt)(lastP.v) });
+    }
+    // End labels never touch: from the top down, each sits at least a line below the one above it.
+    ends.sort((a, b) => a.y - b.y).forEach((e, k) => { if (k && e.y < ends[k - 1].y + 15) e.y = ends[k - 1].y + 15; });
+    for (const e of ends) svg.append('text').attr('class', 'val').attr('x', e.x).attr('y', e.y).text(e.text);
+    const main = lines[0].points;
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', w - m.l - m.r).attr('height', h - m.t - m.b).style('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [px, py] = d3.pointer(ev, el); const t = x.invert(px);
+        const at = (pts2) => { let v = null; for (const q of pts2) if (q.at <= t) v = q.v; return v; };
+        tip.show(`${d3.utcFormat('%-d %b, %H:%M')(t)}: ${lines.map((l) => `${l.name} ${at(l.points) == null ? '—' : (opts.tick || fmt)(at(l.points))}`).join(', ')}`, px, py);
+      })
+      .on('pointerleave', () => tip.hide());
+    if (!main.length) tip.hide();
+  }
+
+  dash.draw('t-alpha', (el) => {
+    const green = series('alpha', 'green'), all = series('alpha', 'all');
+    if (!green) { el.replaceChildren(); el.textContent = dash.data('history').status === 'error' ? 'The history did not load.' : '—'; return; }
+    ocLine(el, [{ name: 'green', points: green, color: dash.colors[0], area: true }, { name: 'all', points: all, color: 'var(--cds-chart-reference)', dash: true }], {
+      label: `The alpha's green check files went from ${fmt(green[0].v)} to ${fmt(green[green.length - 1].v)}`, empty: 'No test history yet.',
+    });
+  });
+  dash.draw('t-capxul', (el) => {
+    const w = series('Capxul', 'written');
+    if (!w) { el.replaceChildren(); el.textContent = '—'; return; }
+    ocLine(el, [{ name: 'written', points: w, color: dash.colors[0], area: true }], {
+      label: `Capxul's journeys written went from ${w[0]?.v} to ${w[w.length - 1]?.v}`, empty: 'No journeys yet.',
+    });
+  });
+  for (const [name, lane] of [['p-alpha', 'alpha'], ['p-capxul', 'Capxul']]) {
+    dash.draw(name, (el) => {
+      const p = series(lane, 'progress');
+      if (!p) { el.replaceChildren(); el.textContent = '—'; return; }
+      ocLine(el, [{ name: 'progress', points: p, color: dash.colors[0], area: true }], {
+        h: 140, max: 100, tick: (v) => `${v}%`, label: `${lane}'s capabilities are ${p[p.length - 1]?.v}% of the way up`, empty: 'One point so far.',
+      });
+    });
+  }
+
+  const MS_NAME = { alpha: 'The alpha', books: 'Capxul: the books', 'people and payroll': 'Capxul: people and payroll', banking: 'Capxul: banking', budgets: 'Capxul: budgets', 'getting paid': 'Capxul: getting paid, later' };
+  dash.draw('ms-chart', (el) => {
+    const d = dash.data('byMilestone');
+    el.replaceChildren();
+    if (d.status !== 'ok') { el.textContent = d.status === 'error' ? 'The milestones did not load.' : '—'; return; }
+    const rows = d.data.filter((r) => r.total > 0);
+    const w = Math.max(280, el.clientWidth), rowH = 32, h = rows.length * rowH + 4;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${h}`).attr('role', 'img')
+      .attr('aria-label', 'Rows per milestone by stage: ' + rows.map((r) => `${MS_NAME[r.group]} ${r.built} of ${r.total} built`).join('; '));
+    const lbls = svg.selectAll('text.lbl').data(rows).join('text').attr('class', 'lbl').attr('x', 0).attr('y', (r, i) => i * rowH + 19).text((r) => MS_NAME[r.group] || r.group);
+    const vals = svg.selectAll('text.val').data(rows).join('text').attr('class', 'val').attr('text-anchor', 'end').attr('x', w).attr('y', (r, i) => i * rowH + 19).text((r) => `${r.built} of ${r.total} built`);
+    const left = Math.min(w * 0.45, d3.max(lbls.nodes(), (n) => n.getComputedTextLength()) + 12);
+    const right = d3.max(vals.nodes(), (n) => n.getComputedTextLength()) + 12;
+    const x = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.total)]).range([left, Math.max(left + 40, w - right)]);
+    const tip = ocTip(el);
+    rows.forEach((r, i) => {
+      let at = 0;
+      STAGES.forEach((s, k) => {
+        if (!r[s]) return;
+        svg.append('rect').attr('x', x(at)).attr('y', i * rowH + 7).attr('width', Math.max(0, x(at + r[s]) - x(at) - 1)).attr('height', 16).attr('rx', 2).style('fill', OC_SW(k))
+          .on('pointerenter', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(`${MS_NAME[r.group]}: ${r[s]} ${s}`, px, py); })
+          .on('pointerleave', () => tip.hide());
+        at += r[s];
+      });
+    });
+  });
+
+  window.ocPick = window.ocPick || { lane: '', dim: '' };
+  dash.draw('lane-pick', (sel) => {
+    sel.replaceChildren(new Option('Both builds', ''), new Option('The alpha', 'alpha'), new Option('Capxul', 'Capxul'));
+    sel.value = window.ocPick.lane;
+    sel.onchange = () => { window.ocPick.lane = sel.value; dash.draw('rows'); };
+  });
+  dash.draw('dim-pick', (sel) => {
+    sel.replaceChildren(new Option('Every dimension', ''), new Option('Capabilities', 'capabilities'), new Option('Tests', 'tests'), new Option('Slices', 'slices'));
+    sel.value = window.ocPick.dim;
+    sel.onchange = () => { window.ocPick.dim = sel.value; dash.draw('rows'); };
+  });
+  dash.draw('rows', (tb) => {
+    const d = dash.data('items');
+    tb.replaceChildren();
+    if (d.status !== 'ok') { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 6; td.textContent = d.status === 'error' ? 'The items did not load.' : '—'; return; }
+    const { lane, dim } = window.ocPick;
+    const order = { capabilities: 0, tests: 1, slices: 2 };
+    const rows = d.data.filter((r) => (!lane || r.lane === lane) && (!dim || r.dimension === dim))
+      .sort((a, b) => a.lane.localeCompare(b.lane) || order[a.dimension] - order[b.dimension] || String(a.group).localeCompare(String(b.group)) || String(a.id).localeCompare(String(b.id)));
+    for (const r of rows) {
+      const tr = tb.insertRow(); tr.dataset.key = r.id;
+      for (const [k, cls] of [['lane'], ['dimension'], ['group'], ['id', 'id'], ['name'], ['status']]) {
+        const td = tr.insertCell(); td.textContent = r[k] ?? '—'; if (cls) td.className = cls;
+      }
+    }
+  });
+</script>
