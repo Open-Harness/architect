@@ -46,8 +46,10 @@ const declareGone = (root: string, on: string, change: (t: string) => string) =>
   // after it; either way `Gone` joins what the call declares. A planting that matches nothing would make the refusals below
   // pass for the wrong reason, so it must match once.
   edit(dirs["github"]!, "src/index.ts", (t) => {
-    const before = [`"${on}": Blueprint.call(),`, `"${on}": Blueprint.call({ errors }),`].filter((form) => t.includes(form));
-    expect(before, `github's src/index.ts declares "${on}" as \`Blueprint.call()\` or \`Blueprint.call({ errors })\`, once`).toHaveLength(1);
+    const forms = [`"${on}": Blueprint.call(),`, `"${on}": Blueprint.call({ errors }),`];
+    const found = forms.reduce((n, form) => n + t.split(form).length - 1, 0);
+    expect(found, `github's src/index.ts declares "${on}" as \`Blueprint.call()\` or \`Blueprint.call({ errors })\`, once`).toBe(1);
+    const before = forms.filter((form) => t.includes(form));
     const declared = before[0]!.includes("{ errors }") ? "[...errors, Gone as never]" : "[Gone as never]";
     return t.replace("export default Blueprint.adapter({", `export class Gone extends Blueprint.error({}, { exit: 98 }) {}\n\nexport default Blueprint.adapter({`)
       .replace(before[0]!, `"${on}": Blueprint.call({ errors: ${declared} }),`);
