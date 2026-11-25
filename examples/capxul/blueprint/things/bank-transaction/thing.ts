@@ -8,7 +8,9 @@ import { AccountCurrency, BridgeRef, Party } from "../../values/bridge.ts";
 // ERPNext's Bank Transaction (erpnext/accounts/doctype/bank_transaction): one movement of money on a company's bank
 // account, which Bridge reports. `deposit` and `withdrawal` are ERPNext's two Currency fields, held as USDC in base units
 // (CX-grill, section 3): Bridge lands a deposit as USDC and sends a transfer from it, both in dollars. One of the two is
-// 0. `reference` is ERPNext's `reference_number`, here Bridge's id for the movement, and `party` its `bank_party_name`.
+// 0, and they stay USDC whatever the account's `currency` (CX-grill, section 3), unlike ERPNext's, which are in the row's
+// currency. `reference` is ERPNext's `transaction_id`, the bank's own id for the movement (unique, as ERPNext's bank
+// imports dedupe on it), here Bridge's; `party` is its `bank_party_name`.
 export const BankTransaction = Blueprint.thing({
   description: "One movement of money on a company's bank account: a deposit Bridge landed, or a transfer out.",
   code: "BT",

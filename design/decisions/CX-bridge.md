@@ -20,10 +20,11 @@ scaffolds (`src/written.ts` and `src/stand-in/`) are in this pull request.
 
 ## The calls Capxul makes
 
-Each was checked against `latest.json` (method, path, required body fields, and whether it takes an `Idempotency-Key`).
-The name is the generated call's.
+Each was checked against `latest.json` (method, path, and whether it takes an `Idempotency-Key`). The body fields are
+those Capxul sends; Bridge requires fewer (`kyc_links` only `type` and `email`, `transfers` only `on_behalf_of`,
+`source` and `destination`), and the stand-in requires what Capxul sends. The name is the generated call's.
 
-| Capxul operation | Bridge call | Generated name | Idempotency-Key |
+| Capxul operation | Bridge call (body fields Capxul sends) | Generated name | Idempotency-Key |
 |---|---|---|---|
 | `bridge-individual.start`, `bridge-business.start` | `POST /v0/kyc_links` (`type`, `full_name`, `email`) | `kycLinks.create` | yes |
 | (reading a decision when an event is late) | `GET /v0/kyc_links/{kycLinkID}` | `kycLinks.get` | no |
@@ -83,10 +84,12 @@ Bridge has no door until #995's gap 5.
 ERPNext's Bank Transaction (`erpnext/accounts/doctype/bank_transaction`), per company:
 
 - **Fields:** `company`, `account` (ERPNext's `bank_account`), `date`, `deposit`, `withdrawal`, `currency`, `reference`
-  (`reference_number`: Bridge's id for the movement) and `party` (`bank_party_name`).
+  (ERPNext's `transaction_id`, the bank's own id for the movement, which ERPNext's bank imports dedupe on: here Bridge's)
+  and `party` (`bank_party_name`).
 - **Base units.** `deposit` and `withdrawal` are USDC in base units (`Blueprint.money(usdc)`), one of the two 0, because
   Bridge lands a deposit as USDC in Capxul's custody and sends a transfer from it. `currency` is the account's, the one
-  the money moved in at the bank.
+  the money moved in at the bank. Unlike ERPNext's, the two amounts are not in the row's `currency`: an EUR account's
+  rows hold USDC too.
 - **Bridge's amounts** are decimal strings in dollars. A virtual account's activity is "a dollar denominated string", and
   a transfer's amount is "in the fiat currency to which the source currency is pegged". Bridge's examples use up to six
   places (`"1.234567"`). So the operations take `Blueprint.decimal({ places: 6 })` (#977, #974), and the handler turns it
@@ -94,9 +97,11 @@ ERPNext's Bank Transaction (`erpnext/accounts/doctype/bank_transaction`), per co
 - **States:** `pending`, `settled` and `failed`, from ERPNext's Pending, Settled and Cancelled. A deposit Bridge reports
   has landed (`land`, to `settled`). A transfer out is `pending` (`send`) until Bridge says `payment_processed`
   (`settle`) or a final failure: `canceled`, `undeliverable`, `returned` or `refunded` (`fail`, carried in
-  `TransferFailed`). Reconciling comes with the books (slice 7).
+  `TransferFailed`). `refund_failed` is left out: Bridge's refund to the sender failed, but the transfer itself has
+  not ended, and Bridge moves it on. Reconciling comes with the books (slice 7).
 - **Refusals on `send`, in this order:** `AccountClosed` (Bridge has deactivated it), `CurrencyNotHeld` (each virtual
-  account takes one currency), then `NothingToSend` (an amount of 0 or less).
+  account takes one currency), then `NothingToSend` (an amount of 0 or less). `land` refuses nothing of its own: only
+  Bridge calls it, and a deposit of 0 or less from Bridge waits for the door's checks (#995).
 
 **Once per movement, keyed on Bridge's id for the movement.** `oneTransactionPerMovement` is unique on `reference`,
 refusing `AlreadyRecorded`. Goal 16's lead asked for the webhook's `event_id` as the key. This record keys on the

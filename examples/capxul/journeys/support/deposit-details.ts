@@ -15,7 +15,7 @@ export const isRoutingNumber = (rtn: unknown): boolean => {
   return assigned && [...rtn].reduce((sum, d, i) => sum + Number(d) * weights[i]!, 0) % 10 === 0;
 };
 
-/** The countries in SWIFT's IBAN registry, each with its IBAN's length. A code not here, such as `XX`, holds no IBAN. */
+/** Countries in SWIFT's IBAN registry, each with its IBAN's length: every SEPA country among them. A code not here, such as `XX`, is refused. */
 const IBAN_LENGTHS: Readonly<Record<string, number>> = {
   AD: 24, AE: 23, AL: 28, AT: 20, AZ: 28, BA: 20, BE: 16, BG: 22, BH: 22, BR: 29, BY: 28, CH: 21, CR: 22, CY: 28, CZ: 24,
   DE: 22, DK: 18, DO: 28, EE: 20, EG: 29, ES: 24, FI: 18, FO: 18, FR: 27, GB: 22, GE: 22, GI: 23, GL: 18, GR: 27, GT: 28,
@@ -31,7 +31,8 @@ const IBAN_LENGTHS: Readonly<Record<string, number>> = {
  * IE90MODR14035307970528 is not (it leaves 57); Modulr's same account with true check digits, IE34MODR14035307970528, is.
  */
 export const isIban = (iban: unknown): boolean => {
-  if (typeof iban !== "string" || !/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(iban)) return false;
+  // Check digits 00, 01 and 99 are never issued, though 01 and 99 can pass mod 97.
+  if (typeof iban !== "string" || !/^[A-Z]{2}(0[2-9]|[1-8]\d|9[0-8])[A-Z0-9]+$/.test(iban)) return false;
   if (IBAN_LENGTHS[iban.slice(0, 2)] !== iban.length) return false;
   const digits = [...`${iban.slice(4)}${iban.slice(0, 4)}`].map((c) => (/\d/.test(c) ? c : String(c.charCodeAt(0) - 55))).join("");
   return BigInt(digits) % 97n === 1n;
