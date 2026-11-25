@@ -5,7 +5,7 @@
 (`hrms/payroll/doctype/{salary_component,salary_structure,salary_detail,salary_structure_assignment,payroll_period,
 salary_slip,payroll_entry,payroll_employee_detail}`, read with every `validate`, `before_submit`, `on_submit` and the
 functions they call). Where the scope and the source differed, the source won, and each difference is listed below
-for core to confirm.
+which core confirmed.
 
 ## What 9a holds
 
@@ -53,7 +53,10 @@ USDC in base units (`Amount`, and `Balance` where a draft may go below nothing);
 | Submit-slips refuses a posting day in none of the company's fiscal years (`AccrualOutsideFiscalYear`), writing nothing | the accrual journal entry's `get_fiscal_year` on submit | `payroll-entry.submit-slips` |
 | Submit-slips submits every slip and posts one submitted Journal Entry, with its lines and one GL Entry per line: a debit per earning account (every slip's earning lines on components booked there, summed), a credit per deduction account, and a credit of the slips' net pay to the payable account (an account both earnings and deductions are booked to gets a debit line and a credit line, never netted, as HRMS keeps the two totals apart; the debits, then the credits, come in the order their accounts are first met, slip by slip in the entry's order and line by line, as HRMS reads slip detail rows), all in the entry's cost center and on its posting day, remark "Accrual Journal Entry for salaries from <first> to <last>". A line of 0 is left out. Each slip names the journal entry | HRMS's `make_accrual_jv_entry` with employee-wise accounting off (its default) | `payroll-entry.submit-slips` |
 
-## Where the source changed the scope (core: please confirm)
+## Where the source changed the scope
+
+Goal 16's core confirmed all nine on 25 November 2026 (thread T-01a2093c-8643-7794-9ce7-5dbc110ce4aa). Items 3 and 4
+are known limits that 9c revisits.
 
 1. **A payroll entry takes three moves, not one.** The scope's entry "fills in the active employees, creates their
    salary slips and submits them". HRMS does that in three steps the owner takes: the entry's `fill_employee_details`,
@@ -66,10 +69,10 @@ USDC in base units (`Amount`, and `Balance` where a draft may go below nothing);
 3. **Leavers.** HRMS fills in an employee who left on or after the first day (`relieving_date >= start_date`) and
    prorates their pay by payment days. Capxul doesn't store the relieving day (#742, item 5) and has no payment days
    (9c), so a leaver is skipped when the entry is made (CX-expense-leavers), and one who leaves after the draft is
-   still paid in full on submit, as HRMS does for an employee already on the entry.
+   still paid in full on submit, as HRMS does for an employee already on the entry. A known limit 9c revisits.
 4. **Every line pays in full.** HRMS prorates a line by payment days (`depends_on_payment_days`, on by default), so a
    joiner inside the span is paid for their days. Payment days need payroll settings (9c): here a joiner on 8 April is
-   paid April in full. `run a payroll` pins this; 9c changes it.
+   paid April in full. `run a payroll` pins this. A known limit 9c revisits.
 5. **No formulas.** A structure line pays a fixed amount, its own or its component's. HRMS's condition, formula,
    `amount_based_on_formula`, `base` and `variable` are left out. So every structure rule is Capxul's own: HRMS's
    `validate` judges only formulas, flexible benefits, timesheets, payment days and tax. They are the rules a fixed
@@ -89,20 +92,21 @@ USDC in base units (`Amount`, and `Balance` where a draft may go below nothing);
 
 ## Framework gaps (for core)
 
-1. **One operation can't run another.** `payroll-entry.submit-slips` should post through `journal-entry.create` and
+1. **One operation can't run another** (snag #1079). `payroll-entry.submit-slips` should post through `journal-entry.create` and
    `journal-entry.submit`. No handler can call another operation, so its step writes the Journal Entry (in
    `submitted`), its Journal Entry Account rows and its GL Entry rows itself, in the shape 7a's handlers write them
    (`writes: [PayrollEntry, SalarySlip, JournalEntry, JournalEntryAccount, GLEntry]`). Two costs: 7a's rules (balance,
    the fiscal year) are judged again in the payroll handler (hence `AccrualOutsideFiscalYear`), and the journal
    entry's own events (`JournalEntryDrafted`, `JournalEntrySubmitted`) aren't written. The checks read the entry back
    through 7a's reads, so a build that writes a different shape fails them.
-2. **An `undefined` in a step's expected value renders two ways.** With `expect(...).toEqual([..., undefined])`,
+2. **An `undefined` in a step's expected value renders two ways** (snag #1031). With `expect(...).toEqual([..., undefined])`,
    `ortho generate` wrote `null` into the journey's docs and `ortho check` rendered `undefined`, so `check` reported
    drift on a freshly generated `generated/docs/salary-slip/get.md` and `generated/portal/blueprint.json`. The journey
    compares `journalEntry === undefined` with `true` instead.
 
 ## Known limits (9b and 9c, and later)
 
+Skipping a leaver at create and paying full months with no payment days (items 3 and 4 above), which 9c revisits.
 Tax: income tax slabs, tax components, exemption categories, declarations and proofs, `variable_based_on_taxable_salary`,
 the payroll period's sub-periods (9b). Additional salary, salary withholding, payroll settings (payment days, leave
 without pay, attendance, holidays, rounding, emailing slips) and scheduling a payroll by frequency (9c). Formulas and
