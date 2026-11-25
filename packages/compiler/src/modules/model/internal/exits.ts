@@ -105,7 +105,7 @@ export const operationExitClashes = (
       return [`${o.file}: ${o.name} refuses both ${other} and ${name} at exit ${a.exit}: ${name}'s exit ${a.exit} is ${other}'s; pick another${by(name)}${by(other)}`];
     }));
     return [...lines, ...[...adapters.values()].map(({ things: [a, b], exits: at }) => {
-      const files = [b, a].flatMap((t) => written.get(t) ?? []);
+      const files = [a, b].flatMap((t) => written.get(t) ?? []);
       const others = [a, b].filter((t) => !written.has(t)).map((t) => fileOf(t, things[t]!.from, "errors"));
       return `${o.file}: ${o.name} refuses errors of ${whose(a)} and ${whose(b)} at the same ${at.length === 1 ? "exit" : "exits"} (${at.join(", ")}): ${setExit(files, `miss every other exit ${o.name} refuses, within ${LOWEST} to ${HIGHEST}`)}${others.length > 0 ? `, or pick others in ${others.join(" and ")}` : ""}`;
     })];
