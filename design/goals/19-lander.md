@@ -85,7 +85,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-25 November 2026, about 09:30 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
+25 November 2026, about 10:40 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
 minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
 said no Claude-led goal is running now.
 
@@ -100,9 +100,8 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Twelve Capxul rounds have landed. `goal/capxul` is ahead of `main` by
-  appraisals, #1030's checks with #1051's build, and by leave, #1026's checks with #1055's build. #1051's last fix
-  (`7a55e9bb`) sits on #1026's merge, so the next round lands appraisals and leave together:
+- **Slice 3, the landing loop, is running.** Thirteen Capxul rounds have landed, and `goal/capxul` is 0 commits ahead of
+  `main`:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -132,6 +131,10 @@ said no Claude-led goal is running now.
     #1043's own commits. The 🔍 passed it: `prove` gives 63/63 moves, 62/62 outcomes and 94/94 refusals; on blank
     handlers only the six ledger journeys fail, and each of six planted wrong builds fails a named step. Codex's one
     finding, that the generated CLI can't pass a list flag, is Snag #1034.
+  - #1057 brought slice 8g's appraisals and slice 8b's leave together, at `cd85ba7d`: #1030 and #1051, and #1026 and
+    #1055. #1051's last fix (`7a55e9bb`) sat on #1026's merge, so the two landed as one. The 🔍 passed it: `prove`
+    gives 91/91 moves, 84/84 outcomes and 174/174 refusals; on blank handlers exactly the 15 new journeys fail, and
+    each of 12 planted wrong builds fails a named step. #1026 had no posted 🔍, and Goal 16 was asked to post it.
 
   Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
   it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
@@ -175,6 +178,7 @@ said no Claude-led goal is running now.
   scratch folders inside `packages/projections/.ortho/`, and `compiler`'s role-paths test, reading that package through
   acme, failed on one that had gone, on `main` at `765ee8dd`. `logbook`'s `local/routes.test.ts` failed once on #948
   and passed on rerun. #1035: `e2e-layer2` check 3 fails at random with "world's address was taken" (on `main` at
-  `67605c1e`; a rerun passed).
+  `67605c1e`; a rerun passed). #1058: `prove`'s `promote/staging.test.ts` fails at random when its issuer's port is
+  taken (on `main` at `f8a20825`; `main` was green on its next commit, `c819ed27`).
 - **Next:** each round lands what the app branches have merged since, and tells every running goal after each
   landing.
