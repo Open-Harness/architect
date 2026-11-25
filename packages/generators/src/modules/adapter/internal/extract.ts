@@ -117,6 +117,16 @@ const authOf = (d: Description, op: Node): Auth => {
   return scheme["type"] === "apiKey" && scheme["in"] === "header" && typeof scheme["name"] === "string" ? { header: scheme["name"] } : "bearer";
 };
 
+/**
+ * Whether the description requires a key: a requirement naming a scheme, in its own `security` or any operation's
+ * (G16-adapter-mounts call 1). A scheme no requirement names, or only the anonymous `[{}]`, requires none; a key made
+ * optional (`[{}, { bearer: [] }]`) still does.
+ */
+export const requiresKey = (d: Description): boolean => {
+  const names = (security: unknown) => Array.isArray(security) && security.some((r) => typeof r === "object" && r !== null && Object.keys(r).length > 0);
+  return names(d.raw["security"]) || Object.values<Node>(d.raw["paths"] ?? {}).some((item) => METHODS.some((m) => names(item?.[m]?.["security"])));
+};
+
 /** The method's word on a collection (the path ends in a fixed part) and on an item (it ends in a `{parameter}`). */
 const WORDS = {
   collection: { get: "list", post: "create", put: "update", patch: "update", delete: "delete" },

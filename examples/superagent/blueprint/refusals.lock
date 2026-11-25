@@ -288,6 +288,64 @@
       },
       "earlier": []
     },
+    "GI-001": {
+      "name": "GithubApiFailure",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {
+        "status": {
+          "value": "uint",
+          "bits": 16
+        },
+        "code": {
+          "value": "text",
+          "max": 200,
+          "optional": true
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "GithubApiFailure"
+        }
+      },
+      "earlier": []
+    },
+    "GI-002": {
+      "name": "GithubInputRefused",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GithubInputRefused"
+        }
+      },
+      "earlier": []
+    },
+    "GI-003": {
+      "name": "GithubAnswerRefused",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GithubAnswerRefused"
+        }
+      },
+      "earlier": []
+    },
+    "GI-004": {
+      "name": "GithubUnreachable",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GithubUnreachable"
+        }
+      },
+      "earlier": []
+    },
     "IN-900": {
       "name": "InputNotWaiting",
       "owner": "input",
@@ -364,6 +422,64 @@
       "wire": {
         "effect": {
           "tag": "OutgoingMessageNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "PH-001": {
+      "name": "PosthogApiFailure",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {
+        "status": {
+          "value": "uint",
+          "bits": 16
+        },
+        "code": {
+          "value": "text",
+          "max": 200,
+          "optional": true
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PosthogApiFailure"
+        }
+      },
+      "earlier": []
+    },
+    "PH-002": {
+      "name": "PosthogInputRefused",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PosthogInputRefused"
+        }
+      },
+      "earlier": []
+    },
+    "PH-003": {
+      "name": "PosthogAnswerRefused",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PosthogAnswerRefused"
+        }
+      },
+      "earlier": []
+    },
+    "PH-004": {
+      "name": "PosthogUnreachable",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PosthogUnreachable"
         }
       },
       "earlier": []
@@ -481,6 +597,64 @@
       "wire": {
         "effect": {
           "tag": "SettingsNotCurrent"
+        }
+      },
+      "earlier": []
+    },
+    "SL-001": {
+      "name": "SlackApiFailure",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {
+        "status": {
+          "value": "uint",
+          "bits": 16
+        },
+        "code": {
+          "value": "text",
+          "max": 200,
+          "optional": true
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SlackApiFailure"
+        }
+      },
+      "earlier": []
+    },
+    "SL-002": {
+      "name": "SlackInputRefused",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SlackInputRefused"
+        }
+      },
+      "earlier": []
+    },
+    "SL-003": {
+      "name": "SlackAnswerRefused",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SlackAnswerRefused"
+        }
+      },
+      "earlier": []
+    },
+    "SL-004": {
+      "name": "SlackUnreachable",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SlackUnreachable"
         }
       },
       "earlier": []

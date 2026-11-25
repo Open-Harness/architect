@@ -25,6 +25,9 @@ const declared = (errors: ReadonlyArray<new (...args: never) => unknown>, label:
 export const runner: CallsApi["runner"] = ({ label, step, wiring }) => (args, failure) => {
   const { call } = step;
   if (!wiring) return Effect.die(new Error(`${label}: nothing is wired to this call: the server serves it without the adapter's callable`)) as never;
+  // A generated adapter's mount with no address is a defect, before anything is sent: never a refusal, never a default URL.
+  const missing = wiring.unset?.();
+  if (missing !== undefined) return Effect.die(new Error(`${label}: ${missing} is not set, so the call has nowhere to go`)) as never;
   const raw = call.mode === "effect" ? effected(wiring, args) : waited(wiring, args);
   return raw.pipe(
     Effect.mapError(failure as (failure: unknown) => never),

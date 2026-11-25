@@ -74,8 +74,8 @@ describe("what the generator keeps and refuses", () => {
     const spec = { ...one("constructor/toString", "/x", []), paths: { "/x": { get: { operationId: "constructor/toString", responses: { "200": { description: "ok" } } } }, "/y": { get: { operationId: "constructor/valueOf", responses: { "200": { description: "ok" } } } } } };
     const index = files(spec).find((f) => f.path === "src/index.ts")!.content;
     expect(index).toContain('"constructor": {');
-    expect(index).toContain('"toString": Blueprint.call()');
-    expect(index).toContain('"valueOf": Blueprint.call()');
+    expect(index).toContain('"toString": Blueprint.call({ errors })');
+    expect(index).toContain('"valueOf": Blueprint.call({ errors })');
   });
 });
 
