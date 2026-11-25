@@ -34,6 +34,7 @@ export class CallTelemetry extends HttpApiMiddleware.Service<CallTelemetry>()("@
             return refused ? rejected : recordCall(route.operation, "unknown", start, { outcome: "defect" });
           }),
           // Counted above as a refused InvalidPayload; then answered with a body that names each field and why (#988).
+          // The cast: `work`'s error is Effect's opaque `unhandled`, which the guard cannot narrow.
           Effect.catchIf(isRefusedPayload, (error) => refusedPayload(error as unknown as HttpApiError.HttpApiSchemaError)),
         );
       }),

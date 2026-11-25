@@ -11,7 +11,8 @@ const said = (issue: Issue, path: ReadonlyArray<unknown> = []): ReadonlyArray<st
   switch (issue._tag) {
     case "Pointer": return inner(issue.issue, issue.path);
     case "Encoding": return inner(issue.issue);
-    case "Composite": case "OneOf": return (issue.issues ?? []).flatMap((next) => inner(next));
+    case "Composite": return (issue.issues ?? []).flatMap((next) => inner(next));
+    case "OneOf": return [`${where} matches more than one kind of value`];
     // A union none of whose members takes the value's kind (a list for an object) has no issues of its own.
     case "AnyOf": return issue.issues?.length ? issue.issues.flatMap((next) => inner(next)) : [`${where} is not the right kind of value`];
     case "MissingKey": return [`${where} is missing`];
