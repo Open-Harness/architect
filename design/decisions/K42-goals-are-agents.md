@@ -46,7 +46,7 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
    right? Whatever application is first and needs it, it builds it ... some of this stuff ... it's important to do, but
    it's not the highest urgency thing ... the whole point of doing the projects first is that it's like a forcing
    function ... how do we know that plugins work? ... We're supposed to be building it all like that."
-9. **Split the shared pieces; the superagent goes first.** "It's not a blanket rule, but what we should do is we
+9. **Split the shared pieces; the superagent goes first.** (Superseded by K44, 25 November 2026: the superagent is parked; two things are built, the Orthograph alpha and Capxul.) "It's not a blanket rule, but what we should do is we
    should split the pieces up amongst them ... we want to get the super agent done first because it's gonna help build
    capsule."
 10. **Organisations are separate.** Asked whether organisations belong to the superagent's launch or to Capxul's
@@ -63,6 +63,8 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
 ## The decision
 
 ### 1. Four goals
+
+(Superseded by K44, 25 November 2026: Goal 17 is parked; Goal 18 keeps running and builds the Orthograph alpha, Goal 16 builds Capxul, and the lander keeps running.)
 
 - **The framework goal (Goal 18)** always runs. It owns the engine and every package no app goal has claimed, the
   board, the roadmap and the releases. It takes over the 🎼 conductor's loop: it decides what runs next.
@@ -106,7 +108,7 @@ An app goal owns every gap it finds, big or small. Before it starts one, it read
    is one.
 
 **The two apps split the shared pieces** (Aaron's call 9). A piece both apps need goes to the app that needs it first
-in the order the apps run, and the superagent runs first, so it takes most of them; the other app mounts the piece
+in the order the apps run, and the superagent runs first (superseded by K44, 25 November 2026: the superagent is parked; Capxul is the one app building), so it takes most of them; the other app mounts the piece
 once it is extracted. The framework goal records the split on the board and settles any piece both want. The split
 on 23 November is in `docs/canon/status.md` once Goal 18's slice 2 writes it: the superagent takes versions, timers,
 safe repeats, events in and the outbox, secrets, webhook doors, the pages, sign-in and the live deploy; Capxul takes
@@ -126,7 +128,7 @@ Each round:
 2. **What can run now:** items whose needs have landed and that are unclaimed, or claimed by the framework goal.
 3. **What runs first**, in this order:
    1. an app goal is waiting on it now;
-   2. it is on the superagent's next slice, then on Capxul's next feature (call 9);
+   2. it is on the superagent's next slice, then on Capxul's next feature (call 9) (superseded by K44, 25 November 2026: the alpha's next slice, or Capxul's next feature);
    3. it makes scaffolding better for every app (today: `ortho new` for an app, M2.09; `ortho add` for events,
       errors, roles and moves, M2.14 and M2.15; adapters from an ABI, #474);
    4. it keeps `main` green and CI fast;
@@ -165,7 +167,7 @@ release once an app has pulled it, proved it with its journeys, and it has been 
 A piece still inside an app's `plugins/` is not part of the framework yet.
 
 - **Preview** stays as K28 has it: the framework on npm under `next`, the baseline every app builds on.
-- **Beta:** every framework piece the superagent pulled to work end to end, extracted into Orthograph's packages and
+- **Beta** (superseded by K44, 25 November 2026: the framework Capxul's books, HR and payroll prove): every framework piece the superagent pulled to work end to end, extracted into Orthograph's packages and
   published, with the superagent running on that published framework. The superagent's launch is not part of it.
 - **1.0:** the same for every piece Capxul core pulled (the books, HR and payroll in ERPNext's shapes, and the paid
   services, as K43 sets out), plus the release slices (M7.01 to M7.04, M7.06 and M7.13). This is Aaron's call 7.

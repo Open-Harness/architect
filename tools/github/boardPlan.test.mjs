@@ -52,7 +52,7 @@ test("a built row reopened when its stage goes back, and a stray copy or an outs
 });
 
 test("the beta label says the beta of K42, and the board's kind has a label and an issue type", () => {
-  assert.equal(LABELS.find((l) => l.name === "release:beta").description, "Ships in the beta: the framework the superagent proves (K42)");
+  assert.equal(LABELS.find((l) => l.name === "release:beta").description, "Ships in the beta: the framework Capxul's books, HR and payroll prove (K44)");
   assert.ok(LABELS.some((l) => l.name === "kind:capability"));
   assert.equal(typeOf("capability", { ownerType: "User" }), "Task");
 });
