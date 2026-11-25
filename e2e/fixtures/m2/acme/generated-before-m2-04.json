@@ -1,5 +1,5 @@
 {
- "note": "sha256 of every file of examples/acme/generated, before M2.04's build (first captured at goal/stage-1 dc471c87; recaptured at M1.51's licence change on goal-3/m1-51-licence-check, hash lines only: the package hashes and digest in generated/model/model.json and generated/portal/blueprint.json). M2.04 must leave every one as it is (milestones.md, M2.04): checks 12, 14 and 21 stay green with no baseline recaptured. Recaptured again at the goal/ui-layer landing (Goal 19, #785): Goal 5 actions projection adds the 15 files of generated/actions/ and the actions entries (and hashes) in generated/model/model.json and generated/portal/blueprint.json; no secrets section, nothing removed.",
+ "note": "sha256 of every file of examples/acme/generated, before M2.04's build (first captured at goal/stage-1 dc471c87; recaptured at M1.51's licence change on goal-3/m1-51-licence-check, hash lines only: the package hashes and digest in generated/model/model.json and generated/portal/blueprint.json). M2.04 must leave every one as it is (milestones.md, M2.04): checks 12, 14 and 21 stay green with no baseline recaptured. Recaptured again at the goal/ui-layer landing (Goal 19, #785): Goal 5 actions projection adds the 15 files of generated/actions/ and the actions entries (and hashes) in generated/model/model.json and generated/portal/blueprint.json; no secrets section, nothing removed. Recaptured again for #969 (#742 item 5, the CLI's --json answer writes a decimal as its text): the hash of generated/cli/src/output.ts only. Recaptured again for #981 (the CLI's --json writes a decimal inside an Option as its text, and a refusal shows only its own declared fields): the hash of generated/cli/src/output.ts only.",
  "files": {
   "generated/actions/allowance/get.ts": "f9b17700ddccee631952845163a63d481adcbfd72575ecf47b98ee8764e69ee5",
   "generated/actions/allowance/grant.ts": "40bbd92716a6833785adae76353e5aaf6a0e11aad8272b447bbe08a6c59d615e",
@@ -58,7 +58,7 @@
   "generated/cli/src/membership/get.ts": "c6e43ec137cc72374b5a383a34f7b0eee4bfa245444c8f2c75b85d6065e04d24",
   "generated/cli/src/organization/create.ts": "fdc2d1de6b5e93ccd9ea96391c5c965cfeadd75306f7476a2329a59df1685a39",
   "generated/cli/src/organization/get.ts": "035449c21444347164996ee3fdd2a2e57f7ce943b0171f18f15e801c73989725",
-  "generated/cli/src/output.ts": "a3d11f7d8b4601c0ca87904c1a2bebc8e396c8c1c5cdaa682d06f373bc0c2828",
+  "generated/cli/src/output.ts": "1fc79675ae941706e1db81364c21bd1272467ce4fd38867fa3235836f2c71401",
   "generated/cli/src/person/sign-up.ts": "7bf1ac33bd9f14bdc0dcaf71955b2cabfd38523a25d4845563acc277af64fbf2",
   "generated/cli/src/session/device.ts": "a0cb1eab0fdac63eb3dd38960bcb0fcba19bad6a5214140e51a65c86502e1a15",
   "generated/cli/src/session/show.ts": "dd0ee614529a9a862d6cfc3b616fed8df981766dbe872b7f81e72e2e76b8c431",

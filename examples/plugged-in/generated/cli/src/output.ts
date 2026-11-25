@@ -1,5 +1,6 @@
 // Generated from blueprint/projections/cli.ts. Do not edit.
-import { Console, Context, Effect, Option } from "effect";
+import { BigDecimal, Console, Context, Effect, Option } from "effect";
+import { decimalText } from "orthograph/server";
 import { Errors } from "../../sdk/src/index.ts";
 
 /** Set by the entry, so commands never touch the process. */
@@ -9,7 +10,15 @@ export class ExitCode extends Context.Service<ExitCode, { readonly set: (code: n
 export const supplied = (flags: Readonly<Record<string, unknown>>) =>
   Object.fromEntries(Object.entries(flags).flatMap(([k, v]) => (Option.isOption(v) ? (Option.isSome(v) ? [[k, v.value]] : []) : [[k, v]])));
 
-const text = (x: unknown) => JSON.stringify(x, (_, v: unknown) => (typeof v === "bigint" ? v.toString() : v));
+/** A value as it travels: a bigint as its digits, a decimal as its text (`1.50`, never an exponent). */
+const wire = (v: unknown): unknown => (typeof v === "bigint" ? v.toString() : BigDecimal.isBigDecimal(v) ? decimalText(v) : v);
+// A decimal is read from its holder, since JSON.stringify has already called its toJSON; every other value keeps what its own toJSON made of it.
+// An `Option.some` keeps its own shape but hands back what it holds, so a decimal inside it is read from its holder too.
+const text = (x: unknown) =>
+  JSON.stringify(x, function (this: Readonly<Record<string, unknown>>, k: string, v: unknown) {
+    const raw = this[k];
+    return BigDecimal.isBigDecimal(raw) ? decimalText(raw) : Option.isOption(raw) && Option.isSome(raw) ? { ...(v as object), value: raw.value } : wire(v);
+  });
 const exitOf = (tag: unknown): number =>
   typeof tag === "string" && tag in Errors.refusals ? Errors.refusals[tag as keyof typeof Errors.refusals].exit : tag === "SchemaError" ? 2 : 1;
 
@@ -18,7 +27,7 @@ const said = (tag: unknown, code: unknown, fields: Readonly<Record<string, unkno
   // Only the project's own refusals have a code. Anything else (the CLI's own `NotSignedIn`) is told as it always was.
   if (typeof tag !== "string" || !(tag in Errors.codes)) return `${String(tag ?? "Error")}: ${text(fields)}`;
   const declared = (Errors.declared as Readonly<Record<string, { readonly fields: Readonly<Record<string, unknown>> }>>)[tag];
-  const shown = Object.entries(fields).filter(([k]) => declared === undefined || k in declared.fields).map(([k, v]) => `${k}: ${typeof v === "object" ? text(v) : String(v)}`);
+  const shown = Object.entries(fields).filter(([k]) => declared === undefined || Object.hasOwn(declared.fields, k)).map(([k, v]) => `${k}: ${typeof v === "object" && !BigDecimal.isBigDecimal(v) ? text(v) : String(wire(v))}`);
   return `${typeof code === "string" ? `[${code}] ` : ""}${tag}${shown.length > 0 ? ` { ${shown.join(", ")} }` : ""}`;
 };
 
@@ -37,4 +46,4 @@ export const refused = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
 
 /** A one-field answer prints its value, or with `json` the whole answer as JSON. */
 export const answer = (json: boolean) => <A extends object, E, R>(effect: Effect.Effect<A, E, R>) =>
-  effect.pipe(Effect.flatMap((a) => Console.log(!json && Object.keys(a).length === 1 ? String(Object.values(a)[0]) : text(a))), refused);
+  effect.pipe(Effect.flatMap((a) => Console.log(!json && Object.keys(a).length === 1 ? String(wire(Object.values(a)[0])) : text(a))), refused);

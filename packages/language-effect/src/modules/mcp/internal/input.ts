@@ -6,7 +6,7 @@ type Json = { readonly [key: string]: unknown };
 const UNSIGNED = "^(0|[1-9][0-9]*)$";
 const SIGNED = "^(0|-?[1-9][0-9]*)$";
 /** A decimal's text as its value takes it (`values/internal/wire.ts`): no exponent, no `+`, no leading zero, no `-0`, at most `places` after the point. */
-const decimal = (places: number): string => `^(?!-0(\\.0*)?$)-?(0|[1-9][0-9]*)${places > 0 ? `(\\.[0-9]{1,${places}})?` : ""}$`;
+export const decimalPattern = (places: number): string => `^(?!-0(\\.0*)?$)-?(0|[1-9][0-9]*)${places > 0 ? `(\\.[0-9]{1,${places}})?` : ""}$`;
 
 /** A payload field the caller may not give: declared, and not public. A tool never offers it and never takes it. */
 export const hiddenInputs = (payload: FieldsInput): ReadonlyArray<string> =>
@@ -31,7 +31,7 @@ export const inputSchema = (payloadSchema: Schema.Top, payload: FieldsInput): Js
       const digits =
         meta?.type === "uint" ? UNSIGNED
         : meta?.type === "money" ? (meta.signed ? SIGNED : UNSIGNED)
-        : meta?.type === "decimal" ? decimal(meta.places)
+        : meta?.type === "decimal" ? decimalPattern(meta.places)
         : undefined;
       const said = digits === undefined ? p : { ...(p as Json), pattern: digits };
       return [k, description === undefined ? said : { ...(said as Json), description }] as const;
