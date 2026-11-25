@@ -1,8 +1,11 @@
 // Scaffolded from blueprint/things/journal-entry/verbs/submit.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Ids, Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/journal-entry/submit.handler.ts";
+import { FiscalYear } from "../../blueprint/things/fiscal-year/thing.ts";
+import { GLEntry } from "../../blueprint/things/gl-entry/thing.ts";
+import { JournalEntryAccount } from "../../blueprint/things/journal-entry-account/thing.ts";
 
 const { JournalEntryUnbalanced, PostingDateOutsideFiscalYear } = Errors.declared;
 
@@ -44,37 +47,69 @@ const { JournalEntryUnbalanced, PostingDateOutsideFiscalYear } = Errors.declared
  *   once it answers, it writes JournalEntrySubmitted: journalEntry and posted from the answer;
  *   the call is the span journal-entry.submit, and its commit journal-entry.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ journalEntry }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span journal-entry.submit.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
+    const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
-    // JournalEntryUnbalanced: exit 48, JE-008.
-    if (yield* Handlers.blank<boolean>("refuse JournalEntryUnbalanced when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why JournalEntryUnbalanced was refused"));
-      return yield* new JournalEntryUnbalanced({
-        difference: yield* Handlers.blank("JournalEntryUnbalanced.difference, a Balance"),
-      });
+    // Step load: database, span journal-entry.submit.load. The runtime read the entry for its role and state checks
+    // and hands it in; this step reads its lines and its company's fiscal years.
+    const { entry, lines, years } = yield* steps.load(
+      Effect.gen(function* () {
+        if (!subject) return yield* Effect.die(new Error(`journal entry ${journalEntry} was checked and then not found`));
+        const lines = yield* records.list({ ...all, thing: JournalEntryAccount, where: { journalEntry } });
+        const years = yield* records.list({ ...all, thing: FiscalYear, where: { company: subject["company"] } });
+        return { entry: subject, lines: lines.items, years: years.items };
+      }),
+    );
+    const company = entry["company"] as string;
+    const postingDate = entry["postingDate"] as string;
+
+    // Refusal order (errors.ts): JournalEntryUnbalanced, then PostingDateOutsideFiscalYear.
+    // JournalEntryUnbalanced: exit 48, JE-008. It carries debit less credit, signed.
+    const difference = (entry["totalDebit"] as bigint) - (entry["totalCredit"] as bigint);
+    if (difference !== 0n) {
+      yield* Effect.logInfo(`debit less credit is ${difference}, not 0`);
+      return yield* new JournalEntryUnbalanced({ difference });
     }
 
-    // PostingDateOutsideFiscalYear: exit 49, JE-009.
-    if (yield* Handlers.blank<boolean>("refuse PostingDateOutsideFiscalYear when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PostingDateOutsideFiscalYear was refused"));
-      return yield* new PostingDateOutsideFiscalYear({
-        postingDate: yield* Handlers.blank("PostingDateOutsideFiscalYear.postingDate, a Day"),
-      });
+    // PostingDateOutsideFiscalYear: exit 49, JE-009. One of the company's own years, both ends counted.
+    if (!years.some((y) => (y["yearStartDate"] as string) <= postingDate && postingDate <= (y["yearEndDate"] as string))) {
+      yield* Effect.logInfo(`${postingDate} falls in none of the company's fiscal years`);
+      return yield* new PostingDateOutsideFiscalYear({ postingDate: postingDate as never });
     }
 
-    // Step post: database, in the store journal-entry, gl-entry, span journal-entry.submit.post.
-    yield* steps.post(Handlers.blank("post: the work this step does"));
+    // Step post: database, in the store journal-entry, gl-entry, span journal-entry.submit.post. One ledger line per
+    // line, in line order, unmerged (merge_similar_account_heads is off by default).
+    const ordered = [...lines].sort((a, b) => ((a["line"] as bigint) < (b["line"] as bigint) ? -1 : 1));
+    yield* steps.post(
+      Effect.forEach(ordered, (line) =>
+        Effect.gen(function* () {
+          const id = yield* Ids.of(GLEntry.fields.id);
+          yield* records.insert(GLEntry, {
+            id,
+            company: company as never,
+            account: line["account"] as never,
+            costCenter: line["costCenter"] as never,
+            postingDate: postingDate as never,
+            debit: line["debit"] as bigint,
+            credit: line["credit"] as bigint,
+            voucherType: "Journal Entry",
+            voucherId: journalEntry,
+            isCancelled: false,
+          });
+        }),
+      ),
+    );
 
     // The move submit, from draft, to submitted.
     yield* move();
 
     return {
-      journalEntry: yield* Handlers.blank("journalEntry, a journal-entry.id"),
+      journalEntry,
       // JournalEntrySubmitted needs posted, and only the answer can give it.
-      posted: yield* Handlers.blank("posted, a LineCount"),
+      posted: BigInt(ordered.length),
     };
   });
 

@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/account/verbs/make-ledger.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/account/make-ledger.handler.ts";
+import { Account } from "../../blueprint/things/account/thing.ts";
 
 const { AccountHasChildren } = Errors.declared;
 
@@ -43,26 +44,29 @@ const { AccountHasChildren } = Errors.declared;
  *   once it answers, it writes AccountMadeLedger: account from the answer;
  *   the call is the span account.make-ledger, and its commit account.make-ledger.commit.
  */
-const makeLedger: Handler = (_payload, { steps, move }) =>
+const makeLedger: Handler = ({ account }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step load: database, span account.make-ledger.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+
+    // Step load: database, span account.make-ledger.load. One account under it is enough to refuse.
+    const children = yield* steps.load(
+      records.list({ thing: Account, where: { parentAccount: account }, state: undefined, order: "oldest", limit: 1, after: undefined }),
+    );
 
     // AccountHasChildren: exit 46, AC-006.
-    if (yield* Handlers.blank<boolean>("refuse AccountHasChildren when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AccountHasChildren was refused"));
+    if (children.items.length > 0) {
+      yield* Effect.logInfo("an account sits under this group");
       return yield* new AccountHasChildren({});
     }
 
-    // Step update: database, span account.make-ledger.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span account.make-ledger.update. The only change is its state, which the runtime sets
+    // once this answers.
+    yield* steps.update(Effect.void);
 
     // The move makeLedger, from group, to ledger.
     yield* move();
 
-    return {
-      account: yield* Handlers.blank("account, an account.id"),
-    };
+    return { account };
   });
 
 export default makeLedger;

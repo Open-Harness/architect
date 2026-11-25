@@ -1,7 +1,9 @@
 // Scaffolded from blueprint/things/account/verbs/balance.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/account/balance.handler.ts";
+import { Account } from "../../blueprint/things/account/thing.ts";
+import { GLEntry } from "../../blueprint/things/gl-entry/thing.ts";
 
 /**
  * account.balance: An account's balance on a day: its own ledger lines and those of every account under it.
@@ -36,17 +38,36 @@ import type { Handler } from "../../generated/api/src/account/balance.handler.ts
  *   each step is its own span: account.balance.sum;
  *   the call is the span account.balance, and its commit account.balance.commit.
  */
-const balance: Handler = (_payload, { steps }) =>
+const balance: Handler = ({ account, onDay }, { steps }) =>
   Effect.gen(function* () {
-    // Step sum: database, span account.balance.sum.
-    yield* steps.sum(Handlers.blank("sum: the work this step does"));
+    const records = yield* Records;
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
+    const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
-    return {
-      account: yield* Handlers.blank("account, an account.id"),
-      debit: yield* Handlers.blank("debit, an Amount"),
-      credit: yield* Handlers.blank("credit, an Amount"),
-      balance: yield* Handlers.blank("balance, a Balance"),
-    };
+    // Step sum: database, span account.balance.sum. The account and every account anywhere under it, walked a level
+    // at a time; then each one's ledger lines not cancelled, posted on or before the day (ERPNext's get_balance_on).
+    const { debit, credit } = yield* steps.sum(
+      Effect.gen(function* () {
+        const accounts: Array<string> = [account];
+        for (let i = 0; i < accounts.length; i++) {
+          const under = yield* records.list({ ...all, thing: Account, where: { parentAccount: accounts[i] } });
+          for (const child of under.items) accounts.push(child["id"] as string);
+        }
+        let debit = 0n;
+        let credit = 0n;
+        for (const each of accounts) {
+          const lines = yield* records.list({ ...all, thing: GLEntry, where: { account: each, isCancelled: false } });
+          for (const line of lines.items) {
+            if ((line["postingDate"] as string) > onDay) continue;
+            debit += line["debit"] as bigint;
+            credit += line["credit"] as bigint;
+          }
+        }
+        return { debit, credit };
+      }),
+    );
+
+    return { account, debit, credit, balance: debit - credit };
   });
 
 export default balance;
