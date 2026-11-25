@@ -55,7 +55,7 @@ USDC in base units (`Amount`, and `Balance` where a draft may go below nothing);
 
 ## Where the source changed the scope
 
-Goal 16's core confirmed all nine on 25 November 2026 (thread T-01a2093c-8643-7794-9ce7-5dbc110ce4aa). Items 3 and 4
+Goal 16's core confirmed all ten on 25 November 2026 (thread T-01a2093c-8643-7794-9ce7-5dbc110ce4aa). Items 3 and 4
 are known limits that 9c revisits.
 
 1. **A payroll entry takes three moves, not one.** The scope's entry "fills in the active employees, creates their
@@ -91,7 +91,8 @@ are known limits that 9c revisits.
    centers, or the employee's or department's; those come later.
 10. **The assignment names no payable account.** HRMS's `get_filtered_employees` picks only employees whose
     assignment's `payroll_payable_account` is the entry's. Capxul's assignment has none, so every assigned employee
-    qualifies, and the entry alone names the account. (Found by the 🔍 review after core's confirmation of 1 to 9.)
+    qualifies, and the entry alone names the account, still judged on its own at create. (Found by the 🔍 review after
+    core's confirmation of 1 to 9; core confirmed it the same day.)
 
 ## Framework gaps (for core)
 
