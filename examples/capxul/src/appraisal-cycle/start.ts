@@ -57,9 +57,9 @@ const start: Handler = ({ appraisalCycle }, { steps, move, subject }) =>
 
     // Step load: database, span appraisal-cycle.start.load. The runtime read the cycle; each row's employee, template
     // and any appraisal it already has are read here.
+    if (!subject) return yield* Effect.die(new Error(`appraisal cycle ${appraisalCycle} was read and then not found`));
     const rows = yield* steps.load(
       Effect.gen(function* () {
-        if (!subject) return yield* Effect.die(new Error(`appraisal cycle ${appraisalCycle} was read and then not found`));
         const appraisees = subject["appraisees"] as ReadonlyArray<{ readonly employee: string; readonly appraisalTemplate: string }>;
         return yield* Effect.forEach(appraisees, (row) =>
           Effect.all({
@@ -81,8 +81,8 @@ const start: Handler = ({ appraisalCycle }, { steps, move, subject }) =>
     // Step create: database, in the store appraisal-cycle, appraisal, span appraisal-cycle.start.create. One draft
     // appraisal per row, by the row's own template, skipping an employee who already has one (HRMS skips the duplicate)
     // or has left (CX-expense-leavers). The method is the cycle's.
-    const company = subject!["company"] as string;
-    const kraEvaluationMethod = subject!["kraEvaluationMethod"] as string;
+    const company = subject["company"] as string;
+    const kraEvaluationMethod = subject["kraEvaluationMethod"] as string;
     const appraisals = yield* steps.create(
       Effect.gen(function* () {
         const made: Array<string> = [];
