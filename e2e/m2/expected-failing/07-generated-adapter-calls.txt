@@ -1,0 +1,6 @@
+# #995 gap 1's checks (07-generated-adapter-calls.test.ts, G16-adapter-mounts call 1), red until a call step reaches a generated adapter by its mount's base URL and key. A builder only deletes lines (G9).
+m2/07-generated-adapter-calls.test.ts > 07 a call step reaches a generated adapter in a world > ORTHO_STAND_<MOUNT> wins over <MOUNT>_BASE_URL for that mount only, a dashed mount's name with underscores
+m2/07-generated-adapter-calls.test.ts > 07 a call step reaches a generated adapter in a world > a service that can't be reached is refused as the adapter's Unreachable
+m2/07-generated-adapter-calls.test.ts > 07 a call step reaches a generated adapter in a world > each mount sends to its own base URL with its own key, the input's path and query, and answers; a 503, a misfit answer and a missing input are refused as the adapter's errors; the app's own error is a defect
+m2/07-generated-adapter-calls.test.ts > 07 a call step reaches a generated adapter in a world > with no key the service's 401 reaches the handler's mapping; a stand-in alone is an address; with neither the call is a defect that sends nothing
+m2/07-generated-adapter-calls.test.ts > 07 a generated adapter names its base URL and key per mount > ortho secrets lists <MOUNT>_BASE_URL for every generated mount and <MOUNT>_API_KEY only where the description requires security, each stored and runtime
