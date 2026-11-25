@@ -58,7 +58,7 @@
   "generated/cli/src/membership/get.ts": "c6e43ec137cc72374b5a383a34f7b0eee4bfa245444c8f2c75b85d6065e04d24",
   "generated/cli/src/organization/create.ts": "fdc2d1de6b5e93ccd9ea96391c5c965cfeadd75306f7476a2329a59df1685a39",
   "generated/cli/src/organization/get.ts": "035449c21444347164996ee3fdd2a2e57f7ce943b0171f18f15e801c73989725",
-  "generated/cli/src/output.ts": "d0ec02f10ec7f5db86dcc8d0053302d0ec8a09b57584e12d9b7d0192b57bd3a2",
+  "generated/cli/src/output.ts": "387251164ad611c8ac1814a66b7377f35b7c64a64facb74c34a276058927e1c8",
   "generated/cli/src/person/sign-up.ts": "7bf1ac33bd9f14bdc0dcaf71955b2cabfd38523a25d4845563acc277af64fbf2",
   "generated/cli/src/session/device.ts": "a0cb1eab0fdac63eb3dd38960bcb0fcba19bad6a5214140e51a65c86502e1a15",
   "generated/cli/src/session/show.ts": "dd0ee614529a9a862d6cfc3b616fed8df981766dbe872b7f81e72e2e76b8c431",
