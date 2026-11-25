@@ -8,10 +8,11 @@ import { Effect, Scope } from "effect";
 import { Collectors, Worlds, type Span } from "@orthograph/prove";
 import { freePort } from "./clients.ts";
 
-export interface Called { readonly trace: string; readonly status: number; readonly body: Record<string, unknown>; readonly text: string }
+export interface Called { readonly trace: string; readonly status: number; readonly body: Record<string, unknown>; readonly text: string; readonly headers: ReadonlyArray<readonly [string, string]> }
 export interface Seen {
   readonly cast: (...names: ReadonlyArray<string>) => Promise<Record<string, { readonly person: string; readonly token: string }>>;
-  readonly call: (route: string, token: string | undefined, body: object, key?: string) => Promise<Called>;
+  /** `type` is the content type sent: `application/json` unless given. */
+  readonly call: (route: string, token: string | undefined, body: object, key?: string, type?: string) => Promise<Called>;
   /** The spans of a call, once the Collector has them: it waits until one carries `operation` (the handler's own), then a moment more for the rest. */
   readonly spans: (trace: string) => Promise<ReadonlyArray<Span>>;
 }
@@ -36,15 +37,15 @@ export const startWorld = (root: string, name: string, scope: Scope.Scope): Prom
   };
   return {
     cast: (...names) => json("/_world/cast", { method: "POST", body: JSON.stringify({ names }) }),
-    call: async (route, token, body, key) => {
+    call: async (route, token, body, key, type) => {
       const trace = randomBytes(16).toString("hex");
       const response = await fetch(`${world.url}/${route}`, {
         method: "POST",
-        headers: { "content-type": "application/json", traceparent: `00-${trace}-${randomBytes(8).toString("hex")}-01`, ...(token ? { authorization: `Bearer ${token}` } : {}), ...(key ? { "idempotency-key": key } : {}) },
+        headers: { "content-type": type ?? "application/json", traceparent: `00-${trace}-${randomBytes(8).toString("hex")}-01`, ...(token ? { authorization: `Bearer ${token}` } : {}), ...(key ? { "idempotency-key": key } : {}) },
         body: JSON.stringify(body),
       });
       const text = await response.text();
-      return { trace, status: response.status, text, body: (() => { try { return JSON.parse(text) as Record<string, unknown>; } catch { return {}; } })() };
+      return { trace, status: response.status, text, headers: [...response.headers], body: (() => { try { return JSON.parse(text) as Record<string, unknown>; } catch { return {}; } })() };
     },
     spans,
   } satisfies Seen;
