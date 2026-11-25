@@ -42,7 +42,8 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   refusal a mapping returns, which must be a `Blueprint.error` the call declares. A generated call declared none, so it could
   never be refused. The client's own failures are `Data.TaggedError`s, which no operation can refuse with. So the generator writes
   four `Blueprint.error`s per adapter in `blueprint/things/<adapter>/errors.ts`, re-exported from the package's main entry:
-  - `<Adapter>ApiFailure { status, code? }`;
+  - `<Adapter>ApiFailure { status: Blueprint.uint(16), code? }` (a `uint` is a bigint in code and a string on the wire, so a
+    mapping passes `BigInt(failure.status)`);
   - `<Adapter>InputRefused`;
   - `<Adapter>AnswerRefused`;
   - `<Adapter>Unreachable`.
@@ -52,6 +53,8 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   turns the client's failure into its namesake. The runner is unchanged: a mapping to anything the call doesn't declare,
   the app's own errors included, stays a defect. This is m1's pattern (`e2e/fixtures/m1/remote`'s `PriceUnavailable`). A
   first proposal, letting a call that declares no errors map to any error of the operation, was withdrawn.
+- **A generated plugin's `package.json` exports its blueprint** (`"./blueprint/*.js": "./blueprint/*.ts"`), because the generated
+  API imports an adapter's errors as `<package>/blueprint/things/<adapter>/errors.js`.
 - **The compiler reads a plugin's `secrets.ts`.** Today it reads only a built plugin's `secrets.js`, so a workspace plugin's
   declarations (every generated adapter in an app's `plugins/`) are skipped.
 - **In a world,** `ORTHO_STAND_<MOUNT>`, the stand-in's URL (GOAL17-check-harness), wins over `<MOUNT>_BASE_URL`. A world
