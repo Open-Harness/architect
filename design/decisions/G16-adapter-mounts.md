@@ -79,6 +79,8 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   - Every generated adapter's four errors take exits 81 to 84, so one operation that calls two generated adapters and lists
     both adapters' errors is refused (`operationExitClashes`; found by Codex on #1021, 25 November 2026). Snag #1012
     fixes it by the next call.
+  - An exit base that isn't a whole number (`85.5`) isn't tried by check 07; the compiler's check of each exit already refuses
+    one ("not a whole number").
   - The key is the adapter's, not the mount's calls': a mount that includes only calls needing no key still lists one, and so
     does a description whose every operation overrides its top-level requirement with `security: []`.
 - **An adapter's exits are set by hand** (Goal 16's lead, on #1028, 25 November 2026). Beside `code`, the plugin's

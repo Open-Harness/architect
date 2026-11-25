@@ -462,9 +462,9 @@ describe("07 one operation calls two generated adapters (snag #1012)", () => {
 
   // The refusal names the base or the exit that leaves the range. 120 is past it; 117 is inside it, but its fourth exit,
   // 120, is not: the four must fit. Both land on exits the runtime keeps (0 to 4, 120 to 125), refused even without a
-  // range check, so each edge also needs a base that leaves only past it and is no exit the runtime keeps: 126 (126 to
-  // 129) past the top, -1 below the bottom. A build that checks one edge only fails one of them.
-  for (const [base, out] of [[120, 120], [117, 120], [126, 126], [-1, -1]] as const) {
+  // range check, so each edge also needs a base whose four exits leave only past it and are none the runtime keeps: 126
+  // (126 to 129) past the top, -4 (-4 to -1) below the bottom. A build that checks one edge only fails one of them.
+  for (const [base, out] of [[120, 120], [117, 120], [126, 126], [-4, -4]] as const) {
     it(`an exit base whose four exits leave 5 to 119 (${base}) is refused, naming the adapter and the setting`, () => {
       const { root } = both(`export const exit: number | undefined = ${base};`);
       const said = run(root, "generate");
