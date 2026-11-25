@@ -17,8 +17,8 @@ export const callSteps = (op: OperationModel) =>
 /**
  * A call's name as part of a variable's: one-to-one, so two calls never share a variable. A group's `.` is `$$`, and any other
  * character a name can't hold is `$<its code in hex>$` (`quotes.get` is `quotes$$get`, `users:search` is `users$3a$search`):
- * read left to right, `$$` is a dot and `$` before hex opens an escape, so no two names give one variable. A name with
- * neither, every name before generated adapters, is as it was.
+ * read left to right, `$$` is a dot and `$` before hex opens an escape, so no two names give one variable. A name of
+ * letters, digits and `_` only, every name in the repo before generated adapters, is as it was.
  */
 const ident = (call: string) => call.replace(/[^A-Za-z0-9_]/g, (c) => (c === "." ? "$$" : `$${c.codePointAt(0)!.toString(16)}$`));
 const callVar = (mount: string, call: string) => `${camel(mount)}${pascal(ident(call))}Call`;
