@@ -145,6 +145,13 @@ test("a link between two slices that the brief no longer orders is removed befor
   assert.deepEqual(links, [["removeBlockedBy", 12, 11], ["addBlockedBy", 11, 13]], "the stale 2-after-1 goes first; the snag's link and another goal's slice stay");
 });
 
+test("every label fits GitHub's limits: a name of at most 50 characters, a description of at most 100", () => {
+  for (const l of LABELS) {
+    assert.ok(l.name.length <= 50, l.name);
+    assert.ok(l.description.length <= 100, `${l.name}: ${l.description.length} characters`);
+  }
+});
+
 test("a parked goal's own plan carries `parked`; its snags, a shared, claimed or board issue never do, and it comes off on resuming", () => {
   const parkedGoal = readGoal("design/goals/06-portal.md", brief.replace("status: ready", "status: parked")).goal;
   const other = readGoal("design/goals/07-x.md", brief.replace("goal: 6", "goal: 7").replace('"Goal 6: the new portal"', '"Goal 7: x"')).goal;

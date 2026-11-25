@@ -25,7 +25,7 @@ export const LABELS = [
   ["harness:opencode", "f9d0c4", "Worked in OpenCode"],
   ["blocked", "b60205", "Waiting on something outside its goal; the body says what"],
   ["needs-aaron", "e99695", "Only Aaron can unblock it: money, a credential, production, or the goal itself"],
-  ["parked", "d4c5f9", "A parked goal's own goal issue or slice: left out of the board's views, never closed, and taken off if the goal resumes (K45)"],
+  ["parked", "d4c5f9", "A parked goal's open goal issue or slice: hidden from the board's views, never closed (K45)"],
 ].map(([name, color, description]) => ({ name, color, description }));
 
 // A kind is its own issue type in an organization (Aaron, 2A); a person's repository has only the native three, so
