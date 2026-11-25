@@ -1,5 +1,17 @@
 -- Generated from the blueprint. Do not edit.
 -- Stage one rebuilds the local database on every `ortho dev`; migrations between versions arrive in stage three.
+CREATE TABLE "account" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "accountName" TEXT NOT NULL,
+  "parentAccount" TEXT,
+  "rootType" TEXT NOT NULL,
+  "reportType" TEXT NOT NULL,
+  "accountType" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "account_oneNamePerCompany" ON "account" ("company", "accountName");
 CREATE TABLE "attendance" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -78,6 +90,15 @@ CREATE TABLE "company" (
 );
 CREATE UNIQUE INDEX "company_oneAbbrPerOwner" ON "company" ("owner", "abbr");
 CREATE UNIQUE INDEX "company_oneNamePerOwner" ON "company" ("owner", "companyName");
+CREATE TABLE "cost-center" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "costCenterName" TEXT NOT NULL,
+  "parentCostCenter" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "cost-center_oneNamePerCompany" ON "cost-center" ("company", "costCenterName");
 CREATE TABLE "department" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -182,6 +203,30 @@ CREATE TABLE "expense-claim-type" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "expense-claim-type_oneNamePerCompany" ON "expense-claim-type" ("company", "expenseType");
+CREATE TABLE "fiscal-year" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "year" TEXT NOT NULL,
+  "yearStartDate" TEXT NOT NULL,
+  "yearEndDate" TEXT NOT NULL,
+  "isShortYear" INTEGER NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "fiscal-year_oneNamePerCompany" ON "fiscal-year" ("company", "year");
+CREATE TABLE "gl-entry" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "costCenter" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "debit" TEXT NOT NULL,
+  "credit" TEXT NOT NULL,
+  "voucherType" TEXT NOT NULL,
+  "voucherId" TEXT NOT NULL,
+  "isCancelled" INTEGER NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "holiday" (
   "id" TEXT PRIMARY KEY,
   "holidayList" TEXT NOT NULL,
@@ -260,6 +305,26 @@ CREATE TABLE "job-opening" (
   "jobTitle" TEXT NOT NULL,
   "vacancies" TEXT NOT NULL,
   "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "journal-entry" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "userRemark" TEXT NOT NULL,
+  "totalDebit" TEXT NOT NULL,
+  "totalCredit" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "journal-entry-account" (
+  "id" TEXT PRIMARY KEY,
+  "journalEntry" TEXT NOT NULL,
+  "line" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "costCenter" TEXT NOT NULL,
+  "debit" TEXT NOT NULL,
+  "credit" TEXT NOT NULL,
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE "shift-type" (
