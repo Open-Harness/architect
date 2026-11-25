@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/employee-transfer/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { EmployeeTransfer } from "../../blueprint/things/employee-transfer/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee-transfer/create.handler.ts";
 
@@ -51,37 +52,50 @@ const { TransferredEmployeeNotInCompany, TransferredEmployeeHasLeft, NewDepartme
  *   once it answers, it writes EmployeeTransferDrafted: employeeTransfer from the answer, employee from the payload;
  *   the call is the span employee-transfer.create, and its commit employee-transfer.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employee, transferDate, newDepartment }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span employee-transfer.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // TransferredEmployeeNotInCompany: exit 41, TR-001.
-    if (yield* Handlers.blank<boolean>("refuse TransferredEmployeeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TransferredEmployeeNotInCompany was refused"));
+    // Step load: database, span employee-transfer.create.load. The runtime read the employee and the new department and hands
+    // them in, so this step only takes them; a missing one never reaches here.
+    const { held, wanted } = yield* steps.load(Effect.succeed({ held: refs.employee, wanted: refs.newDepartment }));
+    if (!held) return yield* Effect.die(new Error(`employee ${employee} was read and then not found`));
+    if (!wanted) return yield* Effect.die(new Error(`department ${newDepartment} was read and then not found`));
+
+    // Refusal order (errors.ts): TransferredEmployeeNotInCompany, then TransferredEmployeeHasLeft, then NewDepartmentNotInCompany, then
+    // DepartmentUnchanged (CX-employee-moves).
+    // TransferredEmployeeNotInCompany: exit 41, TR-001. HRMS copies the company from the employee; here it must match.
+    if (held["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new TransferredEmployeeNotInCompany({});
     }
 
-    // TransferredEmployeeHasLeft: exit 42, TR-002.
-    if (yield* Handlers.blank<boolean>("refuse TransferredEmployeeHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TransferredEmployeeHasLeft was refused"));
+    // TransferredEmployeeHasLeft: exit 42, TR-002. A new transfer is only for an employee still at work, judged on create
+    // only (CX-expense-leavers).
+    if (held.state !== "active") {
+      yield* Effect.logInfo(`the employee is ${held.state ?? "in no state"}, not active`);
       return yield* new TransferredEmployeeHasLeft({});
     }
 
-    // NewDepartmentNotInCompany: exit 43, TR-003.
-    if (yield* Handlers.blank<boolean>("refuse NewDepartmentNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NewDepartmentNotInCompany was refused"));
+    // NewDepartmentNotInCompany: exit 43, TR-003. The new department must be the company's, which also keeps the transfer
+    // inside it.
+    if (wanted["company"] !== company) {
+      yield* Effect.logInfo("the new department belongs to another company");
       return yield* new NewDepartmentNotInCompany({});
     }
 
-    // DepartmentUnchanged: exit 44, TR-004.
-    if (yield* Handlers.blank<boolean>("refuse DepartmentUnchanged when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why DepartmentUnchanged was refused"));
+    // DepartmentUnchanged: exit 44, TR-004. HRMS's property dialog: "Nothing to change".
+    const currentDepartment = held["department"] as typeof newDepartment;
+    if (newDepartment === currentDepartment) {
+      yield* Effect.logInfo("the employee already holds the new department");
       return yield* new DepartmentUnchanged({});
     }
 
-    // Step insert: database, span employee-transfer.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span employee-transfer.create.insert. The current department is copied from the employee, never
+    // typed, as HRMS's Employee Property History line takes its `current`.
+    yield* steps.insert(
+      records.insert(EmployeeTransfer, { id, company, employee, transferDate, currentDepartment, newDepartment }),
+    );
 
     // The move create, to draft.
     yield* move();

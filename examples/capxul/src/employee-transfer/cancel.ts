@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/employee-transfer/verbs/cancel.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
 import type { Handler } from "../../generated/api/src/employee-transfer/cancel.handler.ts";
 
 /**
@@ -41,19 +42,28 @@ import type { Handler } from "../../generated/api/src/employee-transfer/cancel.h
  *   once it answers, it writes EmployeeTransferCancelled: employeeTransfer, employee and department from the answer;
  *   the call is the span employee-transfer.cancel, and its commit employee-transfer.cancel.commit.
  */
-const cancel: Handler = (_payload, { steps, move }) =>
+const cancel: Handler = ({ employeeTransfer }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step update: database, in the store employee-transfer, employee, span employee-transfer.cancel.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    const records = yield* Records;
+
+    // The runtime read the transfer for its role and state checks and hands it in.
+    if (!subject) return yield* Effect.die(new Error(`transfer ${employeeTransfer} was checked and then not found`));
+    const employee = subject["employee"] as string;
+    const currentDepartment = subject["currentDepartment"] as string;
+
+    // Step update: database, in the store employee-transfer, employee, span employee-transfer.cancel.update. The employee
+    // gets back the department it held when the transfer was drafted, whatever it holds now, as HRMS's
+    // `update_employee_work_history(cancel=True)` writes `current` back without comparing (CX-employee-moves).
+    yield* steps.update(records.update(Employee, employee, { department: currentDepartment as never }));
 
     // The move cancel, from submitted, to cancelled.
     yield* move();
 
     return {
-      employeeTransfer: yield* Handlers.blank("employeeTransfer, an employee-transfer.id"),
-      employee: yield* Handlers.blank("employee, an employee-transfer.employee"),
+      employeeTransfer,
+      employee: employee as never,
       // EmployeeTransferCancelled needs department, and only the answer can give it.
-      department: yield* Handlers.blank("department, an employee-transfer.currentDepartment"),
+      department: currentDepartment as never,
     };
   });
 

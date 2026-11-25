@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/employee-promotion/verbs/cancel.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
 import type { Handler } from "../../generated/api/src/employee-promotion/cancel.handler.ts";
 
 /**
@@ -41,19 +42,28 @@ import type { Handler } from "../../generated/api/src/employee-promotion/cancel.
  *   once it answers, it writes EmployeePromotionCancelled: employeePromotion, employee and designation from the answer;
  *   the call is the span employee-promotion.cancel, and its commit employee-promotion.cancel.commit.
  */
-const cancel: Handler = (_payload, { steps, move }) =>
+const cancel: Handler = ({ employeePromotion }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step update: database, in the store employee-promotion, employee, span employee-promotion.cancel.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    const records = yield* Records;
+
+    // The runtime read the promotion for its role and state checks and hands it in.
+    if (!subject) return yield* Effect.die(new Error(`promotion ${employeePromotion} was checked and then not found`));
+    const employee = subject["employee"] as string;
+    const currentDesignation = subject["currentDesignation"] as string;
+
+    // Step update: database, in the store employee-promotion, employee, span employee-promotion.cancel.update. The employee
+    // gets back the designation it held when the promotion was drafted, whatever it holds now, as HRMS's
+    // `update_employee_work_history(cancel=True)` writes `current` back without comparing (CX-employee-moves).
+    yield* steps.update(records.update(Employee, employee, { designation: currentDesignation as never }));
 
     // The move cancel, from submitted, to cancelled.
     yield* move();
 
     return {
-      employeePromotion: yield* Handlers.blank("employeePromotion, an employee-promotion.id"),
-      employee: yield* Handlers.blank("employee, an employee-promotion.employee"),
+      employeePromotion,
+      employee: employee as never,
       // EmployeePromotionCancelled needs designation, and only the answer can give it.
-      designation: yield* Handlers.blank("designation, an employee-promotion.currentDesignation"),
+      designation: currentDesignation as never,
     };
   });
 
