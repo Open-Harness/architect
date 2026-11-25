@@ -145,6 +145,27 @@ test("a link between two slices that the brief no longer orders is removed befor
   assert.deepEqual(links, [["removeBlockedBy", 12, 11], ["addBlockedBy", 11, 13]], "the stale 2-after-1 goes first; the snag's link and another goal's slice stay");
 });
 
+test("a parked goal's own plan carries `parked`; its snags, a shared, claimed or board issue never do, and it comes off on resuming", () => {
+  const parkedGoal = readGoal("design/goals/06-portal.md", brief.replace("status: ready", "status: parked")).goal;
+  const other = readGoal("design/goals/07-x.md", brief.replace("goal: 6", "goal: 7").replace('"Goal 6: the new portal"', '"Goal 7: x"')).goal;
+  const issues = [
+    { number: 50, title: "a slice", body: "", state: "open", labels: ["kind:slice", "goal-6"] },
+    { number: 51, title: "shared with a running goal", body: "", state: "open", labels: ["kind:snag", "goal-6", "goal-7"] },
+    { number: 52, title: "a board row", body: "", state: "open", labels: ["kind:capability", "goal-6"] },
+    { number: 53, title: "claimed by a running goal", body: "", state: "open", labels: ["kind:snag", "goal-6", "lane:goal-7"] },
+    { number: 54, title: "closed", body: "", state: "closed", labels: ["kind:slice", "goal-6"] },
+    { number: 55, title: "a pull request", body: "", state: "open", pullRequest: true, labels: ["goal-6"] },
+    { number: 56, title: "its own snag", body: "", state: "open", labels: ["kind:snag", "goal-6"] },
+    { number: 57, title: "a slice filed in a running goal's milestone", body: "", state: "open", labels: ["kind:slice", "goal-6"], milestone: "Goal 7: x" },
+    { number: 58, title: "its goal issue", body: "", state: "open", labels: ["kind:goal", "goal-6"], milestone: "Goal 6: the new portal" },
+  ];
+  const parkedSteps = (goals, list) => plan({ goals, state: { labels: LABELS, milestones: [], issues: list }, briefUrl: url }).filter((s) => s.do === "setParked").map((s) => [s.number, s.parked]);
+  assert.deepEqual(parkedSteps([parkedGoal, other], issues), [[50, true], [58, true]], "a snag stays in view for the framework goal to sort");
+  const resumed = readGoal("design/goals/06-portal.md", brief).goal;
+  assert.deepEqual(parkedSteps([resumed, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [[50, false]], "it comes off when the goal resumes");
+  assert.deepEqual(parkedSteps([parkedGoal, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [], "made once");
+});
+
 test("the goal page: the plain card, the progress, what is stuck and on whom, and where it stands", () => {
   const { goal } = readGoal("design/goals/06-portal.md", brief);
   const state = {

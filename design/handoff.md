@@ -210,13 +210,14 @@ F5, F6, F7, F8, F9 · G1 · Gate2 · H1, H2 · K1 to K7, K9 to K23, K28 · M0 ·
 | K42 | a goal is a long-running agent; the framework goal (18) and the lander (19) always run; the apps dogfood the framework, the superagent first; the releases are the framework's | decided with Aaron, 23 November (#694) |
 | K43 | Capxul core: free software in ERPNext's shapes; verification, bank accounts and incorporation are paid | decided with Aaron, 23 November (#694) |
 | K44 | two builds, the Orthograph alpha (by Goal 18, the framework goal) and Capxul (Goal 16); the superagent and the experiments park | decided with Aaron, 25 November |
+| K45 | the board follows the two builds: the alpha's milestone and Capxul's path, the parked goals' issues hidden by a `parked` label, and the climb on dimensions | decided with Aaron, 25 November |
 
 **Also taken, off `main`:** K24 (UI SDK is the base, #217), K25 (the blueprint on chain), K26 (on-chain pulled forward), K27 (five plugin kinds), K29
 (the UI layer, #272), K30 (where the core ends, the repositories, declaring what you know, #185), G12 (a slice that changes acme's wire lands as a pair, #263),
 G9 to G11 (`goal/stage-1`), `M2-auth` (#263, #267), `M6-chain` (#275, #276, #279), `M7-03-infra-projection` (#282). `ST1-25-flakes` is a
 decision file; K29's ST1.25 is a slice id, and the two are unrelated.
 
-**Next free:** D5, E2, F10, G13, H3, K45, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
+**Next free:** D5, E2, F10, G13, H3, K46, N2, O5, P2, R2, S32, W3. Never fill a gap (F3, F4, G2): it may have been handed out
 before this list existed. `CI-<slug>`, `M<n>-<slug>`, `ST<n>-<slug>` and `Gate<n>` are named by their slug or
 milestone, not numbered; a goal records its own in its brief, not here (K32), and `GOAL<n>-<slug>` names a call that
 belongs to one goal and no milestone.
