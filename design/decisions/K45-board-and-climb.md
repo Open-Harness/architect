@@ -35,20 +35,23 @@ Heard through speech to text and kept as heard.
 
 `tools/github/board.mjs` ranks them in this order: **alpha** (`Alpha: Orthograph on npm`, the framework's, Goal 18),
 then Capxul's path, **books**, **people and payroll**, **banking**, **budgets** (new) and **getting paid** (later, with
-the chain). The superagent's four stay defined for when it resumes; no row uses them. A framework row's only milestone
-is the alpha.
+the chain). The superagent's four stay defined for when it resumes; no row uses them, and the sync clears their old
+forecast dates. A framework row's only milestone is the alpha. Each milestone names its release and the goal that
+builds it (`board.mjs`), so the views and the release rule read one table.
 
 ### 2. The release follows the milestone (K44, section 4)
 
 The alpha's rows ship in the preview, and every preview row is the alpha's. Capxul's books and people and payroll ship
-in the beta; banking, budgets and getting paid in 1.0; a piece Capxul pulls off its path in 1.0. `board.mjs` refuses
-any other pairing.
+in the beta; banking, budgets and getting paid in 1.0; a piece Capxul pulls off its path in 1.0. A row with a milestone
+names its release. `board.mjs` refuses any other pairing.
 
 ### 3. The rows, re-sorted
 
-- **To the alpha:** every preview row but the portal's graphs and its UI package (portal screens wait, K44 call 2); the
-  chain basics (keys, the chain adapter, confirmation depth, the relayer and follower); sign-in and principals (the
-  starter's #446 and #449); `ortho add` and `ortho new`; and a new row, getting started.
+- **To the alpha:** every preview row but the portal's graphs and its UI package (portal screens wait, K44 call 2; the
+  portal viewer and monitor stay, for their server and feed only); the chain basics (keys, the chain adapter,
+  confirmation depth, the relayer and follower); sign-in and principals (the starter's #446 and #449); `ortho add`; and
+  `ortho new`, rewritten as K44's `ortho new app`, which makes the app the preset makes and needs only the preview's
+  packaging. M2.09's Plugged In scaffold, which needs teams, waits with them. A new row, getting started.
 - **To Capxul:** secrets, events in, webhook doors and adapters from a spec to banking (Bridge's webhooks and adapter);
   timers to people and payroll (a scheduled pay run); derived reads, roles declared with `who` and `holds`, and richer
   lists to the books; a new row, budgets, to budgets; the Safe and Hats to getting paid; incorporation help off the path.
@@ -59,13 +62,19 @@ any other pairing.
 
 Organisations stay separate (K42, call 10): Capxul's companies are its books', and teams wait.
 
-### 4. The parked goals' issues carry `parked`
+Two rows of Capxul's later path need rows nobody needs yet: getting paid needs the pages (and through them the UI
+pieces), and the ERC-20 adapter needs adapters from an ABI. That holds while getting paid is later, with the chain; when
+Capxul reaches it, those rows move to its path.
 
-The goals sync labels `parked` every open issue whose goal labels are all parked goals', unless it is a board row or a
-running goal shares it (its goal label) or claims it (its lane); it takes the label off when the goal resumes. Nothing
-is closed. The Project's views (`tools/github/project.mjs`) are "All goals", "By status" and "Roadmap" without the
-parked issues; "The alpha" (its milestone and Goal 18's); "Capxul's path" (its milestones and Goal 16's); "Parked"; and
-one per running goal.
+### 4. A parked goal's own plan carries `parked`
+
+The goals sync labels `parked` a parked goal's own open goal issue and slices, in its own milestone, unless a running
+goal shares one (its goal label) or claims it (its lane); it takes the label off when the goal resumes. Nothing is
+closed. A parked goal's snags, asks and decisions stay in view: some are the alpha's now (the starter's #446 and #449,
+the preview's #688, the relayer's #700), and Goal 18 sorts the rest. The Project's views (`tools/github/project.mjs`)
+are "All goals", "By status" and "Roadmap" without the parked issues; "The alpha" (its milestone and Goal 18's);
+"Capxul's path" (its milestones and Goal 16's); "Parked" (open ones); and one per running goal. The sync never deletes a
+view, so a parked goal's old view stays until someone deletes it in the Project.
 
 ### 5. The climb, on dimensions (Goal 18's slice 13)
 
@@ -83,6 +92,9 @@ GitHub:
 A script in `tools/github/` writes the dimensions as JSON, and a claude.ai dashboard draws them, refreshed nightly.
 
 ## What was not chosen
+
+- **Parking every issue of a parked goal.** A first draft did, and it hid the starter's sign-in bugs, which are the
+  alpha's first fixes (Goal 18's slice 10), with twenty other snags. A goal's plan is what parks; its snags are work.
 
 - **Closing the parked goals' issues** (call 2). Closing is tidier on GitHub's issue list, but a goal that resumes would
   reopen them one by one; a label hides them from every view and comes off by itself.
@@ -110,7 +122,7 @@ A script in `tools/github/` writes the dimensions as JSON, and a claude.ai dashb
 - **The board:** `docs/canon/status.md`'s rows and column legend; on merge the board sync moves the re-sorted rows'
   issues to their milestones and relabels their releases, and makes the `Alpha: Orthograph on npm` and `Capxul: budgets`
   milestones.
-- **The goals sync:** the `parked` label on about 160 open issues on its first run.
+- **The goals sync:** the `parked` label on about 125 open goal and slice issues on its first run.
 - **The Project:** its views change on the next `--project` run, which needs the Project token: a local run on Aaron's
   machine, or the workflow once the `ORTHOGRAPH_PROJECT_TOKEN` secret exists.
 - **Goal 18's brief:** slice 4 is this; slice 13, the climb, is new.

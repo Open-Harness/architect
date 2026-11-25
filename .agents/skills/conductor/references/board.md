@@ -62,11 +62,12 @@ issue (`` `issue #N` ``), so the board holds one page for it.
 
 ## The two builds on the board (K45)
 
-K44 (25 November 2026) parked the superagent, so Capxul is the one app building. K45 re-sorted the rows it pulled:
-sign-in, principals, `ortho add` and the chain basics to the alpha (milestone `alpha`, release preview); secrets,
-events in, webhook doors and adapters from a spec to Capxul's banking; timers to its payroll; derived reads and roles
-to its books; the rest to "Not yet needed". The parked goals' open issues carry `parked`, which the sync sets and the
-Project's views leave out. Before K44, the split was this.
+K44 (25 November 2026) parked the superagent, so Capxul is the one app building. K45 re-sorted the board: sign-in,
+principals and `ortho add` from the superagent's rows, and the chain basics from Capxul's, went to the alpha (milestone
+`alpha`, release preview); secrets, events in, webhook doors and adapters from a spec to Capxul's banking; timers to
+its payroll; derived reads and roles to its books; the rest of the superagent's to "Not yet needed". A parked goal's
+own goal issue and slices carry `parked`, which the sync sets and the Project's views leave out; its snags and asks stay
+in view. Before K44, the split was this.
 
 The apps split the shared pieces (Aaron's call 9). A piece both need goes to the app that needs it first in the order the
 apps run, and the superagent runs first, so it takes most of them: versions, timers, safe repeats, events in and the

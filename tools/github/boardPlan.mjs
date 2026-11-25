@@ -106,6 +106,11 @@ export const boardPlan = ({ rows, state, statusUrl, typeOf, due = {} }) => {
     if (title === NOT_YET_NEEDED || (haveMilestone.get(title)?.dueOn ?? null) === day) continue;
     steps.push({ do: "setMilestoneDue", title, day });
   }
+  // A board milestone with no dated row left (the superagent's, parked by K44) loses its old forecast date (K45).
+  for (const { title } of BOARD_MILESTONES) {
+    if (title === NOT_YET_NEEDED || title in due || !haveMilestone.get(title)?.dueOn) continue;
+    steps.push({ do: "setMilestoneDue", title, day: null });
+  }
   for (const row of rows) {
     const title = itemTitle(row);
     const labels = itemLabels(row);

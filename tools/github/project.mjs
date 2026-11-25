@@ -49,8 +49,13 @@ export const projectFields = (goals, rows) => [
 ];
 
 const quoted = (titles) => titles.map((t) => `"${t}"`).join(",");
-const byApp = (app) => Object.values(APP_MILESTONES).filter((m) => m.app === app).map((m) => m.title);
-const goalMilestone = (goals, n) => goals.find((g) => g.number === n)?.milestone;
+// A build's view: its board milestones and the milestone of the goal that builds them (board.mjs says which).
+const build = (goals, keys) => {
+  const ms = keys.map((k) => APP_MILESTONES[k]);
+  const goal = goals.find((g) => g.number === ms[0].goal)?.milestone;
+  return `milestone:${quoted([...ms.map((m) => m.title), ...(goal ? [goal] : [])])}`;
+};
+const capxulPath = Object.keys(APP_MILESTONES).filter((k) => APP_MILESTONES[k].app === "Capxul");
 
 /**
  * The saved views (K45): every running goal's work in one table, a board by Status and a roadmap, all without the
@@ -61,9 +66,9 @@ export const projectViews = (goals) => [
   { name: "All goals", layout: "TABLE_LAYOUT", filter: "-label:parked" },
   { name: "By status", layout: "BOARD_LAYOUT", filter: "-label:parked" },
   { name: "Roadmap", layout: "ROADMAP_LAYOUT", filter: "-label:parked" },
-  { name: "The alpha", layout: "BOARD_LAYOUT", filter: `milestone:${quoted([APP_MILESTONES.alpha.title, goalMilestone(goals, 18)].filter(Boolean))}` },
-  { name: "Capxul's path", layout: "BOARD_LAYOUT", filter: `milestone:${quoted([...byApp("Capxul"), goalMilestone(goals, 16)].filter(Boolean))}` },
-  { name: "Parked", layout: "TABLE_LAYOUT", filter: "label:parked" },
+  { name: "The alpha", layout: "BOARD_LAYOUT", filter: build(goals, ["alpha"]) },
+  { name: "Capxul's path", layout: "BOARD_LAYOUT", filter: build(goals, capxulPath) },
+  { name: "Parked", layout: "TABLE_LAYOUT", filter: "is:open label:parked" },
   ...goals.filter((g) => g.status !== "parked").map((g) => ({ name: `Goal ${g.number}`, layout: "TABLE_LAYOUT", filter: `goal:"Goal ${g.number}"` })),
 ];
 

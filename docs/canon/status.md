@@ -67,9 +67,9 @@ page or its first evidence pull request merged; End is the day it was built (the
 yet done gets a forecast from `tools/github/roadmap.mjs` (dependency order and the pace of the last seven days), recomputed every run, and a
 milestone's due date is the forecast end of its last item. A row no app has pulled has no dates.
 
-K44 (25 November 2026) parked the superagent, so Capxul is the one app building, and K45 re-sorted the rows the
-superagent pulled: sign-in, principals, `ortho add` and the chain basics to the alpha; secrets, events in, webhook doors
-and adapters from a spec to Capxul's banking; timers to its payroll; derived reads and roles to its books; the rest to
+K44 (25 November 2026) parked the superagent, so Capxul is the one app building, and K45 re-sorted the board: from the
+superagent's rows, sign-in, principals and `ortho add` to the alpha, and from Capxul's, the chain basics; secrets,
+events in, webhook doors and adapters from a spec to Capxul's banking; timers to its payroll; derived reads and roles to its books; the rest to
 "Not yet needed". Organisations stay separate: Capxul's companies are its books', and teams wait. Before K44 the split
 was (K42, section 3, Aaron's call 9): the superagent pulls versions, timers, safe repeats, events in and the
 outbox, secrets, webhook doors, the pages, sign-in and the live deploy; Capxul pulls reports, lists, trees and dates.
@@ -106,25 +106,25 @@ journeys find a hole.
 | climb-grid | Climb and grid: climb check and the grid | building | framework | preview | alpha | none | `e2e/` | prove-evals | CI `e2e-climb`, `e2e-grid`; Goal 3; not yet proved by an app's journeys: proved on `acme` only |
 | logbook-publish | Logbook and publish: logbook, promote, publish to the local registry, watch | building | framework | preview | alpha | none | `packages/logbook`, `packages/prove` | — | layer 2 checks; slice L2; not yet proved by an app's journeys: proved on `acme` only (`e2e/layer2`) |
 | telemetry-model | Model telemetry: telemetry carrying the model | building | framework | preview | alpha | none | `packages/orthograph/src/modules/telemetry` | — | checks 13, 17; slices M1.18 to M1.21, M1.36; not yet proved by an app's journeys: proved on `acme` and a fixture only |
-| portal-viewer | Portal viewer: things, operations, lifecycle, rules, traces, journeys; calls and metrics, the role a caller held and step verdicts are missing | building | framework | preview | alpha | none | `packages/portal` | telemetry-model | slice M1.13 |
-| portal-monitor | Portal monitor: derived from the model | built | framework | preview | alpha | none | `packages/portal` | portal-viewer | check 39; slice M1.49; proved on Plugged In by `e2e/m1/39-m1-49-monitor-derived.test.ts` |
+| portal-viewer | Portal viewer: things, operations, lifecycle, rules, traces, journeys; calls and metrics, the role a caller held and step verdicts are missing | building | framework | preview | alpha | none | `packages/portal` | telemetry-model | slice M1.13; the alpha ships its server and blueprint feed only, not its screens (K44, call 2; Goal 18's slice 8) |
+| portal-monitor | Portal monitor: derived from the model | built | framework | preview | alpha | none | `packages/portal` | portal-viewer | check 39; slice M1.49; proved on Plugged In by `e2e/m1/39-m1-49-monitor-derived.test.ts`; the alpha ships its server and feed only, not its screens (K44, call 2) |
 | machine-graphs | Machine graphs: the portal draws each machine | building | framework | — | — | none | `packages/portal` | portal-monitor | check 40 red; slice M1.50 |
 | gap-node-host | A Node host: the server runs only as a Cloudflare Worker | provisional | framework | — | — | none | `packages/host-cloudflare` | — | no slice; Goal 4 slice 1 names `Host.node` |
 | npm-preview | npm preview of the framework: publish goes only to Verdaccio, and the publish under `next` itself is Aaron's to run | building | framework | preview | alpha | none | `packages/preset`, `tools/release` | prove-evals | slice M1.51, whose dry run passes (#683); the hand-over is #542; `issue #542` |
-| getting-started | Getting started: one page from install to a proved, running app and its generated tools, and help text on every command and flag | provisional | framework | preview | alpha | none | `docs/canon`, `packages/cli` | npm-preview | K44, section 2; Goal 18's slice 7 |
+| getting-started | Getting started: one page from install to a proved, running app and its generated tools, and help text on every command and flag | provisional | framework | preview | alpha | none | `docs/canon`, `packages/cli` | npm-preview, ortho-new | K44, section 2; Goal 18's slice 7 |
 | plugged-in-journeys | Plugged In's seven journeys: 56 of 56 steps green | built | framework | preview | alpha | none | `examples/plugged-in` | prove-evals | a required CI check on stage 1; slice ST1.02; proved by `e2e/stage1/01-plugged-in-journeys.test.ts` |
 
 ### Stage 1: workable (Plugged In's first stage)
 
 | id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| principals | Principals: beyond a person (agent, service, system, `Via`); `roles/types.ts` has `anonymous` and `person` only | building | framework | preview | alpha | none | `packages/orthograph/src/modules/roles` | — | slices M2.01, M2.03; K40 (`Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*`); `issue #531`, `folds #533`; built on `goal/superagent` (slice 5 forms, the agent caller in slice 9, #781) |
+| principals | Principals: beyond a person (agent, service, system, `Via`); `roles/types.ts` has `anonymous` and `person` only | building | framework | preview | alpha | none | `packages/orthograph/src/modules/roles` | — | slices M2.01, M2.03; K40 (`Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*`); `issue #531`, `folds #533`; built on `goal/superagent` (slice 5 forms, the agent caller in slice 9, #781), which is parked and lands nothing (K44, section 5): Goal 18 brings what the alpha needs to `main` in its own slice, starting with #446 |
 | roles-who-holds | Roles declared with `who` and `holds`: only `rule` exists | provisional | Capxul | beta | books | none | `packages/orthograph/src/modules/roles` | principals | slices M2.17, M2.18 |
 | sign-in | Sign-in: the auth plugin (`@orthograph/auth`: people, sessions, API keys, the device flow, OAuth for MCP): Better Auth runs in the host and its things are copied into each app | building | framework | preview | alpha | none | `packages/host-cloudflare/src/modules/auth`, `packages/auth` | principals | slices M2.05, M2.06 |
 | teams | Teams: the superagent's organisations (who shares and owns an agent), as a plugin: the things are copied into the starter | building | framework | — | — | none | `examples/starter`, `packages/organizations` | sign-in, roles-who-holds | slices M2.07, M2.11; K42 call 10 |
 | companies | Companies: Capxul's organisations, as a plugin, apart from the superagent's teams | building | Capxul | beta | books | goal-16 | `examples/capxul`, `packages/organizations` | sign-in, roles-who-holds | slice M2.07; K42 call 10; #757 (Capxul's app and its Company, merged on `goal/capxul`), `company.create` built by #786 |
 | secrets | Secrets by declaration: per environment only, no plugin secrets, no `ortho secrets set` | building | Capxul | 1.0 | banking | none | `packages/orthograph/src/modules/secrets`, `packages/host-cloudflare` | — | slice M2.04; #690 |
-| ortho-new | `ortho new` and `ortho new feature`: `packages/preset` is still the Nx preset | provisional | framework | preview | alpha | none | `packages/preset`, `packages/cli` | sign-in, teams | slices M2.09, M2.10; M2.09 scaffolds Plugged In with auth and handles mounted, and it waits for M2.07 (`teams`) and ST1.07 (`sign-in` mounted in Plugged In); M2.27 is its check half (G12 pair); the app scaffold is a subcommand of the same `ortho new` as Goal 17's `ortho new adapter` (Goal 18, 24 November 2026) |
+| ortho-new | `ortho new app`: one command makes the app the preset makes, beside `ortho new adapter`, and `npm create orthograph` makes the same | provisional | framework | preview | alpha | none | `packages/preset`, `packages/cli` | npm-preview | K44, section 2, call 3; Goal 18's slice 6. M2.09's Plugged In scaffold (auth, handles and teams mounted, M2.07) and M2.10's `ortho new feature` wait until teams are needed (K45); M2.27 stays M2.09's check half |
 | ortho-add | `ortho add` for events, errors, roles and moves: thing, operation, read and journey only today | building | framework | preview | alpha | none | `packages/cli`, `packages/generators` | — | slices M2.14, M2.15 |
 | adopt-mounted-thing | Adopt a mounted thing: so a running app can switch a plugin on after the fact (Capxul's modules, K43) | provisional | Capxul | 1.0 | — | none | `packages/compiler/src/modules/mounts` | plugins-mounts | slices M2.19, M2.20; the CRM comes after payroll, so no milestone yet |
 | journeys-through-clients | Journeys through the CLI, MCP and the page: no `--through` | provisional | framework | — | — | none | `packages/prove` | generated-outputs | slices M2.08, ST1.25 |
@@ -182,7 +182,7 @@ once planned.
 | world-clock-keeper | World clock and keeper: world clock, moves made by time, the keeper | spiked | framework | — | — | none | `packages/host-cloudflare/src/modules/clock` | timers | `design/spikes/world-clock.md`; the rest is M8's |
 | gap-signature-collection | Signature collection: stage 3's signature collection and the keeper rest on workflows | provisional | framework | — | — | none | `packages/orthograph` | workflows, safe-hats-budgets | no decision, no spike |
 
-### What the superagent pulls beyond the map above (K42, K40)
+### Beyond the map above: pieces K42 and K40 added (re-sorted by K45)
 
 | id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
 |---|---|---|---|---|---|---|---|---|---|

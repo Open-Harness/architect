@@ -63,6 +63,12 @@ test("a milestone's due date is written when it differs, and not for 'Not yet ne
   assert.deepEqual(steps.filter((s) => s.do === "setMilestoneDue"), [{ do: "setMilestoneDue", title: "Capxul: banking", day: "2026-12-09" }]);
 });
 
+test("a board milestone left with no dated row loses its old due date (K45)", () => {
+  const state = { ...empty, milestones: [{ number: 7, title: "Superagent: launch", description: "x", dueOn: "2026-12-20" }, { number: 8, title: "Capxul: the books", description: "x", dueOn: null }] };
+  const steps = boardPlan({ rows: [], state, statusUrl: url, typeOf, due: {} });
+  assert.deepEqual(steps.filter((s) => s.do === "setMilestoneDue"), [{ do: "setMilestoneDue", title: "Superagent: launch", day: null }]);
+});
+
 test("a milestone that gets a due date says it is a forecast, and has the note only then", () => {
   const due = { "Capxul: banking": "2026-12-09" };
   const steps = plan([], empty, due);

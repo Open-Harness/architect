@@ -56,6 +56,7 @@ test("the split and the releases: a framework row's only milestone is the alpha,
   assert.match(bad(row("a", "x: y", "built", "framework", "preview", "—", "none", "—", "—", "")), /preview piece is the alpha's/);
   assert.match(bad(row("a", "x: y", "built", "framework", "beta", "alpha", "none", "—", "—", "")), /for 'alpha' ships in preview/);
   assert.equal(bad(row("a", "x: y", "built", "framework", "preview", "alpha", "none", "—", "—", "")), "");
+  assert.match(bad(row("a", "x: y", "built", "Capxul", "—", "books", "none", "—", "—", "")), /for 'books' ships in beta/, "a milestone's row names its release");
   assert.match(bad(row("a", "x: y", "built", "superagent", "1.0", "coding agent", "none", "—", "—", "")), /ships in beta/);
   assert.match(bad(row("a", "x: y", "built", "superagent", "beta", "launch", "none", "—", "—", "")), /ships in 1.0/);
   const twice = page(row("a", "x: y", "built", "framework", "—", "—", "none", "—", "—", ""), row("a", "y: z", "built", "framework", "—", "—", "none", "—", "—", ""));

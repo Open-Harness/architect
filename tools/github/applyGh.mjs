@@ -15,7 +15,7 @@ export const applySteps = ({ steps, state, repo, rowById, gh, ghAll }) => {
     if (s.do === "updateLabel") gh(`repos/${repo}/labels/${encodeURIComponent(s.name)}`, { method: "PATCH", body: { color: s.color, description: s.description } });
     if (s.do === "createMilestone") milestones.set(s.title, gh(`repos/${repo}/milestones`, { method: "POST", body: { title: s.title, description: s.description } }).number);
     if (s.do === "updateMilestone") gh(`repos/${repo}/milestones/${s.number}`, { method: "PATCH", body: { description: s.description } });
-    if (s.do === "setMilestoneDue") gh(`repos/${repo}/milestones/${milestones.get(s.title)}`, { method: "PATCH", body: { due_on: `${s.day}T12:00:00Z` } });
+    if (s.do === "setMilestoneDue") gh(`repos/${repo}/milestones/${milestones.get(s.title)}`, { method: "PATCH", body: { due_on: s.day ? `${s.day}T12:00:00Z` : null } });
     if (s.do === "createIssue") {
       const i = gh(`repos/${repo}/issues`, { method: "POST", body: { title: s.title, body: s.body, labels: s.labels, milestone: milestones.get(s.milestone), type: s.type } });
       created.set(s.key, { number: i.number, id: i.id });

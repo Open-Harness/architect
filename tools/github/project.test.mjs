@@ -32,7 +32,7 @@ test("from nothing: the Project, linked, its fields and views; only trusted, kin
     ["All goals", "TABLE_LAYOUT", "-label:parked"], ["By status", "BOARD_LAYOUT", "-label:parked"], ["Roadmap", "ROADMAP_LAYOUT", "-label:parked"],
     ["The alpha", "BOARD_LAYOUT", 'milestone:"Alpha: Orthograph on npm"'],
     ["Capxul's path", "BOARD_LAYOUT", 'milestone:"Capxul: the books","Capxul: people and payroll","Capxul: banking","Capxul: budgets","Capxul: getting paid"'],
-    ["Parked", "TABLE_LAYOUT", "label:parked"], ["Goal 6", "TABLE_LAYOUT", 'goal:"Goal 6"'],
+    ["Parked", "TABLE_LAYOUT", "is:open label:parked"], ["Goal 6", "TABLE_LAYOUT", 'goal:"Goal 6"'],
   ]);
   const parked = projectViews([{ ...goal, status: "parked" }, { ...goal, number: 18, milestone: "Goal 18: the framework" }]);
   assert.ok(!parked.some((v) => v.name === "Goal 6"), "a parked goal has no view of its own; its issues are in Parked");
