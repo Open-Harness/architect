@@ -7,12 +7,7 @@ import type { RenderedFile } from "#modules/names/types.js";
 
 const command = (op: OperationModel): RenderedFile => {
   const optional = Object.values(op.payload).some((f) => f.optional);
-  const flags = Object.entries(op.payload).map(([k, f]) => {
-    const text = flagCode(k, f);
-    // An any-thing reference, a list or an object is parsed as JSON at the flag, so malformed JSON is refused there, naming the flag.
-    const flag = refAny(f) || f.json !== undefined ? `${text}.pipe(Flag.withSchema(Schema.fromJsonString(Schema.Unknown)))` : text;
-    return `${k}: ${f.optional ? `Flag.optional(${flag})` : flag}`;
-  });
+  const flags = Object.entries(op.payload).map(([k, f]) => `${k}: ${f.optional ? `Flag.optional(${flagCode(k, f)})` : flagCode(k, f)}`);
   return {
     path: `generated/cli/src/${op.thing}/${op.verb}.ts`,
     scaffold: false,

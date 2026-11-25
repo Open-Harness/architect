@@ -48,12 +48,15 @@ export const helpOf = (op: OperationModel): string => {
     : `${op.description} Moves ${article(op.thing)} ${words(op.thing)} from ${op.move.from.join(" or ")} to ${to}.`;
 };
 
-/** The flag's declaration, as generated code: a number that fits is a number flag (handed on as digits); a wider one stays text. */
+/**
+ * The flag's declaration, as generated code: a number that fits is a number flag (handed on as digits); a wider one stays text. An any-thing
+ * reference, a list or an object is parsed as JSON at the flag, so malformed JSON is refused there, naming the flag.
+ */
 export const flagCode = (name: string, f: FieldModel): string => {
   const note = `Flag.withDescription(${JSON.stringify(flagNote(name, f))})`;
-  return f.value.type === "uint" && f.value.bits <= 53
-    ? `Flag.Int("${name}").pipe(Flag.map(String), ${note})`
-    : `Flag.String("${name}").pipe(Flag.withMetavar(${JSON.stringify(metavar(f))}), ${note})`;
+  if (f.value.type === "uint" && f.value.bits <= 53) return `Flag.Int("${name}").pipe(Flag.map(String), ${note})`;
+  const text = `Flag.String("${name}").pipe(Flag.withMetavar(${JSON.stringify(metavar(f))}), ${note})`;
+  return refAny(f) || f.json !== undefined ? `${text}.pipe(Flag.withSchema(Schema.fromJsonString(Schema.Unknown)))` : text;
 };
 
 /** The rule behind one of an operation's refusals, by the model: its full name (`handle.oneHolderPerName`), the thing that holds it, and the sentence every output says. */
