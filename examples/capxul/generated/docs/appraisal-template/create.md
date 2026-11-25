@@ -61,7 +61,7 @@ Starts from the world `a second feedback criteria`.
 Starts from the world `a three-person cycle`.
 
 - **Ada makes a template in Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, title `Drivers`, kras [{ kra: the world's outsideKra, weightage: { value: `100`, scale: 0 } }], criteria [], and gets back an answer matching `^apt_[0-9a-z]+$`.
-- **Ada makes the template Quality only: Quality 100, no criteria.** `ada` (role company.owner) calls and sends company the world's company, title `Quality only`, kras [{ kra: the world's kra, weightage: { value: `100`, scale: 0 } }], criteria [], and gets back an answer matching `^apt_[0-9a-z]+$`.
+- **Ada makes a template of one KRA, Quality at 100, and no criteria.** `ada` (role company.owner) calls and sends company the world's company, title `Quality only`, kras [{ kra: the world's kra, weightage: { value: `100`, scale: 0 } }], criteria [], and gets back an answer matching `^apt_[0-9a-z]+$`.
 
 ### set up appraisal templates
 

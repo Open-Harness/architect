@@ -341,14 +341,14 @@ export default Blueprint.journey("run an appraisal cycle", {
         noEvents(),
       ),
 
-      // ── Each appraisee by their own template
+      // ── Each appraisee by their own row's template
       s.step(
-        "Ada makes the template Quality only: Quality 100, no criteria",
+        "Ada makes a template of one KRA, Quality at 100, and no criteria",
         s.ada.run(createTemplate, { company: s.world.company, title: "Quality only", kras: [{ kra: s.world.kra, weightage: d("100") }], criteria: [] }),
         expect((a) => a.appraisalTemplate).toMatch(/^apt_[0-9a-z]+$/),
       ),
       s.step(
-        "and Mixed 2027, appraising Olga by Engineers and Cy by Quality only",
+        "and a cycle appraising Olga by Engineers and Cy by the one-KRA template",
         s.ada.run(create, cycle("Mixed 2027", "2027-04-01", "2027-06-30", [olga, { employee: s.world.secondEmployee, appraisalTemplate: s.last.appraisalTemplate }])),
         expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/),
       ),
@@ -364,15 +364,15 @@ export default Blueprint.journey("run an appraisal cycle", {
       ),
 
       // ── A start that makes nothing still starts
-      s.step("Ada sets up Spring 2027 for Olga", s.ada.run(create, cycle("Spring 2027", "2027-03-01", "2027-05-31", [olga])), expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/)),
+      s.step("Ada sets up a spring cycle for Olga", s.ada.run(create, cycle("Spring 2027", "2027-03-01", "2027-05-31", [olga])), expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/)),
       s.step(
         "and makes Olga's appraisal in it by hand",
         s.ada.run(createAppraisal, { employee: s.world.employee, appraisalCycle: s.last.appraisalCycle, appraisalTemplate: s.world.appraisalTemplate }),
         expect((a) => a.appraisal).toMatch(/^apr_[0-9a-z]+$/),
       ),
-      s.step("it reads back in Spring 2027", s.ada.run(getAppraisal, { id: s.last.appraisal }), expect((a) => a.employee).toBe(s.world.employee), noEvents()),
+      s.step("it reads back as Olga's", s.ada.run(getAppraisal, { id: s.last.appraisal }), expect((a) => a.employee).toBe(s.world.employee), noEvents()),
       s.step(
-        "starting Spring 2027 makes nothing, since Olga has hers, and the cycle is in progress",
+        "starting the spring cycle makes nothing, since Olga has hers, and it is in progress",
         s.ada.run(start, { appraisalCycle: s.last.appraisalCycle }),
         expect((a) => a.appraisals.length).toBe(0),
         cycles.isIn(s.last.appraisalCycle, "inProgress"),

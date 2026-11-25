@@ -48806,7 +48806,7 @@
           ]
         },
         {
-          "title": "Ada makes the template Quality only: Quality 100, no criteria",
+          "title": "Ada makes a template of one KRA, Quality at 100, and no criteria",
           "call": {
             "actor": "ada",
             "operation": "appraisal-template.create",
@@ -48844,7 +48844,7 @@
           ]
         },
         {
-          "title": "and Mixed 2027, appraising Olga by Engineers and Cy by Quality only",
+          "title": "and a cycle appraising Olga by Engineers and Cy by the one-KRA template",
           "call": {
             "actor": "ada",
             "operation": "appraisal-cycle.create",
@@ -48995,7 +48995,7 @@
           ]
         },
         {
-          "title": "Ada sets up Spring 2027 for Olga",
+          "title": "Ada sets up a spring cycle for Olga",
           "call": {
             "actor": "ada",
             "operation": "appraisal-cycle.create",
@@ -49071,7 +49071,7 @@
           ]
         },
         {
-          "title": "it reads back in Spring 2027",
+          "title": "it reads back as Olga's",
           "call": {
             "actor": "ada",
             "operation": "appraisal.get",
@@ -49100,7 +49100,7 @@
           ]
         },
         {
-          "title": "starting Spring 2027 makes nothing, since Olga has hers, and the cycle is in progress",
+          "title": "starting the spring cycle makes nothing, since Olga has hers, and it is in progress",
           "call": {
             "actor": "ada",
             "operation": "appraisal-cycle.start",
@@ -49132,7 +49132,7 @@
           ]
         }
       ],
-      "sourceHash": "365bd6ba4ee818897c0c112ed6287c4effe1dd7fffebb6f02c88aee3112b72fa"
+      "sourceHash": "16cd2fbd007c9fb072fb2970fbe81ebcfe90b6ad9594a7af2cecbdf0ecd261b2"
     },
     "journeys/schedule-an-interview.ts": {
       "name": "schedule an interview",
@@ -52434,7 +52434,7 @@
           ]
         },
         {
-          "title": "Ada adds the KRA Mentoring to Acme Trading",
+          "title": "Ada adds a third KRA to Acme Trading",
           "call": {
             "actor": "ada",
             "operation": "kra.create",
@@ -56119,7 +56119,7 @@
           ]
         }
       ],
-      "sourceHash": "a476f03595a6ef5c23b116d41de28994b34f4f7d8ea0d2dda429652ec08b6fc9"
+      "sourceHash": "69943987ad1d9926fad514d2a096bf8571ea66532f460031336ca31f45ab79c0"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",

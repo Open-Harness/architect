@@ -240,7 +240,7 @@ export default Blueprint.journey("set and track goals", {
         refuses(GoalEmployeeNotInCompany),
         noEvents(),
       ),
-      s.step("Ada adds the KRA Mentoring to Acme Trading", s.ada.run(createKra, { company: s.world.company, title: "Mentoring" }), expect((k) => k.kra).toMatch(/^kra_[0-9a-z]+$/)),
+      s.step("Ada adds a third KRA to Acme Trading", s.ada.run(createKra, { company: s.world.company, title: "Mentoring" }), expect((k) => k.kra).toMatch(/^kra_[0-9a-z]+$/)),
       s.step(
         "a KRA of Acme Trading that Olga's appraisal doesn't hold is refused",
         s.olga.run(create, olgaGoal(s.last.kra, "Mentor", "0")),

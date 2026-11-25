@@ -79,7 +79,7 @@ Starts from the world `a manual cycle draft`.
 
 Starts from the world `a three-person cycle`.
 
-- **it reads back in Spring 2027.** `ada` (role company.owner) calls and sends id the last call's appraisal, and gets back the world's employee.
+- **it reads back as Olga's.** `ada` (role company.owner) calls and sends id the last call's appraisal, and gets back the world's employee.
 
 ### set and track goals
 
