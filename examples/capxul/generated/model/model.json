@@ -1,5 +1,7 @@
 {
   "refusals": {
+    "AccountClosed": "BT-001",
+    "AlreadyRecorded": "BT-004",
     "ApplicantRejected": "IV-001",
     "AttendanceAlreadyMarked": "AN-004",
     "AttendanceBeforeJoining": "AN-003",
@@ -8,7 +10,10 @@
     "AttendeeHasLeft": "AN-002",
     "AttendeeNotInCompany": "AN-001",
     "BankAccountNameTaken": "BA-002",
+    "BankAccountNotFound": "BA-901",
     "BankAccountNotOpen": "BA-900",
+    "BankTransactionNotFound": "BT-901",
+    "BankTransactionNotPending": "BT-900",
     "BranchNameTaken": "BR-001",
     "BranchNotActive": "BR-900",
     "BridgeBusinessNotFound": "KB-901",
@@ -22,6 +27,7 @@
     "CompanyNameTaken": "CO-001",
     "CompanyNotActive": "CO-900",
     "CompanyNotFound": "CO-901",
+    "CurrencyNotHeld": "BT-002",
     "DepartmentNameTaken": "DE-001",
     "DepartmentNotActive": "DE-900",
     "DepartmentNotFound": "DE-901",
@@ -78,6 +84,7 @@
     "NewDepartmentNotInCompany": "TR-003",
     "NewDesignationNotInCompany": "PM-003",
     "NotAllowed": "AR-001",
+    "NothingToSend": "BT-003",
     "OfferAlreadyMade": "JF-002",
     "OfferDesignationNotInCompany": "JF-001",
     "OfferNotAccepted": "JA-002",
@@ -134,6 +141,10 @@
     "BridgeLink": {
       "type": "schema"
     },
+    "BridgeRef": {
+      "type": "text",
+      "max": 140
+    },
     "Country": {
       "type": "text",
       "max": 60
@@ -151,6 +162,10 @@
     "DepositDetail": {
       "type": "text",
       "max": 140
+    },
+    "Dollars": {
+      "type": "decimal",
+      "places": 6
     },
     "ExpenseTypeName": {
       "type": "text",
@@ -182,11 +197,18 @@
       "type": "text",
       "max": 140
     },
+    "Party": {
+      "type": "text",
+      "max": 140
+    },
     "RejectionReason": {
       "type": "text",
       "max": 500
     },
     "TimeOfDay": {
+      "type": "schema"
+    },
+    "TransferFailure": {
       "type": "schema"
     },
     "Vacancies": {
@@ -717,12 +739,312 @@
           "code": "BA-002"
         }
       },
+      "notFound": {
+        "error": "BankAccountNotFound",
+        "exit": 4,
+        "code": "BA-901"
+      },
       "roles": [],
       "roleRules": {},
       "from": {
         "kind": "app"
       },
-      "hash": "25003fc246749f17"
+      "hash": "ac0f839f7b17708f"
+    },
+    "bank-transaction": {
+      "name": "bank-transaction",
+      "identifier": "BankTransaction",
+      "code": "BT",
+      "description": "One movement of money on a company's bank account: a deposit Bridge landed, or a transfer out.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          }
+        },
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "company.id"
+        },
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-account.id",
+          "description": "The company's bank account the money moved on."
+        },
+        "date": {
+          "value": {
+            "type": "day"
+          },
+          "named": "Day",
+          "description": "The day the money moved, as Bridge dates it."
+        },
+        "deposit": {
+          "value": {
+            "type": "money",
+            "bits": 128,
+            "signed": false,
+            "asset": {
+              "token": "usdc"
+            }
+          },
+          "named": "Amount",
+          "description": "What came in, in USDC base units; 0 for a transfer out."
+        },
+        "withdrawal": {
+          "value": {
+            "type": "money",
+            "bits": 128,
+            "signed": false,
+            "asset": {
+              "token": "usdc"
+            }
+          },
+          "named": "Amount",
+          "description": "What went out, in USDC base units; 0 for a deposit."
+        },
+        "currency": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "AccountCurrency",
+          "description": "The bank account's currency, which the money moved in at the bank."
+        },
+        "reference": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "BridgeRef",
+          "description": "Bridge's id for the movement: the deposit's, or the transfer's."
+        },
+        "party": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Party",
+          "description": "Who sent the deposit, or the external account the transfer pays."
+        }
+      },
+      "lives": "database",
+      "invariants": {
+        "oneTransactionPerMovement": {
+          "kind": "unique",
+          "fields": [
+            "reference"
+          ],
+          "refuse": "AlreadyRecorded"
+        }
+      },
+      "machine": {
+        "states": [
+          "pending",
+          "settled",
+          "failed"
+        ],
+        "moves": {
+          "land": {
+            "from": [],
+            "to": [
+              "settled"
+            ],
+            "emits": "DepositLanded"
+          },
+          "send": {
+            "from": [],
+            "to": [
+              "pending"
+            ],
+            "emits": "TransferSent"
+          },
+          "settle": {
+            "from": [
+              "pending"
+            ],
+            "to": [
+              "settled"
+            ],
+            "emits": "TransferSettled"
+          },
+          "fail": {
+            "from": [
+              "pending"
+            ],
+            "to": [
+              "failed"
+            ],
+            "emits": "TransferFailed"
+          }
+        },
+        "notFrom": {
+          "error": "BankTransactionNotPending",
+          "exit": 40,
+          "code": "BT-900"
+        }
+      },
+      "events": {
+        "DepositLanded": {
+          "transaction": {
+            "value": {
+              "type": "id",
+              "prefix": "btx"
+            },
+            "ref": "bank-transaction.id"
+          },
+          "account": {
+            "value": {
+              "type": "id",
+              "prefix": "bac"
+            },
+            "ref": "bank-transaction.account",
+            "description": "The company's bank account the money moved on."
+          },
+          "deposit": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "bank-transaction.deposit",
+            "description": "What came in, in USDC base units; 0 for a transfer out."
+          },
+          "reference": {
+            "value": {
+              "type": "text",
+              "max": 140
+            },
+            "named": "BridgeRef",
+            "ref": "bank-transaction.reference",
+            "description": "Bridge's id for the movement: the deposit's, or the transfer's."
+          }
+        },
+        "TransferFailed": {
+          "transaction": {
+            "value": {
+              "type": "id",
+              "prefix": "btx"
+            },
+            "ref": "bank-transaction.id"
+          },
+          "state": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "TransferFailure"
+          }
+        },
+        "TransferSent": {
+          "transaction": {
+            "value": {
+              "type": "id",
+              "prefix": "btx"
+            },
+            "ref": "bank-transaction.id"
+          },
+          "account": {
+            "value": {
+              "type": "id",
+              "prefix": "bac"
+            },
+            "ref": "bank-transaction.account",
+            "description": "The company's bank account the money moved on."
+          },
+          "withdrawal": {
+            "value": {
+              "type": "money",
+              "bits": 128,
+              "signed": false,
+              "asset": {
+                "token": "usdc"
+              }
+            },
+            "named": "Amount",
+            "ref": "bank-transaction.withdrawal",
+            "description": "What went out, in USDC base units; 0 for a deposit."
+          }
+        },
+        "TransferSettled": {
+          "transaction": {
+            "value": {
+              "type": "id",
+              "prefix": "btx"
+            },
+            "ref": "bank-transaction.id"
+          }
+        }
+      },
+      "errors": {
+        "AccountClosed": {
+          "fields": {
+            "account": {
+              "value": {
+                "type": "id",
+                "prefix": "bac"
+              },
+              "ref": "bank-transaction.account",
+              "description": "The company's bank account the money moved on."
+            }
+          },
+          "exit": 41,
+          "code": "BT-001"
+        },
+        "CurrencyNotHeld": {
+          "fields": {
+            "currency": {
+              "value": {
+                "type": "schema"
+              },
+              "named": "AccountCurrency",
+              "ref": "bank-transaction.currency",
+              "description": "The bank account's currency, which the money moved in at the bank."
+            }
+          },
+          "exit": 42,
+          "code": "BT-002"
+        },
+        "NothingToSend": {
+          "fields": {},
+          "exit": 43,
+          "code": "BT-003"
+        },
+        "AlreadyRecorded": {
+          "fields": {
+            "reference": {
+              "value": {
+                "type": "text",
+                "max": 140
+              },
+              "named": "BridgeRef",
+              "ref": "bank-transaction.reference",
+              "description": "Bridge's id for the movement: the deposit's, or the transfer's."
+            }
+          },
+          "exit": 44,
+          "code": "BT-004"
+        }
+      },
+      "notFound": {
+        "error": "BankTransactionNotFound",
+        "exit": 4,
+        "code": "BT-901"
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "app"
+      },
+      "hash": "0e0b6252923c4dee"
     },
     "branch": {
       "name": "branch",
@@ -5180,6 +5502,604 @@
         "p95Ms": 800
       },
       "hash": "010a747b50ed2cac"
+    },
+    "bank-transaction.fail": {
+      "kind": "operation",
+      "name": "bank-transaction.fail",
+      "thing": "bank-transaction",
+      "verb": "fail",
+      "identifier": "fail",
+      "file": "blueprint/things/bank-transaction/verbs/fail.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Record that Bridge couldn't pay a transfer out, and how it ended.",
+      "payload": {
+        "transaction": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          },
+          "ref": "bank-transaction.id"
+        },
+        "state": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "TransferFailure"
+        }
+      },
+      "answer": {
+        "transaction": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          },
+          "ref": "bank-transaction.id"
+        }
+      },
+      "move": {
+        "key": "fail",
+        "from": [
+          "pending"
+        ],
+        "to": [
+          "failed"
+        ],
+        "emits": "TransferFailed"
+      },
+      "errors": [],
+      "invariants": {
+        "AlreadyRecorded": "bank-transaction.oneTransactionPerMovement"
+      },
+      "breaks": [
+        "bank-transaction.oneTransactionPerMovement"
+      ],
+      "refusals": [
+        "AlreadyRecorded",
+        "BankTransactionNotPending",
+        "BankTransactionNotFound",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "transaction": "bank-transaction"
+      },
+      "notFound": {
+        "transaction": "BankTransactionNotFound"
+      },
+      "steps": {
+        "update": {
+          "name": "bank-transaction.fail.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "5b2908c80ca3d337"
+    },
+    "bank-transaction.get": {
+      "kind": "read",
+      "name": "bank-transaction.get",
+      "thing": "bank-transaction",
+      "verb": "get",
+      "identifier": "get",
+      "file": "blueprint/things/bank-transaction/verbs/get.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Read one bank-transaction by its id: company, account, date, deposit, withdrawal, currency, reference, party, state.",
+      "payload": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          },
+          "ref": "bank-transaction.id"
+        }
+      },
+      "answer": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "ref": "bank-transaction.company"
+        },
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-transaction.account",
+          "description": "The company's bank account the money moved on."
+        },
+        "date": {
+          "value": {
+            "type": "day"
+          },
+          "named": "Day",
+          "ref": "bank-transaction.date",
+          "description": "The day the money moved, as Bridge dates it."
+        },
+        "deposit": {
+          "value": {
+            "type": "money",
+            "bits": 128,
+            "signed": false,
+            "asset": {
+              "token": "usdc"
+            }
+          },
+          "named": "Amount",
+          "ref": "bank-transaction.deposit",
+          "description": "What came in, in USDC base units; 0 for a transfer out."
+        },
+        "withdrawal": {
+          "value": {
+            "type": "money",
+            "bits": 128,
+            "signed": false,
+            "asset": {
+              "token": "usdc"
+            }
+          },
+          "named": "Amount",
+          "ref": "bank-transaction.withdrawal",
+          "description": "What went out, in USDC base units; 0 for a deposit."
+        },
+        "currency": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "AccountCurrency",
+          "ref": "bank-transaction.currency",
+          "description": "The bank account's currency, which the money moved in at the bank."
+        },
+        "reference": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "BridgeRef",
+          "ref": "bank-transaction.reference",
+          "description": "Bridge's id for the movement: the deposit's, or the transfer's."
+        },
+        "party": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Party",
+          "ref": "bank-transaction.party",
+          "description": "Who sent the deposit, or the external account the transfer pays."
+        },
+        "state": {
+          "value": {
+            "type": "text",
+            "max": 64
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 50
+      },
+      "hash": "416662c40ca0593d"
+    },
+    "bank-transaction.land": {
+      "kind": "operation",
+      "name": "bank-transaction.land",
+      "thing": "bank-transaction",
+      "verb": "land",
+      "identifier": "land",
+      "file": "blueprint/things/bank-transaction/verbs/land.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Record a deposit Bridge landed on a company's bank account.",
+      "payload": {
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-transaction.account",
+          "description": "The company's bank account the money moved on."
+        },
+        "reference": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "BridgeRef",
+          "ref": "bank-transaction.reference",
+          "description": "Bridge's id for the movement: the deposit's, or the transfer's."
+        },
+        "amount": {
+          "value": {
+            "type": "decimal",
+            "places": 6
+          },
+          "named": "Dollars",
+          "description": "What landed, as Bridge writes it: dollars, at most six places."
+        },
+        "party": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Party",
+          "ref": "bank-transaction.party",
+          "description": "Who sent the deposit, or the external account the transfer pays."
+        },
+        "date": {
+          "value": {
+            "type": "day"
+          },
+          "named": "Day",
+          "ref": "bank-transaction.date",
+          "description": "The day the money moved, as Bridge dates it."
+        }
+      },
+      "answer": {
+        "transaction": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          },
+          "ref": "bank-transaction.id"
+        }
+      },
+      "move": {
+        "key": "land",
+        "from": [],
+        "to": [
+          "settled"
+        ],
+        "emits": "DepositLanded"
+      },
+      "errors": [],
+      "invariants": {
+        "AlreadyRecorded": "bank-transaction.oneTransactionPerMovement"
+      },
+      "breaks": [
+        "bank-transaction.oneTransactionPerMovement"
+      ],
+      "refusals": [
+        "AlreadyRecorded",
+        "BankAccountNotFound",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "account": "bank-account"
+      },
+      "notFound": {
+        "account": "BankAccountNotFound"
+      },
+      "mints": "transaction",
+      "steps": {
+        "load": {
+          "name": "bank-transaction.land.load",
+          "type": "database"
+        },
+        "insert": {
+          "name": "bank-transaction.land.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "1a553d0dc5cb0aa3"
+    },
+    "bank-transaction.list": {
+      "kind": "read",
+      "name": "bank-transaction.list",
+      "thing": "bank-transaction",
+      "verb": "list",
+      "identifier": "list",
+      "file": "blueprint/things/bank-transaction/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "List bank-transactions, oldest first, 50 to a page, filtered by account.",
+      "payload": {
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-transaction.account",
+          "description": "The company's bank account the money moved on.",
+          "optional": true
+        },
+        "cursor": {
+          "value": {
+            "type": "text",
+            "max": 64
+          },
+          "optional": true
+        }
+      },
+      "answer": {
+        "items": {
+          "value": {
+            "type": "schema"
+          }
+        },
+        "next": {
+          "value": {
+            "type": "schema"
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "account.company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 80
+      },
+      "list": {
+        "where": [
+          "account"
+        ],
+        "order": "oldest",
+        "page": 50
+      },
+      "hash": "6ef2dec63a7a0b40"
+    },
+    "bank-transaction.send": {
+      "kind": "operation",
+      "name": "bank-transaction.send",
+      "thing": "bank-transaction",
+      "verb": "send",
+      "identifier": "send",
+      "file": "blueprint/things/bank-transaction/verbs/send.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Send money out of a company's bank account to a payee, through Bridge.",
+      "payload": {
+        "account": {
+          "value": {
+            "type": "id",
+            "prefix": "bac"
+          },
+          "ref": "bank-transaction.account",
+          "description": "The company's bank account the money moved on."
+        },
+        "amount": {
+          "value": {
+            "type": "decimal",
+            "places": 6
+          },
+          "named": "Dollars",
+          "description": "What to send, in dollars, at most six places, as Bridge takes it."
+        },
+        "currency": {
+          "value": {
+            "type": "schema"
+          },
+          "named": "AccountCurrency",
+          "ref": "bank-transaction.currency",
+          "description": "The currency the payee is paid in: the account's own."
+        },
+        "party": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "Party",
+          "ref": "bank-transaction.party",
+          "description": "The payee: the Bridge external account the money goes to."
+        }
+      },
+      "answer": {
+        "transaction": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          },
+          "ref": "bank-transaction.id"
+        },
+        "reference": {
+          "value": {
+            "type": "text",
+            "max": 140
+          },
+          "named": "BridgeRef",
+          "ref": "bank-transaction.reference",
+          "description": "Bridge's id for the movement: the deposit's, or the transfer's."
+        }
+      },
+      "move": {
+        "key": "send",
+        "from": [],
+        "to": [
+          "pending"
+        ],
+        "emits": "TransferSent"
+      },
+      "errors": [
+        "AccountClosed",
+        "CurrencyNotHeld",
+        "NothingToSend"
+      ],
+      "invariants": {
+        "AlreadyRecorded": "bank-transaction.oneTransactionPerMovement"
+      },
+      "breaks": [
+        "bank-transaction.oneTransactionPerMovement"
+      ],
+      "refusals": [
+        "AccountClosed",
+        "CurrencyNotHeld",
+        "NothingToSend",
+        "AlreadyRecorded",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "account.company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "account": "bank-account"
+      },
+      "mints": "transaction",
+      "steps": {
+        "load": {
+          "name": "bank-transaction.send.load",
+          "type": "database"
+        },
+        "insert": {
+          "name": "bank-transaction.send.insert",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 800
+      },
+      "hash": "69288c5f0184b557"
+    },
+    "bank-transaction.settle": {
+      "kind": "operation",
+      "name": "bank-transaction.settle",
+      "thing": "bank-transaction",
+      "verb": "settle",
+      "identifier": "settle",
+      "file": "blueprint/things/bank-transaction/verbs/settle.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Record that Bridge paid a transfer out.",
+      "payload": {
+        "transaction": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          },
+          "ref": "bank-transaction.id"
+        }
+      },
+      "answer": {
+        "transaction": {
+          "value": {
+            "type": "id",
+            "prefix": "btx"
+          },
+          "ref": "bank-transaction.id"
+        }
+      },
+      "move": {
+        "key": "settle",
+        "from": [
+          "pending"
+        ],
+        "to": [
+          "settled"
+        ],
+        "emits": "TransferSettled"
+      },
+      "errors": [],
+      "invariants": {
+        "AlreadyRecorded": "bank-transaction.oneTransactionPerMovement"
+      },
+      "breaks": [
+        "bank-transaction.oneTransactionPerMovement"
+      ],
+      "refusals": [
+        "AlreadyRecorded",
+        "BankTransactionNotPending",
+        "BankTransactionNotFound",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "refs": {
+        "transaction": "bank-transaction"
+      },
+      "notFound": {
+        "transaction": "BankTransactionNotFound"
+      },
+      "steps": {
+        "update": {
+          "name": "bank-transaction.settle.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 150
+      },
+      "hash": "765eb2664ac09935"
     },
     "branch.create": {
       "kind": "operation",
@@ -16388,6 +17308,1185 @@
       ],
       "sourceHash": "c71fa9dbb65ad8a17eea00bb6b6fb9b78430cef112e5aa37a25be098d4ab9cc9"
     },
+    "journeys/bridge-a-bank-account-end-to-end.ts": {
+      "name": "bridge: a bank account, end to end",
+      "file": "journeys/bridge-a-bank-account-end-to-end.ts",
+      "cast": {
+        "ada": {
+          "kind": "signed-in"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "starts": null,
+      "steps": [
+        {
+          "title": "Ada starts her own KYC and gets Bridge's form and terms",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.start",
+            "payload": {
+              "fullName": "Ada Wanjiru Kamau",
+              "email": "ada@acme-trading.test"
+            },
+            "request": "ada-kyc"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": true
+            },
+            {
+              "kind": "emits",
+              "event": "KycStarted",
+              "fields": {
+                "individual": {
+                  "ref": [
+                    "last",
+                    "individual"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "state": "started"
+            }
+          ]
+        },
+        {
+          "title": "Bridge approves her",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-individual.approve",
+            "payload": {
+              "individual": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "KycApproved",
+              "fields": {
+                "individual": {
+                  "ref": [
+                    "last",
+                    "individual"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-individual",
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              },
+              "state": "approved"
+            }
+          ]
+        },
+        {
+          "title": "she reads her KYC back approved, as she started it",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-individual.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "individual"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "ada",
+                    "person"
+                  ]
+                },
+                "Ada Wanjiru Kamau",
+                "ada@acme-trading.test",
+                "approved"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada sets up her company",
+          "call": {
+            "actor": "ada",
+            "operation": "company.create",
+            "payload": {
+              "companyName": "Acme Trading",
+              "abbr": "AT",
+              "country": "Kenya",
+              "defaultCurrency": "USD"
+            },
+            "request": "acme"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^com_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "she starts its KYB",
+          "call": {
+            "actor": "ada",
+            "operation": "bridge-business.start",
+            "payload": {
+              "company": {
+                "ref": [
+                  "last",
+                  "company"
+                ]
+              },
+              "legalName": "Acme Trading Limited",
+              "email": "finance@acme-trading.test"
+            },
+            "request": "acme-kyb"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^kyb_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "state": "started"
+            }
+          ]
+        },
+        {
+          "title": "Bridge approves the KYB",
+          "call": {
+            "actor": "bridge",
+            "operation": "bridge-business.approve",
+            "payload": {
+              "business": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "KybApproved",
+              "fields": {
+                "business": {
+                  "ref": [
+                    "last",
+                    "business"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bridge-business",
+              "id": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "state": "approved"
+            }
+          ]
+        },
+        {
+          "title": "Ada opens a US dollar account on it and gets a bank's own deposit details",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-account.open",
+            "payload": {
+              "business": {
+                "ref": [
+                  "last",
+                  "business"
+                ]
+              },
+              "accountName": "Operating",
+              "currency": "USD"
+            },
+            "request": "acme-operating"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                true,
+                true
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "BankAccountOpened",
+              "fields": {
+                "account": {
+                  "ref": [
+                    "last",
+                    "account"
+                  ]
+                },
+                "currency": "USD"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-account",
+              "id": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              },
+              "state": "open"
+            }
+          ]
+        },
+        {
+          "title": "Bridge lands a deposit on it",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              },
+              "reference": "dep_first01",
+              "amount": {
+                "value": "500",
+                "scale": 0
+              },
+              "party": "First Customer",
+              "date": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "DepositLanded",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "deposit": "500000000",
+                "reference": "dep_first01"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "settled"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads the deposit back",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2026-11-30",
+                "500000000",
+                "0",
+                "USD",
+                "dep_first01",
+                "First Customer",
+                "settled"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada sends part of it out to a supplier",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "12075",
+                "scale": 2
+              },
+              "currency": "USD",
+              "party": "ea_supplier"
+            },
+            "request": "pay-supplier"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "\\S",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "TransferSent",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "withdrawal": "120750000"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "Bridge reports it paid",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.settle",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "TransferSettled",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "settled"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads the transfer back paid",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2026-12-01",
+                "0",
+                "120750000",
+                "USD",
+                "ea_supplier",
+                "settled"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the account holds the deposit and the transfer, each once, oldest first",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "500000000",
+                  "0",
+                  "USD",
+                  "First Customer",
+                  "settled"
+                ],
+                [
+                  "0",
+                  "120750000",
+                  "USD",
+                  "ea_supplier",
+                  "settled"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "3748fcc4c7f50c5e654d26b64be3e6fc21f58869ce7a5e7ba83fcd8d920885a0"
+    },
+    "journeys/bridge-a-deposit-lands.ts": {
+      "name": "bridge: a deposit lands",
+      "file": "journeys/bridge-a-deposit-lands.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "starts": "two bank accounts",
+      "steps": [
+        {
+          "title": "Ada can't report a deposit herself: only Bridge does",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_ada01",
+              "amount": {
+                "value": "10",
+                "scale": 0
+              },
+              "party": "Ada Lovelace",
+              "date": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-transaction.land",
+                "bank-transaction.land.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Bridge lands a deposit of 1,250.50 dollars on Operating",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_8f2c41a7",
+              "amount": {
+                "value": "12505",
+                "scale": 1
+              },
+              "party": "Jane Payer",
+              "date": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^btx_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "DepositLanded",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "deposit": "1250500000",
+                "reference": "dep_8f2c41a7"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "settled"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bank-transaction.land",
+                "bank-transaction.land.load",
+                "bank-transaction.land.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read it",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads it back: a deposit on Operating, in its currency, and nothing withdrawn",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "2026-11-30",
+                "1250500000",
+                "0",
+                "USD",
+                "dep_8f2c41a7",
+                "Jane Payer",
+                "settled"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bridge reports the same deposit again, and it is recorded once",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_8f2c41a7",
+              "amount": {
+                "value": "12505",
+                "scale": 1
+              },
+              "party": "Jane Payer",
+              "date": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AlreadyRecorded",
+              "fields": {
+                "reference": "dep_8f2c41a7"
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-transaction.land.commit"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a later report of that deposit, a day on, is the same deposit",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_8f2c41a7",
+              "amount": {
+                "value": "125050",
+                "scale": 2
+              },
+              "party": "Jane Payer",
+              "date": "2026-12-01"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AlreadyRecorded",
+              "fields": {
+                "reference": "dep_8f2c41a7"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bridge lands the smallest deposit there is, one millionth of a dollar",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_micro01",
+              "amount": {
+                "value": "1",
+                "scale": 6
+              },
+              "party": "Bridge test",
+              "date": "2026-12-01"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "DepositLanded",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "deposit": "1",
+                "reference": "dep_micro01"
+              }
+            }
+          ]
+        },
+        {
+          "title": "it reads back as the smallest deposit, not the one before it",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "dep_micro01",
+                "1",
+                "Bridge test"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "1.005 dollars is exactly 1005000, not a float's 1004999",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_half_cent",
+              "amount": {
+                "value": "1005",
+                "scale": 3
+              },
+              "party": "Jane Payer",
+              "date": "2026-12-01"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "DepositLanded",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "deposit": "1005000",
+                "reference": "dep_half_cent"
+              }
+            }
+          ]
+        },
+        {
+          "title": "a deposit past a float's whole numbers is exact to the millionth",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_large01",
+              "amount": {
+                "value": "9007199254740993",
+                "scale": 6
+              },
+              "party": "Big Payer",
+              "date": "2026-12-01"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "DepositLanded",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "deposit": "9007199254740993",
+                "reference": "dep_large01"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Bridge lands a deposit on Payroll with all six places",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "payroll"
+                ]
+              },
+              "reference": "dep_eur0001",
+              "amount": {
+                "value": "1234567891",
+                "scale": 6
+              },
+              "party": "Rhein GmbH",
+              "date": "2026-12-01"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "DepositLanded",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "payroll"
+                  ]
+                },
+                "deposit": "1234567891",
+                "reference": "dep_eur0001"
+              }
+            }
+          ]
+        },
+        {
+          "title": "it reads back on Payroll, in euros at the bank",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "payroll"
+                  ]
+                },
+                "2026-12-01",
+                "1234567891",
+                "0",
+                "EUR",
+                "dep_eur0001",
+                "Rhein GmbH",
+                "settled"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Operating holds exactly its four deposits, oldest first: the reports made no fifth",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "dep_8f2c41a7",
+                  "1250500000",
+                  "0",
+                  {
+                    "ref": [
+                      "world",
+                      "account"
+                    ]
+                  },
+                  "settled"
+                ],
+                [
+                  "dep_micro01",
+                  "1",
+                  "0",
+                  {
+                    "ref": [
+                      "world",
+                      "account"
+                    ]
+                  },
+                  "settled"
+                ],
+                [
+                  "dep_half_cent",
+                  "1005000",
+                  "0",
+                  {
+                    "ref": [
+                      "world",
+                      "account"
+                    ]
+                  },
+                  "settled"
+                ],
+                [
+                  "dep_large01",
+                  "9007199254740993",
+                  "0",
+                  {
+                    "ref": [
+                      "world",
+                      "account"
+                    ]
+                  },
+                  "settled"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Payroll holds only its own",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "payroll"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "dep_eur0001",
+                  "1234567891"
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't list Ada's account",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "f47ebb9c120e64c06947f2b9fe2ab116f988ce0331c117cf6d322afc4dc470ac"
+    },
     "journeys/bridge-a-kyc-keeps-what-bridge-gave.ts": {
       "name": "bridge: a kyc keeps what bridge gave",
       "file": "journeys/bridge-a-kyc-keeps-what-bridge-gave.ts",
@@ -17166,6 +19265,13 @@
               ]
             },
             {
+              "kind": "expect-equal",
+              "value": [
+                true,
+                true
+              ]
+            },
+            {
               "kind": "no-events"
             }
           ]
@@ -17203,7 +19309,845 @@
           ]
         }
       ],
-      "sourceHash": "c47e2df195047ce59b64f157d7be17c861f917a27145327c023ff812391d4984"
+      "sourceHash": "8665068cb08c22773e4bca62341407b268fbfbbc78ca58d6ef168b226f38d5da"
+    },
+    "journeys/bridge-a-transfer-is-paid-or-returned.ts": {
+      "name": "bridge: a transfer is paid or returned",
+      "file": "journeys/bridge-a-transfer-is-paid-or-returned.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "starts": "a transfer sent",
+      "steps": [
+        {
+          "title": "Ada reads it back pending, with the reference she was given",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "2026-12-01",
+                "0",
+                "300250000",
+                "USD",
+                {
+                  "ref": [
+                    "world",
+                    "transferReference"
+                  ]
+                },
+                "ea_landlord",
+                "pending"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the same request again is the same transfer, and sends nothing more",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "30025",
+                "scale": 2
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            },
+            "request": "rent-december"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "transfer"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "transferReference"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-transaction.send.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada can't say it was paid",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.settle",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              },
+              "state": "pending"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-transaction.settle",
+                "bank-transaction.settle.update"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nor that it came back",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.fail",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              },
+              "state": "returned"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada sends a deposit back to a tenant who moved out",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "950",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_old_tenant"
+            },
+            "request": "deposit-refund"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "\\S",
+              "flags": ""
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "Bridge reports it couldn't be delivered, and the rent is still pending",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.fail",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "undeliverable"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            },
+            {
+              "kind": "emits",
+              "event": "TransferFailed",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "state": "undeliverable"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "failed"
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              },
+              "state": "pending"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bank-transaction.fail",
+                "bank-transaction.fail.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "a transfer that failed can't then be paid",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.settle",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bank-transaction.notFrom",
+              "fields": {
+                "state": "failed"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor fail twice",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.fail",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "returned"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bank-transaction.notFrom",
+              "fields": {
+                "state": "failed"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "it reads back failed, nothing else changed",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "2026-12-01",
+                "0",
+                "950000000",
+                "USD",
+                "ea_old_tenant",
+                "failed"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada pays the cleaner too",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "80",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_cleaner"
+            },
+            "request": "cleaner"
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "the clock reaches half past eleven at night, UTC",
+          "skipped": "a step that moves the world's clock is not an operation"
+        },
+        {
+          "title": "Ada pays late in the day",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "5",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_late"
+            },
+            "request": "late"
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "it is dated that day in UTC, not the next",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2026-12-01",
+                "ea_late"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the clock passes midnight, UTC",
+          "skipped": "a step that moves the world's clock is not an operation"
+        },
+        {
+          "title": "Ada pays just after midnight",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "6",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_early"
+            },
+            "request": "early"
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "it is dated the new day, not the one before",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "2026-12-02",
+                "ea_early"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bridge reports the rent paid",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.settle",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              }
+            },
+            {
+              "kind": "emits",
+              "event": "TransferSettled",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "world",
+                    "transfer"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              },
+              "state": "settled"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bank-transaction.settle",
+                "bank-transaction.settle.update"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "it is paid once",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.settle",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bank-transaction.notFrom",
+              "fields": {
+                "state": "settled"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and once paid it can't come back",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.fail",
+            "payload": {
+              "transaction": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              },
+              "state": "returned"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "bank-transaction.notFrom",
+              "fields": {
+                "state": "settled"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "it reads back paid, still dated the day it was sent, nothing else changed",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "transfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "2026-12-01",
+                "0",
+                "300250000",
+                "USD",
+                {
+                  "ref": [
+                    "world",
+                    "transferReference"
+                  ]
+                },
+                "ea_landlord",
+                "settled"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the account holds the five transfers, each once, oldest first: paying one left the others as they were",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "300250000",
+                  "ea_landlord",
+                  "settled"
+                ],
+                [
+                  "950000000",
+                  "ea_old_tenant",
+                  "failed"
+                ],
+                [
+                  "80000000",
+                  "ea_cleaner",
+                  "pending"
+                ],
+                [
+                  "5000000",
+                  "ea_late",
+                  "pending"
+                ],
+                [
+                  "6000000",
+                  "ea_early",
+                  "pending"
+                ]
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "transferReference"
+                ]
+              }
+            },
+            {
+              "kind": "expect-equal",
+              "value": 5
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Payroll holds none of them",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "payroll"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 0
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read the account's transactions",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "f768b436acd20e903413f47a8eeeb51156d1ac200349a21f3ec2b7cfb207b166"
     },
     "journeys/bridge-an-approved-kyc-keeps-what-bridge-gave.ts": {
       "name": "bridge: an approved kyc keeps what bridge gave",
@@ -17317,6 +20261,300 @@
         }
       ],
       "sourceHash": "705aefcefc3ab7fd1017f2202c4430672476a49318f1c57dc04d21816b3edc4f"
+    },
+    "journeys/bridge-each-companys-money-is-its-own.ts": {
+      "name": "bridge: each company's money is its own",
+      "file": "journeys/bridge-each-companys-money-is-its-own.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "starts": "two companies' accounts",
+      "steps": [
+        {
+          "title": "Bridge lands a deposit on Acme Trading's account",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "reference": "dep_acme01",
+              "amount": {
+                "value": "40",
+                "scale": 0
+              },
+              "party": "Acme Customer",
+              "date": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^btx_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read it",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads it back as Acme Trading's",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "40000000",
+                "dep_acme01"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada pays a supplier from Acme Trading's account",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "15",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_acme_supplier"
+            },
+            "request": "acme-supplier"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^btx_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read Ada's transfer",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada reads it back as Acme Trading's",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "15000000",
+                "ea_acme_supplier"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bridge lands a deposit on Bo's account",
+          "call": {
+            "actor": "bridge",
+            "operation": "bank-transaction.land",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "boAccount"
+                ]
+              },
+              "reference": "dep_bo01",
+              "amount": {
+                "value": "7",
+                "scale": 0
+              },
+              "party": "Bo Customer",
+              "date": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^btx_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada can't read Bo's deposit",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo reads it back on his account",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "boAccount"
+                  ]
+                },
+                "7000000",
+                "dep_bo01"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        }
+      ],
+      "sourceHash": "a9536a6b9d48fdbffdb9cb8a80d9720f5c916823d239fbda6b43546f2412c509"
     },
     "journeys/bridge-kyb-is-decided-by-bridge.ts": {
       "name": "bridge: kyb is decided by bridge",
@@ -17871,14 +21109,11 @@
               "flags": ""
             },
             {
-              "kind": "expect",
-              "match": "^\\d{4,17}$",
-              "flags": ""
-            },
-            {
-              "kind": "expect",
-              "match": "^\\d{9}$",
-              "flags": ""
+              "kind": "expect-equal",
+              "value": [
+                true,
+                true
+              ]
             },
             {
               "kind": "emits",
@@ -18016,14 +21251,11 @@
               "flags": ""
             },
             {
-              "kind": "expect",
-              "match": "^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$",
-              "flags": ""
-            },
-            {
-              "kind": "expect",
-              "match": "^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$",
-              "flags": ""
+              "kind": "expect-equal",
+              "value": [
+                true,
+                true
+              ]
             },
             {
               "kind": "emits",
@@ -18099,9 +21331,11 @@
               ]
             },
             {
-              "kind": "expect",
-              "match": "^[A-Z]{2}\\d{2}[A-Z0-9]{10,30}$",
-              "flags": ""
+              "kind": "expect-equal",
+              "value": [
+                true,
+                true
+              ]
             },
             {
               "kind": "no-events"
@@ -18109,7 +21343,637 @@
           ]
         }
       ],
-      "sourceHash": "44a1aaf61349ec8138eaa1c5093ccb086a3f5ac072830005d19f364f29b2c00b"
+      "sourceHash": "6936a8321c6933735fbbcb68e7fa36a8c391705ba9274024997e5e2cb9177023"
+    },
+    "journeys/bridge-send-money-out.ts": {
+      "name": "bridge: send money out",
+      "file": "journeys/bridge-send-money-out.ts",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bo": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": "a reopened account",
+      "steps": [
+        {
+          "title": "Bo can't send from Ada's account",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "10",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_bo_payee"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-transaction.send",
+                "bank-transaction.send.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nothing is sent from the closed account",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "old"
+                ]
+              },
+              "amount": {
+                "value": "10",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AccountClosed",
+              "fields": {
+                "account": {
+                  "ref": [
+                    "world",
+                    "old"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "bank-transaction.send.commit"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a closed account is refused before its currency or the amount is judged",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "old"
+                ]
+              },
+              "amount": {
+                "value": "0",
+                "scale": 0
+              },
+              "currency": "EUR",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AccountClosed",
+              "fields": {
+                "account": {
+                  "ref": [
+                    "world",
+                    "old"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the dollar account doesn't pay in euros",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "10",
+                "scale": 0
+              },
+              "currency": "EUR",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "CurrencyNotHeld",
+              "fields": {
+                "currency": "EUR"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor the euro account in dollars, and the currency is judged before the amount",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "payroll"
+                ]
+              },
+              "amount": {
+                "value": "0",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "CurrencyNotHeld",
+              "fields": {
+                "currency": "USD"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a transfer of nothing is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "0",
+                "scale": 0
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NothingToSend",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and so is one below nothing",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "-1",
+                "scale": 6
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NothingToSend",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada pays her landlord the rent",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "30025",
+                "scale": 2
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            },
+            "request": "rent-december"
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^btx_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "expect",
+              "match": "\\S",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "TransferSent",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "withdrawal": "300250000"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "pending"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "bank-transaction.send",
+                "bank-transaction.send.load",
+                "bank-transaction.send.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "a second transfer is its own",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "30025",
+                "scale": 2
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            },
+            "request": "rent-december-again"
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "TransferSent",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "withdrawal": "300250000"
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "bank-transaction",
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
+          "title": "the account holds the two transfers, oldest first, each once, each with its own reference",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "300250000",
+                  "0",
+                  "USD",
+                  "ea_landlord",
+                  "pending"
+                ],
+                [
+                  "300250000",
+                  "0",
+                  "USD",
+                  "ea_landlord",
+                  "pending"
+                ]
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": 2
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada pays a supplier from Payroll, in euros, with all six places",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "payroll"
+                ]
+              },
+              "amount": {
+                "value": "1000001",
+                "scale": 6
+              },
+              "currency": "EUR",
+              "party": "ea_rhein_supplier"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "TransferSent",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "payroll"
+                  ]
+                },
+                "withdrawal": "1000001"
+              }
+            }
+          ]
+        },
+        {
+          "title": "Bo can't read it",
+          "call": {
+            "actor": "bo",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "it reads back pending on Payroll, in euros at the bank",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "transaction"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "payroll"
+                  ]
+                },
+                "0",
+                "1000001",
+                "EUR",
+                "ea_rhein_supplier",
+                "pending"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the smallest transfer there is, one millionth of a dollar, is sent",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "1",
+                "scale": 6
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "TransferSent",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "withdrawal": "1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "a transfer past a float's whole numbers is exact to the millionth",
+          "call": {
+            "actor": "ada",
+            "operation": "bank-transaction.send",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "account"
+                ]
+              },
+              "amount": {
+                "value": "9007199254740993",
+                "scale": 6
+              },
+              "currency": "USD",
+              "party": "ea_landlord"
+            }
+          },
+          "checks": [
+            {
+              "kind": "emits",
+              "event": "TransferSent",
+              "fields": {
+                "transaction": {
+                  "ref": [
+                    "last",
+                    "transaction"
+                  ]
+                },
+                "account": {
+                  "ref": [
+                    "world",
+                    "account"
+                  ]
+                },
+                "withdrawal": "9007199254740993"
+              }
+            }
+          ]
+        }
+      ],
+      "sourceHash": "5a153347ad01b723d2dc2425bbac9dc578d07afddf32b8a34c989d7157e5a776"
     },
     "journeys/bridge-start-a-kyb.ts": {
       "name": "bridge: start a kyb",
@@ -40165,7 +44029,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "a0e46a5ca593ea357b5bb21972db5842bb35e6b7a4c379f89065e20546110d4d",
+      "sourceHash": "4833a192f6643ff1cb851e455b9308d45febd86b01f06ef4ab20252475bb54b1",
       "makes": [
         {
           "actor": "ada",
@@ -40243,6 +44107,12 @@
           "ref": [
             "last",
             "routingNumber"
+          ]
+        },
+        "payroll": {
+          "ref": [
+            "world",
+            "payroll"
           ]
         }
       }
@@ -40647,6 +44517,71 @@
           "ref": [
             "last",
             "interviewRound"
+          ]
+        }
+      }
+    },
+    "a transfer sent": {
+      "name": "a transfer sent",
+      "file": "blueprint/starting-worlds/a-transfer-sent.ts",
+      "from": "a reopened account",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "c19e32168d284e91d651f351341ece27d0b4d1a46f430ceda0d17b3127d14f93",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "bank-transaction.send",
+          "payload": {
+            "account": {
+              "ref": [
+                "world",
+                "account"
+              ]
+            },
+            "amount": {
+              "value": "30025",
+              "scale": 2
+            },
+            "currency": "USD",
+            "party": "ea_landlord"
+          },
+          "request": "rent-december"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "account": {
+          "ref": [
+            "world",
+            "account"
+          ]
+        },
+        "payroll": {
+          "ref": [
+            "world",
+            "payroll"
+          ]
+        },
+        "transfer": {
+          "ref": [
+            "last",
+            "transaction"
+          ]
+        },
+        "transferReference": {
+          "ref": [
+            "last",
+            "reference"
           ]
         }
       }
@@ -41317,6 +45252,90 @@
         }
       }
     },
+    "bo has an account": {
+      "name": "bo has an account",
+      "file": "blueprint/starting-worlds/bo-has-an-account.ts",
+      "from": "two kybs started",
+      "cast": {
+        "bo": {
+          "kind": "role",
+          "role": "company.owner"
+        },
+        "bridge": {
+          "kind": "system"
+        }
+      },
+      "sourceHash": "37b39ccca402561844166598a371a79d1469cf73bd7add1c37388744a11e8d1f",
+      "makes": [
+        {
+          "actor": "bridge",
+          "operation": "bridge-business.approve",
+          "payload": {
+            "business": {
+              "ref": [
+                "world",
+                "business"
+              ]
+            }
+          },
+          "request": "approve-acme"
+        },
+        {
+          "actor": "bridge",
+          "operation": "bridge-business.approve",
+          "payload": {
+            "business": {
+              "ref": [
+                "world",
+                "boBusiness"
+              ]
+            }
+          },
+          "request": "approve-bo"
+        },
+        {
+          "actor": "bo",
+          "operation": "bank-account.open",
+          "payload": {
+            "business": {
+              "ref": [
+                "world",
+                "boBusiness"
+              ]
+            },
+            "accountName": "Bo Main",
+            "currency": "USD"
+          },
+          "request": "bo-main"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "business": {
+          "ref": [
+            "world",
+            "business"
+          ]
+        },
+        "boBusiness": {
+          "ref": [
+            "world",
+            "boBusiness"
+          ]
+        },
+        "boAccount": {
+          "ref": [
+            "last",
+            "account"
+          ]
+        }
+      }
+    },
     "four branches": {
       "name": "four branches",
       "file": "blueprint/starting-worlds/four-branches.ts",
@@ -41918,6 +45937,55 @@
         }
       }
     },
+    "two companies' accounts": {
+      "name": "two companies' accounts",
+      "file": "blueprint/starting-worlds/two-companies-accounts.ts",
+      "from": "bo has an account",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "7dc08d727db613215eff09ee0178f2d878064c7f6ca2215bab346dfa8bcc9b7f",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "bank-account.open",
+          "payload": {
+            "business": {
+              "ref": [
+                "world",
+                "business"
+              ]
+            },
+            "accountName": "Operating",
+            "currency": "USD"
+          },
+          "request": "acme-operating"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "account": {
+          "ref": [
+            "last",
+            "account"
+          ]
+        },
+        "boAccount": {
+          "ref": [
+            "world",
+            "boAccount"
+          ]
+        }
+      }
+    },
     "two companies": {
       "name": "two companies",
       "file": "blueprint/starting-worlds/two-companies.ts",
@@ -42335,6 +46403,16 @@
       }
     },
     {
+      "id": "anomaly:BA-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BA-901",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
       "id": "anomaly:BR-001",
       "kind": "anomaly",
       "labels": {
@@ -42350,6 +46428,66 @@
       "labels": {
         "environment": "*",
         "code": "BR-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:BT-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BT-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/bank-transaction/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BT-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BT-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/bank-transaction/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BT-003",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BT-003",
+        "severity": "ticket",
+        "owner": "blueprint/things/bank-transaction/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BT-004",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BT-004",
+        "severity": "ticket",
+        "owner": "blueprint/things/bank-transaction/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:BT-900",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BT-900",
+        "severity": "ticket",
+        "owner": "orthograph"
+      }
+    },
+    {
+      "id": "anomaly:BT-901",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "BT-901",
         "severity": "ticket",
         "owner": "orthograph"
       }
@@ -43610,6 +47748,258 @@
         "operation": "bank-account.open",
         "severity": "page",
         "owner": "blueprint/things/bank-account/verbs/open.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-transaction.fail",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.fail",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/fail.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-transaction.get",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.get",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-transaction.land",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.land",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/land.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-transaction.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.list",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-transaction.send",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.send",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/send.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:bank-transaction.settle",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.settle",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/settle.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -47015,6 +51405,264 @@
       ]
     },
     {
+      "id": "latency:bank-transaction.fail",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.fail",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/fail.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-transaction.get",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.get",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/get.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-transaction.land",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.land",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/land.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-transaction.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.list",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-transaction.send",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.send",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/send.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 800,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:bank-transaction.settle",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "bank-transaction.settle",
+        "severity": "page",
+        "owner": "blueprint/things/bank-transaction/verbs/settle.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 150,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "latency:branch.create",
       "kind": "latency",
       "labels": {
@@ -50115,6 +54763,26 @@
       }
     },
     {
+      "id": "verdict:bridge: a bank account, end to end:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: a bank account, end to end",
+        "severity": "page",
+        "owner": "journeys/bridge-a-bank-account-end-to-end.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: a deposit lands:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: a deposit lands",
+        "severity": "page",
+        "owner": "journeys/bridge-a-deposit-lands.ts"
+      }
+    },
+    {
       "id": "verdict:bridge: a kyc keeps what bridge gave:local",
       "kind": "verdict",
       "labels": {
@@ -50155,6 +54823,16 @@
       }
     },
     {
+      "id": "verdict:bridge: a transfer is paid or returned:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: a transfer is paid or returned",
+        "severity": "page",
+        "owner": "journeys/bridge-a-transfer-is-paid-or-returned.ts"
+      }
+    },
+    {
       "id": "verdict:bridge: an approved kyc keeps what bridge gave:local",
       "kind": "verdict",
       "labels": {
@@ -50162,6 +54840,16 @@
         "journey": "bridge: an approved kyc keeps what bridge gave",
         "severity": "page",
         "owner": "journeys/bridge-an-approved-kyc-keeps-what-bridge-gave.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: each company's money is its own:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: each company's money is its own",
+        "severity": "page",
+        "owner": "journeys/bridge-each-companys-money-is-its-own.ts"
       }
     },
     {
@@ -50182,6 +54870,16 @@
         "journey": "bridge: open a bank account",
         "severity": "page",
         "owner": "journeys/bridge-open-a-bank-account.ts"
+      }
+    },
+    {
+      "id": "verdict:bridge: send money out:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "bridge: send money out",
+        "severity": "page",
+        "owner": "journeys/bridge-send-money-out.ts"
       }
     },
     {
