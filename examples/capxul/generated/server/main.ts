@@ -6,8 +6,8 @@ import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
-import { AuthD1, Database, JournalD1, StoreD1, Telemetry, toWorld } from "@orthograph/host-cloudflare";
-import { Auth, Busy, BusyLive, CallTelemetry, Environment, Handlers, Journal, Principals, Reads, Store, Wire, invariantsIn, thingIn } from "@orthograph/language-effect";
+import { AuthD1, Database, JournalD1, StoreD1, Telemetry, WorldEntry, toWorld } from "@orthograph/host-cloudflare";
+import { Auth, Busy, CallTelemetry, DurableTimers, Environment, Handlers, Journal, Principals, Reads, Store, Timers, Wire, invariantsIn, thingIn } from "@orthograph/language-effect";
 import { Mcp, type McpResult, type ShownOperation } from "@orthograph/language-effect";
 import { Api, Errors } from "../api/src/index.ts";
 import * as portal from "../portal/main.ts";
@@ -58,6 +58,26 @@ import * as holidayGet from "../api/src/holiday/get.ts";
 import * as holidayListAddWeeklyOff from "../api/src/holiday-list/add-weekly-off.ts";
 import * as holidayListCreate from "../api/src/holiday-list/create.ts";
 import * as holidayListGet from "../api/src/holiday-list/get.ts";
+import * as interviewClear from "../api/src/interview/clear.ts";
+import * as interviewCreate from "../api/src/interview/create.ts";
+import * as interviewGet from "../api/src/interview/get.ts";
+import * as interviewReject from "../api/src/interview/reject.ts";
+import * as interviewFeedbackGet from "../api/src/interview-feedback/get.ts";
+import * as interviewFeedbackGive from "../api/src/interview-feedback/give.ts";
+import * as interviewRoundCreate from "../api/src/interview-round/create.ts";
+import * as interviewRoundGet from "../api/src/interview-round/get.ts";
+import * as jobApplicantAccept from "../api/src/job-applicant/accept.ts";
+import * as jobApplicantCreate from "../api/src/job-applicant/create.ts";
+import * as jobApplicantGet from "../api/src/job-applicant/get.ts";
+import * as jobApplicantHold from "../api/src/job-applicant/hold.ts";
+import * as jobApplicantReject from "../api/src/job-applicant/reject.ts";
+import * as jobOfferAccept from "../api/src/job-offer/accept.ts";
+import * as jobOfferCreate from "../api/src/job-offer/create.ts";
+import * as jobOfferGet from "../api/src/job-offer/get.ts";
+import * as jobOfferReject from "../api/src/job-offer/reject.ts";
+import * as jobOpeningClose from "../api/src/job-opening/close.ts";
+import * as jobOpeningCreate from "../api/src/job-opening/create.ts";
+import * as jobOpeningGet from "../api/src/job-opening/get.ts";
 import * as shiftTypeCreate from "../api/src/shift-type/create.ts";
 import * as shiftTypeGet from "../api/src/shift-type/get.ts";
 import attendanceMarkHandler from "../../src/attendance/mark.ts";
@@ -88,6 +108,20 @@ import expenseClaimTypeCreateHandler from "../../src/expense-claim-type/create.t
 import holidayAddHandler from "../../src/holiday/add.ts";
 import holidayListAddWeeklyOffHandler from "../../src/holiday-list/add-weekly-off.ts";
 import holidayListCreateHandler from "../../src/holiday-list/create.ts";
+import interviewClearHandler from "../../src/interview/clear.ts";
+import interviewCreateHandler from "../../src/interview/create.ts";
+import interviewRejectHandler from "../../src/interview/reject.ts";
+import interviewFeedbackGiveHandler from "../../src/interview-feedback/give.ts";
+import interviewRoundCreateHandler from "../../src/interview-round/create.ts";
+import jobApplicantAcceptHandler from "../../src/job-applicant/accept.ts";
+import jobApplicantCreateHandler from "../../src/job-applicant/create.ts";
+import jobApplicantHoldHandler from "../../src/job-applicant/hold.ts";
+import jobApplicantRejectHandler from "../../src/job-applicant/reject.ts";
+import jobOfferAcceptHandler from "../../src/job-offer/accept.ts";
+import jobOfferCreateHandler from "../../src/job-offer/create.ts";
+import jobOfferRejectHandler from "../../src/job-offer/reject.ts";
+import jobOpeningCloseHandler from "../../src/job-opening/close.ts";
+import jobOpeningCreateHandler from "../../src/job-opening/create.ts";
 import shiftTypeCreateHandler from "../../src/shift-type/create.ts";
 import * as attendanceThing from "../../blueprint/things/attendance/thing.ts";
 import * as attendanceRequestThing from "../../blueprint/things/attendance-request/thing.ts";
@@ -106,6 +140,12 @@ import * as expenseClaimThing from "../../blueprint/things/expense-claim/thing.t
 import * as expenseClaimTypeThing from "../../blueprint/things/expense-claim-type/thing.ts";
 import * as holidayThing from "../../blueprint/things/holiday/thing.ts";
 import * as holidayListThing from "../../blueprint/things/holiday-list/thing.ts";
+import * as interviewThing from "../../blueprint/things/interview/thing.ts";
+import * as interviewFeedbackThing from "../../blueprint/things/interview-feedback/thing.ts";
+import * as interviewRoundThing from "../../blueprint/things/interview-round/thing.ts";
+import * as jobApplicantThing from "../../blueprint/things/job-applicant/thing.ts";
+import * as jobOfferThing from "../../blueprint/things/job-offer/thing.ts";
+import * as jobOpeningThing from "../../blueprint/things/job-opening/thing.ts";
 import * as shiftTypeThing from "../../blueprint/things/shift-type/thing.ts";
 import * as attendanceInvariants from "../../blueprint/things/attendance/invariants.ts";
 import * as bankAccountInvariants from "../../blueprint/things/bank-account/invariants.ts";
@@ -121,9 +161,23 @@ import * as employmentTypeInvariants from "../../blueprint/things/employment-typ
 import * as expenseClaimTypeInvariants from "../../blueprint/things/expense-claim-type/invariants.ts";
 import * as holidayInvariants from "../../blueprint/things/holiday/invariants.ts";
 import * as holidayListInvariants from "../../blueprint/things/holiday-list/invariants.ts";
+import * as interviewInvariants from "../../blueprint/things/interview/invariants.ts";
+import * as interviewFeedbackInvariants from "../../blueprint/things/interview-feedback/invariants.ts";
+import * as interviewRoundInvariants from "../../blueprint/things/interview-round/invariants.ts";
+import * as jobOfferInvariants from "../../blueprint/things/job-offer/invariants.ts";
 import * as shiftTypeInvariants from "../../blueprint/things/shift-type/invariants.ts";
 
-export { World } from "@orthograph/host-cloudflare";
+import { World as WorldHost, type WorldWakes } from "@orthograph/host-cloudflare";
+
+/** Which code wakes each kind of durable timer when it falls due: empty until a feature registers a kind (a workflow, an agent, the keeper). */
+const wakes: WorldWakes = {};
+
+/** The world, with its wake route: a due timer of a kind that is not here fails its step and stays pending. */
+export class World extends WorldHost {
+  protected override wakeKinds(): WorldWakes {
+    return wakes;
+  }
+}
 
 const attendanceGetServed = Reads.serve({ name: "attendance.get", read: attendanceGet.declaration });
 const attendanceListServed = Reads.serve({ name: "attendance.list", read: attendanceList.declaration });
@@ -171,18 +225,38 @@ const holidayGetServed = Reads.serve({ name: "holiday.get", read: holidayGet.dec
 const holidayListAddWeeklyOffServed = Handlers.serve({ name: "holiday-list.add-weekly-off", operation: holidayListAddWeeklyOff.declaration, handler: holidayListAddWeeklyOffHandler, notFrom: "HolidayListNotActive", invariants: { HolidayDateTaken: "holiday.oneHolidayPerDay", HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
 const holidayListCreateServed = Handlers.serve({ name: "holiday-list.create", operation: holidayListCreate.declaration, handler: holidayListCreateHandler, invariants: { HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
 const holidayListGetServed = Reads.serve({ name: "holiday-list.get", read: holidayListGet.declaration });
+const interviewClearServed = Handlers.serve({ name: "interview.clear", operation: interviewClear.declaration, handler: interviewClearHandler, notFrom: "InterviewNotPending", invariants: { InterviewAlreadyScheduled: "interview.oneInterviewPerRound" }, codes: Errors.codes });
+const interviewCreateServed = Handlers.serve({ name: "interview.create", operation: interviewCreate.declaration, handler: interviewCreateHandler, notFound: { interviewRound: "InterviewRoundNotFound" }, invariants: { InterviewAlreadyScheduled: "interview.oneInterviewPerRound" }, codes: Errors.codes });
+const interviewGetServed = Reads.serve({ name: "interview.get", read: interviewGet.declaration });
+const interviewRejectServed = Handlers.serve({ name: "interview.reject", operation: interviewReject.declaration, handler: interviewRejectHandler, notFrom: "InterviewNotPending", invariants: { InterviewAlreadyScheduled: "interview.oneInterviewPerRound" }, codes: Errors.codes });
+const interviewFeedbackGetServed = Reads.serve({ name: "interview-feedback.get", read: interviewFeedbackGet.declaration });
+const interviewFeedbackGiveServed = Handlers.serve({ name: "interview-feedback.give", operation: interviewFeedbackGive.declaration, handler: interviewFeedbackGiveHandler, notFound: { interview: "InterviewNotFound" }, invariants: { FeedbackAlreadyGiven: "interview-feedback.oneFeedbackPerInterviewer" }, codes: Errors.codes });
+const interviewRoundCreateServed = Handlers.serve({ name: "interview-round.create", operation: interviewRoundCreate.declaration, handler: interviewRoundCreateHandler, invariants: { RoundNameTaken: "interview-round.oneNamePerCompany" }, codes: Errors.codes });
+const interviewRoundGetServed = Reads.serve({ name: "interview-round.get", read: interviewRoundGet.declaration });
+const jobApplicantAcceptServed = Handlers.serve({ name: "job-applicant.accept", operation: jobApplicantAccept.declaration, handler: jobApplicantAcceptHandler, notFrom: "JobApplicantNotOpen", codes: Errors.codes });
+const jobApplicantCreateServed = Handlers.serve({ name: "job-applicant.create", operation: jobApplicantCreate.declaration, handler: jobApplicantCreateHandler, codes: Errors.codes });
+const jobApplicantGetServed = Reads.serve({ name: "job-applicant.get", read: jobApplicantGet.declaration });
+const jobApplicantHoldServed = Handlers.serve({ name: "job-applicant.hold", operation: jobApplicantHold.declaration, handler: jobApplicantHoldHandler, notFrom: "JobApplicantNotOpen", codes: Errors.codes });
+const jobApplicantRejectServed = Handlers.serve({ name: "job-applicant.reject", operation: jobApplicantReject.declaration, handler: jobApplicantRejectHandler, notFrom: "JobApplicantNotOpen", codes: Errors.codes });
+const jobOfferAcceptServed = Handlers.serve({ name: "job-offer.accept", operation: jobOfferAccept.declaration, handler: jobOfferAcceptHandler, notFrom: "JobOfferNotAwaiting", invariants: { OfferAlreadyMade: "job-offer.oneOfferPerApplicant" }, codes: Errors.codes });
+const jobOfferCreateServed = Handlers.serve({ name: "job-offer.create", operation: jobOfferCreate.declaration, handler: jobOfferCreateHandler, notFound: { designation: "DesignationNotFound" }, invariants: { OfferAlreadyMade: "job-offer.oneOfferPerApplicant" }, codes: Errors.codes });
+const jobOfferGetServed = Reads.serve({ name: "job-offer.get", read: jobOfferGet.declaration });
+const jobOfferRejectServed = Handlers.serve({ name: "job-offer.reject", operation: jobOfferReject.declaration, handler: jobOfferRejectHandler, notFrom: "JobOfferNotAwaiting", invariants: { OfferAlreadyMade: "job-offer.oneOfferPerApplicant" }, codes: Errors.codes });
+const jobOpeningCloseServed = Handlers.serve({ name: "job-opening.close", operation: jobOpeningClose.declaration, handler: jobOpeningCloseHandler, notFrom: "JobOpeningNotOpen", codes: Errors.codes });
+const jobOpeningCreateServed = Handlers.serve({ name: "job-opening.create", operation: jobOpeningCreate.declaration, handler: jobOpeningCreateHandler, codes: Errors.codes });
+const jobOpeningGetServed = Reads.serve({ name: "job-opening.get", read: jobOpeningGet.declaration });
 const shiftTypeCreateServed = Handlers.serve({ name: "shift-type.create", operation: shiftTypeCreate.declaration, handler: shiftTypeCreateHandler, invariants: { ShiftTypeNameTaken: "shift-type.oneNamePerCompany" }, codes: Errors.codes });
 const shiftTypeGetServed = Reads.serve({ name: "shift-type.get", read: shiftTypeGet.declaration });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(shiftTypeThing), "shift-type"]] as const;
+const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(interviewThing), "interview"], [thingIn(interviewFeedbackThing), "interview-feedback"], [thingIn(interviewRoundThing), "interview-round"], [thingIn(jobApplicantThing), "job-applicant"], [thingIn(jobOfferThing), "job-offer"], [thingIn(jobOpeningThing), "job-opening"], [thingIn(shiftTypeThing), "shift-type"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
+const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
-type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth;
+type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth | Timers | DurableTimers;
 
 /** Who is calling, then the operation or read, its refusals sent as their wire classes. */
 type Run = (payload: never, principal: Principal, request?: string) => Effect.Effect<unknown, unknown, unknown>;
@@ -198,7 +272,7 @@ const call = <P extends object>(served: { readonly run: Run; readonly operation:
 
 const AttendanceLive = HttpApiBuilder.group(CallApi, "attendance", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("get", ({ payload, request }) => call(attendanceGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("list", ({ payload, request }) => call(attendanceListServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -206,7 +280,7 @@ const AttendanceLive = HttpApiBuilder.group(CallApi, "attendance", Effect.fn(fun
 }));
 const AttendanceRequestLive = HttpApiBuilder.group(CallApi, "attendance-request", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("approve", ({ payload, request }) => call(attendanceRequestApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("create", ({ payload, request }) => call(attendanceRequestCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -215,7 +289,7 @@ const AttendanceRequestLive = HttpApiBuilder.group(CallApi, "attendance-request"
 }));
 const BankAccountLive = HttpApiBuilder.group(CallApi, "bank-account", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("close", ({ payload, request }) => call(bankAccountCloseServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(bankAccountGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -223,14 +297,14 @@ const BankAccountLive = HttpApiBuilder.group(CallApi, "bank-account", Effect.fn(
 }));
 const BranchLive = HttpApiBuilder.group(CallApi, "branch", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(branchCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(branchGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const BridgeBusinessLive = HttpApiBuilder.group(CallApi, "bridge-business", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("approve", ({ payload, request }) => call(bridgeBusinessApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(bridgeBusinessGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -239,7 +313,7 @@ const BridgeBusinessLive = HttpApiBuilder.group(CallApi, "bridge-business", Effe
 }));
 const BridgeIndividualLive = HttpApiBuilder.group(CallApi, "bridge-individual", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("approve", ({ payload, request }) => call(bridgeIndividualApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(bridgeIndividualGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -248,28 +322,28 @@ const BridgeIndividualLive = HttpApiBuilder.group(CallApi, "bridge-individual", 
 }));
 const CompanyLive = HttpApiBuilder.group(CallApi, "company", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(companyCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(companyGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const DepartmentLive = HttpApiBuilder.group(CallApi, "department", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(departmentCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(departmentGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const DesignationLive = HttpApiBuilder.group(CallApi, "designation", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(designationCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(designationGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const EmployeeLive = HttpApiBuilder.group(CallApi, "employee", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("get", ({ payload, request }) => call(employeeGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("hire", ({ payload, request }) => call(employeeHireServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -277,28 +351,28 @@ const EmployeeLive = HttpApiBuilder.group(CallApi, "employee", Effect.fn(functio
 }));
 const EmployeeGradeLive = HttpApiBuilder.group(CallApi, "employee-grade", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(employeeGradeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(employeeGradeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const EmploymentTypeLive = HttpApiBuilder.group(CallApi, "employment-type", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(employmentTypeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(employmentTypeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const ExpenseLive = HttpApiBuilder.group(CallApi, "expense", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("add", ({ payload, request }) => call(expenseAddServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(expenseGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const ExpenseClaimLive = HttpApiBuilder.group(CallApi, "expense-claim", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("approve", ({ payload, request }) => call(expenseClaimApproveServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("create", ({ payload, request }) => call(expenseClaimCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
@@ -307,29 +381,79 @@ const ExpenseClaimLive = HttpApiBuilder.group(CallApi, "expense-claim", Effect.f
 }));
 const ExpenseClaimTypeLive = HttpApiBuilder.group(CallApi, "expense-claim-type", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(expenseClaimTypeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(expenseClaimTypeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const HolidayLive = HttpApiBuilder.group(CallApi, "holiday", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("add", ({ payload, request }) => call(holidayAddServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(holidayGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const HolidayListLive = HttpApiBuilder.group(CallApi, "holiday-list", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("add-weekly-off", ({ payload, request }) => call(holidayListAddWeeklyOffServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("create", ({ payload, request }) => call(holidayListCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(holidayListGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
+const InterviewLive = HttpApiBuilder.group(CallApi, "interview", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("clear", ({ payload, request }) => call(interviewClearServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(interviewCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(interviewGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reject", ({ payload, request }) => call(interviewRejectServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const InterviewFeedbackLive = HttpApiBuilder.group(CallApi, "interview-feedback", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("get", ({ payload, request }) => call(interviewFeedbackGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("give", ({ payload, request }) => call(interviewFeedbackGiveServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const InterviewRoundLive = HttpApiBuilder.group(CallApi, "interview-round", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(interviewRoundCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(interviewRoundGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const JobApplicantLive = HttpApiBuilder.group(CallApi, "job-applicant", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("accept", ({ payload, request }) => call(jobApplicantAcceptServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(jobApplicantCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(jobApplicantGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("hold", ({ payload, request }) => call(jobApplicantHoldServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reject", ({ payload, request }) => call(jobApplicantRejectServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const JobOfferLive = HttpApiBuilder.group(CallApi, "job-offer", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("accept", ({ payload, request }) => call(jobOfferAcceptServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(jobOfferCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(jobOfferGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reject", ({ payload, request }) => call(jobOfferRejectServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const JobOpeningLive = HttpApiBuilder.group(CallApi, "job-opening", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("close", ({ payload, request }) => call(jobOpeningCloseServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(jobOpeningCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(jobOpeningGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
 const ShiftTypeLive = HttpApiBuilder.group(CallApi, "shift-type", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
-  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth)(yield* Effect.context<Services>());
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(shiftTypeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(shiftTypeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
@@ -384,21 +508,35 @@ export const steps = {
   "holiday.add": ["holiday.add.load", "holiday.add.insert"],
   "holiday-list.add-weekly-off": ["holiday-list.add-weekly-off.load", "holiday-list.add-weekly-off.record"],
   "holiday-list.create": ["holiday-list.create.insert"],
+  "interview.clear": ["interview.clear.update"],
+  "interview.create": ["interview.create.load", "interview.create.insert"],
+  "interview.reject": ["interview.reject.update"],
+  "interview-feedback.give": ["interview-feedback.give.load", "interview-feedback.give.insert"],
+  "interview-round.create": ["interview-round.create.load", "interview-round.create.insert"],
+  "job-applicant.accept": ["job-applicant.accept.load", "job-applicant.accept.update"],
+  "job-applicant.create": ["job-applicant.create.load", "job-applicant.create.insert"],
+  "job-applicant.hold": ["job-applicant.hold.update"],
+  "job-applicant.reject": ["job-applicant.reject.update"],
+  "job-offer.accept": ["job-offer.accept.update"],
+  "job-offer.create": ["job-offer.create.load", "job-offer.create.insert"],
+  "job-offer.reject": ["job-offer.reject.update"],
+  "job-opening.close": ["job-opening.close.update"],
+  "job-opening.create": ["job-opening.create.load", "job-opening.create.insert"],
   "shift-type.create": ["shift-type.create.insert"],
 } as const;
 
 // Better Auth's own routes at /api/auth/*: the device sign-in of this project's CLI. Same database and secret as the
 // layer's instance, so a session either one issues is a person to both.
 let routes: ReturnType<typeof AuthD1.make> | undefined;
-const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, cli: "capxul-cli", worlds: hostsWorlds(env) }));
+const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, cli: "capxul-cli", worlds: hostsWorlds(env) }));
 
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, ShiftTypeLive]),
+      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, InterviewLive, InterviewFeedbackLive, InterviewRoundLive, JobApplicantLive, JobOfferLive, JobOpeningLive, ShiftTypeLive]),
       Layer.provideMerge(CallTelemetry.layer),
-      Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
-      Layer.provideMerge(Database.d1(env.DB)),
+      Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, WorldEntry.work(env, wakes), Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
+      Layer.provideMerge(Database.d1(WorldEntry.fenced(env, env.DB))),
       Layer.provide(HttpServer.layerServices),
     ),
   );
@@ -420,7 +558,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
+  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "interview.clear": interviewClearServed, "interview.create": interviewCreateServed, "interview.get": interviewGetServed, "interview.reject": interviewRejectServed, "interview-feedback.get": interviewFeedbackGetServed, "interview-feedback.give": interviewFeedbackGiveServed, "interview-round.create": interviewRoundCreateServed, "interview-round.get": interviewRoundGetServed, "job-applicant.accept": jobApplicantAcceptServed, "job-applicant.create": jobApplicantCreateServed, "job-applicant.get": jobApplicantGetServed, "job-applicant.hold": jobApplicantHoldServed, "job-applicant.reject": jobApplicantRejectServed, "job-offer.accept": jobOfferAcceptServed, "job-offer.create": jobOfferCreateServed, "job-offer.get": jobOfferGetServed, "job-offer.reject": jobOfferRejectServed, "job-opening.close": jobOpeningCloseServed, "job-opening.create": jobOpeningCreateServed, "job-opening.get": jobOpeningGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 
@@ -428,7 +566,7 @@ const tools = Mcp.tools<Services>({
 let mcpRuntime: ManagedRuntime.ManagedRuntime<Services, never> | undefined;
 const runtimeOf = (env: Env) =>
   (mcpRuntime ??= ManagedRuntime.make(
-    Layer.mergeAll(StoreD1.layer({ tables, rules }), JournalD1.layer, BusyLive, Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: env.DB, secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(env.DB))),
+    Layer.mergeAll(StoreD1.layer({ tables, rules }), JournalD1.layer, WorldEntry.work(env, wakes), Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))).pipe(Layer.provideMerge(Database.d1(WorldEntry.fenced(env, env.DB)))),
   ));
 
 const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/;
@@ -457,7 +595,8 @@ const mcp = (env: Env, request: Request, context: Context.Context<never> | undef
     return Mcp.handle({ name: "capxul", version: env.ORTHO_REVISION ?? "0.0.0", tools, principal: who.principal, run }, request);
   });
 
-export default {
+/** Each request runs in its world's time: `Date` and Effect's `Clock` read the instant its world keeps (stepped and scaled worlds only). */
+export default WorldEntry.entry<Env>({
   fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // Closed before anything reads it: outside worlds there is no door to cast, to read facts, or to register a world.
     if (new URL(request.url).pathname.startsWith("/_world/") && !hostsWorlds(env)) return Promise.resolve(Response.json({ error: "not found" }, { status: 404 }));
@@ -470,7 +609,7 @@ export default {
         : Promise.resolve(Response.json({ _tag: "NotAnEnvironment" }, { status: 404 }));
     }
     if (portal.owns(new URL(request.url).pathname)) return portal.serve(request, env);
-    if (new URL(request.url).pathname.startsWith("/api/auth/")) return Effect.runPromise(AuthD1.handle(routesOf(env), request));
+    if (new URL(request.url).pathname.startsWith("/api/auth/")) return WorldEntry.section(env, () => Effect.runPromise(AuthD1.handle(routesOf(env), request)));
     if (new URL(request.url).pathname.startsWith("/.well-known/")) {
       return Effect.runPromise(AuthD1.oauth.discovery(routesOf(env), request)).then((found) => found ?? Response.json({ error: "not found" }, { status: 404 }));
     }
@@ -481,4 +620,4 @@ export default {
     Telemetry.configure({ sinks: env.OTLP_SINKS, environment: env.ORTHO_ENVIRONMENT });
     return Telemetry.serve({ url: env.OTLP_URL || undefined, service: "capxul", handler: app.handler, waitUntil: (p) => ctx.waitUntil(p) }, request);
   },
-};
+});
