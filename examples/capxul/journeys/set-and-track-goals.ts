@@ -167,6 +167,7 @@ export default Blueprint.journey("set and track goals", {
         "Ada rolls it up: back in progress",
         s.ada.run(rollUp, { goal: s.last.items[1].id }),
         expect((a) => n(a.progress)).toBe("62.5"),
+        emits(GoalRolledUp, { goal: s.last.goal }),
         goals.isIn(s.last.goal, "inProgress"),
       ),
       s.step(
@@ -284,7 +285,7 @@ export default Blueprint.journey("set and track goals", {
       ),
       s.step("nor can Bo", s.bo.run(create, olgaGoal(q, "Bo's idea", "0")), refuses(Blueprint.NotAllowed), noEvents()),
 
-      // ── A group follows its children: it isn't moved by hand
+      // ── A group's progress follows its children: it isn't set, completed, archived or closed by hand
       s.step("Olga lists her goals", s.olga.run(list, { appraisalCycle: s.world.appraisalCycle, employee: s.world.employee }), expect((a) => a.items.length).toBe(6)),
       s.step("Platform's progress isn't set by hand", s.olga.run(updateProgress, { goal: s.last.items[1].id, progress: d("90") }), refuses(GoalIsGroup), noEvents()),
       s.step("even out of range, the group is judged first", s.olga.run(updateProgress, { goal: s.last.items[1].id, progress: d("150") }), refuses(GoalIsGroup), noEvents()),

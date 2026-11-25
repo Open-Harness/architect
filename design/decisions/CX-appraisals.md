@@ -76,7 +76,8 @@ A group is never archived or closed (`GoalIsGroup`), so no journey reaches roll-
 ## Writes
 
 `appraisal-cycle.start` writes `[AppraisalCycle, Appraisal]`. `goal.create` and the goal moves write `[Goal, Appraisal]`,
-because progress feeds the appraisal's scores. `employee-performance-feedback.submit` writes
+because progress feeds the appraisal's scores; `goal.roll-up` writes only its own Goal, since a status feeds no score.
+`employee-performance-feedback.submit` writes
 `[EmployeePerformanceFeedback, Appraisal]`, for the average.
 
 ## Where the source changed the outline
