@@ -38,12 +38,13 @@ Red today on one reason: `ortho env` has `up`, `down` and `status` for a long-li
 
 | Step | Credentials | What it judges |
 |---|---|---|
-| plan | none | `ortho env up staging --plan --run <run id>` prints a plan; `prefix` is read from it and never typed again |
+| select | none | `runs.mjs select <app>`: the run the dispatch chose (`plugged-in` by default, or `capxul`), its root into `$GITHUB_ENV` as `ROOT` and its journeys into `journeys.txt` (CX-staging) |
+| plan | none | `ortho env up staging --plan --run <run id> --root "$ROOT"` prints a plan; `prefix` is read from it and never typed again |
 | snapshot before | token, account | the account's whole listing before anything is made, kept in `tmp/staging/private/` and never uploaded |
 | up | token, account | `ortho env up staging --run <id>`; allowed to fail so that destroy runs, and still fails the job |
 | snapshot while up | token, account | what the account holds with the run up |
 | subdomain | token, account | `subdomain.mjs`: the account's workers.dev subdomain, written as `subdomain=<name>` to the step output and nothing else |
-| the story | none | `ortho prove --env staging --run <id> --only "a person claims a page and shares it"`, with `ORTHO_STAGING_SUBDOMAIN` from the step above; allowed to fail, still fails the job |
+| the story | token, account | `ortho prove --env staging --run <id> --root "$ROOT"` with one `--only` per journey of the chosen run, with `ORTHO_STAGING_SUBDOMAIN` from the step above; allowed to fail, still fails the job |
 | destroy | token, account | `ortho env destroy staging --run <id>`, **`if: always()`** |
 | snapshot after | token, account | the listing after destroy, **`if: always()`** |
 | judge | none | from the files alone, **`if: always()`**; see below |
@@ -77,3 +78,11 @@ pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check
 - [`recorded/`](recorded/): the listings run 44742578303 of the spike wrote, while up (`run-5-while-up.json`) and after destroy (`run-5-after-destroy.json`). The account's other 36 resources are renamed `other-app-*`; the
   run's own names are as recorded. They give the clean case, the everything-left case (six resources), and the base for one leftover of each kind and for lookalikes.
 - `snapshot` is run against a fake account served from `127.0.0.1` (`ORTHO_STAGING_API`, loopback only): every page, a refused kind written as an error, and neither the token nor the account id printed or written.
+
+## Capxul's run (CX-staging)
+
+The dispatch's `app` input chooses a run from [`runs.mjs`](runs.mjs): `plugged-in`, the default, is the story alone and makes exactly the commands this workflow made before it took an input;
+`capxul` is Goal 16's finish line, its journeys listed by name part by part (the books, HR, payroll, KYC and KYB, the bank account). [`runs.test.mjs`](runs.test.mjs) holds each list to the
+journey files, so a renamed journey fails there. `workflow.test.mjs` runs the select, plan, up, story and destroy steps with a stand-in `ortho` for both runs, and walks the job with each step
+failing in turn (`shape`: one up, one destroy, a failed run still destroys). Check 47 ([`e2e/m1/47-cx-staging-capxul.test.ts`](../m1/47-cx-staging-capxul.test.ts)) pins several `--only` and
+Capxul's plan. Where the Bridge journeys run, and any new secret, wait on Aaron (`design/decisions/CX-staging.md`, section 4).

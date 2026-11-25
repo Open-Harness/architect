@@ -27,7 +27,7 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs {projectRoot}/staging/leftovers.test.mjs {projectRoot}/staging/workflow.test.mjs {projectRoot}/staging/subdomain.test.mjs" },
+      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs {projectRoot}/staging/leftovers.test.mjs {projectRoot}/staging/workflow.test.mjs {projectRoot}/staging/runs.test.mjs {projectRoot}/staging/subdomain.test.mjs" },
       "cache": false
     },
     "m0-names": {

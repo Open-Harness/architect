@@ -1,8 +1,9 @@
 name: staging
 
 # M7.04, the CI-only check of Goal 3 (design/goals/03-stage-1-hill-climbed.md, "Staging"; design/decisions/M7-cloud.md and its addenda). One job (plus `refuse`, which fails a dispatch off a goal branch out loud), started by hand, and
-# nothing else starts it: no push, no pull request, no schedule. It plans, deploys Plugged In to Cloudflare `workers.dev`, runs the story, destroys what it made, and lists the
-# account. The job is red when any of these holds: the plan is wrong; up fails; the story fails; a resource with this run's prefix is left; a resource without it changed.
+# nothing else starts it: no push, no pull request, no schedule. It plans, deploys the chosen app to Cloudflare `workers.dev`, runs its journeys, destroys what it made, and lists the
+# account. The dispatch chooses the run by its `app` input; each run's root and journeys are in e2e/staging/runs.mjs (design/decisions/CX-staging.md). The default, `plugged-in`, is
+# Plugged In's one story, exactly the run this workflow made before it took an input; `capxul` is Goal 16's finish line. The job is red when any of these holds: the plan is wrong; up fails; the story fails; a resource with this run's prefix is left; a resource without it changed.
 #
 # Written by the checks author (✍️); a builder never edits this file (tools/ci/builder-paths.sh). The builder makes `ortho env up staging` and `ortho env destroy staging` real
 # (check 37 pins their `--plan`); this workflow only calls them. e2e/staging/README.md says what each step judges. The lead decides when the first real run happens.
@@ -12,6 +13,15 @@ name: staging
 # is not the run's (the repository is public, and the account holds other apps' resources).
 on:
   workflow_dispatch:
+    inputs:
+      app:
+        description: "The run: its root and its journeys are in e2e/staging/runs.mjs"
+        type: choice
+        options:
+          - plugged-in
+          - capxul
+        default: plugged-in
+        required: true
 
 permissions:
   contents: read
@@ -57,12 +67,20 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      # The run the dispatch chose: its root, as ROOT for every later step, and its journeys, one name per line, for the story. No credential. An unknown app or an empty list stops here, before anything is made.
+      - name: select
+        id: select
+        run: |
+          mkdir -p "$EVIDENCE/private"
+          node e2e/staging/runs.mjs select "$APP" "$EVIDENCE/journeys.txt" >> "$GITHUB_ENV"
+        env:
+          APP: ${{ inputs.app }}
+
       # The plan first: no credential, no network. It is what the run is judged against.
       - name: plan
         id: plan
         run: |
-          mkdir -p "$EVIDENCE/private"
-          $ORTHO env up staging --plan --run "$RUN" --root examples/plugged-in > "$EVIDENCE/plan.json"
+          $ORTHO env up staging --plan --run "$RUN" --root "$ROOT" > "$EVIDENCE/plan.json"
           echo "prefix=$(jq -r .prefix "$EVIDENCE/plan.json")" >> "$GITHUB_OUTPUT"
 
       # What the account holds before anything is made: the baseline for "nothing without the prefix changed". If it cannot be read, nothing is made.
@@ -76,7 +94,7 @@ jobs:
       - name: up
         id: up
         continue-on-error: true
-        run: $ORTHO env up staging --run "$RUN" --root examples/plugged-in
+        run: $ORTHO env up staging --run "$RUN" --root "$ROOT"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
@@ -99,7 +117,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
-      # The story, through the same `prove` the other environments use, against the deployed address. It holds the same two credentials as up, to read the run's own D1 databases. Whether it passes never decides
+      # The story: the run's journeys, each named with its own `--only`, through the same `prove` the other environments use, against the deployed address. One failing journey fails the step, and prove still says how each of the others went. It holds the same two credentials as up, to read the run's own D1 databases. Whether it passes never decides
       # whether destroy runs.
       - name: the story
         id: story
@@ -112,13 +130,16 @@ jobs:
           ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-        run: $ORTHO prove --env staging --run "$RUN" --root examples/plugged-in --only "a person claims a page and shares it" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"
+        run: |
+          only=(); while IFS= read -r name; do only+=(--only "$name"); done < "$EVIDENCE/journeys.txt"
+          test "${#only[@]}" -gt 0
+          $ORTHO prove --env staging --run "$RUN" --root "$ROOT" "${only[@]}" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"
 
       # Destroy always runs: after a failed up, a failed story, a failed before-snapshot, or a plan that never printed. It deletes by the run's prefix, so it needs nothing from `up`.
       - name: destroy
         id: destroy
         if: always()
-        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in
+        run: $ORTHO env destroy staging --run "$RUN" --root "$ROOT"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
@@ -169,6 +190,7 @@ jobs:
         with:
           name: staging-evidence-${{ github.run_id }}
           path: |
+            tmp/staging/journeys.txt
             tmp/staging/plan.json
             tmp/staging/story.txt
             tmp/staging/verdict.txt
