@@ -86,6 +86,20 @@ Starts from the world `an expense claim`.
 - **Bo sets up a second company.** `bo` (signed in) calls and sends companyName `Bo Ventures`, abbr `BV`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 - **Bo sets up a third company.** `bo` (signed in) calls and sends companyName `Bo Holdings`, abbr `BH`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
+### leave days
+
+Starts from the world `a leave allocation`.
+
+- **Bo sets up Bo Ltd.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Tanzania`, defaultCurrency `TZS`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
+### leave stays in its company
+
+Starts from the world `a leave application`.
+
+- **Bo sets up Bo Ltd.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Tanzania`, defaultCurrency `TZS`, with the request key `bo-ltd`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo looks up Bo Ltd again.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Tanzania`, defaultCurrency `TZS`, with the request key `bo-ltd`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo looks up Bo Ltd once more.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Tanzania`, defaultCurrency `TZS`, with the request key `bo-ltd`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
 ### set up a company
 
 Starts from an empty world.
@@ -104,6 +118,12 @@ Starts from the world `a company`.
 Starts from the world `an outside employee`.
 
 - **Dee sets up a company of her own.** `dee` (signed in) calls and sends companyName `Dee Ltd`, abbr `DL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
+### set up leave types
+
+Starts from the world `an employee`.
+
+- **Bo sets up Bo Ltd.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Tanzania`, defaultCurrency `TZS`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
 ## How to call
 

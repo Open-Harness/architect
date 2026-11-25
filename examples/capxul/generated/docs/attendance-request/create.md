@@ -42,6 +42,7 @@ Ask for an employee to be marked at work, from one day to another, and why.
 | RequesterHasLeft | 42 | AQ-002 | declared in errors.ts |
 | RequestEndsBeforeStart | 43 | AQ-003 | declared in errors.ts, carrying fromDate |
 | RequestBeforeJoining | 44 | AQ-004 | declared in errors.ts, carrying dateOfJoining |
+| AttendanceRequestOverlaps | 45 | AQ-005 | declared in errors.ts |
 | CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |
 | EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |
@@ -61,6 +62,26 @@ Starts from the world `an attendance request`.
 - **Olga asks to be on duty from 28 February to 1 March 2028, a leap year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2028-02-28`, toDate `2028-03-01`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.
 - **Olga asks to work from home for forty days, 1 April to 10 May 2027.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-04-01`, toDate `2027-05-10`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.
 - **Olga asks to be on duty from Friday 11 to Sunday 13 December, across a weekend.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-11`, toDate `2026-12-13`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.
+
+### attendance requests and leave
+
+Starts from the world `a leave application`.
+
+- **Olga asks to work from home Monday 8 to Wednesday 10 March.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-08`, toDate `2027-03-10`, reason `Work From Home`, with the request key `a`, and is answered.
+- **she can't ask for 10 to 11 March too: it shares the 10th.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-10`, toDate `2027-03-11`, reason `Work From Home`, with the request key `b`, and is refused with AttendanceRequestOverlaps, AQ-005.
+- **nor for 5 to 8 March, sharing the 8th.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-05`, toDate `2027-03-08`, reason `Work From Home`, with the request key `c`, and is refused with AttendanceRequestOverlaps, AQ-005.
+- **nor On Duty on the 9th, inside it.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-09`, toDate `2027-03-09`, reason `On Duty`, with the request key `d`, and is refused with AttendanceRequestOverlaps, AQ-005.
+- **nor 1 to 31 March, around it.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-01`, toDate `2027-03-31`, reason `Work From Home`, with the request key `e`, and is refused with AttendanceRequestOverlaps, AQ-005.
+- **11 to 12 March is allowed, from the day after.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-11`, toDate `2027-03-12`, reason `Work From Home`, with the request key `f`, and is answered.
+- **12 March alone is allowed now: a rejected request doesn't overlap.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-12`, toDate `2027-03-12`, reason `On Duty`, with the request key `g`, and is answered.
+- **Olga sends 8 to 10 March again, and gets it back.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-08`, toDate `2027-03-10`, reason `Work From Home`, with the request key `a`, and is answered.
+- **Olga can't ask for the 9th again: an approved request overlaps.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-09`, toDate `2027-03-09`, reason `Work From Home`, with the request key `h`, and is refused with AttendanceRequestOverlaps, AQ-005.
+- **Bo asks to work from home on the 9th: Olga's request isn't his.** `bo` (signed in) calls and sends company the world's company, employee the last call's employee, fromDate `2027-03-09`, toDate `2027-03-09`, reason `Work From Home`, and is answered.
+- **Olga asks to work from home Friday 26 February to Thursday 4 March, around her open leave.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-26`, toDate `2027-03-04`, reason `Work From Home`, with the request key `around`, and is answered.
+- **Olga sends the request around it again, and gets it back.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-26`, toDate `2027-03-04`, reason `Work From Home`, with the request key `around`, and is answered.
+- **she asks to work from home on the 15th.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-15`, toDate `2027-03-15`, reason `Work From Home`, with the request key `open-leave`, and is answered.
+- **Bo asks to work from home 1 to 3 March.** `bo` (signed in) calls and sends company the world's company, employee the last call's employee, fromDate `2027-03-01`, toDate `2027-03-03`, reason `Work From Home`, and is answered.
+- **Olga asks to work from home on the 22nd.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-03-22`, toDate `2027-03-22`, reason `Work From Home`, with the request key `cancelled-leave`, and is answered.
 
 ### attendance stays in its company
 

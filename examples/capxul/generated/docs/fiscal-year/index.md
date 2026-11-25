@@ -14,7 +14,7 @@ Lives in the database.
 | year | YearName |  |
 | yearStartDate | Day |  |
 | yearEndDate | Day |  |
-| isShortYear | schema | A year shorter than twelve months, as some countries allow (ERPNext's `is_short_year`). |
+| isShortYear | YesNo | A year shorter than twelve months, as some countries allow (ERPNext's `is_short_year`). |
 
 ## Machine
 

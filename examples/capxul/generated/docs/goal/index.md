@@ -16,7 +16,7 @@ Lives in the database.
 | kra | kra.id |  |
 | goalName | GoalName |  |
 | progress | Progress |  |
-| isGroup | schema | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |
+| isGroup | YesNo | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |
 | parentGoal (optional) | goal.id |  |
 
 ## Machine
