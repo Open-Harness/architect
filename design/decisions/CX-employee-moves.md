@@ -89,6 +89,17 @@ clock picks days after the last of these, or a name that sorts before them.
 - A separation's activities, template, project and tasks, notifications, exit interview, Exit Interview and Full and
   Final, and cancelling a separation.
 
+## What the checks leave open
+
+A hostile pass tried 18 wrong builds, then reran its survivors after new steps. Three still pass every journey:
+
+- A cancel that puts the old value back only if the employee still holds the new one. HRMS writes it back
+  unconditionally, but with two job titles (departments) in the company the two builds agree on every reachable step.
+  A third title would settle it, and the outline left it out.
+- A submit refused when the employee already holds the new value, under another refusal's name. HRMS has no such
+  refusal, and only two drafts to one value, submitted one after the other, would reach it.
+- A submit that parses the day in local time. The lint bans `new Date`, and the world runs in UTC.
+
 ## Supersedes
 
 - `design/decisions/CX-recruitment.md` (dated, noted in place): "No other handler reads the clock." → "a promotion's and a transfer's submit read it too"

@@ -52,6 +52,7 @@ Starts from the world `a second transfer`.
 - **nor Cy.** `cy` (signed in) calls and sends employeeTransfer the world's employeeTransfer, and is refused with NotAllowed, AR-001.
 - **Ada cancels it, putting back Engineering.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and gets back [the world's employeeTransfer, the world's employee, the world's department].
 - **Ada can't cancel it twice.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and is refused with EmployeeTransferNotDraft, TR-900, carrying state `cancelled`.
+- **Ada still cancels Cy's, drafted before she left, putting back Engineering.** `ada` (role company.owner) calls and sends employeeTransfer the world's secondTransfer, and gets back [the world's secondTransfer, the world's secondEmployee, the world's department].
 
 ## How to call
 

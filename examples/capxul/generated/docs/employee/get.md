@@ -68,8 +68,10 @@ Starts from the world `a second transfer`.
 
 - **Olga still reads back an engineer.** `olga` (signed in) calls and sends id the world's employee, and gets back the world's designation.
 - **Olga reads herself back a lead engineer, still in Engineering at Acme Trading.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's department, the world's otherDesignation, `active`].
+- **Olga reads her title back as Engineer again.** `olga` (signed in) calls and sends id the world's employee, and gets back the world's designation.
 - **Olga reads herself back an engineer again, still in Engineering.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's department, the world's designation, `active`].
 - **Cy reads herself back a lead engineer who has left.** `cy` (signed in) calls and sends id the world's secondEmployee, and gets back [the world's department, the world's otherDesignation, `left`].
+- **Cy reads her title back as Engineer, and has still left.** `cy` (signed in) calls and sends id the world's secondEmployee, and gets back [the world's designation, `left`].
 
 ### run a separation
 
@@ -83,8 +85,10 @@ Starts from the world `a second transfer`.
 
 - **Olga still reads back in Engineering.** `olga` (signed in) calls and sends id the world's employee, and gets back the world's department.
 - **Olga reads herself back in Platform, still an engineer at Acme Trading.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's secondDepartment, the world's designation, `active`].
+- **Olga reads her department back as Engineering again.** `olga` (signed in) calls and sends id the world's employee, and gets back the world's department.
 - **Olga reads herself back in Engineering again, still an engineer.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's department, the world's designation, `active`].
 - **Cy reads herself back in Platform, an engineer who has left.** `cy` (signed in) calls and sends id the world's secondEmployee, and gets back [the world's secondDepartment, the world's designation, `left`].
+- **Cy reads her department back as Engineering, and has still left.** `cy` (signed in) calls and sends id the world's secondEmployee, and gets back [the world's department, `left`].
 
 ## How to call
 

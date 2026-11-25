@@ -59,6 +59,7 @@ Starts from the world `a second transfer`.
 - **Ada still can't submit it.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with PromotionNotYetDue, PM-005, carrying promotionDate `2026-12-07`.
 - **Ada submits it on the day itself.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and gets back [the world's employeePromotion, the world's employee, the world's otherDesignation].
 - **Ada can't submit it twice.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with EmployeePromotionNotDraft, PM-900, carrying state `submitted`.
+- **and submit it at once, as its day has come.** `ada` (role company.owner) calls and sends employeePromotion the last call's employeePromotion, and gets back [the world's employee, the world's designation].
 - **nor submit it again.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with EmployeePromotionNotDraft, PM-900, carrying state `cancelled`.
 - **Ada still submits Cy's promotion, drafted before she left.** `ada` (role company.owner) calls and sends employeePromotion the world's secondPromotion, and gets back [the world's secondPromotion, the world's secondEmployee, the world's otherDesignation].
 

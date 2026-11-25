@@ -27965,6 +27965,168 @@
           ]
         },
         {
+          "title": "beside that draft, Ada may draft another back to Engineer from 2 December, a day already past",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-promotion.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "promotionDate": "2026-12-02",
+              "newDesignation": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^epr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeePromotionDrafted",
+              "fields": {
+                "employeePromotion": {
+                  "ref": [
+                    "last",
+                    "employeePromotion"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-promotion",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePromotion"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "and submit it at once, as its day has come",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-promotion.submit",
+            "payload": {
+              "employeePromotion": {
+                "ref": [
+                  "last",
+                  "employeePromotion"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeePromoted",
+              "fields": {
+                "employeePromotion": {
+                  "ref": [
+                    "last",
+                    "employeePromotion"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-promotion",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeePromotion"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "Olga reads her title back as Engineer again",
+          "call": {
+            "actor": "olga",
+            "operation": "employee.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "designation"
+                ]
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Bo can't cancel Olga's first",
           "call": {
             "actor": "bo",
@@ -28711,9 +28873,116 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Ada still cancels Cy's, drafted before she left, putting back Engineer",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-promotion.cancel",
+            "payload": {
+              "employeePromotion": {
+                "ref": [
+                  "world",
+                  "secondPromotion"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "secondPromotion"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeePromotionCancelled",
+              "fields": {
+                "employeePromotion": {
+                  "ref": [
+                    "world",
+                    "secondPromotion"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                "designation": {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-promotion",
+              "id": {
+                "ref": [
+                  "world",
+                  "secondPromotion"
+                ]
+              },
+              "state": "cancelled"
+            }
+          ]
+        },
+        {
+          "title": "Cy reads her title back as Engineer, and has still left",
+          "call": {
+            "actor": "cy",
+            "operation": "employee.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "designation"
+                  ]
+                },
+                "left"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "7f8897dccf167e74998c8ae1791037d49b84753b277a6837ff8500ef3c8e5028"
+      "sourceHash": "bd4552915692de5a0149388f7fb6e572ec7bfa7b72697c8284471e574866985e"
     },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
@@ -31224,7 +31493,7 @@
           ]
         },
         {
-          "title": "Cy has left, and Ada may still start her separation, as HRMS doesn't judge the employee's status",
+          "title": "Cy has left, and Ada may still start her separation, its letter dated after it begins: HRMS judges neither",
           "call": {
             "actor": "ada",
             "operation": "employee-separation.create",
@@ -31241,7 +31510,7 @@
                   "secondEmployee"
                 ]
               },
-              "resignationLetterDate": "2026-11-23",
+              "resignationLetterDate": "2026-12-04",
               "boardingBeginsOn": "2026-12-02"
             }
           },
@@ -31324,7 +31593,7 @@
           ]
         }
       ],
-      "sourceHash": "22244f6b5ce15b36ae0a7e4275891091f6e84a602d6c7aba0d308763cd649f7f"
+      "sourceHash": "f58d755ee33b5610b4c5fd757c8c9acbbd5cefc6b4581b6d8a94bcccda33a1f8"
     },
     "journeys/schedule-an-interview.ts": {
       "name": "schedule an interview",
@@ -37880,6 +38149,168 @@
           ]
         },
         {
+          "title": "beside that draft, Ada may draft another back to Engineering from 2 December, a day already past",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-transfer.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "transferDate": "2026-12-02",
+              "newDepartment": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^etr_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeTransferDrafted",
+              "fields": {
+                "employeeTransfer": {
+                  "ref": [
+                    "last",
+                    "employeeTransfer"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-transfer",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeeTransfer"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "and submit it at once, as its day has come",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-transfer.submit",
+            "payload": {
+              "employeeTransfer": {
+                "ref": [
+                  "last",
+                  "employeeTransfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeTransferred",
+              "fields": {
+                "employeeTransfer": {
+                  "ref": [
+                    "last",
+                    "employeeTransfer"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-transfer",
+              "id": {
+                "ref": [
+                  "last",
+                  "employeeTransfer"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "Olga reads her department back as Engineering again",
+          "call": {
+            "actor": "olga",
+            "operation": "employee.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "department"
+                ]
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Bo can't cancel Olga's first",
           "call": {
             "actor": "bo",
@@ -38664,9 +39095,116 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Ada still cancels Cy's, drafted before she left, putting back Engineering",
+          "call": {
+            "actor": "ada",
+            "operation": "employee-transfer.cancel",
+            "payload": {
+              "employeeTransfer": {
+                "ref": [
+                  "world",
+                  "secondTransfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "secondTransfer"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "emits",
+              "event": "EmployeeTransferCancelled",
+              "fields": {
+                "employeeTransfer": {
+                  "ref": [
+                    "world",
+                    "secondTransfer"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                "department": {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "employee-transfer",
+              "id": {
+                "ref": [
+                  "world",
+                  "secondTransfer"
+                ]
+              },
+              "state": "cancelled"
+            }
+          ]
+        },
+        {
+          "title": "Cy reads her department back as Engineering, and has still left",
+          "call": {
+            "actor": "cy",
+            "operation": "employee.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "department"
+                  ]
+                },
+                "left"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "4c15f6a0a097de2b8dadd169856d72001a2910fbe7680ac59f2605218c0b335d"
+      "sourceHash": "c87bdebfd8246867c5728c1cb6c8a4657f07990b3584ea81e830c9e3beafad7d"
     },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",

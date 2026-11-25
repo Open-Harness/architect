@@ -152,8 +152,8 @@ export default Blueprint.journey("run a separation", {
       expect((a) => a.employee).toBe(s.world.secondEmployee),
     ),
     s.step(
-      "Cy has left, and Ada may still start her separation, as HRMS doesn't judge the employee's status",
-      s.ada.run(create, { company: s.world.company, employee: s.world.secondEmployee, resignationLetterDate: "2026-11-23", boardingBeginsOn: "2026-12-02" }),
+      "Cy has left, and Ada may still start her separation, its letter dated after it begins: HRMS judges neither",
+      s.ada.run(create, { company: s.world.company, employee: s.world.secondEmployee, resignationLetterDate: "2026-12-04", boardingBeginsOn: "2026-12-02" }),
       expect((a) => a.employeeSeparation).toMatch(/^esp_[0-9a-z]+$/),
       emits(EmployeeSeparationStarted, { employeeSeparation: s.last.employeeSeparation, employee: s.world.secondEmployee }),
       separations.isIn(s.last.employeeSeparation, "pending"),
