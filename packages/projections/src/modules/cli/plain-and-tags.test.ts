@@ -6,7 +6,7 @@
 //     does: `1.50`, its places kept and no exponent, never Effect's own `some(BigDecimal(1.5))`. Red on main. A bare decimal,
 //     and `--json` (#981's shape), are the controls. Not judged: how a `None`, or an `Option` of anything else, prints plain.
 //  2. A failure whose tag is a name on every object's prototype (`constructor`, `toString`, `hasOwnProperty`, `valueOf`,
-//     `__proto__`) is not one of the project's refusals: it prints as any undeclared failure does, `<tag>: <fields as JSON>`,
+//     `__proto__`, and every other name `Object.prototype` has) is not one of the project's refusals: it prints as any undeclared failure does, `<tag>: <fields as JSON>`,
 //     with no code, and exits 1. Red on main, which looks the tag up with `in`. A declared refusal (its code and exit), the
 //     runtime's own `NotAllowed`, an undeclared tag and `SchemaError` (exit 2) are the controls.
 //
@@ -66,14 +66,23 @@ const printed = async (json: boolean, effect: Effect.Effect<object, unknown>) =>
 const d = (text: string) => BigDecimal.fromStringUnsafe(text);
 
 describe("1. Without --json, a one-field answer holding Option.some(decimal) prints the decimal's text", () => {
-  for (const text of ["1.50", "0.10", "10000000000000000", "-0.00000000000000001", "7"]) {
+  // Past a double's precision too, so the digits are never read through a number.
+  for (const text of ["1.50", "0.10", "10000000000000000", "-0.00000000000000001", "7", "12345678901234567.89", "0.1234567890123456789"]) {
     it(`Option.some(${text}) prints ${text}`, async () => {
       expect((await printed(false, Effect.succeed({ rate: Option.some(d(text)) }))).stdout).toBe(text);
     });
   }
 
+  it("Option.some of a decimal with a negative scale (15 × 10^3) prints 15000", async () => {
+    expect((await printed(false, Effect.succeed({ rate: Option.some(BigDecimal.make(15n, -3)) }))).stdout).toBe("15000");
+  });
+
   it("a bare decimal prints its text (the control)", async () => {
     expect((await printed(false, Effect.succeed({ rate: d("1.50") }))).stdout).toBe("1.50");
+  });
+
+  it("a one-field answer of null prints null (the control)", async () => {
+    expect((await printed(false, Effect.succeed({ rate: null }))).stdout).toBe("null");
   });
 
   it("with --json, it keeps #981's shape (the control)", async () => {
@@ -81,7 +90,8 @@ describe("1. Without --json, a one-field answer holding Option.some(decimal) pri
   });
 });
 
-const PROTOTYPE = ["constructor", "toString", "hasOwnProperty", "valueOf", "__proto__", "isPrototypeOf"];
+// Every name on an object's prototype, as the runtime has them: \`constructor\`, \`toString\`, \`__proto__\`, \`propertyIsEnumerable\` and the rest.
+const PROTOTYPE = Object.getOwnPropertyNames(Object.prototype);
 
 describe("2. A failure tagged with a prototype's name is not a refusal: it prints as an undeclared failure and exits 1", () => {
   for (const tag of PROTOTYPE) {

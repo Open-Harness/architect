@@ -12,15 +12,20 @@ const repo = resolve(import.meta.dirname, "../../../../..");
 type Call = (payload: never) => Effect.Effect<unknown, unknown, never>;
 type Sdk = { readonly layer: (url: string) => never; readonly organization: { readonly create: Call }; readonly person: { readonly signUp: Call } };
 
-/** The refusal a call fails with, before anything is sent. */
-const refused = async (call: (sdk: Sdk) => Call, payload: object) => {
+/** What a call fails with: nothing listens at the address, so a payload the SDK lets through fails on the way. */
+const failure = async (call: (sdk: Sdk) => Call, payload: object) => {
   const sdk = (await import(resolve(repo, "examples/acme/generated/sdk/src/index.ts"))) as Sdk;
   const exit = await Effect.runPromiseExit(call(sdk)(payload as never).pipe(Effect.provide(sdk.layer("http://127.0.0.1:1"))));
   expect(Exit.isFailure(exit), "the call fails").toBe(true);
-  const error = Exit.isFailure(exit) ? (Cause.squash(exit.cause) as { readonly _tag?: string; readonly message?: unknown }) : {};
-  expect(error._tag).toBe("InvalidPayload");
-  return String(error.message);
+  return Exit.isFailure(exit) ? (Cause.squash(exit.cause) as { readonly _tag?: string; readonly message?: unknown }) : {};
 };
+/** The refusal a call fails with, before anything is sent: its message, and the whole error as JSON (what a log would keep). */
+const refusal = async (call: (sdk: Sdk) => Call, payload: object) => {
+  const error = await failure(call, payload);
+  expect(error._tag).toBe("InvalidPayload");
+  return { message: String(error.message), whole: JSON.stringify({ ...error, message: error.message }, (_, v: unknown) => (typeof v === "bigint" ? v.toString() : v)) };
+};
+const refused = async (call: (sdk: Sdk) => Call, payload: object) => (await refusal(call, payload)).message;
 const named = (message: string, field: string) => new RegExp(`(^|[^A-Za-z0-9_])${field}([^A-Za-z0-9_]|$)`).test(message);
 const SECRET = "z8Qv3Lm1".repeat(17).slice(0, 129);
 
@@ -32,16 +37,26 @@ const CASES = [
 
 describe("The SDK's InvalidPayload names every refused field", () => {
   for (const c of CASES) {
-    it(`${c.why}: names ${c.names.join(", ")}, and no value given`, async () => {
-      const message = await refused(c.call, c.payload);
+    it(`${c.why}: names ${c.names.join(", ")}, and no value given, in the message or anywhere on the error`, async () => {
+      const { message, whole } = await refusal(c.call, c.payload);
       for (const field of c.names) expect(named(message, field), `names ${field}: ${message}`).toBe(true);
-      for (const value of c.hides) expect(message.toLowerCase().includes(value.toLowerCase()), `holds no value given: ${message}`).toBe(false);
+      for (const value of c.hides) expect(whole.toLowerCase().includes(value.toLowerCase()), `holds no value given: ${whole}`).toBe(false);
     });
   }
+
+  it("the same fields refused with other values, of other lengths, give the same message: no part of a value, nor its length, is told", async () => {
+    const one = await refused((s) => s.person.signUp, { email: "s999-not-an-email", password: SECRET, name: "" });
+    const other = await refused((s) => s.person.signUp, { email: "qq", password: "w".repeat(200), name: "" });
+    expect(other).toBe(one);
+  });
 
   it("one field wrong names that field only (the control)", async () => {
     const message = await refused((s) => s.organization.create, { name: "", cap: 15n });
     expect([named(message, "name"), named(message, "cap")]).toEqual([true, false]);
+  });
+
+  it("a payload the schema takes, with a key it does not declare, is not refused by the SDK (the control)", async () => {
+    expect((await failure((s) => s.organization.create, { name: "Acme", cap: 15n, s999Extra: "hunter2" }))._tag).not.toBe("InvalidPayload");
   });
 
   it("a field left out is said to be missing (the control)", async () => {
