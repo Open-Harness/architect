@@ -227,6 +227,7 @@ describe("in D1, a row the call read, changed before its commit (#1045)", () => 
     ["a folder its handler found, closed", { plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_3")]], "fld_3", [["open", "open"], ["open", "closed"]]],
     ["the second folder it was handed, closed", { copy: "fld_10" }, [[shut("fld_10")]], "fld_10", [["open", "open"], ["open", "closed"]]],
     ["the third folder it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_3")]], "fld_3", [["open", "open", "open"], ["open", "open", "closed"]]],
+    ["the first of three folders it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_1")]], "fld_1", [["open", "open", "open"], ["closed", "open", "open"]]],
     ["a shelf it found, which has no machine, labelled shut", { plan: { reads: [find("shelf", "shf_1")] } }, [[label(Shelf, "shf_1", "shut")]], "shf_1", [["open", "oak"], ["open", "shut"]]],
     ["another note it found, of the thing it writes, labelled shut", { plan: { reads: [find("note", "nte_9")] } }, [[label(Note, "nte_9", "shut")]], "nte_9", [["open", "keep"], ["open", "shut"]]],
     ["a folder found by an id another row holds, closed", { plan: { reads: [{ via: "nte_9" }] } }, [[shut("fld_3")]], "fld_3", [["open", "keep", "open"], ["open", "keep", "closed"]]],

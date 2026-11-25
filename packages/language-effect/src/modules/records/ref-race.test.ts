@@ -131,13 +131,16 @@ describe("a create that reads its folder races the folder's close (#1045)", () =
       }
       // The other order, already safe (#764): the close lists no notes, the add commits, so the close runs again and meets the note.
       const listed = yield* Deferred.make<void>();
+      const holdList = yield* Deferred.make<void>();
+      let lists = 0;
       const watching = Layer.effect(Store, Effect.gen(function* () {
         const s = yield* Store;
-        return Store.of({ ...s, list: (q) => Effect.tap(s.list(q), () => Deferred.succeed(listed, undefined)) });
+        return Store.of({ ...s, list: (q) => Effect.tap(s.list(q), () => (++lists === 1 ? Effect.andThen(Deferred.succeed(listed, undefined), Deferred.await(holdList)) : Effect.void)) });
       }));
       const fiber = yield* Effect.forkChild(Effect.exit(closing.run({ id: "fld_1" } as never, ada).pipe(Effect.provide(watching.pipe(Layer.provide(memory.layer))))));
       yield* Deferred.await(listed);
       const add = yield* Effect.exit(addCall(() => Effect.void));
+      yield* Deferred.succeed(holdList, undefined);
       return { add, closed: yield* Fiber.join(fiber) };
     }).pipe(Effect.provide(Layer.mergeAll(BusyLive, memory.layer))) as Effect.Effect<any>)
       .then((r) => ({ add: ended(r.add), closed: ended(r.closed), runs, notes: notesOf(memory), state: memory.rows.find((x) => x.instance["id"] === "fld_1")!.instance["state"] }));
@@ -216,6 +219,8 @@ describe("a row the call read, changed before its commit (#1045)", () => {
     ["the second folder it was handed, closed", { copy: "fld_10" }, [[shut("fld_10")]], "fld_10", [["open", "open"], ["open", "closed"]]],
     // A guard on the first reads alone misses the last.
     ["the third folder it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_3")]], "fld_3", [["open", "open", "open"], ["open", "open", "closed"]]],
+    // The first of three closed, the later two not: a guard on the last reads alone misses it.
+    ["the first of three folders it read, closed", { copy: "fld_10", plan: { reads: [find("folder", "fld_3")] } }, [[shut("fld_1")]], "fld_1", [["open", "open", "open"], ["closed", "open", "open"]]],
     // A thing with no machine: a guard on rows with a state alone misses it.
     ["a shelf it found, which has no machine, labelled shut", { plan: { reads: [find("shelf", "shf_1")] } }, [[label(Shelf, "shf_1", "shut")]], "shf_1", [["open", "oak"], ["open", "shut"]]],
     // The thing the call writes: a guard on other things alone misses it.
