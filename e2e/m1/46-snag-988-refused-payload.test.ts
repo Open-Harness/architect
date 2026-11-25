@@ -31,13 +31,16 @@ beforeAll(async () => {
 }, 300_000);
 afterAll(async () => { await Effect.runPromise(Scope.close(scope, Exit.void)); if (copy) { nothingRunning(copy.root); copy.remove(); } });
 
-// A secret no message may hold: acme's `Password` is `visibility.secret(text({ max: 128 }))`, so 129 characters are refused.
-const SECRET = `s988-secret-${"q".repeat(117)}`;
+// A secret no answer may hold, not even four characters of it in any case: acme's `Password` is
+// `visibility.secret(text({ max: 128 }))`, so 129 characters are refused. Made of no word, so no honest message holds a piece of it.
+const SECRET = "q7Zk9Xw2".repeat(17).slice(0, 129);
+/** Every four characters of a value, lower-cased: an answer holding any of them holds part of it. */
+const windows = (value: string) => Array.from({ length: value.length - 3 }, (_, i) => value.slice(i, i + 4).toLowerCase());
 const FITS = "s988-fits-a-password";
 const EMAIL = "s988.ada@example.com";
 
 /** A refused payload: the route, the body sent, the fields the message must name, the values it must not hold, and any field it must say is missing. */
-interface Refused { readonly why: string; readonly route: string; readonly token?: boolean; readonly body: Record<string, unknown>; readonly names: ReadonlyArray<string>; readonly not: ReadonlyArray<string>; readonly hides: ReadonlyArray<string>; readonly missing?: string }
+interface Refused { readonly why: string; readonly route: string; readonly token?: boolean; readonly type?: string; readonly body: Record<string, unknown>; readonly names: ReadonlyArray<string>; readonly not: ReadonlyArray<string>; readonly hides: ReadonlyArray<string>; readonly missing?: string }
 const REFUSED: ReadonlyArray<Refused> = [
   { why: "a uint written as a fraction", route: "organization/create", token: true, body: { name: "s988 org", cap: "15.729" }, names: ["cap"], not: ["name"], hides: ["15.729", "s988 org"] },
   { why: "a negative uint", route: "organization/create", token: true, body: { name: "s988 org", cap: "-4096" }, names: ["cap"], not: ["name"], hides: ["-4096", "s988 org"] },
@@ -47,11 +50,19 @@ const REFUSED: ReadonlyArray<Refused> = [
   { why: "two fields wrong at once", route: "organization/create", token: true, body: { name: "", cap: "15.729" }, names: ["name", "cap"], not: [], hides: ["15.729"] },
   { why: "a malformed id", route: "allowance/spend", token: true, body: { allowance: "s988-no-such-shape", amount: "10", memo: "s988 memo" }, names: ["allowance"], not: ["amount", "memo"], hides: ["s988-no-such-shape", "s988 memo"] },
   { why: "an address that is not an email", route: "invitation/send", token: true, body: { organization: "org_s988", email: "s988-not-an-email" }, names: ["email"], not: ["organization"], hides: ["s988-not-an-email", "org_s988"] },
-  { why: "a secret over its length", route: "person/sign-up", body: { email: EMAIL, password: SECRET, name: "s988 Ada" }, names: ["password"], not: ["email", "name"], hides: [SECRET, SECRET.slice(0, 12), "q".repeat(16), EMAIL, "s988 Ada"] },
+  { why: "a secret over its length", route: "person/sign-up", body: { email: EMAIL, password: SECRET, name: "s988 Ada" }, names: ["password"], not: ["email", "name"], hides: [...windows(SECRET), EMAIL, "s988 Ada"] },
   { why: "a bad email beside a secret that fits", route: "person/sign-up", body: { email: "s988-not-an-email", password: FITS, name: "s988 Ada" }, names: ["email"], not: ["password", "name"], hides: [FITS, "s988-not-an-email"] },
+  // Not only operations: a read's payload is refused the same way.
+  { why: "a read's malformed id", route: "organization/get", token: true, body: { id: "s988-bad-id" }, names: ["id"], not: [], hides: ["s988-bad-id"] },
+  // Whoever asks: a caller with no token is refused the payload first, as one with a token is.
+  { why: "a uint written as a fraction, with no token", route: "organization/create", body: { name: "s988 org", cap: "15.729" }, names: ["cap"], not: ["name"], hides: ["15.729", "s988 org"] },
+  // JSON with its charset named is still JSON.
+  { why: "a uint written as a fraction, sent as JSON with its charset", route: "organization/create", token: true, type: "application/json; charset=utf-8", body: { name: "s988 org", cap: "15.729" }, names: ["cap"], not: ["name"], hides: ["15.729", "s988 org"] },
 ];
 
-const call = (r: { readonly route: string; readonly token?: boolean; readonly body: Record<string, unknown> }) => seen.call(r.route, r.token ? ada.token : undefined, r.body);
+const call = (r: { readonly route: string; readonly token?: boolean; readonly type?: string; readonly body: object }) => seen.call(r.route, r.token ? ada.token : undefined, r.body, undefined, r.type);
+/** The answer as a caller sees it: its headers and its body. */
+const seenText = (c: Called) => `${JSON.stringify(c.headers)}\n${c.text}`.toLowerCase();
 /** The body as JSON, or why it is not: the check reads the raw text, never a body the world's helper guessed at. */
 const json = (c: Called): Record<string, unknown> | string => { try { const v = JSON.parse(c.text) as unknown; return typeof v === "object" && v !== null && !Array.isArray(v) ? v as Record<string, unknown> : `not an object: ${c.text}`; } catch { return `not JSON: ${JSON.stringify(c.text)}`; } };
 /** A field named in the message as a word: `cap` in "cap is …", never inside another word. */
@@ -64,6 +75,7 @@ describe("46 #988: a payload the API refuses is a 400 that names each field and 
       expect(c.status, c.text).toBe(400);
       const body = json(c);
       expect(typeof body === "string" ? body : body["_tag"], "the body is JSON, tagged as the runtime's refusal").toBe("InvalidPayload");
+      expect(typeof body === "string" ? [] : Object.keys(body).sort(), "the body is { _tag, message } and nothing else: no cause, no schema").toEqual(["_tag", "message"]);
       const message = typeof body === "string" ? "" : body["message"];
       expect(typeof message, "a message").toBe("string");
       const text = message as string;
@@ -71,7 +83,7 @@ describe("46 #988: a payload the API refuses is a 400 that names each field and 
       for (const field of r.not) expect(named(text, field), `the message names only refused fields, not ${field}: ${text}`).toBe(false);
       if (r.missing !== undefined) expect(text, "a field left out is said to be missing").toMatch(/\bmissing\b/i);
       else expect(text, "nothing was left out").not.toMatch(/\bmissing\b/i);
-      for (const value of r.hides) expect(c.text.includes(value), `the answer never holds a sent value (${value.slice(0, 20)}…)`).toBe(false);
+      for (const value of r.hides) expect(seenText(c).includes(value.toLowerCase()), `neither the body nor a header holds a sent value, in any case (${value.slice(0, 20)}…)`).toBe(false);
     });
   }
 
@@ -83,11 +95,25 @@ describe("46 #988: a payload the API refuses is a 400 that names each field and 
     const text = typeof body === "string" ? "" : String(body["message"]);
     for (const field of ["name", "cap"]) expect(named(text, field), `the message names ${field}: ${text}`).toBe(true);
     expect(text, "and says they are missing").toMatch(/\bmissing\b/i);
-    expect(c.text.includes("s988-raw"), "the answer never holds a sent value").toBe(false);
+    expect(seenText(c).includes("s988-raw"), "the answer never holds a sent value").toBe(false);
+  });
+
+  it("a body that is JSON but not an object (a list): 400, { _tag: \"InvalidPayload\", message } saying something", async () => {
+    const c = await call({ route: "organization/create", token: true, body: ["s988-listed"] });
+    expect(c.status, c.text).toBe(400);
+    const body = json(c);
+    expect(typeof body === "string" ? body : [body["_tag"], Object.keys(body).sort()]).toEqual(["InvalidPayload", ["_tag", "message"]]);
+    expect(typeof body === "string" ? "" : String(body["message"]), "the message says something").not.toBe("");
+    expect(seenText(c).includes("s988-listed"), "the answer never holds a sent value").toBe(false);
   });
 });
 
 describe("46 #988: the controls", () => {
+  it("a payload that fits, with a key it does not declare, is answered: an extra key is not refused", async () => {
+    const c = await seen.call("organization/create", ada.token, { name: "s988 extra", cap: "1000", note: "s988-note" });
+    expect(c.status, c.text).toBe(200);
+  });
+
   it("a payload that fits is answered", async () => {
     const c = await seen.call("organization/create", ada.token, { name: "s988 fits", cap: "1000" });
     expect(c.status, c.text).toBe(200);
