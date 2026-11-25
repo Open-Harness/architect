@@ -403,13 +403,14 @@ describe("07 two generated adapters whose names share their first two letters (s
   });
 });
 
-describe("07 one operation calls two generated adapters (snag #1012)", () => {
-  it("an operation whose steps call two generated adapters, declaring both adapters' errors, is accepted by ortho generate", () => {
-    const { root } = bare({ rates: null, "fx-rates": null });
-    const errors = ["Rates", "FxRates"].flatMap((p) => FOUR.map((f) => `${p}${f}`));
-    mkdirSync(join(root, "blueprint/things/rate/verbs"), { recursive: true });
-    writeFileSync(join(root, "blueprint/things/rate/thing.ts"), THING);
-    writeFileSync(join(root, "blueprint/things/rate/verbs/both.ts"), `import { Blueprint } from "orthograph";
+/** `rate.both`, whose steps call `rates` and `fx-rates`, listing both adapters' eight errors; `setting` is appended to fx-rates' `src/written.ts`. */
+const both = (setting: string | null): App => {
+  const app = bare({ rates: null, "fx-rates": setting === null ? null : (written) => `${written}\n${setting}\n` });
+  const { root } = app;
+  const errors = ["Rates", "FxRates"].flatMap((p) => FOUR.map((f) => `${p}${f}`));
+  mkdirSync(join(root, "blueprint/things/rate/verbs"), { recursive: true });
+  writeFileSync(join(root, "blueprint/things/rate/thing.ts"), THING);
+  writeFileSync(join(root, "blueprint/things/rate/verbs/both.ts"), `import { Blueprint } from "orthograph";
 import { ${errors.slice(0, 4).join(", ")} } from "@orthograph/rates";
 import { ${errors.slice(4).join(", ")} } from "@orthograph/fx-rates";
 import rates from "../../../adapters/rates.ts";
@@ -425,11 +426,40 @@ export default Blueprint.operation(Rate, {
   steps: { price: Blueprint.step.call(rates.calls.quotes.get), backup: Blueprint.step.call(fx.calls.quotes.get) },
 });
 `);
+  return app;
+};
+/** Each of an adapter's four errors' exit in the generated model, by error name. */
+const exitsOf = (root: string, prefix: string) => {
+  const { things } = JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")) as { things: Record<string, { errors?: Record<string, { exit: number }> }> };
+  return Object.fromEntries(FOUR.map((f) => [`${prefix}${f}`, Object.values(things).find((t) => t.errors?.[`${prefix}${f}`] !== undefined)?.errors?.[`${prefix}${f}`]?.exit]));
+};
+/** A refusal line that names both adapters (`rates`, not only inside `fx-rates`) and the setting that fixes it. */
+const namesTheFix = (out: string) => out.split("\n").some((l) => l.includes("fx-rates") && /(^|[^-\w])rates\b/.test(l) && l.includes("src/written.ts") && /\bexit\b/.test(l));
+
+// G16-adapter-mounts call 1 (#1012, the lead's call): an adapter's four exits are one base set by hand beside `code` in its
+// src/written.ts (`export const exit = <base>;`), the four at base to base+3; unset, 81 to 84.
+describe("07 one operation calls two generated adapters (snag #1012)", () => {
+  it("with fx-rates' exit base set to 85 in its src/written.ts, the operation generates: rates keeps 81 to 84, fx-rates takes 85 to 88", () => {
+    const { root } = both("export const exit: number | undefined = 85;");
     ortho(root, "generate");
-    // Not by letting a clash through: the operation's eight refusals have eight exits, so the command line still tells them apart.
-    const { things } = JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")) as { things: Record<string, { errors?: Record<string, { exit: number }> }> };
-    const exits = errors.map((e) => Object.values(things).find((t) => t.errors?.[e] !== undefined)?.errors?.[e]?.exit);
-    expect(exits.every((x) => typeof x === "number"), `each error's exit in the model: ${JSON.stringify(exits)}`).toBe(true);
-    expect(new Set(exits).size, `the eight exits: ${JSON.stringify(exits)}`).toBe(8);
+    expect(exitsOf(root, "Rates")).toEqual({ RatesApiFailure: 81, RatesInputRefused: 82, RatesAnswerRefused: 83, RatesUnreachable: 84 });
+    expect(exitsOf(root, "FxRates")).toEqual({ FxRatesApiFailure: 85, FxRatesInputRefused: 86, FxRatesAnswerRefused: 87, FxRatesUnreachable: 88 });
   });
+
+  it("with neither setting an exit base, generate refuses the clash, naming both adapters and the setting in src/written.ts that fixes it", () => {
+    const { root } = both(null);
+    const said = run(root, "generate");
+    expect(said.status, said.out).not.toBe(0);
+    expect(namesTheFix(said.out), `a line naming rates, fx-rates, src/written.ts and exit:\n${said.out}`).toBe(true);
+  });
+
+  // 120 is past the range; 117 is inside it, but its fourth exit, 120, is not: the four must fit.
+  for (const base of [120, 117]) {
+    it(`an exit base whose four exits leave 5 to 119 (${base}) is refused, naming the adapter and the setting`, () => {
+      const { root } = both(`export const exit: number | undefined = ${base};`);
+      const said = run(root, "generate");
+      expect(said.status, said.out).not.toBe(0);
+      expect(said.out.split("\n").some((l) => l.includes("fx-rates") && l.includes("src/written.ts") && /\bexit\b/.test(l) && l.includes("120")), said.out).toBe(true);
+    });
+  }
 });
