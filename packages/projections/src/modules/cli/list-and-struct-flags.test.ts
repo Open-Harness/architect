@@ -108,12 +108,8 @@ const load = (): Promise<Project> => (project ??= (async () => {
   write(root, "blueprint/things/entry/verbs/file.ts", FILE);
   // The model as `ortho generate` reads it: the compiler, in a fresh process.
   const model = JSON.parse(execFileSync(process.execPath, [resolve(repo, "packages/compiler/src/main.ts"), root], { encoding: "utf8" })) as Model;
-  const files = renderCli(model, "books");
-  for (const path of ["generated/cli/src/output.ts", "generated/cli/src/entry/post.ts", "generated/cli/src/entry/note.ts", "generated/cli/src/entry/file.ts"]) {
-    const file = files.find((f) => f.path === path);
-    if (file === undefined) throw new Error(`renderCli wrote no ${path}`);
-    write(root, path, file.content);
-  }
+  // Every file it writes, so a build may put the flags' helper in a file of its own.
+  for (const file of renderCli(model, "books")) write(root, file.path, file.content);
   write(root, "generated/api/src/entry/post.ts", api("post"));
   write(root, "generated/api/src/entry/note.ts", api("note"));
   write(root, "generated/api/src/entry/file.ts", api("file"));
@@ -256,10 +252,10 @@ describe("3. --help says a list or struct flag takes JSON, in its metavar and it
     });
   }
 
-  it("--lines says it takes a list, and --where an object", async () => {
+  it("--lines says it takes a list (or array), and --where an object (or record, or struct)", async () => {
     const help = (await ran(["--help"])).stdout;
-    expect([helpFor(help, "lines").description, helpFor(help, "where").description]).toEqual([expect.stringMatching(/\blist\b/i), expect.not.stringMatching(/\blist\b/i)]);
-    expect(helpFor(help, "where").description).toMatch(/\bobject\b/i);
+    expect([helpFor(help, "lines").description, helpFor(help, "where").description]).toEqual([expect.stringMatching(/\b(list|array)\b/i), expect.not.stringMatching(/\b(list|array)\b/i)]);
+    expect(helpFor(help, "where").description).toMatch(/\b(object|record|struct)\b/i);
   });
 
   it("--lines keeps its own description, and says it no longer takes text", async () => {

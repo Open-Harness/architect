@@ -11,6 +11,6 @@ src/modules/cli/list-and-struct-flags.test.ts > 2. Malformed or misshapen JSON i
 src/modules/cli/list-and-struct-flags.test.ts > 2. Malformed or misshapen JSON is refused with a message, before the SDK > text that is not JSON in --lines: refused, naming lines, nothing sent
 src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --lines keeps its own description, and says it no longer takes text
 src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --lines says JSON in both
-src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --lines says it takes a list, and --where an object
+src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --lines says it takes a list (or array), and --where an object (or record, or struct)
 src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --tags says JSON in both
 src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --where says JSON in both
