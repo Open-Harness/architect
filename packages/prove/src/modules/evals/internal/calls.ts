@@ -64,9 +64,11 @@ export const answerShape: PerOperation = (op, evidence, { project }) => {
       // An observed response disambiguates a schema-valued field only after the existing answer selection found it:
       // a valid body cannot bless a public field missing from partial answer telemetry (D3 #82).
       const got = schemaValued && hasResponse && Object.hasOwn(answer, k) ? sent[k] : answer[k];
-      const rawFits = Schema.decodeUnknownExit(schema)({ [k]: got })._tag === "Success";
+      // A field the answer leaves out is decoded as absent, not as `undefined` under its key: an optional one passes, a required one fails (#1018).
+      const held = Object.hasOwn(answer, k);
+      const rawFits = Schema.decodeUnknownExit(schema)(held ? { [k]: got } : {})._tag === "Success";
       // Span-only strings are ambiguous: keep valid text before trying the encoded object/list representation.
-      const ok = rawFits || (!hasResponse && schemaValued && Schema.decodeUnknownExit(schema)({ [k]: fromJson(got) })._tag === "Success");
+      const ok = rawFits || (held && !hasResponse && schemaValued && Schema.decodeUnknownExit(schema)({ [k]: fromJson(got) })._tag === "Success");
       if (ok) return [];
       // A value kept out of telemetry is also kept out of the report.
       const display = shown(k) && !(k === "items" && traceItems !== undefined) ? JSON.stringify(answer[k]) : "a value that does not fit (hidden from telemetry)";
