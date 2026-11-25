@@ -77,7 +77,7 @@ Capxul's local world's clock stands at Tuesday 2026-12-01 09:00 UTC until a jour
 that clock across every journey, it never goes back, and journeys run in file-name order, so a journey that moves it
 keeps its days after those of the journeys before it (`give-interview-feedback` 3 December, `promote-an-employee`
 7 December, `transfer-an-employee` 8 December; a clock step stays within seven days of its journey's start, as the cast's
-sessions last seven days; `decisions/CX-employee-moves.md`); a world adds its keys to
+sessions seem to last seven days (snag #1001); `decisions/CX-employee-moves.md`); a world adds its keys to
 what the worlds before it gave.
 
 A world can hand on only the answer of its latest call (`s.last`), so most add one record; `two kybs started` and

@@ -75,7 +75,7 @@ The submit rules read the world's clock, so they run against Capxul's stepped lo
 and journeys run in file-name order. So a journey that moves the clock keeps its days after those of the journeys
 before it: `give-interview-feedback` 3 December, `promote-an-employee` 7 December, `transfer-an-employee` 8 December. A clock step also stays within seven days of its journey's start: further, and
 every call is refused `NotAllowed`, which looks like the cast's sessions expiring (Better Auth's default lasts seven
-days); snag #1002).
+days; snag #1001).
 The end-to-end journey uses days already due on 1 December and never moves the clock. A new journey that moves the
 clock picks days after the last of these, or a name that sorts before them.
 
