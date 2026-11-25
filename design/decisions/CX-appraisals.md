@@ -49,6 +49,11 @@ each journey has one such caller per move.
 - Self and feedback scores are Σ rating × 5 × weightage ÷ 100, summed unrounded and rounded once (0.33 and 0.33 give
   1.155 + 0.495 = 1.65). The average feedback score covers submitted feedback
   only. The final score is (total + self + average feedback) ÷ 3.
+- A goal move or a feedback submitted after the appraisal is submitted still rescores that appraisal, as HRMS does at
+  `46b38904`. A goal's `on_update` calls `update_goal_progress_in_appraisal` (`goal.py` lines 46 and 125–134), and a
+  feedback's `on_submit` calls `calculate_avg_feedback_score(update=True)` (`employee_performance_feedback.py` lines
+  23–24 and 56–61). Both write the appraisal with `db_update` (`appraisal.py` lines 183–185 and 264–266), whatever its
+  state. A completed cycle stops both (`validate_active_appraisal_cycle`, `appraisal_cycle.py` line 199).
 - Every stored score has two places, rounded half up, as Frappe's default `Banker's Rounding (legacy)` rounds a half
   up. **This is Capxul's choice, from the brief, not HRMS's:** HRMS gives only `goal_completion` and `goal_score` two
   places; `total_score`, `self_score`, `avg_feedback_score`, `final_score`, `score_earned` and a goal's `progress` take
