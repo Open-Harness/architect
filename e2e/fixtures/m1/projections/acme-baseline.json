@@ -1,6 +1,6 @@
 {
   "files": {
-    "server/main.ts": "b553e2ba8f047c35459bf51147973470d255d3a492dcc09f9996e530ff19401f",
+    "server/main.ts": "b2a901d9a4d30ba2c1dc1fa9cfb401cbcbbb5077cc2189e63be80b5efb8293ea",
     "server/migrations/0001_things.sql": "bd49d2d150376824fadd3cebc981ca2b89aca06102b079aa3430de7ef4d43ecc",
     "server/wrangler.jsonc": "f51fb8160ae5e6ee14b0b3d68db13b2a18737ad4cbb26ddf86d18db3a93ba689",
     "api/src/allowance/get.ts": "e5fa906c7e2d6cbe3f53305ab8c1a9ad6e6043ba7e12fd9a3a6e33fa44887bf1",

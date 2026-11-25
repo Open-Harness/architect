@@ -66,7 +66,7 @@ lands, the second call folds into the offer's moves, and the journeys that make 
 ## Time
 
 Feedback's day rule reads the world's clock, so Capxul's local environment is stepped, starting at Tuesday
-1 December 2026, 09:00 UTC (`blueprint/environments/local.ts`). No other handler reads the clock.
+1 December 2026, 09:00 UTC (`blueprint/environments/local.ts`). No other handler reads the clock. (_Superseded by CX-employee-moves, 25 November 2026: a promotion's and a transfer's submit read it too._)
 
 ## Left out of 8e
 

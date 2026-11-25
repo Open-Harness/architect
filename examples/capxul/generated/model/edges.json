@@ -70,6 +70,56 @@
     "kind": "refers"
   },
   {
+    "from": "employee-promotion.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-promotion.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-promotion.currentDesignation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-promotion.newDesignation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-separation.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-separation.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.currentDepartment",
+    "to": "department.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.newDepartment",
+    "to": "department.id",
+    "kind": "refers"
+  },
+  {
     "from": "employment-type.company",
     "to": "company.id",
     "kind": "refers"
@@ -581,6 +631,181 @@
   },
   {
     "from": "employee-grade.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.cancel",
+    "to": "employee-promotion",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-promotion.cancel",
+    "to": "employee-promotion.EmployeePromotionCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-promotion.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.create",
+    "to": "employee-promotion",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-promotion.create",
+    "to": "employee-promotion.EmployeePromotionDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-promotion.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.get",
+    "to": "employee-promotion",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-promotion.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.submit",
+    "to": "employee-promotion",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-promotion.submit",
+    "to": "employee-promotion.EmployeePromoted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-promotion.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.begin",
+    "to": "employee-separation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-separation.begin",
+    "to": "employee-separation.EmployeeSeparationBegun",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-separation.begin",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.complete",
+    "to": "employee-separation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-separation.complete",
+    "to": "employee-separation.EmployeeSeparationCompleted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-separation.complete",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.create",
+    "to": "employee-separation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-separation.create",
+    "to": "employee-separation.EmployeeSeparationStarted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-separation.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.get",
+    "to": "employee-separation",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-separation.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.cancel",
+    "to": "employee-transfer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-transfer.cancel",
+    "to": "employee-transfer.EmployeeTransferCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-transfer.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.create",
+    "to": "employee-transfer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-transfer.create",
+    "to": "employee-transfer.EmployeeTransferDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-transfer.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.get",
+    "to": "employee-transfer",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-transfer.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.submit",
+    "to": "employee-transfer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-transfer.submit",
+    "to": "employee-transfer.EmployeeTransferred",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-transfer.submit",
     "to": "company.owner",
     "kind": "allowed-by"
   },
