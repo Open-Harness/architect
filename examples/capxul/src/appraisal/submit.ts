@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/appraisal/verbs/submit.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/appraisal/submit.handler.ts";
 
 /**
@@ -42,22 +41,20 @@ import type { Handler } from "../../generated/api/src/appraisal/submit.handler.t
  *   once it answers, it writes AppraisalSubmitted: appraisal from the answer;
  *   the call is the span appraisal.submit, and its commit appraisal.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ appraisal }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal.submit.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    // Step load: database, span appraisal.submit.load. The runtime read the appraisal and hands it in; every move
+    // before kept its scores current, so submitting changes nothing but its state.
+    const held = yield* steps.load(Effect.succeed(subject));
+    if (!held) return yield* Effect.die(new Error(`appraisal ${appraisal} was read and then not found`));
 
-    // Step update: database, span appraisal.submit.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span appraisal.submit.update. The move is the whole change.
+    yield* steps.update(Effect.void);
 
     // The move submit, from draft, to submitted.
     yield* move();
 
-    return {
-      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
-      finalScore: yield* Handlers.blank("finalScore, an appraisal.finalScore"),
-      appraisalCycle: yield* Handlers.blank("appraisalCycle, an appraisal.appraisalCycle"),
-    };
+    return { appraisal, finalScore: held["finalScore"] as never, appraisalCycle: held["appraisalCycle"] as never };
   });
 
 export default submit;

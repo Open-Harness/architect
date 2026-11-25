@@ -1,8 +1,11 @@
 // Scaffolded from blueprint/things/goal/verbs/reopen.ts. Yours from now on.
-import { Effect, Match } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
-import type { Handler, Outcome } from "../../generated/api/src/goal/reopen.handler.ts";
+import type { Handler } from "../../generated/api/src/goal/reopen.handler.ts";
+import { AppraisalCycle } from "../../blueprint/things/appraisal-cycle/thing.ts";
+import { statusOf } from "../appraisal-math.ts";
+import { follow } from "../goal-tree.ts";
 
 const { GoalCycleCompleted } = Errors.declared;
 
@@ -92,35 +95,36 @@ const { GoalCycleCompleted } = Errors.declared;
  *   once it answers, it writes GoalReopened: goal from the answer;
  *   the call is the span goal.reopen, and its commit goal.reopen.commit.
  */
-const reopen: Handler = (_payload, { steps, move }) =>
+const reopen: Handler = ({ goal }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span goal.reopen.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // GoalCycleCompleted: exit 41, GO-001.
-    if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
+    // Step load: database, span goal.reopen.load. The runtime read the goal; its cycle is read here.
+    if (!subject) return yield* Effect.die(new Error(`goal ${goal} was read and then not found`));
+    const employee = subject["employee"] as string;
+    const appraisalCycle = subject["appraisalCycle"] as string;
+    const cycle = yield* steps.load(records.find(AppraisalCycle, appraisalCycle));
+
+    // GoalCycleCompleted: exit 41, GO-001. A completed cycle's goals don't move.
+    if (cycle?.state === "completed") {
+      yield* Effect.logInfo("the goal's cycle is completed");
       return yield* new GoalCycleCompleted({});
     }
 
-    // Step update: database, in the store goal, appraisal, span goal.reopen.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
-    // The move reopen, from closed: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where reopen ends: pending or inProgress or completed");
-    yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
-      Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
-      Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), rollUp (to pending or inProgress or completed).
-      Match.when("completed", () => move("completed")),
-      Match.exhaustive,
+    // Step update: database, in the store goal, appraisal, span goal.reopen.update. Back to the state its progress
+    // gives it; the groups above and the appraisal follow.
+    const progress = subject["progress"] as BigDecimal.BigDecimal;
+    const state = statusOf(progress);
+    yield* steps.update(
+      Effect.gen(function* () {
+        yield* follow(employee, appraisalCycle, { id: goal, progress, state });
+      }),
     );
 
-    return {
-      goal: yield* Handlers.blank("goal, a goal.id"),
-    };
+    // The move reopen, to where its progress puts it.
+    yield* move(state);
+
+    return { goal };
   });
 
 export default reopen;

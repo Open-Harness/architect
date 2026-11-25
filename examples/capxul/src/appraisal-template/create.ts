@@ -1,8 +1,12 @@
 // Scaffolded from blueprint/things/appraisal-template/verbs/create.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal-template/create.handler.ts";
+import { AppraisalTemplate } from "../../blueprint/things/appraisal-template/thing.ts";
+import { Kra } from "../../blueprint/things/kra/thing.ts";
+import { EmployeeFeedbackCriteria } from "../../blueprint/things/employee-feedback-criteria/thing.ts";
+import { HUNDRED, ZERO } from "../appraisal-math.ts";
 
 const { TemplateWithoutKras, TemplateKraNotInCompany, TemplateCriteriaNotInCompany, TemplateLineRepeated, TemplateWeightageOutOfRange, KraWeightageNotHundred, CriteriaWeightageNotHundred } = Errors.declared;
 
@@ -49,55 +53,65 @@ const { TemplateWithoutKras, TemplateKraNotInCompany, TemplateCriteriaNotInCompa
  *   once it answers, it writes AppraisalTemplateCreated: appraisalTemplate from the answer, company from the payload;
  *   the call is the span appraisal-template.create, and its commit appraisal-template.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, title, kras, criteria }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal-template.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
+    // Step load: database, span appraisal-template.create.load. Each line's KRA or criteria, to see whose it is.
+    const { kraRows, criteriaRows } = yield* steps.load(
+      Effect.all({
+        kraRows: Effect.forEach(kras, (line) => records.find(Kra, line.kra)),
+        criteriaRows: Effect.forEach(criteria, (line) => records.find(EmployeeFeedbackCriteria, line.criteria)),
+      }),
+    );
+
+    // Refusal order (errors.ts): no KRAs, a line from elsewhere, a repeat, a weightage out of range, then the totals.
     // TemplateWithoutKras: exit 41, TP-001.
-    if (yield* Handlers.blank<boolean>("refuse TemplateWithoutKras when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TemplateWithoutKras was refused"));
+    if (kras.length === 0) {
+      yield* Effect.logInfo("the template has no KRA lines");
       return yield* new TemplateWithoutKras({});
     }
 
-    // TemplateKraNotInCompany: exit 42, TP-002.
-    if (yield* Handlers.blank<boolean>("refuse TemplateKraNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TemplateKraNotInCompany was refused"));
+    // TemplateKraNotInCompany: exit 42, TP-002. A KRA that doesn't exist is refused the same way.
+    if (kraRows.some((row) => row?.["company"] !== company)) {
+      yield* Effect.logInfo("a KRA line names a KRA the company doesn't have");
       return yield* new TemplateKraNotInCompany({});
     }
 
     // TemplateCriteriaNotInCompany: exit 43, TP-003.
-    if (yield* Handlers.blank<boolean>("refuse TemplateCriteriaNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TemplateCriteriaNotInCompany was refused"));
+    if (criteriaRows.some((row) => row?.["company"] !== company)) {
+      yield* Effect.logInfo("a criteria line names criteria the company doesn't have");
       return yield* new TemplateCriteriaNotInCompany({});
     }
 
-    // TemplateLineRepeated: exit 44, TP-004.
-    if (yield* Handlers.blank<boolean>("refuse TemplateLineRepeated when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TemplateLineRepeated was refused"));
+    // TemplateLineRepeated: exit 44, TP-004. A KRA, or a criteria, appears once.
+    if (new Set(kras.map((l) => l.kra)).size !== kras.length || new Set(criteria.map((l) => l.criteria)).size !== criteria.length) {
+      yield* Effect.logInfo("a KRA or criteria appears on two lines");
       return yield* new TemplateLineRepeated({});
     }
 
-    // TemplateWeightageOutOfRange: exit 45, TP-005.
-    if (yield* Handlers.blank<boolean>("refuse TemplateWeightageOutOfRange when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why TemplateWeightageOutOfRange was refused"));
+    // TemplateWeightageOutOfRange: exit 45, TP-005. Each line is above 0 and at most 100.
+    const weightages = [...kras.map((l) => l.weightage), ...criteria.map((l) => l.weightage)];
+    if (weightages.some((w) => !BigDecimal.isGreaterThan(w, ZERO) || BigDecimal.isGreaterThan(w, HUNDRED))) {
+      yield* Effect.logInfo("a line's weightage isn't above 0 and at most 100");
       return yield* new TemplateWeightageOutOfRange({});
     }
 
-    // KraWeightageNotHundred: exit 46, TP-006.
-    if (yield* Handlers.blank<boolean>("refuse KraWeightageNotHundred when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why KraWeightageNotHundred was refused"));
+    // KraWeightageNotHundred: exit 46, TP-006. HRMS's validate_total_weightage.
+    if (!BigDecimal.equals(BigDecimal.sumAll(kras.map((l) => l.weightage)), HUNDRED)) {
+      yield* Effect.logInfo("the KRA weightages don't total 100");
       return yield* new KraWeightageNotHundred({});
     }
 
-    // CriteriaWeightageNotHundred: exit 47, TP-007.
-    if (yield* Handlers.blank<boolean>("refuse CriteriaWeightageNotHundred when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why CriteriaWeightageNotHundred was refused"));
+    // CriteriaWeightageNotHundred: exit 47, TP-007. Only when the template has criteria.
+    if (criteria.length > 0 && !BigDecimal.equals(BigDecimal.sumAll(criteria.map((l) => l.weightage)), HUNDRED)) {
+      yield* Effect.logInfo("the criteria weightages don't total 100");
       return yield* new CriteriaWeightageNotHundred({});
     }
 
-    // Step insert: database, span appraisal-template.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span appraisal-template.create.insert. A title the company already has is the runtime's
+    // refusal (oneTitlePerCompany).
+    yield* steps.insert(records.insert(AppraisalTemplate, { id, company, title, kras, criteria }));
 
     // The move create, to active.
     yield* move();

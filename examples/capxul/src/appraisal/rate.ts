@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/appraisal/verbs/rate.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal/rate.handler.ts";
+import { Appraisal } from "../../blueprint/things/appraisal/thing.ts";
+import { earnedOf, finalOf, inKraScore, matchesOnce, r2, totalOf, type KraLine } from "../appraisal-math.ts";
 
 const { NotRatedManually, ScoresDontMatchKras, KraScoreOutOfRange } = Errors.declared;
 
@@ -49,40 +51,48 @@ const { NotRatedManually, ScoresDontMatchKras, KraScoreOutOfRange } = Errors.dec
  *   once it answers, it writes AppraisalRated: appraisal from the answer;
  *   the call is the span appraisal.rate, and its commit appraisal.rate.commit.
  */
-const rate: Handler = (_payload, { steps, move }) =>
+const rate: Handler = ({ appraisal, scores }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal.rate.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // NotRatedManually: exit 46, AP-006.
-    if (yield* Handlers.blank<boolean>("refuse NotRatedManually when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NotRatedManually was refused"));
+    // Step load: database, span appraisal.rate.load. The runtime read the appraisal and hands it in.
+    const held = yield* steps.load(Effect.succeed(subject));
+    if (!held) return yield* Effect.die(new Error(`appraisal ${appraisal} was read and then not found`));
+    const lines = held["kras"] as ReadonlyArray<KraLine>;
+
+    // NotRatedManually: exit 46, AP-006. Under the automated method, goals score the KRAs.
+    if (held["kraEvaluationMethod"] !== "Manual Rating") {
+      yield* Effect.logInfo("the appraisal is scored from goals, not by hand");
       return yield* new NotRatedManually({});
     }
 
-    // ScoresDontMatchKras: exit 47, AP-007.
-    if (yield* Handlers.blank<boolean>("refuse ScoresDontMatchKras when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ScoresDontMatchKras was refused"));
+    // ScoresDontMatchKras: exit 47, AP-007. Each of the appraisal's KRAs once.
+    if (!matchesOnce(scores.map((s) => s.kra), lines.map((l) => l.kra))) {
+      yield* Effect.logInfo("the scores don't name each of the appraisal's KRAs once");
       return yield* new ScoresDontMatchKras({});
     }
 
-    // KraScoreOutOfRange: exit 48, AP-008.
-    if (yield* Handlers.blank<boolean>("refuse KraScoreOutOfRange when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why KraScoreOutOfRange was refused"));
+    // KraScoreOutOfRange: exit 48, AP-008. HRMS: "Goal Score cannot be greater than 5"; below 0 is Capxul's.
+    if (scores.some((s) => !inKraScore(s.score))) {
+      yield* Effect.logInfo("a KRA score isn't between 0 and 5");
       return yield* new KraScoreOutOfRange({});
     }
 
-    // Step update: database, span appraisal.rate.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span appraisal.rate.update. The lines in the appraisal's order, each earning its share;
+    // the total sums the unrounded shares (appraisal-math), and the final score follows.
+    const given = new Map(scores.map((s) => [s.kra as string, r2(s.score)]));
+    const kras = lines.map((l) => {
+      const score = given.get(l.kra) ?? BigDecimal.fromNumberUnsafe(0);
+      return { ...l, score, earned: earnedOf(score, l.weightage) };
+    });
+    const totalScore = totalOf("Manual Rating", kras);
+    const finalScore = finalOf(totalScore, held["selfScore"] as BigDecimal.BigDecimal, held["avgFeedbackScore"] as BigDecimal.BigDecimal);
+    yield* steps.update(records.update(Appraisal, appraisal, { kras, totalScore, finalScore } as never));
 
     // The move rate, from draft, to draft.
     yield* move();
 
-    return {
-      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
-      totalScore: yield* Handlers.blank("totalScore, an appraisal.totalScore"),
-      finalScore: yield* Handlers.blank("finalScore, an appraisal.finalScore"),
-    };
+    return { appraisal, totalScore, finalScore };
   });
 
 export default rate;
