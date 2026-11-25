@@ -30,7 +30,9 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   - `baseUrl`, always;
   - `apiKey`, when its description requires security: a requirement naming a scheme, at the top or on any operation. A
     scheme that no requirement names, or only the anonymous requirement `[{}]`, requires none, so no key is listed as missing
-    that no call would send. (Refined from "declares any security scheme" by #995 gap 1's checks, 25 November 2026.)
+    that no call would send. A key made optional (`[{}, { ApiKey: [] }]`) still requires one, and Bridge's shape (an `apiKey`
+    scheme in its `Api-Key` header, required at the top) gives `BRIDGE_API_KEY`. (Refined from "declares any security scheme"
+    by #995 gap 1's checks, 25 November 2026; approved by Goal 16's lead.)
 
   By M2-04-secrets-readings' rule they're named per mount: `<MOUNT>_BASE_URL` and `<MOUNT>_API_KEY` (`BRIDGE_BASE_URL`,
   `BRIDGE_API_KEY`). So `ortho secrets` lists them, `ortho secrets set` takes them, and `promote` refuses an environment that
