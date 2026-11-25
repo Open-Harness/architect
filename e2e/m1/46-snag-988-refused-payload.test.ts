@@ -4,9 +4,11 @@
 //
 // The contract, the SDK's own (`generated/sdk/src/client.ts`: "a payload its schema refuses: the message names where and
 // why, never the value") at the API door: a refused payload is a 400 whose body is JSON, `{ _tag: "InvalidPayload",
-// message }`, the runtime's name for it (`InvalidPayload`, D3, G3). The message names each refused field, and only those,
+// message }`, the runtime's name for it (`InvalidPayload`, D3, G3), its text under `message` as the SDK's class keeps it
+// (the runtime's own class says `issues`; the wire takes the SDK's word, so a client reads one shape on both sides). The message names each refused field, and only those,
 // and says why (a field left out is "missing"); it never holds a value the caller sent, a secret's least of all. The
-// handler never runs. Red on main: the 400's body is empty for every refused payload.
+// handler never runs. Every refused field is named, two at once included: stricter than the SDK today, which reports only
+// the first (Effect's default), but what #988 asks. Red on main: the 400's body is empty for every refused payload.
 //
 // The controls stay green: a payload that fits is answered, a declared refusal keeps its own status and body, and every
 // refused payload is a 400 (the status is already right; only the body is missing).
@@ -61,8 +63,8 @@ const REFUSED: ReadonlyArray<Refused> = [
 ];
 
 const call = (r: { readonly route: string; readonly token?: boolean; readonly type?: string; readonly body: object }) => seen.call(r.route, r.token ? ada.token : undefined, r.body, undefined, r.type);
-/** The answer as a caller sees it: its headers and its body. */
-const seenText = (c: Called) => `${JSON.stringify(c.headers)}\n${c.text}`.toLowerCase();
+/** The answer as a caller sees it: its headers and its body, less the trace id this check sent (`x-trace-id` echoes it, and a random hex id can hold a digit value judged below). */
+const seenText = (c: Called) => `${JSON.stringify(c.headers)}\n${c.text}`.toLowerCase().replaceAll(c.trace, "");
 /** The body as JSON, or why it is not: the check reads the raw text, never a body the world's helper guessed at. */
 const json = (c: Called): Record<string, unknown> | string => { try { const v = JSON.parse(c.text) as unknown; return typeof v === "object" && v !== null && !Array.isArray(v) ? v as Record<string, unknown> : `not an object: ${c.text}`; } catch { return `not JSON: ${JSON.stringify(c.text)}`; } };
 /** A field named in the message as a word: `cap` in "cap is …", never inside another word. */
