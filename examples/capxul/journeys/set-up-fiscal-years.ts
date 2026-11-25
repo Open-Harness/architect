@@ -129,6 +129,27 @@ export default Blueprint.journey("set up fiscal years", {
         refuses(FiscalYearOverlaps),
       ),
       s.step(
+        "a short year inside 2026, April to June, overlaps it",
+        year("2026 Q2", "2026-04-01", "2026-06-30", true),
+        refuses(FiscalYearOverlaps, { fiscalYear: s.world.fiscalYear }),
+      ),
+      s.step("a short quarter far ahead, January to March 2045, is allowed", year("2045 Q1", "2045-01-01", "2045-03-31", true), expect((a) => a.fiscalYear).toMatch(/^fyr_/)),
+      s.step(
+        "a full year from December 2044 that holds that quarter whole overlaps it",
+        year("2044-2045", "2044-12-01", "2045-11-30"),
+        refuses(FiscalYearOverlaps, { fiscalYear: s.last.fiscalYear }),
+      ),
+      s.step(
+        "a short year may run the whole year: it ends no later, so 2050 marked short is allowed",
+        year("2050", "2050-01-01", "2050-12-31", true),
+        expect((a) => a.fiscalYear).toMatch(/^fyr_/),
+      ),
+      s.step(
+        "a year from 28 February 2035 ends on 27 February 2036, though 2036 has a leap day",
+        year("2035-2036", "2035-02-28", "2036-02-28"),
+        refuses(FiscalYearWrongLength, { yearEndDate: "2036-02-27" }),
+      ),
+      s.step(
         "a full year may end on a leap day: 1 March 2031 to 29 February 2032",
         year("2031-2032", "2031-03-01", "2032-02-29"),
         expect((a) => a.fiscalYear).toMatch(/^fyr_/),

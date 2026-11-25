@@ -143,7 +143,7 @@ export default Blueprint.journey("post a journal entry", {
         spans({ absent: ["journal-entry.submit.post"] }),
       ),
       s.step(
-        "it posted nothing and is still a draft",
+        "it posted nothing",
         s.ada.run(ledger, { account: s.world.rent, voucherId: s.last.journalEntry }),
         expect((p) => p.items.length).toBe(0),
       ),
@@ -211,6 +211,17 @@ export default Blueprint.journey("post a journal entry", {
       ),
       s.step("is submitted", s.ada.run(submit, { journalEntry: s.last.journalEntry }), expect((a) => a.posted).toBe(2n), entries.isIn(s.last.journalEntry, "submitted")),
       s.step(
+        "Acme Trading sets up a short year from April 2028 to February 2029, named for neither calendar year",
+        s.ada.run(createYear, { company: s.world.company, year: "FY28", yearStartDate: "2028-04-01", yearEndDate: "2029-02-28", isShortYear: true }),
+        expect((a) => a.fiscalYear).toMatch(/^fyr_/),
+      ),
+      s.step(
+        "an entry on 1 February 2029, inside it",
+        entry("2029-02-01", [line(s.world.rent, 10n * USDC, 0n), line(s.world.bank, 0n, 10n * USDC)]),
+        entries.isIn(s.last.journalEntry, "draft"),
+      ),
+      s.step("is submitted: a short year counts", s.ada.run(submit, { journalEntry: s.last.journalEntry }), expect((a) => a.posted).toBe(2n)),
+      s.step(
         "an entry on 2026's first day, three lines with two on Bank",
         entry("2026-01-01", [line(s.world.rent, 70n * USDC, 0n), line(s.world.bank, 0n, 30n * USDC), line(s.world.bank, 0n, 40n * USDC)]),
         entries.isIn(s.last.journalEntry, "draft"),
@@ -259,8 +270,19 @@ export default Blueprint.journey("post a journal entry", {
         expect((p) => p.items.map((i: Gl) => [i.debit, i.isCancelled])).toEqual([[20n * USDC, false]]),
       ),
       s.step(
-        "and its cost center is the new one, not Bank's",
-        s.ada.run(getCostCenter, { id: s.last.items[0].costCenter }),
+        "Ada cancels it",
+        s.ada.run(cancel, { journalEntry: s.last.items[0].voucherId }),
+        expect((a) => a.reversed).toBe(2n),
+      ),
+      s.step(
+        "Rent's line and its reversal are both cancelled, in the same cost center",
+        s.ada.run(ledger, { account: s.world.rent, voucherId: s.last.journalEntry }),
+        expect((p) => p.items.map((i: Gl) => [i.debit, i.credit, i.isCancelled])).toEqual([[20n * USDC, 0n, true], [0n, 20n * USDC, true]]),
+        expect((p) => p.items[0].costCenter === p.items[1].costCenter).toBe(true),
+      ),
+      s.step(
+        "and that cost center is the new one, not Bank's",
+        s.ada.run(getCostCenter, { id: s.last.items[1].costCenter }),
         expect((a) => [a.company, a.costCenterName, a.state]).toEqual([s.world.company, "Sales", "ledger"]),
       ),
       s.step(
@@ -270,24 +292,24 @@ export default Blueprint.journey("post a journal entry", {
       ),
       s.step("is submitted", s.ada.run(submit, { journalEntry: s.last.journalEntry }), expect((a) => a.posted).toBe(2n)),
       s.step(
-        "Bank's balance at 2026's end counts 2026's three entries, and not the cancelled capital or 2027's rent",
+        "Bank's balance at 2026's end counts both, and not the cancelled entries or 2027's rent",
         s.ada.run(balance, { account: s.world.bank, onDay: "2026-12-31" }),
-        expect(sums).toEqual([0n, 170n * USDC, -170n * USDC]),
+        expect(sums).toEqual([0n, 150n * USDC, -150n * USDC]),
       ),
       s.step(
         "at 2027's end it counts 2027's rent too",
         s.ada.run(balance, { account: s.world.bank, onDay: "2027-12-31" }),
-        expect(sums).toEqual([0n, 220n * USDC, -220n * USDC]),
+        expect(sums).toEqual([0n, 200n * USDC, -200n * USDC]),
       ),
       s.step(
         "Expenses, two groups above Rent, the same the other way",
         s.ada.run(balance, { account: s.world.expenses, onDay: "2027-12-31" }),
-        expect(sums).toEqual([220n * USDC, 0n, 220n * USDC]),
+        expect(sums).toEqual([200n * USDC, 0n, 200n * USDC]),
       ),
       s.step(
         "Assets, above Bank, too",
         s.ada.run(balance, { account: s.world.assets, onDay: "2027-12-31" }),
-        expect(sums).toEqual([0n, 220n * USDC, -220n * USDC]),
+        expect(sums).toEqual([0n, 200n * USDC, -200n * USDC]),
       ),
       s.step(
         "Equity, whose only lines were cancelled, holds nothing",

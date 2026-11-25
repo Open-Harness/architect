@@ -58,6 +58,8 @@ left out.
 
 ## Where the source changed the scope (core: please confirm)
 
+- **A one-day fiscal year is allowed.** The scope said to refuse an end "on or before" the start. Frappe's
+  `validate_from_to_dates` refuses only an end before the start, so a short year of one day passes; Capxul follows it.
 - **Cancel marks the originals cancelled.** The scope left it open. ERPNext's default marks both the original and the
   reversal `is_cancelled`, so neither counts in a balance and both stay in the ledger. Capxul does the same. A build
   that deletes the originals, or leaves them uncancelled, fails `post a journal entry`.
@@ -67,29 +69,34 @@ left out.
 - **`isShortYear` is a field.** The scope's "longer than one year less a day" is ERPNext's rule only for a year not
   marked short, and that year must be exactly a year less a day, not merely no longer. A short year is ERPNext's way to
   allow less; Capxul bounds it at a year.
-- **A child naming another root type is refused**, where ERPNext overwrites it. The form keeps the field read-only in
+- **A child naming another root type is refused**, where ERPNext overwrites it. This departs from ERPNext deliberately (the lead's call on #1017): refusing is the better contract. The form keeps the field read-only in
   ERPNext, so only an API caller reaches it, and silently changing what a caller named is worse than refusing.
 - **Group or ledger is a state.** ERPNext's `is_group` is a field with two conversions. Here `create` picks the state,
   and `make-ledger` is the one conversion the scope asks for (a group with children is refused). The way back,
   `convert_ledger_to_group`, comes later: its refusal for ledger lines can't be reached while a ledger can't take lines
   any other way.
 - **Cost center checks run on create.** ERPNext judges a line's cost center only when the GL Entry is saved, on submit.
-  Judging it on create keeps every line check in one place and refuses earlier.
+  Judging it on create keeps every line check in one place and refuses earlier. Its effect across lines: the four
+  account and cost center checks run line by line, so a group cost center on line 1 is refused before a group account
+  on line 2, where ERPNext would refuse line 2's account first.
 - **Too few lines is judged on create.** ERPNext lets a one-line draft be saved and fails it on submit.
 
 ## Framework gaps (for core)
 
-- **An optional field can't come back from a read by id.** `Blueprint.optional` on a thing's field stores `NULL`.
+- **An optional field can't come back from a read by id (Snag #1018).** `Blueprint.optional` on a thing's field stores `NULL`.
   `packages/language-effect/src/modules/handler/internal/read.ts`'s `byId` answers it as `null`, its own answer check
   then rejects `null` and the server dies ("account.get answered outside its declaration"). With that fixed to leave
   the field out, `prove`'s answer-shape eval (`packages/prove/src/modules/evals/internal/calls.ts`) still rejects an
   absent optional field. A root account's `parentAccount` and `accountType`, and a root cost center's
   `parentCostCenter`, hit both. Until they are fixed, `set up a chart of accounts` and `set up cost centers` fail on a
-  correct build. The proofs here ran with a local, uncommitted patch to both files (two lines).
+  correct build. The proofs here ran with a local, uncommitted patch to both files (two lines). The lead's call: #1018
+  gets its own checks and build into `main`, merged into `goal/capxul` before 7a's builder starts; this slice doesn't
+  carry the patch.
 - **Lines** worked without a gap: the entry's create takes its lines as a list of structs in its payload and writes
   them as Journal Entry Account rows in its own step (`writes: [JournalEntry, JournalEntryAccount]`).
 - **A tree's descendant sum** can't be a `Blueprint.read`: a derive looks at records whose field holds the root's id,
-  one level only. So `account.balance` is an operation with no move, whose handler walks the tree with
+  one level only, and a read has no handler to walk further. So `account.balance` is an operation with no move, whose
+  handler walks the tree with
   `Records.list`. Each list read counts as read at commit, which is right but grows with the chart.
 - **The many-row insert on submit** worked: one step inserts a GL Entry per line. Each insert costs its own unique
   checks at commit only where rules exist (none on GL Entry).

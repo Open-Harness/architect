@@ -1,6 +1,6 @@
 // Journey-author file. The builder never edits it (AGENTS.md, "Journeys and checks come first").
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone.
-// End to end (decisions/CX-ledger.md): a fiscal year, two entries posted, balances read on several days and up the
+// End to end (decisions/CX-ledger.md): a fiscal year, three entries posted, balances read on several days and up the
 // tree, one entry cancelled, and the balances read again. Every amount is USDC in base units (1 USDC is 1000000n).
 // A read's answer carries no entry id, so the rent entry is cancelled by the voucher id its own ledger line carries.
 // Nothing here moves the clock.
@@ -16,6 +16,7 @@ import submit from "../blueprint/things/journal-entry/verbs/submit.ts";
 import cancel from "../blueprint/things/journal-entry/verbs/cancel.ts";
 import balance from "../blueprint/things/account/verbs/balance.ts";
 import ledger from "../blueprint/things/gl-entry/verbs/list.ts";
+import createAccount from "../blueprint/things/account/verbs/create.ts";
 
 const USDC = 1_000_000n;
 type Gl = { readonly account: string; readonly costCenter: string; readonly postingDate: string; readonly debit: bigint; readonly credit: bigint; readonly voucherType: string; readonly isCancelled: boolean };
@@ -110,6 +111,40 @@ export default Blueprint.journey("keep the books", {
       expect((a) => sums(a)).toEqual([0n, 10_000n * USDC, -10_000n * USDC]),
     ),
     s.step(
+      "Ada adds a second ledger under Assets, beside Bank",
+      s.ada.run(createAccount, { company: s.world.company, accountName: "Float", parentAccount: s.world.assets, isGroup: false }),
+      expect((a) => a.account).toMatch(/^acc_[0-9a-z]+$/),
+    ),
+    s.step(
+      "she moves 200 USDC of capital into it on 20 January",
+      s.ada.run(draft, {
+        company: s.world.company,
+        postingDate: "2026-01-20",
+        userRemark: "Float",
+        lines: [
+          { account: s.last.account, costCenter: s.world.costCenter, debit: 200n * USDC, credit: 0n },
+          { account: s.world.capital, costCenter: s.world.costCenter, debit: 0n, credit: 200n * USDC },
+        ],
+      }),
+      expect((a) => [a.totalDebit, a.totalCredit]).toEqual([200n * USDC, 200n * USDC]),
+    ),
+    s.step("and submits it", s.ada.run(submit, { journalEntry: s.last.journalEntry }), expect((a) => a.posted).toBe(2n)),
+    s.step(
+      "Assets now holds both its ledgers, read again after the new one was added",
+      s.ada.run(balance, { account: s.world.assets, onDay: "2026-12-31" }),
+      expect((a) => sums(a)).toEqual([10_200n * USDC, 1_500n * USDC, 8_700n * USDC]),
+    ),
+    s.step(
+      "Assets on 14 January, before any entry, holds nothing: the day limit holds below the group too",
+      s.ada.run(balance, { account: s.world.assets, onDay: "2026-01-14" }),
+      expect((a) => sums(a)).toEqual([0n, 0n, 0n]),
+    ),
+    s.step(
+      "Expenses on 31 January, before the rent, holds nothing",
+      s.ada.run(balance, { account: s.world.expenses, onDay: "2026-01-31" }),
+      expect((a) => sums(a)).toEqual([0n, 0n, 0n]),
+    ),
+    s.step(
       "Bank on the rent's own day counts the rent",
       s.ada.run(balance, { account: s.world.bank, onDay: "2026-02-01" }),
       expect((a) => sums(a)).toEqual([10_000n * USDC, 1_500n * USDC, 8_500n * USDC]),
@@ -156,9 +191,9 @@ export default Blueprint.journey("keep the books", {
       expect((a) => sums(a)).toEqual([10_000n * USDC, 0n, 10_000n * USDC]),
     ),
     s.step(
-      "Assets too",
+      "Assets holds the capital in both its ledgers",
       s.ada.run(balance, { account: s.world.assets, onDay: "2026-12-31" }),
-      expect((a) => sums(a)).toEqual([10_000n * USDC, 0n, 10_000n * USDC]),
+      expect((a) => sums(a)).toEqual([10_200n * USDC, 0n, 10_200n * USDC]),
     ),
     s.step(
       "Expenses holds nothing",
@@ -166,9 +201,9 @@ export default Blueprint.journey("keep the books", {
       expect((a) => sums(a)).toEqual([0n, 0n, 0n]),
     ),
     s.step(
-      "and Capital Stock is untouched",
+      "and Capital Stock keeps the capital the cancel left alone",
       s.ada.run(balance, { account: s.world.capital, onDay: "2026-12-31" }),
-      expect((a) => sums(a)).toEqual([0n, 10_000n * USDC, -10_000n * USDC]),
+      expect((a) => sums(a)).toEqual([0n, 10_200n * USDC, -10_200n * USDC]),
     ),
   ],
 });

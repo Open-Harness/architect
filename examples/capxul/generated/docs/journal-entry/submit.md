@@ -49,6 +49,7 @@ Starts from the world `a chart`.
 
 - **and submits it, posting two ledger lines.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `2`.
 - **and submits it.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `2`.
+- **and submits it.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `2`.
 
 ### post a journal entry
 
@@ -66,6 +67,7 @@ Starts from the world `a capital entry`.
 - **is refused too.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and is refused with PostingDateOutsideFiscalYear, JE-009, carrying postingDate `2027-01-01`.
 - **is still refused.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and is refused with PostingDateOutsideFiscalYear, JE-009, carrying postingDate `2027-06-01`.
 - **is submitted.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `2`.
+- **is submitted: a short year counts.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `2`.
 - **is submitted, posting three lines: the two on Bank are not merged.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `3`.
 - **is submitted.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `2`.
 - **is submitted.** `ada` (role company.owner) calls and sends journalEntry the last call's journalEntry, and gets back `2`.

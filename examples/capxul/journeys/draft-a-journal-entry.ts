@@ -99,6 +99,21 @@ export default Blueprint.journey("draft a journal entry", {
         refuses(LineWithoutAmount, { line: 2n }),
       ),
       s.step(
+        "with two lines lacking an amount, the first is named",
+        entry([line(s.world.rent, 0n, 0n), line(s.world.bank, 0n, pay), line(s.world.rent, 0n, 0n)]),
+        refuses(LineWithoutAmount, { line: 1n }),
+      ),
+      s.step(
+        "with two lines carrying both, the first is named",
+        entry([line(s.world.rent, pay, pay), line(s.world.bank, pay, pay)]),
+        refuses(LineDebitAndCredit, { line: 1n }),
+      ),
+      s.step(
+        "a line carrying both is found on the last line too",
+        entry([line(s.world.rent, pay, 0n), line(s.world.bank, pay, pay)]),
+        refuses(LineDebitAndCredit, { line: 2n }),
+      ),
+      s.step(
         "Ada adds Acme Logistics' Assets group",
         s.ada.run(createAccount, { company: s.world.otherCompany, accountName: "Assets", isGroup: true, rootType: "Asset" }),
         expect((a) => a.account).toMatch(/^acc_/),

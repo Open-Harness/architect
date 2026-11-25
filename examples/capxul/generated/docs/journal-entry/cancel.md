@@ -55,6 +55,7 @@ Starts from the world `a capital entry`.
 - **Bo can't cancel it.** `bo` (signed in) calls and sends journalEntry the world's journalEntry, and is refused with NotAllowed, AR-001.
 - **Ada cancels it: two reversing lines.** `ada` (role company.owner) calls and sends journalEntry the world's journalEntry, and gets back [the world's journalEntry, `2`].
 - **it can't be cancelled twice.** `ada` (role company.owner) calls and sends journalEntry the world's journalEntry, and is refused with JournalEntryNotDraft, JE-900, carrying state `cancelled`.
+- **Ada cancels it.** `ada` (role company.owner) calls and sends journalEntry the last call's items 0 voucherId, and gets back `2`.
 
 ## How to call
 

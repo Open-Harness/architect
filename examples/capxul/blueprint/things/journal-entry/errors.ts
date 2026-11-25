@@ -3,11 +3,11 @@ import { Day } from "../../values/employee.ts";
 import { Balance, LineNumber } from "../../values/ledger.ts";
 
 // Refusals that depend on data. The machine's own refusal is generated and never written here.
-// `journal-entry.create` judges, in this order, each refusal over every line before the next refusal (ERPNext's
-// `validate`: `validate_account_company` over the rows, then `validate_debit_credit_amount`, then
-// `set_total_debit_credit`): JournalEntryTooFewLines; then, line by line, LineAccountNotInCompany,
-// LineAccountIsGroup, LineCostCenterNotInCompany, LineCostCenterIsGroup; then LineWithoutAmount over every line; then
-// LineDebitAndCredit over every line. Each line refusal carries the first line, from 1, that breaks it.
+// `journal-entry.create` judges in this order (ERPNext's `validate`: `validate_account_company` over the rows, then
+// `validate_debit_credit_amount`, then `set_total_debit_credit`): JournalEntryTooFewLines; then the four account and
+// cost-center checks line by line (LineAccountNotInCompany, LineAccountIsGroup, LineCostCenterNotInCompany,
+// LineCostCenterIsGroup on line 1, then the same four on line 2, and so on); then LineWithoutAmount over every line;
+// then LineDebitAndCredit over every line. Each line refusal carries the first line, from 1, that breaks it.
 // `journal-entry.submit` refuses JournalEntryUnbalanced (`before_submit`) before PostingDateOutsideFiscalYear (the GL
 // Entry's `validate_and_set_fiscal_year`, on submit).
 /**

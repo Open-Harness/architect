@@ -36,7 +36,7 @@ Read one cost-center by its id: company, costCenterName, parentCostCenter, state
 
 Starts from the world `a capital entry`.
 
-- **and its cost center is the new one, not Bank's.** `ada` (role company.owner) calls and sends id the last call's items 0 costCenter, and gets back [the world's company, `Sales`, `ledger`].
+- **and that cost center is the new one, not Bank's.** `ada` (role company.owner) calls and sends id the last call's items 1 costCenter, and gets back [the world's company, `Sales`, `ledger`].
 
 ### set up cost centers
 

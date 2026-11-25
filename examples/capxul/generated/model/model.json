@@ -22850,6 +22850,202 @@
           ]
         },
         {
+          "title": "with two lines lacking an amount, the first is named",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-03-02",
+              "userRemark": "March",
+              "lines": [
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "rent"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "0",
+                  "credit": "0"
+                },
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "bank"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "0",
+                  "credit": "250000000"
+                },
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "rent"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "0",
+                  "credit": "0"
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "LineWithoutAmount",
+              "fields": {
+                "line": "1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "with two lines carrying both, the first is named",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-03-02",
+              "userRemark": "March",
+              "lines": [
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "rent"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "250000000",
+                  "credit": "250000000"
+                },
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "bank"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "250000000",
+                  "credit": "250000000"
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "LineDebitAndCredit",
+              "fields": {
+                "line": "1"
+              }
+            }
+          ]
+        },
+        {
+          "title": "a line carrying both is found on the last line too",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-03-02",
+              "userRemark": "March",
+              "lines": [
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "rent"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "250000000",
+                  "credit": "0"
+                },
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "bank"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "250000000",
+                  "credit": "250000000"
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "LineDebitAndCredit",
+              "fields": {
+                "line": "2"
+              }
+            }
+          ]
+        },
+        {
           "title": "Ada adds Acme Logistics' Assets group",
           "call": {
             "actor": "ada",
@@ -23747,7 +23943,7 @@
           ]
         }
       ],
-      "sourceHash": "beaab3c97744d07820eb846a0140f6eaf454116b0ff1efb1a9c0893df9c8747c"
+      "sourceHash": "5a2fc66341610e8dc71cd378838b631270d21837e2cecf0810f750d9daa93c5f"
     },
     "journeys/every-weekday.ts": {
       "name": "every weekday",
@@ -27789,6 +27985,195 @@
           ]
         },
         {
+          "title": "Ada adds a second ledger under Assets, beside Bank",
+          "call": {
+            "actor": "ada",
+            "operation": "account.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "accountName": "Float",
+              "parentAccount": {
+                "ref": [
+                  "world",
+                  "assets"
+                ]
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^acc_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "she moves 200 USDC of capital into it on 20 January",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-01-20",
+              "userRemark": "Float",
+              "lines": [
+                {
+                  "account": {
+                    "ref": [
+                      "last",
+                      "account"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "200000000",
+                  "credit": "0"
+                },
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "capital"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "0",
+                  "credit": "200000000"
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "200000000",
+                "200000000"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and submits it",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.submit",
+            "payload": {
+              "journalEntry": {
+                "ref": [
+                  "last",
+                  "journalEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "title": "Assets now holds both its ledgers, read again after the new one was added",
+          "call": {
+            "actor": "ada",
+            "operation": "account.balance",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "assets"
+                ]
+              },
+              "onDay": "2026-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "10200000000",
+                "1500000000",
+                "8700000000"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Assets on 14 January, before any entry, holds nothing: the day limit holds below the group too",
+          "call": {
+            "actor": "ada",
+            "operation": "account.balance",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "assets"
+                ]
+              },
+              "onDay": "2026-01-14"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0",
+                "0"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Expenses on 31 January, before the rent, holds nothing",
+          "call": {
+            "actor": "ada",
+            "operation": "account.balance",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "expenses"
+                ]
+              },
+              "onDay": "2026-01-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "0",
+                "0",
+                "0"
+              ]
+            }
+          ]
+        },
+        {
           "title": "Bank on the rent's own day counts the rent",
           "call": {
             "actor": "ada",
@@ -28072,7 +28457,7 @@
           ]
         },
         {
-          "title": "Assets too",
+          "title": "Assets holds the capital in both its ledgers",
           "call": {
             "actor": "ada",
             "operation": "account.balance",
@@ -28090,9 +28475,9 @@
             {
               "kind": "expect-equal",
               "value": [
-                "10000000000",
+                "10200000000",
                 "0",
-                "10000000000"
+                "10200000000"
               ]
             }
           ]
@@ -28124,7 +28509,7 @@
           ]
         },
         {
-          "title": "and Capital Stock is untouched",
+          "title": "and Capital Stock keeps the capital the cancel left alone",
           "call": {
             "actor": "ada",
             "operation": "account.balance",
@@ -28143,14 +28528,14 @@
               "kind": "expect-equal",
               "value": [
                 "0",
-                "10000000000",
-                "-10000000000"
+                "10200000000",
+                "-10200000000"
               ]
             }
           ]
         }
       ],
-      "sourceHash": "f2823c477d36aa4a29ae55ecaef14112f14a55144ec5e872a036d53901dd53d5"
+      "sourceHash": "403952906e784714e1f5b8d4301822c201514c818bbfdbe28f9f9e2f90d1baab"
     },
     "journeys/make-a-job-offer.ts": {
       "name": "make a job offer",
@@ -33153,7 +33538,7 @@
           ]
         },
         {
-          "title": "it posted nothing and is still a draft",
+          "title": "it posted nothing",
           "call": {
             "actor": "ada",
             "operation": "gl-entry.list",
@@ -33890,6 +34275,117 @@
           ]
         },
         {
+          "title": "Acme Trading sets up a short year from April 2028 to February 2029, named for neither calendar year",
+          "call": {
+            "actor": "ada",
+            "operation": "fiscal-year.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "year": "FY28",
+              "yearStartDate": "2028-04-01",
+              "yearEndDate": "2029-02-28",
+              "isShortYear": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^fyr_",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "an entry on 1 February 2029, inside it",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2029-02-01",
+              "userRemark": "Rent",
+              "lines": [
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "rent"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "10000000",
+                  "credit": "0"
+                },
+                {
+                  "account": {
+                    "ref": [
+                      "world",
+                      "bank"
+                    ]
+                  },
+                  "costCenter": {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "debit": "0",
+                  "credit": "10000000"
+                }
+              ]
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "journal-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "journalEntry"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "is submitted: a short year counts",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.submit",
+            "payload": {
+              "journalEntry": {
+                "ref": [
+                  "last",
+                  "journalEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2"
+            }
+          ]
+        },
+        {
           "title": "an entry on 2026's first day, three lines with two on Bank",
           "call": {
             "actor": "ada",
@@ -34230,7 +34726,72 @@
           ]
         },
         {
-          "title": "and its cost center is the new one, not Bank's",
+          "title": "Ada cancels it",
+          "call": {
+            "actor": "ada",
+            "operation": "journal-entry.cancel",
+            "payload": {
+              "journalEntry": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "voucherId"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "title": "Rent's line and its reversal are both cancelled, in the same cost center",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "rent"
+                ]
+              },
+              "voucherId": {
+                "ref": [
+                  "last",
+                  "journalEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  "20000000",
+                  "0",
+                  true
+                ],
+                [
+                  "0",
+                  "20000000",
+                  true
+                ]
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": true
+            }
+          ]
+        },
+        {
+          "title": "and that cost center is the new one, not Bank's",
           "call": {
             "actor": "ada",
             "operation": "cost-center.get",
@@ -34239,7 +34800,7 @@
                 "ref": [
                   "last",
                   "items",
-                  "0",
+                  "1",
                   "costCenter"
                 ]
               }
@@ -34347,7 +34908,7 @@
           ]
         },
         {
-          "title": "Bank's balance at 2026's end counts 2026's three entries, and not the cancelled capital or 2027's rent",
+          "title": "Bank's balance at 2026's end counts both, and not the cancelled entries or 2027's rent",
           "call": {
             "actor": "ada",
             "operation": "account.balance",
@@ -34366,8 +34927,8 @@
               "kind": "expect-equal",
               "value": [
                 "0",
-                "170000000",
-                "-170000000"
+                "150000000",
+                "-150000000"
               ]
             }
           ]
@@ -34392,8 +34953,8 @@
               "kind": "expect-equal",
               "value": [
                 "0",
-                "220000000",
-                "-220000000"
+                "200000000",
+                "-200000000"
               ]
             }
           ]
@@ -34417,9 +34978,9 @@
             {
               "kind": "expect-equal",
               "value": [
-                "220000000",
+                "200000000",
                 "0",
-                "220000000"
+                "200000000"
               ]
             }
           ]
@@ -34444,8 +35005,8 @@
               "kind": "expect-equal",
               "value": [
                 "0",
-                "220000000",
-                "-220000000"
+                "200000000",
+                "-200000000"
               ]
             }
           ]
@@ -34477,7 +35038,7 @@
           ]
         }
       ],
-      "sourceHash": "aea8e8520f1479ef6c627569c6fdf853146925b0f31d3d0ec6889289749c7f1a"
+      "sourceHash": "627aa3fa4ea6936cbd76fa39c0a30893944aef07a5c62d774756e3c7ec8721cd"
     },
     "journeys/promote-an-employee.ts": {
       "name": "promote an employee",
@@ -45406,6 +45967,152 @@
           ]
         },
         {
+          "title": "a short year inside 2026, April to June, overlaps it",
+          "call": {
+            "actor": "ada",
+            "operation": "fiscal-year.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "year": "2026 Q2",
+              "yearStartDate": "2026-04-01",
+              "yearEndDate": "2026-06-30",
+              "isShortYear": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FiscalYearOverlaps",
+              "fields": {
+                "fiscalYear": {
+                  "ref": [
+                    "world",
+                    "fiscalYear"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "a short quarter far ahead, January to March 2045, is allowed",
+          "call": {
+            "actor": "ada",
+            "operation": "fiscal-year.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "year": "2045 Q1",
+              "yearStartDate": "2045-01-01",
+              "yearEndDate": "2045-03-31",
+              "isShortYear": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^fyr_",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "a full year from December 2044 that holds that quarter whole overlaps it",
+          "call": {
+            "actor": "ada",
+            "operation": "fiscal-year.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "year": "2044-2045",
+              "yearStartDate": "2044-12-01",
+              "yearEndDate": "2045-11-30",
+              "isShortYear": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FiscalYearOverlaps",
+              "fields": {
+                "fiscalYear": {
+                  "ref": [
+                    "last",
+                    "fiscalYear"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "a short year may run the whole year: it ends no later, so 2050 marked short is allowed",
+          "call": {
+            "actor": "ada",
+            "operation": "fiscal-year.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "year": "2050",
+              "yearStartDate": "2050-01-01",
+              "yearEndDate": "2050-12-31",
+              "isShortYear": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^fyr_",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "a year from 28 February 2035 ends on 27 February 2036, though 2036 has a leap day",
+          "call": {
+            "actor": "ada",
+            "operation": "fiscal-year.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "year": "2035-2036",
+              "yearStartDate": "2035-02-28",
+              "yearEndDate": "2036-02-28",
+              "isShortYear": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "FiscalYearWrongLength",
+              "fields": {
+                "yearEndDate": "2036-02-27"
+              }
+            }
+          ]
+        },
+        {
           "title": "a full year may end on a leap day: 1 March 2031 to 29 February 2032",
           "call": {
             "actor": "ada",
@@ -45647,7 +46354,7 @@
           ]
         }
       ],
-      "sourceHash": "c6102bf50d11f32d956ba60e302bcae6c08fb3fd33b3e858a965f42936f1a7e4"
+      "sourceHash": "48f3caf3cb7cb39264db7499fd0676df76da4ec6ce42f6cdce04a5cde1d5f60c"
     },
     "journeys/set-up-grades.ts": {
       "name": "set up grades",

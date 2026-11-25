@@ -49,10 +49,11 @@ Starts from the world `a capital entry`.
 - **Bo can't read Bank's ledger.** `bo` (signed in) calls and sends account the world's bank, and is refused with NotAllowed, AR-001.
 - **Bank's ledger keeps the debit and adds its reversal, a credit, both marked cancelled.** `ada` (role company.owner) calls and sends account the world's bank, and gets back [[the world's company, the world's bank, the world's costCenter, `2026-01-15`, `10000000000`, `0`, `Journal Entry`, the world's journalEntry, true], [the world's company, the world's bank, the world's costCenter, `2026-01-15`, `0`, `10000000000`, `Journal Entry`, the world's journalEntry, true]].
 - **Capital Stock's the same, the other way.** `ada` (role company.owner) calls and sends account the world's capital, and gets back [[the world's company, the world's capital, the world's costCenter, `2026-01-15`, `0`, `10000000000`, `Journal Entry`, the world's journalEntry, true], [the world's company, the world's capital, the world's costCenter, `2026-01-15`, `10000000000`, `0`, `Journal Entry`, the world's journalEntry, true]].
-- **it posted nothing and is still a draft.** `ada` (role company.owner) calls and sends account the world's rent, voucherId the last call's journalEntry, and gets back 0.
+- **it posted nothing.** `ada` (role company.owner) calls and sends account the world's rent, voucherId the last call's journalEntry, and gets back 0.
 - **Bank holds those two credits, apart.** `ada` (role company.owner) calls and sends account the world's bank, voucherId the last call's journalEntry, and gets back [[`2026-01-01`, `0`, `30000000`, false], [`2026-01-01`, `0`, `40000000`, false]].
 - **Bank's line keeps Operations.** `ada` (role company.owner) calls and sends account the world's bank, voucherId the last call's journalEntry, and gets back [[the world's costCenter, `20000000`]].
 - **Rent holds one line of that entry.** `ada` (role company.owner) calls and sends account the world's rent, voucherId the last call's items 0 voucherId, and gets back [[`20000000`, false]].
+- **Rent's line and its reversal are both cancelled, in the same cost center.** `ada` (role company.owner) calls and sends account the world's rent, voucherId the last call's journalEntry, and gets back [[`20000000`, `0`, true], [`0`, `20000000`, true]] and gets back true.
 
 ## How to call
 

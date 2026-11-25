@@ -59,6 +59,12 @@ Starts from the world `a fiscal year`.
 - **Ada adds Acme Logistics' Assets group.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Assets`, isGroup true, rootType `Asset`, and gets back an answer matching `^acc_`.
 - **and its Bank ledger under it.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Bank`, parentAccount the last call's account, isGroup false, accountType `Bank`, and gets back an answer matching `^acc_`.
 
+### keep the books
+
+Starts from the world `a chart`.
+
+- **Ada adds a second ledger under Assets, beside Bank.** `ada` (role company.owner) calls and sends company the world's company, accountName `Float`, parentAccount the world's assets, isGroup false, and gets back an answer matching `^acc_[0-9a-z]+$`.
+
 ### set up a chart of accounts
 
 Starts from the world `a chart`.

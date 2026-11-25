@@ -45,14 +45,17 @@ Starts from the world `a chart`.
 - **and so does Operating Expenses, between them.** `ada` (role company.owner) calls and sends account the world's operating, onDay `2026-12-31`, and gets back [`1500000000`, `0`, `1500000000`].
 - **Capital Stock is in credit, so its balance is negative.** `ada` (role company.owner) calls and sends account the world's capital, onDay `2026-12-31`, and gets back [`0`, `10000000000`, `-10000000000`].
 - **and Equity above it the same.** `ada` (role company.owner) calls and sends account the world's equity, onDay `2026-12-31`, and gets back [`0`, `10000000000`, `-10000000000`].
+- **Assets now holds both its ledgers, read again after the new one was added.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2026-12-31`, and gets back [`10200000000`, `1500000000`, `8700000000`].
+- **Assets on 14 January, before any entry, holds nothing: the day limit holds below the group too.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2026-01-14`, and gets back [`0`, `0`, `0`].
+- **Expenses on 31 January, before the rent, holds nothing.** `ada` (role company.owner) calls and sends account the world's expenses, onDay `2026-01-31`, and gets back [`0`, `0`, `0`].
 - **Bank on the rent's own day counts the rent.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-02-01`, and gets back [`10000000000`, `1500000000`, `8500000000`].
 - **the day before, it doesn't.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-01-31`, and gets back [`10000000000`, `0`, `10000000000`].
 - **on the capital's own day it counts the capital.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-01-15`, and gets back [`10000000000`, `0`, `10000000000`].
 - **and the day before that, nothing.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-01-14`, and gets back [`0`, `0`, `0`].
 - **Bank's balance is the capital alone again.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`10000000000`, `0`, `10000000000`].
-- **Assets too.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2026-12-31`, and gets back [`10000000000`, `0`, `10000000000`].
+- **Assets holds the capital in both its ledgers.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2026-12-31`, and gets back [`10200000000`, `0`, `10200000000`].
 - **Expenses holds nothing.** `ada` (role company.owner) calls and sends account the world's expenses, onDay `2026-12-31`, and gets back [`0`, `0`, `0`].
-- **and Capital Stock is untouched.** `ada` (role company.owner) calls and sends account the world's capital, onDay `2026-12-31`, and gets back [`0`, `10000000000`, `-10000000000`].
+- **and Capital Stock keeps the capital the cancel left alone.** `ada` (role company.owner) calls and sends account the world's capital, onDay `2026-12-31`, and gets back [`0`, `10200000000`, `-10200000000`].
 
 ### post a journal entry
 
@@ -62,10 +65,10 @@ Starts from the world `a capital entry`.
 - **Bank's balance is the capital.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`10000000000`, `0`, `10000000000`].
 - **Bank's balance is nothing again.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`0`, `0`, `0`].
 - **and Capital Stock's.** `ada` (role company.owner) calls and sends account the world's capital, onDay `2026-12-31`, and gets back [`0`, `0`, `0`].
-- **Bank's balance at 2026's end counts 2026's three entries, and not the cancelled capital or 2027's rent.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`0`, `170000000`, `-170000000`].
-- **at 2027's end it counts 2027's rent too.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2027-12-31`, and gets back [`0`, `220000000`, `-220000000`].
-- **Expenses, two groups above Rent, the same the other way.** `ada` (role company.owner) calls and sends account the world's expenses, onDay `2027-12-31`, and gets back [`220000000`, `0`, `220000000`].
-- **Assets, above Bank, too.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2027-12-31`, and gets back [`0`, `220000000`, `-220000000`].
+- **Bank's balance at 2026's end counts both, and not the cancelled entries or 2027's rent.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`0`, `150000000`, `-150000000`].
+- **at 2027's end it counts 2027's rent too.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2027-12-31`, and gets back [`0`, `200000000`, `-200000000`].
+- **Expenses, two groups above Rent, the same the other way.** `ada` (role company.owner) calls and sends account the world's expenses, onDay `2027-12-31`, and gets back [`200000000`, `0`, `200000000`].
+- **Assets, above Bank, too.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2027-12-31`, and gets back [`0`, `200000000`, `-200000000`].
 - **Equity, whose only lines were cancelled, holds nothing.** `ada` (role company.owner) calls and sends account the world's equity, onDay `2027-12-31`, and gets back [`0`, `0`, `0`].
 
 ## How to call
