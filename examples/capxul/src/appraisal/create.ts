@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/appraisal/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal/create.handler.ts";
+import { Appraisal } from "../../blueprint/things/appraisal/thing.ts";
+import { draftFrom } from "../appraisal-math.ts";
 
 const { AppraisedEmployeeNotInCompany, AppraisedEmployeeHasLeft, AppraisalCycleCompleted, AppraisalTemplateNotInCompany } = Errors.declared;
 
@@ -52,37 +54,54 @@ const { AppraisedEmployeeNotInCompany, AppraisedEmployeeHasLeft, AppraisalCycleC
  *   once it answers, it writes AppraisalCreated: appraisal from the answer, employee and appraisalCycle from the payload;
  *   the call is the span appraisal.create, and its commit appraisal.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ employee, appraisalCycle, appraisalTemplate }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // AppraisedEmployeeNotInCompany: exit 41, AP-001.
-    if (yield* Handlers.blank<boolean>("refuse AppraisedEmployeeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraisedEmployeeNotInCompany was refused"));
+    // Step load: database, span appraisal.create.load. The runtime read the employee, the cycle and the template.
+    const { person, cycle, template } = yield* steps.load(
+      Effect.succeed({ person: refs.employee, cycle: refs.appraisalCycle, template: refs.appraisalTemplate }),
+    );
+    if (!person || !cycle || !template) return yield* Effect.die(new Error(`appraisal ${id}'s records were read and then not found`));
+    const company = cycle["company"] as string;
+
+    // Refusal order (errors.ts). AppraisedEmployeeNotInCompany: exit 41, AP-001.
+    if (person["company"] !== company) {
+      yield* Effect.logInfo("the employee doesn't work for the cycle's company");
       return yield* new AppraisedEmployeeNotInCompany({});
     }
 
-    // AppraisedEmployeeHasLeft: exit 42, AP-002.
-    if (yield* Handlers.blank<boolean>("refuse AppraisedEmployeeHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraisedEmployeeHasLeft was refused"));
+    // AppraisedEmployeeHasLeft: exit 42, AP-002. CX-expense-leavers.
+    if (person.state !== "active") {
+      yield* Effect.logInfo("the employee has left");
       return yield* new AppraisedEmployeeHasLeft({});
     }
 
-    // AppraisalCycleCompleted: exit 43, AP-003.
-    if (yield* Handlers.blank<boolean>("refuse AppraisalCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraisalCycleCompleted was refused"));
+    // AppraisalCycleCompleted: exit 43, AP-003. HRMS's validate_active_appraisal_cycle.
+    if (cycle.state === "completed") {
+      yield* Effect.logInfo("the cycle is completed");
       return yield* new AppraisalCycleCompleted({});
     }
 
     // AppraisalTemplateNotInCompany: exit 44, AP-004.
-    if (yield* Handlers.blank<boolean>("refuse AppraisalTemplateNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraisalTemplateNotInCompany was refused"));
+    if (template["company"] !== company) {
+      yield* Effect.logInfo("the template isn't the cycle's company's");
       return yield* new AppraisalTemplateNotInCompany({});
     }
 
-    // Step insert: database, span appraisal.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span appraisal.create.insert. Lines from the template, the method from the cycle. A
+    // second appraisal for the employee in the cycle is the runtime's refusal (oneAppraisalPerCycle).
+    yield* steps.insert(
+      records.insert(Appraisal, {
+        id,
+        company,
+        employee,
+        appraisalCycle,
+        appraisalTemplate,
+        kraEvaluationMethod: cycle["kraEvaluationMethod"],
+        ...draftFrom(template),
+      } as never),
+    );
 
     // The move create, to draft.
     yield* move();

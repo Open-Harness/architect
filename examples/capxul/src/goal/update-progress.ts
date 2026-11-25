@@ -1,8 +1,12 @@
 // Scaffolded from blueprint/things/goal/verbs/update-progress.ts. Yours from now on.
-import { Effect, Match } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
-import type { Handler, Outcome } from "../../generated/api/src/goal/update-progress.handler.ts";
+import type { Handler } from "../../generated/api/src/goal/update-progress.handler.ts";
+import { Goal } from "../../blueprint/things/goal/thing.ts";
+import { AppraisalCycle } from "../../blueprint/things/appraisal-cycle/thing.ts";
+import { inPercent, statusOf } from "../appraisal-math.ts";
+import { follow } from "../goal-tree.ts";
 
 const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
 
@@ -97,53 +101,49 @@ const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
  *   once it answers, it writes GoalProgressUpdated: goal from the answer;
  *   the call is the span goal.update-progress, and its commit goal.update-progress.commit.
  */
-const updateProgress: Handler = (_payload, { steps, move }) =>
+const updateProgress: Handler = ({ goal, progress }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span goal.update-progress.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // GoalCycleCompleted: exit 41, GO-001.
-    if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
+    // Step load: database, span goal.update-progress.load. The runtime read the goal; its cycle is read here.
+    if (!subject) return yield* Effect.die(new Error(`goal ${goal} was read and then not found`));
+    const employee = subject["employee"] as string;
+    const appraisalCycle = subject["appraisalCycle"] as string;
+    const cycle = yield* steps.load(records.find(AppraisalCycle, appraisalCycle));
+
+    // Refusal order (errors.ts). GoalCycleCompleted: exit 41, GO-001.
+    if (cycle?.state === "completed") {
+      yield* Effect.logInfo("the goal's cycle is completed");
       return yield* new GoalCycleCompleted({});
     }
 
-    // GoalIsGroup: exit 47, GO-007.
-    if (yield* Handlers.blank<boolean>("refuse GoalIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalIsGroup was refused"));
+    // GoalIsGroup: exit 47, GO-007. A group's progress follows its children.
+    if (subject["isGroup"] === true) {
+      yield* Effect.logInfo("the goal is a group, whose progress follows its children");
       return yield* new GoalIsGroup({});
     }
 
     // ProgressOutOfRange: exit 46, GO-006.
-    if (yield* Handlers.blank<boolean>("refuse ProgressOutOfRange when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ProgressOutOfRange was refused"));
+    if (!inPercent(progress)) {
+      yield* Effect.logInfo("the progress isn't between 0 and 100");
       return yield* new ProgressOutOfRange({});
     }
 
-    // Step update: database, in the store goal, appraisal, span goal.update-progress.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
-    // The move updateProgress, from pending or inProgress or completed or archived or closed: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where updateProgress ends: pending or inProgress or completed or archived or closed");
-    yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
-      Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
-      Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), rollUp (to pending or inProgress or completed).
-      Match.when("completed", () => move("completed")),
-      // To archived. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), close (to closed), unarchive (to pending or inProgress or completed).
-      Match.when("archived", () => move("archived")),
-      // To closed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), archive (to archived), reopen (to pending or inProgress or completed).
-      Match.when("closed", () => move("closed")),
-      Match.exhaustive,
+    // Step update: database, in the store goal, appraisal, span goal.update-progress.update. An archived or closed goal
+    // keeps its state (HRMS sets status from progress only on an open goal); otherwise its progress gives it.
+    const state = subject.state === "archived" || subject.state === "closed" ? subject.state : statusOf(progress);
+    const appraisal = yield* steps.update(
+      Effect.gen(function* () {
+        yield* records.update(Goal, goal, { progress } as never);
+        return yield* follow(employee, appraisalCycle, { id: goal, progress, state });
+      }),
     );
+    if (!appraisal) return yield* Effect.die(new Error(`goal ${goal}'s appraisal was read and then not found`));
 
-    return {
-      goal: yield* Handlers.blank("goal, a goal.id"),
-      progress: yield* Handlers.blank("progress, a goal.progress"),
-      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
-    };
+    // The move updateProgress, to the state worked out above.
+    yield* move(state);
+
+    return { goal, progress, appraisal: appraisal as never };
   });
 
 export default updateProgress;

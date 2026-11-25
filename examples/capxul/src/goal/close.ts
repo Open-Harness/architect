@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/goal/verbs/close.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/goal/close.handler.ts";
+import { AppraisalCycle } from "../../blueprint/things/appraisal-cycle/thing.ts";
+import { follow } from "../goal-tree.ts";
 
 const { GoalCycleCompleted, GoalIsGroup } = Errors.declared;
 
@@ -93,32 +95,42 @@ const { GoalCycleCompleted, GoalIsGroup } = Errors.declared;
  *   once it answers, it writes GoalClosed: goal from the answer;
  *   the call is the span goal.close, and its commit goal.close.commit.
  */
-const close: Handler = (_payload, { steps, move }) =>
+const close: Handler = ({ goal }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span goal.close.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // GoalCycleCompleted: exit 41, GO-001.
-    if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
+    // Step load: database, span goal.close.load. The runtime read the goal; its cycle is read here.
+    if (!subject) return yield* Effect.die(new Error(`goal ${goal} was read and then not found`));
+    const employee = subject["employee"] as string;
+    const appraisalCycle = subject["appraisalCycle"] as string;
+    const cycle = yield* steps.load(records.find(AppraisalCycle, appraisalCycle));
+
+    // GoalCycleCompleted: exit 41, GO-001. A completed cycle's goals don't move.
+    if (cycle?.state === "completed") {
+      yield* Effect.logInfo("the goal's cycle is completed");
       return yield* new GoalCycleCompleted({});
     }
 
-    // GoalIsGroup: exit 47, GO-007.
-    if (yield* Handlers.blank<boolean>("refuse GoalIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalIsGroup was refused"));
+    // GoalIsGroup: exit 47, GO-007. A group's status follows its children, through goal.roll-up.
+    if (subject["isGroup"] === true) {
+      yield* Effect.logInfo("the goal is a group, whose status follows its children");
       return yield* new GoalIsGroup({});
     }
 
-    // Step update: database, in the store goal, appraisal, span goal.close.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, in the store goal, appraisal, span goal.close.update. A closed goal still counts, as
+    // HRMS's averages count it; the groups above and the appraisal follow.
+    const progress = subject["progress"] as BigDecimal.BigDecimal;
+    const state = "closed";
+    yield* steps.update(
+      Effect.gen(function* () {
+        yield* follow(employee, appraisalCycle, { id: goal, progress, state });
+      }),
+    );
 
-    // The move close, from pending or inProgress or archived, to closed.
+    // The move close, to closed.
     yield* move();
 
-    return {
-      goal: yield* Handlers.blank("goal, a goal.id"),
-    };
+    return { goal };
   });
 
 export default close;

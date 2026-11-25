@@ -1,8 +1,12 @@
 // Scaffolded from blueprint/things/goal/verbs/complete.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/goal/complete.handler.ts";
+import { Goal } from "../../blueprint/things/goal/thing.ts";
+import { AppraisalCycle } from "../../blueprint/things/appraisal-cycle/thing.ts";
+import { HUNDRED } from "../appraisal-math.ts";
+import { follow } from "../goal-tree.ts";
 
 const { GoalCycleCompleted, GoalIsGroup } = Errors.declared;
 
@@ -93,32 +97,43 @@ const { GoalCycleCompleted, GoalIsGroup } = Errors.declared;
  *   once it answers, it writes GoalCompleted: goal from the answer;
  *   the call is the span goal.complete, and its commit goal.complete.commit.
  */
-const complete: Handler = (_payload, { steps, move }) =>
+const complete: Handler = ({ goal }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span goal.complete.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // GoalCycleCompleted: exit 41, GO-001.
-    if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
+    // Step load: database, span goal.complete.load. The runtime read the goal; its cycle is read here.
+    if (!subject) return yield* Effect.die(new Error(`goal ${goal} was read and then not found`));
+    const employee = subject["employee"] as string;
+    const appraisalCycle = subject["appraisalCycle"] as string;
+    const cycle = yield* steps.load(records.find(AppraisalCycle, appraisalCycle));
+
+    // GoalCycleCompleted: exit 41, GO-001. A completed cycle's goals don't move.
+    if (cycle?.state === "completed") {
+      yield* Effect.logInfo("the goal's cycle is completed");
       return yield* new GoalCycleCompleted({});
     }
 
-    // GoalIsGroup: exit 47, GO-007.
-    if (yield* Handlers.blank<boolean>("refuse GoalIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalIsGroup was refused"));
+    // GoalIsGroup: exit 47, GO-007. A group's status follows its children, through goal.roll-up.
+    if (subject["isGroup"] === true) {
+      yield* Effect.logInfo("the goal is a group, whose status follows its children");
       return yield* new GoalIsGroup({});
     }
 
-    // Step update: database, in the store goal, appraisal, span goal.complete.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, in the store goal, appraisal, span goal.complete.update. Complete sets its progress to
+    // 100; the groups above and the appraisal follow.
+    const progress = HUNDRED;
+    const state = "completed";
+    yield* steps.update(
+      Effect.gen(function* () {
+        yield* records.update(Goal, goal, { progress } as never);
+        yield* follow(employee, appraisalCycle, { id: goal, progress, state });
+      }),
+    );
 
-    // The move complete, from pending or inProgress, to completed.
+    // The move complete, to completed.
     yield* move();
 
-    return {
-      goal: yield* Handlers.blank("goal, a goal.id"),
-    };
+    return { goal };
   });
 
 export default complete;
