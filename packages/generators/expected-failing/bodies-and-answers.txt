@@ -1,9 +1,0 @@
-# #739's gaps 4 and 5 (bodies-and-answers.test.ts), red until the same build. A builder only deletes lines (G11).
-src/modules/adapter/bodies-and-answers.test.ts > 4. a oneOf or anyOf request body takes the fields of its alternatives > refuses before sending an input that fits none, and a field no alternative has
-src/modules/adapter/bodies-and-answers.test.ts > 4. a oneOf or anyOf request body takes the fields of its alternatives > sends an input that fits any one alternative, in the body as given
-src/modules/adapter/bodies-and-answers.test.ts > 5. a lenient client reports an answer it would refuse, and still returns it > lenient refuses inputs and fails failures as before, without calling onMisfit
-src/modules/adapter/bodies-and-answers.test.ts > 5. a lenient client reports an answer it would refuse, and still returns it > lenient without onMisfit still returns the answer
-src/modules/adapter/bodies-and-answers.test.ts > 5. a lenient client reports an answer it would refuse, and still returns it > lenient: each answer comes back whole, a misfit or an undocumented 2xx reported once with every problem, a fitting one not at all
-src/modules/adapter/bodies-and-answers.test.ts > 5. a lenient client reports an answer it would refuse, and still returns it > refuses a misfit and an undocumented 2xx as AnswerRefused with {"answers":"strict"}, never calling onMisfit
-src/modules/adapter/bodies-and-answers.test.ts > 5. a lenient client reports an answer it would refuse, and still returns it > refuses a misfit and an undocumented 2xx as AnswerRefused with {"onMisfit":"set"}, never calling onMisfit
-src/modules/adapter/bodies-and-answers.test.ts > 5. a lenient client reports an answer it would refuse, and still returns it > refuses a misfit and an undocumented 2xx as AnswerRefused with {}, never calling onMisfit
