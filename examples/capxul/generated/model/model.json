@@ -18751,7 +18751,7 @@
           ]
         },
         {
-          "title": "Olga sets a Development goal, Refactor, at 40: it earns 16, and the total is 3.35",
+          "title": "Olga sets a Development goal at 40: it earns 16, and the total is 3.35",
           "call": {
             "actor": "olga",
             "operation": "goal.create",
@@ -19391,7 +19391,7 @@
           ]
         }
       ],
-      "sourceHash": "6ab9661646d7a91dd43e295aca2692bab45acd8676cc35b00b3f5793a48ca4f6"
+      "sourceHash": "98102f20e2b9557417c9324ea948d36e76a47b04ef754d6a2c55835b39f85bc1"
     },
     "journeys/approve-an-attendance-request.ts": {
       "name": "approve an attendance request",
@@ -33290,7 +33290,7 @@
           ]
         }
       ],
-      "sourceHash": "da55de873807423a6fc734a134bb33324d015fd7cc11dd8e3ad5367574cfb8a5"
+      "sourceHash": "d2a1acc406fa3040df94892f39a49f3fd85ebf336dc55bd7068cd4d0cae24513"
     },
     "journeys/grade-names-are-the-companys.ts": {
       "name": "grade names are the company's",
@@ -43742,7 +43742,7 @@
           ]
         }
       ],
-      "sourceHash": "cb3a2956cb3f7dfe2fe0f859cd4790304ef36c2d1ea8d06e4d889a70341a8cb3"
+      "sourceHash": "a4b63d26088a73524d8378e6c058be09bac6dbad505fe30ca951ba809420b4a5"
     },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
@@ -47755,6 +47755,31 @@
           ]
         },
         {
+          "title": "Olga can't list the whole cycle's",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "it still can't complete while Cy's is a draft",
           "call": {
             "actor": "ada",
@@ -48856,8 +48881,8 @@
                 ]
               },
               "cycleName": "Mixed 2027",
-              "startDate": "2027-04-01",
-              "endDate": "2027-06-30",
+              "startDate": "2027-10-01",
+              "endDate": "2027-12-31",
               "kraEvaluationMethod": "Manual Rating",
               "appraisees": [
                 {
@@ -48995,7 +49020,7 @@
           ]
         },
         {
-          "title": "Ada sets up a spring cycle for Olga",
+          "title": "Ada sets up a summer cycle for Olga",
           "call": {
             "actor": "ada",
             "operation": "appraisal-cycle.create",
@@ -49006,9 +49031,9 @@
                   "company"
                 ]
               },
-              "cycleName": "Spring 2027",
-              "startDate": "2027-03-01",
-              "endDate": "2027-05-31",
+              "cycleName": "Summer 2027",
+              "startDate": "2027-07-01",
+              "endDate": "2027-09-30",
               "kraEvaluationMethod": "Manual Rating",
               "appraisees": [
                 {
@@ -49100,7 +49125,7 @@
           ]
         },
         {
-          "title": "starting the spring cycle makes nothing, since Olga has hers, and it is in progress",
+          "title": "starting the summer cycle makes nothing, since Olga has hers, and it is in progress",
           "call": {
             "actor": "ada",
             "operation": "appraisal-cycle.start",
@@ -49132,7 +49157,7 @@
           ]
         }
       ],
-      "sourceHash": "16cd2fbd007c9fb072fb2970fbe81ebcfe90b6ad9594a7af2cecbdf0ecd261b2"
+      "sourceHash": "919567fef614b853e4f34897bd27485feb04452bf144bb0a02c1341901b52429"
     },
     "journeys/schedule-an-interview.ts": {
       "name": "schedule an interview",
@@ -56725,6 +56750,9 @@
           "kind": "role",
           "role": "company.owner"
         },
+        "olga": {
+          "kind": "signed-in"
+        },
         "bo": {
           "kind": "signed-in"
         }
@@ -56854,6 +56882,181 @@
                 "ref": [
                   "last",
                   "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Olga, who works at Acme Trading",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal-template.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "appraisalTemplate"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga can't make a template",
+          "call": {
+            "actor": "olga",
+            "operation": "appraisal-template.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Olga's",
+              "kras": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "100",
+                    "scale": 0
+                  }
+                }
+              ],
+              "criteria": []
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "appraisal-template.create.insert"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nor add a KRA",
+          "call": {
+            "actor": "olga",
+            "operation": "kra.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Speed"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor read one",
+          "call": {
+            "actor": "olga",
+            "operation": "kra.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor add a criteria",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-feedback-criteria.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "criteria": "Speed"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor read one",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-feedback-criteria.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "criteria"
                 ]
               }
             }
@@ -58283,7 +58486,7 @@
           ]
         }
       ],
-      "sourceHash": "3a23b0ac56adf63b93bb680e5e80150996dfa30e369a9c156147835c069abf24"
+      "sourceHash": "201bc1bd76e09a7b64d73886f8beb1d22cdb135b605194ff391f6a93983d2141"
     },
     "journeys/set-up-branches.ts": {
       "name": "set up branches",

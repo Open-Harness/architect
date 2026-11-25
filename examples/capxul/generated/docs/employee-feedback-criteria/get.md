@@ -31,6 +31,12 @@ Read one employee-feedback-criteria by its id: company, criteria, state.
 
 ## Worked examples
 
+### set up appraisal templates
+
+Starts from the world `an outside criteria`.
+
+- **nor read one.** `olga` (signed in) calls and sends id the world's criteria, and is refused with NotAllowed, AR-001.
+
 ### set up kras and criteria
 
 Starts from the world `three companies`.

@@ -5,8 +5,9 @@
 // One appraisal from end to end, scored from goals: a template, a cycle, its start, goals and their progress, feedback, a
 // self rating, submitting, completing and reading back. Under Automated Based on Goal Progress a KRA's score is the
 // average progress of its top-level goals, a group goal's progress is its children's average, a line earns score ×
-// weightage ÷ 100, and the total is their sum ÷ 20 (HRMS's `calculate_total_score`). Ratings give rating × 5 × weightage
-// ÷ 100, summed; the final score is the average of the total, self and feedback scores, each rounded to two places, half up.
+// weightage ÷ 100, rounded, and the total is those rounded lines summed ÷ 20 (HRMS's `calculate_total_score`). Ratings
+// give rating × 5 × weightage ÷ 100, summed then rounded; the final score is the average of the total, self and feedback
+// scores. Each stored score has two places, rounded half up.
 import { BigDecimal } from "effect";
 import { Blueprint, emits, expect, noEvents, refuses } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
@@ -133,7 +134,7 @@ export default Blueprint.journey("appraise a year", {
         noEvents(),
       ),
       s.step(
-        "Olga sets a Development goal, Refactor, at 40: it earns 16, and the total is 3.35",
+        "Olga sets a Development goal at 40: it earns 16, and the total is 3.35",
         s.olga.run(createGoal, { employee: s.world.employee, appraisalCycle: s.last.appraisalCycle, kra: dev, goalName: "Refactoring", progress: d("40"), isGroup: false } as never),
         goals.isIn(s.last.goal, "inProgress"),
       ),

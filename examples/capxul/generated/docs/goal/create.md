@@ -65,7 +65,7 @@ Starts from the world `a second feedback criteria`.
 - **Olga sets herself a group goal under Quality, Ship v2.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's kra, goalName `Ship v2`, progress { value: `0`, scale: 0 }, isGroup true, and gets back an answer matching `^gol_[0-9a-z]+$`.
 - **and under it the API, done: Ship v2 follows it to 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's kra, goalName `API`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.
 - **she adds the UI under Ship v2, half done.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's items 0 appraisalCycle, kra the world's kra, goalName `UI`, progress { value: `50`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is answered.
-- **Olga sets a Development goal, Refactor, at 40: it earns 16, and the total is 3.35.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's otherKra, goalName `Refactoring`, progress { value: `40`, scale: 0 }, isGroup false, and is answered.
+- **Olga sets a Development goal at 40: it earns 16, and the total is 3.35.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's otherKra, goalName `Refactoring`, progress { value: `40`, scale: 0 }, isGroup false, and is answered.
 
 ### run an appraisal cycle
 

@@ -20,6 +20,10 @@ import {
 import { machine as templates } from "../blueprint/things/appraisal-template/machine.ts";
 import create from "../blueprint/things/appraisal-template/verbs/create.ts";
 import get from "../blueprint/things/appraisal-template/verbs/get.ts";
+import createKra from "../blueprint/things/kra/verbs/create.ts";
+import getKra from "../blueprint/things/kra/verbs/get.ts";
+import createCriteria from "../blueprint/things/employee-feedback-criteria/verbs/create.ts";
+import getCriteria from "../blueprint/things/employee-feedback-criteria/verbs/get.ts";
 
 const d = BigDecimal.fromStringUnsafe;
 /** A decimal as plain text with no trailing zeros, so 30 and 30.00 read the same. */
@@ -31,8 +35,9 @@ const lines = (a: { kras: ReadonlyArray<{ kra: string; weightage: BigDecimal.Big
 
 export default Blueprint.journey("set up appraisal templates", {
   // Ada runs Acme Trading, with the KRAs Quality and Development and the criteria Problem Solving and Excellence, and
-  // Acme Logistics, with the KRA Safety and the criteria Punctuality. Bo drives for Acme Logistics.
-  cast: { ada: owner, bo: Blueprint.signedIn },
+  // Acme Logistics, with the KRA Safety and the criteria Punctuality. Olga works at Acme Trading; Bo drives for Acme
+  // Logistics.
+  cast: { ada: owner, olga: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "an outside criteria",
   steps: (s) => [
     s.step(
@@ -49,6 +54,18 @@ export default Blueprint.journey("set up appraisal templates", {
       spans({ present: ["appraisal-template.create", "appraisal-template.create.load", "appraisal-template.create.insert"] }),
     ),
     s.step("Bo can't read it", s.bo.run(get, { id: s.last.appraisalTemplate }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor can Olga, who works at Acme Trading", s.olga.run(get, { id: s.last.appraisalTemplate }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step(
+      "Olga can't make a template",
+      s.olga.run(create, { company: s.world.company, title: "Olga's", kras: [{ kra: s.world.kra, weightage: d("100") }], criteria: [] }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+      spans({ absent: ["appraisal-template.create.insert"] }),
+    ),
+    s.step("nor add a KRA", s.olga.run(createKra, { company: s.world.company, title: "Speed" }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor read one", s.olga.run(getKra, { id: s.world.kra }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor add a criteria", s.olga.run(createCriteria, { company: s.world.company, criteria: "Speed" }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor read one", s.olga.run(getCriteria, { id: s.world.criteria }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
       "it reads back with each line in the order given",
       s.ada.run(get, { id: s.last.appraisalTemplate }),

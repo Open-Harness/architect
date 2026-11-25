@@ -3,7 +3,8 @@
 // A cycle moves notStarted → inProgress → completed, and back to inProgress (HRMS's "Mark as In Progress"). Refusal order
 // on create (appraisal-cycle/errors.ts): CycleEndsBeforeStart, AppraiseeNotInCompany, AppraiseeHasLeft,
 // AppraiseeTemplateNotInCompany, AppraiseeListedTwice; CycleNameTaken at commit. Start makes one appraisal per appraisee
-// who has none and is still at work, in the order listed (HRMS's `create_appraisals_for_cycle`).
+// who has none and is still at work, in the order listed. HRMS's `create_appraisals_for_cycle` skips an existing
+// appraisal; skipping a leaver is Capxul's own, under CX-expense-leavers (`decisions/CX-appraisals.md`).
 import { BigDecimal } from "effect";
 import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
@@ -225,6 +226,7 @@ export default Blueprint.journey("run an appraisal cycle", {
       ),
       s.step("Bo can't list the cycle's", s.bo.run(listAppraisals, { appraisalCycle: s.world.appraisalCycle }), refuses(Blueprint.NotAllowed), noEvents()),
       s.step("nor Olga's", s.bo.run(listAppraisals, { employee: s.world.employee }), refuses(Blueprint.NotAllowed), noEvents()),
+      s.step("Olga can't list the whole cycle's", s.olga.run(listAppraisals, { appraisalCycle: s.world.appraisalCycle }), refuses(Blueprint.NotAllowed), noEvents()),
       s.step(
         "it still can't complete while Cy's is a draft",
         s.ada.run(complete, { appraisalCycle: s.world.appraisalCycle }),
@@ -349,7 +351,7 @@ export default Blueprint.journey("run an appraisal cycle", {
       ),
       s.step(
         "and a cycle appraising Olga by Engineers and Cy by the one-KRA template",
-        s.ada.run(create, cycle("Mixed 2027", "2027-04-01", "2027-06-30", [olga, { employee: s.world.secondEmployee, appraisalTemplate: s.last.appraisalTemplate }])),
+        s.ada.run(create, cycle("Mixed 2027", "2027-10-01", "2027-12-31", [olga, { employee: s.world.secondEmployee, appraisalTemplate: s.last.appraisalTemplate }])),
         expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/),
       ),
       s.step("she starts it: two appraisals", s.ada.run(start, { appraisalCycle: s.last.appraisalCycle }), expect((a) => a.appraisals.length).toBe(2)),
@@ -364,7 +366,7 @@ export default Blueprint.journey("run an appraisal cycle", {
       ),
 
       // ── A start that makes nothing still starts
-      s.step("Ada sets up a spring cycle for Olga", s.ada.run(create, cycle("Spring 2027", "2027-03-01", "2027-05-31", [olga])), expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/)),
+      s.step("Ada sets up a summer cycle for Olga", s.ada.run(create, cycle("Summer 2027", "2027-07-01", "2027-09-30", [olga])), expect((a) => a.appraisalCycle).toMatch(/^apc_[0-9a-z]+$/)),
       s.step(
         "and makes Olga's appraisal in it by hand",
         s.ada.run(createAppraisal, { employee: s.world.employee, appraisalCycle: s.last.appraisalCycle, appraisalTemplate: s.world.appraisalTemplate }),
@@ -372,7 +374,7 @@ export default Blueprint.journey("run an appraisal cycle", {
       ),
       s.step("it reads back as Olga's", s.ada.run(getAppraisal, { id: s.last.appraisal }), expect((a) => a.employee).toBe(s.world.employee), noEvents()),
       s.step(
-        "starting the spring cycle makes nothing, since Olga has hers, and it is in progress",
+        "starting the summer cycle makes nothing, since Olga has hers, and it is in progress",
         s.ada.run(start, { appraisalCycle: s.last.appraisalCycle }),
         expect((a) => a.appraisals.length).toBe(0),
         cycles.isIn(s.last.appraisalCycle, "inProgress"),

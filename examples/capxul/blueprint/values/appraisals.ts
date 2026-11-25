@@ -1,8 +1,9 @@
 import { Blueprint } from "orthograph";
 
-// Appraisals' numbers (`decisions/CX-appraisals.md`). Every one is an exact decimal with two places, as leave's are.
-// A score worked out from others is rounded to two places half up, Frappe's default (`Banker's Rounding (legacy)`,
-// which rounds a half up at any precision above 0), at each step HRMS rounds.
+// Appraisals' numbers (`decisions/CX-appraisals.md`). Every one is an exact decimal with two places, as leave's are:
+// Capxul's choice, where HRMS stores most scores at the site's float precision (3 by default). A score worked out from
+// others is rounded to two places half up, as Frappe's default rounding (`Banker's Rounding (legacy)`) rounds a half up,
+// where HRMS rounds and where the stored field has two places.
 
 /** A line's share of a template, in percent (HRMS's `per_weightage`). Capxul takes it more than 0 and at most 100. */
 export const Weightage = Blueprint.value(Blueprint.decimal({ places: 2 }));

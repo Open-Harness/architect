@@ -38,6 +38,7 @@ Read one appraisal-template by its id: company, title, kras, criteria, state.
 Starts from the world `an outside criteria`.
 
 - **Bo can't read it.** `bo` (signed in) calls and sends id the last call's appraisalTemplate, and is refused with NotAllowed, AR-001.
+- **nor can Olga, who works at Acme Trading.** `olga` (signed in) calls and sends id the last call's appraisalTemplate, and is refused with NotAllowed, AR-001.
 - **it reads back with each line in the order given.** `ada` (role company.owner) calls and sends id the last call's appraisalTemplate, and gets back [the world's company, `Engineers`, `active`, [[the world's kra, `30`], [the world's otherKra, `70`]], [[the world's criteria, `70`], [the world's otherCriteria, `30`]]].
 - **it reads back with its hundredths and no criteria.** `ada` (role company.owner) calls and sends id the last call's appraisalTemplate, and gets back [`Thirds`, [[the world's kra, `33.33`], [the world's otherKra, `66.67`]], []].
 - **it reads back as typed.** `ada` (role company.owner) calls and sends id the last call's appraisalTemplate, and gets back [`Quality only`, [[the world's kra, `100`]], [[the world's criteria, `10.1`], [the world's otherCriteria, `89.9`]]].

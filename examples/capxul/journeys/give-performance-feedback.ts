@@ -2,7 +2,7 @@
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone.
 // A feedback's total is rating × 5 × weightage ÷ 100 summed over the template's criteria (HRMS's `set_total_score`). Its
 // appraisal's average feedback score is the average of the submitted feedbacks' totals, and the final score is the
-// average of the total, self and feedback scores, each rounded to two places, half up. A draft counts for nothing.
+// average of the total, self and feedback scores. Each stored score has two places, rounded half up. A draft counts for nothing.
 // HRMS refuses feedback only against a completed cycle, so a cycle not yet started takes it, and a reviewer may give any
 // number of feedbacks on one appraisal (`decisions/CX-appraisals.md`).
 // Refusal order (employee-performance-feedback/errors.ts): create FeedbackCycleCompleted, FeedbackForOneself,
@@ -50,8 +50,8 @@ const scores = (a: Scores) => [n(a.totalScore), n(a.selfScore), n(a.avgFeedbackS
 export default Blueprint.journey("give performance feedback", {
   // H2 2026 has started, scored from goals: Olga's and Cy's appraisals are drafts by Engineers (Problem Solving 70,
   // Excellence 30), every score 0. Cy has drafted feedback on Olga's (0.8 and 0.7), Dee on Cy's (0.5 and 0.5). H1 2027
-  // is rated by hand and has started, and Cy has drafted feedback on Olga's there too (0.4 and 0.9). Q1 2027 hasn't
-  // started. Bo drives for Acme Logistics.
+  // is rated by hand and has started, and Cy has drafted feedback on Olga's there too (0.4 and 0.9). The journey makes
+  // Q3 2027 and doesn't start it. Bo drives for Acme Logistics.
   cast: { ada: owner, olga: Blueprint.signedIn, cy: Blueprint.signedIn, dee: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "a manual cycle draft",
   steps: (s) => {

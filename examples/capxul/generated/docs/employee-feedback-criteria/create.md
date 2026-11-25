@@ -40,6 +40,12 @@ Add something a company rates its people on.
 
 ## Worked examples
 
+### set up appraisal templates
+
+Starts from the world `an outside criteria`.
+
+- **nor add a criteria.** `olga` (signed in) calls and sends company the world's company, criteria `Speed`, and is refused with NotAllowed, AR-001.
+
 ### set up kras and criteria
 
 Starts from the world `three companies`.

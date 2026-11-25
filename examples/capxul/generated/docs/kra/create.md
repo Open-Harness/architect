@@ -46,6 +46,12 @@ Starts from the world `a started manual cycle`.
 
 - **Ada adds a third KRA to Acme Trading.** `ada` (role company.owner) calls and sends company the world's company, title `Mentoring`, and gets back an answer matching `^kra_[0-9a-z]+$`.
 
+### set up appraisal templates
+
+Starts from the world `an outside criteria`.
+
+- **nor add a KRA.** `olga` (signed in) calls and sends company the world's company, title `Speed`, and is refused with NotAllowed, AR-001.
+
 ### set up kras and criteria
 
 Starts from the world `three companies`.

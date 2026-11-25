@@ -63,7 +63,7 @@ Starts from the world `a three-person cycle`.
 - **nor start again.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and is refused with AppraisalCycleNotNotStarted, CY-900, carrying state `completed`.
 - **Ada starts Q1 2027: Olga has one already and Dee has left, so it makes Cy's alone.** `ada` (role company.owner) calls and sends appraisalCycle the world's threePersonCycle, and gets back 1.
 - **she starts it: two appraisals.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and gets back 2.
-- **starting the spring cycle makes nothing, since Olga has hers, and it is in progress.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and gets back 0.
+- **starting the summer cycle makes nothing, since Olga has hers, and it is in progress.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and gets back 0.
 
 ## How to call
 

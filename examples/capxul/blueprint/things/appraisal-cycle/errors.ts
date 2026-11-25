@@ -16,7 +16,7 @@ export class AppraiseeHasLeft extends Blueprint.error({}, { exit: 43 }) {}
 export class AppraiseeTemplateNotInCompany extends Blueprint.error({}, { exit: 44 }) {}
 /** Capxul's own rule: an employee is listed once. HRMS would make their appraisal once and skip the repeat. */
 export class AppraiseeListedTwice extends Blueprint.error({}, { exit: 45 }) {}
-/** HRMS's `create_appraisals`: "Please select employees to create appraisals for". */
+/** HRMS's Create Appraisals: "Please select employees to create appraisals for". Capxul's start refuses it, where HRMS's Start alone doesn't. */
 export class CycleWithoutAppraisees extends Blueprint.error({}, { exit: 46 }) {}
 /** HRMS's `complete_cycle`: a cycle completes only once every appraisal in it is submitted. It carries how many are drafts. */
 export class AppraisalsNotSubmitted extends Blueprint.error({ drafts: RecordCount }, { exit: 47 }) {}

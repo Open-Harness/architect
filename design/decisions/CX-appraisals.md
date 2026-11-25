@@ -41,14 +41,19 @@ each journey has one such caller per move.
 - Manual Rating: a KRA line earns score × weightage ÷ 100, stored rounded; the total sums the unrounded earned scores
   and rounds once (out of 5), as HRMS's loop does (`total += flt(entry.score_earned)` with no precision). So 4.25 × 30%
   and 3.15 × 70% read back as lines of 1.28 and 2.21 but total 3.48, not 3.49.
-- Automated Based on Goal Progress: a KRA's score is the average progress of its top-level goals that aren't archived;
-  a line earns score × weightage ÷ 100; the total is their sum ÷ 20.
+- Automated Based on Goal Progress: a KRA's score is the average progress of its top-level goals that aren't archived,
+  rounded; a line earns score × weightage ÷ 100, rounded (HRMS's `goal_completion` and `goal_score` have precision 2);
+  the total is those rounded lines summed ÷ 20.
 - A group goal's progress is the average of its children that aren't archived, and its status follows unless it is
   archived or closed; this climbs to the root.
 - Self and feedback scores are Σ rating × 5 × weightage ÷ 100, summed unrounded and rounded once (0.33 and 0.33 give
   1.155 + 0.495 = 1.65). The average feedback score covers submitted feedback
   only. The final score is (total + self + average feedback) ÷ 3.
-- Each score is rounded to two places, half up (Frappe's `flt` at precision 2).
+- Every stored score has two places, rounded half up, as Frappe's default `Banker's Rounding (legacy)` rounds a half
+  up. **This is Capxul's choice, from the brief, not HRMS's:** HRMS gives only `goal_completion` and `goal_score` two
+  places; `total_score`, `self_score`, `avg_feedback_score`, `final_score`, `score_earned` and a goal's `progress` take
+  the site's float precision, 3 by default (`test_appraisal.py` asserts a total of 1.938). Nor does HRMS store
+  `score_earned` rounded; Capxul's line reads back at two places.
 
 The journeys pin the arithmetic with hand-worked numbers, including half-up cases (1.275 → 1.28, 3.025 → 3.03) and
 the rounding points above.
@@ -67,19 +72,32 @@ because progress feeds the appraisal's scores. `employee-performance-feedback.su
 - **A reviewer may give any number of feedbacks on one appraisal.** HRMS has no limit.
 - **A completed cycle can be reopened** (`reopen`, back to `inProgress`): HRMS's form allows it. A completed cycle
   takes no new appraisal, goal, goal move or feedback.
-- **Start skips appraisals that already exist** and employees who have left since the cycle was set up
-  (`create_appraisals`), rather than refusing.
+- **Start makes the appraisals.** In HRMS, Start only sets the status (`appraisal_cycle.js`), and Create Appraisals is
+  a separate button that may be pressed again while the cycle isn't completed; its check, "Please select employees to
+  create appraisals for", becomes start's `CycleWithoutAppraisees`. HRMS starts an empty cycle; Capxul doesn't. An
+  appraisal for an employee added later is made by hand (`appraisal.create`).
+- **Start skips appraisals that already exist**, as `create_appraisals_for_cycle` skips a `DuplicateEntryError`. **It
+  also skips employees who have left**, Capxul's own call under CX-expense-leavers: HRMS's `validate_active_employee`
+  refuses only Inactive employees (and its error aborts the whole run), so a Left employee would get an appraisal.
 - **An employee may create and move their own goals.** HRMS gives the Employee role create and write on Goal.
 - **Submit has no condition on the cycle.** HRMS's completed-cycle check runs on every save, but a cycle completes only
   when none of its appraisals is a draft, so a draft's cycle is never completed.
 - **Goals have `archived` and `closed`, and group goals**, as HRMS does. A group's progress isn't typed; it follows its
   children.
 - **Cycles are the owner's alone.** HRMS gives the Employee role read on Appraisal Cycle.
+- **Feedback is the reviewer's and the owner's.** HRMS shows the appraised employee their feedback history, and lets
+  the HR Manager submit anyone's feedback; Capxul does neither. HRMS also refuses feedback on an Inactive employee's
+  appraisal; Capxul's employees can't be Inactive, and feedback on a leaver's open appraisal is allowed.
+- **A group goal is never archived, closed or completed by hand.** HRMS's list view refuses these on a group, though its
+  form offers Archive and Close; Capxul follows the list (`GoalIsGroup`).
 - **A goal always belongs to a cycle.** HRMS's cycle field is optional.
 - **Left out:** HRMS's check for an appraisal with an overlapping period, its custom final-score formula option, and
   site-wide templates (Capxul's are per company).
 - **Capxul's own bounds:** each weightage is above 0 and at most 100, a line appears once in a template, a rating by
   hand or a self or feedback rating names each line exactly once, and scores, ratings and progress below 0 are refused.
+- **A goal's KRA is one of the appraisal's KRA lines, under either method** (`GoalKraNotInAppraisal`). HRMS's form
+  offers KRAs from Appraisal KRA (`get_kras_for_employee`), which is empty under Manual Rating, so HRMS offers none
+  there; Capxul allows a goal under a manual appraisal's KRA, and it scores nothing.
 
 ## Leavers (CX-expense-leavers, with Interview Feedback as the precedent)
 

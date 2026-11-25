@@ -37,6 +37,12 @@ Starts from the world `a second feedback criteria`.
 
 - **Quality is Acme Trading's KRA.** `ada` (role company.owner) calls and sends id the world's kra, and gets back [the world's company, `Quality`].
 
+### set up appraisal templates
+
+Starts from the world `an outside criteria`.
+
+- **nor read one.** `olga` (signed in) calls and sends id the world's kra, and is refused with NotAllowed, AR-001.
+
 ### set up kras and criteria
 
 Starts from the world `three companies`.

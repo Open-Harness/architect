@@ -80,7 +80,7 @@ record types are listed in `../doctypes.md`.
   2026-12-01. It adds `employeeSeparation`.
 - `a kra`, from `a new hire`, then `a second kra`, `a feedback criteria`, `a second feedback criteria`, `an outside kra`,
   `an outside criteria`, each from the one before: Ada adds the KRAs Quality and Development and the criteria Problem
-  Solving and Excellence to Acme Trading, and Bo adds a KRA and a criteria to Acme Logistics. They add `kra`,
+  Solving and Excellence to Acme Trading, and a KRA and a criteria to Acme Logistics, her other company. They add `kra`,
   `otherKra`, `criteria`, `otherCriteria`, `outsideKra` and `outsideCriteria`.
 - `an appraisal template`, from `an outside criteria`: Engineers, Quality 30 and Development 70, rated on Problem
   Solving 70 and Excellence 30. It adds `appraisalTemplate`.
@@ -94,7 +94,7 @@ record types are listed in `../doctypes.md`.
   It adds `secondGoal`.
 - `a manual cycle` and `a started manual cycle`, from `a colleague's goal`: H1 2027, rated by hand, started. They add
   `manualCycle`, `manualAppraisal` (Olga's) and `secondManualAppraisal` (Cy's).
-- `an outside template`, from `a started manual cycle`: Bo's Drivers. It adds `outsideTemplate`.
+- `an outside template`, from `a started manual cycle`: Ada's Drivers, in Acme Logistics. It adds `outsideTemplate`.
 - `a newcomer's draft`, from `an outside template`: Dee's draft on Cy's H2 2026 appraisal, 0.5 and 0.5. It adds
   `deeDraft`. `a manual cycle draft`, from it: Cy's draft on Olga's H1 2027 appraisal, 0.4 and 0.9. It adds
   `manualDraft`.

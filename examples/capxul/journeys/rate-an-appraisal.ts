@@ -1,9 +1,10 @@
 // Journey-author file. The builder never edits it (AGENTS.md, "Journeys and checks come first").
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone.
 // Under Manual Rating the owner scores each KRA from 0 to 5: a line earns score × weightage ÷ 100 and the total is their
-// sum (HRMS's `calculate_total_score`). The employee rates themselves 0 to 1 against each criteria: the self score is
-// rating × 5 × weightage ÷ 100, summed. The final score is the average of the total, self and feedback scores. Every
-// score is rounded to two places, half up. The numbers are HRMS's own tests' (`test_appraisal.py`).
+// unrounded sum (HRMS's `calculate_total_score`). The employee rates themselves 0 to 1 against each criteria: the self
+// score is rating × 5 × weightage ÷ 100, summed. The final score is the average of the total, self and feedback scores.
+// Each stored score has two places, rounded half up. 5 and 3, and 0.8 and 0.7, are HRMS's own tests' ratings
+// (`test_appraisal.py`); the rest are worked here by hand.
 // Refusal order: create (appraisal/errors.ts) AppraisedEmployeeNotInCompany, AppraisedEmployeeHasLeft,
 // AppraisalCycleCompleted, AppraisalTemplateNotInCompany, then AppraisalAlreadyExists at commit; rate NotRatedManually,
 // ScoresDontMatchKras, KraScoreOutOfRange; self-rate SelfRatingsDontMatchCriteria, SelfRatingOutOfRange.
