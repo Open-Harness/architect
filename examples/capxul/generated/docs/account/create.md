@@ -16,7 +16,7 @@ Add an account to a company's chart, under a group or as a root.
 | company | account.company |  |
 | accountName | account.accountName |  |
 | parentAccount (optional) | account.parentAccount |  |
-| isGroup | schema | Make it a group, which other accounts sit under, rather than a ledger, which takes entries. |
+| isGroup | YesNo | Make it a group, which other accounts sit under, rather than a ledger, which takes entries. |
 | rootType (optional) | account.rootType |  |
 | accountType (optional) | account.accountType |  |
 

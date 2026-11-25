@@ -18,7 +18,7 @@ Lives in the database.
 | credit | Amount |  |
 | voucherType | VoucherType |  |
 | voucherId | VoucherId |  |
-| isCancelled | schema | Set on a line its voucher's cancel reversed, and on the reversing line itself: neither counts in a balance. |
+| isCancelled | YesNo | Set on a line its voucher's cancel reversed, and on the reversing line itself: neither counts in a balance. |
 
 ## Operations
 

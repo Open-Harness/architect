@@ -128,6 +128,16 @@ import { declaration as journalEntrySubmit } from "../../api/src/journal-entry/s
 import { declaration as journalEntryAccountList } from "../../api/src/journal-entry-account/list.ts";
 import { declaration as kraCreate } from "../../api/src/kra/create.ts";
 import { declaration as kraGet } from "../../api/src/kra/get.ts";
+import { declaration as leaveAllocationCreate } from "../../api/src/leave-allocation/create.ts";
+import { declaration as leaveAllocationGet } from "../../api/src/leave-allocation/get.ts";
+import { declaration as leaveAllocationSubmit } from "../../api/src/leave-allocation/submit.ts";
+import { declaration as leaveApplicationApprove } from "../../api/src/leave-application/approve.ts";
+import { declaration as leaveApplicationCancel } from "../../api/src/leave-application/cancel.ts";
+import { declaration as leaveApplicationCreate } from "../../api/src/leave-application/create.ts";
+import { declaration as leaveApplicationGet } from "../../api/src/leave-application/get.ts";
+import { declaration as leaveApplicationReject } from "../../api/src/leave-application/reject.ts";
+import { declaration as leaveTypeCreate } from "../../api/src/leave-type/create.ts";
+import { declaration as leaveTypeGet } from "../../api/src/leave-type/get.ts";
 import { declaration as shiftTypeCreate } from "../../api/src/shift-type/create.ts";
 import { declaration as shiftTypeGet } from "../../api/src/shift-type/get.ts";
 
@@ -261,6 +271,16 @@ export const catalog = {
   "journal-entry-account.list": { description: "List journal-entry-accounts, oldest first, 50 to a page, filtered by journalEntry.", operation: journalEntryAccountList },
   "kra.create": { description: "Add a key result area to a company. Refuses KraTitleTaken when another kra holds this company and title.", operation: kraCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"KraCreated"} },
   "kra.get": { description: "Read one kra by its id: company, title, state.", operation: kraGet, states: ["active"] },
+  "leave-allocation.create": { description: "Give an employee leave days of one type, between two days, as a draft.", operation: leaveAllocationCreate, states: ["draft","submitted"], move: {"key":"create","from":[],"to":["draft"],"emits":"LeaveAllocationCreated"} },
+  "leave-allocation.get": { description: "Read one leave-allocation by its id: company, employee, leaveType, fromDate, toDate, newLeavesAllocated, state.", operation: leaveAllocationGet, states: ["draft","submitted"] },
+  "leave-allocation.submit": { description: "Submit an allocation, so its leave days can be taken.", operation: leaveAllocationSubmit, states: ["draft","submitted"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"LeaveAllocationSubmitted"} },
+  "leave-application.approve": { description: "Approve a leave, marking each of its days On Leave. Refuses AttendanceAlreadyMarked when another attendance holds this employee and attendance date.", operation: leaveApplicationApprove, states: ["open","approved","rejected","cancelled"], move: {"key":"approve","from":["open"],"to":["approved"],"emits":"LeaveApplicationApproved"} },
+  "leave-application.cancel": { description: "Cancel a leave, open or approved.", operation: leaveApplicationCancel, states: ["open","approved","rejected","cancelled"], move: {"key":"cancel","from":["open","approved"],"to":["cancelled"],"emits":"LeaveApplicationCancelled"} },
+  "leave-application.create": { description: "Ask for leave of one type, from one day to another, and why.", operation: leaveApplicationCreate, states: ["open","approved","rejected","cancelled"], move: {"key":"create","from":[],"to":["open"],"emits":"LeaveApplied"} },
+  "leave-application.get": { description: "Read one leave-application by its id: company, employee, leaveType, fromDate, toDate, reason, totalLeaveDays, state.", operation: leaveApplicationGet, states: ["open","approved","rejected","cancelled"] },
+  "leave-application.reject": { description: "Reject a leave, marking none of its days.", operation: leaveApplicationReject, states: ["open","approved","rejected","cancelled"], move: {"key":"reject","from":["open"],"to":["rejected"],"emits":"LeaveApplicationRejected"} },
+  "leave-type.create": { description: "Add a kind of leave a company gives. Refuses LeaveTypeNameTaken when another leave type holds this company and leave type name.", operation: leaveTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"LeaveTypeCreated"} },
+  "leave-type.get": { description: "Read one leave-type by its id: company, leaveTypeName, maxContinuousDaysAllowed, isLwp, includeHoliday, state.", operation: leaveTypeGet, states: ["active"] },
   "shift-type.create": { description: "Add a working shift to a company, from its start time to its end time. Refuses ShiftTypeNameTaken when another shift type holds this company and shift type name.", operation: shiftTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ShiftTypeCreated"} },
   "shift-type.get": { description: "Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.", operation: shiftTypeGet, states: ["active"] },
 } as const satisfies { readonly [name: string]: McpEntry };

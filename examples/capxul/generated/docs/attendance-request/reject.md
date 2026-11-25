@@ -45,6 +45,12 @@ Starts from the world `an attendance request`.
 
 - **nor rejected once approved.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `approved`.
 
+### attendance requests and leave
+
+Starts from the world `a leave application`.
+
+- **Ada rejects it.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and is answered.
+
 ### reject an attendance request
 
 Starts from the world `an attendance request`.

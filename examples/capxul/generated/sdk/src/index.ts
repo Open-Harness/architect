@@ -42,6 +42,9 @@ export * as jobOpening from "./job-opening/index.ts";
 export * as journalEntry from "./journal-entry/index.ts";
 export * as journalEntryAccount from "./journal-entry-account/index.ts";
 export * as kra from "./kra/index.ts";
+export * as leaveAllocation from "./leave-allocation/index.ts";
+export * as leaveApplication from "./leave-application/index.ts";
+export * as leaveType from "./leave-type/index.ts";
 export * as shiftType from "./shift-type/index.ts";
 export type { Account, AccountState, AccountCreated, AccountMadeLedger } from "./account/types.ts";
 export type { Appraisal, AppraisalState, AppraisalCreated, AppraisalRated, AppraisalSelfRated, AppraisalSubmitted } from "./appraisal/types.ts";
@@ -83,4 +86,7 @@ export type { JobOpening, JobOpeningState, JobOpeningClosed, JobOpeningCreated }
 export type { JournalEntry, JournalEntryState, JournalEntryCancelled, JournalEntryDrafted, JournalEntrySubmitted } from "./journal-entry/types.ts";
 export type { JournalEntryAccount } from "./journal-entry-account/types.ts";
 export type { Kra, KraState, KraCreated } from "./kra/types.ts";
+export type { LeaveAllocation, LeaveAllocationState, LeaveAllocationCreated, LeaveAllocationSubmitted } from "./leave-allocation/types.ts";
+export type { LeaveApplication, LeaveApplicationState, LeaveApplicationApproved, LeaveApplicationCancelled, LeaveApplicationRejected, LeaveApplied } from "./leave-application/types.ts";
+export type { LeaveType, LeaveTypeState, LeaveTypeCreated } from "./leave-type/types.ts";
 export type { ShiftType, ShiftTypeState, ShiftTypeCreated } from "./shift-type/types.ts";

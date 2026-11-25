@@ -16,7 +16,7 @@ Add a cost center to a company, under a group or as a root.
 | company | cost-center.company |  |
 | costCenterName | cost-center.costCenterName |  |
 | parentCostCenter (optional) | cost-center.parentCostCenter |  |
-| isGroup | schema | Make it a group, which other cost centers sit under, rather than a ledger, which takes entries. |
+| isGroup | YesNo | Make it a group, which other cost centers sit under, rather than a ledger, which takes entries. |
 
 ## Answer
 

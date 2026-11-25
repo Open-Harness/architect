@@ -73,6 +73,17 @@ Starts from the world `a leap fortnight`.
 - **the second of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-02`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-02`.
 - **the fourth of March is then taken.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, holidayDate `2028-03-04`, description `Picnic`, and is refused with HolidayDateTaken, HD-001, carrying holidayDate `2028-03-04`.
 
+### leave days
+
+Starts from the world `a leave allocation`.
+
+- **and makes Friday 5 March a holiday.** `ada` (role company.owner) calls and sends holidayList the last call's holidayList, holidayDate `2027-03-05`, description `Founders' Day`, and gets back an answer matching `^hol_[0-9a-z]+$`.
+- **and makes Friday 2 April a holiday.** `ada` (role company.owner) calls and sends holidayList the last call's holidayList, holidayDate `2027-04-02`, description `Good Friday`, and gets back an answer matching `^hol_[0-9a-z]+$`.
+- **and makes Saturday 10 April a holiday.** `ada` (role company.owner) calls and sends holidayList the last call's holidayList, holidayDate `2027-04-10`, description `Rest day`, and gets back an answer matching `^hol_[0-9a-z]+$`.
+- **and makes Sunday 11 April a holiday.** `ada` (role company.owner) calls and sends holidayList the last call's holidayList, holidayDate `2027-04-11`, description `Rest day`, and gets back an answer matching `^hol_[0-9a-z]+$`.
+- **and makes Monday 14 June a holiday in it.** `ada` (role company.owner) calls and sends holidayList the last call's holidayList, holidayDate `2027-06-14`, description `Coast Day`, and gets back an answer matching `^hol_[0-9a-z]+$`.
+- **and makes Monday 3 May a holiday in it.** `bo` (signed in) calls and sends holidayList the last call's holidayList, holidayDate `2027-05-03`, description `Bo's Day`, and gets back an answer matching `^hol_[0-9a-z]+$`.
+
 ### weekly offs
 
 Starts from the world `a sunday holiday`.
