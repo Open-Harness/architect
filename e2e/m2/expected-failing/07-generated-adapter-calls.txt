@@ -1,5 +1,7 @@
 # Snag #1012: every generated adapter's four errors take exits 81 to 84, so one operation calling two generated adapters is refused. Red until an adapter's exit base is set by hand beside `code` in its src/written.ts (G16-adapter-mounts call 1). A builder only deletes lines (G9).
+m2/07-generated-adapter-calls.test.ts > 07 one operation calls two generated adapters (snag #1012) > an exit base whose four exits leave 5 to 119 (-1) is refused, naming the adapter and the setting
 m2/07-generated-adapter-calls.test.ts > 07 one operation calls two generated adapters (snag #1012) > an exit base whose four exits leave 5 to 119 (117) is refused, naming the adapter and the setting
 m2/07-generated-adapter-calls.test.ts > 07 one operation calls two generated adapters (snag #1012) > an exit base whose four exits leave 5 to 119 (120) is refused, naming the adapter and the setting
+m2/07-generated-adapter-calls.test.ts > 07 one operation calls two generated adapters (snag #1012) > an exit base whose four exits leave 5 to 119 (123) is refused, naming the adapter and the setting
 m2/07-generated-adapter-calls.test.ts > 07 one operation calls two generated adapters (snag #1012) > with fx-rates' exit base set to 85 in its src/written.ts, the operation generates: rates keeps 81 to 84, fx-rates takes 85 to 88
 m2/07-generated-adapter-calls.test.ts > 07 one operation calls two generated adapters (snag #1012) > with neither setting an exit base, generate refuses the clash, naming both adapters and the setting in src/written.ts that fixes it

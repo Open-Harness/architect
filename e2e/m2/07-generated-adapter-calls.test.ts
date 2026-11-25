@@ -453,13 +453,17 @@ describe("07 one operation calls two generated adapters (snag #1012)", () => {
     expect(namesTheFix(said.out), `a line naming rates, fx-rates, src/written.ts and exit:\n${said.out}`).toBe(true);
   });
 
-  // 120 is past the range; 117 is inside it, but its fourth exit, 120, is not: the four must fit.
-  for (const base of [120, 117]) {
+  // The refusal names the exit that leaves the range. 120 is past it; 117 is inside it, but its fourth exit, 120, is
+  // not: the four must fit. Both land on exits the runtime keeps (0 to 4, 120 to 125), so each edge needs a base whose
+  // only way out is the edge itself: 123's fourth exit, 126, is past the top, and -1 is below the bottom (0 to 2 are
+  // the runtime's too). A build that checks one edge only fails one of them.
+  for (const [base, out] of [[120, 120], [117, 120], [123, 126], [-1, -1]] as const) {
     it(`an exit base whose four exits leave 5 to 119 (${base}) is refused, naming the adapter and the setting`, () => {
       const { root } = both(`export const exit: number | undefined = ${base};`);
       const said = run(root, "generate");
       expect(said.status, said.out).not.toBe(0);
-      expect(said.out.split("\n").some((l) => l.includes("fx-rates") && l.includes("src/written.ts") && /\bexit\b/.test(l) && l.includes("120")), said.out).toBe(true);
+      const names = new RegExp(`(?<![\\w-])${out}(?!\\d)`);
+      expect(said.out.split("\n").some((l) => l.includes("fx-rates") && l.includes("src/written.ts") && /\bexit\b/.test(l) && names.test(l)), said.out).toBe(true);
     });
   }
 });
