@@ -244,9 +244,9 @@ export const plan = ({ goals, state, briefUrl, migrate = false }) => {
     if (i.pullRequest || i.trusted === false || (i.state && i.state !== "open")) continue;
     const of = (prefix) => i.labels.filter((l) => new RegExp(`^${prefix}\\d+$`).test(l)).map((l) => Number(l.slice(prefix.length)));
     const goalsOf = of("goal-");
-    const plan = i.labels.includes("kind:goal") || i.labels.includes("kind:slice");
-    const own = !i.milestone || parkedMilestones.has(i.milestone);
-    const want = plan && own && !i.labels.some((l) => BOARD_KINDS.includes(l)) && goalsOf.length > 0 && goalsOf.every((n) => parked.has(n)) && !of("lane:goal-").some((n) => running.has(n));
+    const ownPlan = i.labels.includes("kind:goal") || i.labels.includes("kind:slice");
+    const inOwnMilestone = !i.milestone || parkedMilestones.has(i.milestone);
+    const want = ownPlan && inOwnMilestone && !i.labels.some((l) => BOARD_KINDS.includes(l)) && goalsOf.length > 0 && goalsOf.every((n) => parked.has(n)) && !of("lane:goal-").some((n) => running.has(n));
     const has = i.labels.includes("parked");
     if (want !== has) steps.push({ do: "setParked", number: i.number, parked: want, title: `#${i.number} ${want ? "parked" : "no longer parked"}` });
   }
