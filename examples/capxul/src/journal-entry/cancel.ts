@@ -44,8 +44,8 @@ const cancel: Handler = ({ journalEntry }, { steps, move }) =>
   Effect.gen(function* () {
     const records = yield* Records;
 
-    // Step load: database, span journal-entry.cancel.load. The ledger lines the submit posted, oldest first. A list
-    // reads every matching row whatever its limit, so one call takes them all.
+    // Step load: database, span journal-entry.cancel.load. The ledger lines the submit posted, oldest first. Every
+    // matching row counts as read at commit; the limit is set so the page holds them all.
     const posted = yield* steps.load(
       records.list({
         thing: GLEntry,

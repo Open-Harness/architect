@@ -64,8 +64,8 @@ const create: Handler = ({ company, year, yearStartDate, yearEndDate, isShortYea
   Effect.gen(function* () {
     const records = yield* Records;
 
-    // Step load: database, span fiscal-year.create.load. The company's years, for the overlap check. A list reads
-    // every matching row whatever its limit, so one call takes them all.
+    // Step load: database, span fiscal-year.create.load. The company's years, for the overlap check. Every
+    // matching row counts as read at commit; the limit is set so the page holds them all.
     const years = yield* steps.load(
       records.list({ thing: FiscalYear, where: { company }, state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined }),
     );

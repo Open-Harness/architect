@@ -50,7 +50,7 @@ const { JournalEntryUnbalanced, PostingDateOutsideFiscalYear } = Errors.declared
 const submit: Handler = ({ journalEntry }, { steps, move, subject }) =>
   Effect.gen(function* () {
     const records = yield* Records;
-    // A list reads every matching row whatever its limit, so one call takes them all.
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
     const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
     // Step load: database, span journal-entry.submit.load. The runtime read the entry for its role and state checks
