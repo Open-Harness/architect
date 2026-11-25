@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/leave-application/verbs/cancel.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/leave-application/cancel.handler.ts";
 
 /**
@@ -40,17 +39,17 @@ import type { Handler } from "../../generated/api/src/leave-application/cancel.h
  *   once it answers, it writes LeaveApplicationCancelled: leaveApplication from the answer;
  *   the call is the span leave-application.cancel, and its commit leave-application.cancel.commit.
  */
-const cancel: Handler = (_payload, { steps, move }) =>
+const cancel: Handler = ({ leaveApplication }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span leave-application.cancel.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span leave-application.cancel.update. A cancelled application takes no balance and blocks no other. The days an approved one marked On Leave stay as they
+    // are, as its declaration says (CX-leave, call 11); the only change is its state, which the
+    // runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move cancel, from open or approved, to cancelled.
     yield* move();
 
-    return {
-      leaveApplication: yield* Handlers.blank("leaveApplication, a leave-application.id"),
-    };
+    return { leaveApplication };
   });
 
 export default cancel;

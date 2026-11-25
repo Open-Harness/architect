@@ -1,6 +1,9 @@
 // Scaffolded from blueprint/things/leave-application/verbs/create.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Days } from "orthograph";
+import { Records } from "@orthograph/language-effect";
+import { LeaveApplication } from "../../blueprint/things/leave-application/thing.ts";
+import { all, attendancesOf, balanceOf, coveringAllocation, firstDayAttended, leaveDayCountOf, overlaps } from "./internal/leave.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/leave-application/create.handler.ts";
 
@@ -65,87 +68,116 @@ const { ApplicantNotInCompany, ApplicantHasLeft, ApplicationTypeNotInCompany, Le
  *   once it answers, it writes LeaveApplied: leaveApplication from the answer, company, employee and leaveType from the payload;
  *   the call is the span leave-application.create, and its commit leave-application.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employee, leaveType, fromDate, toDate, reason }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span leave-application.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
+    // Step load: database, span leave-application.create.load. The runtime read the employee and the type and hands them
+    // in. This step lists what the rules judge: the leave days (with the company's holidays), the covering allocation and
+    // its balance, the employee's other applications and their attendance. A leave ending before it starts has no days,
+    // so nothing past the dates is read for it.
+    const applicant = refs.employee;
+    const type = refs.leaveType;
+    if (!applicant || !type) return yield* Effect.die(new Error(`employee ${employee} or leave type ${leaveType} was read and then not found`));
+    const isLwp = type["isLwp"] === true;
+    const loaded = yield* steps.load(
+      Effect.gen(function* () {
+        if (toDate < fromDate) return undefined;
+        const leaveDays = yield* leaveDayCountOf(type, company, fromDate, toDate);
+        const allocation = isLwp ? undefined : yield* coveringAllocation(employee, leaveType, fromDate, toDate);
+        const balance = allocation === undefined ? undefined : yield* balanceOf(allocation);
+        const theirs = yield* records.list({ ...all, thing: LeaveApplication, where: { employee } });
+        const attendances = yield* attendancesOf(employee);
+        return { leaveDays, allocation, balance, theirs: theirs.items, attendances };
+      }),
+    );
+
+    // Refusal order (errors.ts): Capxul's own checks, then HRMS's validate order.
     // ApplicantNotInCompany: exit 41, LP-001.
-    if (yield* Handlers.blank<boolean>("refuse ApplicantNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ApplicantNotInCompany was refused"));
+    if (applicant["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new ApplicantNotInCompany({});
     }
 
-    // ApplicantHasLeft: exit 42, LP-002.
-    if (yield* Handlers.blank<boolean>("refuse ApplicantHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ApplicantHasLeft was refused"));
+    // ApplicantHasLeft: exit 42, LP-002. Judged on create only (CX-expense-leavers).
+    if (applicant.state !== "active") {
+      yield* Effect.logInfo(`the employee is ${applicant.state ?? "in no state"}, not active`);
       return yield* new ApplicantHasLeft({});
     }
 
-    // ApplicationTypeNotInCompany: exit 43, LP-003.
-    if (yield* Handlers.blank<boolean>("refuse ApplicationTypeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ApplicationTypeNotInCompany was refused"));
+    // ApplicationTypeNotInCompany: exit 43, LP-003. Leave types are per company (CX-leave, call 8).
+    if (type["company"] !== company) {
+      yield* Effect.logInfo("the leave type is another company's");
       return yield* new ApplicationTypeNotInCompany({});
     }
 
-    // LeaveEndsBeforeStart: exit 44, LP-004.
-    if (yield* Handlers.blank<boolean>("refuse LeaveEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveEndsBeforeStart was refused"));
-      return yield* new LeaveEndsBeforeStart({
-        fromDate: yield* Handlers.blank("LeaveEndsBeforeStart.fromDate, a Day"),
-      });
+    // LeaveEndsBeforeStart: exit 44, LP-004. The same day is allowed.
+    if (loaded === undefined) {
+      yield* Effect.logInfo("the leave's last day is before its first");
+      return yield* new LeaveEndsBeforeStart({ fromDate });
     }
 
-    // LeaveBeforeJoining: exit 45, LP-005.
-    if (yield* Handlers.blank<boolean>("refuse LeaveBeforeJoining when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveBeforeJoining was refused"));
-      return yield* new LeaveBeforeJoining({
-        dateOfJoining: yield* Handlers.blank("LeaveBeforeJoining.dateOfJoining, a Day"),
-      });
+    // LeaveBeforeJoining: exit 45, LP-005. Judged on the first day; the joining day itself is allowed (CX-leave, call 7).
+    const dateOfJoining = applicant["dateOfJoining"] as typeof fromDate;
+    if (fromDate < dateOfJoining) {
+      yield* Effect.logInfo("the leave starts before the employee joined");
+      return yield* new LeaveBeforeJoining({ dateOfJoining });
     }
 
-    // NoAllocationCovers: exit 46, LP-006.
-    if (yield* Handlers.blank<boolean>("refuse NoAllocationCovers when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NoAllocationCovers was refused"));
+    // NoAllocationCovers: exit 46, LP-006. Leave without pay skips it.
+    const { leaveDays, allocation, balance, theirs, attendances } = loaded;
+    if (!isLwp && allocation === undefined) {
+      yield* Effect.logInfo("no one submitted allocation of the employee and type holds both the first and the last day");
       return yield* new NoAllocationCovers({});
     }
 
-    // LeaveAllHolidays: exit 47, LP-007.
-    if (yield* Handlers.blank<boolean>("refuse LeaveAllHolidays when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveAllHolidays was refused"));
+    // LeaveAllHolidays: exit 47, LP-007. Every day asked for is a holiday the type doesn't count.
+    if (leaveDays <= 0) {
+      yield* Effect.logInfo("every day asked for is a holiday");
       return yield* new LeaveAllHolidays({});
     }
 
-    // InsufficientLeaveBalance: exit 48, LP-008.
-    if (yield* Handlers.blank<boolean>("refuse InsufficientLeaveBalance when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why InsufficientLeaveBalance was refused"));
+    // InsufficientLeaveBalance: exit 48, LP-008. Only approved applications take the balance. Leave without pay skips it.
+    const totalLeaveDays = BigDecimal.fromBigInt(BigInt(leaveDays));
+    if (balance !== undefined && BigDecimal.isLessThan(balance, totalLeaveDays)) {
+      yield* Effect.logInfo(`${leaveDays} days are more than the ${BigDecimal.format(balance)} left`);
       return yield* new InsufficientLeaveBalance({});
     }
 
-    // LeaveOverlaps: exit 49, LP-009.
-    if (yield* Handlers.blank<boolean>("refuse LeaveOverlaps when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveOverlaps was refused"));
+    // LeaveOverlaps: exit 49, LP-009. An open or approved application of the employee, of any type.
+    const live = theirs.filter((a) => a.state === "open" || a.state === "approved");
+    if (live.some((a) => overlaps(a, fromDate, toDate))) {
+      yield* Effect.logInfo("an open or approved application of the employee shares a day with this one");
       return yield* new LeaveOverlaps({});
     }
 
-    // LeaveTooLong: exit 50, LP-010.
-    if (yield* Handlers.blank<boolean>("refuse LeaveTooLong when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveTooLong was refused"));
-      return yield* new LeaveTooLong({
-        maxContinuousDaysAllowed: yield* Handlers.blank("LeaveTooLong.maxContinuousDaysAllowed, a MaxContinuousDays"),
-      });
+    // LeaveTooLong: exit 50, LP-010. With the open or approved applications of the same type that run on from it day
+    // after day, either side, counting their leave days. 0 is no limit.
+    const maxContinuousDaysAllowed = type["maxContinuousDaysAllowed"] as bigint;
+    if (maxContinuousDaysAllowed > 0n) {
+      const sameType = live.filter((a) => a["leaveType"] === leaveType);
+      let run = totalLeaveDays;
+      for (let day = Days.add(fromDate, -1), before; (before = sameType.find((a) => a["toDate"] === day)); day = Days.add(before["fromDate"] as string, -1)) {
+        run = BigDecimal.sum(run, before["totalLeaveDays"] as BigDecimal.BigDecimal);
+      }
+      for (let day = Days.add(toDate, 1), after; (after = sameType.find((a) => a["fromDate"] === day)); day = Days.add(after["toDate"] as string, 1)) {
+        run = BigDecimal.sum(run, after["totalLeaveDays"] as BigDecimal.BigDecimal);
+      }
+      if (BigDecimal.isGreaterThan(run, BigDecimal.fromBigInt(maxContinuousDaysAllowed))) {
+        yield* Effect.logInfo(`${BigDecimal.format(run)} leave days in a row are more than the type's ${maxContinuousDaysAllowed}`);
+        return yield* new LeaveTooLong({ maxContinuousDaysAllowed: maxContinuousDaysAllowed as never });
+      }
     }
 
-    // LeaveDayAttended: exit 51, LP-011.
-    if (yield* Handlers.blank<boolean>("refuse LeaveDayAttended when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveDayAttended was refused"));
-      return yield* new LeaveDayAttended({
-        attendanceDate: yield* Handlers.blank("LeaveDayAttended.attendanceDate, a Day"),
-      });
+    // LeaveDayAttended: exit 51, LP-011. The first day asked for that the employee is marked Present or Work From Home.
+    const attended = firstDayAttended(attendances, fromDate, toDate);
+    if (attended !== undefined) {
+      yield* Effect.logInfo(`the employee was at work on ${attended}`);
+      return yield* new LeaveDayAttended({ attendanceDate: attended as typeof fromDate });
     }
 
-    // Step insert: database, span leave-application.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span leave-application.create.insert. The day count is kept from here on (CX-leave, call 2).
+    yield* steps.insert(records.insert(LeaveApplication, { id, company, employee, leaveType, fromDate, toDate, reason, totalLeaveDays }));
 
     // The move create, to open.
     yield* move();
@@ -153,7 +185,7 @@ const create: Handler = (_payload, { steps, move, id }) =>
     return {
       // LeaveApplied needs leaveApplication, and only the answer can give it.
       leaveApplication: id,
-      totalLeaveDays: yield* Handlers.blank("totalLeaveDays, a LeaveDays"),
+      totalLeaveDays,
     };
   });
 

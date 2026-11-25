@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/leave-application/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/leave-application/reject.handler.ts";
 
 /**
@@ -40,17 +39,16 @@ import type { Handler } from "../../generated/api/src/leave-application/reject.h
  *   once it answers, it writes LeaveApplicationRejected: leaveApplication from the answer;
  *   the call is the span leave-application.reject, and its commit leave-application.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ leaveApplication }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span leave-application.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span leave-application.reject.update. A rejected application marks no day and takes no balance; the only change is its state, which the
+    // runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move reject, from open, to rejected.
     yield* move();
 
-    return {
-      leaveApplication: yield* Handlers.blank("leaveApplication, a leave-application.id"),
-    };
+    return { leaveApplication };
   });
 
 export default reject;
