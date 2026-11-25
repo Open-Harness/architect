@@ -108,6 +108,10 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
 - **How it runs.** A world prove starts runs `node <entry> --port 0 --dir <the world's state>/stands/<mount>`, the contract
   `e2e/superagent/servers.ts` already holds. prove reads `stand-in listening on <url>` and passes `ORTHO_STAND_<MOUNT>=<url>`
   to the Worker. When the world ends, prove stops the stand-in and everything it started.
+- **Its edges** (#995 gap 2's checks, 25 November 2026). The folder is there when the stand-in starts. A mount whose adapter's
+  stand-in is `Stand.none` or `Stand.vendor` gets no process, even when its package names an entry. A stand-in that exits
+  before it says where it listens fails the world, naming the mount, and leaves nothing running. "Everything it started"
+  is the stand-in's processes too: prove stops a stand-in's own children, not only the stand-in.
 - **The key.** prove gives the Worker `<MOUNT>_API_KEY` = `world-<mount>` for each mount it stood up. A stand-in that
   requires a key gets one, and two mounts still differ.
 

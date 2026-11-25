@@ -1,0 +1,5 @@
+# #995 gap 2's checks (08-prove-stand-ins.test.ts, G16-adapter-mounts call 3), red until prove stands up a mount's process stand-in; the last line also needs gap 1's call steps (call 1). A builder only deletes lines (G9).
+m2/08-prove-stand-ins.test.ts > 08 a call step in prove's world reaches the mount's stand-in > each mount's call reaches its own stand-in at the address it said, with world-<mount> as its key
+m2/08-prove-stand-ins.test.ts > 08 prove stands up a mount's process stand-in > a stand-in that exits before it says where it listens fails prove, naming the mount, and leaves nothing running
+m2/08-prove-stand-ins.test.ts > 08 prove stands up a mount's process stand-in > runs node <entry> --port 0 --dir <state>/stands/<mount> once for each process stand-in, its folder there, and none for a mount without one
+m2/08-prove-stand-ins.test.ts > 08 prove stands up a mount's process stand-in > stops each stand-in and every process it started once the world ends: none is running after prove exits
