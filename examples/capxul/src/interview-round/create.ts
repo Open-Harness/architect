@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/interview-round/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/interview-round/create.handler.ts";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
+import { InterviewRound } from "../../blueprint/things/interview-round/thing.ts";
 
 const { RoundInterviewerNotInCompany, RoundInterviewerHasLeft } = Errors.declared;
 
@@ -43,25 +45,31 @@ const { RoundInterviewerNotInCompany, RoundInterviewerHasLeft } = Errors.declare
  *   once it answers, it writes InterviewRoundCreated: interviewRound from the answer, company from the payload;
  *   the call is the span interview-round.create, and its commit interview-round.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, roundName, interviewers }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span interview-round.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // RoundInterviewerNotInCompany: exit 42, IR-002.
-    if (yield* Handlers.blank<boolean>("refuse RoundInterviewerNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RoundInterviewerNotInCompany was refused"));
+    // Step load: database, span interview-round.create.load. Every interviewer named, in the order given; one that
+    // isn't found is undefined.
+    const found = yield* steps.load(Effect.forEach(interviewers, (employee) => records.find(Employee, employee)));
+
+    // Refusal order (errors.ts): the company check over every interviewer, then the leaver check over every one,
+    // wherever each stands in the list.
+    // RoundInterviewerNotInCompany: exit 42, IR-002. An employee that isn't found works for no company here.
+    if (found.some((employee) => employee?.["company"] !== company)) {
+      yield* Effect.logInfo("an interviewer works for another company");
       return yield* new RoundInterviewerNotInCompany({});
     }
 
-    // RoundInterviewerHasLeft: exit 43, IR-003.
-    if (yield* Handlers.blank<boolean>("refuse RoundInterviewerHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RoundInterviewerHasLeft was refused"));
+    // RoundInterviewerHasLeft: exit 43, IR-003. A leaver isn't put on a new round (CX-expense-leavers).
+    if (found.some((employee) => employee?.state !== "active")) {
+      yield* Effect.logInfo("an interviewer has left the company");
       return yield* new RoundInterviewerHasLeft({});
     }
 
-    // Step insert: database, span interview-round.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span interview-round.create.insert. A name the company already has is the runtime's
+    // refusal (oneNamePerCompany).
+    yield* steps.insert(records.insert(InterviewRound, { id, company, roundName, interviewers }));
 
     // The move create, to active.
     yield* move();

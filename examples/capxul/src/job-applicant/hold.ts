@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/job-applicant/verbs/hold.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/job-applicant/hold.handler.ts";
 
 /**
@@ -41,17 +40,16 @@ import type { Handler } from "../../generated/api/src/job-applicant/hold.handler
  *   once it answers, it writes JobApplicantHeld: jobApplicant from the answer;
  *   the call is the span job-applicant.hold, and its commit job-applicant.hold.commit.
  */
-const hold: Handler = (_payload, { steps, move }) =>
+const hold: Handler = ({ jobApplicant }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span job-applicant.hold.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span job-applicant.hold.update. Holding changes no field, only the applicant's state,
+    // which the runtime sets once this answers.
+    yield* steps.update(Effect.void);
 
     // The move hold, from open, to hold.
     yield* move();
 
-    return {
-      jobApplicant: yield* Handlers.blank("jobApplicant, a job-applicant.id"),
-    };
+    return { jobApplicant };
   });
 
 export default hold;

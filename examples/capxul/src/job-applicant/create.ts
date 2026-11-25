@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/job-applicant/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/job-applicant/create.handler.ts";
+import { JobApplicant } from "../../blueprint/things/job-applicant/thing.ts";
 
 const { OpeningClosed } = Errors.declared;
 
@@ -46,19 +47,26 @@ const { OpeningClosed } = Errors.declared;
  *   once it answers, it writes JobApplicantCreated: jobApplicant from the answer, company from the job-applicant as the call left it, jobOpening from the payload;
  *   the call is the span job-applicant.create, and its commit job-applicant.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ jobOpening, applicantName, email }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span job-applicant.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // OpeningClosed: exit 41, JA-001.
-    if (yield* Handlers.blank<boolean>("refuse OpeningClosed when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why OpeningClosed was refused"));
+    // Step load: database, span job-applicant.create.load. The runtime read the opening for the role check and hands
+    // it in, so this step only takes it.
+    const opening = yield* steps.load(Effect.succeed(refs.jobOpening));
+    if (!opening) return yield* Effect.die(new Error(`job opening ${jobOpening} was read for the role check and then not found`));
+
+    // OpeningClosed: exit 41, JA-001. HRMS's `before_insert`: nobody new applies for a closed opening.
+    if (opening.state === "closed") {
+      yield* Effect.logInfo("the job opening is closed");
       return yield* new OpeningClosed({});
     }
 
-    // Step insert: database, span job-applicant.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span job-applicant.create.insert. The applicant takes the opening's company. The email
+    // isn't unique: one person may apply again (HRMS's `autoname`).
+    yield* steps.insert(
+      records.insert(JobApplicant, { id, company: opening["company"] as never, jobOpening, applicantName, email }),
+    );
 
     // The move create, to open.
     yield* move();
