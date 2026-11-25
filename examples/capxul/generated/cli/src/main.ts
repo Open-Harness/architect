@@ -6,6 +6,10 @@ import { Effect, Layer } from "effect";
 import { CliOutput, Command } from "effect/cli";
 import * as Sdk from "../../sdk/src/index.ts";
 import { ExitCode } from "./output.ts";
+import { balance as accountBalance } from "./account/balance.ts";
+import { create as accountCreate } from "./account/create.ts";
+import { get as accountGet } from "./account/get.ts";
+import { makeLedger as accountMakeLedger } from "./account/make-ledger.ts";
 import { get as attendanceGet } from "./attendance/get.ts";
 import { list as attendanceList } from "./attendance/list.ts";
 import { mark as attendanceMark } from "./attendance/mark.ts";
@@ -16,6 +20,12 @@ import { reject as attendanceRequestReject } from "./attendance-request/reject.t
 import { close as bankAccountClose } from "./bank-account/close.ts";
 import { get as bankAccountGet } from "./bank-account/get.ts";
 import { open as bankAccountOpen } from "./bank-account/open.ts";
+import { fail as bankTransactionFail } from "./bank-transaction/fail.ts";
+import { get as bankTransactionGet } from "./bank-transaction/get.ts";
+import { land as bankTransactionLand } from "./bank-transaction/land.ts";
+import { list as bankTransactionList } from "./bank-transaction/list.ts";
+import { send as bankTransactionSend } from "./bank-transaction/send.ts";
+import { settle as bankTransactionSettle } from "./bank-transaction/settle.ts";
 import { create as branchCreate } from "./branch/create.ts";
 import { get as branchGet } from "./branch/get.ts";
 import { approve as bridgeBusinessApprove } from "./bridge-business/approve.ts";
@@ -28,6 +38,8 @@ import { reject as bridgeIndividualReject } from "./bridge-individual/reject.ts"
 import { start as bridgeIndividualStart } from "./bridge-individual/start.ts";
 import { create as companyCreate } from "./company/create.ts";
 import { get as companyGet } from "./company/get.ts";
+import { create as costCenterCreate } from "./cost-center/create.ts";
+import { get as costCenterGet } from "./cost-center/get.ts";
 import { create as departmentCreate } from "./department/create.ts";
 import { get as departmentGet } from "./department/get.ts";
 import { create as designationCreate } from "./designation/create.ts";
@@ -59,6 +71,9 @@ import { get as expenseClaimGet } from "./expense-claim/get.ts";
 import { reject as expenseClaimReject } from "./expense-claim/reject.ts";
 import { create as expenseClaimTypeCreate } from "./expense-claim-type/create.ts";
 import { get as expenseClaimTypeGet } from "./expense-claim-type/get.ts";
+import { create as fiscalYearCreate } from "./fiscal-year/create.ts";
+import { get as fiscalYearGet } from "./fiscal-year/get.ts";
+import { list as glEntryList } from "./gl-entry/list.ts";
 import { add as holidayAdd } from "./holiday/add.ts";
 import { get as holidayGet } from "./holiday/get.ts";
 import { addWeeklyOff as holidayListAddWeeklyOff } from "./holiday-list/add-weekly-off.ts";
@@ -84,19 +99,27 @@ import { reject as jobOfferReject } from "./job-offer/reject.ts";
 import { close as jobOpeningClose } from "./job-opening/close.ts";
 import { create as jobOpeningCreate } from "./job-opening/create.ts";
 import { get as jobOpeningGet } from "./job-opening/get.ts";
+import { cancel as journalEntryCancel } from "./journal-entry/cancel.ts";
+import { create as journalEntryCreate } from "./journal-entry/create.ts";
+import { get as journalEntryGet } from "./journal-entry/get.ts";
+import { submit as journalEntrySubmit } from "./journal-entry/submit.ts";
+import { list as journalEntryAccountList } from "./journal-entry-account/list.ts";
 import { create as shiftTypeCreate } from "./shift-type/create.ts";
 import { get as shiftTypeGet } from "./shift-type/get.ts";
 
 // The release version is stamped in when the CLI is published (`ortho publish`); run from source, it says 0.0.0.
 declare const ORTHO_VERSION: string | undefined;
 
+const account = Command.make("account").pipe(Command.withSubcommands([accountBalance, accountCreate, accountGet, accountMakeLedger]));
 const attendance = Command.make("attendance").pipe(Command.withSubcommands([attendanceGet, attendanceList, attendanceMark]));
 const attendanceRequest = Command.make("attendance-request").pipe(Command.withSubcommands([attendanceRequestApprove, attendanceRequestCreate, attendanceRequestGet, attendanceRequestReject]));
 const bankAccount = Command.make("bank-account").pipe(Command.withSubcommands([bankAccountClose, bankAccountGet, bankAccountOpen]));
+const bankTransaction = Command.make("bank-transaction").pipe(Command.withSubcommands([bankTransactionFail, bankTransactionGet, bankTransactionLand, bankTransactionList, bankTransactionSend, bankTransactionSettle]));
 const branch = Command.make("branch").pipe(Command.withSubcommands([branchCreate, branchGet]));
 const bridgeBusiness = Command.make("bridge-business").pipe(Command.withSubcommands([bridgeBusinessApprove, bridgeBusinessGet, bridgeBusinessReject, bridgeBusinessStart]));
 const bridgeIndividual = Command.make("bridge-individual").pipe(Command.withSubcommands([bridgeIndividualApprove, bridgeIndividualGet, bridgeIndividualReject, bridgeIndividualStart]));
 const company = Command.make("company").pipe(Command.withSubcommands([companyCreate, companyGet]));
+const costCenter = Command.make("cost-center").pipe(Command.withSubcommands([costCenterCreate, costCenterGet]));
 const department = Command.make("department").pipe(Command.withSubcommands([departmentCreate, departmentGet]));
 const designation = Command.make("designation").pipe(Command.withSubcommands([designationCreate, designationGet]));
 const employee = Command.make("employee").pipe(Command.withSubcommands([employeeGet, employeeHire, employeeRelieve]));
@@ -108,6 +131,8 @@ const employmentType = Command.make("employment-type").pipe(Command.withSubcomma
 const expense = Command.make("expense").pipe(Command.withSubcommands([expenseAdd, expenseGet]));
 const expenseClaim = Command.make("expense-claim").pipe(Command.withSubcommands([expenseClaimApprove, expenseClaimCreate, expenseClaimGet, expenseClaimReject]));
 const expenseClaimType = Command.make("expense-claim-type").pipe(Command.withSubcommands([expenseClaimTypeCreate, expenseClaimTypeGet]));
+const fiscalYear = Command.make("fiscal-year").pipe(Command.withSubcommands([fiscalYearCreate, fiscalYearGet]));
+const glEntry = Command.make("gl-entry").pipe(Command.withSubcommands([glEntryList]));
 const holiday = Command.make("holiday").pipe(Command.withSubcommands([holidayAdd, holidayGet]));
 const holidayList = Command.make("holiday-list").pipe(Command.withSubcommands([holidayListAddWeeklyOff, holidayListCreate, holidayListGet]));
 const interview = Command.make("interview").pipe(Command.withSubcommands([interviewClear, interviewCreate, interviewGet, interviewReject]));
@@ -116,10 +141,12 @@ const interviewRound = Command.make("interview-round").pipe(Command.withSubcomma
 const jobApplicant = Command.make("job-applicant").pipe(Command.withSubcommands([jobApplicantAccept, jobApplicantCreate, jobApplicantGet, jobApplicantHold, jobApplicantReject]));
 const jobOffer = Command.make("job-offer").pipe(Command.withSubcommands([jobOfferAccept, jobOfferCreate, jobOfferGet, jobOfferReject]));
 const jobOpening = Command.make("job-opening").pipe(Command.withSubcommands([jobOpeningClose, jobOpeningCreate, jobOpeningGet]));
+const journalEntry = Command.make("journal-entry").pipe(Command.withSubcommands([journalEntryCancel, journalEntryCreate, journalEntryGet, journalEntrySubmit]));
+const journalEntryAccount = Command.make("journal-entry-account").pipe(Command.withSubcommands([journalEntryAccountList]));
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, shiftType]),
+  Command.withSubcommands([account, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeGrade, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

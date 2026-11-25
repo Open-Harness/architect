@@ -49,7 +49,7 @@ Starts from the world `two bank accounts`.
 
 Starts from the world `a reopened account`.
 
-- **the new account reads back with the details its opening answered.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`].
+- **the new account reads back with the details its opening answered.** `ada` (role company.owner) calls and sends id the world's account, and gets back [the world's company, the world's business, `Operating`, `USD`, the world's bankName, the world's accountNumber, the world's routingNumber, `open`] and gets back [true, true].
 - **the old one is closed, and keeps its own number.** `ada` (role company.owner) calls and sends id the world's old, and gets back [the world's oldAccountNumber, `closed`].
 
 ### bridge: open a bank account
@@ -57,7 +57,7 @@ Starts from the world `a reopened account`.
 Starts from the world `kyb approved`.
 
 - **Bo can't read it.** `bo` (signed in) calls and sends id the last call's account, and is refused with NotAllowed, AR-001.
-- **it reads back as the second account, not the first.** `ada` (role company.owner) calls and sends id the last call's account, and gets back [the world's company, the world's business, `Payroll`, `EUR`, `open`] and gets back an answer matching `^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$`.
+- **it reads back as the second account, not the first.** `ada` (role company.owner) calls and sends id the last call's account, and gets back [the world's company, the world's business, `Payroll`, `EUR`, `open`] and gets back [true, true].
 
 ## How to call
 

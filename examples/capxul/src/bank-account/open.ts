@@ -9,11 +9,13 @@ import { BridgeBusiness } from "../../blueprint/things/bridge-business/thing.ts"
 const { KybNotApproved } = Errors.declared;
 
 /**
- * The deposit instructions Bridge gives a virtual account (`source_deposit_instructions`). Until Capxul mounts the
- * Bridge adapter they are the stand-in's, and they must never route a real deposit: the USD routing number starts 99,
- * a prefix the ABA has never assigned, and the IBAN and BIC are in `XX`, which no country holds. They still pass the
- * ABA checksum and the IBAN's mod-97 check, as Bridge's would. The account number (or IBAN) is drawn from the account's
- * own random id, 17 or 18 of its digits, so no two accounts almost surely share one (bank-account.oneAccountPerNumber).
+ * The deposit instructions Bridge gives a virtual account (`source_deposit_instructions`), in the banks Bridge's virtual
+ * account guide names and its stand-in uses (CX-bridge, "The stand-in"), with numbers drawn from the account's own
+ * random id. They pass the ABA and IBAN checks a real one passes (#912). Until #995 lets a step reach the Bridge adapter
+ * (`customers.virtualAccounts.create`), and Bridge issues them, they are Capxul's own, and two limits follow: they name
+ * live banks, so nothing real is deposited to them; and a EUR account has only 10^8 numbers (an Irish IBAN's 8 digits
+ * after Modulr's sort code), so two accounts clash at about 1% by 1,400 EUR accounts, failing `open` as a defect
+ * (bank-account.oneAccountPerNumber names no refusal). USD draws 17 digits, and does not clash in practice.
  */
 const depositDetails = (id: string, currency: "USD" | "EUR") => {
   // The id's random base-36 part, as a decimal number: 16 characters of it are about 25 digits.
@@ -21,11 +23,14 @@ const depositDetails = (id: string, currency: "USD" | "EUR") => {
     .reduce((n, c) => n * 36n + BigInt(Number.parseInt(c, 36)), 0n)
     .toString();
   const lastDigits = (n: number) => random.padStart(n, "0").slice(-n);
-  if (currency === "USD") return { bankName: "Bridge stand-in bank", accountNumber: lastDigits(17), routingNumber: "990000000" };
-  // An IBAN: XX, two check digits (mod 97 over the account number, then X = 33, X = 33, 00), then 18 digits.
-  const bban = lastDigits(18);
-  const check = 98n - (BigInt(`${bban}333300`) % 97n);
-  return { bankName: "Bridge stand-in bank", accountNumber: `XX${check.toString().padStart(2, "0")}${bban}`, routingNumber: "STNDXX00" };
+  // USD: Lead Bank, ABA routing 101019644, and a US account number of 17 digits, the most ABA allows.
+  if (currency === "USD") return { bankName: "Lead Bank", accountNumber: lastDigits(17), routingNumber: "101019644" };
+  // EUR: Modulr's Irish branch, BIC MODRIE00XXX, sort code 140353, and an 8-digit account. ISO 13616's check digits are
+  // 98 less the BBAN with "IE00" after it, letters as 10 to 35, mod 97, always two digits.
+  const bban = `MODR140353${lastDigits(8)}`;
+  const numeric = [...`${bban}IE00`].map((c) => Number.parseInt(c, 36).toString()).join("");
+  const check = (98n - (BigInt(numeric) % 97n)).toString().padStart(2, "0");
+  return { bankName: "Modulr Finance, Ireland Branch", accountNumber: `IE${check}${bban}`, routingNumber: "MODRIE00XXX" };
 };
 
 /**

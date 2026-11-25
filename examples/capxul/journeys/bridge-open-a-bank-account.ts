@@ -7,6 +7,7 @@ import { BankAccountNameTaken } from "../blueprint/things/bank-account/errors.ts
 import { machine } from "../blueprint/things/bank-account/machine.ts";
 import open from "../blueprint/things/bank-account/verbs/open.ts";
 import get from "../blueprint/things/bank-account/verbs/get.ts";
+import { isBicFor, isIban, isRoutingNumber, isUsAccountNumber } from "./support/deposit-details.ts";
 
 export default Blueprint.journey("bridge: open a bank account", {
   // Bridge has approved Acme Trading's KYB; Bo is signed in and runs nothing of Ada's.
@@ -25,8 +26,8 @@ export default Blueprint.journey("bridge: open a bank account", {
       s.ada.run(open, { business: s.world.business, accountName: "Operating", currency: "USD" }, { request: "acme-operating" }),
       expect((a) => a.account).toMatch(/^bac_[0-9a-z]+$/),
       expect((a) => a.bankName).toMatch(/\S/),
-      expect((a) => a.accountNumber).toMatch(/^\d{4,17}$/),
-      expect((a) => a.routingNumber).toMatch(/^\d{9}$/),
+      // A US account number and an ABA routing number (#912): nine digits, an assigned prefix, the 3-7-1 checksum.
+      expect((a) => [isUsAccountNumber(a.accountNumber), isRoutingNumber(a.routingNumber)]).toEqual([true, true]),
       emits(BankAccountOpened, { account: s.last.account, company: s.world.company, business: s.world.business, currency: "USD" }),
       machine.isIn(s.last.account, "open"),
       spans({ present: ["bank-account.open", "bank-account.open.load", "bank-account.open.insert"] }),
@@ -49,8 +50,8 @@ export default Blueprint.journey("bridge: open a bank account", {
       s.ada.run(open, { business: s.world.business, accountName: "Payroll", currency: "EUR" }),
       expect((a) => a.account).toMatch(/^bac_[0-9a-z]+$/),
       expect((a) => a.bankName).toMatch(/\S/),
-      expect((a) => a.accountNumber).toMatch(/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/),
-      expect((a) => a.routingNumber).toMatch(/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/),
+      // An IBAN of a real country, passing mod 97, and the BIC of a bank in that country (#912).
+      expect((a) => [isIban(a.accountNumber), isBicFor(a.routingNumber, a.accountNumber)]).toEqual([true, true]),
       emits(BankAccountOpened, { account: s.last.account, company: s.world.company, business: s.world.business, currency: "EUR" }),
       machine.isIn(s.last.account, "open"),
     ),
@@ -64,7 +65,7 @@ export default Blueprint.journey("bridge: open a bank account", {
         "EUR",
         "open",
       ]),
-      expect((a) => a.accountNumber).toMatch(/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/),
+      expect((a) => [isIban(a.accountNumber), isBicFor(a.routingNumber, a.accountNumber)]).toEqual([true, true]),
       noEvents(),
     ),
   ],

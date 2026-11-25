@@ -1,5 +1,9 @@
 // Generated from the blueprint. Do not edit.
 import type { McpEntry } from "@orthograph/language-effect";
+import { declaration as accountBalance } from "../../api/src/account/balance.ts";
+import { declaration as accountCreate } from "../../api/src/account/create.ts";
+import { declaration as accountGet } from "../../api/src/account/get.ts";
+import { declaration as accountMakeLedger } from "../../api/src/account/make-ledger.ts";
 import { declaration as attendanceGet } from "../../api/src/attendance/get.ts";
 import { declaration as attendanceList } from "../../api/src/attendance/list.ts";
 import { declaration as attendanceMark } from "../../api/src/attendance/mark.ts";
@@ -10,6 +14,12 @@ import { declaration as attendanceRequestReject } from "../../api/src/attendance
 import { declaration as bankAccountClose } from "../../api/src/bank-account/close.ts";
 import { declaration as bankAccountGet } from "../../api/src/bank-account/get.ts";
 import { declaration as bankAccountOpen } from "../../api/src/bank-account/open.ts";
+import { declaration as bankTransactionFail } from "../../api/src/bank-transaction/fail.ts";
+import { declaration as bankTransactionGet } from "../../api/src/bank-transaction/get.ts";
+import { declaration as bankTransactionLand } from "../../api/src/bank-transaction/land.ts";
+import { declaration as bankTransactionList } from "../../api/src/bank-transaction/list.ts";
+import { declaration as bankTransactionSend } from "../../api/src/bank-transaction/send.ts";
+import { declaration as bankTransactionSettle } from "../../api/src/bank-transaction/settle.ts";
 import { declaration as branchCreate } from "../../api/src/branch/create.ts";
 import { declaration as branchGet } from "../../api/src/branch/get.ts";
 import { declaration as bridgeBusinessApprove } from "../../api/src/bridge-business/approve.ts";
@@ -22,6 +32,8 @@ import { declaration as bridgeIndividualReject } from "../../api/src/bridge-indi
 import { declaration as bridgeIndividualStart } from "../../api/src/bridge-individual/start.ts";
 import { declaration as companyCreate } from "../../api/src/company/create.ts";
 import { declaration as companyGet } from "../../api/src/company/get.ts";
+import { declaration as costCenterCreate } from "../../api/src/cost-center/create.ts";
+import { declaration as costCenterGet } from "../../api/src/cost-center/get.ts";
 import { declaration as departmentCreate } from "../../api/src/department/create.ts";
 import { declaration as departmentGet } from "../../api/src/department/get.ts";
 import { declaration as designationCreate } from "../../api/src/designation/create.ts";
@@ -53,6 +65,9 @@ import { declaration as expenseClaimGet } from "../../api/src/expense-claim/get.
 import { declaration as expenseClaimReject } from "../../api/src/expense-claim/reject.ts";
 import { declaration as expenseClaimTypeCreate } from "../../api/src/expense-claim-type/create.ts";
 import { declaration as expenseClaimTypeGet } from "../../api/src/expense-claim-type/get.ts";
+import { declaration as fiscalYearCreate } from "../../api/src/fiscal-year/create.ts";
+import { declaration as fiscalYearGet } from "../../api/src/fiscal-year/get.ts";
+import { declaration as glEntryList } from "../../api/src/gl-entry/list.ts";
 import { declaration as holidayAdd } from "../../api/src/holiday/add.ts";
 import { declaration as holidayGet } from "../../api/src/holiday/get.ts";
 import { declaration as holidayListAddWeeklyOff } from "../../api/src/holiday-list/add-weekly-off.ts";
@@ -78,11 +93,20 @@ import { declaration as jobOfferReject } from "../../api/src/job-offer/reject.ts
 import { declaration as jobOpeningClose } from "../../api/src/job-opening/close.ts";
 import { declaration as jobOpeningCreate } from "../../api/src/job-opening/create.ts";
 import { declaration as jobOpeningGet } from "../../api/src/job-opening/get.ts";
+import { declaration as journalEntryCancel } from "../../api/src/journal-entry/cancel.ts";
+import { declaration as journalEntryCreate } from "../../api/src/journal-entry/create.ts";
+import { declaration as journalEntryGet } from "../../api/src/journal-entry/get.ts";
+import { declaration as journalEntrySubmit } from "../../api/src/journal-entry/submit.ts";
+import { declaration as journalEntryAccountList } from "../../api/src/journal-entry-account/list.ts";
 import { declaration as shiftTypeCreate } from "../../api/src/shift-type/create.ts";
 import { declaration as shiftTypeGet } from "../../api/src/shift-type/get.ts";
 
 /** One tool per operation and read, named as the operation is. */
 export const catalog = {
+  "account.balance": { description: "An account's balance on a day: its own ledger lines and those of every account under it.", operation: accountBalance, states: ["group","ledger"] },
+  "account.create": { description: "Add an account to a company's chart, under a group or as a root. Refuses AccountNameTaken when another account holds this company and account name.", operation: accountCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"AccountCreated"} },
+  "account.get": { description: "Read one account by its id: company, accountName, parentAccount, rootType, reportType, accountType, state.", operation: accountGet, states: ["group","ledger"] },
+  "account.make-ledger": { description: "Turn a group account with nothing under it into a ledger. Refuses AccountNameTaken when another account holds this company and account name.", operation: accountMakeLedger, states: ["group","ledger"], move: {"key":"makeLedger","from":["group"],"to":["ledger"],"emits":"AccountMadeLedger"} },
   "attendance.get": { description: "Read one attendance by its id: company, employee, attendanceDate, status, state.", operation: attendanceGet, states: ["marked"] },
   "attendance.list": { description: "List attendances, oldest first, 50 to a page, filtered by employee, attendanceDate.", operation: attendanceList, states: ["marked"] },
   "attendance.mark": { description: "Mark whether an employee was at work on a day. Refuses AttendanceAlreadyMarked when another attendance holds this employee and attendance date.", operation: attendanceMark, states: ["marked"], move: {"key":"mark","from":[],"to":["marked"],"emits":"AttendanceMarked"} },
@@ -93,6 +117,12 @@ export const catalog = {
   "bank-account.close": { description: "Close a company's bank account; it takes no more deposits.", operation: bankAccountClose, states: ["open","closed"], move: {"key":"close","from":["open"],"to":["closed"],"emits":"BankAccountClosed"} },
   "bank-account.get": { description: "Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.", operation: bankAccountGet, states: ["open","closed"] },
   "bank-account.open": { description: "Open a bank account for a company whose KYB Bridge approved: answers where to send deposits. Refuses BankAccountNameTaken when another open bank account holds this company and account name.", operation: bankAccountOpen, states: ["open","closed"], move: {"key":"open","from":[],"to":["open"],"emits":"BankAccountOpened"} },
+  "bank-transaction.fail": { description: "Record that Bridge couldn't pay a transfer out, and how it ended. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionFail, states: ["pending","settled","failed"], move: {"key":"fail","from":["pending"],"to":["failed"],"emits":"TransferFailed"} },
+  "bank-transaction.get": { description: "Read one bank-transaction by its id: company, account, date, deposit, withdrawal, currency, reference, party, state.", operation: bankTransactionGet, states: ["pending","settled","failed"] },
+  "bank-transaction.land": { description: "Record a deposit Bridge landed on a company's bank account. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionLand, states: ["pending","settled","failed"], move: {"key":"land","from":[],"to":["settled"],"emits":"DepositLanded"} },
+  "bank-transaction.list": { description: "List bank-transactions, oldest first, 50 to a page, filtered by account.", operation: bankTransactionList, states: ["pending","settled","failed"] },
+  "bank-transaction.send": { description: "Send money out of a company's bank account to a payee, through Bridge. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionSend, states: ["pending","settled","failed"], move: {"key":"send","from":[],"to":["pending"],"emits":"TransferSent"} },
+  "bank-transaction.settle": { description: "Record that Bridge paid a transfer out. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionSettle, states: ["pending","settled","failed"], move: {"key":"settle","from":["pending"],"to":["settled"],"emits":"TransferSettled"} },
   "branch.create": { description: "Add a branch to a company. Refuses BranchNameTaken when another branch holds this company and branch name.", operation: branchCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"BranchCreated"} },
   "branch.get": { description: "Read one branch by its id: company, branchName, state.", operation: branchGet, states: ["active"] },
   "bridge-business.approve": { description: "Record that Bridge approved a company's KYB. Refuses KybAlreadyStarted when another bridge business holds this company.", operation: bridgeBusinessApprove, states: ["started","approved","rejected"], move: {"key":"approve","from":["started"],"to":["approved"],"emits":"KybApproved"} },
@@ -105,6 +135,8 @@ export const catalog = {
   "bridge-individual.start": { description: "Start your own KYC with Bridge: answers the form you fill in, and Bridge's terms. Refuses KycAlreadyStarted when another bridge individual holds this person.", operation: bridgeIndividualStart, states: ["started","approved","rejected"], move: {"key":"start","from":[],"to":["started"],"emits":"KycStarted"} },
   "company.create": { description: "Set up a company; the person who sets it up runs it. Refuses CompanyAbbrTaken when another company holds this owner and abbr. Refuses CompanyNameTaken when another company holds this owner and company name.", operation: companyCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"CompanyCreated"} },
   "company.get": { description: "Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.", operation: companyGet, states: ["active"] },
+  "cost-center.create": { description: "Add a cost center to a company, under a group or as a root. Refuses CostCenterNameTaken when another cost center holds this company and cost center name.", operation: costCenterCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"CostCenterCreated"} },
+  "cost-center.get": { description: "Read one cost-center by its id: company, costCenterName, parentCostCenter, state.", operation: costCenterGet, states: ["group","ledger"] },
   "department.create": { description: "Add a department to a company. Refuses DepartmentNameTaken when another department holds this company and department name.", operation: departmentCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"DepartmentCreated"} },
   "department.get": { description: "Read one department by its id: company, departmentName, state.", operation: departmentGet, states: ["active"] },
   "designation.create": { description: "Add a job title to a company. Refuses DesignationNameTaken when another designation holds this company and designation name.", operation: designationCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"DesignationCreated"} },
@@ -136,6 +168,9 @@ export const catalog = {
   "expense-claim.reject": { description: "Reject a claim, so nothing of it is paid back.", operation: expenseClaimReject, states: ["draft","approved","rejected"], move: {"key":"reject","from":["draft"],"to":["rejected"],"emits":"ExpenseClaimRejected"} },
   "expense-claim-type.create": { description: "Add a kind of expense a company pays back. Refuses ExpenseTypeTaken when another expense claim type holds this company and expense type.", operation: expenseClaimTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ExpenseClaimTypeCreated"} },
   "expense-claim-type.get": { description: "Read one expense-claim-type by its id: company, expenseType, state.", operation: expenseClaimTypeGet, states: ["active"] },
+  "fiscal-year.create": { description: "Set up a company's fiscal year. Refuses FiscalYearNameTaken when another fiscal year holds this company and year.", operation: fiscalYearCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"FiscalYearCreated"} },
+  "fiscal-year.get": { description: "Read one fiscal-year by its id: company, year, yearStartDate, yearEndDate, isShortYear, state.", operation: fiscalYearGet, states: ["active"] },
+  "gl-entry.list": { description: "List gl-entrys, oldest first, 50 to a page, filtered by account, voucherId.", operation: glEntryList },
   "holiday.add": { description: "Add one day off to a holiday list. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"HolidayAdded"} },
   "holiday.get": { description: "Read one holiday by its id: holidayList, holidayDate, description, state.", operation: holidayGet, states: ["active"] },
   "holiday-list.add-weekly-off": { description: "Make every given weekday in a holiday list a day off. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListAddWeeklyOff, states: ["active"], move: {"key":"addWeeklyOff","from":["active"],"to":["active"],"emits":"WeeklyOffAdded"} },
@@ -161,6 +196,11 @@ export const catalog = {
   "job-opening.close": { description: "Close a job opening to new applicants.", operation: jobOpeningClose, states: ["open","closed"], move: {"key":"close","from":["open"],"to":["closed"],"emits":"JobOpeningClosed"} },
   "job-opening.create": { description: "Open a job under one of a company's job titles, for some number of people.", operation: jobOpeningCreate, states: ["open","closed"], move: {"key":"create","from":[],"to":["open"],"emits":"JobOpeningCreated"} },
   "job-opening.get": { description: "Read one job-opening by its id: company, designation, jobTitle, vacancies, state.", operation: jobOpeningGet, states: ["open","closed"] },
+  "journal-entry.cancel": { description: "Cancel a submitted journal entry, posting a reversing ledger line for each it posted.", operation: journalEntryCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"JournalEntryCancelled"} },
+  "journal-entry.create": { description: "Draft a journal entry with its lines.", operation: journalEntryCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"JournalEntryDrafted"} },
+  "journal-entry.get": { description: "Read one journal-entry by its id: company, postingDate, userRemark, totalDebit, totalCredit, state.", operation: journalEntryGet, states: ["draft","submitted","cancelled"] },
+  "journal-entry.submit": { description: "Submit a balanced journal entry, posting one ledger line per line.", operation: journalEntrySubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"JournalEntrySubmitted"} },
+  "journal-entry-account.list": { description: "List journal-entry-accounts, oldest first, 50 to a page, filtered by journalEntry.", operation: journalEntryAccountList },
   "shift-type.create": { description: "Add a working shift to a company, from its start time to its end time. Refuses ShiftTypeNameTaken when another shift type holds this company and shift type name.", operation: shiftTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ShiftTypeCreated"} },
   "shift-type.get": { description: "Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.", operation: shiftTypeGet, states: ["active"] },
 } as const satisfies { readonly [name: string]: McpEntry };
