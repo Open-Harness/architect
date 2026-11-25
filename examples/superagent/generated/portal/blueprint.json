@@ -5667,6 +5667,7 @@
               "type": "schema",
               "format": "list"
             },
+            "json": "list",
             "ref": "eval.triggers"
           },
           "timeoutMs": {
@@ -5720,7 +5721,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "45d2d74e2f077f7b"
+        "hash": "546a8ba2e7a5b4b2"
       },
       "input.delivered": {
         "kind": "operation",
@@ -6868,6 +6869,7 @@
               "type": "schema",
               "format": "list"
             },
+            "json": "list",
             "ref": "policy.allowed"
           },
           "bots": {
@@ -6875,6 +6877,7 @@
               "type": "schema",
               "format": "list"
             },
+            "json": "list",
             "ref": "policy.bots"
           },
           "admission": {
@@ -6936,7 +6939,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "a66072b4b1b92710"
+        "hash": "61cde18dbb2e68c3"
       },
       "policy.sync": {
         "kind": "operation",
@@ -8072,12 +8075,14 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "ref": "superagent.connections"
           },
           "playbook": {
             "value": {
               "type": "schema"
             },
+            "json": "object",
             "ref": "superagent.playbook"
           },
           "slots": {
@@ -8139,7 +8144,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "5efe7d8005653498"
+        "hash": "7ffcd5c6e77a9b85"
       },
       "superagent.fill": {
         "kind": "operation",
@@ -8719,12 +8724,14 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "ref": "superagent.connections"
           },
           "playbook": {
             "value": {
               "type": "schema"
             },
+            "json": "object",
             "ref": "superagent.playbook"
           },
           "slots": {
@@ -8777,7 +8784,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "94f49eef64aa1927"
+        "hash": "eed019d6ead8f73c"
       },
       "thread.bind": {
         "kind": "operation",
@@ -10449,7 +10456,8 @@
             "value": {
               "type": "schema"
             },
-            "optional": true
+            "optional": true,
+            "json": "object"
           },
           "channel": {
             "value": {
@@ -10511,7 +10519,7 @@
         "runs": "server",
         "test": "unit",
         "budget": null,
-        "hash": "dcd8f9335d7ad5d7"
+        "hash": "d85e3c07648ed53a"
       },
       "trigger.reevaluate": {
         "kind": "operation",
@@ -15230,7 +15238,7 @@
       "thing:superagent": "7239711b73e83825"
     },
     "eval.start": {
-      "operation:eval.start": "45d2d74e2f077f7b",
+      "operation:eval.start": "546a8ba2e7a5b4b2",
       "thing:eval": "bc42f0b1a8f2e36f",
       "thing:superagent": "7239711b73e83825"
     },
@@ -15318,7 +15326,7 @@
       "thing:superagent": "7239711b73e83825"
     },
     "policy.save": {
-      "operation:policy.save": "a66072b4b1b92710",
+      "operation:policy.save": "61cde18dbb2e68c3",
       "thing:policy": "f467cbf59f3e8c68",
       "thing:superagent": "7239711b73e83825"
     },
@@ -15402,7 +15410,7 @@
       "thing:superagent": "7239711b73e83825"
     },
     "superagent.create": {
-      "operation:superagent.create": "5efe7d8005653498",
+      "operation:superagent.create": "7ffcd5c6e77a9b85",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "7239711b73e83825"
     },
@@ -15442,7 +15450,7 @@
       "thing:superagent": "7239711b73e83825"
     },
     "superagent.update": {
-      "operation:superagent.update": "94f49eef64aa1927",
+      "operation:superagent.update": "eed019d6ead8f73c",
       "thing:agent": "a369aaa882ce59e7",
       "thing:superagent": "7239711b73e83825"
     },
@@ -15559,7 +15567,7 @@
       "thing:trigger": "495ade995f1f31f8"
     },
     "trigger.receive": {
-      "operation:trigger.receive": "dcd8f9335d7ad5d7",
+      "operation:trigger.receive": "d85e3c07648ed53a",
       "thing:superagent": "7239711b73e83825",
       "thing:trigger": "495ade995f1f31f8"
     },
@@ -15699,5 +15707,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "1a449beb7d2cad84bb52488defaaebb00f460cc5d29e5eb51c74d57c304586fd"
+  "digest": "7ee3fdbcf2150849ce34a0dca127551587e23333689aeca81453775f1f5bd670"
 }

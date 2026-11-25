@@ -14,7 +14,7 @@ export const refAny = (f: FieldModel) => f.value.type === "schema" && f.value.fo
 
 /** What a text flag takes, in the words a caller uses: a wide number is a `uint` (kept as text, so no digit is lost), an id says what it names, a named value its own name. */
 export const metavar = (f: FieldModel): string =>
-  f.value.type === "uint" ? "uint" : f.value.type === "id" ? "id" : refAny(f) ? "json" : f.named !== undefined ? words(f.named).replace(/ /g, "-") : "text";
+  f.value.type === "uint" ? "uint" : f.value.type === "id" ? "id" : refAny(f) || f.json !== undefined ? "json" : f.named !== undefined ? words(f.named).replace(/ /g, "-") : "text";
 
 /** What kind of value a field holds, as words. */
 const kindOf = (f: FieldModel): string =>
@@ -22,6 +22,8 @@ const kindOf = (f: FieldModel): string =>
   : f.value.type === "id" ? `an id (${f.value.prefix}_...)`
   : f.value.type === "text" ? `text of up to ${f.value.max} characters`
   : refAny(f) ? "a JSON object with the declaration and the id"
+  : f.json === "list" ? "a list, as JSON"
+  : f.json === "object" ? "an object, as JSON"
   : "text";
 
 /**
