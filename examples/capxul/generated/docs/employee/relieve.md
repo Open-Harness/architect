@@ -72,6 +72,13 @@ Starts from the world `an interview`.
 
 - **Ada relieves Cy on 3 December.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-12-03`, and gets back `2026-12-03`.
 
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **Dee leaves.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-11-30`, and gets back the world's newHire.
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+
 ### move an employee through the company
 
 Starts from the world `a new hire`.
@@ -85,17 +92,37 @@ Starts from the world `a second transfer`.
 - **Ada relieves Bo on 30 November.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
 - **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+
 ### run a separation
 
 Starts from the world `a separation`.
 
 - **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **Dee leaves.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-11-30`, and gets back the world's newHire.
+
 ### schedule an interview
 
 Starts from the world `an outside employee`.
 
 - **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+- **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
 ### set up interview rounds
 

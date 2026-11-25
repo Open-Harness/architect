@@ -16,6 +16,19 @@ import * as accountBalance from "../api/src/account/balance.ts";
 import * as accountCreate from "../api/src/account/create.ts";
 import * as accountGet from "../api/src/account/get.ts";
 import * as accountMakeLedger from "../api/src/account/make-ledger.ts";
+import * as appraisalCreate from "../api/src/appraisal/create.ts";
+import * as appraisalGet from "../api/src/appraisal/get.ts";
+import * as appraisalList from "../api/src/appraisal/list.ts";
+import * as appraisalRate from "../api/src/appraisal/rate.ts";
+import * as appraisalSelfRate from "../api/src/appraisal/self-rate.ts";
+import * as appraisalSubmit from "../api/src/appraisal/submit.ts";
+import * as appraisalCycleComplete from "../api/src/appraisal-cycle/complete.ts";
+import * as appraisalCycleCreate from "../api/src/appraisal-cycle/create.ts";
+import * as appraisalCycleGet from "../api/src/appraisal-cycle/get.ts";
+import * as appraisalCycleReopen from "../api/src/appraisal-cycle/reopen.ts";
+import * as appraisalCycleStart from "../api/src/appraisal-cycle/start.ts";
+import * as appraisalTemplateCreate from "../api/src/appraisal-template/create.ts";
+import * as appraisalTemplateGet from "../api/src/appraisal-template/get.ts";
 import * as attendanceGet from "../api/src/attendance/get.ts";
 import * as attendanceList from "../api/src/attendance/list.ts";
 import * as attendanceMark from "../api/src/attendance/mark.ts";
@@ -53,8 +66,13 @@ import * as designationGet from "../api/src/designation/get.ts";
 import * as employeeGet from "../api/src/employee/get.ts";
 import * as employeeHire from "../api/src/employee/hire.ts";
 import * as employeeRelieve from "../api/src/employee/relieve.ts";
+import * as employeeFeedbackCriteriaCreate from "../api/src/employee-feedback-criteria/create.ts";
+import * as employeeFeedbackCriteriaGet from "../api/src/employee-feedback-criteria/get.ts";
 import * as employeeGradeCreate from "../api/src/employee-grade/create.ts";
 import * as employeeGradeGet from "../api/src/employee-grade/get.ts";
+import * as employeePerformanceFeedbackCreate from "../api/src/employee-performance-feedback/create.ts";
+import * as employeePerformanceFeedbackGet from "../api/src/employee-performance-feedback/get.ts";
+import * as employeePerformanceFeedbackSubmit from "../api/src/employee-performance-feedback/submit.ts";
 import * as employeePromotionCancel from "../api/src/employee-promotion/cancel.ts";
 import * as employeePromotionCreate from "../api/src/employee-promotion/create.ts";
 import * as employeePromotionGet from "../api/src/employee-promotion/get.ts";
@@ -80,6 +98,16 @@ import * as expenseClaimTypeGet from "../api/src/expense-claim-type/get.ts";
 import * as fiscalYearCreate from "../api/src/fiscal-year/create.ts";
 import * as fiscalYearGet from "../api/src/fiscal-year/get.ts";
 import * as glEntryList from "../api/src/gl-entry/list.ts";
+import * as goalArchive from "../api/src/goal/archive.ts";
+import * as goalClose from "../api/src/goal/close.ts";
+import * as goalComplete from "../api/src/goal/complete.ts";
+import * as goalCreate from "../api/src/goal/create.ts";
+import * as goalGet from "../api/src/goal/get.ts";
+import * as goalList from "../api/src/goal/list.ts";
+import * as goalReopen from "../api/src/goal/reopen.ts";
+import * as goalRollUp from "../api/src/goal/roll-up.ts";
+import * as goalUnarchive from "../api/src/goal/unarchive.ts";
+import * as goalUpdateProgress from "../api/src/goal/update-progress.ts";
 import * as holidayAdd from "../api/src/holiday/add.ts";
 import * as holidayGet from "../api/src/holiday/get.ts";
 import * as holidayListAddWeeklyOff from "../api/src/holiday-list/add-weekly-off.ts";
@@ -110,11 +138,22 @@ import * as journalEntryCreate from "../api/src/journal-entry/create.ts";
 import * as journalEntryGet from "../api/src/journal-entry/get.ts";
 import * as journalEntrySubmit from "../api/src/journal-entry/submit.ts";
 import * as journalEntryAccountList from "../api/src/journal-entry-account/list.ts";
+import * as kraCreate from "../api/src/kra/create.ts";
+import * as kraGet from "../api/src/kra/get.ts";
 import * as shiftTypeCreate from "../api/src/shift-type/create.ts";
 import * as shiftTypeGet from "../api/src/shift-type/get.ts";
 import accountBalanceHandler from "../../src/account/balance.ts";
 import accountCreateHandler from "../../src/account/create.ts";
 import accountMakeLedgerHandler from "../../src/account/make-ledger.ts";
+import appraisalCreateHandler from "../../src/appraisal/create.ts";
+import appraisalRateHandler from "../../src/appraisal/rate.ts";
+import appraisalSelfRateHandler from "../../src/appraisal/self-rate.ts";
+import appraisalSubmitHandler from "../../src/appraisal/submit.ts";
+import appraisalCycleCompleteHandler from "../../src/appraisal-cycle/complete.ts";
+import appraisalCycleCreateHandler from "../../src/appraisal-cycle/create.ts";
+import appraisalCycleReopenHandler from "../../src/appraisal-cycle/reopen.ts";
+import appraisalCycleStartHandler from "../../src/appraisal-cycle/start.ts";
+import appraisalTemplateCreateHandler from "../../src/appraisal-template/create.ts";
 import attendanceMarkHandler from "../../src/attendance/mark.ts";
 import attendanceRequestApproveHandler from "../../src/attendance-request/approve.ts";
 import attendanceRequestCreateHandler from "../../src/attendance-request/create.ts";
@@ -138,7 +177,10 @@ import departmentCreateHandler from "../../src/department/create.ts";
 import designationCreateHandler from "../../src/designation/create.ts";
 import employeeHireHandler from "../../src/employee/hire.ts";
 import employeeRelieveHandler from "../../src/employee/relieve.ts";
+import employeeFeedbackCriteriaCreateHandler from "../../src/employee-feedback-criteria/create.ts";
 import employeeGradeCreateHandler from "../../src/employee-grade/create.ts";
+import employeePerformanceFeedbackCreateHandler from "../../src/employee-performance-feedback/create.ts";
+import employeePerformanceFeedbackSubmitHandler from "../../src/employee-performance-feedback/submit.ts";
 import employeePromotionCancelHandler from "../../src/employee-promotion/cancel.ts";
 import employeePromotionCreateHandler from "../../src/employee-promotion/create.ts";
 import employeePromotionSubmitHandler from "../../src/employee-promotion/submit.ts";
@@ -155,6 +197,14 @@ import expenseClaimCreateHandler from "../../src/expense-claim/create.ts";
 import expenseClaimRejectHandler from "../../src/expense-claim/reject.ts";
 import expenseClaimTypeCreateHandler from "../../src/expense-claim-type/create.ts";
 import fiscalYearCreateHandler from "../../src/fiscal-year/create.ts";
+import goalArchiveHandler from "../../src/goal/archive.ts";
+import goalCloseHandler from "../../src/goal/close.ts";
+import goalCompleteHandler from "../../src/goal/complete.ts";
+import goalCreateHandler from "../../src/goal/create.ts";
+import goalReopenHandler from "../../src/goal/reopen.ts";
+import goalRollUpHandler from "../../src/goal/roll-up.ts";
+import goalUnarchiveHandler from "../../src/goal/unarchive.ts";
+import goalUpdateProgressHandler from "../../src/goal/update-progress.ts";
 import holidayAddHandler from "../../src/holiday/add.ts";
 import holidayListAddWeeklyOffHandler from "../../src/holiday-list/add-weekly-off.ts";
 import holidayListCreateHandler from "../../src/holiday-list/create.ts";
@@ -175,8 +225,12 @@ import jobOpeningCreateHandler from "../../src/job-opening/create.ts";
 import journalEntryCancelHandler from "../../src/journal-entry/cancel.ts";
 import journalEntryCreateHandler from "../../src/journal-entry/create.ts";
 import journalEntrySubmitHandler from "../../src/journal-entry/submit.ts";
+import kraCreateHandler from "../../src/kra/create.ts";
 import shiftTypeCreateHandler from "../../src/shift-type/create.ts";
 import * as accountThing from "../../blueprint/things/account/thing.ts";
+import * as appraisalThing from "../../blueprint/things/appraisal/thing.ts";
+import * as appraisalCycleThing from "../../blueprint/things/appraisal-cycle/thing.ts";
+import * as appraisalTemplateThing from "../../blueprint/things/appraisal-template/thing.ts";
 import * as attendanceThing from "../../blueprint/things/attendance/thing.ts";
 import * as attendanceRequestThing from "../../blueprint/things/attendance-request/thing.ts";
 import * as bankAccountThing from "../../blueprint/things/bank-account/thing.ts";
@@ -189,7 +243,9 @@ import * as costCenterThing from "../../blueprint/things/cost-center/thing.ts";
 import * as departmentThing from "../../blueprint/things/department/thing.ts";
 import * as designationThing from "../../blueprint/things/designation/thing.ts";
 import * as employeeThing from "../../blueprint/things/employee/thing.ts";
+import * as employeeFeedbackCriteriaThing from "../../blueprint/things/employee-feedback-criteria/thing.ts";
 import * as employeeGradeThing from "../../blueprint/things/employee-grade/thing.ts";
+import * as employeePerformanceFeedbackThing from "../../blueprint/things/employee-performance-feedback/thing.ts";
 import * as employeePromotionThing from "../../blueprint/things/employee-promotion/thing.ts";
 import * as employeeSeparationThing from "../../blueprint/things/employee-separation/thing.ts";
 import * as employeeTransferThing from "../../blueprint/things/employee-transfer/thing.ts";
@@ -199,6 +255,7 @@ import * as expenseClaimThing from "../../blueprint/things/expense-claim/thing.t
 import * as expenseClaimTypeThing from "../../blueprint/things/expense-claim-type/thing.ts";
 import * as fiscalYearThing from "../../blueprint/things/fiscal-year/thing.ts";
 import * as glEntryThing from "../../blueprint/things/gl-entry/thing.ts";
+import * as goalThing from "../../blueprint/things/goal/thing.ts";
 import * as holidayThing from "../../blueprint/things/holiday/thing.ts";
 import * as holidayListThing from "../../blueprint/things/holiday-list/thing.ts";
 import * as interviewThing from "../../blueprint/things/interview/thing.ts";
@@ -209,8 +266,12 @@ import * as jobOfferThing from "../../blueprint/things/job-offer/thing.ts";
 import * as jobOpeningThing from "../../blueprint/things/job-opening/thing.ts";
 import * as journalEntryThing from "../../blueprint/things/journal-entry/thing.ts";
 import * as journalEntryAccountThing from "../../blueprint/things/journal-entry-account/thing.ts";
+import * as kraThing from "../../blueprint/things/kra/thing.ts";
 import * as shiftTypeThing from "../../blueprint/things/shift-type/thing.ts";
 import * as accountInvariants from "../../blueprint/things/account/invariants.ts";
+import * as appraisalInvariants from "../../blueprint/things/appraisal/invariants.ts";
+import * as appraisalCycleInvariants from "../../blueprint/things/appraisal-cycle/invariants.ts";
+import * as appraisalTemplateInvariants from "../../blueprint/things/appraisal-template/invariants.ts";
 import * as attendanceInvariants from "../../blueprint/things/attendance/invariants.ts";
 import * as bankAccountInvariants from "../../blueprint/things/bank-account/invariants.ts";
 import * as bankTransactionInvariants from "../../blueprint/things/bank-transaction/invariants.ts";
@@ -222,6 +283,7 @@ import * as costCenterInvariants from "../../blueprint/things/cost-center/invari
 import * as departmentInvariants from "../../blueprint/things/department/invariants.ts";
 import * as designationInvariants from "../../blueprint/things/designation/invariants.ts";
 import * as employeeInvariants from "../../blueprint/things/employee/invariants.ts";
+import * as employeeFeedbackCriteriaInvariants from "../../blueprint/things/employee-feedback-criteria/invariants.ts";
 import * as employeeGradeInvariants from "../../blueprint/things/employee-grade/invariants.ts";
 import * as employeeSeparationInvariants from "../../blueprint/things/employee-separation/invariants.ts";
 import * as employmentTypeInvariants from "../../blueprint/things/employment-type/invariants.ts";
@@ -233,6 +295,7 @@ import * as interviewInvariants from "../../blueprint/things/interview/invariant
 import * as interviewFeedbackInvariants from "../../blueprint/things/interview-feedback/invariants.ts";
 import * as interviewRoundInvariants from "../../blueprint/things/interview-round/invariants.ts";
 import * as jobOfferInvariants from "../../blueprint/things/job-offer/invariants.ts";
+import * as kraInvariants from "../../blueprint/things/kra/invariants.ts";
 import * as shiftTypeInvariants from "../../blueprint/things/shift-type/invariants.ts";
 
 import { World as WorldHost, type WorldWakes } from "@orthograph/host-cloudflare";
@@ -251,6 +314,19 @@ const accountBalanceServed = Handlers.serve({ name: "account.balance", operation
 const accountCreateServed = Handlers.serve({ name: "account.create", operation: accountCreate.declaration, handler: accountCreateHandler, invariants: { AccountNameTaken: "account.oneNamePerCompany" }, codes: Errors.codes });
 const accountGetServed = Reads.serve({ name: "account.get", read: accountGet.declaration });
 const accountMakeLedgerServed = Handlers.serve({ name: "account.make-ledger", operation: accountMakeLedger.declaration, handler: accountMakeLedgerHandler, notFrom: "AccountNotGroup", invariants: { AccountNameTaken: "account.oneNamePerCompany" }, codes: Errors.codes });
+const appraisalCreateServed = Handlers.serve({ name: "appraisal.create", operation: appraisalCreate.declaration, handler: appraisalCreateHandler, notFound: { employee: "EmployeeNotFound", appraisalTemplate: "AppraisalTemplateNotFound" }, invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const appraisalGetServed = Reads.serve({ name: "appraisal.get", read: appraisalGet.declaration });
+const appraisalListServed = Reads.serve({ name: "appraisal.list", read: appraisalList.declaration });
+const appraisalRateServed = Handlers.serve({ name: "appraisal.rate", operation: appraisalRate.declaration, handler: appraisalRateHandler, notFrom: "AppraisalNotDraft", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const appraisalSelfRateServed = Handlers.serve({ name: "appraisal.self-rate", operation: appraisalSelfRate.declaration, handler: appraisalSelfRateHandler, notFrom: "AppraisalNotDraft", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const appraisalSubmitServed = Handlers.serve({ name: "appraisal.submit", operation: appraisalSubmit.declaration, handler: appraisalSubmitHandler, notFrom: "AppraisalNotDraft", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const appraisalCycleCompleteServed = Handlers.serve({ name: "appraisal-cycle.complete", operation: appraisalCycleComplete.declaration, handler: appraisalCycleCompleteHandler, notFrom: "AppraisalCycleNotNotStarted", invariants: { CycleNameTaken: "appraisal-cycle.oneNamePerCompany" }, codes: Errors.codes });
+const appraisalCycleCreateServed = Handlers.serve({ name: "appraisal-cycle.create", operation: appraisalCycleCreate.declaration, handler: appraisalCycleCreateHandler, invariants: { CycleNameTaken: "appraisal-cycle.oneNamePerCompany" }, codes: Errors.codes });
+const appraisalCycleGetServed = Reads.serve({ name: "appraisal-cycle.get", read: appraisalCycleGet.declaration });
+const appraisalCycleReopenServed = Handlers.serve({ name: "appraisal-cycle.reopen", operation: appraisalCycleReopen.declaration, handler: appraisalCycleReopenHandler, notFrom: "AppraisalCycleNotNotStarted", invariants: { CycleNameTaken: "appraisal-cycle.oneNamePerCompany" }, codes: Errors.codes });
+const appraisalCycleStartServed = Handlers.serve({ name: "appraisal-cycle.start", operation: appraisalCycleStart.declaration, handler: appraisalCycleStartHandler, notFrom: "AppraisalCycleNotNotStarted", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle", CycleNameTaken: "appraisal-cycle.oneNamePerCompany" }, codes: Errors.codes });
+const appraisalTemplateCreateServed = Handlers.serve({ name: "appraisal-template.create", operation: appraisalTemplateCreate.declaration, handler: appraisalTemplateCreateHandler, invariants: { TemplateTitleTaken: "appraisal-template.oneTitlePerCompany" }, codes: Errors.codes });
+const appraisalTemplateGetServed = Reads.serve({ name: "appraisal-template.get", read: appraisalTemplateGet.declaration });
 const attendanceGetServed = Reads.serve({ name: "attendance.get", read: attendanceGet.declaration });
 const attendanceListServed = Reads.serve({ name: "attendance.list", read: attendanceList.declaration });
 const attendanceMarkServed = Handlers.serve({ name: "attendance.mark", operation: attendanceMark.declaration, handler: attendanceMarkHandler, notFound: { employee: "EmployeeNotFound" }, invariants: { AttendanceAlreadyMarked: "attendance.oneAttendancePerDay" }, codes: Errors.codes });
@@ -288,8 +364,13 @@ const designationGetServed = Reads.serve({ name: "designation.get", read: design
 const employeeGetServed = Reads.serve({ name: "employee.get", read: employeeGet.declaration });
 const employeeHireServed = Handlers.serve({ name: "employee.hire", operation: employeeHire.declaration, handler: employeeHireHandler, notFound: { department: "DepartmentNotFound", designation: "DesignationNotFound" }, invariants: { EmployeeAlreadyHired: "employee.onePlacePerPerson" }, codes: Errors.codes });
 const employeeRelieveServed = Handlers.serve({ name: "employee.relieve", operation: employeeRelieve.declaration, handler: employeeRelieveHandler, notFrom: "EmployeeNotActive", codes: Errors.codes });
+const employeeFeedbackCriteriaCreateServed = Handlers.serve({ name: "employee-feedback-criteria.create", operation: employeeFeedbackCriteriaCreate.declaration, handler: employeeFeedbackCriteriaCreateHandler, invariants: { CriteriaNameTaken: "employee-feedback-criteria.oneNamePerCompany" }, codes: Errors.codes });
+const employeeFeedbackCriteriaGetServed = Reads.serve({ name: "employee-feedback-criteria.get", read: employeeFeedbackCriteriaGet.declaration });
 const employeeGradeCreateServed = Handlers.serve({ name: "employee-grade.create", operation: employeeGradeCreate.declaration, handler: employeeGradeCreateHandler, invariants: { EmployeeGradeNameTaken: "employee-grade.oneNamePerCompany" }, codes: Errors.codes });
 const employeeGradeGetServed = Reads.serve({ name: "employee-grade.get", read: employeeGradeGet.declaration });
+const employeePerformanceFeedbackCreateServed = Handlers.serve({ name: "employee-performance-feedback.create", operation: employeePerformanceFeedbackCreate.declaration, handler: employeePerformanceFeedbackCreateHandler, notFound: { appraisal: "AppraisalNotFound" }, codes: Errors.codes });
+const employeePerformanceFeedbackGetServed = Reads.serve({ name: "employee-performance-feedback.get", read: employeePerformanceFeedbackGet.declaration });
+const employeePerformanceFeedbackSubmitServed = Handlers.serve({ name: "employee-performance-feedback.submit", operation: employeePerformanceFeedbackSubmit.declaration, handler: employeePerformanceFeedbackSubmitHandler, notFrom: "EmployeePerformanceFeedbackNotDraft", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
 const employeePromotionCancelServed = Handlers.serve({ name: "employee-promotion.cancel", operation: employeePromotionCancel.declaration, handler: employeePromotionCancelHandler, notFrom: "EmployeePromotionNotDraft", invariants: { EmployeeAlreadyHired: "employee.onePlacePerPerson" }, codes: Errors.codes });
 const employeePromotionCreateServed = Handlers.serve({ name: "employee-promotion.create", operation: employeePromotionCreate.declaration, handler: employeePromotionCreateHandler, notFound: { employee: "EmployeeNotFound", newDesignation: "DesignationNotFound" }, codes: Errors.codes });
 const employeePromotionGetServed = Reads.serve({ name: "employee-promotion.get", read: employeePromotionGet.declaration });
@@ -315,6 +396,16 @@ const expenseClaimTypeGetServed = Reads.serve({ name: "expense-claim-type.get", 
 const fiscalYearCreateServed = Handlers.serve({ name: "fiscal-year.create", operation: fiscalYearCreate.declaration, handler: fiscalYearCreateHandler, invariants: { FiscalYearNameTaken: "fiscal-year.oneNamePerCompany" }, codes: Errors.codes });
 const fiscalYearGetServed = Reads.serve({ name: "fiscal-year.get", read: fiscalYearGet.declaration });
 const glEntryListServed = Reads.serve({ name: "gl-entry.list", read: glEntryList.declaration });
+const goalArchiveServed = Handlers.serve({ name: "goal.archive", operation: goalArchive.declaration, handler: goalArchiveHandler, notFrom: "GoalNotPending", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const goalCloseServed = Handlers.serve({ name: "goal.close", operation: goalClose.declaration, handler: goalCloseHandler, notFrom: "GoalNotPending", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const goalCompleteServed = Handlers.serve({ name: "goal.complete", operation: goalComplete.declaration, handler: goalCompleteHandler, notFrom: "GoalNotPending", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const goalCreateServed = Handlers.serve({ name: "goal.create", operation: goalCreate.declaration, handler: goalCreateHandler, notFound: { employee: "EmployeeNotFound", appraisalCycle: "AppraisalCycleNotFound", kra: "KraNotFound" }, invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const goalGetServed = Reads.serve({ name: "goal.get", read: goalGet.declaration });
+const goalListServed = Reads.serve({ name: "goal.list", read: goalList.declaration });
+const goalReopenServed = Handlers.serve({ name: "goal.reopen", operation: goalReopen.declaration, handler: goalReopenHandler, notFrom: "GoalNotPending", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const goalRollUpServed = Handlers.serve({ name: "goal.roll-up", operation: goalRollUp.declaration, handler: goalRollUpHandler, notFrom: "GoalNotPending", codes: Errors.codes });
+const goalUnarchiveServed = Handlers.serve({ name: "goal.unarchive", operation: goalUnarchive.declaration, handler: goalUnarchiveHandler, notFrom: "GoalNotPending", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
+const goalUpdateProgressServed = Handlers.serve({ name: "goal.update-progress", operation: goalUpdateProgress.declaration, handler: goalUpdateProgressHandler, notFrom: "GoalNotPending", invariants: { AppraisalAlreadyExists: "appraisal.oneAppraisalPerCycle" }, codes: Errors.codes });
 const holidayAddServed = Handlers.serve({ name: "holiday.add", operation: holidayAdd.declaration, handler: holidayAddHandler, invariants: { HolidayDateTaken: "holiday.oneHolidayPerDay", HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
 const holidayGetServed = Reads.serve({ name: "holiday.get", read: holidayGet.declaration });
 const holidayListAddWeeklyOffServed = Handlers.serve({ name: "holiday-list.add-weekly-off", operation: holidayListAddWeeklyOff.declaration, handler: holidayListAddWeeklyOffHandler, notFrom: "HolidayListNotActive", invariants: { HolidayDateTaken: "holiday.oneHolidayPerDay", HolidayListNameTaken: "holiday-list.oneNamePerCompany" }, codes: Errors.codes });
@@ -345,14 +436,16 @@ const journalEntryCreateServed = Handlers.serve({ name: "journal-entry.create", 
 const journalEntryGetServed = Reads.serve({ name: "journal-entry.get", read: journalEntryGet.declaration });
 const journalEntrySubmitServed = Handlers.serve({ name: "journal-entry.submit", operation: journalEntrySubmit.declaration, handler: journalEntrySubmitHandler, notFrom: "JournalEntryNotDraft", codes: Errors.codes });
 const journalEntryAccountListServed = Reads.serve({ name: "journal-entry-account.list", read: journalEntryAccountList.declaration });
+const kraCreateServed = Handlers.serve({ name: "kra.create", operation: kraCreate.declaration, handler: kraCreateHandler, invariants: { KraTitleTaken: "kra.oneTitlePerCompany" }, codes: Errors.codes });
+const kraGetServed = Reads.serve({ name: "kra.get", read: kraGet.declaration });
 const shiftTypeCreateServed = Handlers.serve({ name: "shift-type.create", operation: shiftTypeCreate.declaration, handler: shiftTypeCreateHandler, invariants: { ShiftTypeNameTaken: "shift-type.oneNamePerCompany" }, codes: Errors.codes });
 const shiftTypeGetServed = Reads.serve({ name: "shift-type.get", read: shiftTypeGet.declaration });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(accountThing), "account"], [thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(bankTransactionThing), "bank-transaction"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(costCenterThing), "cost-center"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employeePromotionThing), "employee-promotion"], [thingIn(employeeSeparationThing), "employee-separation"], [thingIn(employeeTransferThing), "employee-transfer"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(fiscalYearThing), "fiscal-year"], [thingIn(glEntryThing), "gl-entry"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(interviewThing), "interview"], [thingIn(interviewFeedbackThing), "interview-feedback"], [thingIn(interviewRoundThing), "interview-round"], [thingIn(jobApplicantThing), "job-applicant"], [thingIn(jobOfferThing), "job-offer"], [thingIn(jobOpeningThing), "job-opening"], [thingIn(journalEntryThing), "journal-entry"], [thingIn(journalEntryAccountThing), "journal-entry-account"], [thingIn(shiftTypeThing), "shift-type"]] as const;
+const tables = [[thingIn(accountThing), "account"], [thingIn(appraisalThing), "appraisal"], [thingIn(appraisalCycleThing), "appraisal-cycle"], [thingIn(appraisalTemplateThing), "appraisal-template"], [thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(bankTransactionThing), "bank-transaction"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(costCenterThing), "cost-center"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeFeedbackCriteriaThing), "employee-feedback-criteria"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employeePerformanceFeedbackThing), "employee-performance-feedback"], [thingIn(employeePromotionThing), "employee-promotion"], [thingIn(employeeSeparationThing), "employee-separation"], [thingIn(employeeTransferThing), "employee-transfer"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(fiscalYearThing), "fiscal-year"], [thingIn(glEntryThing), "gl-entry"], [thingIn(goalThing), "goal"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(interviewThing), "interview"], [thingIn(interviewFeedbackThing), "interview-feedback"], [thingIn(interviewRoundThing), "interview-round"], [thingIn(jobApplicantThing), "job-applicant"], [thingIn(jobOfferThing), "job-offer"], [thingIn(jobOpeningThing), "job-opening"], [thingIn(journalEntryThing), "journal-entry"], [thingIn(journalEntryAccountThing), "journal-entry-account"], [thingIn(kraThing), "kra"], [thingIn(shiftTypeThing), "shift-type"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("bank-transaction", bankTransactionInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("cost-center", costCenterInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employee-separation", employeeSeparationInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("fiscal-year", fiscalYearInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
+const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("appraisal", appraisalInvariants), ...invariantsIn("appraisal-cycle", appraisalCycleInvariants), ...invariantsIn("appraisal-template", appraisalTemplateInvariants), ...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("bank-transaction", bankTransactionInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("cost-center", costCenterInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-feedback-criteria", employeeFeedbackCriteriaInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employee-separation", employeeSeparationInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("fiscal-year", fiscalYearInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("kra", kraInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
 // A refused payload names every field it was refused for, not only the first (#988).
@@ -379,6 +472,34 @@ const AccountLive = HttpApiBuilder.group(CallApi, "account", Effect.fn(function*
       .handle("create", ({ payload, request }) => call(accountCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(accountGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("make-ledger", ({ payload, request }) => call(accountMakeLedgerServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const AppraisalLive = HttpApiBuilder.group(CallApi, "appraisal", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(appraisalCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(appraisalGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("list", ({ payload, request }) => call(appraisalListServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("rate", ({ payload, request }) => call(appraisalRateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("self-rate", ({ payload, request }) => call(appraisalSelfRateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("submit", ({ payload, request }) => call(appraisalSubmitServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const AppraisalCycleLive = HttpApiBuilder.group(CallApi, "appraisal-cycle", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("complete", ({ payload, request }) => call(appraisalCycleCompleteServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(appraisalCycleCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(appraisalCycleGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reopen", ({ payload, request }) => call(appraisalCycleReopenServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("start", ({ payload, request }) => call(appraisalCycleStartServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const AppraisalTemplateLive = HttpApiBuilder.group(CallApi, "appraisal-template", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(appraisalTemplateCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(appraisalTemplateGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const AttendanceLive = HttpApiBuilder.group(CallApi, "attendance", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
@@ -477,12 +598,27 @@ const EmployeeLive = HttpApiBuilder.group(CallApi, "employee", Effect.fn(functio
       .handle("hire", ({ payload, request }) => call(employeeHireServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("relieve", ({ payload, request }) => call(employeeRelieveServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
+const EmployeeFeedbackCriteriaLive = HttpApiBuilder.group(CallApi, "employee-feedback-criteria", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(employeeFeedbackCriteriaCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(employeeFeedbackCriteriaGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
 const EmployeeGradeLive = HttpApiBuilder.group(CallApi, "employee-grade", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
   const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("create", ({ payload, request }) => call(employeeGradeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(employeeGradeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const EmployeePerformanceFeedbackLive = HttpApiBuilder.group(CallApi, "employee-performance-feedback", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(employeePerformanceFeedbackCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(employeePerformanceFeedbackGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("submit", ({ payload, request }) => call(employeePerformanceFeedbackSubmitServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const EmployeePromotionLive = HttpApiBuilder.group(CallApi, "employee-promotion", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
@@ -553,6 +689,21 @@ const GlEntryLive = HttpApiBuilder.group(CallApi, "gl-entry", Effect.fn(function
   const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
   return handlers
       .handle("list", ({ payload, request }) => call(glEntryListServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const GoalLive = HttpApiBuilder.group(CallApi, "goal", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("archive", ({ payload, request }) => call(goalArchiveServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("close", ({ payload, request }) => call(goalCloseServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("complete", ({ payload, request }) => call(goalCompleteServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(goalCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(goalGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("list", ({ payload, request }) => call(goalListServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("reopen", ({ payload, request }) => call(goalReopenServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("roll-up", ({ payload, request }) => call(goalRollUpServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("unarchive", ({ payload, request }) => call(goalUnarchiveServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("update-progress", ({ payload, request }) => call(goalUpdateProgressServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const HolidayLive = HttpApiBuilder.group(CallApi, "holiday", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
@@ -634,6 +785,13 @@ const JournalEntryAccountLive = HttpApiBuilder.group(CallApi, "journal-entry-acc
   return handlers
       .handle("list", ({ payload, request }) => call(journalEntryAccountListServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
+const KraLive = HttpApiBuilder.group(CallApi, "kra", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("create", ({ payload, request }) => call(kraCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(kraGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
 const ShiftTypeLive = HttpApiBuilder.group(CallApi, "shift-type", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
   const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
@@ -666,6 +824,15 @@ export const steps = {
   "account.balance": ["account.balance.sum"],
   "account.create": ["account.create.load", "account.create.insert"],
   "account.make-ledger": ["account.make-ledger.load", "account.make-ledger.update"],
+  "appraisal.create": ["appraisal.create.load", "appraisal.create.insert"],
+  "appraisal.rate": ["appraisal.rate.load", "appraisal.rate.update"],
+  "appraisal.self-rate": ["appraisal.self-rate.load", "appraisal.self-rate.update"],
+  "appraisal.submit": ["appraisal.submit.load", "appraisal.submit.update"],
+  "appraisal-cycle.complete": ["appraisal-cycle.complete.load", "appraisal-cycle.complete.update"],
+  "appraisal-cycle.create": ["appraisal-cycle.create.load", "appraisal-cycle.create.insert"],
+  "appraisal-cycle.reopen": ["appraisal-cycle.reopen.update"],
+  "appraisal-cycle.start": ["appraisal-cycle.start.load", "appraisal-cycle.start.create"],
+  "appraisal-template.create": ["appraisal-template.create.load", "appraisal-template.create.insert"],
   "attendance.mark": ["attendance.mark.load", "attendance.mark.insert"],
   "attendance-request.approve": ["attendance-request.approve.load", "attendance-request.approve.mark"],
   "attendance-request.create": ["attendance-request.create.load", "attendance-request.create.insert"],
@@ -689,7 +856,10 @@ export const steps = {
   "designation.create": ["designation.create.insert"],
   "employee.hire": ["employee.hire.load", "employee.hire.insert"],
   "employee.relieve": ["employee.relieve.load", "employee.relieve.update"],
+  "employee-feedback-criteria.create": ["employee-feedback-criteria.create.insert"],
   "employee-grade.create": ["employee-grade.create.insert"],
+  "employee-performance-feedback.create": ["employee-performance-feedback.create.load", "employee-performance-feedback.create.insert"],
+  "employee-performance-feedback.submit": ["employee-performance-feedback.submit.load", "employee-performance-feedback.submit.update"],
   "employee-promotion.cancel": ["employee-promotion.cancel.update"],
   "employee-promotion.create": ["employee-promotion.create.load", "employee-promotion.create.insert"],
   "employee-promotion.submit": ["employee-promotion.submit.update"],
@@ -706,6 +876,14 @@ export const steps = {
   "expense-claim.reject": ["expense-claim.reject.update"],
   "expense-claim-type.create": ["expense-claim-type.create.insert"],
   "fiscal-year.create": ["fiscal-year.create.load", "fiscal-year.create.insert"],
+  "goal.archive": ["goal.archive.load", "goal.archive.update"],
+  "goal.close": ["goal.close.load", "goal.close.update"],
+  "goal.complete": ["goal.complete.load", "goal.complete.update"],
+  "goal.create": ["goal.create.load", "goal.create.insert"],
+  "goal.reopen": ["goal.reopen.load", "goal.reopen.update"],
+  "goal.roll-up": ["goal.roll-up.load", "goal.roll-up.update"],
+  "goal.unarchive": ["goal.unarchive.load", "goal.unarchive.update"],
+  "goal.update-progress": ["goal.update-progress.load", "goal.update-progress.update"],
   "holiday.add": ["holiday.add.load", "holiday.add.insert"],
   "holiday-list.add-weekly-off": ["holiday-list.add-weekly-off.load", "holiday-list.add-weekly-off.record"],
   "holiday-list.create": ["holiday-list.create.insert"],
@@ -726,6 +904,7 @@ export const steps = {
   "journal-entry.cancel": ["journal-entry.cancel.load", "journal-entry.cancel.reverse"],
   "journal-entry.create": ["journal-entry.create.load", "journal-entry.create.insert"],
   "journal-entry.submit": ["journal-entry.submit.load", "journal-entry.submit.post"],
+  "kra.create": ["kra.create.insert"],
   "shift-type.create": ["shift-type.create.insert"],
 } as const;
 
@@ -737,7 +916,7 @@ const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: WorldEntry.fenced(e
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([AccountLive, AttendanceLive, AttendanceRequestLive, BankAccountLive, BankTransactionLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, CostCenterLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmployeePromotionLive, EmployeeSeparationLive, EmployeeTransferLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, FiscalYearLive, GlEntryLive, HolidayLive, HolidayListLive, InterviewLive, InterviewFeedbackLive, InterviewRoundLive, JobApplicantLive, JobOfferLive, JobOpeningLive, JournalEntryLive, JournalEntryAccountLive, ShiftTypeLive]),
+      Layer.provide([AccountLive, AppraisalLive, AppraisalCycleLive, AppraisalTemplateLive, AttendanceLive, AttendanceRequestLive, BankAccountLive, BankTransactionLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, CostCenterLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeFeedbackCriteriaLive, EmployeeGradeLive, EmployeePerformanceFeedbackLive, EmployeePromotionLive, EmployeeSeparationLive, EmployeeTransferLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, FiscalYearLive, GlEntryLive, GoalLive, HolidayLive, HolidayListLive, InterviewLive, InterviewFeedbackLive, InterviewRoundLive, JobApplicantLive, JobOfferLive, JobOpeningLive, JournalEntryLive, JournalEntryAccountLive, KraLive, ShiftTypeLive]),
       Layer.provideMerge(CallTelemetry.layer),
       Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, WorldEntry.work(env, wakes), Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(WorldEntry.fenced(env, env.DB))),
@@ -762,7 +941,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "account.balance": accountBalanceServed, "account.create": accountCreateServed, "account.get": accountGetServed, "account.make-ledger": accountMakeLedgerServed, "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "bank-transaction.fail": bankTransactionFailServed, "bank-transaction.get": bankTransactionGetServed, "bank-transaction.land": bankTransactionLandServed, "bank-transaction.list": bankTransactionListServed, "bank-transaction.send": bankTransactionSendServed, "bank-transaction.settle": bankTransactionSettleServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "cost-center.create": costCenterCreateServed, "cost-center.get": costCenterGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employee-promotion.cancel": employeePromotionCancelServed, "employee-promotion.create": employeePromotionCreateServed, "employee-promotion.get": employeePromotionGetServed, "employee-promotion.submit": employeePromotionSubmitServed, "employee-separation.begin": employeeSeparationBeginServed, "employee-separation.complete": employeeSeparationCompleteServed, "employee-separation.create": employeeSeparationCreateServed, "employee-separation.get": employeeSeparationGetServed, "employee-transfer.cancel": employeeTransferCancelServed, "employee-transfer.create": employeeTransferCreateServed, "employee-transfer.get": employeeTransferGetServed, "employee-transfer.submit": employeeTransferSubmitServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "fiscal-year.create": fiscalYearCreateServed, "fiscal-year.get": fiscalYearGetServed, "gl-entry.list": glEntryListServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "interview.clear": interviewClearServed, "interview.create": interviewCreateServed, "interview.get": interviewGetServed, "interview.reject": interviewRejectServed, "interview-feedback.get": interviewFeedbackGetServed, "interview-feedback.give": interviewFeedbackGiveServed, "interview-round.create": interviewRoundCreateServed, "interview-round.get": interviewRoundGetServed, "job-applicant.accept": jobApplicantAcceptServed, "job-applicant.create": jobApplicantCreateServed, "job-applicant.get": jobApplicantGetServed, "job-applicant.hold": jobApplicantHoldServed, "job-applicant.reject": jobApplicantRejectServed, "job-offer.accept": jobOfferAcceptServed, "job-offer.create": jobOfferCreateServed, "job-offer.get": jobOfferGetServed, "job-offer.reject": jobOfferRejectServed, "job-opening.close": jobOpeningCloseServed, "job-opening.create": jobOpeningCreateServed, "job-opening.get": jobOpeningGetServed, "journal-entry.cancel": journalEntryCancelServed, "journal-entry.create": journalEntryCreateServed, "journal-entry.get": journalEntryGetServed, "journal-entry.submit": journalEntrySubmitServed, "journal-entry-account.list": journalEntryAccountListServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
+  served: { "account.balance": accountBalanceServed, "account.create": accountCreateServed, "account.get": accountGetServed, "account.make-ledger": accountMakeLedgerServed, "appraisal.create": appraisalCreateServed, "appraisal.get": appraisalGetServed, "appraisal.list": appraisalListServed, "appraisal.rate": appraisalRateServed, "appraisal.self-rate": appraisalSelfRateServed, "appraisal.submit": appraisalSubmitServed, "appraisal-cycle.complete": appraisalCycleCompleteServed, "appraisal-cycle.create": appraisalCycleCreateServed, "appraisal-cycle.get": appraisalCycleGetServed, "appraisal-cycle.reopen": appraisalCycleReopenServed, "appraisal-cycle.start": appraisalCycleStartServed, "appraisal-template.create": appraisalTemplateCreateServed, "appraisal-template.get": appraisalTemplateGetServed, "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "bank-transaction.fail": bankTransactionFailServed, "bank-transaction.get": bankTransactionGetServed, "bank-transaction.land": bankTransactionLandServed, "bank-transaction.list": bankTransactionListServed, "bank-transaction.send": bankTransactionSendServed, "bank-transaction.settle": bankTransactionSettleServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "cost-center.create": costCenterCreateServed, "cost-center.get": costCenterGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-feedback-criteria.create": employeeFeedbackCriteriaCreateServed, "employee-feedback-criteria.get": employeeFeedbackCriteriaGetServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employee-performance-feedback.create": employeePerformanceFeedbackCreateServed, "employee-performance-feedback.get": employeePerformanceFeedbackGetServed, "employee-performance-feedback.submit": employeePerformanceFeedbackSubmitServed, "employee-promotion.cancel": employeePromotionCancelServed, "employee-promotion.create": employeePromotionCreateServed, "employee-promotion.get": employeePromotionGetServed, "employee-promotion.submit": employeePromotionSubmitServed, "employee-separation.begin": employeeSeparationBeginServed, "employee-separation.complete": employeeSeparationCompleteServed, "employee-separation.create": employeeSeparationCreateServed, "employee-separation.get": employeeSeparationGetServed, "employee-transfer.cancel": employeeTransferCancelServed, "employee-transfer.create": employeeTransferCreateServed, "employee-transfer.get": employeeTransferGetServed, "employee-transfer.submit": employeeTransferSubmitServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "fiscal-year.create": fiscalYearCreateServed, "fiscal-year.get": fiscalYearGetServed, "gl-entry.list": glEntryListServed, "goal.archive": goalArchiveServed, "goal.close": goalCloseServed, "goal.complete": goalCompleteServed, "goal.create": goalCreateServed, "goal.get": goalGetServed, "goal.list": goalListServed, "goal.reopen": goalReopenServed, "goal.roll-up": goalRollUpServed, "goal.unarchive": goalUnarchiveServed, "goal.update-progress": goalUpdateProgressServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "interview.clear": interviewClearServed, "interview.create": interviewCreateServed, "interview.get": interviewGetServed, "interview.reject": interviewRejectServed, "interview-feedback.get": interviewFeedbackGetServed, "interview-feedback.give": interviewFeedbackGiveServed, "interview-round.create": interviewRoundCreateServed, "interview-round.get": interviewRoundGetServed, "job-applicant.accept": jobApplicantAcceptServed, "job-applicant.create": jobApplicantCreateServed, "job-applicant.get": jobApplicantGetServed, "job-applicant.hold": jobApplicantHoldServed, "job-applicant.reject": jobApplicantRejectServed, "job-offer.accept": jobOfferAcceptServed, "job-offer.create": jobOfferCreateServed, "job-offer.get": jobOfferGetServed, "job-offer.reject": jobOfferRejectServed, "job-opening.close": jobOpeningCloseServed, "job-opening.create": jobOpeningCreateServed, "job-opening.get": jobOpeningGetServed, "journal-entry.cancel": journalEntryCancelServed, "journal-entry.create": journalEntryCreateServed, "journal-entry.get": journalEntryGetServed, "journal-entry.submit": journalEntrySubmitServed, "journal-entry-account.list": journalEntryAccountListServed, "kra.create": kraCreateServed, "kra.get": kraGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 

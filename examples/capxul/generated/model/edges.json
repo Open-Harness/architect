@@ -5,6 +5,36 @@
     "kind": "refers"
   },
   {
+    "from": "appraisal.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal.appraisalCycle",
+    "to": "appraisal-cycle.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal.appraisalTemplate",
+    "to": "appraisal-template.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal-cycle.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal-template.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "attendance.company",
     "to": "company.id",
     "kind": "refers"
@@ -85,8 +115,38 @@
     "kind": "refers"
   },
   {
+    "from": "employee-feedback-criteria.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "employee-grade.company",
     "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.appraisal",
+    "to": "appraisal.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.appraisalCycle",
+    "to": "appraisal-cycle.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.reviewer",
+    "to": "employee.id",
     "kind": "refers"
   },
   {
@@ -190,6 +250,26 @@
     "kind": "refers"
   },
   {
+    "from": "goal.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "goal.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "goal.appraisalCycle",
+    "to": "appraisal-cycle.id",
+    "kind": "refers"
+  },
+  {
+    "from": "goal.kra",
+    "to": "kra.id",
+    "kind": "refers"
+  },
+  {
     "from": "holiday.holidayList",
     "to": "holiday-list.id",
     "kind": "refers"
@@ -290,6 +370,11 @@
     "kind": "refers"
   },
   {
+    "from": "kra.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "shift-type.company",
     "to": "company.id",
     "kind": "refers"
@@ -341,6 +426,191 @@
   },
   {
     "from": "account.make-ledger",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.create",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.create",
+    "to": "appraisal.AppraisalCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.get",
+    "to": "appraisal",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.list",
+    "to": "appraisal",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.rate",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.rate",
+    "to": "appraisal.AppraisalRated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.rate",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.self-rate",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.self-rate",
+    "to": "appraisal.AppraisalSelfRated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.self-rate",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.submit",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.submit",
+    "to": "appraisal.AppraisalSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.complete",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.complete",
+    "to": "appraisal-cycle.AppraisalCycleCompleted",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.complete",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.create",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.create",
+    "to": "appraisal-cycle.AppraisalCycleCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.get",
+    "to": "appraisal-cycle",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal-cycle.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.reopen",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.reopen",
+    "to": "appraisal-cycle.AppraisalCycleReopened",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.reopen",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.start",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.start",
+    "to": "appraisal-cycle.AppraisalCycleStarted",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.start",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-template.create",
+    "to": "appraisal-template",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-template.create",
+    "to": "appraisal-template.AppraisalTemplateCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-template.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-template.get",
+    "to": "appraisal-template",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal-template.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
@@ -810,6 +1080,31 @@
     "kind": "allowed-by"
   },
   {
+    "from": "employee-feedback-criteria.create",
+    "to": "employee-feedback-criteria",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-feedback-criteria.create",
+    "to": "employee-feedback-criteria.FeedbackCriteriaCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-feedback-criteria.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-feedback-criteria.get",
+    "to": "employee-feedback-criteria",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-feedback-criteria.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "employee-grade.create",
     "to": "employee-grade",
     "kind": "acts-on"
@@ -832,6 +1127,51 @@
   {
     "from": "employee-grade.get",
     "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.create",
+    "to": "employee-performance-feedback",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-performance-feedback.create",
+    "to": "employee-performance-feedback.PerformanceFeedbackDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-performance-feedback.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.get",
+    "to": "employee-performance-feedback",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-performance-feedback.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.submit",
+    "to": "employee-performance-feedback",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-performance-feedback.submit",
+    "to": "employee-performance-feedback.PerformanceFeedbackSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-performance-feedback.submit",
+    "to": "employee.self",
     "kind": "allowed-by"
   },
   {
@@ -1181,6 +1521,196 @@
   },
   {
     "from": "gl-entry.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.archive",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.archive",
+    "to": "goal.GoalArchived",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.archive",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.archive",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.close",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.close",
+    "to": "goal.GoalClosed",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.close",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.close",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.complete",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.complete",
+    "to": "goal.GoalCompleted",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.complete",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.complete",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.create",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.create",
+    "to": "goal.GoalCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.get",
+    "to": "goal",
+    "kind": "reads"
+  },
+  {
+    "from": "goal.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.list",
+    "to": "goal",
+    "kind": "reads"
+  },
+  {
+    "from": "goal.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "goal.GoalReopened",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "goal.GoalRolledUp",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "goal.GoalUnarchived",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.update-progress",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.update-progress",
+    "to": "goal.GoalProgressUpdated",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.update-progress",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.update-progress",
     "to": "company.owner",
     "kind": "allowed-by"
   },
@@ -1586,6 +2116,31 @@
   },
   {
     "from": "journal-entry-account.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "kra.create",
+    "to": "kra",
+    "kind": "acts-on"
+  },
+  {
+    "from": "kra.create",
+    "to": "kra.KraCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "kra.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "kra.get",
+    "to": "kra",
+    "kind": "reads"
+  },
+  {
+    "from": "kra.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
