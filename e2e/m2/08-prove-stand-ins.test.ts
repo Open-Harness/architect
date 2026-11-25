@@ -15,9 +15,9 @@
 //    on the mount reaches the stand-in with that key, two mounts with two keys (this test also needs gap 1's call steps,
 //    G16-adapter-mounts call 1);
 //  - when the world ends prove stops each stand-in and every process it started: none is left once prove has exited;
-//  - a stand-in that exits (with any code) before it says where it listens fails prove at once (not
-//    after the 60 s wait), or says nothing within 60 s fails prove, naming the
-//    mount, and leaves nothing running; a stand-in that ignores SIGTERM is stopped all the same;
+//  - a stand-in that exits (with any code) before it says where it listens fails prove at once, not after the 60 s wait; one
+//    that says nothing within 60 s fails prove too. Each names the mount and leaves nothing running; a stand-in that
+//    ignores SIGTERM is stopped all the same;
 //  - the stand-in runs in its package's folder, and prove keeps reading what it says after its line;
 //  - a model with a process stand-in makes prove take a world of its own, as a device chain does: a warm `ortho dev` world,
 //    which has no stand-ins, is not reused (m1 check 30 is the control: without one, it is).
