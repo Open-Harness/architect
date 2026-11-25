@@ -38,6 +38,16 @@ describe("the Bridge stand-in", () => {
     expect((other.body as { id: string }).id).not.toBe((first.body as { id: string }).id);
   });
 
+  it("gives the first answer as it was, after Bridge has since changed what it answered about", () => {
+    const world = fresh();
+    const body = { type: "business", full_name: "Acme Trading Limited", email: "finance@acme-trading.test" };
+    const first = world.handle(post("/v0/kyc_links", body, "kyb")).body as { id: string; kyc_status: string };
+    const answered = first.kyc_status;
+    world.decide(first.id, "approved");
+    expect(answered).not.toBe("approved");
+    expect((world.handle(post("/v0/kyc_links", body, "kyb")).body as { kyc_status: string }).kyc_status).toBe(answered);
+  });
+
   it("opens no virtual account before the customer is approved", () => {
     const world = fresh();
     const link = world.handle(post("/v0/kyc_links", { type: "business", full_name: "Acme", email: "a@b.test" }, "kyb")).body as { customer_id: string };

@@ -171,11 +171,12 @@ export const createWorld = (context: Context) => {
     if (request.method === "POST" && (request.idempotencyKey ?? "") === "") return failed(400, "missing_idempotency_key", "Idempotency-Key header is required");
     const key = request.method === "POST" ? `${request.path} ${request.idempotencyKey}` : undefined;
     const seen = key === undefined ? undefined : kept.get(key);
-    if (seen !== undefined) return seen.reply;
+    if (seen !== undefined) return structuredClone(seen.reply);
     const fields = parsed(request.body);
     if (fields === undefined) return failed(400, "invalid_json", "the body is not a JSON object");
     const reply = route(request, fields);
-    if (key !== undefined && reply.status < 500) kept.set(key, { path: request.path, reply });
+    if (key !== undefined && reply.status < 500) kept.set(key, { path: request.path, reply: structuredClone(reply) });
+    // a snapshot: the first answer as it was, not the resource a later decision or deactivation changes
     save();
     return reply;
   };
