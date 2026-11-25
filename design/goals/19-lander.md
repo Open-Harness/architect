@@ -85,7 +85,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-25 November 2026, about 04:25 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
+25 November 2026, about 08:30 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
 minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
 said no Claude-led goal is running now.
 
@@ -100,8 +100,8 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Ten Capxul rounds have landed, and `goal/capxul` is 0 commits ahead of
-  `main`:
+- **Slice 3, the landing loop, is running.** Eleven Capxul rounds have landed. `goal/capxul` is ahead of `main` only by
+  checks that wait for their builds, #1017 (the ledger) and #1030 (appraisals), and by Goal 16's merges of `main`:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -120,6 +120,12 @@ said no Claude-led goal is running now.
   - #1013 brought slice 8f's employee moves, at `160f7893`: #1000, the checks (with CX-employee-moves), and #1009, the
     build, with #991 and #1005 (Goal 16's merges of `main`). #1000 had no 🔍 posted either, so the lander's 🔍 tested it:
     on blank handlers only the four 8f journeys fail, and each of 13 planted wrong builds fails a named step.
+  - #1033 brought Bridge part one, at `2dfa8d90`: #1007, the checks, and #1027, the build. The lander's 🔍 first
+    blocked it at `96d20c17`: the Bridge plugin was generated before #994 and #1021 changed `main`'s generator, so
+    regenerating it from the pinned spec gave a different `src/index.ts`, `src/runtime/client.ts` and two new
+    scaffolds. Goal 16 regenerated it (`4ab55270`), the lander merged that commit without #1017, whose build has not
+    landed, and the 🔍 passed `56be9a16`: the regenerated plugin matches byte for byte, and `prove` gives 56/56 moves,
+    54/54 outcomes and 70/70 refusals.
 
   Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
   it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
@@ -162,6 +168,7 @@ said no Claude-led goal is running now.
   `85ee3707`. The lander asked Goal 18 on #718 to rank #944 up. #1008: projections' `decimal-doors.test.ts` makes
   scratch folders inside `packages/projections/.ortho/`, and `compiler`'s role-paths test, reading that package through
   acme, failed on one that had gone, on `main` at `765ee8dd`. `logbook`'s `local/routes.test.ts` failed once on #948
-  and passed on rerun.
+  and passed on rerun. #1035: `e2e-layer2` check 3 fails at random with "world's address was taken" (on `main` at
+  `67605c1e`; a rerun passed).
 - **Next:** each round lands what the app branches have merged since, and tells every running goal after each
   landing.
