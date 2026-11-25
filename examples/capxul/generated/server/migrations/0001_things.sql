@@ -172,6 +172,66 @@ CREATE TABLE "holiday-list" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "holiday-list_oneNamePerCompany" ON "holiday-list" ("company", "holidayListName");
+CREATE TABLE "interview" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "jobApplicant" TEXT NOT NULL,
+  "interviewRound" TEXT NOT NULL,
+  "scheduledOn" TEXT NOT NULL,
+  "fromTime" TEXT NOT NULL,
+  "toTime" TEXT NOT NULL,
+  "interviewers" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "interview_oneInterviewPerRound" ON "interview" ("jobApplicant", "interviewRound");
+CREATE TABLE "interview-feedback" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "interview" TEXT NOT NULL,
+  "interviewer" TEXT NOT NULL,
+  "result" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "interview-feedback_oneFeedbackPerInterviewer" ON "interview-feedback" ("interview", "interviewer");
+CREATE TABLE "interview-round" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "roundName" TEXT NOT NULL,
+  "interviewers" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "interview-round_oneNamePerCompany" ON "interview-round" ("company", "roundName");
+CREATE TABLE "job-applicant" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "jobOpening" TEXT NOT NULL,
+  "applicantName" TEXT NOT NULL,
+  "email" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "job-offer" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "jobApplicant" TEXT NOT NULL,
+  "designation" TEXT NOT NULL,
+  "offerDate" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "job-offer_oneOfferPerApplicant" ON "job-offer" ("jobApplicant");
+CREATE TABLE "job-opening" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "designation" TEXT NOT NULL,
+  "jobTitle" TEXT NOT NULL,
+  "vacancies" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "shift-type" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

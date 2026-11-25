@@ -14590,7 +14590,7 @@
         "file": "blueprint/adapters/github.ts",
         "package": "@orthograph/github",
         "version": "0.0.0",
-        "integrity": "sha256-tfHqOZCAhnAlvQM4eZ6uhKhtuPjpxqiP+c/9g0sAdt4=",
+        "integrity": "sha256-wJVuGu/fZUifvTpPXn6tjXI6fTANjr7o9GnNAlD+y+o=",
         "chosen": {},
         "calls": [
           "issues.createComment",
@@ -14618,7 +14618,7 @@
         "door": {
           "secret": "GITHUB_WEBHOOK_SIGNING"
         },
-        "hash": "051033cf6090f625"
+        "hash": "409d7da29c484a7e"
       },
       "intake": {
         "kind": "feature",
@@ -14634,7 +14634,7 @@
         "file": "blueprint/adapters/posthog.ts",
         "package": "@orthograph/posthog",
         "version": "0.0.0",
-        "integrity": "sha256-6Y61VLZw9UT90TQGiePYVZfXqujhFpg7pFoA0Q7QhOw=",
+        "integrity": "sha256-DNZoVGfgCIqPP3MFttgHdS/F5Wlvvk4iixRAi0C/ve8=",
         "chosen": {},
         "calls": [
           "errorTrackingIssuesList",
@@ -14649,7 +14649,7 @@
           "how": "process",
           "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
         },
-        "hash": "07539e1f62b2d18e"
+        "hash": "aac0c72cb87736f0"
       },
       "prompts": {
         "kind": "feature",
@@ -14665,7 +14665,7 @@
         "file": "blueprint/adapters/slack.ts",
         "package": "@orthograph/slack",
         "version": "0.0.0",
-        "integrity": "sha256-QYnT/gSA5dMvW6i11Dbg3eVtbsJrYGGBlZK12Gh0oaE=",
+        "integrity": "sha256-zSTSgEjQvvEyKG59ZQ5wkIe+UjYI9gu9rtHjCm4KZpI=",
         "chosen": {},
         "calls": [
           "chatPostMessage",
@@ -14683,7 +14683,7 @@
         "door": {
           "secret": "SLACK_WEBHOOK_SIGNING"
         },
-        "hash": "98400b39cf57b2ad"
+        "hash": "2041a96d3b403698"
       },
       "superagent": {
         "kind": "feature",
@@ -15301,5 +15301,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "a89b285a4d38f7fa9663c62bf91046d14f0f595ca47fecc1c01fe8ab8ad32d61"
+  "digest": "96420d46b3b09c0bc7cbda9c1a1bacd6e124c17f67ed5ff9e2b83891816866b4"
 }
