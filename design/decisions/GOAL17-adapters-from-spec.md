@@ -27,7 +27,7 @@ builds M5.07 (`ortho new adapter --from-openapi`) on the integration branch, as 
 4. **An event's schema is the judge over the spec's payloads, not a `Schema.Struct`**: a struct decode drops what the schema
    doesn't name, and the contract says nothing documented is dropped. `Schema.Unknown` with one filter decodes to the value itself.
 5. **Errors.** A failure is a tagged value (`ApiFailure` with `status`, or Slack's `code`; `InputRefused`, `AnswerRefused`,
-   `Unreachable`). Declared error classes per response are not generated yet: `Blueprint.call()` is given none.
+   `Unreachable`). Declared error classes per response are not generated yet: `Blueprint.call()` is given none. (_Superseded by G16-adapter-mounts, 25 November 2026: every generated call declares its adapter's four errors._)
 6. **The judge honours `pattern`, `format`, lengths and bounds** (the lead's note of 23 November, and the checks' oracle now does). One
    spec contradiction is tolerated: GitHub's label says `type: [null]` beside an `allOf` of a user.
 

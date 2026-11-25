@@ -1,6 +1,6 @@
 // A derived read (GOAL17-derived-reads): the records it looks at, then the pure function that works its answer out. Nothing is
 // kept: each call reads the records again, so an answer never drifts from them.
-import { Effect } from "effect";
+import { Effect, Option, Schema } from "effect";
 import { NotAllowed, type AnyDerive, type Look, type Read } from "orthograph";
 import { Store, type Instance } from "#modules/records/types.js";
 import { ReadNotServed, type ReadAnswer } from "../types.ts";
@@ -46,8 +46,18 @@ export const withAdds = (derive: AnyDerive, root: Instance) =>
 
 const listed = (item: Instance) => ({ ...item, state: item.state ?? "none" });
 
-/** Does a worked-out row hold the values a read pins, and the filters its caller gave on derived fields? */
-const matches = (row: Instance, wanted: Readonly<Record<string, unknown>>) => Object.entries(wanted).every(([k, v]) => row[k] === v);
+/** A derived field's value as its schema writes it on the wire, as text; none when the schema doesn't take it (an unset optional). */
+const wireOf = (derive: AnyDerive, field: string, value: unknown): string | undefined => {
+  const encoded = Schema.encodeUnknownOption((derive.adds as Readonly<Record<string, { readonly schema: unknown }>>)[field]!.schema as Schema.Encoder<unknown>)(value);
+  return Option.isSome(encoded) && encoded.value !== undefined ? JSON.stringify(encoded.value) : undefined;
+};
+
+/** Does a worked-out row hold the values a read pins, and the filters its caller gave on derived fields? Equal when written alike. */
+const matches = (derive: AnyDerive, row: Instance, wanted: Readonly<Record<string, unknown>>) =>
+  Object.entries(wanted).every(([k, v]) => {
+    const held = wireOf(derive, k, row[k]);
+    return held !== undefined && held === wireOf(derive, k, v);
+  });
 
 /**
  * A page of a derived list, in steps: a page of roots from the store (stored `where` and `state`), each worked out, those that
@@ -79,7 +89,7 @@ export const derivedPage = (read: Read<any, any, any>, payload: ReadAnswer) =>
       scanned += roots.items.length;
       for (const root of roots.items) {
         const row = yield* withAdds(derive, root);
-        if (matches(row, derivedWhere)) kept.push(listed(row));
+        if (matches(derive, row, derivedWhere)) kept.push(listed(row));
       }
       next = roots.next;
       after = roots.next ?? undefined;
