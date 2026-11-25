@@ -49,19 +49,25 @@ export const thingFile = (head: string, name: string, title: string) => [
   `});`, "",
 ].join("\n");
 
-/** The client's four failures as errors an operation can refuse with; a handler's mapping turns each into its namesake. */
+/**
+ * The client's four failures as errors an operation can refuse with; a handler's mapping turns each into its namesake. Their
+ * exits are one base, 81 unless the plugin's `src/written.ts` exports an `exit` (snag #1012, G16-adapter-mounts call 1):
+ * read through the module, as `code` is, so a plugin scaffolded before it had one still loads.
+ */
 export const errorsFile = (head: string, name: string) => {
   const [apiFailure, inputRefused, answerRefused, unreachable] = errorsOf(name);
   return [
-    head, `import { Blueprint } from "orthograph";`, "",
+    head, `import { Blueprint } from "orthograph";`,
+    `import * as written from "../../../src/written.ts";`, "",
+    `const { exit = 81 } = written as { readonly exit?: number | undefined };`, "",
     `/** The service answered with an HTTP status of 400 or more, or a 200 whose body says \`ok: false\` (its \`code\`). */`,
-    `export class ${apiFailure} extends Blueprint.error({ status: Blueprint.uint(16), code: Blueprint.optional(Blueprint.text({ max: 200 })) }, { exit: 81 }) {}`,
+    `export class ${apiFailure} extends Blueprint.error({ status: Blueprint.uint(16), code: Blueprint.optional(Blueprint.text({ max: 200 })) }, { exit }) {}`,
     `/** The input doesn't fit the call, so nothing was sent. */`,
-    `export class ${inputRefused} extends Blueprint.error({}, { exit: 82 }) {}`,
+    `export class ${inputRefused} extends Blueprint.error({}, { exit: exit + 1 }) {}`,
     `/** The answer doesn't fit what the description documents. */`,
-    `export class ${answerRefused} extends Blueprint.error({}, { exit: 83 }) {}`,
+    `export class ${answerRefused} extends Blueprint.error({}, { exit: exit + 2 }) {}`,
     `/** The service couldn't be reached. */`,
-    `export class ${unreachable} extends Blueprint.error({}, { exit: 84 }) {}`, "",
+    `export class ${unreachable} extends Blueprint.error({}, { exit: exit + 3 }) {}`, "",
   ].join("\n");
 };
 
@@ -77,4 +83,6 @@ export const writtenFile = () => [
   `export const door: AdapterDoor | undefined = undefined;`, "",
   `/** Its errors' refusal code prefix, 2 to 4 capitals (\`PH\`). \`undefined\` takes the name's first two letters; set one when another thing has those. */`,
   `export const code: string | undefined = undefined;`, "",
+  `/** Its four errors' exits, one base: they take base to base+3. \`undefined\` takes 81 to 84; set one when an operation also calls another generated adapter. */`,
+  `export const exit: number | undefined = undefined;`, "",
 ].join("\n");
