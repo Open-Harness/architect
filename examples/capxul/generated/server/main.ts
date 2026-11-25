@@ -3,7 +3,7 @@
 import { Context, Effect, Layer } from "effect";
 import { ManagedRuntime, Tracer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
-import { HttpApiBuilder } from "effect/http-api";
+import { HttpApi, HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
 import { AuthD1, Database, JournalD1, StoreD1, Telemetry, WorldEntry, toWorld } from "@orthograph/host-cloudflare";
@@ -448,7 +448,8 @@ const tables = [[thingIn(accountThing), "account"], [thingIn(appraisalThing), "a
 const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("appraisal", appraisalInvariants), ...invariantsIn("appraisal-cycle", appraisalCycleInvariants), ...invariantsIn("appraisal-template", appraisalTemplateInvariants), ...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("bank-transaction", bankTransactionInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("cost-center", costCenterInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-feedback-criteria", employeeFeedbackCriteriaInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employee-separation", employeeSeparationInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("fiscal-year", fiscalYearInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("kra", kraInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
-const CallApi = Api.middleware(CallTelemetry);
+// A refused payload names every field it was refused for, not only the first (#988).
+const CallApi = Api.middleware(CallTelemetry).annotate(HttpApi.PayloadParseOptions, { errors: "all" });
 type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth | Timers | DurableTimers;
 
 /** Who is calling, then the operation or read, its refusals sent as their wire classes. */

@@ -54,8 +54,9 @@ const refuse = (call: string, components: Components, op: Operation, input: unkn
     ...op.params.filter((p) => p.required && !given.some(([k]) => k === p.name)).map((p) => `${call}: ${p.name} is required`),
     ...given.flatMap(([k, v]) => {
       const param = known.get(k);
-      if (param === undefined || (typeof v === "string" && numberish(param.schema) && NUMERIC.test(v))) return [];
-      return problems(components, param.schema, v, k);
+      if (param === undefined) return [];
+      // a numeric string is judged as the number it spells, against every rule of the field; it is still sent as given
+      return problems(components, param.schema, typeof v === "string" && numberish(param.schema) && NUMERIC.test(v) ? Number(v) : v, k);
     }),
     // a body of alternatives is judged whole: each field alone fits some alternative, the input's body must fit one
     ...(op.body == null || (bodyGiven(op, input).length === 0 && !op.body.required) ? []
