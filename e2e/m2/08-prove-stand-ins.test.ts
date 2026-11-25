@@ -15,13 +15,16 @@
 //    on the mount reaches the stand-in with that key, two mounts with two keys (this test also needs gap 1's call steps,
 //    G16-adapter-mounts call 1);
 //  - when the world ends prove stops each stand-in and every process it started: none is left once prove has exited;
-//  - a stand-in that exits before it says where it listens fails prove, naming the mount, and leaves nothing running;
+//  - a stand-in that exits (with any code) before it says where it listens fails prove at once (not
+//    after the 60 s wait), or says nothing within 60 s fails prove, naming the
+//    mount, and leaves nothing running; a stand-in that ignores SIGTERM is stopped all the same;
+//  - the stand-in runs in its package's folder, and prove keeps reading what it says after its line;
 //  - a model with a process stand-in makes prove take a world of its own, as a device chain does: a warm `ortho dev` world,
 //    which has no stand-ins, is not reused (m1 check 30 is the control: without one, it is).
 //
 // Real workerd, a port from the OS. Written by the checks author; a builder never edits this file.
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -53,8 +56,14 @@ const spec = (title: string) => ({
 
 // ---- the stand-in ----
 
-/** The stand-in for `plugin`, writing to `log`; `refuse` makes it exit 3 before it listens. */
-const standInOf = (plugin: string, log: string, refuse = false) => `// A stand-in written by check 08.
+/**
+ * The stand-in for `plugin`, writing to `log`. It behaves as a real one may, so a build that leans on a tidy one is seen: it says
+ * other things first, waits, and says its line in two writes split mid-line; it then writes a megabyte to stdout and stderr each
+ * (Linux pipes block, so a build that stops reading after the line stalls it); and it and its child ignore SIGTERM. `refuse`
+ * makes it exit with that code before it listens; `silent`, listen and never say where.
+ */
+type Fault = { readonly refuse: number } | { readonly silent: true };
+const standInOf = (plugin: string, log: string, fault?: Fault) => `// A stand-in written by check 08.
 import { appendFileSync, existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
@@ -62,17 +71,30 @@ import { spawn } from "node:child_process";
 const write = (entry) => appendFileSync(${JSON.stringify(log)}, JSON.stringify({ plugin: ${JSON.stringify(plugin)}, ...entry }) + "\\n");
 const args = process.argv.slice(2);
 const dir = args.includes("--dir") ? args[args.indexOf("--dir") + 1] : undefined;
-${refuse ? 'write({ event: "refused", pid: process.pid });\nprocess.exit(3);\n' : ""}// A process of its own, never stopped by this stand-in: prove stops everything a stand-in started.
-const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1 << 30)"], { stdio: "ignore" });
-write({ event: "start", args, pid: process.pid, child: child.pid, dirThere: dir !== undefined && existsSync(dir) });
+${fault !== undefined && "refuse" in fault ? `write({ event: "refused", pid: process.pid });\nprocess.exit(${fault.refuse});\n` : ""}process.on("SIGTERM", () => {});
+// A process of its own, never stopped by this stand-in, which also ignores SIGTERM: prove stops everything a stand-in started.
+const child = spawn(process.execPath, ["-e", "process.on('SIGTERM', () => {}); setInterval(() => {}, 1 << 30)"], { stdio: "ignore" });
+write({ event: "start", args, cwd: process.cwd(), pid: process.pid, child: child.pid, dirThere: dir !== undefined && existsSync(dir) });
 const server = createServer((request, response) => {
-  write({ event: "request", method: request.method, url: request.url, authorization: request.headers.authorization ?? null });
+  write({ event: "request", method: request.method, url: request.url, authorization: request.headers.authorization ?? null, dirThere: dir !== undefined && existsSync(dir) });
   const pair = /\\/quotes\\/([^/?]+)/.exec(request.url ?? "")?.[1];
   response.writeHead(200, { "content-type": "application/json" });
   response.end(JSON.stringify({ pair, rate: ${JSON.stringify(`${plugin}-stand-1.0842`)} }));
 });
 const port = args.includes("--port") ? Number(args[args.indexOf("--port") + 1]) : 0;
-server.listen(port, "127.0.0.1", () => console.log("stand-in listening on http://127.0.0.1:" + server.address().port));
+server.listen(port, "127.0.0.1", () => {
+  process.stdout.write("${plugin} stand-in: loading fixtures\\n");
+  process.stderr.write("${plugin} stand-in: a warning on stderr\\n");
+  setTimeout(() => {
+${fault !== undefined && "silent" in fault ? '    write({ event: "silent", pid: process.pid });\n' : `    process.stdout.write("stand-in listening on http://127.0");
+    setTimeout(() => {
+      process.stdout.write(".0.1:" + server.address().port + "\\n");
+      const filler = ".".repeat(1023) + "\\n";
+      for (let i = 0; i < 1024; i++) { process.stdout.write(filler); process.stderr.write(filler); }
+      write({ event: "flooded" });
+    }, 300);
+`}  }, 2500);
+});
 `;
 
 // ---- the app ----
@@ -163,9 +185,9 @@ const succeeds = (root: string, ...args: ReadonlyArray<string>) => {
 /**
  * A copy of acme with the four adapters generated, installed and mounted. With `calls`, `rate.quote` (pricing) and `rate.backup`
  * (fx-backup) call them, and the journey "a rate from each stand-in" runs both; without, nothing calls them, so the app generates
- * whatever the call steps can do. `refuse` names the plugin whose stand-in exits before it listens.
+ * whatever the call steps can do. `fault` names the plugin whose stand-in exits before it listens, or never says where.
  */
-const app = (options: { readonly calls?: boolean; readonly refuse?: string } = {}): App => {
+const app = (options: { readonly calls?: boolean; readonly fault?: { readonly plugin: string } & Fault } = {}): App => {
   const copy = copyOf(acme);
   const log = join(copy.root, "..", "stands.log");
   const made = { ...copy, log };
@@ -185,7 +207,7 @@ const app = (options: { readonly calls?: boolean; readonly refuse?: string } = {
     succeeds(root, "new", "adapter", name, "--from-openapi", join(specs, `${name}.json`));
     const plugin = join(root, "plugins", name);
     // Every package names a stand-in; only the model's `Stand.process` says to run one.
-    writeFileSync(join(plugin, "stand.mjs"), standInOf(name, log, options.refuse === name));
+    writeFileSync(join(plugin, "stand.mjs"), standInOf(name, log, options.fault?.plugin === name ? options.fault : undefined));
     const manifest = JSON.parse(readFileSync(join(plugin, "package.json"), "utf8")) as { orthograph: Record<string, unknown> };
     manifest.orthograph["standIn"] = "stand.mjs";
     writeFileSync(join(plugin, "package.json"), JSON.stringify(manifest, null, 2));
@@ -218,7 +240,8 @@ const app = (options: { readonly calls?: boolean; readonly refuse?: string } = {
 
 interface Entry {
   readonly plugin: string;
-  readonly event: "start" | "request" | "refused";
+  readonly event: "start" | "request" | "refused" | "silent" | "flooded";
+  readonly cwd?: string;
   readonly args?: ReadonlyArray<string>;
   readonly pid?: number;
   readonly child?: number;
@@ -274,6 +297,8 @@ describe("08 prove stands up a mount's process stand-in", () => {
       { plugin: "fx-rates", args: ["--port", "0", "--dir", join(root, ".ortho/prove/stands/fx-backup")], dirThere: true },
       { plugin: "rates", args: ["--port", "0", "--dir", join(root, ".ortho/prove/stands/pricing")], dirThere: true },
     ]);
+    // Each runs in its own package's folder, as `e2e/superagent/servers.ts` runs one.
+    expect(Object.fromEntries(starts.map((e) => [e.plugin, e.cwd])), proved.out).toEqual({ "fx-rates": realpathSync(join(root, "plugins/fx-rates")), rates: realpathSync(join(root, "plugins/rates")) });
   });
 
   it("stops each stand-in and every process it started once the world ends: none is running after prove exits", () => {
@@ -288,14 +313,38 @@ describe("08 prove stands up a mount's process stand-in", () => {
     nothingRunning(root);
   });
 
-  it("a stand-in that exits before it says where it listens fails prove, naming the mount, and leaves nothing running", () => {
-    const { root, log } = app({ refuse: "rates" });
+  // Each mount in turn, so a build that stops only the stand-ins started before the failing one is seen; an exit 0 is a failure too.
+  for (const { plugin, mount, exit } of [{ plugin: "rates", mount: "pricing", exit: 3 }, { plugin: "fx-rates", mount: "fx-backup", exit: 0 }]) {
+    it(`a stand-in that exits ${exit} before it says where it listens fails prove at once, naming the mount (${mount}), and leaves nothing running`, () => {
+      const { root, log } = app({ fault: { plugin, refuse: exit } });
+      const began = performance.now();
+      const proved = prove(root, "health is up");
+      const seconds = (performance.now() - began) / 1000;
+      expect(entriesOf(log).filter((e) => e.event === "refused").map((e) => e.plugin), proved.out).toEqual([plugin]);
+      // No world ran without its stand-in: the journey never ran, and what prove said names the mount (no other line here does).
+      expect(proved.status, proved.out).not.toBe(0);
+      expect(proved.out).not.toMatch(/^journey health is up/m);
+      expect(proved.out).toContain(mount);
+      // The exit itself fails prove, not the 60 s wait for a stand-in that says nothing (about 13 s here).
+      expect(seconds, proved.out).toBeLessThan(45);
+      const left = entriesOf(log).filter((e) => e.event === "start").flatMap((e) => [e.pid!, e.child!]).filter(alive);
+      for (const pid of left) process.kill(pid, "SIGKILL");
+      expect(left, "processes still running after prove failed (their ids, now killed)").toEqual([]);
+      nothingRunning(root);
+    });
+  }
+
+  it("a stand-in that never says where it listens fails prove within 60 s of starting it, naming the mount, and leaves nothing running", () => {
+    const { root, log } = app({ fault: { plugin: "rates", silent: true } });
+    const began = performance.now();
     const proved = prove(root, "health is up");
-    expect(entriesOf(log).filter((e) => e.event === "refused").map((e) => e.plugin), proved.out).toEqual(["rates"]);
-    // No world ran without its stand-in: the journey never ran, and what prove said names the mount (no other line here does).
+    const seconds = (performance.now() - began) / 1000;
+    expect(entriesOf(log).filter((e) => e.event === "silent").map((e) => e.plugin), proved.out).toEqual(["rates"]);
     expect(proved.status, proved.out).not.toBe(0);
     expect(proved.out).not.toMatch(/^journey health is up/m);
     expect(proved.out).toContain("pricing");
+    // 60 s for the stand-in, and room for the rest of a prove that never ran a journey.
+    expect(seconds, proved.out).toBeLessThan(150);
     const left = entriesOf(log).filter((e) => e.event === "start").flatMap((e) => [e.pid!, e.child!]).filter(alive);
     for (const pid of left) process.kill(pid, "SIGKILL");
     expect(left, "processes still running after prove failed (their ids, now killed)").toEqual([]);
@@ -322,11 +371,14 @@ describe("08 a call step in prove's world reaches the mount's stand-in", () => {
   it("each mount's call reaches its own stand-in at the address it said, with world-<mount> as its key", () => {
     const { root, log } = app({ calls: true });
     const proved = prove(root, "a rate from each stand-in");
-    const requests = entriesOf(log).filter((e) => e.event === "request").map((e) => ({ plugin: e.plugin, method: e.method, url: e.url, authorization: e.authorization }));
+    const requests = entriesOf(log).filter((e) => e.event === "request").map((e) => ({ plugin: e.plugin, method: e.method, url: e.url, authorization: e.authorization, dirThere: e.dirThere }));
+    // The folder is still there when the call comes (a build that starts the stand-ins before the world's state is wiped loses it).
     expect(requests.sort((a, b) => a.plugin.localeCompare(b.plugin)), proved.out).toEqual([
-      { plugin: "fx-rates", method: "GET", url: "/quotes/GBPUSD?amount=7", authorization: "Bearer world-fx-backup" },
-      { plugin: "rates", method: "GET", url: "/quotes/EURUSD?amount=100", authorization: "Bearer world-pricing" },
+      { plugin: "fx-rates", method: "GET", url: "/quotes/GBPUSD?amount=7", authorization: "Bearer world-fx-backup", dirThere: true },
+      { plugin: "rates", method: "GET", url: "/quotes/EURUSD?amount=100", authorization: "Bearer world-pricing", dirThere: true },
     ]);
+    // Each stand-in wrote its megabyte after its line and still answered: prove kept reading what it said.
+    expect(entriesOf(log).filter((e) => e.event === "flooded").map((e) => e.plugin).sort(), proved.out).toEqual(["fx-rates", "rates"]);
     expect(proved.out).toMatch(/^journey a rate from each stand-in ✔ 2\/2 steps$/m);
     nothingRunning(root);
   });

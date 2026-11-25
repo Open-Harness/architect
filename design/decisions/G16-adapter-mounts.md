@@ -112,6 +112,13 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
   stand-in is `Stand.none` or `Stand.vendor` gets no process, even when its package names an entry. A stand-in that exits
   before it says where it listens fails the world, naming the mount, and leaves nothing running. "Everything it started"
   is the stand-in's processes too: prove stops a stand-in's own children, not only the stand-in.
+  The stand-in runs in its package's folder, as `e2e/superagent/servers.ts` runs one. Its line counts once it is whole
+  (ended by a newline), whatever came before it or however it was split; prove keeps reading the stand-in's stdout and
+  stderr after it, so a stand-in that goes on talking never blocks. A stand-in that exits with any code before its line, or
+  says no line within 60 s, fails the world. Stopping escalates to SIGKILL, so a stand-in that ignores SIGTERM still goes.
+  (Added from the hostile pass on #1016, 25 November 2026.)
+- **Known limit: the key is judged only where a call reaches it.** No check sees that a `Stand.vendor` or `Stand.none` mount
+  is not given `world-<mount>`; the contract says the key is for "each mount it stood up".
 - **A world of its own** (signed off by the lead on #995, 25 November 2026). A model with a process stand-in makes prove take
   a world of its own, as a device chain does (`needsDevice`): a warm `ortho dev` world is not reused, and every run starts
   with fresh stand-in state.
