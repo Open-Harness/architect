@@ -41,6 +41,12 @@ Record that Bridge approved a person's KYC.
 
 ## Worked examples
 
+### bridge: a bank account, end to end
+
+Starts from an empty world.
+
+- **Bridge approves her.** `bridge` (system) calls and sends individual the last call's individual, and is answered.
+
 ### bridge: a person is checked
 
 Starts from an empty world.
