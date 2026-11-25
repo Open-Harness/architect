@@ -150,19 +150,23 @@ would fail the checksum checks, so the stand-in can't use them. Bridge's virtual
   mod 97: the remainder is 57, checked by two independent computations. So the stand-in keeps the guide's bank, BIC, sort
   code (140353) and account (07970528), and computes the true check digits: `IE34MODR14035307970528`.
 
-**Its answers fit Bridge's schemas, where Bridge's own examples don't.** The generated client is strict by default: it
-refuses an answer that misfits the call's schema. Bridge's published examples leave out fields its schemas require, so
-the stand-in adds them, and `tests/bridge-stand-in.test.ts` runs the strict client against it on every call Capxul
-makes:
+**Its answers fit Bridge's schemas, which Bridge's own examples don't always match.** The generated client is strict by
+default: it refuses an answer that misfits the call's schema. `tests/bridge-stand-in.test.ts` runs the strict client
+against the stand-in on every call Capxul makes:
 
 - **Transfers:** every example's `receipt` lacks the `*_currency` field beside each amount (`initial_amount_currency`,
   `developer_fee_currency`, `exchange_fee_currency`, `subtotal_amount_currency`), which `Receipt` requires. The stand-in
-  gives the source currency for those and the destination's for `final_amount_currency`.
-- **USD virtual accounts:** `bank_beneficiary_address` is required. The stand-in gives the schema example's
-  `1234 Main St., Kansas City, MO 64108`.
-- **EUR virtual accounts:** `payment_rails` is the string `"sepa"` in `VirtualAccountSourceDepositInstructionsEu`, not
-  a list as on USD, and there is no `payment_rail`. The stand-in follows the schema. If Bridge in fact sends a list, the
-  strict client refuses it, and the adapter runs lenient (`answers: "lenient"`, #946) until Bridge's description is fixed.
+  gives the source currency for those and the destination's for `final_amount_currency`. A transfer's `currency` is the
+  fiat its source is pegged to (USDC is `usd`), as `TransferResponse` says.
+- **USD virtual accounts:** `bank_beneficiary_address` is required, and Bridge's examples carry it; the stand-in had left
+  it out. It now gives the schema example's `1234 Main St., Kansas City, MO 64108`.
+- **EUR virtual accounts: the schema and the examples disagree.** `VirtualAccountSourceDepositInstructionsEu` types
+  `payment_rails` as the string `"sepa"`, with no `payment_rail`. Bridge's own EUR examples give `payment_rails:
+  ["sepa"]` (a list, as on USD) or the deprecated `payment_rail: "sepa"`, never the string. The stand-in follows the
+  schema, because the schema is what the generated client judges. The examples are the only evidence of what Bridge
+  sends, so expect the strict client to refuse a real EUR answer. Until Bridge confirms one or the other, the adapter
+  reads virtual accounts leniently (`answers: "lenient"`, #946), and the builder of the call steps (#995 gap 1) decides
+  that with Goal 16's lead.
 - **Virtual account create** answers 200, the only success the description documents, and a transfer's
   `client_reference_id` is left out unless the caller gave one.
 
@@ -185,7 +189,7 @@ makes:
 | a transfer retried with the same request sends the same `Idempotency-Key` to Bridge, and Bridge holds one transfer | gaps 1, 2 and 3 |
 | KYC and KYB decided by Bridge's `kyc_link` event, an event for an unknown customer ignored | gaps 4 and 5 |
 | a deposit's activity events land one Bank Transaction, replayed too | gaps 3, 4 and 5 |
-| a deposit's second and third activity events leave exactly one Bank Transaction, in its latest status, none refused | gaps 3, 4 and 5 |
+| a deposit's second and third activity events leave exactly one Bank Transaction, in its latest status (`settled`, a deposit's one state today), none refused | gaps 3, 4 and 5 |
 | an unsigned, wrongly signed or stale event refused, and nothing written | gaps 3 and 5 |
 | a transfer's state events move its Bank Transaction | gaps 3, 4 and 5 |
 

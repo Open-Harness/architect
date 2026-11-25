@@ -96,9 +96,9 @@ describe("the Bridge stand-in", () => {
       .then(([usd, eur]: Array<{ id: string; source_deposit_instructions: Record<string, string> }>) => {
         expect([usd!.source_deposit_instructions["bank_routing_number"], eur!.source_deposit_instructions["iban"]]).toEqual(["101019644", "IE34MODR14035307970528"]);
         return calls["transfers"].create({ on_behalf_of: customer, amount: "300.25", source: { currency: "usdc", payment_rail: "ethereum", from_address: usdc.address }, destination: { currency: "usd", payment_rail: "ach", external_account_id: "ea_1" } })
-          .then((transfer: { id: string; state: string }) => Promise.all([transfer.state, calls["transfers"].get({ transferID: transfer.id }), calls["customers"].virtualAccounts.deactivate.create({ customerID: customer, virtualAccountID: usd!.id })]));
+          .then((transfer: { id: string; state: string }) => Promise.all([transfer.state, calls["transfers"].get({ transferID: transfer.id }), calls["customers"].virtualAccounts.get({ customerID: customer, virtualAccountID: eur!.id }), calls["customers"].virtualAccounts.deactivate.create({ customerID: customer, virtualAccountID: usd!.id })]));
       })
-      .then(([state, , closed]: [string, unknown, { status: string }]) => expect([state, closed.status]).toEqual(["awaiting_funds", "deactivated"]))
+      .then(([state, , , closed]: [string, unknown, unknown, { status: string }]) => expect([state, closed.status]).toEqual(["awaiting_funds", "deactivated"]))
       .finally(() => vi.unstubAllGlobals());
   });
 

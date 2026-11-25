@@ -118,6 +118,9 @@ export const createWorld = (context: Context) => {
     return { status: 200, body: account };
   };
 
+  /** A transfer's `currency`: its source's fiat, or the fiat a stablecoin source is pegged to. */
+  const pegged = (currency: unknown): unknown => currency === "usdc" ? "usd" : currency === "eurc" ? "eur" : currency;
+
   /**
    * `POST /v0/transfers`: Bridge's AchOfframpTransferResponse, awaiting funds, with the `currency` and the receipt's
    * `*_currency` fields its schema requires and its example leaves out.
@@ -131,7 +134,7 @@ export const createWorld = (context: Context) => {
     const amount = fields["amount"];
     const id = context.random();
     const made = {
-      id, ...(typeof fields["client_reference_id"] === "string" ? { client_reference_id: fields["client_reference_id"] } : {}), state: "awaiting_funds", on_behalf_of: fields["on_behalf_of"], amount, currency: destination["currency"], developer_fee: "0.0",
+      id, ...(typeof fields["client_reference_id"] === "string" ? { client_reference_id: fields["client_reference_id"] } : {}), state: "awaiting_funds", on_behalf_of: fields["on_behalf_of"], amount, currency: pegged(source["currency"]), developer_fee: "0.0",
       source, destination, receipt: {
         initial_amount: amount, initial_amount_currency: source["currency"], developer_fee: "0.0", developer_fee_currency: source["currency"], exchange_fee: "0.0", exchange_fee_currency: source["currency"],
         subtotal_amount: amount, subtotal_amount_currency: source["currency"], gas_fee: "0.0", gas_fee_currency: source["currency"], final_amount: amount, final_amount_currency: destination["currency"],

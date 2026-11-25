@@ -196,8 +196,9 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 - **Bridge, part two.** Not checked yet, each waiting on #995 (`decisions/CX-bridge.md`, last section): the call to
   Bridge as a step in each operation, Bridge's webhooks arriving signed through its door and moving the records, the
   relay of the deposit details the stand-in issued, a transfer's `Idempotency-Key` held across a retry, a deposit's
-  later activity events leaving its one Bank Transaction in its latest status, and Bridge's other KYC states. A business's associated persons wait on #992. Help with incorporation is left out. Those checks
-  come in a second author pull request on this slice.
+  later activity events leaving its one Bank Transaction settled and none refused, and Bridge's other KYC states. A
+  business's associated persons wait on #992. Help with incorporation is left out. Those checks come in a second author
+  pull request on this slice.
 - **Bank Transaction.** ERPNext's Bank Transaction, one movement on a company's bank account: a deposit Bridge lands
   (`land`, `settled`) or a transfer out (`send`, `pending`, then Bridge's `settle` or `fail`). `deposit` and `withdrawal`
   are USDC base units, one of them 0; Bridge's amounts are dollars with up to six places (`Dollars`), turned into base
