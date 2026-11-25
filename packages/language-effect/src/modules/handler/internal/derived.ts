@@ -103,7 +103,8 @@ export const derivedOne = (read: Read<any, any, any>, root: Instance): Effect.Ef
   Effect.gen(function* () {
     const row = yield* withAdds(read.derive as AnyDerive, root);
     const names = [...read.fields, ...Object.keys(read.derive!.adds)];
-    return Object.fromEntries(names.map((f) => [f, f === "state" ? (root.state ?? "none") : row[f]])) as ReadAnswer;
+    // As a plain read by id: an optional field, the thing's or an add, with no value is left out (#1018).
+    return Object.fromEntries(names.map((f) => [f, f === "state" ? (root.state ?? "none") : row[f]]).filter(([, v]) => v !== undefined)) as ReadAnswer;
   });
 
 export const notServed = (name: string) => new ReadNotServed({ read: name, message: `${name}: a derive that looks at problems is not served yet` });
