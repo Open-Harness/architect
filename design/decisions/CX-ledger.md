@@ -108,6 +108,12 @@ templates; cost center numbers, allocations and conversions; journal entry vouch
 references, cheques, opening entries, inter-company entries, multi-currency, amending and deleting a draft; GL Entry's
 party, against, remarks, fiscal year and currency columns; closing a year; accounting periods and freezing dates.
 
+A balance on a day in no fiscal year is left out on purpose. ERPNext's `get_balance_on` answers 0 for such a day up to
+today, and for a later day refuses or counts every line depending on whether today is in a year: its answer reads
+today's date. Capxul's balance reads no clock ("Time", below; snag #1001), so it counts every line on any day.
+Every account counts every line, Profit and Loss included: ERPNext dropped the P&L year bound from `get_balance_on` in
+frappe/erpnext@0bd4de45 (7 June 2023). Its lines at a6f54f9c are in `get_count_on` (snag #1046, closed as not planned).
+
 ## Time
 
 Nothing reads the world's clock. Every posting day is typed, so no journey moves it, and snag #1001 doesn't apply.
