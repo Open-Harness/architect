@@ -15,11 +15,14 @@
 //    on the mount reaches the stand-in with that key, two mounts with two keys (this test also needs gap 1's call steps,
 //    G16-adapter-mounts call 1);
 //  - when the world ends prove stops each stand-in and every process it started: none is left once prove has exited;
-//  - a stand-in that exits before it says where it listens fails prove, naming the mount, and leaves nothing running.
+//  - a stand-in that exits before it says where it listens fails prove, naming the mount, and leaves nothing running;
+//  - a model with a process stand-in makes prove take a world of its own, as a device chain does: a warm `ortho dev` world,
+//    which has no stand-ins, is not reused (m1 check 30 is the control: without one, it is).
 //
 // Real workerd, a port from the OS. Written by the checks author; a builder never edits this file.
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { createServer } from "node:net";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { acme, cli, copyOf, nothingRunning } from "../layer1/support.ts";
@@ -234,6 +237,32 @@ const alive = (pid: number) => { try { process.kill(pid, 0); return true; } catc
  */
 const prove = (root: string, journey: string) => ortho(root, "prove", "--env", "local", "--only", journey);
 const HEALTH = /^journey health is up ✔ 1\/1 steps$/m;
+/** What prove says when it reuses `ortho dev`'s world (m1 check 30's line). */
+const REUSING = /^prove: reusing the world of ortho dev at /m;
+
+const freePort = () => new Promise<number>((found) => {
+  const server = createServer();
+  server.listen(0, "127.0.0.1", () => { const { port } = server.address() as { port: number }; server.close(() => found(port)); });
+});
+/** `ortho dev`, started as a user does, ready once its world answers (m1 check 30's way). */
+const startDev = async (root: string) => {
+  const port = await freePort();
+  const child = spawn(process.execPath, [cli, "dev", "--root", root, "--port", String(port)], { cwd: root, stdio: "ignore" });
+  for (let i = 0; i < 480; i++) {
+    if (child.exitCode !== null) throw new Error("ortho dev exited before its world answered");
+    if (await fetch(`http://127.0.0.1:${port}/_world/health`).then((r) => r.ok, () => false)) return child;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  child.kill("SIGTERM");
+  throw new Error(`ortho dev's world at ${port} never answered`);
+};
+const stopDev = async (child: ChildProcess) => {
+  if (child.exitCode !== null) return;
+  const exited = new Promise<void>((r) => child.once("exit", () => r()));
+  child.kill("SIGTERM");
+  await Promise.race([exited, new Promise((r) => setTimeout(r, 30_000))]);
+  if (child.exitCode === null) child.kill("SIGKILL");
+};
 
 describe("08 prove stands up a mount's process stand-in", () => {
   it("runs node <entry> --port 0 --dir <state>/stands/<mount> once for each process stand-in, its folder there, and none for a mount without one", () => {
@@ -270,6 +299,21 @@ describe("08 prove stands up a mount's process stand-in", () => {
     const left = entriesOf(log).filter((e) => e.event === "start").flatMap((e) => [e.pid!, e.child!]).filter(alive);
     for (const pid of left) process.kill(pid, "SIGKILL");
     expect(left, "processes still running after prove failed (their ids, now killed)").toEqual([]);
+    nothingRunning(root);
+  });
+});
+
+describe("08 a model with a process stand-in gets a world of its own", () => {
+  it("with ortho dev's world warm, prove still starts a world of its own and its stand-ins, and never says it reuses dev's", async () => {
+    const { root, log } = app();
+    const dev = await startDev(root);
+    let proved: { readonly status: number | null; readonly out: string };
+    try {
+      proved = prove(root, "health is up");
+    } finally { await stopDev(dev); }
+    expect(proved.out).not.toMatch(REUSING);
+    expect(proved.out).toMatch(HEALTH);
+    expect(entriesOf(log).filter((e) => e.event === "start").map((e) => e.plugin).sort(), proved.out).toEqual(["fx-rates", "rates"]);
     nothingRunning(root);
   });
 });

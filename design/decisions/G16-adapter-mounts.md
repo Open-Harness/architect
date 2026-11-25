@@ -112,6 +112,12 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
   stand-in is `Stand.none` or `Stand.vendor` gets no process, even when its package names an entry. A stand-in that exits
   before it says where it listens fails the world, naming the mount, and leaves nothing running. "Everything it started"
   is the stand-in's processes too: prove stops a stand-in's own children, not only the stand-in.
+- **A world of its own** (signed off by the lead on #995, 25 November 2026). A model with a process stand-in makes prove take
+  a world of its own, as a device chain does (`needsDevice`): a warm `ortho dev` world is not reused, and every run starts
+  with fresh stand-in state.
+- **Known limit: no stand-ins under `ortho dev`.** Its world starts none, so a generated call there fails on the missing
+  `<MOUNT>_BASE_URL` (call 1's 500) and never reaches a real service. Stand-ins in dev, with `Warm.reset` restarting them,
+  are in `design/later.md` until a developer needs them.
 - **The key.** prove gives the Worker `<MOUNT>_API_KEY` = `world-<mount>` for each mount it stood up. A stand-in that
   requires a key gets one, and two mounts still differ.
 
