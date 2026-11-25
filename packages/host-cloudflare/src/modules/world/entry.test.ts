@@ -86,6 +86,8 @@ const worldOf = async <A>(name: string, use: (stub: ReturnType<typeof stubOf>, t
     return use(stub, timers, clock, { ...stepped, WORLD: { idFromName: (n: string) => n, get: () => stub } as unknown as DurableObjectNamespace });
   });
 const pause = (ms = 10) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
+/** Waits, a pause at a time, until `done` holds or a second has passed: a token goes back a few turns after its gate opens, and later under load (#944). The assertion after it says whether it did. */
+const until = async (done: () => boolean) => { for (let i = 0; i < 100 && !done(); i++) await pause(); };
 
 describe("a request holds one token for its whole life", () => {
   it("is counted from arrival, through its work, the gaps between attempts and a sleep that lends it out, until the response ends", async () => {
@@ -133,6 +135,7 @@ describe("a request holds one token for its whole life", () => {
       expect(timers.held()).toEqual(["probe.spin"]);
       await release();
       // Parked in a sleep: the token is lent out, the world may move, and the request wakes on the instant it moved to.
+      await until(() => timers.held().length === 0);
       expect(timers.held()).toEqual([]);
       expect(await settle(T + DAY)).toMatchObject({ _tag: "Success", success: { now: new RealDate(T + DAY).toISOString() } });
       await spin;
@@ -159,7 +162,7 @@ describe("a request holds one token for its whole life", () => {
       // The response is out; the request's own token has gone back; the detached work still holds its own.
       expect(timers.held()).toEqual(["agents/run/run_1"]);
       finish();
-      await pause();
+      await until(() => timers.held().length === 0);
       expect(timers.held()).toEqual([]);
     });
   });
