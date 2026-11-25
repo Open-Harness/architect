@@ -13,10 +13,12 @@ export type AnswerOf<F extends Callable> = ReturnType<F> extends Effect.Effect<i
 /** What the callable fails with: `unknown` for a Promise (a rejection or a throw), the typed failure of an Effect. */
 export type FailureOf<F extends Callable> = ReturnType<F> extends Effect.Effect<any, infer E, any> ? E : unknown;
 
-/** What the generated server hands a call step: the callable, and its adapter's layer when the adapter ships one. */
+/** What the generated server hands a call step: the callable, its adapter's layer when the adapter ships one, and whether it has an address. */
 export interface CallWiring {
   readonly run: Callable;
   readonly layer?: Layer.Layer<any, any, any>;
+  /** A generated adapter's call (G16-adapter-mounts call 1): the variable its mount's address is missing from, or nothing when it has one. */
+  readonly unset?: () => string | undefined;
 }
 
 /**

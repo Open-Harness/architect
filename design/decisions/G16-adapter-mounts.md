@@ -67,11 +67,30 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   names `<MOUNT>_BASE_URL`. There is no default from the description's `servers`, which would send a test environment to
   production (Bridge's is `https://api.bridge.xyz/v0`).
 - **Known limits** (#995 gap 1's checks, 25 November 2026):
-  - The four errors' thing takes the compiler's default refusal prefix, its name's first two letters. Two generated adapters
-    whose names share them (`open` and `optional`, `github` and `gitlab`) can't be mounted together, and an app can't set
-    `code` on a generated file. Snag #1012: `ortho new adapter --code`.
+  - The four errors' thing takes the compiler's default refusal prefix, its name's first two letters, unless the plugin's
+    scaffolded `src/written.ts` exports a `code`, which the generated `thing.ts` reads. Two generated adapters whose names
+    share those letters (`open` and `optional`, `github` and `gitlab`), or one whose letters another thing owns, need one
+    set there by hand. The superagent's `posthog` sets `PH`, because intake's `policy` owns `PO`. (#995 gap 1's build,
+    25 November 2026: without it the superagent app could not mount its own PostHog adapter.) Snag #1012 may still add
+    `ortho new adapter --code` to write it at the first run.
+  - A mount is wired as a generated adapter's when its plugin declares a `baseUrl` secret, which the generator always writes. A
+    hand-written adapter that declares one too would be wired to a `client` it may not have (#1021's review). Nothing does
+    today; a positive marker in the mount model is the fix when one does.
+  - Every generated adapter's four errors take exits 81 to 84, so one operation that calls two generated adapters and lists
+    both adapters' errors is refused (`operationExitClashes`; found by Codex on #1021, 25 November 2026). Snag #1012
+    fixes it by the next call.
+  - An exit base that isn't a whole number (`85.5`) isn't tried by check 07; the compiler's check of each exit already refuses
+    one ("not a whole number").
   - The key is the adapter's, not the mount's calls': a mount that includes only calls needing no key still lists one, and so
     does a description whose every operation overrides its top-level requirement with `security: []`.
+- **An adapter's exits are set by hand** (Goal 16's lead, on #1028, 25 November 2026). Beside `code`, the plugin's
+  scaffolded `src/written.ts` may export `exit`, one base: its four errors take base to base+3. Unset, they stay 81 to 84,
+  so one adapter needs no setting. Two adapters whose exits clash in one operation are refused by `generate`, naming both
+  adapters and the `exit` in `src/written.ts` that fixes it. A base whose four exits leave 5 to 119 is refused, naming the
+  adapter, the setting, and the base or the exit that leaves. The scaffold may write the `exit` line itself, as it
+  writes `code`'s. Not from a hash of the name, which can still clash and can't be fixed by hand; not assigned by
+  the compiler, which would move exits when an unrelated adapter is added, as `refusals.lock` exists to stop. Check 07
+  pins it, red until #1012 is built.
 
 ### 2. Bridge's signature at the door (gap 5)
 
@@ -137,4 +156,5 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 ## Supersedes
 
 - G16-adapter-mounts call 1, as merged in #1003: "`apiKey`, when its description declares any security scheme" → "`apiKey`, when its description requires security"
+- G16-adapter-mounts call 1, as merged in #1010: "and an app can't set `code` on a generated file" → "unless the plugin's scaffolded `src/written.ts` exports a `code`, which the generated `thing.ts` reads"
 - GOAL17-adapters-from-spec: "Declared error classes per response are not generated yet: `Blueprint.call()` is given none." → "every generated call is `Blueprint.call({ errors: [<Adapter>ApiFailure, <Adapter>InputRefused, <Adapter>AnswerRefused, <Adapter>Unreachable] })`"

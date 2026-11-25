@@ -42,6 +42,8 @@ describe("server", () => {
     for (const same of [withClock(), withClock({ kind: "real" })]) expect(await rendered(same)).toEqual(plain);
     expect(file(plain, "main.ts")).not.toContain("WorldEntry");
     expect(file(plain, "main.ts")).toContain("BusyLive");
+    // A refused payload is decoded with every error, so its 400 names each refused field (#988).
+    expect(file(plain, "main.ts")).toContain(`const CallApi = Api.middleware(CallTelemetry).annotate(HttpApi.PayloadParseOptions, { errors: "all" });`);
     expect(file(plain, "main.ts")).not.toContain("Timers");
     expect(file(plain, "wrangler.jsonc")).not.toContain("ORTHO_CLOCKS");
 
