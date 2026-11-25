@@ -12,6 +12,45 @@ CREATE TABLE "account" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "account_oneNamePerCompany" ON "account" ("company", "accountName");
+CREATE TABLE "appraisal" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "appraisalCycle" TEXT NOT NULL,
+  "appraisalTemplate" TEXT NOT NULL,
+  "kraEvaluationMethod" TEXT NOT NULL,
+  "kras" TEXT NOT NULL,
+  "selfRatings" TEXT NOT NULL,
+  "totalScore" TEXT NOT NULL,
+  "selfScore" TEXT NOT NULL,
+  "avgFeedbackScore" TEXT NOT NULL,
+  "finalScore" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "appraisal_oneAppraisalPerCycle" ON "appraisal" ("employee", "appraisalCycle");
+CREATE TABLE "appraisal-cycle" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "cycleName" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "kraEvaluationMethod" TEXT NOT NULL,
+  "appraisees" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "appraisal-cycle_oneNamePerCompany" ON "appraisal-cycle" ("company", "cycleName");
+CREATE TABLE "appraisal-template" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "kras" TEXT NOT NULL,
+  "criteria" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "appraisal-template_oneTitlePerCompany" ON "appraisal-template" ("company", "title");
 CREATE TABLE "attendance" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -143,6 +182,14 @@ CREATE TABLE "employee" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee_onePlacePerPerson" ON "employee" ("company", "person") WHERE "state" IN ('active');
+CREATE TABLE "employee-feedback-criteria" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "criteria" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employee-feedback-criteria_oneNamePerCompany" ON "employee-feedback-criteria" ("company", "criteria");
 CREATE TABLE "employee-grade" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -151,6 +198,19 @@ CREATE TABLE "employee-grade" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee-grade_oneNamePerCompany" ON "employee-grade" ("company", "gradeName");
+CREATE TABLE "employee-performance-feedback" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "appraisal" TEXT NOT NULL,
+  "appraisalCycle" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "reviewer" TEXT NOT NULL,
+  "feedback" TEXT NOT NULL,
+  "ratings" TEXT NOT NULL,
+  "totalScore" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "employee-promotion" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -239,6 +299,19 @@ CREATE TABLE "gl-entry" (
   "voucherType" TEXT NOT NULL,
   "voucherId" TEXT NOT NULL,
   "isCancelled" INTEGER NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "goal" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "appraisalCycle" TEXT NOT NULL,
+  "kra" TEXT NOT NULL,
+  "goalName" TEXT NOT NULL,
+  "progress" TEXT NOT NULL,
+  "isGroup" INTEGER NOT NULL,
+  "parentGoal" TEXT,
+  "state" TEXT,
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE "holiday" (
@@ -341,6 +414,48 @@ CREATE TABLE "journal-entry-account" (
   "credit" TEXT NOT NULL,
   "version" INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE "kra" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "kra_oneTitlePerCompany" ON "kra" ("company", "title");
+CREATE TABLE "leave-allocation" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "leaveType" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "newLeavesAllocated" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "leave-application" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "leaveType" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  "totalLeaveDays" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "leave-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "leaveTypeName" TEXT NOT NULL,
+  "maxContinuousDaysAllowed" TEXT NOT NULL,
+  "isLwp" INTEGER NOT NULL,
+  "includeHoliday" INTEGER NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "leave-type_oneNamePerCompany" ON "leave-type" ("company", "leaveTypeName");
 CREATE TABLE "shift-type" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

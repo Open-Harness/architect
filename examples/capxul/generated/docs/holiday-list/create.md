@@ -43,6 +43,17 @@ Start a company's list of days off, between two days.
 
 ## Worked examples
 
+### leave days
+
+Starts from the world `a leave allocation`.
+
+- **Ada starts Kenya 2027, a holiday list for the year.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `KE-27`, fromDate `2027-01-01`, toDate `2027-12-31`, with the request key `kenya`, and gets back an answer matching `^hls_[0-9a-z]+$`.
+- **Ada looks up Kenya 2027.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `KE-27`, fromDate `2027-01-01`, toDate `2027-12-31`, with the request key `kenya`, and gets back an answer matching `^hls_[0-9a-z]+$`.
+- **Ada looks up Kenya 2027 again.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `KE-27`, fromDate `2027-01-01`, toDate `2027-12-31`, with the request key `kenya`, and gets back an answer matching `^hls_[0-9a-z]+$`.
+- **Ada looks up Kenya 2027 a third time.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `KE-27`, fromDate `2027-01-01`, toDate `2027-12-31`, with the request key `kenya`, and gets back an answer matching `^hls_[0-9a-z]+$`.
+- **Ada starts a second list, Coast June, for June 2027 alone.** `ada` (role company.owner) calls and sends company the world's company, holidayListName `COAST-06`, fromDate `2027-06-01`, toDate `2027-06-30`, and gets back an answer matching `^hls_[0-9a-z]+$`.
+- **and starts its list for 2027.** `bo` (signed in) calls and sends company the last call's company, holidayListName `BO-27`, fromDate `2027-01-01`, toDate `2027-12-31`, and gets back an answer matching `^hls_[0-9a-z]+$`.
+
 ### set up a holiday list
 
 Starts from the world `a company`.

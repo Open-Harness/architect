@@ -162,6 +162,23 @@
       },
       "earlier": []
     },
+    "AN-005": {
+      "name": "AttendanceOnLeave",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {
+        "leaveApplication": {
+          "value": "id",
+          "prefix": "lap"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceOnLeave"
+        }
+      },
+      "earlier": []
+    },
     "AN-900": {
       "name": "AttendanceNotMarked",
       "owner": "attendance",
@@ -174,6 +191,158 @@
       "wire": {
         "effect": {
           "tag": "AttendanceNotMarked"
+        }
+      },
+      "earlier": []
+    },
+    "AP-001": {
+      "name": "AppraisedEmployeeNotInCompany",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AP-002": {
+      "name": "AppraisedEmployeeHasLeft",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisedEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "AP-003": {
+      "name": "AppraisalCycleCompleted",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisalCycleCompleted"
+        }
+      },
+      "earlier": []
+    },
+    "AP-004": {
+      "name": "AppraisalTemplateNotInCompany",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisalTemplateNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AP-005": {
+      "name": "AppraisalAlreadyExists",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisalAlreadyExists"
+        }
+      },
+      "earlier": []
+    },
+    "AP-006": {
+      "name": "NotRatedManually",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotRatedManually"
+        }
+      },
+      "earlier": []
+    },
+    "AP-007": {
+      "name": "ScoresDontMatchKras",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ScoresDontMatchKras"
+        }
+      },
+      "earlier": []
+    },
+    "AP-008": {
+      "name": "KraScoreOutOfRange",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "KraScoreOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "AP-009": {
+      "name": "SelfRatingsDontMatchCriteria",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SelfRatingsDontMatchCriteria"
+        }
+      },
+      "earlier": []
+    },
+    "AP-010": {
+      "name": "SelfRatingOutOfRange",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SelfRatingOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "AP-900": {
+      "name": "AppraisalNotDraft",
+      "owner": "appraisal",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "AP-901": {
+      "name": "AppraisalNotFound",
+      "owner": "appraisal",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "apr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalNotFound"
         }
       },
       "earlier": []
@@ -230,6 +399,18 @@
       "wire": {
         "effect": {
           "tag": "RequestBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-005": {
+      "name": "AttendanceRequestOverlaps",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AttendanceRequestOverlaps"
         }
       },
       "earlier": []
@@ -586,6 +767,148 @@
       "wire": {
         "effect": {
           "tag": "CompanyNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "CY-001": {
+      "name": "CycleEndsBeforeStart",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {
+        "startDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CycleEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "CY-002": {
+      "name": "AppraiseeNotInCompany",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CY-003": {
+      "name": "AppraiseeHasLeft",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "CY-004": {
+      "name": "AppraiseeTemplateNotInCompany",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeTemplateNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CY-005": {
+      "name": "AppraiseeListedTwice",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeListedTwice"
+        }
+      },
+      "earlier": []
+    },
+    "CY-006": {
+      "name": "CycleWithoutAppraisees",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CycleWithoutAppraisees"
+        }
+      },
+      "earlier": []
+    },
+    "CY-007": {
+      "name": "AppraisalsNotSubmitted",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {
+        "drafts": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalsNotSubmitted"
+        }
+      },
+      "earlier": []
+    },
+    "CY-008": {
+      "name": "CycleNameTaken",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {
+        "cycleName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CycleNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CY-900": {
+      "name": "AppraisalCycleNotNotStarted",
+      "owner": "appraisal-cycle",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalCycleNotNotStarted"
+        }
+      },
+      "earlier": []
+    },
+    "CY-901": {
+      "name": "AppraisalCycleNotFound",
+      "owner": "appraisal-cycle",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "apc"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalCycleNotFound"
         }
       },
       "earlier": []
@@ -988,6 +1311,39 @@
       },
       "earlier": []
     },
+    "FC-001": {
+      "name": "CriteriaNameTaken",
+      "owner": "employee-feedback-criteria",
+      "from": "blueprint/things/employee-feedback-criteria/errors.ts",
+      "fields": {
+        "criteria": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CriteriaNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "FC-900": {
+      "name": "EmployeeFeedbackCriteriaNotActive",
+      "owner": "employee-feedback-criteria",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeFeedbackCriteriaNotActive"
+        }
+      },
+      "earlier": []
+    },
     "FY-001": {
       "name": "FiscalYearEndsBeforeStart",
       "owner": "fiscal-year",
@@ -1061,6 +1417,130 @@
       "wire": {
         "effect": {
           "tag": "FiscalYearNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "GO-001": {
+      "name": "GoalCycleCompleted",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalCycleCompleted"
+        }
+      },
+      "earlier": []
+    },
+    "GO-002": {
+      "name": "GoalEmployeeNotInCompany",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "GO-003": {
+      "name": "GoalOwnerHasLeft",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalOwnerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "GO-004": {
+      "name": "GoalKraNotInAppraisal",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalKraNotInAppraisal"
+        }
+      },
+      "earlier": []
+    },
+    "GO-005": {
+      "name": "ParentGoalMismatch",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentGoalMismatch"
+        }
+      },
+      "earlier": []
+    },
+    "GO-006": {
+      "name": "ProgressOutOfRange",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ProgressOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "GO-007": {
+      "name": "GoalIsGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "GO-008": {
+      "name": "GoalNotGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "GO-009": {
+      "name": "ParentGoalNotGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentGoalNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "GO-900": {
+      "name": "GoalNotPending",
+      "owner": "goal",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "GoalNotPending"
         }
       },
       "earlier": []
@@ -1771,6 +2251,473 @@
       },
       "earlier": []
     },
+    "KR-001": {
+      "name": "KraTitleTaken",
+      "owner": "kra",
+      "from": "blueprint/things/kra/errors.ts",
+      "fields": {
+        "title": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "KraTitleTaken"
+        }
+      },
+      "earlier": []
+    },
+    "KR-900": {
+      "name": "KraNotActive",
+      "owner": "kra",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "KraNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "KR-901": {
+      "name": "KraNotFound",
+      "owner": "kra",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "kra"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "KraNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "LL-001": {
+      "name": "AllocateeNotInCompany",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocateeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LL-002": {
+      "name": "AllocateeHasLeft",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocateeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "LL-003": {
+      "name": "AllocationTypeNotInCompany",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LL-004": {
+      "name": "AllocationEndsBeforeStart",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AllocationEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "LL-005": {
+      "name": "AllocationOverlaps",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "LL-006": {
+      "name": "LeaveWithoutPayNotAllocated",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveWithoutPayNotAllocated"
+        }
+      },
+      "earlier": []
+    },
+    "LL-007": {
+      "name": "NoLeavesAllocated",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoLeavesAllocated"
+        }
+      },
+      "earlier": []
+    },
+    "LL-008": {
+      "name": "AllocationExceedsPeriod",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationExceedsPeriod"
+        }
+      },
+      "earlier": []
+    },
+    "LL-900": {
+      "name": "LeaveAllocationNotDraft",
+      "owner": "leave-allocation",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveAllocationNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "LP-001": {
+      "name": "ApplicantNotInCompany",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LP-002": {
+      "name": "ApplicantHasLeft",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "LP-003": {
+      "name": "ApplicationTypeNotInCompany",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicationTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LP-004": {
+      "name": "LeaveEndsBeforeStart",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "LP-005": {
+      "name": "LeaveBeforeJoining",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "LP-006": {
+      "name": "NoAllocationCovers",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoAllocationCovers"
+        }
+      },
+      "earlier": []
+    },
+    "LP-007": {
+      "name": "LeaveAllHolidays",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveAllHolidays"
+        }
+      },
+      "earlier": []
+    },
+    "LP-008": {
+      "name": "InsufficientLeaveBalance",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InsufficientLeaveBalance"
+        }
+      },
+      "earlier": []
+    },
+    "LP-009": {
+      "name": "LeaveOverlaps",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "LP-010": {
+      "name": "LeaveTooLong",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "maxContinuousDaysAllowed": {
+          "value": "uint",
+          "bits": 32
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTooLong"
+        }
+      },
+      "earlier": []
+    },
+    "LP-011": {
+      "name": "LeaveDayAttended",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "attendanceDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveDayAttended"
+        }
+      },
+      "earlier": []
+    },
+    "LP-900": {
+      "name": "LeaveApplicationNotOpen",
+      "owner": "leave-application",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveApplicationNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "LT-001": {
+      "name": "LeaveTypeNameTaken",
+      "owner": "leave-type",
+      "from": "blueprint/things/leave-type/errors.ts",
+      "fields": {
+        "leaveTypeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "LT-900": {
+      "name": "LeaveTypeNotActive",
+      "owner": "leave-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "LT-901": {
+      "name": "LeaveTypeNotFound",
+      "owner": "leave-type",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "lty"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "PF-002": {
+      "name": "FeedbackForOneself",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackForOneself"
+        }
+      },
+      "earlier": []
+    },
+    "PF-003": {
+      "name": "ReviewerNotInCompany",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ReviewerNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PF-004": {
+      "name": "ReviewerHasLeft",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ReviewerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "PF-005": {
+      "name": "FeedbackRatingsDontMatchCriteria",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackRatingsDontMatchCriteria"
+        }
+      },
+      "earlier": []
+    },
+    "PF-006": {
+      "name": "FeedbackRatingOutOfRange",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackRatingOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "PF-007": {
+      "name": "FeedbackCycleCompleted",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackCycleCompleted"
+        }
+      },
+      "earlier": []
+    },
+    "PF-900": {
+      "name": "EmployeePerformanceFeedbackNotDraft",
+      "owner": "employee-performance-feedback",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeePerformanceFeedbackNotDraft"
+        }
+      },
+      "earlier": []
+    },
     "PM-001": {
       "name": "PromotedEmployeeNotInCompany",
       "owner": "employee-promotion",
@@ -1932,6 +2879,139 @@
       "wire": {
         "effect": {
           "tag": "EmployeeSeparationNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "TP-001": {
+      "name": "TemplateWithoutKras",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateWithoutKras"
+        }
+      },
+      "earlier": []
+    },
+    "TP-002": {
+      "name": "TemplateKraNotInCompany",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateKraNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TP-003": {
+      "name": "TemplateCriteriaNotInCompany",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateCriteriaNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TP-004": {
+      "name": "TemplateLineRepeated",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateLineRepeated"
+        }
+      },
+      "earlier": []
+    },
+    "TP-005": {
+      "name": "TemplateWeightageOutOfRange",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateWeightageOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "TP-006": {
+      "name": "KraWeightageNotHundred",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "KraWeightageNotHundred"
+        }
+      },
+      "earlier": []
+    },
+    "TP-007": {
+      "name": "CriteriaWeightageNotHundred",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CriteriaWeightageNotHundred"
+        }
+      },
+      "earlier": []
+    },
+    "TP-008": {
+      "name": "TemplateTitleTaken",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {
+        "title": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TemplateTitleTaken"
+        }
+      },
+      "earlier": []
+    },
+    "TP-900": {
+      "name": "AppraisalTemplateNotActive",
+      "owner": "appraisal-template",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalTemplateNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "TP-901": {
+      "name": "AppraisalTemplateNotFound",
+      "owner": "appraisal-template",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "apt"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalTemplateNotFound"
         }
       },
       "earlier": []
