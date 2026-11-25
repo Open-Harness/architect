@@ -73,6 +73,9 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
     set there by hand. The superagent's `posthog` sets `PH`, because intake's `policy` owns `PO`. (#995 gap 1's build,
     25 November 2026: without it the superagent app could not mount its own PostHog adapter.) Snag #1012 may still add
     `ortho new adapter --code` to write it at the first run.
+  - A mount is wired as a generated adapter's when its plugin declares a `baseUrl` secret, which the generator always writes. A
+    hand-written adapter that declares one too would be wired to a `client` it may not have (#1021's review). Nothing does
+    today; a positive marker in the mount model is the fix when one does.
   - The key is the adapter's, not the mount's calls': a mount that includes only calls needing no key still lists one, and so
     does a description whose every operation overrides its top-level requirement with `security: []`.
 

@@ -53,8 +53,8 @@ Its blueprint (G16-adapter-mounts call 1) holds what a mount reads and refuses w
 - **`blueprint/things/<name>/errors.ts`** declares `<Name>ApiFailure { status, code? }`, `<Name>InputRefused`,
   `<Name>AnswerRefused` and `<Name>Unreachable`, on a thing of the adapter's name (`thing.ts`), re-exported from `src/index.ts`.
   Every call declares the four, so a handler's mapping turns the client's failure into its namesake. The thing takes the
-  compiler's default refusal prefix, so two adapters whose names share their first two letters can't be mounted together
-  (snag #1012).
+  compiler's default refusal prefix, its name's first two letters, unless the plugin's `src/written.ts` exports a `code`;
+  set one there when another thing has those letters (snag #1012).
 - **`package.json`** exports `./blueprint/*.js`, which the generated API imports the errors from.
 
 Not done here: types of payloads from the schemas (events decode to `unknown`), and errors per documented response. Tests: `adapter.test.ts`, and #739's
