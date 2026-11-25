@@ -22,7 +22,7 @@ a row adopts an existing issue (`` `issue #N` `` in Evidence) and folds duplicat
    release: the beta is every piece Capxul's books, HR and payroll pulled, extracted and published; 1.0 the same for
    the rest of Capxul core (K44).
 
-**Pulled by** is the app that needs it first: superagent, Capxul, or framework (no app yet). **Release** is the framework
+**Pulled by** is the app that needs it first: Capxul, or framework (the alpha's, or no app yet; K45). **Release** is the framework
 release it ships in. **Milestone** is the first app milestone that pulls it; a piece no app has pulled sits in "Not yet
 needed", with no dates.
 
@@ -60,10 +60,13 @@ its app branch.
 a row, not a request to another goal. Case-2 asks stay open until settled; once settled, the row that results adopts the
 issue (`` `issue #N` ``), so the board holds one page for it.
 
-## The split of the two apps
+## The two builds on the board (K45)
 
-K44 (25 November 2026) parked the superagent, so Capxul is the one app building. Goal 18's slice 4 re-sorts the rows
-the superagent pulled to the alpha, to Capxul or to "Not yet needed"; until then they keep the split below.
+K44 (25 November 2026) parked the superagent, so Capxul is the one app building. K45 re-sorted the rows it pulled:
+sign-in, principals, `ortho add` and the chain basics to the alpha (milestone `alpha`, release preview); secrets,
+events in, webhook doors and adapters from a spec to Capxul's banking; timers to its payroll; derived reads and roles
+to its books; the rest to "Not yet needed". The parked goals' open issues carry `parked`, which the sync sets and the
+Project's views leave out. Before K44, the split was this.
 
 The apps split the shared pieces (Aaron's call 9). A piece both need goes to the app that needs it first in the order the
 apps run, and the superagent runs first, so it takes most of them: versions, timers, safe repeats, events in and the

@@ -10,9 +10,9 @@ export const row = (id, item, stage, by, release, milestone, lane, touches, need
 
 export const sample = page(
   row("secrets", "Secrets by declaration: per environment only", "building", "superagent", "beta", "coding agent", "goal-17", "`packages/host-cloudflare`, `packages/orthograph/src/modules/secrets`", "—", "#690; slice M2.04"),
-  row("things", "Things: fields, machines", "built", "framework", "preview", "—", "none", "`packages/orthograph/src/modules/things`", "—", "slice M1.03"),
+  row("things", "Things: fields, machines", "built", "framework", "preview", "alpha", "none", "`packages/orthograph/src/modules/things`", "—", "slice M1.03"),
   row("sign-in", "Sign-in (`@orthograph/auth`: people, sessions): Better Auth", "provisional", "superagent", "1.0", "launch", "none", "`packages/auth`", "secrets, things", "slices M2.05"),
-  row("reports", "Reports: the books' statements", "provisional", "Capxul", "1.0", "books", "none", "`packages/projections`", "things", "K42"),
+  row("reports", "Reports: the books' statements", "provisional", "Capxul", "beta", "books", "none", "`packages/projections`", "things", "K42"),
   row("gap-node-host", "Node host: the server runs only as a Worker", "provisional", "framework", "—", "—", "none", "—", "—", "no slice"),
 );
 

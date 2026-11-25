@@ -46,11 +46,16 @@ test("fail closed: a table in the map whose header is misspelt is an error, and 
   assert.match(parseBoard(page(good).replace("Prose.", "| Colum | What |\n|---|---|\n| x | y |")).errors[0], /header is not the board's columns/);
 });
 
-test("the split and the releases: a framework row has no app milestone, and K42 decides the release", () => {
+test("the split and the releases: a framework row's only milestone is the alpha, and K44 decides the release", () => {
   const bad = (line) => parseBoard(page(line)).errors.join("\n");
   assert.match(bad(row("a", "x: y", "built", "framework", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by framework/);
   assert.match(bad(row("a", "x: y", "built", "superagent", "—", "books", "none", "—", "—", "")), /is Capxul's, but the row is pulled by superagent/);
-  assert.match(bad(row("a", "x: y", "built", "Capxul", "beta", "books", "none", "—", "—", "")), /only Capxul pulls ships in 1.0/);
+  assert.match(bad(row("a", "x: y", "built", "Capxul", "1.0", "books", "none", "—", "—", "")), /for 'books' ships in beta/);
+  assert.match(bad(row("a", "x: y", "built", "Capxul", "beta", "banking", "none", "—", "—", "")), /for 'banking' ships in 1.0/);
+  assert.match(bad(row("a", "x: y", "built", "Capxul", "beta", "—", "none", "—", "—", "")), /off its path ships in 1.0/);
+  assert.match(bad(row("a", "x: y", "built", "framework", "preview", "—", "none", "—", "—", "")), /preview piece is the alpha's/);
+  assert.match(bad(row("a", "x: y", "built", "framework", "beta", "alpha", "none", "—", "—", "")), /for 'alpha' ships in preview/);
+  assert.equal(bad(row("a", "x: y", "built", "framework", "preview", "alpha", "none", "—", "—", "")), "");
   assert.match(bad(row("a", "x: y", "built", "superagent", "1.0", "coding agent", "none", "—", "—", "")), /ships in beta/);
   assert.match(bad(row("a", "x: y", "built", "superagent", "beta", "launch", "none", "—", "—", "")), /ships in 1.0/);
   const twice = page(row("a", "x: y", "built", "framework", "—", "—", "none", "—", "—", ""), row("a", "y: z", "built", "framework", "—", "—", "none", "—", "—", ""));
@@ -64,11 +69,12 @@ test("the real status page reads, every id is unique, and every app milestone is
   assert.deepEqual(errors, []);
   assert.ok(rows.length > 60);
   for (const r of rows) if (r.milestone) assert.equal(APP_MILESTONES[r.milestone].app, r.pulledBy);
-  // K42's split: what the superagent pulls and what Capxul pulls.
-  const by = (id) => rows.find((r) => r.id === id).pulledBy;
-  for (const id of ["versions", "timers", "safe-repeats", "events-in", "outbox", "secrets", "webhook-doors", "pages", "sign-in", "live-deploy"]) assert.equal(by(id), "superagent", id);
-  for (const id of ["reports", "lists", "trees", "dates"]) assert.equal(by(id), "Capxul", id);
-  assert.notEqual(by("teams"), by("companies"), "organisations are separate (K42, call 10)");
+  // K44: the superagent is parked, so no row is its; the chain basics are the alpha's; Capxul's books pull its reports.
+  const at = (id) => rows.find((r) => r.id === id);
+  assert.deepEqual(rows.filter((r) => r.pulledBy === "superagent").map((r) => r.id), []);
+  for (const id of ["wallets-keys", "chain-evm", "relayer-follower", "sign-in", "ortho-new"]) assert.equal(at(id).milestone, "alpha", id);
+  for (const id of ["reports", "lists", "trees", "dates"]) assert.deepEqual([at(id).pulledBy, at(id).release], ["Capxul", "beta"], id);
+  assert.notEqual(at("teams").pulledBy, at("companies").pulledBy, "organisations are separate (K42, call 10)");
   assert.deepEqual(claimOverlaps(rows), []);
 });
 

@@ -29,8 +29,14 @@ test("from nothing: the Project, linked, its fields and views; only trusted, kin
   assert.deepEqual(steps.filter((s) => s.do === "createField").map((s) => s.name), ["Goal", "Kind", "Status", "Release", "Harness", "Model", "Lead role", "Start", "End"]);
   assert.deepEqual(steps.filter((s) => s.do === "addItem").map((s) => s.number), [10, 11, 12, 13]);
   assert.deepEqual(steps.filter((s) => s.do === "createView").map((s) => [s.name, s.layout, s.filter]), [
-    ["All goals", "TABLE_LAYOUT", ""], ["By status", "BOARD_LAYOUT", ""], ["Roadmap", "ROADMAP_LAYOUT", ""], ["Goal 6", "TABLE_LAYOUT", 'goal:"Goal 6"'],
+    ["All goals", "TABLE_LAYOUT", "-label:parked"], ["By status", "BOARD_LAYOUT", "-label:parked"], ["Roadmap", "ROADMAP_LAYOUT", "-label:parked"],
+    ["The alpha", "BOARD_LAYOUT", 'milestone:"Alpha: Orthograph on npm"'],
+    ["Capxul's path", "BOARD_LAYOUT", 'milestone:"Capxul: the books","Capxul: people and payroll","Capxul: banking","Capxul: budgets","Capxul: getting paid"'],
+    ["Parked", "TABLE_LAYOUT", "label:parked"], ["Goal 6", "TABLE_LAYOUT", 'goal:"Goal 6"'],
   ]);
+  const parked = projectViews([{ ...goal, status: "parked" }, { ...goal, number: 18, milestone: "Goal 18: the framework" }]);
+  assert.ok(!parked.some((v) => v.name === "Goal 6"), "a parked goal has no view of its own; its issues are in Parked");
+  assert.equal(parked.find((v) => v.name === "The alpha").filter, 'milestone:"Alpha: Orthograph on npm","Goal 18: the framework"');
 });
 
 const opts = (field) => field.options.map((o, k) => ({ id: `${field.name}-${k}`, name: o.name }));

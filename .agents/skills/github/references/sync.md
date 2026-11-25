@@ -42,8 +42,8 @@ every row in Needs is built; otherwise **Blocked**.
   whichever is earlier. **End:** for a built row, the day its last evidence pull request merged.
 - **Forecast** (`tools/github/roadmap.mjs`, pure and tested): for a row not yet done, from what needs what and the pace
   measured so far (pull requests merged per day over the last seven full days), spent a day at a time on the rows that are
-  ready, the superagent's milestones first, as K42 ranked them (Goal 18's slice 4 changes the ranking for K44). The
-  superagent's milestones run in the order of its brief. A row no app has
+  ready, in `board.mjs`'s order: the alpha's first, then Capxul's path (K45). The parked superagent's milestones, if
+  any row returns to them, run in the order of its brief. A row no app has
   pulled has no dates.
 - A **milestone's due date** is the forecast end of its last item, so a slip shows where it comes from. It is a forecast,
   never a promise: a milestone that has a due date says "Forecast, recomputed every run (K42 §5)" in its description, and

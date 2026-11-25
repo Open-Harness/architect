@@ -39,6 +39,10 @@ export const applySteps = ({ steps, state, repo, rowById, gh, ghAll }) => {
     if (s.do === "removeBlockedBy") gh(`repos/${repo}/issues/${s.issue}/dependencies/blocked_by/${issueRef(s.blocker).id}`, { method: "DELETE" });
     if (s.do === "addBlockedBy") gh(`repos/${repo}/issues/${issueRef(s.issue).number}/dependencies/blocked_by`, { method: "POST", body: { issue_id: issueRef(s.blocker).id } });
     if (s.do === "addSubIssue") gh(`repos/${repo}/issues/${issueRef(s.parent).number}/sub_issues`, { method: "POST", body: { sub_issue_id: issueRef(s.child).id } });
+    if (s.do === "setParked") {
+      if (s.parked) gh(`repos/${repo}/issues/${s.number}/labels`, { method: "POST", body: { labels: ["parked"] } });
+      else gh(`repos/${repo}/issues/${s.number}/labels/parked`, { method: "DELETE" });
+    }
     if (s.do === "moveIssue") {
       if (s.milestone) gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { milestone: milestones.get(s.milestone) } });
       if (s.addLabels.length) gh(`repos/${repo}/issues/${s.number}/labels`, { method: "POST", body: { labels: s.addLabels } });

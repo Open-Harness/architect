@@ -1,7 +1,7 @@
 // The "Orthograph" Project (K33): one GitHub Project, owned by the repository's owner, over every goal, laid on top of the milestones,
 // sub-issues and labels. Pure: no I/O. `projectGh.mjs` reads and writes it; `sync.mjs --project` runs both.
 
-import { PULLED_BY, STAGES, isDone } from "./board.mjs";
+import { APP_MILESTONES, PULLED_BY, STAGES, isDone } from "./board.mjs";
 import { issueOfRow } from "./boardPlan.mjs";
 
 export const PROJECT_TITLE = "Orthograph";
@@ -48,12 +48,23 @@ export const projectFields = (goals, rows) => [
   ] : []),
 ];
 
-/** The saved views: every goal in one table, a board by Status, a roadmap (Start to End), and one table per goal. */
+const quoted = (titles) => titles.map((t) => `"${t}"`).join(",");
+const byApp = (app) => Object.values(APP_MILESTONES).filter((m) => m.app === app).map((m) => m.title);
+const goalMilestone = (goals, n) => goals.find((g) => g.number === n)?.milestone;
+
+/**
+ * The saved views (K45): every running goal's work in one table, a board by Status and a roadmap, all without the
+ * parked goals' issues; the alpha (its milestone and Goal 18's); Capxul's path (its milestones and Goal 16's); the
+ * parked issues on their own; and one table per goal that isn't parked.
+ */
 export const projectViews = (goals) => [
-  { name: "All goals", layout: "TABLE_LAYOUT", filter: "" },
-  { name: "By status", layout: "BOARD_LAYOUT", filter: "" },
-  { name: "Roadmap", layout: "ROADMAP_LAYOUT", filter: "" },
-  ...goals.map((g) => ({ name: `Goal ${g.number}`, layout: "TABLE_LAYOUT", filter: `goal:"Goal ${g.number}"` })),
+  { name: "All goals", layout: "TABLE_LAYOUT", filter: "-label:parked" },
+  { name: "By status", layout: "BOARD_LAYOUT", filter: "-label:parked" },
+  { name: "Roadmap", layout: "ROADMAP_LAYOUT", filter: "-label:parked" },
+  { name: "The alpha", layout: "BOARD_LAYOUT", filter: `milestone:${quoted([APP_MILESTONES.alpha.title, goalMilestone(goals, 18)].filter(Boolean))}` },
+  { name: "Capxul's path", layout: "BOARD_LAYOUT", filter: `milestone:${quoted([...byApp("Capxul"), goalMilestone(goals, 16)].filter(Boolean))}` },
+  { name: "Parked", layout: "TABLE_LAYOUT", filter: "label:parked" },
+  ...goals.filter((g) => g.status !== "parked").map((g) => ({ name: `Goal ${g.number}`, layout: "TABLE_LAYOUT", filter: `goal:"Goal ${g.number}"` })),
 ];
 
 const label = (i, prefix) => (i.labels.find((l) => l.startsWith(prefix)) ?? "").slice(prefix.length) || null;

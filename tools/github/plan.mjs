@@ -1,5 +1,6 @@
 // What GitHub should hold, worked out from the goal briefs (K33), and the steps that get it there from what it holds.
 // Pure: no I/O. `sync.mjs` reads the briefs and GitHub, calls `plan`, and applies the steps.
+import { BOARD_KINDS } from "./board.mjs";
 
 export const LABELS = [
   ["kind:goal", "5319e7", "A goal: one lead, one branch, one done check, one milestone (K32, K33)"],
@@ -24,6 +25,7 @@ export const LABELS = [
   ["harness:opencode", "f9d0c4", "Worked in OpenCode"],
   ["blocked", "b60205", "Waiting on something outside its goal; the body says what"],
   ["needs-aaron", "e99695", "Only Aaron can unblock it: money, a credential, production, or the goal itself"],
+  ["parked", "d4c5f9", "Its goal is parked: left out of the board's views, never closed, and taken off if the goal resumes (K45)"],
 ].map(([name, color, description]) => ({ name, color, description }));
 
 // A kind is its own issue type in an organization (Aaron, 2A); a person's repository has only the native three, so
@@ -229,6 +231,20 @@ export const plan = ({ goals, state, briefUrl, migrate = false }) => {
         steps.push({ do: "addBlockedBy", issue: issue ? issue.number : `slice ${g.number}.${s.number}`, blocker: blocker ? blocker.number : `slice ${g.number}.${a}`, title: `slice ${g.number}.${s.number} after ${a}` });
       }
     }
+  }
+
+  // K45: an open issue whose goals are all parked carries `parked`, so the board's views leave it out; nothing is closed.
+  // An issue a running goal shares or claims (its goal label or a lane), a board row and a pull request are never parked,
+  // and the label comes off when the goal resumes.
+  const parked = new Set(goals.filter((g) => g.status === "parked").map((g) => g.number));
+  const running = new Set(goals.filter((g) => g.status !== "parked").map((g) => g.number));
+  for (const i of state.issues) {
+    if (i.pullRequest || i.trusted === false || (i.state && i.state !== "open")) continue;
+    const of = (prefix) => i.labels.filter((l) => new RegExp(`^${prefix}\\d+$`).test(l)).map((l) => Number(l.slice(prefix.length)));
+    const goalsOf = of("goal-");
+    const want = !i.labels.some((l) => BOARD_KINDS.includes(l)) && goalsOf.length > 0 && goalsOf.every((n) => parked.has(n)) && !of("lane:goal-").some((n) => running.has(n));
+    const has = i.labels.includes("parked");
+    if (want !== has) steps.push({ do: "setParked", number: i.number, parked: want, title: `#${i.number} ${want ? "parked" : "no longer parked"}` });
   }
 
   if (migrate) {

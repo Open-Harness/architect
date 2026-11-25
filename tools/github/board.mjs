@@ -11,17 +11,25 @@ export const RELEASES = ["preview", "beta", "1.0"];
 const LEGEND_COLUMNS = ["Column", "What it holds"];
 export const NOT_YET_NEEDED = "Not yet needed";
 
-/** The apps' milestones (K42, section 5), by the key a row's Milestone column holds. */
+/**
+ * The milestones (K42, section 5; K44), by the key a row's Milestone column holds, in the order they are ranked: the
+ * alpha first, then Capxul's critical path (K44, section 3). The superagent's are kept for its rows when it resumes; K44
+ * parked it and its rows were re-sorted.
+ */
 export const APP_MILESTONES = {
+  alpha: { app: "framework", title: "Alpha: Orthograph on npm", description: "The npm preview, TypeScript end to end, with the chain basics: what Goal 18 builds (K44, section 2)." },
+  books: { app: "Capxul", title: "Capxul: the books", description: "Capxul's books in double entry, in ERPNext's shapes, the first step of its path (K44, section 3). Ships in the beta." },
+  "people and payroll": { app: "Capxul", title: "Capxul: people and payroll", description: "Capxul's HR basics and payroll, each pay run posting to the books (K44, section 3). Ships in the beta." },
+  banking: { app: "Capxul", title: "Capxul: banking", description: "Bridge for real, and money in and out posting to the books (K44, section 3). Ships in 1.0." },
+  budgets: { app: "Capxul", title: "Capxul: budgets", description: "Budgets against accounts and cost centres; the on-chain module is deployed outside the framework (K44, call 8). Ships in 1.0." },
+  "getting paid": { app: "Capxul", title: "Capxul: getting paid", description: "Capxul's milestone for getting paid, later with the chain (K44): a sales invoice with a pay link, the payment that settles it and the ledger lines it posts." },
   "coding agent": { app: "superagent", title: "Superagent: the coding agent end to end", description: "The superagent's first milestone: the pages and the coding agent end to end, its slice 12 (K42, section 6)." },
   "triage agent": { app: "superagent", title: "Superagent: the triage agent", description: "The superagent's triage agent, made from data with no new code, its slice 13." },
   extraction: { app: "superagent", title: "Superagent: extraction", description: "The superagent's plugins moved from its plugins/ into packages/ and published, its slice 14." },
   launch: { app: "superagent", title: "Superagent: launch", description: "The superagent's launch: real sign-in, teams, a live deploy with a public address for webhooks, a sandbox and a model endpoint off Aaron's Mac." },
-  "getting paid": { app: "Capxul", title: "Capxul: getting paid", description: "Capxul's milestone for getting paid, later with the chain (K44): a sales invoice with a pay link, the payment that settles it and the ledger lines it posts." },
-  books: { app: "Capxul", title: "Capxul: the books", description: "Capxul's books, in ERPNext's shapes (K43)." },
-  "people and payroll": { app: "Capxul", title: "Capxul: people and payroll", description: "Capxul's HR and payroll (K43)." },
-  banking: { app: "Capxul", title: "Capxul: banking", description: "Capxul's bank accounts through Bridge (K43)." },
 };
+/** K44, section 4: the release each milestone ships in. */
+export const MILESTONE_RELEASE = { alpha: "preview", books: "beta", "people and payroll": "beta", banking: "1.0", budgets: "1.0", "getting paid": "1.0", "coding agent": "beta", "triage agent": "beta", extraction: "beta", launch: "1.0" };
 export const NOT_YET_DESCRIPTION = "Board items no app has pulled yet, with no date (K42, section 5).";
 export const BOARD_MILESTONES = [
   ...Object.values(APP_MILESTONES).map(({ title, description }) => ({ title, description })),
@@ -112,14 +120,12 @@ export const parseBoard = (text) => {
       if (adopts.length > 1) bad(`adopts ${adopts.length} issues; a row adopts one, and folds the rest`);
       if (folds.length && !adopts.length) bad("folds issues but adopts none: name the one it adopts with `issue #N`");
       if (adopts.some((n) => folds.includes(n))) bad("adopts and folds the same issue");
-      if (pulledBy === "framework" && !none(milestone)) bad("a framework row has no app milestone: an app pulls it, or it is not yet needed");
-      // K42, section 5: a piece the superagent pulls for its slices 1 to 14 ships in the beta; its launch alone, or Capxul alone, in 1.0.
-      // K44 moves Capxul's books, HR and payroll to the beta; Goal 18's slice 4 changes this rule with the board's rows.
-      if (pulledBy === "Capxul" && !none(release) && release !== "1.0") bad("a piece only Capxul pulls ships in 1.0");
-      if (pulledBy === "superagent" && !none(milestone) && !none(release)) {
-        const want = milestone === "launch" ? "1.0" : "beta";
-        if (release !== want) bad(`a superagent piece for '${milestone}' ships in ${want}`);
-      }
+      if (pulledBy === "framework" && !none(milestone) && milestone !== "alpha") bad("a framework row's only milestone is the alpha: an app pulls it, or it is not yet needed");
+      // K44, section 4: a row ships in its milestone's release. The alpha's rows are the preview's, and the preview's rows
+      // are the alpha's; Capxul's books, people and payroll ship in the beta, the rest of its path in 1.0.
+      if (!none(milestone) && !none(release) && MILESTONE_RELEASE[milestone] && release !== MILESTONE_RELEASE[milestone]) bad(`a piece for '${milestone}' ships in ${MILESTONE_RELEASE[milestone]}`);
+      if (pulledBy === "framework" && release === "preview" && milestone !== "alpha") bad("a preview piece is the alpha's: its milestone is alpha");
+      if (pulledBy === "Capxul" && none(milestone) && !none(release) && release !== "1.0") bad("a piece Capxul pulls off its path ships in 1.0");
       rows.push({
         id,
         kind: kindOf(id),

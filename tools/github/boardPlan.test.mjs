@@ -18,7 +18,7 @@ test("from nothing: the lane label, every milestone, an issue per row in the fir
   assert.ok(secrets.body.startsWith(itemMarker("secrets")) && secrets.body.includes("**Touches:** `packages/host-cloudflare`"));
   assert.equal(issues.find((s) => s.key === "item gap-node-host").milestone, NOT_YET_NEEDED);
   assert.equal(issues.find((s) => s.key === "item gap-node-host").type, "Gap");
-  assert.deepEqual(issues.find((s) => s.key === "item reports").labels, ["kind:capability", "release:1.0"]);
+  assert.deepEqual(issues.find((s) => s.key === "item reports").labels, ["kind:capability", "release:beta"]);
   assert.deepEqual(steps.filter((s) => s.do === "closeIssue").map((s) => s.issue), ["item things"], "a built row's issue is closed");
 });
 
