@@ -66,7 +66,7 @@ export default Blueprint.journey("set up kras and criteria", {
     ),
     s.step("Ada can't read Bo's", s.ada.run(getKra, { id: s.last.kra }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
-      "Ada adds the criteria Problem Solving to Acme Trading",
+      "Ada adds a criteria to Acme Trading",
       s.ada.run(createCriteria, { company: s.world.company, criteria: "Problem Solving" }),
       expect((a) => a.employeeFeedbackCriteria).toMatch(/^efc_[0-9a-z]+$/),
       emits(FeedbackCriteriaCreated, { employeeFeedbackCriteria: s.last.employeeFeedbackCriteria, company: s.world.company }),

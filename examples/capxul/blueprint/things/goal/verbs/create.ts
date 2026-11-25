@@ -18,7 +18,8 @@ import { Appraisal } from "../../appraisal/thing.ts";
 // its children that aren't archived, and its status follow (`update_parent_progress`). Under the automated method, the
 // employee's appraisal in the cycle takes each KRA's score as the average progress of its top goals that aren't archived,
 // and its scores follow (`update_goal_progress_in_appraisal`, `set_goal_score`). It answers that appraisal and the
-// parent it named, so the next call can reach them. Refusal order (errors.ts).
+// cycle, so the next call can reach them. It doesn't answer the parent: an optional answer field fails prove's answer
+// shape eval when absent (`decisions/CX-appraisals.md`, framework gaps), and `goal.list` names each goal's parent. Refusal order (errors.ts).
 export default Blueprint.operation(Goal, {
   description: "Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.",
   payload: {
@@ -30,7 +31,7 @@ export default Blueprint.operation(Goal, {
     isGroup: Goal.fields.isGroup,
     parentGoal: Goal.fields.parentGoal,
   },
-  answer: { goal: Goal.fields.id, appraisal: Appraisal.fields.id, parentGoal: Goal.fields.parentGoal },
+  answer: { goal: Goal.fields.id, appraisal: Appraisal.fields.id, appraisalCycle: Goal.fields.appraisalCycle },
   move: machine.moves.create,
   errors: [GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, ParentGoalNotGroup],
   allowed: [self.of("employee"), owner.of("appraisalCycle.company")],
