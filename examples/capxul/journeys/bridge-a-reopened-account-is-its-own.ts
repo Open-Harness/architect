@@ -2,6 +2,7 @@
 import { Blueprint, expect, noEvents } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
 import get from "../blueprint/things/bank-account/verbs/get.ts";
+import { isRoutingNumber, isUsAccountNumber } from "./support/deposit-details.ts";
 
 export default Blueprint.journey("bridge: a reopened account is its own", {
   // Ada closed Operating and opened a new account under its name.
@@ -21,6 +22,8 @@ export default Blueprint.journey("bridge: a reopened account is its own", {
         s.world.routingNumber,
         "open",
       ]),
+      // The third US dollar account Bridge gave Acme Trading is a bank's too, not only the first (#912).
+      expect((a) => [isUsAccountNumber(a.accountNumber), isRoutingNumber(a.routingNumber)]).toEqual([true, true]),
       noEvents(),
     ),
     s.step(

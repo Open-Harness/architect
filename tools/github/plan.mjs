@@ -10,7 +10,7 @@ export const LABELS = [
   ["kind:capability", "0052cc", "A row of the capability map in docs/canon/status.md: one item, written by the board sync (K42)"],
   ["kind:decision", "0e8a16", "A call to be made; closed by the pull request that records it in design/decisions/"],
   ["release:preview", "bfd4f2", "Ships in the preview (K28)"],
-  ["release:beta", "bfd4f2", "Ships in the beta: the framework the superagent proves (K42)"],
+  ["release:beta", "bfd4f2", "Ships in the beta: the framework Capxul's books, HR and payroll prove (K44)"],
   ["release:1.0", "bfd4f2", "Ships in 1.0 (K28)"],
   ["role:lead", "ededed", "Opened by a goal's lead"],
   ["role:author", "ededed", "Journeys and checks, written first (the author skill)"],
@@ -210,6 +210,17 @@ export const plan = ({ goals, state, briefUrl, migrate = false }) => {
 
     // "Blocked by" links for the order the brief gives (`(after 4)`); asks and snags are linked by hand (the skill).
     const ref = (n) => byMarker(sliceMarker(g.number, n), "kind:slice") ?? null;
+    // A link between two of this goal's slices that the brief no longer gives goes first, so a reordered brief never
+    // leaves a stale link or makes a cycle. Links to anything else (a snag, an ask, another goal's slice) stay.
+    const sliceAt = new Map(g.slices.map((s) => [ref(s.number)?.number, s.number]).filter(([n]) => n !== undefined));
+    for (const s of g.slices) {
+      const issue = ref(s.number);
+      for (const n of issue?.blockedBy ?? []) {
+        const a = sliceAt.get(n);
+        if (a === undefined || (s.after ?? []).includes(a)) continue;
+        steps.push({ do: "removeBlockedBy", issue: issue.number, blocker: n, title: `slice ${g.number}.${s.number} no longer after ${a}` });
+      }
+    }
     for (const s of g.slices) {
       for (const a of s.after ?? []) {
         if (!g.slices.some((x) => x.number === a)) continue;

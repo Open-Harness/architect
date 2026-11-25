@@ -41,6 +41,12 @@ Record that Bridge approved a company's KYB.
 
 ## Worked examples
 
+### bridge: a bank account, end to end
+
+Starts from an empty world.
+
+- **Bridge approves the KYB.** `bridge` (system) calls and sends business the last call's business, and is answered.
+
 ### bridge: kyb is decided by bridge
 
 Starts from the world `two kybs started`.

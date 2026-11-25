@@ -1,5 +1,10 @@
 [
   {
+    "from": "account.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "attendance.company",
     "to": "company.id",
     "kind": "refers"
@@ -30,12 +35,27 @@
     "kind": "refers"
   },
   {
+    "from": "bank-transaction.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "bank-transaction.account",
+    "to": "bank-account.id",
+    "kind": "refers"
+  },
+  {
     "from": "branch.company",
     "to": "company.id",
     "kind": "refers"
   },
   {
     "from": "bridge-business.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "cost-center.company",
     "to": "company.id",
     "kind": "refers"
   },
@@ -150,6 +170,26 @@
     "kind": "refers"
   },
   {
+    "from": "fiscal-year.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "gl-entry.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "gl-entry.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "gl-entry.costCenter",
+    "to": "cost-center.id",
+    "kind": "refers"
+  },
+  {
     "from": "holiday.holidayList",
     "to": "holiday-list.id",
     "kind": "refers"
@@ -230,9 +270,79 @@
     "kind": "refers"
   },
   {
+    "from": "journal-entry.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "journal-entry-account.journalEntry",
+    "to": "journal-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "journal-entry-account.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "journal-entry-account.costCenter",
+    "to": "cost-center.id",
+    "kind": "refers"
+  },
+  {
     "from": "shift-type.company",
     "to": "company.id",
     "kind": "refers"
+  },
+  {
+    "from": "account.balance",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.balance",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "account.create",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.create",
+    "to": "account.AccountCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "account.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "account.get",
+    "to": "account",
+    "kind": "reads"
+  },
+  {
+    "from": "account.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "account.make-ledger",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.make-ledger",
+    "to": "account.AccountMadeLedger",
+    "kind": "emits"
+  },
+  {
+    "from": "account.make-ledger",
+    "to": "company.owner",
+    "kind": "allowed-by"
   },
   {
     "from": "attendance.get",
@@ -385,6 +495,71 @@
     "kind": "allowed-by"
   },
   {
+    "from": "bank-transaction.fail",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.fail",
+    "to": "bank-transaction.TransferFailed",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.get",
+    "to": "bank-transaction",
+    "kind": "reads"
+  },
+  {
+    "from": "bank-transaction.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.land",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.land",
+    "to": "bank-transaction.DepositLanded",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.list",
+    "to": "bank-transaction",
+    "kind": "reads"
+  },
+  {
+    "from": "bank-transaction.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "bank-transaction.TransferSent",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.settle",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.settle",
+    "to": "bank-transaction.TransferSettled",
+    "kind": "emits"
+  },
+  {
     "from": "branch.create",
     "to": "branch",
     "kind": "acts-on"
@@ -511,6 +686,31 @@
   },
   {
     "from": "company.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "cost-center.create",
+    "to": "cost-center",
+    "kind": "acts-on"
+  },
+  {
+    "from": "cost-center.create",
+    "to": "cost-center.CostCenterCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "cost-center.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "cost-center.get",
+    "to": "cost-center",
+    "kind": "reads"
+  },
+  {
+    "from": "cost-center.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
@@ -950,6 +1150,41 @@
     "kind": "allowed-by"
   },
   {
+    "from": "fiscal-year.create",
+    "to": "fiscal-year",
+    "kind": "acts-on"
+  },
+  {
+    "from": "fiscal-year.create",
+    "to": "fiscal-year.FiscalYearCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "fiscal-year.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "fiscal-year.get",
+    "to": "fiscal-year",
+    "kind": "reads"
+  },
+  {
+    "from": "fiscal-year.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "gl-entry.list",
+    "to": "gl-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "gl-entry.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "holiday.add",
     "to": "holiday",
     "kind": "acts-on"
@@ -1286,6 +1521,71 @@
   },
   {
     "from": "job-opening.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.cancel",
+    "to": "journal-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "journal-entry.cancel",
+    "to": "journal-entry.JournalEntryCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "journal-entry.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.create",
+    "to": "journal-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "journal-entry.create",
+    "to": "journal-entry.JournalEntryDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "journal-entry.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.get",
+    "to": "journal-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "journal-entry.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.submit",
+    "to": "journal-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "journal-entry.submit",
+    "to": "journal-entry.JournalEntrySubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "journal-entry.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry-account.list",
+    "to": "journal-entry-account",
+    "kind": "reads"
+  },
+  {
+    "from": "journal-entry-account.list",
     "to": "company.owner",
     "kind": "allowed-by"
   },

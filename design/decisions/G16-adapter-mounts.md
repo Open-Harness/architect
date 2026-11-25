@@ -90,7 +90,9 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   adapter, the setting, and the base or the exit that leaves. The scaffold may write the `exit` line itself, as it
   writes `code`'s. Not from a hash of the name, which can still clash and can't be fixed by hand; not assigned by
   the compiler, which would move exits when an unrelated adapter is added, as `refusals.lock` exists to stop. Check 07
-  pins it, red until #1012 is built.
+  pins it. Built on `goal-16/snag-1012-build`: the generated `errors.ts` reads `exit` from `src/written.ts` as
+  `thing.ts` reads `code`, and the compiler knows a generated adapter by the `src/written.ts` its package has, so only
+  its exit refusals name that setting; a hand-written adapter's still name its errors file.
 
 ### 2. Bridge's signature at the door (gap 5)
 

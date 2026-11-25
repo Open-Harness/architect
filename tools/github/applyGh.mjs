@@ -36,6 +36,7 @@ export const applySteps = ({ steps, state, repo, rowById, gh, ghAll }) => {
       execFileSync("gh", ["api", "graphql", "-f", `query=${TYPE_MUTATION}`, "-f", `o=${state.ownerId}`, "-f", `n=${s.name}`, "-f", `c=${s.color}`, "-f", `d=${s.description}`], { encoding: "utf8" });
     }
     if (s.do === "setType") gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { type: s.type } });
+    if (s.do === "removeBlockedBy") gh(`repos/${repo}/issues/${s.issue}/dependencies/blocked_by/${issueRef(s.blocker).id}`, { method: "DELETE" });
     if (s.do === "addBlockedBy") gh(`repos/${repo}/issues/${issueRef(s.issue).number}/dependencies/blocked_by`, { method: "POST", body: { issue_id: issueRef(s.blocker).id } });
     if (s.do === "addSubIssue") gh(`repos/${repo}/issues/${issueRef(s.parent).number}/sub_issues`, { method: "POST", body: { sub_issue_id: issueRef(s.child).id } });
     if (s.do === "moveIssue") {
