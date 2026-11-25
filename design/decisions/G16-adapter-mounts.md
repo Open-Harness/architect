@@ -38,9 +38,20 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   `client({ baseUrl, token: apiKey }).calls.customers.create(input)`, with the step's one argument as the input.
   What it fails with goes to the handler's one mapping, as a Promise call's does today: `ApiFailure`, `InputRefused`,
   `AnswerRefused` and `Unreachable`, each a value with its `_tag`.
-- **The mapping.** A generated call declares no errors (`Blueprint.call()`), and today's runner turns a mapping to anything a
-  call doesn't declare into a defect, so no generated call could ever be refused. A call that declares no errors may be mapped
-  to any error the operation declares; a call that declares some keeps today's rule.
+- **The errors a generated call declares** (signed off by the lead on #995, 25 November 2026). The runner's `declared` judges the
+  refusal a mapping returns, which must be a `Blueprint.error` the call declares. A generated call declared none, so it could
+  never be refused. The client's own failures are `Data.TaggedError`s, which no operation can refuse with. So the generator writes
+  four `Blueprint.error`s per adapter in `blueprint/things/<adapter>/errors.ts`, re-exported from the package's main entry:
+  - `<Adapter>ApiFailure { status, code? }`;
+  - `<Adapter>InputRefused`;
+  - `<Adapter>AnswerRefused`;
+  - `<Adapter>Unreachable`.
+
+  `<Adapter>` is the adapter's name in Pascal case (`RatesApiFailure`); the prefix keeps two adapters' errors apart. Every
+  generated call is `Blueprint.call({ errors: [those four] })`. An operation lists the ones it refuses with, and its mapping
+  turns the client's failure into its namesake. The runner is unchanged: a mapping to anything the call doesn't declare,
+  the app's own errors included, stays a defect. This is m1's pattern (`e2e/fixtures/m1/remote`'s `PriceUnavailable`). A
+  first proposal, letting a call that declares no errors map to any error of the operation, was withdrawn.
 - **The compiler reads a plugin's `secrets.ts`.** Today it reads only a built plugin's `secrets.js`, so a workspace plugin's
   declarations (every generated adapter in an app's `plugins/`) are skipped.
 - **In a world,** `ORTHO_STAND_<MOUNT>`, the stand-in's URL (GOAL17-check-harness), wins over `<MOUNT>_BASE_URL`. A world
