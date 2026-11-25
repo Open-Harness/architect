@@ -10,10 +10,12 @@ const { KybNotApproved } = Errors.declared;
 
 /**
  * The deposit instructions Bridge gives a virtual account (`source_deposit_instructions`), in the banks Bridge's virtual
- * account guide names (get-started/guides/move-money/virtualaccounts), as its stand-in issues them (CX-bridge, "The
- * stand-in"). Until #995 lets a step reach the Bridge adapter (`customers.virtualAccounts.create`), the account and IBAN
- * are drawn from the account's own random id, so no two accounts almost surely share one
- * (bank-account.oneAccountPerNumber). They pass the ABA and IBAN checks a real one passes (#912).
+ * account guide names and its stand-in uses (CX-bridge, "The stand-in"), with numbers drawn from the account's own
+ * random id. They pass the ABA and IBAN checks a real one passes (#912). Until #995 lets a step reach the Bridge adapter
+ * (`customers.virtualAccounts.create`), and Bridge issues them, they are Capxul's own, and two limits follow: they name
+ * live banks, so nothing real is deposited to them; and a EUR account has only 10^8 numbers (an Irish IBAN's 8 digits
+ * after Modulr's sort code), so two accounts clash at about 1% by 1,400 EUR accounts, failing `open` as a defect
+ * (bank-account.oneAccountPerNumber names no refusal). USD draws 17 digits, and does not clash in practice.
  */
 const depositDetails = (id: string, currency: "USD" | "EUR") => {
   // The id's random base-36 part, as a decimal number: 16 characters of it are about 25 digits.

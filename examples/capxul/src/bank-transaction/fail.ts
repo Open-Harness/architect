@@ -43,7 +43,8 @@ import type { Handler } from "../../generated/api/src/bank-transaction/fail.hand
  */
 const fail: Handler = ({ transaction }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bank-transaction.fail.update. Bridge couldn't pay the transfer: the state changes, and how it ended travels in the event alone.
+    // Step update: database, span bank-transaction.fail.update. Bridge couldn't pay the transfer: the
+    // state changes, and how it ended travels in the event alone.
     // The move fail, from pending, to failed.
     yield* steps.update(move());
 

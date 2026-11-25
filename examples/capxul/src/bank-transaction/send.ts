@@ -83,8 +83,8 @@ const send: Handler = ({ account, amount, currency, party }, { steps, move, id }
 
     // Until #995 lets a step reach the Bridge adapter (transfers.create, with an Idempotency-Key from this call's request
     // key), the transfer's reference is Capxul's own, drawn from the transaction's id (CX-bridge, "Who speaks for
-    // Bridge"). Its day is the world clock's UTC day.
-    const reference = `tr_${id.slice(id.indexOf("_") + 1)}`;
+    // Bridge"), and prefixed so it is never taken for one of Bridge's `tr_…`. Its day is the world clock's UTC day.
+    const reference = `capxul_${id.slice(id.indexOf("_") + 1)}`;
     const today = Days.add("1970-01-01", Math.floor((yield* Clock.currentTimeMillis) / DAY_MS));
 
     // Step insert: database, span bank-transaction.send.insert. The amount is USDC base units exactly, as in land.

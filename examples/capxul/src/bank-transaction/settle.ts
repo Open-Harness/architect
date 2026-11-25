@@ -42,7 +42,8 @@ import type { Handler } from "../../generated/api/src/bank-transaction/settle.ha
  */
 const settle: Handler = ({ transaction }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bank-transaction.settle.update. Bridge paid the transfer: the state changes and nothing else.
+    // Step update: database, span bank-transaction.settle.update. Bridge paid the transfer: the state
+    // changes and nothing else.
     // The move settle, from pending, to settled.
     yield* steps.update(move());
 
