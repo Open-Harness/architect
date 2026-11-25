@@ -1,0 +1,3 @@
+# #1018's checks (optional-read.test.ts): red until a read by id leaves an optional field with no value out of its answer. A builder only deletes lines (G11).
+src/modules/handler/optional-read.test.ts > a read by id of a thing with optional fields (#1018) > answers a root account with neither optional field's key
+src/modules/handler/optional-read.test.ts > a read by id of a thing with optional fields (#1018) > answers one optional field without the other
