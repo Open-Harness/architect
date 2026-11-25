@@ -1608,6 +1608,86 @@
       },
       "earlier": []
     },
+    "PM-001": {
+      "name": "PromotedEmployeeNotInCompany",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PromotedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PM-002": {
+      "name": "PromotedEmployeeHasLeft",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PromotedEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "PM-003": {
+      "name": "NewDesignationNotInCompany",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NewDesignationNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PM-004": {
+      "name": "DesignationUnchanged",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "DesignationUnchanged"
+        }
+      },
+      "earlier": []
+    },
+    "PM-005": {
+      "name": "PromotionNotYetDue",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {
+        "promotionDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PromotionNotYetDue"
+        }
+      },
+      "earlier": []
+    },
+    "PM-900": {
+      "name": "EmployeePromotionNotDraft",
+      "owner": "employee-promotion",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeePromotionNotDraft"
+        }
+      },
+      "earlier": []
+    },
     "SH-001": {
       "name": "ShiftTypeNameTaken",
       "owner": "shift-type",
@@ -1649,6 +1729,126 @@
       "wire": {
         "effect": {
           "tag": "ShiftTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "SP-001": {
+      "name": "SeparatedEmployeeNotInCompany",
+      "owner": "employee-separation",
+      "from": "blueprint/things/employee-separation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SeparatedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SP-002": {
+      "name": "SeparationAlreadyOpen",
+      "owner": "employee-separation",
+      "from": "blueprint/things/employee-separation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SeparationAlreadyOpen"
+        }
+      },
+      "earlier": []
+    },
+    "SP-900": {
+      "name": "EmployeeSeparationNotPending",
+      "owner": "employee-separation",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeSeparationNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "TR-001": {
+      "name": "TransferredEmployeeNotInCompany",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TransferredEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TR-002": {
+      "name": "TransferredEmployeeHasLeft",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TransferredEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "TR-003": {
+      "name": "NewDepartmentNotInCompany",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NewDepartmentNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TR-004": {
+      "name": "DepartmentUnchanged",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "DepartmentUnchanged"
+        }
+      },
+      "earlier": []
+    },
+    "TR-005": {
+      "name": "TransferNotYetDue",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {
+        "transferDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TransferNotYetDue"
+        }
+      },
+      "earlier": []
+    },
+    "TR-900": {
+      "name": "EmployeeTransferNotDraft",
+      "owner": "employee-transfer",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeTransferNotDraft"
         }
       },
       "earlier": []

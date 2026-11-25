@@ -361,12 +361,12 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Employee Onboarding | thing | SUB | 16 | `hrms/hrms/hr/doctype/employee_onboarding/employee_onboarding.json` |  |
 | Employee Onboarding Template | thing |  | 5 | `hrms/hrms/hr/doctype/employee_onboarding_template/employee_onboarding_template.json` |  |
 | Employee Performance Feedback | thing | SUB | 15 | `hrms/hrms/hr/doctype/employee_performance_feedback/employee_performance_feedback.json` |  |
-| Employee Promotion | thing | SUB | 9 | `hrms/hrms/hr/doctype/employee_promotion/employee_promotion.json` |  |
+| Employee Promotion | thing | SUB | 9 | `hrms/hrms/hr/doctype/employee_promotion/employee_promotion.json` | the job title only, as one property line: the current one copied from the employee on create and a new one of the company's; draft, submitted on or after its day by the world's clock (setting the employee's job title), cancelled (putting the old one back). Not for a leaver, judged on create. Grade, branch and pay (`revised_ctc`) come later (CX-employee-moves) |
 | Employee Referral | thing | SUB | 20 | `hrms/hrms/hr/doctype/employee_referral/employee_referral.json` |  |
-| Employee Separation | thing | SUB | 14 | `hrms/hrms/hr/doctype/employee_separation/employee_separation.json` |  |
+| Employee Separation | thing | SUB | 14 | `hrms/hrms/hr/doctype/employee_separation/employee_separation.json` | the resignation letter's day and the day it begins; pending, in process, completed, moved by the owner. One open separation per employee (a unique rule, Capxul's own). It doesn't relieve the employee. Activities, template, project and tasks, exit interview and Full and Final come later (CX-employee-moves) |
 | Employee Separation Template | thing |  | 5 | `hrms/hrms/hr/doctype/employee_separation_template/employee_separation_template.json` |  |
 | Employee Skill Map | thing |  | 3 | `hrms/hrms/hr/doctype/employee_skill_map/employee_skill_map.json` |  |
-| Employee Transfer | thing | SUB | 10 | `hrms/hrms/hr/doctype/employee_transfer/employee_transfer.json` |  |
+| Employee Transfer | thing | SUB | 10 | `hrms/hrms/hr/doctype/employee_transfer/employee_transfer.json` | the department only, as one property line, with the same shape and rules as a promotion. It stays in its company: HRMS's move to another company makes a new employee, and waits, as do `reallocate_leaves` and other lines (CX-employee-moves) |
 | Employment Type | thing |  | 1 | `hrms/hrms/hr/doctype/employment_type/employment_type.json` | a way a company employs people, its name unique within the company |
 | Exit Interview | thing | SUB | 18 | `hrms/hrms/hr/doctype/exit_interview/exit_interview.json` |  |
 | Expense Claim | thing | SUB | 26 | `hrms/hrms/hr/doctype/expense_claim/expense_claim.json` |  |
@@ -435,7 +435,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Employee Feedback Rating | line |  | 3 | `hrms/hrms/hr/doctype/employee_feedback_rating/employee_feedback_rating.json` |  |
 | Employee Group Table | line |  | 3 | `erpnext/erpnext/setup/doctype/employee_group_table/employee_group_table.json` |  |
 | Employee Internal Work History | line |  | 5 | `erpnext/erpnext/setup/doctype/employee_internal_work_history/employee_internal_work_history.json` |  |
-| Employee Property History | line |  | 4 | `hrms/hrms/hr/doctype/employee_property_history/employee_property_history.json` |  |
+| Employee Property History | line |  | 4 | `hrms/hrms/hr/doctype/employee_property_history/employee_property_history.json` | folded into a promotion's job titles and a transfer's departments as two fields each; other properties wait (CX-employee-moves) |
 | Employee Skill | line |  | 3 | `hrms/hrms/hr/doctype/employee_skill/employee_skill.json` |  |
 | Employee Training | line |  | 2 | `hrms/hrms/hr/doctype/employee_training/employee_training.json` |  |
 | Expected Skill Set | line |  | 2 | `hrms/hrms/hr/doctype/expected_skill_set/expected_skill_set.json` |  |

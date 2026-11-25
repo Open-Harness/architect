@@ -3,10 +3,10 @@
 export type JsonSchema = { readonly [key: string]: unknown };
 export type Components = Readonly<Record<string, JsonSchema>>;
 
-/** One thing a caller supplies: it goes in the path, the query or the body, under the spec's own name. */
+/** One thing a caller supplies: it goes in the path, the query, a header or the body, under the spec's own name. */
 export interface Param {
   readonly name: string;
-  readonly in: "path" | "query" | "body";
+  readonly in: "path" | "query" | "header" | "body";
   readonly required: boolean;
   readonly schema: JsonSchema;
 }
@@ -18,6 +18,10 @@ export interface Operation {
   /** The path with its base path (Swagger's `basePath`) in front. */
   readonly path: string;
   readonly params: ReadonlyArray<Param>;
+  /** A body of alternatives (`oneOf` / `anyOf`), which the body fields given are judged against whole; required when the spec says so. None: each body field is judged alone. */
+  readonly body?: { readonly schema: JsonSchema; readonly required: boolean } | null;
+  /** How the token is sent: `Authorization: Bearer` (none said), in the header an apiKey scheme names, or not at all (`security: []`). */
+  readonly auth?: "bearer" | "none" | { readonly header: string };
   readonly successes: ReadonlyArray<{ readonly status: number; readonly schema: JsonSchema | null }>;
 }
 

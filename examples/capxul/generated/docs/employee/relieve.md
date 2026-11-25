@@ -78,6 +78,25 @@ Starts from the world `a leave application`.
 
 - **Olga leaves on 31 March 2027.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2027-03-31`, and gets back `2027-03-31`.
 
+### move an employee through the company
+
+Starts from the world `a new hire`.
+
+- **Ada relieves Dee on 31 December.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-12-31`, and gets back [the world's newHire, `2026-12-31`].
+
+### promote an employee
+
+Starts from the world `a second transfer`.
+
+- **Ada relieves Bo on 30 November.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
+### run a separation
+
+Starts from the world `a separation`.
+
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
 ### schedule an interview
 
 Starts from the world `an outside employee`.
@@ -89,6 +108,13 @@ Starts from the world `an outside employee`.
 Starts from the world `an outside employee`.
 
 - **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### transfer an employee
+
+Starts from the world `a second transfer`.
+
+- **Ada relieves Bo on 30 November.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
 ## How to call
 

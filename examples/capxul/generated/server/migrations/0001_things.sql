@@ -116,6 +116,36 @@ CREATE TABLE "employee-grade" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee-grade_oneNamePerCompany" ON "employee-grade" ("company", "gradeName");
+CREATE TABLE "employee-promotion" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "promotionDate" TEXT NOT NULL,
+  "currentDesignation" TEXT NOT NULL,
+  "newDesignation" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "employee-separation" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "resignationLetterDate" TEXT NOT NULL,
+  "boardingBeginsOn" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employee-separation_oneOpenSeparationPerEmployee" ON "employee-separation" ("employee") WHERE "state" IN ('pending', 'inProcess');
+CREATE TABLE "employee-transfer" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "transferDate" TEXT NOT NULL,
+  "currentDepartment" TEXT NOT NULL,
+  "newDepartment" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "employment-type" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

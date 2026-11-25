@@ -37,6 +37,18 @@ import { hire as employeeHire } from "./employee/hire.ts";
 import { relieve as employeeRelieve } from "./employee/relieve.ts";
 import { create as employeeGradeCreate } from "./employee-grade/create.ts";
 import { get as employeeGradeGet } from "./employee-grade/get.ts";
+import { cancel as employeePromotionCancel } from "./employee-promotion/cancel.ts";
+import { create as employeePromotionCreate } from "./employee-promotion/create.ts";
+import { get as employeePromotionGet } from "./employee-promotion/get.ts";
+import { submit as employeePromotionSubmit } from "./employee-promotion/submit.ts";
+import { begin as employeeSeparationBegin } from "./employee-separation/begin.ts";
+import { complete as employeeSeparationComplete } from "./employee-separation/complete.ts";
+import { create as employeeSeparationCreate } from "./employee-separation/create.ts";
+import { get as employeeSeparationGet } from "./employee-separation/get.ts";
+import { cancel as employeeTransferCancel } from "./employee-transfer/cancel.ts";
+import { create as employeeTransferCreate } from "./employee-transfer/create.ts";
+import { get as employeeTransferGet } from "./employee-transfer/get.ts";
+import { submit as employeeTransferSubmit } from "./employee-transfer/submit.ts";
 import { create as employmentTypeCreate } from "./employment-type/create.ts";
 import { get as employmentTypeGet } from "./employment-type/get.ts";
 import { add as expenseAdd } from "./expense/add.ts";
@@ -99,6 +111,9 @@ const department = Command.make("department").pipe(Command.withSubcommands([depa
 const designation = Command.make("designation").pipe(Command.withSubcommands([designationCreate, designationGet]));
 const employee = Command.make("employee").pipe(Command.withSubcommands([employeeGet, employeeHire, employeeRelieve]));
 const employeeGrade = Command.make("employee-grade").pipe(Command.withSubcommands([employeeGradeCreate, employeeGradeGet]));
+const employeePromotion = Command.make("employee-promotion").pipe(Command.withSubcommands([employeePromotionCancel, employeePromotionCreate, employeePromotionGet, employeePromotionSubmit]));
+const employeeSeparation = Command.make("employee-separation").pipe(Command.withSubcommands([employeeSeparationBegin, employeeSeparationComplete, employeeSeparationCreate, employeeSeparationGet]));
+const employeeTransfer = Command.make("employee-transfer").pipe(Command.withSubcommands([employeeTransferCancel, employeeTransferCreate, employeeTransferGet, employeeTransferSubmit]));
 const employmentType = Command.make("employment-type").pipe(Command.withSubcommands([employmentTypeCreate, employmentTypeGet]));
 const expense = Command.make("expense").pipe(Command.withSubcommands([expenseAdd, expenseGet]));
 const expenseClaim = Command.make("expense-claim").pipe(Command.withSubcommands([expenseClaimApprove, expenseClaimCreate, expenseClaimGet, expenseClaimReject]));
@@ -117,7 +132,7 @@ const leaveType = Command.make("leave-type").pipe(Command.withSubcommands([leave
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, leaveAllocation, leaveApplication, leaveType, shiftType]),
+  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, leaveAllocation, leaveApplication, leaveType, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

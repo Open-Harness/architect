@@ -31,6 +31,18 @@ import { declaration as employeeHire } from "../../api/src/employee/hire.ts";
 import { declaration as employeeRelieve } from "../../api/src/employee/relieve.ts";
 import { declaration as employeeGradeCreate } from "../../api/src/employee-grade/create.ts";
 import { declaration as employeeGradeGet } from "../../api/src/employee-grade/get.ts";
+import { declaration as employeePromotionCancel } from "../../api/src/employee-promotion/cancel.ts";
+import { declaration as employeePromotionCreate } from "../../api/src/employee-promotion/create.ts";
+import { declaration as employeePromotionGet } from "../../api/src/employee-promotion/get.ts";
+import { declaration as employeePromotionSubmit } from "../../api/src/employee-promotion/submit.ts";
+import { declaration as employeeSeparationBegin } from "../../api/src/employee-separation/begin.ts";
+import { declaration as employeeSeparationComplete } from "../../api/src/employee-separation/complete.ts";
+import { declaration as employeeSeparationCreate } from "../../api/src/employee-separation/create.ts";
+import { declaration as employeeSeparationGet } from "../../api/src/employee-separation/get.ts";
+import { declaration as employeeTransferCancel } from "../../api/src/employee-transfer/cancel.ts";
+import { declaration as employeeTransferCreate } from "../../api/src/employee-transfer/create.ts";
+import { declaration as employeeTransferGet } from "../../api/src/employee-transfer/get.ts";
+import { declaration as employeeTransferSubmit } from "../../api/src/employee-transfer/submit.ts";
 import { declaration as employmentTypeCreate } from "../../api/src/employment-type/create.ts";
 import { declaration as employmentTypeGet } from "../../api/src/employment-type/get.ts";
 import { declaration as expenseAdd } from "../../api/src/expense/add.ts";
@@ -112,6 +124,18 @@ export const catalog = {
   "employee.relieve": { description: "Record that an employee has left the company, on the day they were relieved.", operation: employeeRelieve, states: ["active","left"], move: {"key":"relieve","from":["active"],"to":["left"],"emits":"EmployeeRelieved"} },
   "employee-grade.create": { description: "Add a grade to a company. Refuses EmployeeGradeNameTaken when another employee grade holds this company and grade name.", operation: employeeGradeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmployeeGradeCreated"} },
   "employee-grade.get": { description: "Read one employee-grade by its id: company, gradeName, state.", operation: employeeGradeGet, states: ["active"] },
+  "employee-promotion.cancel": { description: "Cancel a submitted promotion, putting back the job title it replaced. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeePromotionCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"EmployeePromotionCancelled"} },
+  "employee-promotion.create": { description: "Draft a promotion: an employee's new job title, from a day.", operation: employeePromotionCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"EmployeePromotionDrafted"} },
+  "employee-promotion.get": { description: "Read one employee-promotion by its id: company, employee, promotionDate, currentDesignation, newDesignation, state.", operation: employeePromotionGet, states: ["draft","submitted","cancelled"] },
+  "employee-promotion.submit": { description: "Submit a promotion on or after its day, giving the employee the new job title. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeePromotionSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"EmployeePromoted"} },
+  "employee-separation.begin": { description: "Mark a separation in process. Refuses SeparationAlreadyOpen when another pending or inProcess employee separation holds this employee.", operation: employeeSeparationBegin, states: ["pending","inProcess","completed"], move: {"key":"begin","from":["pending"],"to":["inProcess"],"emits":"EmployeeSeparationBegun"} },
+  "employee-separation.complete": { description: "Mark a separation completed. The employee is relieved by its own call.", operation: employeeSeparationComplete, states: ["pending","inProcess","completed"], move: {"key":"complete","from":["pending","inProcess"],"to":["completed"],"emits":"EmployeeSeparationCompleted"} },
+  "employee-separation.create": { description: "Start an employee's separation, from their resignation letter. Refuses SeparationAlreadyOpen when another pending or inProcess employee separation holds this employee.", operation: employeeSeparationCreate, states: ["pending","inProcess","completed"], move: {"key":"create","from":[],"to":["pending"],"emits":"EmployeeSeparationStarted"} },
+  "employee-separation.get": { description: "Read one employee-separation by its id: company, employee, resignationLetterDate, boardingBeginsOn, state.", operation: employeeSeparationGet, states: ["pending","inProcess","completed"] },
+  "employee-transfer.cancel": { description: "Cancel a submitted transfer, putting back the department it replaced. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeeTransferCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"EmployeeTransferCancelled"} },
+  "employee-transfer.create": { description: "Draft a transfer: an employee's new department, from a day.", operation: employeeTransferCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"EmployeeTransferDrafted"} },
+  "employee-transfer.get": { description: "Read one employee-transfer by its id: company, employee, transferDate, currentDepartment, newDepartment, state.", operation: employeeTransferGet, states: ["draft","submitted","cancelled"] },
+  "employee-transfer.submit": { description: "Submit a transfer on or after its day, giving the employee the new department. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeeTransferSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"EmployeeTransferred"} },
   "employment-type.create": { description: "Add a way a company employs people. Refuses EmploymentTypeNameTaken when another employment type holds this company and employment type name.", operation: employmentTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmploymentTypeCreated"} },
   "employment-type.get": { description: "Read one employment-type by its id: company, employmentTypeName, state.", operation: employmentTypeGet, states: ["active"] },
   "expense.add": { description: "Add one expense to a claim still in draft.", operation: expenseAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"ExpenseAdded"} },
