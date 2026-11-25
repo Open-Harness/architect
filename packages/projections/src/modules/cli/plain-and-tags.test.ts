@@ -6,9 +6,10 @@
 //     does: `1.50`, its places kept and no exponent, never Effect's own `some(BigDecimal(1.5))`. Red on main. A bare decimal,
 //     and `--json` (#981's shape), are the controls. Not judged: how a `None`, or an `Option` of anything else, prints plain.
 //  2. A failure whose tag is a name on every object's prototype (`constructor`, `toString`, `hasOwnProperty`, `valueOf`,
-//     `__proto__`, and every other name `Object.prototype` has) is not one of the project's refusals: it prints as any undeclared failure does, `<tag>: <fields as JSON>`,
-//     with no code, and exits 1. Red on main, which looks the tag up with `in`. A declared refusal (its code and exit), the
-//     runtime's own `NotAllowed`, an undeclared tag and `SchemaError` (exit 2) are the controls.
+//     `__proto__`, and every other name `Object.prototype` has) is not one of the project's refusals: it prints as any
+//     undeclared failure does, `<tag>: <fields as JSON>`, with no code, and exits 1. Red on main, which looks the tag up
+//     with `in`. A declared refusal (its code and exit), the runtime's own `NotAllowed`, an undeclared tag and `SchemaError`
+//     (exit 2) are the controls.
 //
 // The SDK's half of #999 (its `InvalidPayload` names every refused field) is `sdk/invalid-payload-fields.test.ts`.
 // Written by #999's checks author. The red cases are listed in packages/projections/expected-failing/plain-and-tags.txt (G11).
@@ -90,7 +91,8 @@ describe("1. Without --json, a one-field answer holding Option.some(decimal) pri
   });
 });
 
-// Every name on an object's prototype, as the runtime has them: \`constructor\`, \`toString\`, \`__proto__\`, \`propertyIsEnumerable\` and the rest.
+// Every name on an object's prototype, as the runtime has them: `constructor`, `toString`, `__proto__`,
+// `propertyIsEnumerable` and the rest.
 const PROTOTYPE = Object.getOwnPropertyNames(Object.prototype);
 
 describe("2. A failure tagged with a prototype's name is not a refusal: it prints as an undeclared failure and exits 1", () => {
