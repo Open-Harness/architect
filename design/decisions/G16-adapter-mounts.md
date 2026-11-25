@@ -28,7 +28,11 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
 - **Where they come from.** A generated adapter (one with `src/client.ts`, no `src/calls/`) declares two stored runtime
   secrets in its own `blueprint/secrets.ts`:
   - `baseUrl`, always;
-  - `apiKey`, when its description declares any security scheme.
+  - `apiKey`, when its description requires security: a requirement naming a scheme, at the top or on any operation. A
+    scheme that no requirement names, or only the anonymous requirement `[{}]`, requires none, so no key is listed as missing
+    that no call would send. A key made optional (`[{}, { ApiKey: [] }]`) still requires one, and Bridge's shape (an `apiKey`
+    scheme in its `Api-Key` header, required at the top) gives `BRIDGE_API_KEY`. (Refined from "declares any security scheme"
+    by #995 gap 1's checks, 25 November 2026; approved by Goal 16's lead.)
 
   By M2-04-secrets-readings' rule they're named per mount: `<MOUNT>_BASE_URL` and `<MOUNT>_API_KEY` (`BRIDGE_BASE_URL`,
   `BRIDGE_API_KEY`). So `ortho secrets` lists them, `ortho secrets set` takes them, and `promote` refuses an environment that
@@ -62,6 +66,12 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
 - **No base URL at all is a defect,** not a refusal: the operation answers 500, nothing is sent, and the defect on its span
   names `<MOUNT>_BASE_URL`. There is no default from the description's `servers`, which would send a test environment to
   production (Bridge's is `https://api.bridge.xyz/v0`).
+- **Known limits** (#995 gap 1's checks, 25 November 2026):
+  - The four errors' thing takes the compiler's default refusal prefix, its name's first two letters. Two generated adapters
+    whose names share them (`open` and `optional`, `github` and `gitlab`) can't be mounted together, and an app can't set
+    `code` on a generated file. Snag #1012: `ortho new adapter --code`.
+  - The key is the adapter's, not the mount's calls': a mount that includes only calls needing no key still lists one, and so
+    does a description whose every operation overrides its top-level requirement with `security: []`.
 
 ### 2. Bridge's signature at the door (gap 5)
 
@@ -121,4 +131,5 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 
 ## Supersedes
 
+- G16-adapter-mounts call 1, as merged in #1003: "`apiKey`, when its description declares any security scheme" → "`apiKey`, when its description requires security"
 - GOAL17-adapters-from-spec: "Declared error classes per response are not generated yet: `Blueprint.call()` is given none." → "every generated call is `Blueprint.call({ errors: [<Adapter>ApiFailure, <Adapter>InputRefused, <Adapter>AnswerRefused, <Adapter>Unreachable] })`"
