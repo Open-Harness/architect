@@ -311,6 +311,10 @@
       "EvalNotFound": "EV-901",
       "EvalNotQueued": "EV-900",
       "ExecutorAlreadyQueued": "AS-003",
+      "GithubAnswerRefused": "GI-003",
+      "GithubApiFailure": "GI-001",
+      "GithubInputRefused": "GI-002",
+      "GithubUnreachable": "GI-004",
       "IdempotencyConflict": "AR-002",
       "InputNotFound": "IN-901",
       "InputNotWaiting": "IN-900",
@@ -320,12 +324,20 @@
       "OutgoingMessageNotFound": "OU-901",
       "OutgoingMessageNotPending": "OU-900",
       "PolicyNotCurrent": "PO-900",
+      "PosthogAnswerRefused": "PH-003",
+      "PosthogApiFailure": "PH-001",
+      "PosthogInputRefused": "PH-002",
+      "PosthogUnreachable": "PH-004",
       "ProposalNotFound": "PP-901",
       "ProposalNotWaiting": "PP-900",
       "ReadNotServed": "AR-008",
       "ReportNotProgress": "RE-900",
       "SeatTaken": "AS-002",
       "SettingsNotCurrent": "SE-900",
+      "SlackAnswerRefused": "SL-003",
+      "SlackApiFailure": "SL-001",
+      "SlackInputRefused": "SL-002",
+      "SlackUnreachable": "SL-004",
       "SlotsOutOfRange": "SU-001",
       "SourceNotFound": "SO-901",
       "SourceNotSetup": "SO-900",
@@ -1552,6 +1564,69 @@
         },
         "hash": "bc42f0b1a8f2e36f"
       },
+      "github": {
+        "name": "github",
+        "identifier": "Github",
+        "code": "GI",
+        "description": "What GitHub v3 REST API fails with.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "github"
+            }
+          }
+        },
+        "lives": "database",
+        "machine": null,
+        "events": {},
+        "errors": {
+          "GithubApiFailure": {
+            "fields": {
+              "status": {
+                "value": {
+                  "type": "uint",
+                  "bits": 16
+                }
+              },
+              "code": {
+                "value": {
+                  "type": "text",
+                  "max": 200
+                },
+                "optional": true
+              }
+            },
+            "exit": 81,
+            "code": "GI-001"
+          },
+          "GithubInputRefused": {
+            "fields": {},
+            "exit": 82,
+            "code": "GI-002"
+          },
+          "GithubAnswerRefused": {
+            "fields": {},
+            "exit": 83,
+            "code": "GI-003"
+          },
+          "GithubUnreachable": {
+            "fields": {},
+            "exit": 84,
+            "code": "GI-004"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "feature",
+          "mount": "github",
+          "package": "@orthograph/github",
+          "version": "0.0.0",
+          "thing": "github"
+        },
+        "hash": "2f5fd43e9b11adc2"
+      },
       "input": {
         "name": "input",
         "identifier": "Input",
@@ -2252,6 +2327,69 @@
         },
         "hash": "f467cbf59f3e8c68"
       },
+      "posthog": {
+        "name": "posthog",
+        "identifier": "Posthog",
+        "code": "PH",
+        "description": "What PostHog API fails with.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "posthog"
+            }
+          }
+        },
+        "lives": "database",
+        "machine": null,
+        "events": {},
+        "errors": {
+          "PosthogApiFailure": {
+            "fields": {
+              "status": {
+                "value": {
+                  "type": "uint",
+                  "bits": 16
+                }
+              },
+              "code": {
+                "value": {
+                  "type": "text",
+                  "max": 200
+                },
+                "optional": true
+              }
+            },
+            "exit": 81,
+            "code": "PH-001"
+          },
+          "PosthogInputRefused": {
+            "fields": {},
+            "exit": 82,
+            "code": "PH-002"
+          },
+          "PosthogAnswerRefused": {
+            "fields": {},
+            "exit": 83,
+            "code": "PH-003"
+          },
+          "PosthogUnreachable": {
+            "fields": {},
+            "exit": 84,
+            "code": "PH-004"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "feature",
+          "mount": "posthog",
+          "package": "@orthograph/posthog",
+          "version": "0.0.0",
+          "thing": "posthog"
+        },
+        "hash": "e574d77238db5207"
+      },
       "prompt-set": {
         "name": "prompt-set",
         "identifier": "PromptSet",
@@ -2655,6 +2793,69 @@
           "kind": "app"
         },
         "hash": "21618af26da198bf"
+      },
+      "slack": {
+        "name": "slack",
+        "identifier": "Slack",
+        "code": "SL",
+        "description": "What Slack Web API fails with.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "slack"
+            }
+          }
+        },
+        "lives": "database",
+        "machine": null,
+        "events": {},
+        "errors": {
+          "SlackApiFailure": {
+            "fields": {
+              "status": {
+                "value": {
+                  "type": "uint",
+                  "bits": 16
+                }
+              },
+              "code": {
+                "value": {
+                  "type": "text",
+                  "max": 200
+                },
+                "optional": true
+              }
+            },
+            "exit": 81,
+            "code": "SL-001"
+          },
+          "SlackInputRefused": {
+            "fields": {},
+            "exit": 82,
+            "code": "SL-002"
+          },
+          "SlackAnswerRefused": {
+            "fields": {},
+            "exit": 83,
+            "code": "SL-003"
+          },
+          "SlackUnreachable": {
+            "fields": {},
+            "exit": 84,
+            "code": "SL-004"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "feature",
+          "mount": "slack",
+          "package": "@orthograph/slack",
+          "version": "0.0.0",
+          "thing": "slack"
+        },
+        "hash": "19b9312c082f5171"
       },
       "source": {
         "name": "source",
@@ -10449,6 +10650,68 @@
     },
     "journeys": {},
     "startingWorlds": {},
+    "secrets": {
+      "GITHUB_BASE_URL": {
+        "how": "stored",
+        "kind": "runtime",
+        "export": "baseUrl",
+        "from": {
+          "kind": "adapter",
+          "mount": "github",
+          "package": "@orthograph/github",
+          "version": "0.0.0"
+        },
+        "describe": "Where the service answers, its base path included"
+      },
+      "POSTHOG_API_KEY": {
+        "how": "stored",
+        "kind": "runtime",
+        "export": "apiKey",
+        "from": {
+          "kind": "adapter",
+          "mount": "posthog",
+          "package": "@orthograph/posthog",
+          "version": "0.0.0"
+        },
+        "describe": "The key the service is called with"
+      },
+      "POSTHOG_BASE_URL": {
+        "how": "stored",
+        "kind": "runtime",
+        "export": "baseUrl",
+        "from": {
+          "kind": "adapter",
+          "mount": "posthog",
+          "package": "@orthograph/posthog",
+          "version": "0.0.0"
+        },
+        "describe": "Where the service answers, its base path included"
+      },
+      "SLACK_API_KEY": {
+        "how": "stored",
+        "kind": "runtime",
+        "export": "apiKey",
+        "from": {
+          "kind": "adapter",
+          "mount": "slack",
+          "package": "@orthograph/slack",
+          "version": "0.0.0"
+        },
+        "describe": "The key the service is called with"
+      },
+      "SLACK_BASE_URL": {
+        "how": "stored",
+        "kind": "runtime",
+        "export": "baseUrl",
+        "from": {
+          "kind": "adapter",
+          "mount": "slack",
+          "package": "@orthograph/slack",
+          "version": "0.0.0"
+        },
+        "describe": "Where the service answers, its base path included"
+      }
+    },
     "environments": {
       "local": {
         "name": "local",
@@ -10458,7 +10721,13 @@
         "lifetimeMs": null,
         "cloud": null,
         "database": "d1-local",
-        "secrets": {},
+        "secrets": {
+          "GITHUB_BASE_URL": "stored",
+          "POSTHOG_API_KEY": "stored",
+          "POSTHOG_BASE_URL": "stored",
+          "SLACK_API_KEY": "stored",
+          "SLACK_BASE_URL": "stored"
+        },
         "promotesFrom": null,
         "telemetry": [
           {
@@ -10467,7 +10736,7 @@
         ],
         "deploy": {},
         "publish": {},
-        "hash": "0f14705e03d3bc97"
+        "hash": "f159c223a458f43d"
       },
       "test": {
         "name": "test",
@@ -10480,11 +10749,17 @@
           "database": "d1"
         },
         "database": null,
-        "secrets": {},
+        "secrets": {
+          "GITHUB_BASE_URL": "stored",
+          "POSTHOG_API_KEY": "stored",
+          "POSTHOG_BASE_URL": "stored",
+          "SLACK_API_KEY": "stored",
+          "SLACK_BASE_URL": "stored"
+        },
         "promotesFrom": null,
         "deploy": {},
         "publish": {},
-        "hash": "e264584f19862db6"
+        "hash": "36367a55bc598f97"
       }
     },
     "alertRules": [
@@ -10679,6 +10954,46 @@
         }
       },
       {
+        "id": "anomaly:GI-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "GI-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/github/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:GI-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "GI-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/github/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:GI-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "GI-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/github/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:GI-004",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "GI-004",
+          "severity": "ticket",
+          "owner": "blueprint/things/github/errors.ts"
+        }
+      },
+      {
         "id": "anomaly:IN-900",
         "kind": "anomaly",
         "labels": {
@@ -10726,6 +11041,46 @@
           "code": "OU-901",
           "severity": "ticket",
           "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:PH-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "PH-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/posthog/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:PH-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "PH-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/posthog/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:PH-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "PH-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/posthog/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:PH-004",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "PH-004",
+          "severity": "ticket",
+          "owner": "blueprint/things/posthog/errors.ts"
         }
       },
       {
@@ -10796,6 +11151,46 @@
           "code": "SE-900",
           "severity": "ticket",
           "owner": "orthograph"
+        }
+      },
+      {
+        "id": "anomaly:SL-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SL-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/slack/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SL-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SL-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/slack/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SL-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SL-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/slack/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:SL-004",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "SL-004",
+          "severity": "ticket",
+          "owner": "blueprint/things/slack/errors.ts"
         }
       },
       {
@@ -14590,7 +14985,7 @@
         "file": "blueprint/adapters/github.ts",
         "package": "@orthograph/github",
         "version": "0.0.0",
-        "integrity": "sha256-ba3ErXBMiGDIAjKA3OM44h+FFm/hwyHl5REAqPztVmI=",
+        "integrity": "sha256-zcA+cNm9pb0nZfp3Y8dCDWXe60EFIuiI3Frf0mifS90=",
         "chosen": {},
         "calls": [
           "issues.createComment",
@@ -14618,7 +15013,7 @@
         "door": {
           "secret": "GITHUB_WEBHOOK_SIGNING"
         },
-        "hash": "571cdb521d8ac077"
+        "hash": "c917b0962e8c972e"
       },
       "intake": {
         "kind": "feature",
@@ -14634,7 +15029,7 @@
         "file": "blueprint/adapters/posthog.ts",
         "package": "@orthograph/posthog",
         "version": "0.0.0",
-        "integrity": "sha256-MK1RozS7HLi1q08jkzy0aJLSPoaxyzQIyJ2Ji+FOXWs=",
+        "integrity": "sha256-pYEvDW+FoGcRS/K/YqvAIk1a4VZhuLg33LEodx//JkI=",
         "chosen": {},
         "calls": [
           "errorTrackingIssuesList",
@@ -14649,7 +15044,7 @@
           "how": "process",
           "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
         },
-        "hash": "898d80e4bb914e20"
+        "hash": "51cd82f85481058d"
       },
       "prompts": {
         "kind": "feature",
@@ -14665,7 +15060,7 @@
         "file": "blueprint/adapters/slack.ts",
         "package": "@orthograph/slack",
         "version": "0.0.0",
-        "integrity": "sha256-vOiFWmc38LMY037A7VMwgra4peAVPSa+NQnbeNtlMJM=",
+        "integrity": "sha256-kXm5btB7zqazNZ2c8aD48tmO/CzJ26VLXo8fRZSEzlY=",
         "chosen": {},
         "calls": [
           "chatPostMessage",
@@ -14683,7 +15078,7 @@
         "door": {
           "secret": "SLACK_WEBHOOK_SIGNING"
         },
-        "hash": "e688b83c8ae0b8d2"
+        "hash": "1eaad71437d5bdfd"
       },
       "superagent": {
         "kind": "feature",
@@ -15210,6 +15605,7 @@
     "eval/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval\n\nOne judgement the main agent is asked for: a thread's waiting triggers, batched.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | superagent.id |\n| thread | id |\n| triggers | schema |\n| activeAtStart | uint |\n| timeoutMs | uint |\n| deliveredAt (optional) | uint |\n\n## Machine\n\nStates: queued, delivered, decided, unavailable. A move from the wrong state is refused EvalNotQueued (exit 85).\n\n| move | from | to | emits |\n|---|---|---|---|\n| started | (creates) | queued | EvalStarted |\n| delivered | queued | delivered | EvalDelivered |\n| decided | delivered | decided | EvalDecided |\n| expired | delivered | unavailable | EvalExpired |\n\n## Invariants\n\n- `eval.oneLiveEvalPerThread`: another queued or delivered eval holds this thread. Unique on thread, while queued or delivered; refuses nothing, a break is a defect.\n\n## Events\n\n- `EvalDecided`: carries eval (eval.id); emitted by the move decided\n- `EvalDelivered`: carries superagent (eval.superagent), eval (eval.id); emitted by the move delivered\n- `EvalExpired`: carries eval (eval.id); emitted by the move expired\n- `EvalStarted`: carries superagent (eval.superagent), eval (eval.id), thread (eval.thread); emitted by the move started\n\n## Operations\n\n- [eval.context](context.md): Read what a judgement needs: the thread's history and what else it touches.\n- [eval.decide](decide.md): Record one judgement per enabled rule.\n- [eval.delivered](delivered.md): Start an eval's clock when it is told to the main agent: a held hop, so a pause never starts it.\n- [eval.due](due.md): One pass of the eval clock: batch each thread's waiting triggers into an eval, and expire the ones that ran out of time. Not armed again while paused.\n- [eval.expire](expire.md): Give up on an eval that ran out of time: it is unavailable, and keeps its triggers until a person reevaluates one.\n- [eval.read](read.md): Read one page of a thread, through its connection.\n- [eval.start](start.md): Make an eval for one thread's waiting triggers.\n",
     "eval/read.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.read\n\nRead one page of a thread, through its connection.\n\n**Who may call:** the itsMain of its superagent.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | eval.superagent |\n| eval | eval.id |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| text | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EvalNotFound | 4 | EV-901 | nothing has the id in eval; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the itsMain of its superagent; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval read --superagent <superagent> --eval <eval> [--cursor <cursor>]\n```\n\nHTTP: `POST /eval/read` with the payload as JSON. SDK: `Sdk.eval.read(payload)`.\n",
     "eval/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# eval.start\n\nMake an eval for one thread's waiting triggers.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | eval.superagent |\n| thread | eval.thread |\n| triggers | eval.triggers |\n| timeoutMs | eval.timeoutMs |\n\n## Answer\n\n| field | value |\n|---|---|\n| eval | eval.id |\n\n## Move\n\n`started`: from nothing (it creates) to queued, emitting EvalStarted.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent eval start --superagent <superagent> --thread <thread> --triggers <triggers> --timeoutMs <timeoutMs>\n```\n\nHTTP: `POST /eval/start` with the payload as JSON. SDK: `Sdk.eval.start(payload)`.\n",
+    "github/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# github\n\nWhat GitHub v3 REST API fails with.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n\n## Operations\n\n(none yet)\n",
     "input/delivered.md": "<!-- Generated from the blueprint. Do not edit. -->\n# input.delivered\n\nThe executor took the Input.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| input | input.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`delivered`: from routed to delivered, emitting InputDelivered.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InputNotWaiting | 98 | IN-900 | the input is in a state delivered can't start from; carries `state` |\n| InputNotFound | 4 | IN-901 | nothing has the id in input; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent input delivered --input <input>\n```\n\nHTTP: `POST /input/delivered` with the payload as JSON. SDK: `Sdk.input.delivered(payload)`.\n",
     "input/delivery-failed.md": "<!-- Generated from the blueprint. Do not edit. -->\n# input.delivery-failed\n\nThe outbox gave up telling the executor.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| input | input.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`failed`: from routed to failed, emitting InputFailed.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| InputNotWaiting | 98 | IN-900 | the input is in a state failed can't start from; carries `state` |\n| InputNotFound | 4 | IN-901 | nothing has the id in input; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent input delivery-failed --input <input>\n```\n\nHTTP: `POST /input/delivery-failed` with the payload as JSON. SDK: `Sdk.input.delivery-failed(payload)`.\n",
     "input/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# input\n\nOne message for a ticket's executor, waiting for a seat, routed, delivered or failed.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | superagent.id |\n| ticket | ticket.id |\n| from | schema |\n| text | text |\n| seq | uint |\n| retryAt | uint |\n| refusals | uint |\n\n## Machine\n\nStates: waiting, routed, delivered, failed. A move from the wrong state is refused InputNotWaiting (exit 98).\n\n| move | from | to | emits |\n|---|---|---|---|\n| stored | (creates) | waiting | InputStored |\n| routed | waiting | routed | InputRouted |\n| requeued | routed, failed | waiting | InputStored |\n| delivered | routed | delivered | InputDelivered |\n| failed | routed | failed | InputFailed |\n\n## Events\n\n- `InputDelivered`: carries superagent (input.superagent), input (input.id); emitted by the move delivered\n- `InputFailed`: carries superagent (input.superagent), input (input.id); emitted by the move failed\n- `InputRouted`: carries superagent (input.superagent), input (input.id), ticket (input.ticket), agent (agent.id), assignment (id), text (input.text); emitted by the move routed\n- `InputStored`: carries superagent (input.superagent), input (input.id), ticket (input.ticket); emitted by the move stored, requeued\n\n## Operations\n\n- [input.delivered](delivered.md): The executor took the Input.\n- [input.delivery-failed](delivery-failed.md): The outbox gave up telling the executor.\n- [input.read](read.md): Read one Input's text.\n- [input.requeue](requeue.md): Put a refused or failed Input back to waiting, after a short wait that grows with each refusal.\n- [input.route](route.md): Send a waiting Input to its running executor, or queue the Assignment that will start one.\n- [input.store](store.md): Store a message for a ticket's executor: a person's, or a followed thread's trigger.\n",
@@ -15230,6 +15626,7 @@
     "policy/restore.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.restore\n\nSave an earlier version again, as a new one.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n| revision | policy.revision |\n| base | uint |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | policy.revision |\n\n## Move\n\n`restore`: from nothing (it creates) to current, emitting PolicyChanged.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleRevision | 87 | SU-002 | the policy is in a state restore can't start from; carries `state` |\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy restore --superagent <superagent> --revision <revision> --base <base>\n```\n\nHTTP: `POST /policy/restore` with the payload as JSON. SDK: `Sdk.policy.restore(payload)`.\n",
     "policy/save.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.save\n\nSave a new version of the policy. A save made from an older version is refused, with the current one.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n| base | uint |\n| mode | policy.mode |\n| allowed | policy.allowed |\n| bots | policy.bots |\n| admission | policy.admission |\n| rules | policy.rules |\n\n## Answer\n\n| field | value |\n|---|---|\n| revision | policy.revision |\n\n## Move\n\n`save`: from nothing (it creates) to current, emitting PolicyChanged.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleRevision | 87 | SU-002 | the policy is in a state save can't start from; carries `state` |\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy save --superagent <superagent> --base <base> --mode <mode> --allowed <allowed> --bots <bots> --admission <admission> --rules <rules>\n```\n\nHTTP: `POST /policy/save` with the payload as JSON. SDK: `Sdk.policy.save(payload)`.\n",
     "policy/sync.md": "<!-- Generated from the blueprint. Do not edit. -->\n# policy.sync\n\nList the accounts a connection's roster names.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | policy.superagent |\n| source | text |\n\n## Answer\n\n(none)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent policy sync --superagent <superagent> --source <source>\n```\n\nHTTP: `POST /policy/sync` with the payload as JSON. SDK: `Sdk.policy.sync(payload)`.\n",
+    "posthog/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# posthog\n\nWhat PostHog API fails with.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n\n## Operations\n\n(none yet)\n",
     "prompt-set/compose.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set.compose\n\nMake the prompt for one agent's model request, from the current version.\n\n**Who may call:** the system.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | prompt-set.superagent |\n| role | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| text | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent prompt-set compose --superagent <superagent> --role <role>\n```\n\nHTTP: `POST /prompt-set/compose` with the payload as JSON. SDK: `Sdk.prompt-set.compose(payload)`.\n",
     "prompt-set/history.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set.history\n\nEvery saved version, newest first, each row its number, when, by whom, and the one it was made from.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| superagent | prompt-set.superagent |\n\n## Answer\n\n| field | value |\n|---|---|\n| entries | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SuperagentNotFound | 4 | SU-901 | nothing has the id in superagent; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent prompt-set history --superagent <superagent>\n```\n\nHTTP: `POST /prompt-set/history` with the payload as JSON. SDK: `Sdk.prompt-set.history(payload)`.\n",
     "prompt-set/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# prompt-set\n\nWhat a team writes into its agents' prompts: sections, skills and overrides. One current version, every save kept.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | superagent.id |\n| revision | uint |\n| sections | schema |\n| skills | schema |\n| overrides | schema |\n| saved (optional) | schema |\n\n## Invariants\n\n- `prompt-set.oneVersionPerRevision`: another prompt set holds this superagent and revision. Unique on superagent, revision, in every state; refuses nothing, a break is a defect.\n\n## Operations\n\n- [prompt-set.compose](compose.md): Make the prompt for one agent's model request, from the current version.\n- [prompt-set.history](history.md): Every saved version, newest first, each row its number, when, by whom, and the one it was made from.\n- [prompt-set.preview](preview.md): Show the prompt an agent of one kind would get, with a draft applied.\n- [prompt-set.save](save.md): Save a new version of the prompts. A save made from an older version is refused, with the current one.\n",
@@ -15243,6 +15640,7 @@
     "report/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# report\n\nHow the executor says a ticket stands. Its state is its kind.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | superagent.id |\n| ticket | ticket.id |\n| text | text |\n| seq | uint |\n\n## Machine\n\nStates: progress, waiting, ready, blocked, failed, dropped. A move from the wrong state is refused ReportNotProgress (exit 99).\n\n| move | from | to | emits |\n|---|---|---|---|\n| made | (creates) | progress, waiting, ready, blocked, failed, dropped | ReportMade |\n\n## Events\n\n- `ReportMade`: carries superagent (report.superagent), report (report.id), ticket (report.ticket); emitted by the move made\n\n## Operations\n\n(none yet)\n",
     "settings/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# settings\n\nThe app's settings: execution variables and blocked commands. One current version, every save kept.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| revision | uint |\n| variables | schema |\n| blocked | schema |\n| saved (optional) | schema |\n\n## Machine\n\nStates: current. A move from the wrong state is refused SettingsNotCurrent (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| save | (creates) | current | SettingsSaved |\n\n## Invariants\n\n- `settings.oneVersionPerRevision`: another settings holds this revision. Unique on revision, in every state; refuses nothing, a break is a defect.\n\n## Events\n\n- `SettingsSaved`: carries settings (settings.id), revision (settings.revision); emitted by the move save\n\n## Operations\n\n- [settings.save](save.md): Save a new version of the settings. A save made from an older version is refused, with the current one. A main agent may only propose it.\n",
     "settings/save.md": "<!-- Generated from the blueprint. Do not edit. -->\n# settings.save\n\nSave a new version of the settings. A save made from an older version is refused, with the current one. A main agent may only propose it.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| base | uint |\n| variables | settings.variables |\n| blocked | settings.blocked |\n\n## Answer\n\n| field | value |\n|---|---|\n| settings | settings.id |\n| revision | settings.revision |\n\n## Move\n\n`save`: from nothing (it creates) to current, emitting SettingsSaved.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| StaleRevision | 40 | SU-002 | the settings is in a state save can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent settings save --base <base> --variables <variables> --blocked <blocked>\n```\n\nHTTP: `POST /settings/save` with the payload as JSON. SDK: `Sdk.settings.save(payload)`.\n",
+    "slack/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# slack\n\nWhat Slack Web API fails with.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n\n## Operations\n\n(none yet)\n",
     "source/disable.md": "<!-- Generated from the blueprint. Do not edit. -->\n# source.disable\n\nStop listening on a connection; its triggers already recorded stay.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| source | source.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`disable`: from setup or ready or paused or error to paused or off, emitting SourceDisabled.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SourceNotSetup | 80 | SO-900 | the source is in a state disable can't start from; carries `state` |\n| SourceNotFound | 4 | SO-901 | nothing has the id in source; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent source disable --source <source>\n```\n\nHTTP: `POST /source/disable` with the payload as JSON. SDK: `Sdk.source.disable(payload)`.\n",
     "source/enable.md": "<!-- Generated from the blueprint. Do not edit. -->\n# source.enable\n\nStart listening on a connection.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| source | source.id |\n\n## Answer\n\n(none)\n\n## Move\n\n`enable`: from setup or paused or off or error to ready, emitting SourceEnabled.\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SourceNotSetup | 80 | SO-900 | the source is in a state enable can't start from; carries `state` |\n| SourceNotFound | 4 | SO-901 | nothing has the id in source; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## How to call\n\n```sh\nsuperagent source enable --source <source>\n```\n\nHTTP: `POST /source/enable` with the payload as JSON. SDK: `Sdk.source.enable(payload)`.\n",
     "source/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# source\n\nOne connection of a superagent to an outside service, with the place it has read to.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| superagent | superagent.id |\n| name | text |\n| kind | text |\n| config | schema |\n| position | text |\n| failures | uint |\n| failAfter | uint |\n\n## Machine\n\nStates: setup, ready, paused, error, off. A move from the wrong state is refused SourceNotSetup (exit 80).\n\n| move | from | to | emits |\n|---|---|---|---|\n| save | (creates) | setup | SourceSaved |\n| enable | setup, paused, off, error | ready | SourceEnabled |\n| disable | setup, ready, paused, error | paused, off | SourceDisabled |\n| advance | ready | ready | SourcePositionAdvanced |\n| fail | ready | error | SourceFailed |\n\n## Events\n\n- `SourceDisabled`: carries source (source.id); emitted by the move disable\n- `SourceEnabled`: carries source (source.id); emitted by the move enable\n- `SourceFailed`: carries source (source.id); emitted by the move fail\n- `SourcePositionAdvanced`: carries source (source.id), position (source.position); emitted by the move advance\n- `SourceSaved`: carries source (source.id), superagent (source.superagent); emitted by the move save\n\n## Operations\n\n- [source.disable](disable.md): Stop listening on a connection; its triggers already recorded stay.\n- [source.enable](enable.md): Start listening on a connection.\n- [source.position-advanced](position-advanced.md): Record how far a connection has read, after a poll.\n- [source.problem](problem.md): Say a connection has failed three polls in a row: it shows as a problem until a poll succeeds.\n- [source.save](save.md): Save a connection: its kind and its configuration.\n",
@@ -15301,5 +15699,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "ff69a658b276c6c534323b4bd14ea2d6a9bf602954fadb0f5cf7f7f71926e8ec"
+  "digest": "1a449beb7d2cad84bb52488defaaebb00f460cc5d29e5eb51c74d57c304586fd"
 }

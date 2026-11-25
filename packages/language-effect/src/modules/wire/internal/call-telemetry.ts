@@ -3,9 +3,10 @@ import { HttpMiddleware, HttpServerError, HttpServerRequest } from "effect/http"
 import { HttpApiError, HttpApiMiddleware } from "effect/http-api";
 import { recordCall, RoutedCall } from "#modules/handler/internal/call-metrics.js";
 import { Principals } from "#modules/principals/types.js";
+import { isRefusedPayload, refusedPayload } from "./refused-payload.ts";
 
 const badPayload = (error: unknown) =>
-  (HttpApiError.HttpApiSchemaError.is(error) && error.kind === "Payload") ||
+  isRefusedPayload(error) ||
   HttpApiError.HttpApiPayloadTooLarge.is(error) ||
   (HttpServerError.isHttpServerError(error) && error.reason._tag === "RequestParseError");
 
@@ -32,6 +33,9 @@ export class CallTelemetry extends HttpApiMiddleware.Service<CallTelemetry>()("@
             const refused = Exit.isSuccess(exit) ? exit.value.status === 413 || exit.value.status === 415 : badPayload(Cause.squash(exit.cause));
             return refused ? rejected : recordCall(route.operation, "unknown", start, { outcome: "defect" });
           }),
+          // Counted above as a refused InvalidPayload; then answered with a body that names each field and why (#988).
+          // The cast: `work`'s error is Effect's opaque `unhandled`, which the guard cannot narrow.
+          Effect.catchIf(isRefusedPayload, (error) => refusedPayload(error as unknown as HttpApiError.HttpApiSchemaError)),
         );
       }),
     )),
