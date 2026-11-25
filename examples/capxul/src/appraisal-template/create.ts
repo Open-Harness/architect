@@ -27,8 +27,8 @@ const { TemplateWithoutKras, TemplateKraNotInCompany, TemplateCriteriaNotInCompa
  *   TemplateCriteriaNotInCompany  exit 43   TP-003  yours to refuse below; from blueprint/things/appraisal-template/errors.ts
  *   TemplateLineRepeated          exit 44   TP-004  yours to refuse below; from blueprint/things/appraisal-template/errors.ts
  *   TemplateWeightageOutOfRange   exit 45   TP-005  yours to refuse below; from blueprint/things/appraisal-template/errors.ts
- *   KraWeightageNotHundred        exit 46   TP-006  yours to refuse below, carrying total; from blueprint/things/appraisal-template/errors.ts
- *   CriteriaWeightageNotHundred   exit 47   TP-007  yours to refuse below, carrying total; from blueprint/things/appraisal-template/errors.ts
+ *   KraWeightageNotHundred        exit 46   TP-006  yours to refuse below; from blueprint/things/appraisal-template/errors.ts
+ *   CriteriaWeightageNotHundred   exit 47   TP-007  yours to refuse below; from blueprint/things/appraisal-template/errors.ts
  *   TemplateTitleTaken            exit 48   TP-008  the runtime's: another appraisal template holds this company and title (appraisal-template.oneTitlePerCompany); from blueprint/things/appraisal-template/invariants.ts
  *   NotAllowed                    exit 3    AR-001  the runtime's, when the caller isn't the owner of its company; from blueprint/things/company/roles.ts
  *   IdempotencyConflict           exit 120  AR-002  the runtime's, when the same request key comes with another payload; from blueprint/things/appraisal-template/verbs/create.ts
@@ -87,17 +87,13 @@ const create: Handler = (_payload, { steps, move, id }) =>
     // KraWeightageNotHundred: exit 46, TP-006.
     if (yield* Handlers.blank<boolean>("refuse KraWeightageNotHundred when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why KraWeightageNotHundred was refused"));
-      return yield* new KraWeightageNotHundred({
-        total: yield* Handlers.blank("KraWeightageNotHundred.total, a Weightage"),
-      });
+      return yield* new KraWeightageNotHundred({});
     }
 
     // CriteriaWeightageNotHundred: exit 47, TP-007.
     if (yield* Handlers.blank<boolean>("refuse CriteriaWeightageNotHundred when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why CriteriaWeightageNotHundred was refused"));
-      return yield* new CriteriaWeightageNotHundred({
-        total: yield* Handlers.blank("CriteriaWeightageNotHundred.total, a Weightage"),
-      });
+      return yield* new CriteriaWeightageNotHundred({});
     }
 
     // Step insert: database, span appraisal-template.create.insert.

@@ -40,24 +40,14 @@ export type AppraisalCreated = {
 /** The event AppraisalRated: what it carries when an appraisal moves. */
 export type AppraisalRated = {
   readonly "appraisal": Of<(typeof Events)["AppraisalRated"]["fields"]["appraisal"]>;
-  /** The KRAs' score out of 5 (HRMS's `total_score`). */
-  readonly "totalScore": Of<(typeof Events)["AppraisalRated"]["fields"]["totalScore"]>;
-  /** The average of the three scores above (HRMS's `final_score`). */
-  readonly "finalScore": Of<(typeof Events)["AppraisalRated"]["fields"]["finalScore"]>;
 };
 
 /** The event AppraisalSelfRated: what it carries when an appraisal moves. */
 export type AppraisalSelfRated = {
   readonly "appraisal": Of<(typeof Events)["AppraisalSelfRated"]["fields"]["appraisal"]>;
-  /** The self ratings' score out of 5 (HRMS's `self_score`). */
-  readonly "selfScore": Of<(typeof Events)["AppraisalSelfRated"]["fields"]["selfScore"]>;
-  /** The average of the three scores above (HRMS's `final_score`). */
-  readonly "finalScore": Of<(typeof Events)["AppraisalSelfRated"]["fields"]["finalScore"]>;
 };
 
 /** The event AppraisalSubmitted: what it carries when an appraisal moves. */
 export type AppraisalSubmitted = {
   readonly "appraisal": Of<(typeof Events)["AppraisalSubmitted"]["fields"]["appraisal"]>;
-  /** The average of the three scores above (HRMS's `final_score`). */
-  readonly "finalScore": Of<(typeof Events)["AppraisalSubmitted"]["fields"]["finalScore"]>;
 };

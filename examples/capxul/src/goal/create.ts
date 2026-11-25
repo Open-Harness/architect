@@ -11,10 +11,9 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *
  * Who may call:
  *   the self of its employee: (employee, caller) => employee.person === caller.person; from blueprint/things/employee/roles.ts
- *   the owner of its company: (company, caller) => company.owner === caller.person; from blueprint/things/company/roles.ts
+ *   the owner of its appraisalCycle.company: (company, caller) => company.owner === caller.person; from blueprint/things/company/roles.ts
  *
  * Payload, from blueprint/things/goal/verbs/create.ts:
- *   company         goal.company
  *   employee        goal.employee
  *   appraisalCycle  goal.appraisalCycle
  *   kra             goal.kra
@@ -35,11 +34,10 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *   ProgressOutOfRange        exit 46   GL-006  yours to refuse below; from blueprint/things/goal/errors.ts
  *   ParentGoalNotGroup        exit 48   GL-010  yours to refuse below; from blueprint/things/goal/errors.ts
  *   AppraisalAlreadyExists    exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
- *   CompanyNotFound           exit 4    CO-901  the runtime's, when no company has that id, carrying id; from blueprint/things/company/thing.ts
  *   EmployeeNotFound          exit 4    EM-901  the runtime's, when no employee has that id, carrying id; from blueprint/things/employee/thing.ts
  *   AppraisalCycleNotFound    exit 4    CY-901  the runtime's, when no appraisal-cycle has that id, carrying id; from blueprint/things/appraisal-cycle/thing.ts
  *   KraNotFound               exit 4    KR-901  the runtime's, when no kra has that id, carrying id; from blueprint/things/kra/thing.ts
- *   NotAllowed                exit 3    AR-001  the runtime's, when the caller isn't the self of its employee, or the owner of its company; from blueprint/things/employee/roles.ts
+ *   NotAllowed                exit 3    AR-001  the runtime's, when the caller isn't the self of its employee, or the owner of its appraisalCycle.company; from blueprint/things/employee/roles.ts
  *   IdempotencyConflict       exit 120  AR-002  the runtime's, when the same request key comes with another payload; from blueprint/things/goal/verbs/create.ts
  *
  * Idempotent by request, from blueprint/things/goal/verbs/create.ts: the same request key from the same caller is one call.
@@ -75,8 +73,7 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *     closed      reopen          completed   GoalReopened
  *
  * What the runtime does, so this handler doesn't:
- *   before it runs, it refuses NotAllowed unless the caller is the self of its employee, or the owner of its company;
- *   before it runs, it reads the company and hands it in as refs.company, refusing CompanyNotFound if there is none;
+ *   before it runs, it refuses NotAllowed unless the caller is the self of its employee, or the owner of its appraisalCycle.company;
  *   before it runs, it reads the employee and hands it in as refs.employee, refusing EmployeeNotFound if there is none;
  *   before it runs, it reads the appraisalCycle and hands it in as refs.appraisalCycle, refusing AppraisalCycleNotFound if there is none;
  *   before it runs, it reads the kra and hands it in as refs.kra, refusing KraNotFound if there is none;
@@ -84,7 +81,7 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *   before it runs, it mints the goal's new id and hands it in as id;
  *   each step is its own span: goal.create.load, goal.create.insert;
  *   once it answers, it sets the goal's state to the outcome given to move;
- *   once it answers, it writes GoalCreated: goal from the answer, employee, kra and progress from the payload;
+ *   once it answers, it writes GoalCreated: goal from the answer, employee and kra from the payload;
  *   the call is the span goal.create, and its commit goal.create.commit.
  */
 const create: Handler = (_payload, { steps, move, id }) =>

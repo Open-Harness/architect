@@ -42,8 +42,8 @@ Make an appraisal template: KRAs and rating criteria, each with its weightage.
 | TemplateCriteriaNotInCompany | 43 | TP-003 | declared in errors.ts |
 | TemplateLineRepeated | 44 | TP-004 | declared in errors.ts |
 | TemplateWeightageOutOfRange | 45 | TP-005 | declared in errors.ts |
-| KraWeightageNotHundred | 46 | TP-006 | declared in errors.ts, carrying total |
-| CriteriaWeightageNotHundred | 47 | TP-007 | declared in errors.ts, carrying total |
+| KraWeightageNotHundred | 46 | TP-006 | declared in errors.ts |
+| CriteriaWeightageNotHundred | 47 | TP-007 | declared in errors.ts |
 | TemplateTitleTaken | 48 | TP-008 | another appraisal template holds this company and title; by the rule appraisal-template.oneTitlePerCompany, carrying title |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |

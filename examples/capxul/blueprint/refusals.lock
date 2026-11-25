@@ -2054,12 +2054,7 @@
       "name": "KraWeightageNotHundred",
       "owner": "appraisal-template",
       "from": "blueprint/things/appraisal-template/errors.ts",
-      "fields": {
-        "total": {
-          "value": "decimal",
-          "places": 2
-        }
-      },
+      "fields": {},
       "wire": {
         "effect": {
           "tag": "KraWeightageNotHundred"
@@ -2071,12 +2066,7 @@
       "name": "CriteriaWeightageNotHundred",
       "owner": "appraisal-template",
       "from": "blueprint/things/appraisal-template/errors.ts",
-      "fields": {
-        "total": {
-          "value": "decimal",
-          "places": 2
-        }
-      },
+      "fields": {},
       "wire": {
         "effect": {
           "tag": "CriteriaWeightageNotHundred"
@@ -2268,6 +2258,18 @@
       "wire": {
         "effect": {
           "tag": "ParentGoalHasProgress"
+        }
+      },
+      "earlier": []
+    },
+    "GL-011": {
+      "name": "GoalNotOnTemplate",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalNotOnTemplate"
         }
       },
       "earlier": []

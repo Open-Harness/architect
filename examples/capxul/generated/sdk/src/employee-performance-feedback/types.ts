@@ -32,14 +32,10 @@ export type PerformanceFeedbackDrafted = {
   readonly "appraisal": Of<(typeof Events)["PerformanceFeedbackDrafted"]["fields"]["appraisal"]>;
   /** The employee who gives it. */
   readonly "reviewer": Of<(typeof Events)["PerformanceFeedbackDrafted"]["fields"]["reviewer"]>;
-  /** The ratings' score out of 5 (HRMS's `total_score`). */
-  readonly "totalScore": Of<(typeof Events)["PerformanceFeedbackDrafted"]["fields"]["totalScore"]>;
 };
 
 /** The event PerformanceFeedbackSubmitted: what it carries when an employee-performance-feedback moves. */
 export type PerformanceFeedbackSubmitted = {
   readonly "employeePerformanceFeedback": Of<(typeof Events)["PerformanceFeedbackSubmitted"]["fields"]["employeePerformanceFeedback"]>;
   readonly "appraisal": Of<(typeof Events)["PerformanceFeedbackSubmitted"]["fields"]["appraisal"]>;
-  /** The ratings' score out of 5 (HRMS's `total_score`). */
-  readonly "totalScore": Of<(typeof Events)["PerformanceFeedbackSubmitted"]["fields"]["totalScore"]>;
 };

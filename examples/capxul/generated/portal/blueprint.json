@@ -525,24 +525,6 @@
                 "prefix": "apr"
               },
               "ref": "appraisal.id"
-            },
-            "totalScore": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Score",
-              "ref": "appraisal.totalScore",
-              "description": "The KRAs' score out of 5 (HRMS's `total_score`)."
-            },
-            "finalScore": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Score",
-              "ref": "appraisal.finalScore",
-              "description": "The average of the three scores above (HRMS's `final_score`)."
             }
           },
           "AppraisalSelfRated": {
@@ -552,24 +534,6 @@
                 "prefix": "apr"
               },
               "ref": "appraisal.id"
-            },
-            "selfScore": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Score",
-              "ref": "appraisal.selfScore",
-              "description": "The self ratings' score out of 5 (HRMS's `self_score`)."
-            },
-            "finalScore": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Score",
-              "ref": "appraisal.finalScore",
-              "description": "The average of the three scores above (HRMS's `final_score`)."
             }
           },
           "AppraisalSubmitted": {
@@ -579,15 +543,6 @@
                 "prefix": "apr"
               },
               "ref": "appraisal.id"
-            },
-            "finalScore": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Score",
-              "ref": "appraisal.finalScore",
-              "description": "The average of the three scores above (HRMS's `final_score`)."
             }
           }
         },
@@ -653,7 +608,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "2279bf33a0031ea1"
+        "hash": "8bb3d8978bb593bb"
       },
       "appraisal-cycle": {
         "name": "appraisal-cycle",
@@ -1006,28 +961,12 @@
             "code": "TP-005"
           },
           "KraWeightageNotHundred": {
-            "fields": {
-              "total": {
-                "value": {
-                  "type": "decimal",
-                  "places": 2
-                },
-                "named": "Weightage"
-              }
-            },
+            "fields": {},
             "exit": 46,
             "code": "TP-006"
           },
           "CriteriaWeightageNotHundred": {
-            "fields": {
-              "total": {
-                "value": {
-                  "type": "decimal",
-                  "places": 2
-                },
-                "named": "Weightage"
-              }
-            },
+            "fields": {},
             "exit": 47,
             "code": "TP-007"
           },
@@ -1055,7 +994,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "182064fc99ebe2f9"
+        "hash": "247c2bef2dd04a89"
       },
       "attendance": {
         "name": "attendance",
@@ -2912,15 +2851,6 @@
               },
               "ref": "employee-performance-feedback.reviewer",
               "description": "The employee who gives it."
-            },
-            "totalScore": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Score",
-              "ref": "employee-performance-feedback.totalScore",
-              "description": "The ratings' score out of 5 (HRMS's `total_score`)."
             }
           },
           "PerformanceFeedbackSubmitted": {
@@ -2937,15 +2867,6 @@
                 "prefix": "apr"
               },
               "ref": "employee-performance-feedback.appraisal"
-            },
-            "totalScore": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Score",
-              "ref": "employee-performance-feedback.totalScore",
-              "description": "The ratings' score out of 5 (HRMS's `total_score`)."
             }
           }
         },
@@ -2986,7 +2907,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "d51d22337ffc38e0"
+        "hash": "d56c94588940badf"
       },
       "employee-promotion": {
         "name": "employee-promotion",
@@ -4266,14 +4187,6 @@
                 "prefix": "kra"
               },
               "ref": "goal.kra"
-            },
-            "progress": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Progress",
-              "ref": "goal.progress"
             }
           },
           "GoalProgressUpdated": {
@@ -4283,14 +4196,6 @@
                 "prefix": "gol"
               },
               "ref": "goal.id"
-            },
-            "progress": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Progress",
-              "ref": "goal.progress"
             }
           },
           "GoalReopened": {
@@ -4359,7 +4264,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "604a05fb6b178b37"
+        "hash": "d4362a66a86a8203"
       },
       "holiday": {
         "name": "holiday",
@@ -6165,7 +6070,6 @@
           "emits": "AppraisalRated"
         },
         "errors": [
-          "AppraisalCycleCompleted",
           "NotRatedManually",
           "ScoresDontMatchKras",
           "KraScoreOutOfRange"
@@ -6177,7 +6081,6 @@
           "appraisal.oneAppraisalPerCycle"
         ],
         "refusals": [
-          "AppraisalCycleCompleted",
           "NotRatedManually",
           "ScoresDontMatchKras",
           "KraScoreOutOfRange",
@@ -6214,7 +6117,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "6cb450f6669cbb69"
+        "hash": "dbfb61a88c7ad4f5"
       },
       "appraisal.self-rate": {
         "kind": "operation",
@@ -6280,7 +6183,6 @@
           "emits": "AppraisalSelfRated"
         },
         "errors": [
-          "AppraisalCycleCompleted",
           "SelfRatingsDontMatchCriteria",
           "SelfRatingOutOfRange"
         ],
@@ -6291,7 +6193,6 @@
           "appraisal.oneAppraisalPerCycle"
         ],
         "refusals": [
-          "AppraisalCycleCompleted",
           "SelfRatingsDontMatchCriteria",
           "SelfRatingOutOfRange",
           "AppraisalAlreadyExists",
@@ -6327,7 +6228,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "d0dc946e9e131df7"
+        "hash": "23fce24e084e48ac"
       },
       "appraisal.submit": {
         "kind": "operation",
@@ -6339,7 +6240,7 @@
         "from": {
           "kind": "app"
         },
-        "description": "Submit an appraisal, fixing its scores.",
+        "description": "Submit an appraisal.",
         "payload": {
           "appraisal": {
             "value": {
@@ -6377,9 +6278,7 @@
           ],
           "emits": "AppraisalSubmitted"
         },
-        "errors": [
-          "AppraisalCycleCompleted"
-        ],
+        "errors": [],
         "invariants": {
           "AppraisalAlreadyExists": "appraisal.oneAppraisalPerCycle"
         },
@@ -6387,7 +6286,6 @@
           "appraisal.oneAppraisalPerCycle"
         ],
         "refusals": [
-          "AppraisalCycleCompleted",
           "AppraisalAlreadyExists",
           "AppraisalNotDraft",
           "NotAllowed",
@@ -6421,7 +6319,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "615670b9b00cd227"
+        "hash": "0569b39e77b1610d"
       },
       "appraisal-cycle.complete": {
         "kind": "operation",
@@ -12524,7 +12422,8 @@
           "emits": "GoalArchived"
         },
         "errors": [
-          "GoalCycleCompleted"
+          "GoalCycleCompleted",
+          "GoalIsGroup"
         ],
         "invariants": {
           "AppraisalAlreadyExists": "appraisal.oneAppraisalPerCycle"
@@ -12534,6 +12433,7 @@
         ],
         "refusals": [
           "GoalCycleCompleted",
+          "GoalIsGroup",
           "AppraisalAlreadyExists",
           "GoalNotPending",
           "NotAllowed",
@@ -12576,7 +12476,7 @@
         "budget": {
           "p95Ms": 400
         },
-        "hash": "0dafd0e2114f0002"
+        "hash": "688046f665babaa9"
       },
       "goal.close": {
         "kind": "operation",
@@ -12620,7 +12520,8 @@
           "emits": "GoalClosed"
         },
         "errors": [
-          "GoalCycleCompleted"
+          "GoalCycleCompleted",
+          "GoalIsGroup"
         ],
         "invariants": {
           "AppraisalAlreadyExists": "appraisal.oneAppraisalPerCycle"
@@ -12630,6 +12531,7 @@
         ],
         "refusals": [
           "GoalCycleCompleted",
+          "GoalIsGroup",
           "AppraisalAlreadyExists",
           "GoalNotPending",
           "NotAllowed",
@@ -12672,7 +12574,7 @@
         "budget": {
           "p95Ms": 400
         },
-        "hash": "ddd1e2d23c5bc914"
+        "hash": "27583026e4354dbe"
       },
       "goal.complete": {
         "kind": "operation",
@@ -12783,13 +12685,6 @@
         },
         "description": "Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.",
         "payload": {
-          "company": {
-            "value": {
-              "type": "id",
-              "prefix": "com"
-            },
-            "ref": "goal.company"
-          },
           "employee": {
             "value": {
               "type": "id",
@@ -12887,7 +12782,6 @@
           "ProgressOutOfRange",
           "ParentGoalNotGroup",
           "AppraisalAlreadyExists",
-          "CompanyNotFound",
           "EmployeeNotFound",
           "AppraisalCycleNotFound",
           "KraNotFound",
@@ -12903,19 +12797,17 @@
           {
             "kind": "role-of",
             "role": "company.owner",
-            "path": "company"
+            "path": "appraisalCycle.company"
           }
         ],
         "agentTool": true,
         "refs": {
-          "company": "company",
           "employee": "employee",
           "appraisalCycle": "appraisal-cycle",
           "kra": "kra",
           "parentGoal": "goal"
         },
         "notFound": {
-          "company": "CompanyNotFound",
           "employee": "EmployeeNotFound",
           "appraisalCycle": "AppraisalCycleNotFound",
           "kra": "KraNotFound"
@@ -12942,7 +12834,7 @@
         "budget": {
           "p95Ms": 400
         },
-        "hash": "97c44d6aa704a734"
+        "hash": "b44629693fbd6570"
       },
       "goal.get": {
         "kind": "read",
@@ -13059,6 +12951,90 @@
           "p95Ms": 50
         },
         "hash": "0d2856cf481bc332"
+      },
+      "goal.list": {
+        "kind": "read",
+        "name": "goal.list",
+        "thing": "goal",
+        "verb": "list",
+        "identifier": "list",
+        "file": "blueprint/things/goal/verbs/list.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.",
+        "payload": {
+          "appraisalCycle": {
+            "value": {
+              "type": "id",
+              "prefix": "apc"
+            },
+            "ref": "goal.appraisalCycle",
+            "optional": true
+          },
+          "employee": {
+            "value": {
+              "type": "id",
+              "prefix": "emp"
+            },
+            "ref": "goal.employee",
+            "optional": true
+          },
+          "cursor": {
+            "value": {
+              "type": "text",
+              "max": 64
+            },
+            "optional": true
+          }
+        },
+        "answer": {
+          "items": {
+            "value": {
+              "type": "schema"
+            }
+          },
+          "next": {
+            "value": {
+              "type": "schema"
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "employee.self",
+            "path": "employee"
+          },
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "appraisalCycle.company"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 80
+        },
+        "list": {
+          "where": [
+            "appraisalCycle",
+            "employee"
+          ],
+          "order": "oldest",
+          "page": 50
+        },
+        "hash": "71b3c88ceb8d0035"
       },
       "goal.reopen": {
         "kind": "operation",
@@ -44152,6 +44128,57 @@
           }
         }
       },
+      "a colleague's goal": {
+        "name": "a colleague's goal",
+        "file": "blueprint/starting-worlds/a-colleagues-goal.ts",
+        "from": "a feedback draft",
+        "cast": {
+          "cy": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "19066cb420f0576e3b298032dc582a9ad9aa5b7cd01a0a600bb40c1d9834c6f1",
+        "makes": [
+          {
+            "actor": "cy",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "otherKra"
+                ]
+              },
+              "goalName": "Write the runbook",
+              "progress": {
+                "value": "50",
+                "scale": 0
+              },
+              "isGroup": false
+            }
+          }
+        ],
+        "gives": {
+          "secondGoal": {
+            "ref": [
+              "last",
+              "goal"
+            ]
+          }
+        }
+      },
       "a company": {
         "name": "a company",
         "file": "blueprint/starting-worlds/a-company.ts",
@@ -44221,6 +44248,158 @@
             "ref": [
               "last",
               "department"
+            ]
+          }
+        }
+      },
+      "a feedback criteria": {
+        "name": "a feedback criteria",
+        "file": "blueprint/starting-worlds/a-feedback-criteria.ts",
+        "from": "a second kra",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "8ee0836baaf0c5d0f07de70b01deb124fe9e6388494e2a15b479a070e8becb77",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "employee-feedback-criteria.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "criteria": "Problem Solving"
+            }
+          }
+        ],
+        "gives": {
+          "criteria": {
+            "ref": [
+              "last",
+              "employeeFeedbackCriteria"
+            ]
+          }
+        }
+      },
+      "a feedback draft": {
+        "name": "a feedback draft",
+        "file": "blueprint/starting-worlds/a-feedback-draft.ts",
+        "from": "a goal",
+        "cast": {
+          "cy": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "8af1ca61ea69dc95e9240a3a4261d0d12fccf9843b82a2f35ff8214508f29a74",
+        "makes": [
+          {
+            "actor": "cy",
+            "operation": "employee-performance-feedback.create",
+            "payload": {
+              "appraisal": {
+                "ref": [
+                  "world",
+                  "appraisal"
+                ]
+              },
+              "reviewer": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "feedback": "Olga explains her designs clearly.",
+              "ratings": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "8",
+                    "scale": 1
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "rating": {
+                    "value": "7",
+                    "scale": 1
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "gives": {
+          "feedbackDraft": {
+            "ref": [
+              "last",
+              "employeePerformanceFeedback"
+            ]
+          }
+        }
+      },
+      "a goal": {
+        "name": "a goal",
+        "file": "blueprint/starting-worlds/a-goal.ts",
+        "from": "a started cycle",
+        "cast": {
+          "olga": {
+            "kind": "signed-in"
+          }
+        },
+        "sourceHash": "495debdafe9af4703270e730bd5064ac4b935fd68b93831bfc206c93732de936",
+        "makes": [
+          {
+            "actor": "olga",
+            "operation": "goal.create",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              },
+              "kra": {
+                "ref": [
+                  "world",
+                  "kra"
+                ]
+              },
+              "goalName": "Ship the ledger",
+              "progress": {
+                "value": "0",
+                "scale": 0
+              },
+              "isGroup": false
+            }
+          }
+        ],
+        "gives": {
+          "goal": {
+            "ref": [
+              "last",
+              "goal"
             ]
           }
         }
@@ -44393,6 +44572,41 @@
           }
         }
       },
+      "a kra": {
+        "name": "a kra",
+        "file": "blueprint/starting-worlds/a-kra.ts",
+        "from": "an outside employee",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "a9066cea6f4de6986ef60eefa86dee264620f3e521c77e5a84609677ed392b2b",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "kra.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Quality"
+            }
+          }
+        ],
+        "gives": {
+          "kra": {
+            "ref": [
+              "last",
+              "kra"
+            ]
+          }
+        }
+      },
       "a leap fortnight": {
         "name": "a leap fortnight",
         "file": "blueprint/starting-worlds/a-leap-fortnight.ts",
@@ -44432,6 +44646,74 @@
             "ref": [
               "last",
               "holidayList"
+            ]
+          }
+        }
+      },
+      "a manual cycle": {
+        "name": "a manual cycle",
+        "file": "blueprint/starting-worlds/a-manual-cycle.ts",
+        "from": "a colleague's goal",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "bd3c08e972a4833b97333209e21c517f4913d5f4b1f3885580f88831469062cd",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "appraisal-cycle.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "cycleName": "H1 2027",
+              "startDate": "2027-01-01",
+              "endDate": "2027-06-30",
+              "kraEvaluationMethod": "Manual Rating",
+              "appraisees": [
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  }
+                },
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "secondEmployee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "gives": {
+          "manualCycle": {
+            "ref": [
+              "last",
+              "appraisalCycle"
             ]
           }
         }
@@ -44773,6 +45055,41 @@
           }
         }
       },
+      "a second feedback criteria": {
+        "name": "a second feedback criteria",
+        "file": "blueprint/starting-worlds/a-second-feedback-criteria.ts",
+        "from": "a feedback criteria",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "73678d67d95d3fe067df6dfcf7c9cfb6716f17ce8fe4bc235c37b74b2e92bc9f",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "employee-feedback-criteria.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "criteria": "Excellence"
+            }
+          }
+        ],
+        "gives": {
+          "otherCriteria": {
+            "ref": [
+              "last",
+              "employeeFeedbackCriteria"
+            ]
+          }
+        }
+      },
       "a second job title": {
         "name": "a second job title",
         "file": "blueprint/starting-worlds/a-second-job-title.ts",
@@ -44804,6 +45121,41 @@
             "ref": [
               "last",
               "designation"
+            ]
+          }
+        }
+      },
+      "a second kra": {
+        "name": "a second kra",
+        "file": "blueprint/starting-worlds/a-second-kra.ts",
+        "from": "a kra",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "a1fbb2497182ff6452137b8483b0ea1a00c053205776f5dfe082e26cd33e8442",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "kra.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Development"
+            }
+          }
+        ],
+        "gives": {
+          "otherKra": {
+            "ref": [
+              "last",
+              "kra"
             ]
           }
         }
@@ -44940,6 +45292,90 @@
             "ref": [
               "last",
               "employeeSeparation"
+            ]
+          }
+        }
+      },
+      "a started cycle": {
+        "name": "a started cycle",
+        "file": "blueprint/starting-worlds/a-started-cycle.ts",
+        "from": "an appraisal cycle",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "ac94cb8fe02816d857284ab44623fd508ff7c4b21b52cc2e060f1b2ef7b47f9e",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "appraisal-cycle.start",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "appraisalCycle"
+                ]
+              }
+            }
+          }
+        ],
+        "gives": {
+          "appraisal": {
+            "ref": [
+              "last",
+              "appraisals",
+              "0"
+            ]
+          },
+          "secondAppraisal": {
+            "ref": [
+              "last",
+              "appraisals",
+              "1"
+            ]
+          }
+        }
+      },
+      "a started manual cycle": {
+        "name": "a started manual cycle",
+        "file": "blueprint/starting-worlds/a-started-manual-cycle.ts",
+        "from": "a manual cycle",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "27af806d731bf0e169273ee1562ac7b25001dcb33f9964972ad4f8f91868f3df",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "appraisal-cycle.start",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              }
+            }
+          }
+        ],
+        "gives": {
+          "manualAppraisal": {
+            "ref": [
+              "last",
+              "appraisals",
+              "0"
+            ]
+          },
+          "secondManualAppraisal": {
+            "ref": [
+              "last",
+              "appraisals",
+              "1"
             ]
           }
         }
@@ -45125,6 +45561,161 @@
             "ref": [
               "last",
               "employeeTransfer"
+            ]
+          }
+        }
+      },
+      "an appraisal cycle": {
+        "name": "an appraisal cycle",
+        "file": "blueprint/starting-worlds/an-appraisal-cycle.ts",
+        "from": "an appraisal template",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "f5dae42781fab2665a42dde9a8896a7c084b28a0fd23f73dbcb8b0eac81668a5",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "appraisal-cycle.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "cycleName": "H2 2026",
+              "startDate": "2026-07-01",
+              "endDate": "2026-12-31",
+              "kraEvaluationMethod": "Automated Based on Goal Progress",
+              "appraisees": [
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "employee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  }
+                },
+                {
+                  "employee": {
+                    "ref": [
+                      "world",
+                      "secondEmployee"
+                    ]
+                  },
+                  "appraisalTemplate": {
+                    "ref": [
+                      "world",
+                      "appraisalTemplate"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "gives": {
+          "appraisalCycle": {
+            "ref": [
+              "last",
+              "appraisalCycle"
+            ]
+          }
+        }
+      },
+      "an appraisal template": {
+        "name": "an appraisal template",
+        "file": "blueprint/starting-worlds/an-appraisal-template.ts",
+        "from": "a second feedback criteria",
+        "cast": {
+          "ada": {
+            "kind": "role",
+            "role": "company.owner"
+          }
+        },
+        "sourceHash": "e0d4a5bf6ec64f68d044aa7f20e349d86fc37836d9be62ab38033b4d9e988807",
+        "makes": [
+          {
+            "actor": "ada",
+            "operation": "appraisal-template.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "title": "Engineers",
+              "kras": [
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "kra"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "30",
+                    "scale": 0
+                  }
+                },
+                {
+                  "kra": {
+                    "ref": [
+                      "world",
+                      "otherKra"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "70",
+                    "scale": 0
+                  }
+                }
+              ],
+              "criteria": [
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "criteria"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "70",
+                    "scale": 0
+                  }
+                },
+                {
+                  "criteria": {
+                    "ref": [
+                      "world",
+                      "otherCriteria"
+                    ]
+                  },
+                  "weightage": {
+                    "value": "30",
+                    "scale": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "gives": {
+          "appraisalTemplate": {
+            "ref": [
+              "last",
+              "appraisalTemplate"
             ]
           }
         }
@@ -51378,6 +51969,48 @@
         ]
       },
       {
+        "id": "defect:goal.list",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "goal.list",
+          "severity": "page",
+          "owner": "blueprint/things/goal/verbs/list.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "defect:goal.reopen",
         "kind": "defect",
         "labels": {
@@ -55990,6 +56623,49 @@
         ]
       },
       {
+        "id": "latency:goal.list",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "goal.list",
+          "severity": "page",
+          "owner": "blueprint/things/goal/verbs/list.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 80,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "latency:goal.reopen",
         "kind": "latency",
         "labels": {
@@ -57865,59 +58541,59 @@
     },
     "appraisal-template.create": {
       "operation:appraisal-template.create": "b5bbdc51c9d0ed83",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130"
     },
     "appraisal-template.get": {
       "operation:appraisal-template.get": "af2dbd8298857b81",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130"
     },
     "appraisal.create": {
       "operation:appraisal.create": "be45acb06a7cbd31",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8"
     },
     "appraisal.get": {
       "operation:appraisal.get": "5c88dd16d4469a8f",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8"
     },
     "appraisal.list": {
       "operation:appraisal.list": "162112213e74f8fd",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8"
     },
     "appraisal.rate": {
-      "operation:appraisal.rate": "6cb450f6669cbb69",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "operation:appraisal.rate": "dbfb61a88c7ad4f5",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8"
     },
     "appraisal.self-rate": {
-      "operation:appraisal.self-rate": "d0dc946e9e131df7",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "operation:appraisal.self-rate": "23fce24e084e48ac",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8"
     },
     "appraisal.submit": {
-      "operation:appraisal.submit": "615670b9b00cd227",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "operation:appraisal.submit": "0569b39e77b1610d",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
-      "thing:appraisal-template": "182064fc99ebe2f9",
+      "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8"
     },
@@ -58077,27 +58753,27 @@
     },
     "employee-performance-feedback.create": {
       "operation:employee-performance-feedback.create": "5746ed27e78b9a47",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:employee-performance-feedback": "d51d22337ffc38e0"
+      "thing:employee-performance-feedback": "d56c94588940badf"
     },
     "employee-performance-feedback.get": {
       "operation:employee-performance-feedback.get": "5708ac8a5976c998",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:employee-performance-feedback": "d51d22337ffc38e0"
+      "thing:employee-performance-feedback": "d56c94588940badf"
     },
     "employee-performance-feedback.submit": {
       "operation:employee-performance-feedback.submit": "42cb8ac494f6d355",
-      "thing:appraisal": "2279bf33a0031ea1",
+      "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:employee-performance-feedback": "d51d22337ffc38e0"
+      "thing:employee-performance-feedback": "d56c94588940badf"
     },
     "employee-promotion.cancel": {
       "operation:employee-promotion.cancel": "e2079280ff6564c0",
@@ -58259,19 +58935,19 @@
       "thing:expense-claim-type": "616b010967dc334d"
     },
     "goal.archive": {
-      "operation:goal.archive": "0dafd0e2114f0002",
+      "operation:goal.archive": "688046f665babaa9",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.close": {
-      "operation:goal.close": "ddd1e2d23c5bc914",
+      "operation:goal.close": "27583026e4354dbe",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.complete": {
@@ -58279,15 +58955,15 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.create": {
-      "operation:goal.create": "97c44d6aa704a734",
+      "operation:goal.create": "b44629693fbd6570",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.get": {
@@ -58295,7 +58971,15 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
+      "thing:kra": "c9c738bfe2949c1a"
+    },
+    "goal.list": {
+      "operation:goal.list": "71b3c88ceb8d0035",
+      "thing:appraisal-cycle": "681fd95c76a14b5e",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:employee": "a123a6ad8b10e9b8",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.reopen": {
@@ -58303,7 +58987,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.unarchive": {
@@ -58311,7 +58995,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.update-progress": {
@@ -58319,7 +59003,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "604a05fb6b178b37",
+      "thing:goal": "d4362a66a86a8203",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "holiday-list.add-weekly-off": {
@@ -58505,16 +59189,16 @@
     "appraisal-cycle/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal-cycle\n\nA period a company appraises its people over, and whom it appraises by which template.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| cycleName | CycleName |\n| startDate | Day |\n| endDate | Day |\n| kraEvaluationMethod | EvaluationMethod |\n| appraisees | Appraisees |\n\n## Machine\n\nStates: notStarted, inProgress, completed. A move from the wrong state is refused AppraisalCycleNotNotStarted (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | notStarted | AppraisalCycleCreated |\n| start | notStarted | inProgress | AppraisalCycleStarted |\n| complete | inProgress | completed | AppraisalCycleCompleted |\n| reopen | completed | inProgress | AppraisalCycleReopened |\n\n## Invariants\n\n- `appraisal-cycle.oneNamePerCompany`: another appraisal cycle holds this company and cycle name. Unique on company, cycleName, in every state; refused CycleNameTaken.\n\n## Events\n\n- `AppraisalCycleCompleted`: carries appraisalCycle (appraisal-cycle.id); emitted by the move complete\n- `AppraisalCycleCreated`: carries appraisalCycle (appraisal-cycle.id), company (appraisal-cycle.company); emitted by the move create\n- `AppraisalCycleReopened`: carries appraisalCycle (appraisal-cycle.id); emitted by the move reopen\n- `AppraisalCycleStarted`: carries appraisalCycle (appraisal-cycle.id); emitted by the move start\n\n## Operations\n\n- [appraisal-cycle.complete](complete.md): Mark a cycle completed once every appraisal in it is submitted.\n- [appraisal-cycle.create](create.md): Set up an appraisal cycle: its days, how its KRAs are scored, and who is appraised by which template.\n- [appraisal-cycle.get](get.md): Read one appraisal-cycle by its id: company, cycleName, startDate, endDate, kraEvaluationMethod, appraisees, state.\n- [appraisal-cycle.reopen](reopen.md): Put a completed cycle back in progress.\n- [appraisal-cycle.start](start.md): Start a cycle, making an appraisal for each appraisee who has none yet.\n",
     "appraisal-cycle/reopen.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal-cycle.reopen\n\nPut a completed cycle back in progress.\n\n**Who may call:** the owner of its appraisalCycle.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisalCycle | appraisal-cycle.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| appraisalCycle | appraisal-cycle.id |\n\n## Move\n\n`reopen`: from completed to inProgress, emitting AppraisalCycleReopened.\n\n## Steps\n\n- `appraisal-cycle.reopen.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| CycleNameTaken | 48 | CY-008 | another appraisal cycle holds this company and cycle name; by the rule appraisal-cycle.oneNamePerCompany, carrying cycleName |\n| AppraisalCycleNotNotStarted | 40 | CY-900 | the appraisal-cycle is in a state reopen can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisalCycle.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal-cycle reopen --appraisalCycle <appraisalCycle>\n```\n\nHTTP: `POST /appraisal-cycle/reopen` with the payload as JSON. SDK: `Sdk.appraisal-cycle.reopen(payload)`.\n",
     "appraisal-cycle/start.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal-cycle.start\n\nStart a cycle, making an appraisal for each appraisee who has none yet.\n\n**Who may call:** the owner of its appraisalCycle.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 500ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisalCycle | appraisal-cycle.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| appraisalCycle | appraisal-cycle.id |\n| appraisals | AppraisalIds |\n\n## Move\n\n`start`: from notStarted to inProgress, emitting AppraisalCycleStarted.\n\n## Steps\n\n- `appraisal-cycle.start.load` (database)\n- `appraisal-cycle.start.create` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| CycleWithoutAppraisees | 46 | CY-006 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| CycleNameTaken | 48 | CY-008 | another appraisal cycle holds this company and cycle name; by the rule appraisal-cycle.oneNamePerCompany, carrying cycleName |\n| AppraisalCycleNotNotStarted | 40 | CY-900 | the appraisal-cycle is in a state start can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisalCycle.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal-cycle start --appraisalCycle <appraisalCycle>\n```\n\nHTTP: `POST /appraisal-cycle/start` with the payload as JSON. SDK: `Sdk.appraisal-cycle.start(payload)`.\n",
-    "appraisal-template/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal-template.create\n\nMake an appraisal template: KRAs and rating criteria, each with its weightage.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | appraisal-template.company |\n| title | appraisal-template.title |\n| kras | appraisal-template.kras |\n| criteria | appraisal-template.criteria |\n\n## Answer\n\n| field | value |\n|---|---|\n| appraisalTemplate | appraisal-template.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting AppraisalTemplateCreated.\n\n## Steps\n\n- `appraisal-template.create.load` (database)\n- `appraisal-template.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TemplateWithoutKras | 41 | TP-001 | declared in errors.ts |\n| TemplateKraNotInCompany | 42 | TP-002 | declared in errors.ts |\n| TemplateCriteriaNotInCompany | 43 | TP-003 | declared in errors.ts |\n| TemplateLineRepeated | 44 | TP-004 | declared in errors.ts |\n| TemplateWeightageOutOfRange | 45 | TP-005 | declared in errors.ts |\n| KraWeightageNotHundred | 46 | TP-006 | declared in errors.ts, carrying total |\n| CriteriaWeightageNotHundred | 47 | TP-007 | declared in errors.ts, carrying total |\n| TemplateTitleTaken | 48 | TP-008 | another appraisal template holds this company and title; by the rule appraisal-template.oneTitlePerCompany, carrying title |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal-template create --company <company> --title <title> --kras <kras> --criteria <criteria>\n```\n\nHTTP: `POST /appraisal-template/create` with the payload as JSON. SDK: `Sdk.appraisal-template.create(payload)`.\n",
+    "appraisal-template/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal-template.create\n\nMake an appraisal template: KRAs and rating criteria, each with its weightage.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | appraisal-template.company |\n| title | appraisal-template.title |\n| kras | appraisal-template.kras |\n| criteria | appraisal-template.criteria |\n\n## Answer\n\n| field | value |\n|---|---|\n| appraisalTemplate | appraisal-template.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting AppraisalTemplateCreated.\n\n## Steps\n\n- `appraisal-template.create.load` (database)\n- `appraisal-template.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| TemplateWithoutKras | 41 | TP-001 | declared in errors.ts |\n| TemplateKraNotInCompany | 42 | TP-002 | declared in errors.ts |\n| TemplateCriteriaNotInCompany | 43 | TP-003 | declared in errors.ts |\n| TemplateLineRepeated | 44 | TP-004 | declared in errors.ts |\n| TemplateWeightageOutOfRange | 45 | TP-005 | declared in errors.ts |\n| KraWeightageNotHundred | 46 | TP-006 | declared in errors.ts |\n| CriteriaWeightageNotHundred | 47 | TP-007 | declared in errors.ts |\n| TemplateTitleTaken | 48 | TP-008 | another appraisal template holds this company and title; by the rule appraisal-template.oneTitlePerCompany, carrying title |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal-template create --company <company> --title <title> --kras <kras> --criteria <criteria>\n```\n\nHTTP: `POST /appraisal-template/create` with the payload as JSON. SDK: `Sdk.appraisal-template.create(payload)`.\n",
     "appraisal-template/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal-template.get\n\nRead one appraisal-template by its id: company, title, kras, criteria, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | appraisal-template.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | appraisal-template.company |\n| title | appraisal-template.title |\n| kras | appraisal-template.kras |\n| criteria | appraisal-template.criteria |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal-template get --id <id>\n```\n\nHTTP: `POST /appraisal-template/get` with the payload as JSON. SDK: `Sdk.appraisal-template.get(payload)`.\n",
     "appraisal-template/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal-template\n\nThe KRAs and criteria a company appraises a kind of job by, each with its share.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| title | TemplateTitle |\n| kras | TemplateKras |\n| criteria | TemplateCriteria |\n\n## Machine\n\nStates: active. A move from the wrong state is refused AppraisalTemplateNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | AppraisalTemplateCreated |\n\n## Invariants\n\n- `appraisal-template.oneTitlePerCompany`: another appraisal template holds this company and title. Unique on company, title, in every state; refused TemplateTitleTaken.\n\n## Events\n\n- `AppraisalTemplateCreated`: carries appraisalTemplate (appraisal-template.id), company (appraisal-template.company); emitted by the move create\n\n## Operations\n\n- [appraisal-template.create](create.md): Make an appraisal template: KRAs and rating criteria, each with its weightage.\n- [appraisal-template.get](get.md): Read one appraisal-template by its id: company, title, kras, criteria, state.\n",
     "appraisal/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.create\n\nMake an employee's appraisal in a cycle, by a template.\n\n**Who may call:** the owner of its appraisalCycle.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employee | appraisal.employee |\n| appraisalCycle | appraisal.appraisalCycle |\n| appraisalTemplate | appraisal.appraisalTemplate |\n\n## Answer\n\n| field | value |\n|---|---|\n| appraisal | appraisal.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting AppraisalCreated.\n\n## Steps\n\n- `appraisal.create.load` (database)\n- `appraisal.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AppraisedEmployeeNotInCompany | 41 | AP-001 | declared in errors.ts |\n| AppraisedEmployeeHasLeft | 42 | AP-002 | declared in errors.ts |\n| AppraisalCycleCompleted | 43 | AP-003 | declared in errors.ts |\n| AppraisalTemplateNotInCompany | 44 | AP-004 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| AppraisalTemplateNotFound | 4 | TP-901 | nothing has the id in appraisalTemplate; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisalCycle.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal create --employee <employee> --appraisalCycle <appraisalCycle> --appraisalTemplate <appraisalTemplate>\n```\n\nHTTP: `POST /appraisal/create` with the payload as JSON. SDK: `Sdk.appraisal.create(payload)`.\n",
     "appraisal/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.get\n\nRead one appraisal by its id: company, employee, appraisalCycle, appraisalTemplate, kraEvaluationMethod, kras, selfRatings, totalScore, selfScore, avgFeedbackScore, finalScore, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | appraisal.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | appraisal.company |  |\n| employee | appraisal.employee |  |\n| appraisalCycle | appraisal.appraisalCycle |  |\n| appraisalTemplate | appraisal.appraisalTemplate |  |\n| kraEvaluationMethod | appraisal.kraEvaluationMethod |  |\n| kras | appraisal.kras |  |\n| selfRatings | appraisal.selfRatings |  |\n| totalScore | appraisal.totalScore | The KRAs' score out of 5 (HRMS's `total_score`). |\n| selfScore | appraisal.selfScore | The self ratings' score out of 5 (HRMS's `self_score`). |\n| avgFeedbackScore | appraisal.avgFeedbackScore | The average of the submitted feedback's scores, out of 5 (HRMS's `avg_feedback_score`). |\n| finalScore | appraisal.finalScore | The average of the three scores above (HRMS's `final_score`). |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal get --id <id>\n```\n\nHTTP: `POST /appraisal/get` with the payload as JSON. SDK: `Sdk.appraisal.get(payload)`.\n",
-    "appraisal/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal\n\nHow one employee did over one appraisal cycle.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| employee | employee.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| appraisalTemplate | appraisal-template.id |  |\n| kraEvaluationMethod | EvaluationMethod |  |\n| kras | AppraisalKras |  |\n| selfRatings | CriteriaRatings |  |\n| totalScore | Score | The KRAs' score out of 5 (HRMS's `total_score`). |\n| selfScore | Score | The self ratings' score out of 5 (HRMS's `self_score`). |\n| avgFeedbackScore | Score | The average of the submitted feedback's scores, out of 5 (HRMS's `avg_feedback_score`). |\n| finalScore | Score | The average of the three scores above (HRMS's `final_score`). |\n\n## Machine\n\nStates: draft, submitted. A move from the wrong state is refused AppraisalNotDraft (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | draft | AppraisalCreated |\n| rate | draft | draft | AppraisalRated |\n| selfRate | draft | draft | AppraisalSelfRated |\n| submit | draft | submitted | AppraisalSubmitted |\n\n## Invariants\n\n- `appraisal.oneAppraisalPerCycle`: another appraisal holds this employee and appraisal cycle. Unique on employee, appraisalCycle, in every state; refused AppraisalAlreadyExists.\n\n## Events\n\n- `AppraisalCreated`: carries appraisal (appraisal.id), employee (appraisal.employee), appraisalCycle (appraisal.appraisalCycle); emitted by the move create\n- `AppraisalRated`: carries appraisal (appraisal.id), totalScore (appraisal.totalScore: The KRAs' score out of 5 (HRMS's `total_score`).), finalScore (appraisal.finalScore: The average of the three scores above (HRMS's `final_score`).); emitted by the move rate\n- `AppraisalSelfRated`: carries appraisal (appraisal.id), selfScore (appraisal.selfScore: The self ratings' score out of 5 (HRMS's `self_score`).), finalScore (appraisal.finalScore: The average of the three scores above (HRMS's `final_score`).); emitted by the move selfRate\n- `AppraisalSubmitted`: carries appraisal (appraisal.id), finalScore (appraisal.finalScore: The average of the three scores above (HRMS's `final_score`).); emitted by the move submit\n\n## Operations\n\n- [appraisal.create](create.md): Make an employee's appraisal in a cycle, by a template.\n- [appraisal.get](get.md): Read one appraisal by its id: company, employee, appraisalCycle, appraisalTemplate, kraEvaluationMethod, kras, selfRatings, totalScore, selfScore, avgFeedbackScore, finalScore, state.\n- [appraisal.list](list.md): List appraisals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n- [appraisal.rate](rate.md): Score each KRA of an appraisal by hand, from 0 to 5.\n- [appraisal.self-rate](self-rate.md): Rate yourself against each of your appraisal's criteria, from 0 to 1.\n- [appraisal.submit](submit.md): Submit an appraisal, fixing its scores.\n",
+    "appraisal/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal\n\nHow one employee did over one appraisal cycle.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| employee | employee.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| appraisalTemplate | appraisal-template.id |  |\n| kraEvaluationMethod | EvaluationMethod |  |\n| kras | AppraisalKras |  |\n| selfRatings | CriteriaRatings |  |\n| totalScore | Score | The KRAs' score out of 5 (HRMS's `total_score`). |\n| selfScore | Score | The self ratings' score out of 5 (HRMS's `self_score`). |\n| avgFeedbackScore | Score | The average of the submitted feedback's scores, out of 5 (HRMS's `avg_feedback_score`). |\n| finalScore | Score | The average of the three scores above (HRMS's `final_score`). |\n\n## Machine\n\nStates: draft, submitted. A move from the wrong state is refused AppraisalNotDraft (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | draft | AppraisalCreated |\n| rate | draft | draft | AppraisalRated |\n| selfRate | draft | draft | AppraisalSelfRated |\n| submit | draft | submitted | AppraisalSubmitted |\n\n## Invariants\n\n- `appraisal.oneAppraisalPerCycle`: another appraisal holds this employee and appraisal cycle. Unique on employee, appraisalCycle, in every state; refused AppraisalAlreadyExists.\n\n## Events\n\n- `AppraisalCreated`: carries appraisal (appraisal.id), employee (appraisal.employee), appraisalCycle (appraisal.appraisalCycle); emitted by the move create\n- `AppraisalRated`: carries appraisal (appraisal.id); emitted by the move rate\n- `AppraisalSelfRated`: carries appraisal (appraisal.id); emitted by the move selfRate\n- `AppraisalSubmitted`: carries appraisal (appraisal.id); emitted by the move submit\n\n## Operations\n\n- [appraisal.create](create.md): Make an employee's appraisal in a cycle, by a template.\n- [appraisal.get](get.md): Read one appraisal by its id: company, employee, appraisalCycle, appraisalTemplate, kraEvaluationMethod, kras, selfRatings, totalScore, selfScore, avgFeedbackScore, finalScore, state.\n- [appraisal.list](list.md): List appraisals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n- [appraisal.rate](rate.md): Score each KRA of an appraisal by hand, from 0 to 5.\n- [appraisal.self-rate](self-rate.md): Rate yourself against each of your appraisal's criteria, from 0 to 1.\n- [appraisal.submit](submit.md): Submit an appraisal.\n",
     "appraisal/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.list\n\nList appraisals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n\n**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by appraisalCycle, employee; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisalCycle (optional) | appraisal.appraisalCycle |\n| employee (optional) | appraisal.employee |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal list [--appraisalCycle <appraisalCycle>] [--employee <employee>] [--cursor <cursor>]\n```\n\nHTTP: `POST /appraisal/list` with the payload as JSON. SDK: `Sdk.appraisal.list(payload)`.\n",
-    "appraisal/rate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.rate\n\nScore each KRA of an appraisal by hand, from 0 to 5.\n\n**Who may call:** the owner of its appraisal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisal | appraisal.id |\n| scores | GivenScores |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| appraisal | appraisal.id |  |\n| totalScore | appraisal.totalScore | The KRAs' score out of 5 (HRMS's `total_score`). |\n| finalScore | appraisal.finalScore | The average of the three scores above (HRMS's `final_score`). |\n\n## Move\n\n`rate`: from draft to draft, emitting AppraisalRated.\n\n## Steps\n\n- `appraisal.rate.load` (database)\n- `appraisal.rate.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AppraisalCycleCompleted | 43 | AP-003 | declared in errors.ts |\n| NotRatedManually | 46 | AP-006 | declared in errors.ts |\n| ScoresDontMatchKras | 47 | AP-007 | declared in errors.ts |\n| KraScoreOutOfRange | 48 | AP-008 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| AppraisalNotDraft | 40 | AP-900 | the appraisal is in a state rate can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal rate --appraisal <appraisal> --scores <scores>\n```\n\nHTTP: `POST /appraisal/rate` with the payload as JSON. SDK: `Sdk.appraisal.rate(payload)`.\n",
-    "appraisal/self-rate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.self-rate\n\nRate yourself against each of your appraisal's criteria, from 0 to 1.\n\n**Who may call:** the self of its appraisal.employee.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisal | appraisal.id |\n| ratings | GivenRatings |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| appraisal | appraisal.id |  |\n| selfScore | appraisal.selfScore | The self ratings' score out of 5 (HRMS's `self_score`). |\n| finalScore | appraisal.finalScore | The average of the three scores above (HRMS's `final_score`). |\n\n## Move\n\n`selfRate`: from draft to draft, emitting AppraisalSelfRated.\n\n## Steps\n\n- `appraisal.self-rate.load` (database)\n- `appraisal.self-rate.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AppraisalCycleCompleted | 43 | AP-003 | declared in errors.ts |\n| SelfRatingsDontMatchCriteria | 49 | AP-009 | declared in errors.ts |\n| SelfRatingOutOfRange | 50 | AP-010 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| AppraisalNotDraft | 40 | AP-900 | the appraisal is in a state selfRate can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its appraisal.employee; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal self-rate --appraisal <appraisal> --ratings <ratings>\n```\n\nHTTP: `POST /appraisal/self-rate` with the payload as JSON. SDK: `Sdk.appraisal.self-rate(payload)`.\n",
-    "appraisal/submit.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.submit\n\nSubmit an appraisal, fixing its scores.\n\n**Who may call:** the owner of its appraisal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisal | appraisal.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| appraisal | appraisal.id |  |\n| finalScore | appraisal.finalScore | The average of the three scores above (HRMS's `final_score`). |\n\n## Move\n\n`submit`: from draft to submitted, emitting AppraisalSubmitted.\n\n## Steps\n\n- `appraisal.submit.load` (database)\n- `appraisal.submit.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AppraisalCycleCompleted | 43 | AP-003 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| AppraisalNotDraft | 40 | AP-900 | the appraisal is in a state submit can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal submit --appraisal <appraisal>\n```\n\nHTTP: `POST /appraisal/submit` with the payload as JSON. SDK: `Sdk.appraisal.submit(payload)`.\n",
+    "appraisal/rate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.rate\n\nScore each KRA of an appraisal by hand, from 0 to 5.\n\n**Who may call:** the owner of its appraisal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisal | appraisal.id |\n| scores | GivenScores |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| appraisal | appraisal.id |  |\n| totalScore | appraisal.totalScore | The KRAs' score out of 5 (HRMS's `total_score`). |\n| finalScore | appraisal.finalScore | The average of the three scores above (HRMS's `final_score`). |\n\n## Move\n\n`rate`: from draft to draft, emitting AppraisalRated.\n\n## Steps\n\n- `appraisal.rate.load` (database)\n- `appraisal.rate.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotRatedManually | 46 | AP-006 | declared in errors.ts |\n| ScoresDontMatchKras | 47 | AP-007 | declared in errors.ts |\n| KraScoreOutOfRange | 48 | AP-008 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| AppraisalNotDraft | 40 | AP-900 | the appraisal is in a state rate can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal rate --appraisal <appraisal> --scores <scores>\n```\n\nHTTP: `POST /appraisal/rate` with the payload as JSON. SDK: `Sdk.appraisal.rate(payload)`.\n",
+    "appraisal/self-rate.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.self-rate\n\nRate yourself against each of your appraisal's criteria, from 0 to 1.\n\n**Who may call:** the self of its appraisal.employee.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisal | appraisal.id |\n| ratings | GivenRatings |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| appraisal | appraisal.id |  |\n| selfScore | appraisal.selfScore | The self ratings' score out of 5 (HRMS's `self_score`). |\n| finalScore | appraisal.finalScore | The average of the three scores above (HRMS's `final_score`). |\n\n## Move\n\n`selfRate`: from draft to draft, emitting AppraisalSelfRated.\n\n## Steps\n\n- `appraisal.self-rate.load` (database)\n- `appraisal.self-rate.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SelfRatingsDontMatchCriteria | 49 | AP-009 | declared in errors.ts |\n| SelfRatingOutOfRange | 50 | AP-010 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| AppraisalNotDraft | 40 | AP-900 | the appraisal is in a state selfRate can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its appraisal.employee; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal self-rate --appraisal <appraisal> --ratings <ratings>\n```\n\nHTTP: `POST /appraisal/self-rate` with the payload as JSON. SDK: `Sdk.appraisal.self-rate(payload)`.\n",
+    "appraisal/submit.md": "<!-- Generated from the blueprint. Do not edit. -->\n# appraisal.submit\n\nSubmit an appraisal.\n\n**Who may call:** the owner of its appraisal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisal | appraisal.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| appraisal | appraisal.id |  |\n| finalScore | appraisal.finalScore | The average of the three scores above (HRMS's `final_score`). |\n\n## Move\n\n`submit`: from draft to submitted, emitting AppraisalSubmitted.\n\n## Steps\n\n- `appraisal.submit.load` (database)\n- `appraisal.submit.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| AppraisalNotDraft | 40 | AP-900 | the appraisal is in a state submit can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul appraisal submit --appraisal <appraisal>\n```\n\nHTTP: `POST /appraisal/submit` with the payload as JSON. SDK: `Sdk.appraisal.submit(payload)`.\n",
     "attendance-request/approve.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.approve\n\nApprove a request, marking each of its days.\n\n**Who may call:** the owner of its attendanceRequest.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n| marked | DayCount |\n| changed | DayCount |\n\n## Move\n\n`approve`: from draft to approved, emitting AttendanceRequestApproved.\n\n## Steps\n\n- `attendance-request.approve.load` (database)\n- `attendance-request.approve.mark` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AttendanceAlreadyMarked | 44 | AN-004 | another attendance holds this employee and attendance date; by the rule attendance.oneAttendancePerDay, carrying attendanceDate |\n| AttendanceRequestNotDraft | 40 | AQ-900 | the attendance-request is in a state approve can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its attendanceRequest.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga can't approve her own request.** `olga` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends attendanceRequest the world's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **Ada approves it: two days are new, the absent Tuesday and the present Wednesday change, and Thursday is left as it was.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back [the world's attendanceRequest, `2`, `2`].\n- **it can't be approved twice.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `approved`.\n- **approved, the absent Monday and the half day change to present, and the present Tuesday is left: none is new.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`0`, `2`].\n- **approved, it marks the Friday and Sunday and changes the half-day Saturday.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `1`].\n- **approved, it marks that one day.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`1`, `0`].\n- **approved, it marks both, across the year's end.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `0`].\n- **approved, it marks three days, with no 29 February.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].\n- **approved, it marks 28 February and 1 March and changes 29 February to present.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`2`, `1`].\n- **approved, it marks all forty.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`40`, `0`].\n- **approved, it marks all three, the weekend too.** `ada` (role company.owner) calls and sends attendanceRequest the last call's attendanceRequest, and gets back [`3`, `0`].\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **the request she made before leaving is still approved, marking its days.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and gets back [the world's attendanceRequest, `4`, `1`].\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **it can't then be approved.** `ada` (role company.owner) calls and sends attendanceRequest the world's attendanceRequest, and is refused with AttendanceRequestNotDraft, AQ-900, carrying state `rejected`.\n\n## How to call\n\n```sh\ncapxul attendance-request approve --attendanceRequest <attendanceRequest>\n```\n\nHTTP: `POST /attendance-request/approve` with the payload as JSON. SDK: `Sdk.attendance-request.approve(payload)`.\n",
     "attendance-request/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.create\n\nAsk for an employee to be marked at work, from one day to another, and why.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | attendance-request.company |\n| employee | attendance-request.employee |\n| fromDate | attendance-request.fromDate |\n| toDate | attendance-request.toDate |\n| reason | attendance-request.reason |\n\n## Answer\n\n| field | value |\n|---|---|\n| attendanceRequest | attendance-request.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting AttendanceRequested.\n\n## Steps\n\n- `attendance-request.create.load` (database)\n- `attendance-request.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| RequesterNotInCompany | 41 | AQ-001 | declared in errors.ts |\n| RequesterHasLeft | 42 | AQ-002 | declared in errors.ts |\n| RequestEndsBeforeStart | 43 | AQ-003 | declared in errors.ts, carrying fromDate |\n| RequestBeforeJoining | 44 | AQ-004 | declared in errors.ts, carrying dateOfJoining |\n| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **Olga asks to be on duty from 30 November to 2 December, across the month's end.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-12-02`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home from Friday 4 to Sunday 6 December, across a weekend.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-04`, toDate `2026-12-06`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home on 7 December alone.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-07`, toDate `2026-12-07`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home on New Year's Eve and New Year's Day.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-31`, toDate `2027-01-01`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home from 27 February to 1 March 2027, a year with no leap day.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-02-27`, toDate `2027-03-01`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to be on duty from 28 February to 1 March 2028, a leap year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2028-02-28`, toDate `2028-03-01`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to work from home for forty days, 1 April to 10 May 2027.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-04-01`, toDate `2027-05-10`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Olga asks to be on duty from Friday 11 to Sunday 13 December, across a weekend.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-11`, toDate `2026-12-13`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n\n### attendance stays in its company\n\nStarts from the world `an attendance request`.\n\n- **nor ask for Olga's attendance there.** `ada` (role company.owner) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **nor can Olga ask for herself there.** `olga` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `Work From Home`, and is refused with RequesterNotInCompany, AQ-001.\n- **nor ask for her attendance there.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **Olga can't ask to work from home in Bo's company either.** `olga` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `Work From Home`, and is refused with RequesterNotInCompany, AQ-001.\n- **nor ask for her there, ending before it starts.** `bo` (signed in) calls and sends company the last call's company, employee the world's employee, fromDate `2025-12-02`, toDate `2025-12-01`, reason `On Duty`, and is refused with RequesterNotInCompany, AQ-001.\n- **Ada can't ask for Olga's attendance now she has left.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequesterHasLeft, AQ-002.\n- **nor for days that end before they start, before she joined.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2025-12-02`, toDate `2025-12-01`, reason `On Duty`, and is refused with RequesterHasLeft, AQ-002.\n- **Olga can't ask for herself either.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-30`, toDate `2026-11-30`, reason `Work From Home`, and is refused with RequesterHasLeft, AQ-002.\n\n### request attendance\n\nStarts from the world `an employee`.\n\n- **Olga asks to be marked working from home, 2 to 4 November.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-02`, toDate `2026-11-04`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Ada asks for Olga on duty for the single day of 9 November.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-09`, toDate `2026-11-09`, reason `On Duty`, and is answered.\n- **a request can't end the day before it starts.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-10`, toDate `2026-11-09`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-11-10`.\n- **nor in the month before.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-12-01`, toDate `2026-11-30`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-12-01`.\n- **nor in the year before, later in its month.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-01-01`, toDate `2026-12-31`, reason `Work From Home`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2027-01-01`.\n- **a request can't start the day before Olga joined.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-06`, reason `On Duty`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **nor to work from home from the day before she joined.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-06`, reason `Work From Home`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **nor a year before, later in its year.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2025-03-01`, toDate `2026-01-06`, reason `On Duty`, and is refused with RequestBeforeJoining, AQ-004, carrying dateOfJoining `2026-01-05`.\n- **one that ends before it starts and starts before she joined is refused for its order first.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-04`, toDate `2026-01-03`, reason `On Duty`, and is refused with RequestEndsBeforeStart, AQ-003, carrying fromDate `2026-01-04`.\n- **the day she joined may start one.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-01-05`, toDate `2026-01-06`, reason `On Duty`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **days still to come may be asked for: HRMS's validate_dates runs with restrict_future_dates off.** `olga` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2027-06-01`, toDate `2027-06-02`, reason `Work From Home`, and gets back an answer matching `^arq_[0-9a-z]+$`.\n- **Bo can't ask for Olga in Ada's company.** `bo` (signed in) calls and sends company the world's company, employee the world's employee, fromDate `2026-11-16`, toDate `2026-11-17`, reason `On Duty`, and is refused with NotAllowed, AR-001.\n\n## How to call\n\n```sh\ncapxul attendance-request create --company <company> --employee <employee> --fromDate <fromDate> --toDate <toDate> --reason <reason>\n```\n\nHTTP: `POST /attendance-request/create` with the payload as JSON. SDK: `Sdk.attendance-request.create(payload)`.\n",
     "attendance-request/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# attendance-request.get\n\nRead one attendance-request by its id: company, employee, fromDate, toDate, reason, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | attendance-request.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | attendance-request.company |\n| employee | attendance-request.employee |\n| fromDate | attendance-request.fromDate |\n| toDate | attendance-request.toDate |\n| reason | attendance-request.reason |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### approve an attendance request\n\nStarts from the world `an attendance request`.\n\n- **the request reads back approved, as she asked it.** `olga` (signed in) calls and sends id the world's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-23`, `2026-11-27`, `Work From Home`, `approved`].\n\n### reject an attendance request\n\nStarts from the world `an attendance request`.\n\n- **it reads back rejected, as she asked it.** `olga` (signed in) calls and sends id the world's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-23`, `2026-11-27`, `Work From Home`, `rejected`].\n\n### request attendance\n\nStarts from the world `an employee`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's attendanceRequest, and is refused with NotAllowed, AR-001.\n- **it reads back as she typed it, a draft.** `olga` (signed in) calls and sends id the last call's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-02`, `2026-11-04`, `Work From Home`, `draft`].\n- **Ada reads it back on duty, a draft.** `ada` (role company.owner) calls and sends id the last call's attendanceRequest, and gets back [the world's company, the world's employee, `2026-11-09`, `2026-11-09`, `On Duty`, `draft`].\n- **it reads back from the day she joined.** `olga` (signed in) calls and sends id the last call's attendanceRequest, and gets back [`2026-01-05`, `2026-01-06`, `On Duty`, `draft`].\n\n## How to call\n\n```sh\ncapxul attendance-request get --id <id>\n```\n\nHTTP: `POST /attendance-request/get` with the payload as JSON. SDK: `Sdk.attendance-request.get(payload)`.\n",
@@ -58558,7 +59242,7 @@
     "employee-grade/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-grade\n\nA level a company places its employees at, such as junior or senior.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| gradeName | Name |\n\n## Machine\n\nStates: active. A move from the wrong state is refused EmployeeGradeNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | EmployeeGradeCreated |\n\n## Invariants\n\n- `employee-grade.oneNamePerCompany`: another employee grade holds this company and grade name. Unique on company, gradeName, in every state; refused EmployeeGradeNameTaken.\n\n## Events\n\n- `EmployeeGradeCreated`: carries grade (employee-grade.id), company (employee-grade.company); emitted by the move create\n\n## Operations\n\n- [employee-grade.create](create.md): Add a grade to a company.\n- [employee-grade.get](get.md): Read one employee-grade by its id: company, gradeName, state.\n",
     "employee-performance-feedback/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-performance-feedback.create\n\nDraft your feedback on a colleague's appraisal: what you think, and a rating for each criteria.\n\n**Who may call:** the self of its reviewer.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| appraisal | employee-performance-feedback.appraisal |  |\n| reviewer | employee-performance-feedback.reviewer | The employee who gives it. |\n| feedback | employee-performance-feedback.feedback |  |\n| ratings | GivenRatings |  |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| employeePerformanceFeedback | employee-performance-feedback.id |  |\n| totalScore | employee-performance-feedback.totalScore | The ratings' score out of 5 (HRMS's `total_score`). |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting PerformanceFeedbackDrafted.\n\n## Steps\n\n- `employee-performance-feedback.create.load` (database)\n- `employee-performance-feedback.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| FeedbackCycleCompleted | 41 | PF-007 | declared in errors.ts |\n| FeedbackForOneself | 42 | PF-002 | declared in errors.ts |\n| ReviewerNotInCompany | 43 | PF-003 | declared in errors.ts |\n| ReviewerHasLeft | 44 | PF-004 | declared in errors.ts |\n| FeedbackRatingsDontMatchCriteria | 45 | PF-005 | declared in errors.ts |\n| FeedbackRatingOutOfRange | 46 | PF-006 | declared in errors.ts |\n| AppraisalNotFound | 4 | AP-901 | nothing has the id in appraisal; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its reviewer; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul employee-performance-feedback create --appraisal <appraisal> --reviewer <reviewer> --feedback <feedback> --ratings <ratings>\n```\n\nHTTP: `POST /employee-performance-feedback/create` with the payload as JSON. SDK: `Sdk.employee-performance-feedback.create(payload)`.\n",
     "employee-performance-feedback/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-performance-feedback.get\n\nRead one employee-performance-feedback by its id: company, appraisal, appraisalCycle, employee, reviewer, feedback, ratings, totalScore, state.\n\n**Who may call:** the self of its reviewer, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | employee-performance-feedback.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | employee-performance-feedback.company |  |\n| appraisal | employee-performance-feedback.appraisal |  |\n| appraisalCycle | employee-performance-feedback.appraisalCycle |  |\n| employee | employee-performance-feedback.employee | The employee the feedback is about. |\n| reviewer | employee-performance-feedback.reviewer | The employee who gives it. |\n| feedback | employee-performance-feedback.feedback |  |\n| ratings | employee-performance-feedback.ratings |  |\n| totalScore | employee-performance-feedback.totalScore | The ratings' score out of 5 (HRMS's `total_score`). |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its reviewer, or the owner of its company; the handler never runs |\n\n## How to call\n\n```sh\ncapxul employee-performance-feedback get --id <id>\n```\n\nHTTP: `POST /employee-performance-feedback/get` with the payload as JSON. SDK: `Sdk.employee-performance-feedback.get(payload)`.\n",
-    "employee-performance-feedback/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-performance-feedback\n\nWhat one colleague thinks of an employee's work, for their appraisal.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| appraisal | appraisal.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| employee | employee.id | The employee the feedback is about. |\n| reviewer | employee.id | The employee who gives it. |\n| feedback | FeedbackText |  |\n| ratings | CriteriaRatings |  |\n| totalScore | Score | The ratings' score out of 5 (HRMS's `total_score`). |\n\n## Machine\n\nStates: draft, submitted. A move from the wrong state is refused EmployeePerformanceFeedbackNotDraft (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | draft | PerformanceFeedbackDrafted |\n| submit | draft | submitted | PerformanceFeedbackSubmitted |\n\n## Events\n\n- `PerformanceFeedbackDrafted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal), reviewer (employee-performance-feedback.reviewer: The employee who gives it.), totalScore (employee-performance-feedback.totalScore: The ratings' score out of 5 (HRMS's `total_score`).); emitted by the move create\n- `PerformanceFeedbackSubmitted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal), totalScore (employee-performance-feedback.totalScore: The ratings' score out of 5 (HRMS's `total_score`).); emitted by the move submit\n\n## Operations\n\n- [employee-performance-feedback.create](create.md): Draft your feedback on a colleague's appraisal: what you think, and a rating for each criteria.\n- [employee-performance-feedback.get](get.md): Read one employee-performance-feedback by its id: company, appraisal, appraisalCycle, employee, reviewer, feedback, ratings, totalScore, state.\n- [employee-performance-feedback.submit](submit.md): Submit your feedback, counting it in the appraisal's average.\n",
+    "employee-performance-feedback/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-performance-feedback\n\nWhat one colleague thinks of an employee's work, for their appraisal.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| appraisal | appraisal.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| employee | employee.id | The employee the feedback is about. |\n| reviewer | employee.id | The employee who gives it. |\n| feedback | FeedbackText |  |\n| ratings | CriteriaRatings |  |\n| totalScore | Score | The ratings' score out of 5 (HRMS's `total_score`). |\n\n## Machine\n\nStates: draft, submitted. A move from the wrong state is refused EmployeePerformanceFeedbackNotDraft (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | draft | PerformanceFeedbackDrafted |\n| submit | draft | submitted | PerformanceFeedbackSubmitted |\n\n## Events\n\n- `PerformanceFeedbackDrafted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal), reviewer (employee-performance-feedback.reviewer: The employee who gives it.); emitted by the move create\n- `PerformanceFeedbackSubmitted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal); emitted by the move submit\n\n## Operations\n\n- [employee-performance-feedback.create](create.md): Draft your feedback on a colleague's appraisal: what you think, and a rating for each criteria.\n- [employee-performance-feedback.get](get.md): Read one employee-performance-feedback by its id: company, appraisal, appraisalCycle, employee, reviewer, feedback, ratings, totalScore, state.\n- [employee-performance-feedback.submit](submit.md): Submit your feedback, counting it in the appraisal's average.\n",
     "employee-performance-feedback/submit.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-performance-feedback.submit\n\nSubmit your feedback, counting it in the appraisal's average.\n\n**Who may call:** the self of its employeePerformanceFeedback.reviewer.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employeePerformanceFeedback | employee-performance-feedback.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| employeePerformanceFeedback | employee-performance-feedback.id |  |\n| avgFeedbackScore | appraisal.avgFeedbackScore | The average of the submitted feedback's scores, out of 5 (HRMS's `avg_feedback_score`). |\n\n## Move\n\n`submit`: from draft to submitted, emitting PerformanceFeedbackSubmitted.\n\n## Steps\n\n- `employee-performance-feedback.submit.load` (database)\n- `employee-performance-feedback.submit.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| FeedbackCycleCompleted | 41 | PF-007 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| EmployeePerformanceFeedbackNotDraft | 40 | PF-900 | the employee-performance-feedback is in a state submit can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employeePerformanceFeedback.reviewer; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul employee-performance-feedback submit --employeePerformanceFeedback <employeePerformanceFeedback>\n```\n\nHTTP: `POST /employee-performance-feedback/submit` with the payload as JSON. SDK: `Sdk.employee-performance-feedback.submit(payload)`.\n",
     "employee-promotion/cancel.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-promotion.cancel\n\nCancel a submitted promotion, putting back the job title it replaced.\n\n**Who may call:** the owner of its employeePromotion.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| employeePromotion | employee-promotion.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| employeePromotion | employee-promotion.id |  |\n| employee | employee-promotion.employee |  |\n| designation | employee-promotion.currentDesignation | The job title the employee held when the promotion was drafted. |\n\n## Move\n\n`cancel`: from submitted to cancelled, emitting EmployeePromotionCancelled.\n\n## Steps\n\n- `employee-promotion.cancel.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| EmployeeAlreadyHired | 41 | EM-001 | another active employee holds this company and person; by the rule employee.onePlacePerPerson, carrying person |\n| EmployeePromotionNotDraft | 40 | PM-900 | the employee-promotion is in a state cancel can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its employeePromotion.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### promote an employee\n\nStarts from the world `a second transfer`.\n\n- **Ada can't cancel it while it is a draft.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with EmployeePromotionNotDraft, PM-900, carrying state `draft`.\n- **Bo can't cancel Olga's first.** `bo` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.\n- **nor can Olga.** `olga` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.\n- **nor Cy.** `cy` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.\n- **Ada cancels it, putting back Engineer.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and gets back [the world's employeePromotion, the world's employee, the world's designation].\n- **Ada can't cancel it twice.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with EmployeePromotionNotDraft, PM-900, carrying state `cancelled`.\n- **Ada still cancels Cy's, drafted before she left, putting back Engineer.** `ada` (role company.owner) calls and sends employeePromotion the world's secondPromotion, and gets back [the world's secondPromotion, the world's secondEmployee, the world's designation].\n\n## How to call\n\n```sh\ncapxul employee-promotion cancel --employeePromotion <employeePromotion>\n```\n\nHTTP: `POST /employee-promotion/cancel` with the payload as JSON. SDK: `Sdk.employee-promotion.cancel(payload)`.\n",
     "employee-promotion/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# employee-promotion.create\n\nDraft a promotion: an employee's new job title, from a day.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | employee-promotion.company |  |\n| employee | employee-promotion.employee |  |\n| promotionDate | employee-promotion.promotionDate |  |\n| newDesignation | employee-promotion.newDesignation | The job title the employee holds once it is submitted. |\n\n## Answer\n\n| field | value |\n|---|---|\n| employeePromotion | employee-promotion.id |\n\n## Move\n\n`create`: from nothing (it creates) to draft, emitting EmployeePromotionDrafted.\n\n## Steps\n\n- `employee-promotion.create.load` (database)\n- `employee-promotion.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| PromotedEmployeeNotInCompany | 41 | PM-001 | declared in errors.ts |\n| PromotedEmployeeHasLeft | 42 | PM-002 | declared in errors.ts |\n| NewDesignationNotInCompany | 43 | PM-003 | declared in errors.ts |\n| DesignationUnchanged | 44 | PM-004 | declared in errors.ts |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| DesignationNotFound | 4 | DS-901 | nothing has the id in newDesignation; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### move an employee through the company\n\nStarts from the world `a new hire`.\n\n- **Ada drafts Dee's promotion to Lead Engineer, from 1 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's newHire, promotionDate `2026-12-01`, newDesignation the world's otherDesignation, and gets back an answer matching `^epr_[0-9a-z]+$`.\n\n### promote an employee\n\nStarts from the world `a second transfer`.\n\n- **Bo can't draft a promotion in Acme Trading.** `bo` (signed in) calls and sends company the world's company, employee the world's secondEmployee, promotionDate `2026-12-01`, newDesignation the world's otherDesignation, and is refused with NotAllowed, AR-001.\n- **Ada can't draft Olga's promotion to Lead Engineer again, the title she now holds.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, promotionDate `2026-12-14`, newDesignation the world's otherDesignation, and is refused with DesignationUnchanged, PM-004.\n- **but she may draft one back to Engineer.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, promotionDate `2026-12-14`, newDesignation the world's designation, and gets back an answer matching `^epr_[0-9a-z]+$`.\n- **beside that draft, Ada may draft another back to Engineer from 2 December, a day already past.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, promotionDate `2026-12-02`, newDesignation the world's designation, and gets back an answer matching `^epr_[0-9a-z]+$`.\n- **Ada can't draft Olga's promotion to Engineer, the title she holds.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, promotionDate `2026-12-14`, newDesignation the world's designation, and is refused with DesignationUnchanged, PM-004.\n- **Ada can't promote Bo in Acme Trading, where he doesn't work.** `ada` (role company.owner) calls and sends company the world's company, employee the world's outsider, promotionDate `2026-12-14`, newDesignation the world's otherDesignation, and is refused with PromotedEmployeeNotInCompany, PM-001.\n- **nor give Bo, at Acme Logistics, one of Acme Trading's titles.** `ada` (role company.owner) calls and sends company the world's otherCompany, employee the world's outsider, promotionDate `2026-12-14`, newDesignation the world's otherDesignation, and is refused with NewDesignationNotInCompany, PM-003.\n- **Olga in Acme Logistics is refused for the employee's company, which is judged before the title's.** `ada` (role company.owner) calls and sends company the world's otherCompany, employee the world's employee, promotionDate `2026-12-14`, newDesignation the world's otherDesignation, and is refused with PromotedEmployeeNotInCompany, PM-001.\n- **Ada can't promote Bo now he has left, which is judged before the title's company.** `ada` (role company.owner) calls and sends company the world's otherCompany, employee the world's outsider, promotionDate `2026-12-14`, newDesignation the world's otherDesignation, and is refused with PromotedEmployeeHasLeft, PM-002.\n- **in Acme Trading he is refused for the company first.** `ada` (role company.owner) calls and sends company the world's company, employee the world's outsider, promotionDate `2026-12-14`, newDesignation the world's otherDesignation, and is refused with PromotedEmployeeNotInCompany, PM-001.\n- **Ada can't draft a new one for Cy now she has left, which is judged before the title she holds.** `ada` (role company.owner) calls and sends company the world's company, employee the world's secondEmployee, promotionDate `2026-12-14`, newDesignation the world's otherDesignation, and is refused with PromotedEmployeeHasLeft, PM-002.\n\n## How to call\n\n```sh\ncapxul employee-promotion create --company <company> --employee <employee> --promotionDate <promotionDate> --newDesignation <newDesignation>\n```\n\nHTTP: `POST /employee-promotion/create` with the payload as JSON. SDK: `Sdk.employee-promotion.create(payload)`.\n",
@@ -58593,12 +59277,13 @@
     "expense/add.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.add\n\nAdd one expense to a claim still in draft.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n\n## Answer\n\n| field | value |\n|---|---|\n| expense | expense.id |\n| totalClaimedAmount | expense-claim.totalClaimedAmount |\n| totalSanctionedAmount | expense-claim.totalSanctionedAmount |\n\n## Move\n\n`add`: from nothing (it creates) to active, emitting ExpenseAdded.\n\n## Steps\n\n- `expense.add.load` (database)\n- `expense.add.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SanctionedOverClaimed | 41 | EX-001 | declared in errors.ts, carrying amount |\n| ExpenseTypeNotInCompany | 42 | EX-002 | declared in errors.ts |\n| ClaimNotDraft | 43 | EX-003 | declared in errors.ts |\n| ExpenseClaimTypeNotFound | 4 | ET-901 | nothing has the id in expenseType; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense claim with two types`.\n\n- **Ada can't sanction more than was spent.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000001`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `45000000`.\n- **Ada adds a 45 USDC taxi, sanctioned in full.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-18`, expenseType the world's expenseClaimType, amount `45000000`, sanctionedAmount `45000000`, and gets back [`45000000`, `45000000`] and gets back an answer matching `^exp_[0-9a-z]+$`.\n- **Ada adds a 120.500001 USDC hotel as Lodging, sanctioning 100.000001 USDC of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's lodging, amount `120500001`, sanctionedAmount `100000001`, and gets back [`165500001`, `145000001`].\n- **a line is judged on its own amounts, not the claim's: 12 USDC can't be sanctioned on a 10.500001 USDC lunch.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `10500001`, sanctionedAmount `12000000`, and is refused with SanctionedOverClaimed, EX-001, carrying amount `10500001`.\n- **an approved claim takes no more expenses.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `2000000`, and is refused with ClaimNotDraft, EX-003.\n- **Ada adds a line of 2^53 + 1 base units, sanctioned in full: totals are exact, not floating point.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-11-22`, expenseType the world's expenseClaimType, amount `9007199254740993`, sanctionedAmount `9007199254740993`, and gets back [`9007199254740993`, `9007199254740993`].\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **Ada can't put Bo's expense type on Olga's claim, even over-sanctioned.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `5000000`, sanctionedAmount `6000000`, and is refused with ExpenseTypeNotInCompany, EX-002.\n- **Ada adds one base unit Olga spent before leaving, sanctioning none of it.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1`, sanctionedAmount `0`, and gets back [`1`, `0`].\n- **the approved claim takes no line, not even one with Bo's type, over-sanctioned.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the last call's expenseClaimType, amount `1000000`, sanctionedAmount `2000000`, and is refused with ClaimNotDraft, EX-003.\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **Ada adds 30 USDC of lunches.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `30000000`, sanctionedAmount `30000000`, and gets back [`30000000`, `30000000`].\n- **a rejected claim takes no more expenses, not even an over-sanctioned one.** `ada` (role company.owner) calls and sends expenseClaim the world's expenseClaim, expenseDate `2026-11-19`, expenseType the world's expenseClaimType, amount `1000000`, sanctionedAmount `2000000`, and is refused with ClaimNotDraft, EX-003.\n- **Ada adds 4 USDC of lunches to it, sanctioning 3.** `ada` (role company.owner) calls and sends expenseClaim the last call's expenseClaim, expenseDate `2026-12-03`, expenseType the world's expenseClaimType, amount `4000000`, sanctionedAmount `3000000`, and gets back [`4000000`, `3000000`].\n\n## How to call\n\n```sh\ncapxul expense add --expenseClaim <expenseClaim> --expenseDate <expenseDate> --expenseType <expenseType> --amount <amount> --sanctionedAmount <sanctionedAmount>\n```\n\nHTTP: `POST /expense/add` with the payload as JSON. SDK: `Sdk.expense.add(payload)`.\n",
     "expense/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense.get\n\nRead one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.\n\n**Who may call:** the owner of its expenseClaim.company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | expense.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| expenseClaim | expense.expenseClaim |\n| expenseDate | expense.expenseDate |\n| expenseType | expense.expenseType |\n| amount | expense.amount |\n| sanctionedAmount | expense.sanctionedAmount |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its expenseClaim.company; the handler never runs |\n\n## Worked examples\n\n### claim expenses\n\nStarts from the world `an expense claim with two types`.\n\n- **the taxi reads back as Ada typed it.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-18`, the world's expenseClaimType, `45000000`, `45000000`, `active`].\n- **the hotel reads back with what was spent and what was sanctioned.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's lodging, `120500001`, `100000001`].\n- **that line reads back exactly.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`9007199254740993`, `9007199254740993`].\n\n### expense claims stay in their company\n\nStarts from the world `an expense claim`.\n\n- **that line reads back on Olga's claim, sanctioned at nothing.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's expenseClaimType, `1`, `0`, `active`].\n\n### reject an expense claim\n\nStarts from the world `an expense claim`.\n\n- **the lunches read back on Olga's claim.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [the world's expenseClaim, `2026-11-19`, the world's expenseClaimType, `30000000`, `30000000`, `active`].\n- **the 4 USDC line reads back on the third claim.** `ada` (role company.owner) calls and sends id the last call's expense, and gets back [`2026-12-03`, `4000000`, `3000000`].\n\n## How to call\n\n```sh\ncapxul expense get --id <id>\n```\n\nHTTP: `POST /expense/get` with the payload as JSON. SDK: `Sdk.expense.get(payload)`.\n",
     "expense/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# expense\n\nOne expense in a claim.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| expenseClaim | expense-claim.id |\n| expenseDate | Day |\n| expenseType | expense-claim-type.id |\n| amount | Amount |\n| sanctionedAmount | Amount |\n\n## Machine\n\nStates: active. A move from the wrong state is refused ExpenseNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| add | (creates) | active | ExpenseAdded |\n\n## Events\n\n- `ExpenseAdded`: carries expense (expense.id), expenseClaim (expense.expenseClaim), amount (expense.amount), totalClaimedAmount (expense-claim.totalClaimedAmount); emitted by the move add\n\n## Operations\n\n- [expense.add](add.md): Add one expense to a claim still in draft.\n- [expense.get](get.md): Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.\n",
-    "goal/archive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.archive\n\nArchive a goal: it no longer counts towards its parent or its appraisal.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`archive`: from pending or inProgress or closed to archived, emitting GoalArchived.\n\n## Steps\n\n- `goal.archive.load` (database)\n- `goal.archive.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state archive can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal archive --goal <goal>\n```\n\nHTTP: `POST /goal/archive` with the payload as JSON. SDK: `Sdk.goal.archive(payload)`.\n",
-    "goal/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.close\n\nClose a goal, keeping its progress.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`close`: from pending or inProgress or archived to closed, emitting GoalClosed.\n\n## Steps\n\n- `goal.close.load` (database)\n- `goal.close.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state close can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal close --goal <goal>\n```\n\nHTTP: `POST /goal/close` with the payload as JSON. SDK: `Sdk.goal.close(payload)`.\n",
+    "goal/archive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.archive\n\nArchive a goal: it no longer counts towards its parent or its appraisal.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`archive`: from pending or inProgress or closed to archived, emitting GoalArchived.\n\n## Steps\n\n- `goal.archive.load` (database)\n- `goal.archive.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state archive can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal archive --goal <goal>\n```\n\nHTTP: `POST /goal/archive` with the payload as JSON. SDK: `Sdk.goal.archive(payload)`.\n",
+    "goal/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.close\n\nClose a goal, keeping its progress.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`close`: from pending or inProgress or archived to closed, emitting GoalClosed.\n\n## Steps\n\n- `goal.close.load` (database)\n- `goal.close.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state close can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal close --goal <goal>\n```\n\nHTTP: `POST /goal/close` with the payload as JSON. SDK: `Sdk.goal.close(payload)`.\n",
     "goal/complete.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.complete\n\nMark a goal completed, setting its progress to 100.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`complete`: from pending or inProgress to completed, emitting GoalCompleted.\n\n## Steps\n\n- `goal.complete.load` (database)\n- `goal.complete.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state complete can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal complete --goal <goal>\n```\n\nHTTP: `POST /goal/complete` with the payload as JSON. SDK: `Sdk.goal.complete(payload)`.\n",
-    "goal/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.create\n\nSet an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | goal.company |  |\n| employee | goal.employee |  |\n| appraisalCycle | goal.appraisalCycle |  |\n| kra | goal.kra |  |\n| goalName | goal.goalName |  |\n| progress | goal.progress |  |\n| isGroup | goal.isGroup | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.parentGoal |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`create`: from nothing (it creates) to pending or inProgress or completed, emitting GoalCreated.\n\n## Steps\n\n- `goal.create.load` (database)\n- `goal.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalEmployeeNotInCompany | 42 | GL-002 | declared in errors.ts |\n| GoalOwnerHasLeft | 43 | GL-003 | declared in errors.ts |\n| GoalKraNotInAppraisal | 44 | GL-004 | declared in errors.ts |\n| ParentGoalMismatch | 45 | GL-005 | declared in errors.ts |\n| ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |\n| ParentGoalNotGroup | 48 | GL-010 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| AppraisalCycleNotFound | 4 | CY-901 | nothing has the id in appraisalCycle; the handler never runs; carries `id` |\n| KraNotFound | 4 | KR-901 | nothing has the id in kra; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal create --company <company> --employee <employee> --appraisalCycle <appraisalCycle> --kra <kra> --goalName <goalName> --progress <progress> --isGroup <isGroup> [--parentGoal <parentGoal>]\n```\n\nHTTP: `POST /goal/create` with the payload as JSON. SDK: `Sdk.goal.create(payload)`.\n",
+    "goal/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.create\n\nSet an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n\n**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| employee | goal.employee |  |\n| appraisalCycle | goal.appraisalCycle |  |\n| kra | goal.kra |  |\n| goalName | goal.goalName |  |\n| progress | goal.progress |  |\n| isGroup | goal.isGroup | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.parentGoal |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`create`: from nothing (it creates) to pending or inProgress or completed, emitting GoalCreated.\n\n## Steps\n\n- `goal.create.load` (database)\n- `goal.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalEmployeeNotInCompany | 42 | GL-002 | declared in errors.ts |\n| GoalOwnerHasLeft | 43 | GL-003 | declared in errors.ts |\n| GoalKraNotInAppraisal | 44 | GL-004 | declared in errors.ts |\n| ParentGoalMismatch | 45 | GL-005 | declared in errors.ts |\n| ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |\n| ParentGoalNotGroup | 48 | GL-010 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| AppraisalCycleNotFound | 4 | CY-901 | nothing has the id in appraisalCycle; the handler never runs; carries `id` |\n| KraNotFound | 4 | KR-901 | nothing has the id in kra; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal create --employee <employee> --appraisalCycle <appraisalCycle> --kra <kra> --goalName <goalName> --progress <progress> --isGroup <isGroup> [--parentGoal <parentGoal>]\n```\n\nHTTP: `POST /goal/create` with the payload as JSON. SDK: `Sdk.goal.create(payload)`.\n",
     "goal/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.get\n\nRead one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, parentGoal, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | goal.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | goal.company |  |\n| employee | goal.employee |  |\n| appraisalCycle | goal.appraisalCycle |  |\n| kra | goal.kra |  |\n| goalName | goal.goalName |  |\n| progress | goal.progress |  |\n| isGroup | goal.isGroup | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.parentGoal |  |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal get --id <id>\n```\n\nHTTP: `POST /goal/get` with the payload as JSON. SDK: `Sdk.goal.get(payload)`.\n",
-    "goal/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal\n\nSomething an employee aims to do in an appraisal cycle, under one KRA.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| employee | employee.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| kra | kra.id |  |\n| goalName | GoalName |  |\n| progress | Progress |  |\n| isGroup | schema | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.id |  |\n\n## Machine\n\nStates: pending, inProgress, completed, archived, closed. A move from the wrong state is refused GoalNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | pending, inProgress, completed | GoalCreated |\n| updateProgress | pending, inProgress, completed | pending, inProgress, completed | GoalProgressUpdated |\n| complete | pending, inProgress | completed | GoalCompleted |\n| archive | pending, inProgress, closed | archived | GoalArchived |\n| close | pending, inProgress, archived | closed | GoalClosed |\n| unarchive | archived | pending, inProgress, completed | GoalUnarchived |\n| reopen | closed | pending, inProgress, completed | GoalReopened |\n\n## Events\n\n- `GoalArchived`: carries goal (goal.id); emitted by the move archive\n- `GoalClosed`: carries goal (goal.id); emitted by the move close\n- `GoalCompleted`: carries goal (goal.id); emitted by the move complete\n- `GoalCreated`: carries goal (goal.id), employee (goal.employee), kra (goal.kra), progress (goal.progress); emitted by the move create\n- `GoalProgressUpdated`: carries goal (goal.id), progress (goal.progress); emitted by the move updateProgress\n- `GoalReopened`: carries goal (goal.id); emitted by the move reopen\n- `GoalUnarchived`: carries goal (goal.id); emitted by the move unarchive\n\n## Operations\n\n- [goal.archive](archive.md): Archive a goal: it no longer counts towards its parent or its appraisal.\n- [goal.close](close.md): Close a goal, keeping its progress.\n- [goal.complete](complete.md): Mark a goal completed, setting its progress to 100.\n- [goal.create](create.md): Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n- [goal.get](get.md): Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, parentGoal, state.\n- [goal.reopen](reopen.md): Reopen a closed goal: its status follows its progress again.\n- [goal.unarchive](unarchive.md): Bring an archived goal back: its status follows its progress again.\n- [goal.update-progress](update-progress.md): Set how far along a goal is, from 0 to 100.\n",
+    "goal/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal\n\nSomething an employee aims to do in an appraisal cycle, under one KRA.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| employee | employee.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| kra | kra.id |  |\n| goalName | GoalName |  |\n| progress | Progress |  |\n| isGroup | schema | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.id |  |\n\n## Machine\n\nStates: pending, inProgress, completed, archived, closed. A move from the wrong state is refused GoalNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | pending, inProgress, completed | GoalCreated |\n| updateProgress | pending, inProgress, completed | pending, inProgress, completed | GoalProgressUpdated |\n| complete | pending, inProgress | completed | GoalCompleted |\n| archive | pending, inProgress, closed | archived | GoalArchived |\n| close | pending, inProgress, archived | closed | GoalClosed |\n| unarchive | archived | pending, inProgress, completed | GoalUnarchived |\n| reopen | closed | pending, inProgress, completed | GoalReopened |\n\n## Events\n\n- `GoalArchived`: carries goal (goal.id); emitted by the move archive\n- `GoalClosed`: carries goal (goal.id); emitted by the move close\n- `GoalCompleted`: carries goal (goal.id); emitted by the move complete\n- `GoalCreated`: carries goal (goal.id), employee (goal.employee), kra (goal.kra); emitted by the move create\n- `GoalProgressUpdated`: carries goal (goal.id); emitted by the move updateProgress\n- `GoalReopened`: carries goal (goal.id); emitted by the move reopen\n- `GoalUnarchived`: carries goal (goal.id); emitted by the move unarchive\n\n## Operations\n\n- [goal.archive](archive.md): Archive a goal: it no longer counts towards its parent or its appraisal.\n- [goal.close](close.md): Close a goal, keeping its progress.\n- [goal.complete](complete.md): Mark a goal completed, setting its progress to 100.\n- [goal.create](create.md): Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n- [goal.get](get.md): Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, parentGoal, state.\n- [goal.list](list.md): List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n- [goal.reopen](reopen.md): Reopen a closed goal: its status follows its progress again.\n- [goal.unarchive](unarchive.md): Bring an archived goal back: its status follows its progress again.\n- [goal.update-progress](update-progress.md): Set how far along a goal is, from 0 to 100.\n",
+    "goal/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.list\n\nList goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n\n**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by appraisalCycle, employee; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisalCycle (optional) | goal.appraisalCycle |\n| employee (optional) | goal.employee |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal list [--appraisalCycle <appraisalCycle>] [--employee <employee>] [--cursor <cursor>]\n```\n\nHTTP: `POST /goal/list` with the payload as JSON. SDK: `Sdk.goal.list(payload)`.\n",
     "goal/reopen.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.reopen\n\nReopen a closed goal: its status follows its progress again.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`reopen`: from closed to pending or inProgress or completed, emitting GoalReopened.\n\n## Steps\n\n- `goal.reopen.load` (database)\n- `goal.reopen.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state reopen can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal reopen --goal <goal>\n```\n\nHTTP: `POST /goal/reopen` with the payload as JSON. SDK: `Sdk.goal.reopen(payload)`.\n",
     "goal/unarchive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.unarchive\n\nBring an archived goal back: its status follows its progress again.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`unarchive`: from archived to pending or inProgress or completed, emitting GoalUnarchived.\n\n## Steps\n\n- `goal.unarchive.load` (database)\n- `goal.unarchive.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state unarchive can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal unarchive --goal <goal>\n```\n\nHTTP: `POST /goal/unarchive` with the payload as JSON. SDK: `Sdk.goal.unarchive(payload)`.\n",
     "goal/update-progress.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.update-progress\n\nSet how far along a goal is, from 0 to 100.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n| progress | goal.progress |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n| progress | goal.progress |\n\n## Move\n\n`updateProgress`: from pending or inProgress or completed to pending or inProgress or completed, emitting GoalProgressUpdated.\n\n## Steps\n\n- `goal.update-progress.load` (database)\n- `goal.update-progress.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state updateProgress can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul goal update-progress --goal <goal> --progress <progress>\n```\n\nHTTP: `POST /goal/update-progress` with the payload as JSON. SDK: `Sdk.goal.update-progress(payload)`.\n",
@@ -58656,5 +59341,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "a177298ddeba04f041a26c905893ef51cc5587c37da809ffe4aa29e3d0f16a1a"
+  "digest": "729768406a1b2cd3aaeee6a348e01c1802a64300a50d4321922c084dce15173a"
 }

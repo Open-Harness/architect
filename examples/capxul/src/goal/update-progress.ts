@@ -68,7 +68,7 @@ const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
  *   before it runs, it hands in the goal it read as subject, so this handler never reads it again;
  *   each step is its own span: goal.update-progress.load, goal.update-progress.update;
  *   once it answers, it sets the goal's state to the outcome given to move;
- *   once it answers, it writes GoalProgressUpdated: goal and progress from the answer;
+ *   once it answers, it writes GoalProgressUpdated: goal from the answer;
  *   the call is the span goal.update-progress, and its commit goal.update-progress.commit.
  */
 const updateProgress: Handler = (_payload, { steps, move }) =>

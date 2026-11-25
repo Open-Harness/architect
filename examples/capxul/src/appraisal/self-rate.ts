@@ -4,7 +4,7 @@ import { Handlers } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal/self-rate.handler.ts";
 
-const { AppraisalCycleCompleted, SelfRatingsDontMatchCriteria, SelfRatingOutOfRange } = Errors.declared;
+const { SelfRatingsDontMatchCriteria, SelfRatingOutOfRange } = Errors.declared;
 
 /**
  * appraisal.self-rate: Rate yourself against each of your appraisal's criteria, from 0 to 1.
@@ -22,7 +22,6 @@ const { AppraisalCycleCompleted, SelfRatingsDontMatchCriteria, SelfRatingOutOfRa
  *   finalScore  appraisal.finalScore
  *
  * Refusals:
- *   AppraisalCycleCompleted       exit 43   AP-003  yours to refuse below; from blueprint/things/appraisal/errors.ts
  *   SelfRatingsDontMatchCriteria  exit 49   AP-009  yours to refuse below; from blueprint/things/appraisal/errors.ts
  *   SelfRatingOutOfRange          exit 50   AP-010  yours to refuse below; from blueprint/things/appraisal/errors.ts
  *   AppraisalAlreadyExists        exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
@@ -46,19 +45,13 @@ const { AppraisalCycleCompleted, SelfRatingsDontMatchCriteria, SelfRatingOutOfRa
  *   before it runs, it hands in the appraisal it read as subject, so this handler never reads it again;
  *   each step is its own span: appraisal.self-rate.load, appraisal.self-rate.update;
  *   once it answers, it sets the appraisal's state to draft;
- *   once it answers, it writes AppraisalSelfRated: appraisal, selfScore and finalScore from the answer;
+ *   once it answers, it writes AppraisalSelfRated: appraisal from the answer;
  *   the call is the span appraisal.self-rate, and its commit appraisal.self-rate.commit.
  */
 const selfRate: Handler = (_payload, { steps, move }) =>
   Effect.gen(function* () {
     // Step load: database, span appraisal.self-rate.load.
     yield* steps.load(Handlers.blank("load: the work this step does"));
-
-    // AppraisalCycleCompleted: exit 43, AP-003.
-    if (yield* Handlers.blank<boolean>("refuse AppraisalCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraisalCycleCompleted was refused"));
-      return yield* new AppraisalCycleCompleted({});
-    }
 
     // SelfRatingsDontMatchCriteria: exit 49, AP-009.
     if (yield* Handlers.blank<boolean>("refuse SelfRatingsDontMatchCriteria when?")) {

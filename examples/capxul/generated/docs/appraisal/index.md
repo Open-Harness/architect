@@ -40,9 +40,9 @@ States: draft, submitted. A move from the wrong state is refused AppraisalNotDra
 ## Events
 
 - `AppraisalCreated`: carries appraisal (appraisal.id), employee (appraisal.employee), appraisalCycle (appraisal.appraisalCycle); emitted by the move create
-- `AppraisalRated`: carries appraisal (appraisal.id), totalScore (appraisal.totalScore: The KRAs' score out of 5 (HRMS's `total_score`).), finalScore (appraisal.finalScore: The average of the three scores above (HRMS's `final_score`).); emitted by the move rate
-- `AppraisalSelfRated`: carries appraisal (appraisal.id), selfScore (appraisal.selfScore: The self ratings' score out of 5 (HRMS's `self_score`).), finalScore (appraisal.finalScore: The average of the three scores above (HRMS's `final_score`).); emitted by the move selfRate
-- `AppraisalSubmitted`: carries appraisal (appraisal.id), finalScore (appraisal.finalScore: The average of the three scores above (HRMS's `final_score`).); emitted by the move submit
+- `AppraisalRated`: carries appraisal (appraisal.id); emitted by the move rate
+- `AppraisalSelfRated`: carries appraisal (appraisal.id); emitted by the move selfRate
+- `AppraisalSubmitted`: carries appraisal (appraisal.id); emitted by the move submit
 
 ## Operations
 
@@ -51,4 +51,4 @@ States: draft, submitted. A move from the wrong state is refused AppraisalNotDra
 - [appraisal.list](list.md): List appraisals, oldest first, 50 to a page, filtered by appraisalCycle, employee.
 - [appraisal.rate](rate.md): Score each KRA of an appraisal by hand, from 0 to 5.
 - [appraisal.self-rate](self-rate.md): Rate yourself against each of your appraisal's criteria, from 0 to 1.
-- [appraisal.submit](submit.md): Submit an appraisal, fixing its scores.
+- [appraisal.submit](submit.md): Submit an appraisal.

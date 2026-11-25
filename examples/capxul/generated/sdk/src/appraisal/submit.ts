@@ -4,6 +4,6 @@ import type { PayloadOf } from "orthograph";
 import { declaration } from "../../../api/src/appraisal/submit.ts";
 import { Capxul, call, type CallOptions } from "../client.ts";
 
-/** Submit an appraisal, fixing its scores. */
+/** Submit an appraisal. */
 export const submit = (payload: PayloadOf<typeof declaration>, options?: CallOptions) =>
   call(declaration, payload, options, true, Effect.flatMap(Capxul, (client) => client.appraisal.submit({ payload })));

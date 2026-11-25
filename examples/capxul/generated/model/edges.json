@@ -1385,6 +1385,21 @@
     "kind": "allowed-by"
   },
   {
+    "from": "goal.list",
+    "to": "goal",
+    "kind": "reads"
+  },
+  {
+    "from": "goal.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "goal.reopen",
     "to": "goal",
     "kind": "acts-on"

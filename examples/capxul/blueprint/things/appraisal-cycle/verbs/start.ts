@@ -7,8 +7,8 @@ import { Appraisal } from "../../appraisal/thing.ts";
 import { AppraisalIds } from "../../../values/appraisal-ids.ts";
 
 // HRMS's Start, with its `create_appraisals_for_cycle`: one appraisal per appraisee, in the order listed, each with the
-// row's template, the cycle's method, its KRA lines and criteria copied, and its scores worked out from the goals already
-// set (`Appraisal.validate`). An appraisee who already has an appraisal in the cycle is skipped, as HRMS passes over its
+// row's template, the cycle's method, its KRA lines and criteria copied, and every score 0, as `appraisal.create` makes
+// one. An appraisee who already has an appraisal in the cycle is skipped, as HRMS passes over its
 // DuplicateEntryError, and so is one who has left since the cycle was set up (CX-expense-leavers). `appraisals` lists the
 // ones made.
 export default Blueprint.operation(AppraisalCycle, {

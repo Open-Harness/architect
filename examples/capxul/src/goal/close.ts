@@ -4,7 +4,7 @@ import { Handlers } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/goal/close.handler.ts";
 
-const { GoalCycleCompleted } = Errors.declared;
+const { GoalCycleCompleted, GoalIsGroup } = Errors.declared;
 
 /**
  * goal.close: Close a goal, keeping its progress.
@@ -21,6 +21,7 @@ const { GoalCycleCompleted } = Errors.declared;
  *
  * Refusals:
  *   GoalCycleCompleted      exit 41   GL-001  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalIsGroup             exit 47   GL-009  yours to refuse below; from blueprint/things/goal/errors.ts
  *   AppraisalAlreadyExists  exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
  *   GoalNotPending          exit 40   GL-900  the runtime's, when the goal isn't in pending or inProgress or archived, carrying state; from blueprint/things/goal/machine.ts
  *   NotAllowed              exit 3    AR-001  the runtime's, when the caller isn't the self of its goal.employee, or the owner of its goal.company; from blueprint/things/employee/roles.ts
@@ -76,6 +77,12 @@ const close: Handler = (_payload, { steps, move }) =>
     if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
       return yield* new GoalCycleCompleted({});
+    }
+
+    // GoalIsGroup: exit 47, GL-009.
+    if (yield* Handlers.blank<boolean>("refuse GoalIsGroup when?")) {
+      yield* Effect.logInfo(yield* Handlers.blank("why GoalIsGroup was refused"));
+      return yield* new GoalIsGroup({});
     }
 
     // Step update: database, in the store goal, appraisal, span goal.close.update.

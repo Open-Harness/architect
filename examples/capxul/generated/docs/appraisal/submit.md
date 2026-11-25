@@ -1,7 +1,7 @@
 <!-- Generated from the blueprint. Do not edit. -->
 # appraisal.submit
 
-Submit an appraisal, fixing its scores.
+Submit an appraisal.
 
 **Who may call:** the owner of its appraisal.company.
 
@@ -35,7 +35,6 @@ Submit an appraisal, fixing its scores.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| AppraisalCycleCompleted | 43 | AP-003 | declared in errors.ts |
 | AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |
 | AppraisalNotDraft | 40 | AP-900 | the appraisal is in a state submit can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisal.company; the handler never runs |

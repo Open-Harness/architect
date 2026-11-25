@@ -37,7 +37,6 @@ Rate yourself against each of your appraisal's criteria, from 0 to 1.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| AppraisalCycleCompleted | 43 | AP-003 | declared in errors.ts |
 | SelfRatingsDontMatchCriteria | 49 | AP-009 | declared in errors.ts |
 | SelfRatingOutOfRange | 50 | AP-010 | declared in errors.ts |
 | AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |

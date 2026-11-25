@@ -1,7 +1,7 @@
 import { Blueprint } from "orthograph";
 import { Appraisal } from "../thing.ts";
 import { machine } from "../machine.ts";
-import { AppraisalCycleCompleted, SelfRatingOutOfRange, SelfRatingsDontMatchCriteria } from "../errors.ts";
+import { SelfRatingOutOfRange, SelfRatingsDontMatchCriteria } from "../errors.ts";
 import { self } from "../../employee/roles.ts";
 import { GivenRatings } from "../../../values/appraisal-lines.ts";
 
@@ -13,7 +13,7 @@ export default Blueprint.operation(Appraisal, {
   payload: { appraisal: Appraisal.fields.id, ratings: GivenRatings },
   answer: { appraisal: Appraisal.fields.id, selfScore: Appraisal.fields.selfScore, finalScore: Appraisal.fields.finalScore },
   move: machine.moves.selfRate,
-  errors: [AppraisalCycleCompleted, SelfRatingsDontMatchCriteria, SelfRatingOutOfRange],
+  errors: [SelfRatingsDontMatchCriteria, SelfRatingOutOfRange],
   allowed: [self.of("appraisal.employee")],
   steps: { load: Blueprint.step.database({ writes: [] }), update: Blueprint.step.database() },
   idempotent: "request",

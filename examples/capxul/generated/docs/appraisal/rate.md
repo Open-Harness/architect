@@ -37,7 +37,6 @@ Score each KRA of an appraisal by hand, from 0 to 5.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| AppraisalCycleCompleted | 43 | AP-003 | declared in errors.ts |
 | NotRatedManually | 46 | AP-006 | declared in errors.ts |
 | ScoresDontMatchKras | 47 | AP-007 | declared in errors.ts |
 | KraScoreOutOfRange | 48 | AP-008 | declared in errors.ts |

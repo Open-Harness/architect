@@ -44,13 +44,11 @@ export type GoalCreated = {
   readonly "goal": Of<(typeof Events)["GoalCreated"]["fields"]["goal"]>;
   readonly "employee": Of<(typeof Events)["GoalCreated"]["fields"]["employee"]>;
   readonly "kra": Of<(typeof Events)["GoalCreated"]["fields"]["kra"]>;
-  readonly "progress": Of<(typeof Events)["GoalCreated"]["fields"]["progress"]>;
 };
 
 /** The event GoalProgressUpdated: what it carries when a goal moves. */
 export type GoalProgressUpdated = {
   readonly "goal": Of<(typeof Events)["GoalProgressUpdated"]["fields"]["goal"]>;
-  readonly "progress": Of<(typeof Events)["GoalProgressUpdated"]["fields"]["progress"]>;
 };
 
 /** The event GoalReopened: what it carries when a goal moves. */

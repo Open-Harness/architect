@@ -1,5 +1,5 @@
 import { Blueprint } from "orthograph";
-import { TemplateTitle, Weightage } from "../../values/appraisals.ts";
+import { TemplateTitle } from "../../values/appraisals.ts";
 
 // Refusals that depend on data. The machine's own refusal is generated and never written here.
 // When several apply, `appraisal-template.create` refuses TemplateWithoutKras, then TemplateKraNotInCompany, then
@@ -16,9 +16,9 @@ export class TemplateCriteriaNotInCompany extends Blueprint.error({}, { exit: 43
 export class TemplateLineRepeated extends Blueprint.error({}, { exit: 44 }) {}
 /** Capxul's own rule: each line's weightage is more than 0 and at most 100. HRMS's Percent field has no bound. */
 export class TemplateWeightageOutOfRange extends Blueprint.error({}, { exit: 45 }) {}
-/** HRMS's `validate_total_weightage("goals", "KRAs")`: the KRAs' weightages total exactly 100. It carries the total. */
-export class KraWeightageNotHundred extends Blueprint.error({ total: Weightage }, { exit: 46 }) {}
-/** HRMS's `validate_total_weightage("rating_criteria", "Criteria")`: criteria, when there are any, total exactly 100. It carries the total. */
-export class CriteriaWeightageNotHundred extends Blueprint.error({ total: Weightage }, { exit: 47 }) {}
+/** HRMS's `validate_total_weightage("goals", "KRAs")`: the KRAs' weightages total exactly 100. */
+export class KraWeightageNotHundred extends Blueprint.error({}, { exit: 46 }) {}
+/** HRMS's `validate_total_weightage("rating_criteria", "Criteria")`: criteria, when there are any, total exactly 100. */
+export class CriteriaWeightageNotHundred extends Blueprint.error({}, { exit: 47 }) {}
 /** HRMS names a template by its title (`autoname: field:template_title`), so a company has one of each title. */
 export class TemplateTitleTaken extends Blueprint.error({ title: TemplateTitle }, { exit: 48 }) {}

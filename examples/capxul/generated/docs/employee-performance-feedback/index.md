@@ -30,8 +30,8 @@ States: draft, submitted. A move from the wrong state is refused EmployeePerform
 
 ## Events
 
-- `PerformanceFeedbackDrafted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal), reviewer (employee-performance-feedback.reviewer: The employee who gives it.), totalScore (employee-performance-feedback.totalScore: The ratings' score out of 5 (HRMS's `total_score`).); emitted by the move create
-- `PerformanceFeedbackSubmitted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal), totalScore (employee-performance-feedback.totalScore: The ratings' score out of 5 (HRMS's `total_score`).); emitted by the move submit
+- `PerformanceFeedbackDrafted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal), reviewer (employee-performance-feedback.reviewer: The employee who gives it.); emitted by the move create
+- `PerformanceFeedbackSubmitted`: carries employeePerformanceFeedback (employee-performance-feedback.id), appraisal (employee-performance-feedback.appraisal); emitted by the move submit
 
 ## Operations
 

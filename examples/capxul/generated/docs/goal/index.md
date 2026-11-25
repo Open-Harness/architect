@@ -38,8 +38,8 @@ States: pending, inProgress, completed, archived, closed. A move from the wrong 
 - `GoalArchived`: carries goal (goal.id); emitted by the move archive
 - `GoalClosed`: carries goal (goal.id); emitted by the move close
 - `GoalCompleted`: carries goal (goal.id); emitted by the move complete
-- `GoalCreated`: carries goal (goal.id), employee (goal.employee), kra (goal.kra), progress (goal.progress); emitted by the move create
-- `GoalProgressUpdated`: carries goal (goal.id), progress (goal.progress); emitted by the move updateProgress
+- `GoalCreated`: carries goal (goal.id), employee (goal.employee), kra (goal.kra); emitted by the move create
+- `GoalProgressUpdated`: carries goal (goal.id); emitted by the move updateProgress
 - `GoalReopened`: carries goal (goal.id); emitted by the move reopen
 - `GoalUnarchived`: carries goal (goal.id); emitted by the move unarchive
 
@@ -50,6 +50,7 @@ States: pending, inProgress, completed, archived, closed. A move from the wrong 
 - [goal.complete](complete.md): Mark a goal completed, setting its progress to 100.
 - [goal.create](create.md): Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.
 - [goal.get](get.md): Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, parentGoal, state.
+- [goal.list](list.md): List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.
 - [goal.reopen](reopen.md): Reopen a closed goal: its status follows its progress again.
 - [goal.unarchive](unarchive.md): Bring an archived goal back: its status follows its progress again.
 - [goal.update-progress](update-progress.md): Set how far along a goal is, from 0 to 100.

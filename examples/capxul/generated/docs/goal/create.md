@@ -3,7 +3,7 @@
 
 Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.
 
-**Who may call:** the self of its employee, or the owner of its company.
+**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.
 
 **Idempotent by request:** send `idempotency-key`; the same key twice is one call.
 
@@ -13,7 +13,6 @@ Set an employee a goal in a cycle, under a KRA, perhaps under another of their g
 
 | field | value | description |
 |---|---|---|
-| company | goal.company |  |
 | employee | goal.employee |  |
 | appraisalCycle | goal.appraisalCycle |  |
 | kra | goal.kra |  |
@@ -49,17 +48,16 @@ Set an employee a goal in a cycle, under a KRA, perhaps under another of their g
 | ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |
 | ParentGoalNotGroup | 48 | GL-010 | declared in errors.ts |
 | AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |
-| CompanyNotFound | 4 | CO-901 | nothing has the id in company; the handler never runs; carries `id` |
 | EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |
 | AppraisalCycleNotFound | 4 | CY-901 | nothing has the id in appraisalCycle; the handler never runs; carries `id` |
 | KraNotFound | 4 | KR-901 | nothing has the id in kra; the handler never runs; carries `id` |
-| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |
+| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
 ## How to call
 
 ```sh
-capxul goal create --company <company> --employee <employee> --appraisalCycle <appraisalCycle> --kra <kra> --goalName <goalName> --progress <progress> --isGroup <isGroup> [--parentGoal <parentGoal>]
+capxul goal create --employee <employee> --appraisalCycle <appraisalCycle> --kra <kra> --goalName <goalName> --progress <progress> --isGroup <isGroup> [--parentGoal <parentGoal>]
 ```
 
 HTTP: `POST /goal/create` with the payload as JSON. SDK: `Sdk.goal.create(payload)`.

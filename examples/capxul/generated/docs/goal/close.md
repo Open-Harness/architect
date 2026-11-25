@@ -35,6 +35,7 @@ Close a goal, keeping its progress.
 | refusal | exit | code | when |
 |---|---|---|---|
 | GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |
+| GoalIsGroup | 47 | GL-009 | declared in errors.ts |
 | AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |
 | GoalNotPending | 40 | GL-900 | the goal is in a state close can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |

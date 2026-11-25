@@ -521,24 +521,6 @@
               "prefix": "apr"
             },
             "ref": "appraisal.id"
-          },
-          "totalScore": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Score",
-            "ref": "appraisal.totalScore",
-            "description": "The KRAs' score out of 5 (HRMS's `total_score`)."
-          },
-          "finalScore": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Score",
-            "ref": "appraisal.finalScore",
-            "description": "The average of the three scores above (HRMS's `final_score`)."
           }
         },
         "AppraisalSelfRated": {
@@ -548,24 +530,6 @@
               "prefix": "apr"
             },
             "ref": "appraisal.id"
-          },
-          "selfScore": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Score",
-            "ref": "appraisal.selfScore",
-            "description": "The self ratings' score out of 5 (HRMS's `self_score`)."
-          },
-          "finalScore": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Score",
-            "ref": "appraisal.finalScore",
-            "description": "The average of the three scores above (HRMS's `final_score`)."
           }
         },
         "AppraisalSubmitted": {
@@ -575,15 +539,6 @@
               "prefix": "apr"
             },
             "ref": "appraisal.id"
-          },
-          "finalScore": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Score",
-            "ref": "appraisal.finalScore",
-            "description": "The average of the three scores above (HRMS's `final_score`)."
           }
         }
       },
@@ -649,7 +604,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "2279bf33a0031ea1"
+      "hash": "8bb3d8978bb593bb"
     },
     "appraisal-cycle": {
       "name": "appraisal-cycle",
@@ -1002,28 +957,12 @@
           "code": "TP-005"
         },
         "KraWeightageNotHundred": {
-          "fields": {
-            "total": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Weightage"
-            }
-          },
+          "fields": {},
           "exit": 46,
           "code": "TP-006"
         },
         "CriteriaWeightageNotHundred": {
-          "fields": {
-            "total": {
-              "value": {
-                "type": "decimal",
-                "places": 2
-              },
-              "named": "Weightage"
-            }
-          },
+          "fields": {},
           "exit": 47,
           "code": "TP-007"
         },
@@ -1051,7 +990,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "182064fc99ebe2f9"
+      "hash": "247c2bef2dd04a89"
     },
     "attendance": {
       "name": "attendance",
@@ -2908,15 +2847,6 @@
             },
             "ref": "employee-performance-feedback.reviewer",
             "description": "The employee who gives it."
-          },
-          "totalScore": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Score",
-            "ref": "employee-performance-feedback.totalScore",
-            "description": "The ratings' score out of 5 (HRMS's `total_score`)."
           }
         },
         "PerformanceFeedbackSubmitted": {
@@ -2933,15 +2863,6 @@
               "prefix": "apr"
             },
             "ref": "employee-performance-feedback.appraisal"
-          },
-          "totalScore": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Score",
-            "ref": "employee-performance-feedback.totalScore",
-            "description": "The ratings' score out of 5 (HRMS's `total_score`)."
           }
         }
       },
@@ -2982,7 +2903,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "d51d22337ffc38e0"
+      "hash": "d56c94588940badf"
     },
     "employee-promotion": {
       "name": "employee-promotion",
@@ -4262,14 +4183,6 @@
               "prefix": "kra"
             },
             "ref": "goal.kra"
-          },
-          "progress": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Progress",
-            "ref": "goal.progress"
           }
         },
         "GoalProgressUpdated": {
@@ -4279,14 +4192,6 @@
               "prefix": "gol"
             },
             "ref": "goal.id"
-          },
-          "progress": {
-            "value": {
-              "type": "decimal",
-              "places": 2
-            },
-            "named": "Progress",
-            "ref": "goal.progress"
           }
         },
         "GoalReopened": {
@@ -4355,7 +4260,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "604a05fb6b178b37"
+      "hash": "d4362a66a86a8203"
     },
     "holiday": {
       "name": "holiday",
@@ -6161,7 +6066,6 @@
         "emits": "AppraisalRated"
       },
       "errors": [
-        "AppraisalCycleCompleted",
         "NotRatedManually",
         "ScoresDontMatchKras",
         "KraScoreOutOfRange"
@@ -6173,7 +6077,6 @@
         "appraisal.oneAppraisalPerCycle"
       ],
       "refusals": [
-        "AppraisalCycleCompleted",
         "NotRatedManually",
         "ScoresDontMatchKras",
         "KraScoreOutOfRange",
@@ -6210,7 +6113,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "6cb450f6669cbb69"
+      "hash": "dbfb61a88c7ad4f5"
     },
     "appraisal.self-rate": {
       "kind": "operation",
@@ -6276,7 +6179,6 @@
         "emits": "AppraisalSelfRated"
       },
       "errors": [
-        "AppraisalCycleCompleted",
         "SelfRatingsDontMatchCriteria",
         "SelfRatingOutOfRange"
       ],
@@ -6287,7 +6189,6 @@
         "appraisal.oneAppraisalPerCycle"
       ],
       "refusals": [
-        "AppraisalCycleCompleted",
         "SelfRatingsDontMatchCriteria",
         "SelfRatingOutOfRange",
         "AppraisalAlreadyExists",
@@ -6323,7 +6224,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "d0dc946e9e131df7"
+      "hash": "23fce24e084e48ac"
     },
     "appraisal.submit": {
       "kind": "operation",
@@ -6335,7 +6236,7 @@
       "from": {
         "kind": "app"
       },
-      "description": "Submit an appraisal, fixing its scores.",
+      "description": "Submit an appraisal.",
       "payload": {
         "appraisal": {
           "value": {
@@ -6373,9 +6274,7 @@
         ],
         "emits": "AppraisalSubmitted"
       },
-      "errors": [
-        "AppraisalCycleCompleted"
-      ],
+      "errors": [],
       "invariants": {
         "AppraisalAlreadyExists": "appraisal.oneAppraisalPerCycle"
       },
@@ -6383,7 +6282,6 @@
         "appraisal.oneAppraisalPerCycle"
       ],
       "refusals": [
-        "AppraisalCycleCompleted",
         "AppraisalAlreadyExists",
         "AppraisalNotDraft",
         "NotAllowed",
@@ -6417,7 +6315,7 @@
       "budget": {
         "p95Ms": 150
       },
-      "hash": "615670b9b00cd227"
+      "hash": "0569b39e77b1610d"
     },
     "appraisal-cycle.complete": {
       "kind": "operation",
@@ -12520,7 +12418,8 @@
         "emits": "GoalArchived"
       },
       "errors": [
-        "GoalCycleCompleted"
+        "GoalCycleCompleted",
+        "GoalIsGroup"
       ],
       "invariants": {
         "AppraisalAlreadyExists": "appraisal.oneAppraisalPerCycle"
@@ -12530,6 +12429,7 @@
       ],
       "refusals": [
         "GoalCycleCompleted",
+        "GoalIsGroup",
         "AppraisalAlreadyExists",
         "GoalNotPending",
         "NotAllowed",
@@ -12572,7 +12472,7 @@
       "budget": {
         "p95Ms": 400
       },
-      "hash": "0dafd0e2114f0002"
+      "hash": "688046f665babaa9"
     },
     "goal.close": {
       "kind": "operation",
@@ -12616,7 +12516,8 @@
         "emits": "GoalClosed"
       },
       "errors": [
-        "GoalCycleCompleted"
+        "GoalCycleCompleted",
+        "GoalIsGroup"
       ],
       "invariants": {
         "AppraisalAlreadyExists": "appraisal.oneAppraisalPerCycle"
@@ -12626,6 +12527,7 @@
       ],
       "refusals": [
         "GoalCycleCompleted",
+        "GoalIsGroup",
         "AppraisalAlreadyExists",
         "GoalNotPending",
         "NotAllowed",
@@ -12668,7 +12570,7 @@
       "budget": {
         "p95Ms": 400
       },
-      "hash": "ddd1e2d23c5bc914"
+      "hash": "27583026e4354dbe"
     },
     "goal.complete": {
       "kind": "operation",
@@ -12779,13 +12681,6 @@
       },
       "description": "Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.",
       "payload": {
-        "company": {
-          "value": {
-            "type": "id",
-            "prefix": "com"
-          },
-          "ref": "goal.company"
-        },
         "employee": {
           "value": {
             "type": "id",
@@ -12883,7 +12778,6 @@
         "ProgressOutOfRange",
         "ParentGoalNotGroup",
         "AppraisalAlreadyExists",
-        "CompanyNotFound",
         "EmployeeNotFound",
         "AppraisalCycleNotFound",
         "KraNotFound",
@@ -12899,19 +12793,17 @@
         {
           "kind": "role-of",
           "role": "company.owner",
-          "path": "company"
+          "path": "appraisalCycle.company"
         }
       ],
       "agentTool": true,
       "refs": {
-        "company": "company",
         "employee": "employee",
         "appraisalCycle": "appraisal-cycle",
         "kra": "kra",
         "parentGoal": "goal"
       },
       "notFound": {
-        "company": "CompanyNotFound",
         "employee": "EmployeeNotFound",
         "appraisalCycle": "AppraisalCycleNotFound",
         "kra": "KraNotFound"
@@ -12938,7 +12830,7 @@
       "budget": {
         "p95Ms": 400
       },
-      "hash": "97c44d6aa704a734"
+      "hash": "b44629693fbd6570"
     },
     "goal.get": {
       "kind": "read",
@@ -13055,6 +12947,90 @@
         "p95Ms": 50
       },
       "hash": "0d2856cf481bc332"
+    },
+    "goal.list": {
+      "kind": "read",
+      "name": "goal.list",
+      "thing": "goal",
+      "verb": "list",
+      "identifier": "list",
+      "file": "blueprint/things/goal/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.",
+      "payload": {
+        "appraisalCycle": {
+          "value": {
+            "type": "id",
+            "prefix": "apc"
+          },
+          "ref": "goal.appraisalCycle",
+          "optional": true
+        },
+        "employee": {
+          "value": {
+            "type": "id",
+            "prefix": "emp"
+          },
+          "ref": "goal.employee",
+          "optional": true
+        },
+        "cursor": {
+          "value": {
+            "type": "text",
+            "max": 64
+          },
+          "optional": true
+        }
+      },
+      "answer": {
+        "items": {
+          "value": {
+            "type": "schema"
+          }
+        },
+        "next": {
+          "value": {
+            "type": "schema"
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "employee.self",
+          "path": "employee"
+        },
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "appraisalCycle.company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 80
+      },
+      "list": {
+        "where": [
+          "appraisalCycle",
+          "employee"
+        ],
+        "order": "oldest",
+        "page": 50
+      },
+      "hash": "71b3c88ceb8d0035"
     },
     "goal.reopen": {
       "kind": "operation",
@@ -44148,6 +44124,57 @@
         }
       }
     },
+    "a colleague's goal": {
+      "name": "a colleague's goal",
+      "file": "blueprint/starting-worlds/a-colleagues-goal.ts",
+      "from": "a feedback draft",
+      "cast": {
+        "cy": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "19066cb420f0576e3b298032dc582a9ad9aa5b7cd01a0a600bb40c1d9834c6f1",
+      "makes": [
+        {
+          "actor": "cy",
+          "operation": "goal.create",
+          "payload": {
+            "employee": {
+              "ref": [
+                "world",
+                "secondEmployee"
+              ]
+            },
+            "appraisalCycle": {
+              "ref": [
+                "world",
+                "appraisalCycle"
+              ]
+            },
+            "kra": {
+              "ref": [
+                "world",
+                "otherKra"
+              ]
+            },
+            "goalName": "Write the runbook",
+            "progress": {
+              "value": "50",
+              "scale": 0
+            },
+            "isGroup": false
+          }
+        }
+      ],
+      "gives": {
+        "secondGoal": {
+          "ref": [
+            "last",
+            "goal"
+          ]
+        }
+      }
+    },
     "a company": {
       "name": "a company",
       "file": "blueprint/starting-worlds/a-company.ts",
@@ -44217,6 +44244,158 @@
           "ref": [
             "last",
             "department"
+          ]
+        }
+      }
+    },
+    "a feedback criteria": {
+      "name": "a feedback criteria",
+      "file": "blueprint/starting-worlds/a-feedback-criteria.ts",
+      "from": "a second kra",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "8ee0836baaf0c5d0f07de70b01deb124fe9e6388494e2a15b479a070e8becb77",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-feedback-criteria.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "criteria": "Problem Solving"
+          }
+        }
+      ],
+      "gives": {
+        "criteria": {
+          "ref": [
+            "last",
+            "employeeFeedbackCriteria"
+          ]
+        }
+      }
+    },
+    "a feedback draft": {
+      "name": "a feedback draft",
+      "file": "blueprint/starting-worlds/a-feedback-draft.ts",
+      "from": "a goal",
+      "cast": {
+        "cy": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "8af1ca61ea69dc95e9240a3a4261d0d12fccf9843b82a2f35ff8214508f29a74",
+      "makes": [
+        {
+          "actor": "cy",
+          "operation": "employee-performance-feedback.create",
+          "payload": {
+            "appraisal": {
+              "ref": [
+                "world",
+                "appraisal"
+              ]
+            },
+            "reviewer": {
+              "ref": [
+                "world",
+                "secondEmployee"
+              ]
+            },
+            "feedback": "Olga explains her designs clearly.",
+            "ratings": [
+              {
+                "criteria": {
+                  "ref": [
+                    "world",
+                    "criteria"
+                  ]
+                },
+                "rating": {
+                  "value": "8",
+                  "scale": 1
+                }
+              },
+              {
+                "criteria": {
+                  "ref": [
+                    "world",
+                    "otherCriteria"
+                  ]
+                },
+                "rating": {
+                  "value": "7",
+                  "scale": 1
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "gives": {
+        "feedbackDraft": {
+          "ref": [
+            "last",
+            "employeePerformanceFeedback"
+          ]
+        }
+      }
+    },
+    "a goal": {
+      "name": "a goal",
+      "file": "blueprint/starting-worlds/a-goal.ts",
+      "from": "a started cycle",
+      "cast": {
+        "olga": {
+          "kind": "signed-in"
+        }
+      },
+      "sourceHash": "495debdafe9af4703270e730bd5064ac4b935fd68b93831bfc206c93732de936",
+      "makes": [
+        {
+          "actor": "olga",
+          "operation": "goal.create",
+          "payload": {
+            "employee": {
+              "ref": [
+                "world",
+                "employee"
+              ]
+            },
+            "appraisalCycle": {
+              "ref": [
+                "world",
+                "appraisalCycle"
+              ]
+            },
+            "kra": {
+              "ref": [
+                "world",
+                "kra"
+              ]
+            },
+            "goalName": "Ship the ledger",
+            "progress": {
+              "value": "0",
+              "scale": 0
+            },
+            "isGroup": false
+          }
+        }
+      ],
+      "gives": {
+        "goal": {
+          "ref": [
+            "last",
+            "goal"
           ]
         }
       }
@@ -44389,6 +44568,41 @@
         }
       }
     },
+    "a kra": {
+      "name": "a kra",
+      "file": "blueprint/starting-worlds/a-kra.ts",
+      "from": "an outside employee",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "a9066cea6f4de6986ef60eefa86dee264620f3e521c77e5a84609677ed392b2b",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "kra.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "title": "Quality"
+          }
+        }
+      ],
+      "gives": {
+        "kra": {
+          "ref": [
+            "last",
+            "kra"
+          ]
+        }
+      }
+    },
     "a leap fortnight": {
       "name": "a leap fortnight",
       "file": "blueprint/starting-worlds/a-leap-fortnight.ts",
@@ -44428,6 +44642,74 @@
           "ref": [
             "last",
             "holidayList"
+          ]
+        }
+      }
+    },
+    "a manual cycle": {
+      "name": "a manual cycle",
+      "file": "blueprint/starting-worlds/a-manual-cycle.ts",
+      "from": "a colleague's goal",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "bd3c08e972a4833b97333209e21c517f4913d5f4b1f3885580f88831469062cd",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "appraisal-cycle.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "cycleName": "H1 2027",
+            "startDate": "2027-01-01",
+            "endDate": "2027-06-30",
+            "kraEvaluationMethod": "Manual Rating",
+            "appraisees": [
+              {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "appraisalTemplate": {
+                  "ref": [
+                    "world",
+                    "appraisalTemplate"
+                  ]
+                }
+              },
+              {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                "appraisalTemplate": {
+                  "ref": [
+                    "world",
+                    "appraisalTemplate"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "gives": {
+        "manualCycle": {
+          "ref": [
+            "last",
+            "appraisalCycle"
           ]
         }
       }
@@ -44769,6 +45051,41 @@
         }
       }
     },
+    "a second feedback criteria": {
+      "name": "a second feedback criteria",
+      "file": "blueprint/starting-worlds/a-second-feedback-criteria.ts",
+      "from": "a feedback criteria",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "73678d67d95d3fe067df6dfcf7c9cfb6716f17ce8fe4bc235c37b74b2e92bc9f",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "employee-feedback-criteria.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "criteria": "Excellence"
+          }
+        }
+      ],
+      "gives": {
+        "otherCriteria": {
+          "ref": [
+            "last",
+            "employeeFeedbackCriteria"
+          ]
+        }
+      }
+    },
     "a second job title": {
       "name": "a second job title",
       "file": "blueprint/starting-worlds/a-second-job-title.ts",
@@ -44800,6 +45117,41 @@
           "ref": [
             "last",
             "designation"
+          ]
+        }
+      }
+    },
+    "a second kra": {
+      "name": "a second kra",
+      "file": "blueprint/starting-worlds/a-second-kra.ts",
+      "from": "a kra",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "a1fbb2497182ff6452137b8483b0ea1a00c053205776f5dfe082e26cd33e8442",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "kra.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "title": "Development"
+          }
+        }
+      ],
+      "gives": {
+        "otherKra": {
+          "ref": [
+            "last",
+            "kra"
           ]
         }
       }
@@ -44936,6 +45288,90 @@
           "ref": [
             "last",
             "employeeSeparation"
+          ]
+        }
+      }
+    },
+    "a started cycle": {
+      "name": "a started cycle",
+      "file": "blueprint/starting-worlds/a-started-cycle.ts",
+      "from": "an appraisal cycle",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "ac94cb8fe02816d857284ab44623fd508ff7c4b21b52cc2e060f1b2ef7b47f9e",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "appraisal-cycle.start",
+          "payload": {
+            "appraisalCycle": {
+              "ref": [
+                "world",
+                "appraisalCycle"
+              ]
+            }
+          }
+        }
+      ],
+      "gives": {
+        "appraisal": {
+          "ref": [
+            "last",
+            "appraisals",
+            "0"
+          ]
+        },
+        "secondAppraisal": {
+          "ref": [
+            "last",
+            "appraisals",
+            "1"
+          ]
+        }
+      }
+    },
+    "a started manual cycle": {
+      "name": "a started manual cycle",
+      "file": "blueprint/starting-worlds/a-started-manual-cycle.ts",
+      "from": "a manual cycle",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "27af806d731bf0e169273ee1562ac7b25001dcb33f9964972ad4f8f91868f3df",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "appraisal-cycle.start",
+          "payload": {
+            "appraisalCycle": {
+              "ref": [
+                "world",
+                "manualCycle"
+              ]
+            }
+          }
+        }
+      ],
+      "gives": {
+        "manualAppraisal": {
+          "ref": [
+            "last",
+            "appraisals",
+            "0"
+          ]
+        },
+        "secondManualAppraisal": {
+          "ref": [
+            "last",
+            "appraisals",
+            "1"
           ]
         }
       }
@@ -45121,6 +45557,161 @@
           "ref": [
             "last",
             "employeeTransfer"
+          ]
+        }
+      }
+    },
+    "an appraisal cycle": {
+      "name": "an appraisal cycle",
+      "file": "blueprint/starting-worlds/an-appraisal-cycle.ts",
+      "from": "an appraisal template",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "f5dae42781fab2665a42dde9a8896a7c084b28a0fd23f73dbcb8b0eac81668a5",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "appraisal-cycle.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "cycleName": "H2 2026",
+            "startDate": "2026-07-01",
+            "endDate": "2026-12-31",
+            "kraEvaluationMethod": "Automated Based on Goal Progress",
+            "appraisees": [
+              {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                },
+                "appraisalTemplate": {
+                  "ref": [
+                    "world",
+                    "appraisalTemplate"
+                  ]
+                }
+              },
+              {
+                "employee": {
+                  "ref": [
+                    "world",
+                    "secondEmployee"
+                  ]
+                },
+                "appraisalTemplate": {
+                  "ref": [
+                    "world",
+                    "appraisalTemplate"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "gives": {
+        "appraisalCycle": {
+          "ref": [
+            "last",
+            "appraisalCycle"
+          ]
+        }
+      }
+    },
+    "an appraisal template": {
+      "name": "an appraisal template",
+      "file": "blueprint/starting-worlds/an-appraisal-template.ts",
+      "from": "a second feedback criteria",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "e0d4a5bf6ec64f68d044aa7f20e349d86fc37836d9be62ab38033b4d9e988807",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "appraisal-template.create",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            },
+            "title": "Engineers",
+            "kras": [
+              {
+                "kra": {
+                  "ref": [
+                    "world",
+                    "kra"
+                  ]
+                },
+                "weightage": {
+                  "value": "30",
+                  "scale": 0
+                }
+              },
+              {
+                "kra": {
+                  "ref": [
+                    "world",
+                    "otherKra"
+                  ]
+                },
+                "weightage": {
+                  "value": "70",
+                  "scale": 0
+                }
+              }
+            ],
+            "criteria": [
+              {
+                "criteria": {
+                  "ref": [
+                    "world",
+                    "criteria"
+                  ]
+                },
+                "weightage": {
+                  "value": "70",
+                  "scale": 0
+                }
+              },
+              {
+                "criteria": {
+                  "ref": [
+                    "world",
+                    "otherCriteria"
+                  ]
+                },
+                "weightage": {
+                  "value": "30",
+                  "scale": 0
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "gives": {
+        "appraisalTemplate": {
+          "ref": [
+            "last",
+            "appraisalTemplate"
           ]
         }
       }
@@ -51374,6 +51965,48 @@
       ]
     },
     {
+      "id": "defect:goal.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "goal.list",
+        "severity": "page",
+        "owner": "blueprint/things/goal/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "defect:goal.reopen",
       "kind": "defect",
       "labels": {
@@ -55954,6 +56587,49 @@
       "target": 0.95,
       "windowDays": 28,
       "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:goal.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "goal.list",
+        "severity": "page",
+        "owner": "blueprint/things/goal/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
       "minCalls": 20,
       "alerts": [
         {
