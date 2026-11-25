@@ -13,12 +13,12 @@ const generate: AdapterApi["generate"] = ({ name, spec }) =>
     if (!isRecord(spec) || (spec["openapi"] === undefined && spec["swagger"] === undefined)) return yield* new AdapterRefused({ message: "not an OpenAPI or Swagger description (it has neither an `openapi` nor a `swagger` version)" });
     const d: Description = { raw: spec, swagger: spec["swagger"] !== undefined };
     const ops = operationsOf(d);
-    if (ops.length === 0) return yield* new AdapterRefused({ message: "no operations: the description has no path with an operationId" });
+    if (ops.length === 0) return yield* new AdapterRefused({ message: "no operations: the description has no path with an operation" });
     const { tree, clashes } = treeOf(ops);
-    if (clashes.length > 0) return yield* new AdapterRefused({ message: `a name is both a call and a group of calls, so the descriptor can't hold it: ${clashes.slice(0, 5).join(", ")}` });
+    if (clashes.length > 0) return yield* new AdapterRefused({ message: `two operations come to one name, or a name is both a call and a group of calls, so the descriptor can't hold it: ${clashes.slice(0, 5).join(", ")}` });
     const [title, version] = [String(spec["info"]?.["title"] ?? name), String(spec["info"]?.["version"] ?? "0")];
     const events = eventsOf(d);
-    const components = componentsOf(d, [...ops.flatMap((o) => [...o.successes.flatMap((x) => (x.schema === null ? [] : [x.schema])), ...o.params.map((p) => p.schema)]), ...events.flatMap((e) => e.payloads)]);
+    const components = componentsOf(d, [...ops.flatMap((o) => [...o.successes.flatMap((x) => (x.schema === null ? [] : [x.schema])), ...o.params.map((p) => p.schema), ...(o.body === null ? [] : [o.body.schema])]), ...events.flatMap((e) => e.payloads)]);
     const head = generatedLine(title, version);
     const generated = (path: string, content: string): PluginFile => ({ path, content, how: "generated" });
     const files: ReadonlyArray<PluginFile> = [

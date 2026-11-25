@@ -12,7 +12,7 @@ const byParts = (ops: ReadonlyArray<Op>) => [...ops].sort((a, b) => { const [x, 
 
 export const operationsFile = (ops: ReadonlyArray<Op>) => [
   `import type { Operation } from "../runtime/types.ts";`, "",
-  `export const operations = ${json(byParts(ops).map((o) => ({ name: o.parts, method: o.method, path: o.path, params: o.params, successes: o.successes })), "ReadonlyArray<Operation>")};`, "",
+  `export const operations = ${json(byParts(ops).map((o) => ({ name: o.parts, method: o.method, path: o.path, params: o.params, body: o.body, auth: o.auth, successes: o.successes })), "ReadonlyArray<Operation>")};`, "",
 ].join("\n");
 
 export const componentsFile = (components: Readonly<Record<string, Node>>) => [
@@ -27,7 +27,7 @@ export const eventsFile = (events: ReadonlyArray<Event>) => [
 
 interface Tree { [name: string]: Tree | null }
 
-/** The calls as nested groups. A name that is both a call and a group has no one place in the tree: it is told to the caller. */
+/** The calls as nested groups. A name two operations come to, or one that is both a call and a group, has no one place in the tree: it is told to the caller. */
 export const treeOf = (ops: ReadonlyArray<Op>): { readonly tree: Tree; readonly clashes: ReadonlyArray<string> } => {
   const tree: Tree = Object.create(null) as Tree;
   const clashes: Array<string> = [];
