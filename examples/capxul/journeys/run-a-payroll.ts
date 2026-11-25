@@ -597,6 +597,35 @@ export default Blueprint.journey("run a payroll", {
           [3n, s.world.payable, s.world.costCenter, 0n, 3_100n * USDC],
         ]),
       ),
+      s.step(
+        "the days are judged before another company's account",
+        draft("2026-02-28", "2026-02-01", { payrollPayableAccount: s.world.otherPayable }),
+        refuses(PayrollEndsBeforeStart, { startDate: "2026-02-28" }),
+        noEvents(),
+      ),
+      s.step(
+        "Ada adds a group under Liabilities, typed as owed to suppliers",
+        s.ada.run(createAccount, { company: s.world.company, accountName: "Accrued Liabilities", parentAccount: s.world.liabilities, isGroup: true, accountType: "Payable" }),
+      ),
+      s.step("a group is judged before its type", draft("2026-02-01", "2026-02-28", { payrollPayableAccount: s.last.account }), refuses(PayableAccountIsGroup), noEvents()),
+      s.step(
+        "the account's type is judged before another company's cost center",
+        draft("2026-02-01", "2026-02-28", { payrollPayableAccount: s.world.bank, costCenter: s.world.otherCostCenter }),
+        refuses(PayableAccountHasType),
+        noEvents(),
+      ),
+      s.step(
+        "another company's cost center is refused before being a group",
+        draft("2026-02-01", "2026-02-28", { costCenter: s.world.otherMainCostCenter }),
+        refuses(PayrollCostCenterNotInCompany),
+        noEvents(),
+      ),
+      s.step(
+        "and before finding no one to pay",
+        draft("2025-12-01", "2025-12-31", { costCenter: s.world.otherCostCenter }),
+        refuses(PayrollCostCenterNotInCompany),
+        noEvents(),
+      ),
     ];
   },
 });

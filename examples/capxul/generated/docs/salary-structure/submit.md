@@ -47,6 +47,7 @@ Starts from the world `a payroll outsider`.
 
 - **and submits it.** `ada` (role company.owner) calls and sends salaryStructure the last call's salaryStructure, and is answered.
 - **and submits it.** `ada` (role company.owner) calls and sends salaryStructure the last call's salaryStructure, and is answered.
+- **and submits it.** `ada` (role company.owner) calls and sends salaryStructure the last call's salaryStructure, and is answered.
 
 ### pay a month
 

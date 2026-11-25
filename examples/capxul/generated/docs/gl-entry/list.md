@@ -46,7 +46,7 @@ Starts from the world `a pension component`.
 - **and names the journal entry, whose ledger line on Salaries is the debit.** `ada` (role company.owner) calls and sends account the world's salaries, voucherId the last call's items 0 journalEntry, and gets back [[the world's company, the world's salaries, the world's costCenter, `2026-03-31`, `7000000000`, `0`, `Journal Entry`, false]].
 - **on Pension Payable the credit.** `ada` (role company.owner) calls and sends account the world's pension, voucherId the last call's items 0 voucherId, and gets back [[the world's company, the world's pension, the world's costCenter, `2026-03-31`, `0`, `300000000`, `Journal Entry`, false]].
 - **on Payroll Payable the net.** `ada` (role company.owner) calls and sends account the world's payable, voucherId the last call's items 0 voucherId, and gets back [[the world's company, the world's payable, the world's costCenter, `2026-03-31`, `0`, `6700000000`, `Journal Entry`, false]].
-- **and its ledger lines are the same three.** `ada` (role company.owner) calls and sends account the world's payable, voucherId the last call's items 0 journalEntry, and gets back 1.
+- **and Payroll Payable has one ledger line from the entry it names.** `ada` (role company.owner) calls and sends account the world's payable, voucherId the last call's items 0 journalEntry, and gets back 1.
 
 ### post a journal entry
 

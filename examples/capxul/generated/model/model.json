@@ -31656,6 +31656,46 @@
           ]
         },
         {
+          "title": "the joining day is judged before the structure's company",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure-assignment.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "salaryStructure": {
+                "ref": [
+                  "last",
+                  "salaryStructure"
+                ]
+              },
+              "fromDate": "2026-01-11"
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AssignmentBeforeJoining",
+              "fields": {
+                "dateOfJoining": "2026-01-12"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Ada assigns the engineers' structure to Cy from her joining day",
           "call": {
             "actor": "ada",
@@ -33069,9 +33109,229 @@
               "state": "cancelled"
             }
           ]
+        },
+        {
+          "title": "Ada drafts an interim structure: Basic at its own 3,000",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "salaryStructureName": "Interim",
+              "earnings": [
+                {
+                  "salaryComponent": {
+                    "ref": [
+                      "world",
+                      "basic"
+                    ]
+                  },
+                  "amount": "0"
+                }
+              ],
+              "deductions": []
+            }
+          },
+          "checks": []
+        },
+        {
+          "title": "and submits it",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure.submit",
+            "payload": {
+              "salaryStructure": {
+                "ref": [
+                  "last",
+                  "salaryStructure"
+                ]
+              }
+            }
+          },
+          "checks": []
+        },
+        {
+          "title": "she drafts its assignment to Olga from 1 September",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure-assignment.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "salaryStructure": {
+                "ref": [
+                  "last",
+                  "salaryStructure"
+                ]
+              },
+              "fromDate": "2026-09-01"
+            }
+          },
+          "checks": []
+        },
+        {
+          "title": "and drafts the engineers' structure for Olga on the same day: a draft holds no day",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure-assignment.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              },
+              "salaryStructure": {
+                "ref": [
+                  "world",
+                  "salaryStructure"
+                ]
+              },
+              "fromDate": "2026-09-01"
+            }
+          },
+          "checks": []
+        },
+        {
+          "title": "and submits that one",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure-assignment.submit",
+            "payload": {
+              "salaryStructureAssignment": {
+                "ref": [
+                  "last",
+                  "salaryStructureAssignment"
+                ]
+              }
+            }
+          },
+          "checks": []
+        },
+        {
+          "title": "Ada lists Olga's assignments",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure-assignment.list",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 6
+            }
+          ]
+        },
+        {
+          "title": "the interim structure is used only by a draft, so Ada can cancel it",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure.cancel",
+            "payload": {
+              "salaryStructure": {
+                "ref": [
+                  "last",
+                  "items",
+                  "4",
+                  "salaryStructure"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "salary-structure",
+              "id": {
+                "ref": [
+                  "last",
+                  "salaryStructure"
+                ]
+              },
+              "state": "cancelled"
+            }
+          ]
+        },
+        {
+          "title": "Ada lists Olga's assignments again",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure-assignment.list",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "draft"
+            }
+          ]
+        },
+        {
+          "title": "the draft can't be submitted: the day taken is judged before its cancelled structure",
+          "call": {
+            "actor": "ada",
+            "operation": "salary-structure-assignment.submit",
+            "payload": {
+              "salaryStructureAssignment": {
+                "ref": [
+                  "last",
+                  "items",
+                  "4",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AssignmentExists",
+              "fields": {
+                "fromDate": "2026-09-01"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "4d8efd80b258ad808b9934ef01346fd12de703f5ea08504f8629c98d6c609f22"
+      "sourceHash": "30453dc61a67c30f96a522e5f9a4ecefbf84689a1708b734b81e1e112519efd2"
     },
     "journeys/attendance-requests-and-leave.ts": {
       "name": "attendance requests and leave",
@@ -62391,7 +62651,7 @@
           ]
         },
         {
-          "title": "and its ledger lines are the same three",
+          "title": "and Payroll Payable has one ledger line from the entry it names",
           "call": {
             "actor": "ada",
             "operation": "gl-entry.list",
@@ -62579,7 +62839,7 @@
           ]
         }
       ],
-      "sourceHash": "280e3aa78778cee68407f70515b821ec90422f2e0686ef27fa4d365f408820ec"
+      "sourceHash": "517a8ec54e1f86826f0e9923d0703f7ec1470b6bfbebec6e2caee32b404d9488"
     },
     "journeys/post-a-journal-entry.ts": {
       "name": "post a journal entry",
@@ -76871,9 +77131,236 @@
               ]
             }
           ]
+        },
+        {
+          "title": "the days are judged before another company's account",
+          "call": {
+            "actor": "ada",
+            "operation": "payroll-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-02-01",
+              "startDate": "2026-02-28",
+              "endDate": "2026-02-01",
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              },
+              "payrollPayableAccount": {
+                "ref": [
+                  "world",
+                  "otherPayable"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PayrollEndsBeforeStart",
+              "fields": {
+                "startDate": "2026-02-28"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada adds a group under Liabilities, typed as owed to suppliers",
+          "call": {
+            "actor": "ada",
+            "operation": "account.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "accountName": "Accrued Liabilities",
+              "parentAccount": {
+                "ref": [
+                  "world",
+                  "liabilities"
+                ]
+              },
+              "isGroup": true,
+              "accountType": "Payable"
+            }
+          },
+          "checks": []
+        },
+        {
+          "title": "a group is judged before its type",
+          "call": {
+            "actor": "ada",
+            "operation": "payroll-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-02-28",
+              "startDate": "2026-02-01",
+              "endDate": "2026-02-28",
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              },
+              "payrollPayableAccount": {
+                "ref": [
+                  "last",
+                  "account"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PayableAccountIsGroup",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the account's type is judged before another company's cost center",
+          "call": {
+            "actor": "ada",
+            "operation": "payroll-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-02-28",
+              "startDate": "2026-02-01",
+              "endDate": "2026-02-28",
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "otherCostCenter"
+                ]
+              },
+              "payrollPayableAccount": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PayableAccountHasType",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "another company's cost center is refused before being a group",
+          "call": {
+            "actor": "ada",
+            "operation": "payroll-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2026-02-28",
+              "startDate": "2026-02-01",
+              "endDate": "2026-02-28",
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "otherMainCostCenter"
+                ]
+              },
+              "payrollPayableAccount": {
+                "ref": [
+                  "world",
+                  "payable"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PayrollCostCenterNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and before finding no one to pay",
+          "call": {
+            "actor": "ada",
+            "operation": "payroll-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "postingDate": "2025-12-31",
+              "startDate": "2025-12-01",
+              "endDate": "2025-12-31",
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "otherCostCenter"
+                ]
+              },
+              "payrollPayableAccount": {
+                "ref": [
+                  "world",
+                  "payable"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PayrollCostCenterNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "d2e0be015c2096c90915ea7be50636ed76ab3891da406caf92e0b05d6cce8cc3"
+      "sourceHash": "d8bbd8a569d1d445481e1fa7d435e432f197370c1937737671caea0003a7aa73"
     },
     "journeys/run-a-separation.ts": {
       "name": "run a separation",

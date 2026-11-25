@@ -203,7 +203,7 @@ export default Blueprint.journey("pay a month", {
       s.step("on Pension Payable the credit", s.ada.run(ledger, { account: s.world.pension, voucherId: s.last.items[0].voucherId }), expect(gl).toEqual([accrual(s.world.pension, 0n, 300n * USDC)])),
       s.step("on Payroll Payable the net", s.ada.run(ledger, { account: s.world.payable, voucherId: s.last.items[0].voucherId }), expect(gl).toEqual([accrual(s.world.payable, 0n, 6_700n * USDC)])),
       s.step("Cy's slip names it too", s.ada.run(slipList, { employee: s.world.secondEmployee }), expect(slips).toEqual([slipRow(s.world.secondEmployee, "Submitted")])),
-      s.step("and its ledger lines are the same three", s.ada.run(ledger, { account: s.world.payable, voucherId: s.last.items[0].journalEntry }), expect((p) => p.items.length).toBe(1)),
+      s.step("and Payroll Payable has one ledger line from the entry it names", s.ada.run(ledger, { account: s.world.payable, voucherId: s.last.items[0].journalEntry }), expect((p) => p.items.length).toBe(1)),
       s.step("Salaries holds the month's pay", s.ada.run(balance, { account: s.world.salaries, onDay: "2026-03-31" }), expect(sums).toEqual([7_000n * USDC, 0n, 7_000n * USDC]), noEvents()),
       s.step("not the day before", s.ada.run(balance, { account: s.world.salaries, onDay: "2026-03-30" }), expect(sums).toEqual([0n, 0n, 0n])),
       s.step("Expenses, two groups above, holds it too", s.ada.run(balance, { account: s.world.expenses, onDay: "2026-12-31" }), expect(sums).toEqual([7_000n * USDC, 0n, 7_000n * USDC])),

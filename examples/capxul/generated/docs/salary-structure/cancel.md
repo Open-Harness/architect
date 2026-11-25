@@ -48,6 +48,7 @@ Starts from the world `a payroll outsider`.
 
 - **a draft assignment doesn't keep the structure in use: Ada cancels it.** `ada` (role company.owner) calls and sends salaryStructure the last call's salaryStructure, and is answered.
 - **a cancelled assignment doesn't keep the structure in use: Ada cancels it.** `ada` (role company.owner) calls and sends salaryStructure the last call's salaryStructure, and is answered.
+- **the interim structure is used only by a draft, so Ada can cancel it.** `ada` (role company.owner) calls and sends salaryStructure the last call's items 4 salaryStructure, and is answered.
 
 ### pay a month
 

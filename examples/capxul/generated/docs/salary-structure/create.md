@@ -59,6 +59,7 @@ Starts from the world `a payroll outsider`.
 - **and drafts a structure there.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryStructureName `Drivers`, earnings [{ salaryComponent: the last call's salaryComponent, amount: `0` }], deductions [], and is answered.
 - **Ada drafts a seniors' structure: Basic at 5,000.** `ada` (role company.owner) calls and sends company the world's company, salaryStructureName `Seniors`, earnings [{ salaryComponent: the world's basic, amount: `5000000000` }], deductions [], and is answered.
 - **Ada drafts a structure for temporary staff: Basic at its own 3,000.** `ada` (role company.owner) calls and sends company the world's company, salaryStructureName `Temps`, earnings [{ salaryComponent: the world's basic, amount: `0` }], deductions [], and is answered.
+- **Ada drafts an interim structure: Basic at its own 3,000.** `ada` (role company.owner) calls and sends company the world's company, salaryStructureName `Interim`, earnings [{ salaryComponent: the world's basic, amount: `0` }], deductions [], and is answered.
 
 ### pay a month
 

@@ -58,6 +58,8 @@ Starts from the world `a payroll outsider`.
 - **Olga's day is her own: Cy's for the same day can be submitted.** `ada` (role company.owner) calls and sends salaryStructureAssignment the last call's items 2 id, and gets back the world's secondEmployee.
 - **the draft can't be submitted now, its structure cancelled.** `ada` (role company.owner) calls and sends salaryStructureAssignment the last call's items 2 id, and is refused with AssignedStructureNotSubmitted, SA-006.
 - **and submits it.** `ada` (role company.owner) calls and sends salaryStructureAssignment the last call's salaryStructureAssignment, and is answered.
+- **and submits that one.** `ada` (role company.owner) calls and sends salaryStructureAssignment the last call's salaryStructureAssignment, and is answered.
+- **the draft can't be submitted: the day taken is judged before its cancelled structure.** `ada` (role company.owner) calls and sends salaryStructureAssignment the last call's items 4 id, and is refused with AssignmentExists, SA-003, carrying fromDate `2026-09-01`.
 
 ### check every slip first
 

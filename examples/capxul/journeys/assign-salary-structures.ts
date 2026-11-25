@@ -121,6 +121,12 @@ export default Blueprint.journey("assign salary structures", {
         noEvents(),
       ),
       s.step(
+        "the joining day is judged before the structure's company",
+        to(s.world.secondEmployee, s.last.salaryStructure, "2026-01-11"),
+        refuses(AssignmentBeforeJoining, { dateOfJoining: "2026-01-12" }),
+        noEvents(),
+      ),
+      s.step(
         "Ada assigns the engineers' structure to Cy from her joining day",
         to(s.world.secondEmployee, s.world.salaryStructure, "2026-01-12"),
         emits(SalaryStructureAssigned, { employee: s.world.secondEmployee, salaryStructure: s.world.salaryStructure, fromDate: "2026-01-12" }),
@@ -295,6 +301,27 @@ export default Blueprint.journey("assign salary structures", {
         "a cancelled assignment doesn't keep the structure in use: Ada cancels it",
         s.ada.run(cancelStructure, { salaryStructure: s.last.salaryStructure }),
         structures.isIn(s.last.salaryStructure, "cancelled"),
+      ),
+      s.step(
+        "Ada drafts an interim structure: Basic at its own 3,000",
+        s.ada.run(createStructure, { company: s.world.company, salaryStructureName: "Interim", earnings: [{ salaryComponent: s.world.basic, amount: 0n }], deductions: [] } as never),
+      ),
+      s.step("and submits it", s.ada.run(submitStructure, { salaryStructure: s.last.salaryStructure })),
+      s.step("she drafts its assignment to Olga from 1 September", to(s.world.employee, s.last.salaryStructure, "2026-09-01")),
+      s.step("and drafts the engineers' structure for Olga on the same day: a draft holds no day", to(s.world.employee, s.world.salaryStructure, "2026-09-01")),
+      s.step("and submits that one", s.ada.run(submitAssignment, { salaryStructureAssignment: s.last.salaryStructureAssignment })),
+      s.step("Ada lists Olga's assignments", s.ada.run(listAssignments, { employee: s.world.employee }), expect((p) => p.items.length).toBe(6)),
+      s.step(
+        "the interim structure is used only by a draft, so Ada can cancel it",
+        s.ada.run(cancelStructure, { salaryStructure: s.last.items[4].salaryStructure }),
+        structures.isIn(s.last.salaryStructure, "cancelled"),
+      ),
+      s.step("Ada lists Olga's assignments again", s.ada.run(listAssignments, { employee: s.world.employee }), expect((p) => p.items[4].state).toBe("draft")),
+      s.step(
+        "the draft can't be submitted: the day taken is judged before its cancelled structure",
+        s.ada.run(submitAssignment, { salaryStructureAssignment: s.last.items[4].id }),
+        refuses(AssignmentExists, { fromDate: "2026-09-01" }),
+        noEvents(),
       ),
     ];
   },

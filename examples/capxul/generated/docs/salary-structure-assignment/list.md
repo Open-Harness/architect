@@ -41,6 +41,8 @@ Starts from the world `a payroll outsider`.
 - **Ada lists Cy's assignments again.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, and gets back 2.
 - **Cy's three assignments, the newest a draft.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, and gets back [[`2026-01-12`, `submitted`], [`2026-01-12`, `cancelled`], [`2026-02-02`, `draft`]].
 - **Olga's assignments: the first, February's, then the June draft.** `ada` (role company.owner) calls and sends employee the world's employee, and gets back 3.
+- **Ada lists Olga's assignments.** `ada` (role company.owner) calls and sends employee the world's employee, and gets back 6.
+- **Ada lists Olga's assignments again.** `ada` (role company.owner) calls and sends employee the world's employee, and gets back `draft`.
 
 ### run a payroll
 

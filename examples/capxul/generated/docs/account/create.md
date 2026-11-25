@@ -77,6 +77,7 @@ Starts from the world `a chart`.
 Starts from the world `an outside cost center`.
 
 - **Ada adds another ledger under Liabilities, typed as owed to suppliers.** `ada` (role company.owner) calls and sends company the world's company, accountName `Trade Creditors`, parentAccount the world's liabilities, isGroup false, accountType `Payable`, and is answered.
+- **Ada adds a group under Liabilities, typed as owed to suppliers.** `ada` (role company.owner) calls and sends company the world's company, accountName `Accrued Liabilities`, parentAccount the world's liabilities, isGroup true, accountType `Payable`, and is answered.
 
 ### set up a chart of accounts
 
