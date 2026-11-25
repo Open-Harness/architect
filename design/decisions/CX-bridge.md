@@ -139,6 +139,13 @@ is 400, and a key seen before gets the first answer again. It opens no virtual a
 approved. It records what it issued (`/_stand/issued`), and it signs webhooks as Bridge does. Its own test is
 `tests/bridge-stand-in.test.ts`.
 
+**Until #995, `bank-account.open` makes its own details, and a EUR one can clash.** No step reaches the stand-in yet,
+so the handler (`src/bank-account/open.ts`, #1027) draws the numbers from the account's random id, in the guide's banks
+below. A USD account number is 17 digits. A EUR account number is the 8 digits an Irish IBAN leaves after Modulr's sort
+code, so there are 10^8 of them, with about a 1% chance of a clash by 1,400 EUR accounts. A clash fails `open` as a
+defect, never silently: `bank-account.oneAccountPerNumber` names no refusal, so the runtime stops the write. Part two
+replaces this with the IBAN Bridge issues.
+
 **Its deposit details are the guide's, not `latest.json`'s.** The virtual account examples in `latest.json` give
 routing `87654321` (eight digits, so it fails ABA), account `123456789` and IBAN `X6099`. A correct relay of those
 would fail the checksum checks, so the stand-in can't use them. Bridge's virtual account guide
