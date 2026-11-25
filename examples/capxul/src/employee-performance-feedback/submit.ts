@@ -1,8 +1,12 @@
 // Scaffolded from blueprint/things/employee-performance-feedback/verbs/submit.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee-performance-feedback/submit.handler.ts";
+import { Appraisal } from "../../blueprint/things/appraisal/thing.ts";
+import { AppraisalCycle } from "../../blueprint/things/appraisal-cycle/thing.ts";
+import { EmployeePerformanceFeedback } from "../../blueprint/things/employee-performance-feedback/thing.ts";
+import { avg, finalOf } from "../appraisal-math.ts";
 
 const { FeedbackCycleCompleted } = Errors.declared;
 
@@ -44,28 +48,41 @@ const { FeedbackCycleCompleted } = Errors.declared;
  *   once it answers, it writes PerformanceFeedbackSubmitted: employeePerformanceFeedback and appraisal from the answer;
  *   the call is the span employee-performance-feedback.submit, and its commit employee-performance-feedback.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ employeePerformanceFeedback }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span employee-performance-feedback.submit.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // FeedbackCycleCompleted: exit 41, PF-007.
-    if (yield* Handlers.blank<boolean>("refuse FeedbackCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FeedbackCycleCompleted was refused"));
+    // Step load: database, span employee-performance-feedback.submit.load. The runtime read the feedback; its
+    // appraisal, the appraisal's cycle and the appraisal's feedback already submitted are read here.
+    if (!subject) return yield* Effect.die(new Error(`feedback ${employeePerformanceFeedback} was read and then not found`));
+    const appraisal = subject["appraisal"] as string;
+    const { held, cycle, submitted } = yield* steps.load(
+      Effect.all({
+        held: records.find(Appraisal, appraisal),
+        cycle: records.find(AppraisalCycle, subject["appraisalCycle"] as string),
+        submitted: records.list({ thing: EmployeePerformanceFeedback, where: { appraisal }, state: "submitted", order: "oldest", limit: 1000, after: undefined }),
+      }),
+    );
+    if (!held) return yield* Effect.die(new Error(`appraisal ${appraisal} was read and then not found`));
+
+    // FeedbackCycleCompleted: exit 41, PF-007. A leaver may still submit one already drafted.
+    if (cycle?.state === "completed") {
+      yield* Effect.logInfo("the appraisal's cycle is completed");
       return yield* new FeedbackCycleCompleted({});
     }
 
-    // Step update: database, in the store employee-performance-feedback, appraisal, span employee-performance-feedback.submit.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, in the store employee-performance-feedback, appraisal, span
+    // employee-performance-feedback.submit.update. The average covers submitted feedback only, this one with them
+    // (it is still a draft until this call answers); the final score follows.
+    const scores = [...submitted.items.map((f) => f["totalScore"] as BigDecimal.BigDecimal), subject["totalScore"] as BigDecimal.BigDecimal];
+    const avgFeedbackScore = avg(scores);
+    const finalScore = finalOf(held["totalScore"] as BigDecimal.BigDecimal, held["selfScore"] as BigDecimal.BigDecimal, avgFeedbackScore);
+    yield* steps.update(records.update(Appraisal, appraisal, { avgFeedbackScore, finalScore } as never));
 
     // The move submit, from draft, to submitted.
     yield* move();
 
-    return {
-      employeePerformanceFeedback: yield* Handlers.blank("employeePerformanceFeedback, an employee-performance-feedback.id"),
-      avgFeedbackScore: yield* Handlers.blank("avgFeedbackScore, an appraisal.avgFeedbackScore"),
-      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
-    };
+    return { employeePerformanceFeedback, avgFeedbackScore, appraisal: appraisal as never };
   });
 
 export default submit;

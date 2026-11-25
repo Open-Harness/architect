@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/employee-feedback-criteria/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/employee-feedback-criteria/create.handler.ts";
+import { EmployeeFeedbackCriteria } from "../../blueprint/things/employee-feedback-criteria/thing.ts";
 
 /**
  * employee-feedback-criteria.create: Add something a company rates its people on.
@@ -37,10 +38,13 @@ import type { Handler } from "../../generated/api/src/employee-feedback-criteria
  *   once it answers, it writes FeedbackCriteriaCreated: employeeFeedbackCriteria from the answer, company from the payload;
  *   the call is the span employee-feedback-criteria.create, and its commit employee-feedback-criteria.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, criteria }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span employee-feedback-criteria.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span employee-feedback-criteria.create.insert. A name the company already has is the
+    // runtime's refusal (oneNamePerCompany).
+    yield* steps.insert(records.insert(EmployeeFeedbackCriteria, { id, company, criteria }));
 
     // The move create, to active.
     yield* move();

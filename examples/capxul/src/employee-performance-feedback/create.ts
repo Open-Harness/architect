@@ -1,8 +1,11 @@
 // Scaffolded from blueprint/things/employee-performance-feedback/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/employee-performance-feedback/create.handler.ts";
+import { EmployeePerformanceFeedback } from "../../blueprint/things/employee-performance-feedback/thing.ts";
+import { AppraisalCycle } from "../../blueprint/things/appraisal-cycle/thing.ts";
+import { inRating, matchesOnce, r2, rateLines, ratingScoreOf, type RatingLine } from "../appraisal-math.ts";
 
 const { FeedbackCycleCompleted, FeedbackForOneself, ReviewerNotInCompany, ReviewerHasLeft, FeedbackRatingsDontMatchCriteria, FeedbackRatingOutOfRange } = Errors.declared;
 
@@ -51,49 +54,74 @@ const { FeedbackCycleCompleted, FeedbackForOneself, ReviewerNotInCompany, Review
  *   once it answers, it writes PerformanceFeedbackDrafted: employeePerformanceFeedback from the answer, appraisal and reviewer from the payload;
  *   the call is the span employee-performance-feedback.create, and its commit employee-performance-feedback.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ appraisal, reviewer, feedback, ratings }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span employee-performance-feedback.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // FeedbackCycleCompleted: exit 41, PF-007.
-    if (yield* Handlers.blank<boolean>("refuse FeedbackCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FeedbackCycleCompleted was refused"));
+    // Step load: database, span employee-performance-feedback.create.load. The runtime read the appraisal and the
+    // reviewer; the appraisal's cycle is read here.
+    const { held, person, cycle } = yield* steps.load(
+      Effect.gen(function* () {
+        const held = refs.appraisal;
+        if (!held) return yield* Effect.die(new Error(`appraisal ${appraisal} was read and then not found`));
+        return { held, person: refs.reviewer, cycle: yield* records.find(AppraisalCycle, held["appraisalCycle"] as string) };
+      }),
+    );
+    const lines = held["selfRatings"] as ReadonlyArray<RatingLine>;
+
+    // Refusal order (errors.ts). FeedbackCycleCompleted: exit 41, PF-007. HRMS refuses only a completed cycle.
+    if (cycle?.state === "completed") {
+      yield* Effect.logInfo("the appraisal's cycle is completed");
       return yield* new FeedbackCycleCompleted({});
     }
 
-    // FeedbackForOneself: exit 42, PF-002.
-    if (yield* Handlers.blank<boolean>("refuse FeedbackForOneself when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FeedbackForOneself was refused"));
+    // FeedbackForOneself: exit 42, PF-002. HRMS: "Use Self Appraisal instead."
+    if (held["employee"] === reviewer) {
+      yield* Effect.logInfo("the reviewer is the appraised employee");
       return yield* new FeedbackForOneself({});
     }
 
     // ReviewerNotInCompany: exit 43, PF-003.
-    if (yield* Handlers.blank<boolean>("refuse ReviewerNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ReviewerNotInCompany was refused"));
+    if (person?.["company"] !== held["company"]) {
+      yield* Effect.logInfo("the reviewer doesn't work for the appraisal's company");
       return yield* new ReviewerNotInCompany({});
     }
 
-    // ReviewerHasLeft: exit 44, PF-004.
-    if (yield* Handlers.blank<boolean>("refuse ReviewerHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ReviewerHasLeft was refused"));
+    // ReviewerHasLeft: exit 44, PF-004. CX-expense-leavers: a leaver starts no new feedback.
+    if (person?.state !== "active") {
+      yield* Effect.logInfo("the reviewer has left");
       return yield* new ReviewerHasLeft({});
     }
 
-    // FeedbackRatingsDontMatchCriteria: exit 45, PF-005.
-    if (yield* Handlers.blank<boolean>("refuse FeedbackRatingsDontMatchCriteria when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FeedbackRatingsDontMatchCriteria was refused"));
+    // FeedbackRatingsDontMatchCriteria: exit 45, PF-005. Each of the appraisal's criteria once.
+    if (!matchesOnce(ratings.map((r) => r.criteria), lines.map((l) => l.criteria))) {
+      yield* Effect.logInfo("the ratings don't name each of the appraisal's criteria once");
       return yield* new FeedbackRatingsDontMatchCriteria({});
     }
 
-    // FeedbackRatingOutOfRange: exit 46, PF-006.
-    if (yield* Handlers.blank<boolean>("refuse FeedbackRatingOutOfRange when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FeedbackRatingOutOfRange was refused"));
+    // FeedbackRatingOutOfRange: exit 46, PF-006. HRMS's Rating field holds 0 to 1.
+    if (ratings.some((r) => !inRating(r.rating))) {
+      yield* Effect.logInfo("a rating isn't between 0 and 1");
       return yield* new FeedbackRatingOutOfRange({});
     }
 
-    // Step insert: database, span employee-performance-feedback.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span employee-performance-feedback.create.insert. The ratings in the appraisal's order,
+    // with their weightages, and their score; the appraisal's average counts it once it is submitted.
+    const rated = rateLines(lines, ratings.map((r) => ({ criteria: r.criteria, rating: r2(r.rating) })));
+    const totalScore = ratingScoreOf(rated);
+    yield* steps.insert(
+      records.insert(EmployeePerformanceFeedback, {
+        id,
+        company: held["company"],
+        appraisal,
+        appraisalCycle: held["appraisalCycle"],
+        employee: held["employee"],
+        reviewer,
+        feedback,
+        ratings: rated,
+        totalScore,
+      } as never),
+    );
 
     // The move create, to draft.
     yield* move();
@@ -101,7 +129,7 @@ const create: Handler = (_payload, { steps, move, id }) =>
     return {
       // PerformanceFeedbackDrafted needs employeePerformanceFeedback, and only the answer can give it.
       employeePerformanceFeedback: id,
-      totalScore: yield* Handlers.blank("totalScore, an employee-performance-feedback.totalScore"),
+      totalScore,
     };
   });
 

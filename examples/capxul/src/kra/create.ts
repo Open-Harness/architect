@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/kra/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/kra/create.handler.ts";
+import { Kra } from "../../blueprint/things/kra/thing.ts";
 
 /**
  * kra.create: Add a key result area to a company.
@@ -37,10 +38,13 @@ import type { Handler } from "../../generated/api/src/kra/create.handler.ts";
  *   once it answers, it writes KraCreated: kra from the answer, company from the payload;
  *   the call is the span kra.create, and its commit kra.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, title }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span kra.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span kra.create.insert. A title the company already has is the runtime's refusal
+    // (oneTitlePerCompany).
+    yield* steps.insert(records.insert(Kra, { id, company, title }));
 
     // The move create, to active.
     yield* move();

@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/appraisal-cycle/verbs/complete.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal-cycle/complete.handler.ts";
+import { Appraisal } from "../../blueprint/things/appraisal/thing.ts";
 
 const { AppraisalsNotSubmitted } = Errors.declared;
 
@@ -44,28 +45,28 @@ const { AppraisalsNotSubmitted } = Errors.declared;
  *   once it answers, it writes AppraisalCycleCompleted: appraisalCycle from the answer;
  *   the call is the span appraisal-cycle.complete, and its commit appraisal-cycle.complete.commit.
  */
-const complete: Handler = (_payload, { steps, move }) =>
+const complete: Handler = ({ appraisalCycle }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal-cycle.complete.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // AppraisalsNotSubmitted: exit 47, CY-007.
-    if (yield* Handlers.blank<boolean>("refuse AppraisalsNotSubmitted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraisalsNotSubmitted was refused"));
-      return yield* new AppraisalsNotSubmitted({
-        drafts: yield* Handlers.blank("AppraisalsNotSubmitted.drafts, a RecordCount"),
-      });
+    // Step load: database, span appraisal-cycle.complete.load. The cycle's appraisals still in draft.
+    const drafts = yield* steps.load(
+      records.list({ thing: Appraisal, where: { appraisalCycle }, state: "draft", order: "oldest", limit: 1000, after: undefined }),
+    );
+
+    // AppraisalsNotSubmitted: exit 47, CY-007. HRMS's complete_cycle: every appraisal is submitted first.
+    if (drafts.items.length > 0) {
+      yield* Effect.logInfo(`${drafts.items.length} appraisals in the cycle are drafts`);
+      return yield* new AppraisalsNotSubmitted({ drafts: BigInt(drafts.items.length) as never });
     }
 
-    // Step update: database, span appraisal-cycle.complete.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span appraisal-cycle.complete.update. The move is the whole change.
+    yield* steps.update(Effect.void);
 
     // The move complete, from inProgress, to completed.
     yield* move();
 
-    return {
-      appraisalCycle: yield* Handlers.blank("appraisalCycle, an appraisal-cycle.id"),
-    };
+    return { appraisalCycle };
   });
 
 export default complete;

@@ -1,8 +1,13 @@
 // Scaffolded from blueprint/things/appraisal-cycle/verbs/start.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Ids, Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal-cycle/start.handler.ts";
+import { Appraisal } from "../../blueprint/things/appraisal/thing.ts";
+import { oneAppraisalPerCycle } from "../../blueprint/things/appraisal/invariants.ts";
+import { AppraisalTemplate } from "../../blueprint/things/appraisal-template/thing.ts";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
+import { draftFrom } from "../appraisal-math.ts";
 
 const { CycleWithoutAppraisees } = Errors.declared;
 
@@ -46,27 +51,59 @@ const { CycleWithoutAppraisees } = Errors.declared;
  *   once it answers, it writes AppraisalCycleStarted: appraisalCycle from the answer;
  *   the call is the span appraisal-cycle.start, and its commit appraisal-cycle.start.commit.
  */
-const start: Handler = (_payload, { steps, move }) =>
+const start: Handler = ({ appraisalCycle }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal-cycle.start.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // CycleWithoutAppraisees: exit 46, CY-006.
-    if (yield* Handlers.blank<boolean>("refuse CycleWithoutAppraisees when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why CycleWithoutAppraisees was refused"));
+    // Step load: database, span appraisal-cycle.start.load. The runtime read the cycle; each row's employee, template
+    // and any appraisal it already has are read here.
+    const rows = yield* steps.load(
+      Effect.gen(function* () {
+        if (!subject) return yield* Effect.die(new Error(`appraisal cycle ${appraisalCycle} was read and then not found`));
+        const appraisees = subject["appraisees"] as ReadonlyArray<{ readonly employee: string; readonly appraisalTemplate: string }>;
+        return yield* Effect.forEach(appraisees, (row) =>
+          Effect.all({
+            employee: Effect.succeed(row.employee),
+            person: records.find(Employee, row.employee),
+            template: records.find(AppraisalTemplate, row.appraisalTemplate),
+            held: records.findBy(oneAppraisalPerCycle, { employee: row.employee, appraisalCycle } as never),
+          }),
+        );
+      }),
+    );
+
+    // CycleWithoutAppraisees: exit 46, CY-006. HRMS's Create Appraisals: "Please select employees to create appraisals for".
+    if (rows.length === 0) {
+      yield* Effect.logInfo("the cycle lists no appraisees");
       return yield* new CycleWithoutAppraisees({});
     }
 
-    // Step create: database, in the store appraisal-cycle, appraisal, span appraisal-cycle.start.create.
-    yield* steps.create(Handlers.blank("create: the work this step does"));
+    // Step create: database, in the store appraisal-cycle, appraisal, span appraisal-cycle.start.create. One draft
+    // appraisal per row, by the row's own template, skipping an employee who already has one (HRMS skips the duplicate)
+    // or has left (CX-expense-leavers). The method is the cycle's.
+    const company = subject!["company"] as string;
+    const kraEvaluationMethod = subject!["kraEvaluationMethod"] as string;
+    const appraisals = yield* steps.create(
+      Effect.gen(function* () {
+        const made: Array<string> = [];
+        for (const { employee, person, template, held } of rows) {
+          if (held || !template || person?.state !== "active") continue;
+          const id = yield* Ids.of(Appraisal.fields.id);
+          yield* records.insert(
+            Appraisal,
+            { id, company, employee, appraisalCycle, appraisalTemplate: template["id"], kraEvaluationMethod, ...draftFrom(template) } as never,
+            "draft",
+          );
+          made.push(id);
+        }
+        return made;
+      }),
+    );
 
     // The move start, from notStarted, to inProgress.
     yield* move();
 
-    return {
-      appraisalCycle: yield* Handlers.blank("appraisalCycle, an appraisal-cycle.id"),
-      appraisals: yield* Handlers.blank("appraisals, an AppraisalIds"),
-    };
+    return { appraisalCycle, appraisals: appraisals as never };
   });
 
 export default start;

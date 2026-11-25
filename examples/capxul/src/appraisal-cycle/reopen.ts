@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/appraisal-cycle/verbs/reopen.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/appraisal-cycle/reopen.handler.ts";
 
 /**
@@ -40,17 +39,16 @@ import type { Handler } from "../../generated/api/src/appraisal-cycle/reopen.han
  *   once it answers, it writes AppraisalCycleReopened: appraisalCycle from the answer;
  *   the call is the span appraisal-cycle.reopen, and its commit appraisal-cycle.reopen.commit.
  */
-const reopen: Handler = (_payload, { steps, move }) =>
+const reopen: Handler = ({ appraisalCycle }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span appraisal-cycle.reopen.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span appraisal-cycle.reopen.update. The move is the whole change: HRMS's form lets a
+    // completed cycle go back to In Progress.
+    yield* steps.update(Effect.void);
 
     // The move reopen, from completed, to inProgress.
     yield* move();
 
-    return {
-      appraisalCycle: yield* Handlers.blank("appraisalCycle, an appraisal-cycle.id"),
-    };
+    return { appraisalCycle };
   });
 
 export default reopen;

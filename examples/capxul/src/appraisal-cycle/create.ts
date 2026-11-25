@@ -1,8 +1,11 @@
 // Scaffolded from blueprint/things/appraisal-cycle/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal-cycle/create.handler.ts";
+import { AppraisalCycle } from "../../blueprint/things/appraisal-cycle/thing.ts";
+import { AppraisalTemplate } from "../../blueprint/things/appraisal-template/thing.ts";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
 
 const { CycleEndsBeforeStart, AppraiseeNotInCompany, AppraiseeHasLeft, AppraiseeTemplateNotInCompany, AppraiseeListedTwice } = Errors.declared;
 
@@ -52,45 +55,52 @@ const { CycleEndsBeforeStart, AppraiseeNotInCompany, AppraiseeHasLeft, Appraisee
  *   once it answers, it writes AppraisalCycleCreated: appraisalCycle from the answer, company from the payload;
  *   the call is the span appraisal-cycle.create, and its commit appraisal-cycle.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, cycleName, startDate, endDate, kraEvaluationMethod, appraisees }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal-cycle.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // CycleEndsBeforeStart: exit 41, CY-001.
-    if (yield* Handlers.blank<boolean>("refuse CycleEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why CycleEndsBeforeStart was refused"));
-      return yield* new CycleEndsBeforeStart({
-        startDate: yield* Handlers.blank("CycleEndsBeforeStart.startDate, a Day"),
-      });
+    // Step load: database, span appraisal-cycle.create.load. Each row's employee and template, to see whose they are.
+    const { people, templates } = yield* steps.load(
+      Effect.all({
+        people: Effect.forEach(appraisees, (row) => records.find(Employee, row.employee)),
+        templates: Effect.forEach(appraisees, (row) => records.find(AppraisalTemplate, row.appraisalTemplate)),
+      }),
+    );
+
+    // Refusal order (errors.ts), each judged over every row before the next.
+    // CycleEndsBeforeStart: exit 41, CY-001. Days are YYYY-MM-DD, so they compare as text; one day is a cycle.
+    if (endDate < startDate) {
+      yield* Effect.logInfo("the cycle ends before it starts");
+      return yield* new CycleEndsBeforeStart({ startDate });
     }
 
-    // AppraiseeNotInCompany: exit 42, CY-002.
-    if (yield* Handlers.blank<boolean>("refuse AppraiseeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraiseeNotInCompany was refused"));
+    // AppraiseeNotInCompany: exit 42, CY-002. An employee that doesn't exist is refused the same way.
+    if (people.some((person) => person?.["company"] !== company)) {
+      yield* Effect.logInfo("an appraisee doesn't work for the cycle's company");
       return yield* new AppraiseeNotInCompany({});
     }
 
-    // AppraiseeHasLeft: exit 43, CY-003.
-    if (yield* Handlers.blank<boolean>("refuse AppraiseeHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraiseeHasLeft was refused"));
+    // AppraiseeHasLeft: exit 43, CY-003. A leaver is in no new cycle (CX-expense-leavers).
+    if (people.some((person) => person?.state !== "active")) {
+      yield* Effect.logInfo("an appraisee has left");
       return yield* new AppraiseeHasLeft({});
     }
 
-    // AppraiseeTemplateNotInCompany: exit 44, CY-004.
-    if (yield* Handlers.blank<boolean>("refuse AppraiseeTemplateNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraiseeTemplateNotInCompany was refused"));
+    // AppraiseeTemplateNotInCompany: exit 44, CY-004. A template that doesn't exist is refused the same way.
+    if (templates.some((template) => template?.["company"] !== company)) {
+      yield* Effect.logInfo("an appraisee's template isn't the company's");
       return yield* new AppraiseeTemplateNotInCompany({});
     }
 
     // AppraiseeListedTwice: exit 45, CY-005.
-    if (yield* Handlers.blank<boolean>("refuse AppraiseeListedTwice when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AppraiseeListedTwice was refused"));
+    if (new Set(appraisees.map((row) => row.employee)).size !== appraisees.length) {
+      yield* Effect.logInfo("an employee is listed twice");
       return yield* new AppraiseeListedTwice({});
     }
 
-    // Step insert: database, span appraisal-cycle.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span appraisal-cycle.create.insert. A name the company already has is the runtime's
+    // refusal (oneNamePerCompany).
+    yield* steps.insert(records.insert(AppraisalCycle, { id, company, cycleName, startDate, endDate, kraEvaluationMethod, appraisees }));
 
     // The move create, to notStarted.
     yield* move();
