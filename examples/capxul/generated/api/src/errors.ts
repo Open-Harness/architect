@@ -4,6 +4,7 @@ import { ErrorNames, wireStruct } from "orthograph/server";
 import * as Attendance from "../../../blueprint/things/attendance/errors.ts";
 import * as AttendanceRequest from "../../../blueprint/things/attendance-request/errors.ts";
 import * as BankAccount from "../../../blueprint/things/bank-account/errors.ts";
+import * as BankTransaction from "../../../blueprint/things/bank-transaction/errors.ts";
 import * as Branch from "../../../blueprint/things/branch/errors.ts";
 import * as BridgeBusiness from "../../../blueprint/things/bridge-business/errors.ts";
 import * as BridgeIndividual from "../../../blueprint/things/bridge-individual/errors.ts";
@@ -38,6 +39,10 @@ export const refusals = {
   RequestBeforeJoining: { code: "AQ-004", exit: 44, status: 422 },
   KybNotApproved: { code: "BA-001", exit: 41, status: 422 },
   BankAccountNameTaken: { code: "BA-002", exit: 42, status: 422 },
+  AccountClosed: { code: "BT-001", exit: 41, status: 422 },
+  CurrencyNotHeld: { code: "BT-002", exit: 42, status: 422 },
+  NothingToSend: { code: "BT-003", exit: 43, status: 422 },
+  AlreadyRecorded: { code: "BT-004", exit: 44, status: 422 },
   BranchNameTaken: { code: "BR-001", exit: 41, status: 422 },
   KybAlreadyStarted: { code: "KB-001", exit: 41, status: 422 },
   KycAlreadyStarted: { code: "KC-001", exit: 41, status: 422 },
@@ -85,6 +90,7 @@ export const refusals = {
   AttendanceNotMarked: { code: "AN-900", exit: 40, status: 409 },
   AttendanceRequestNotDraft: { code: "AQ-900", exit: 40, status: 409 },
   BankAccountNotOpen: { code: "BA-900", exit: 40, status: 409 },
+  BankTransactionNotPending: { code: "BT-900", exit: 40, status: 409 },
   BranchNotActive: { code: "BR-900", exit: 40, status: 409 },
   BridgeBusinessNotStarted: { code: "KB-900", exit: 40, status: 409 },
   BridgeIndividualNotStarted: { code: "KC-900", exit: 40, status: 409 },
@@ -106,6 +112,8 @@ export const refusals = {
   JobOfferNotAwaiting: { code: "JF-900", exit: 40, status: 409 },
   JobOpeningNotOpen: { code: "JO-900", exit: 40, status: 409 },
   ShiftTypeNotActive: { code: "SH-900", exit: 40, status: 409 },
+  BankAccountNotFound: { code: "BA-901", exit: 4, status: 404 },
+  BankTransactionNotFound: { code: "BT-901", exit: 4, status: 404 },
   BridgeBusinessNotFound: { code: "KB-901", exit: 4, status: 404 },
   BridgeIndividualNotFound: { code: "KC-901", exit: 4, status: 404 },
   CompanyNotFound: { code: "CO-901", exit: 4, status: 404 },
@@ -140,6 +148,14 @@ ErrorNames.name(BankAccount.KybNotApproved, "KybNotApproved");
 export class KybNotApproved extends Schema.TaggedError<KybNotApproved>()("KybNotApproved", { code: Schema.Literal(refusals.KybNotApproved.code), ...wireStruct(BankAccount.KybNotApproved.fields).fields }, { httpApiStatus: refusals.KybNotApproved.status }) { static readonly code = refusals.KybNotApproved.code; }
 ErrorNames.name(BankAccount.BankAccountNameTaken, "BankAccountNameTaken");
 export class BankAccountNameTaken extends Schema.TaggedError<BankAccountNameTaken>()("BankAccountNameTaken", { code: Schema.Literal(refusals.BankAccountNameTaken.code), ...wireStruct(BankAccount.BankAccountNameTaken.fields).fields }, { httpApiStatus: refusals.BankAccountNameTaken.status }) { static readonly code = refusals.BankAccountNameTaken.code; }
+ErrorNames.name(BankTransaction.AccountClosed, "AccountClosed");
+export class AccountClosed extends Schema.TaggedError<AccountClosed>()("AccountClosed", { code: Schema.Literal(refusals.AccountClosed.code), ...wireStruct(BankTransaction.AccountClosed.fields).fields }, { httpApiStatus: refusals.AccountClosed.status }) { static readonly code = refusals.AccountClosed.code; }
+ErrorNames.name(BankTransaction.CurrencyNotHeld, "CurrencyNotHeld");
+export class CurrencyNotHeld extends Schema.TaggedError<CurrencyNotHeld>()("CurrencyNotHeld", { code: Schema.Literal(refusals.CurrencyNotHeld.code), ...wireStruct(BankTransaction.CurrencyNotHeld.fields).fields }, { httpApiStatus: refusals.CurrencyNotHeld.status }) { static readonly code = refusals.CurrencyNotHeld.code; }
+ErrorNames.name(BankTransaction.NothingToSend, "NothingToSend");
+export class NothingToSend extends Schema.TaggedError<NothingToSend>()("NothingToSend", { code: Schema.Literal(refusals.NothingToSend.code), ...wireStruct(BankTransaction.NothingToSend.fields).fields }, { httpApiStatus: refusals.NothingToSend.status }) { static readonly code = refusals.NothingToSend.code; }
+ErrorNames.name(BankTransaction.AlreadyRecorded, "AlreadyRecorded");
+export class AlreadyRecorded extends Schema.TaggedError<AlreadyRecorded>()("AlreadyRecorded", { code: Schema.Literal(refusals.AlreadyRecorded.code), ...wireStruct(BankTransaction.AlreadyRecorded.fields).fields }, { httpApiStatus: refusals.AlreadyRecorded.status }) { static readonly code = refusals.AlreadyRecorded.code; }
 ErrorNames.name(Branch.BranchNameTaken, "BranchNameTaken");
 export class BranchNameTaken extends Schema.TaggedError<BranchNameTaken>()("BranchNameTaken", { code: Schema.Literal(refusals.BranchNameTaken.code), ...wireStruct(Branch.BranchNameTaken.fields).fields }, { httpApiStatus: refusals.BranchNameTaken.status }) { static readonly code = refusals.BranchNameTaken.code; }
 ErrorNames.name(BridgeBusiness.KybAlreadyStarted, "KybAlreadyStarted");
@@ -231,6 +247,7 @@ export class ShiftStartsWhenItEnds extends Schema.TaggedError<ShiftStartsWhenItE
 export class AttendanceNotMarked extends Schema.TaggedError<AttendanceNotMarked>()("AttendanceNotMarked", { code: Schema.Literal(refusals.AttendanceNotMarked.code), ...{ state: Schema.Literals(["marked"]) } }, { httpApiStatus: refusals.AttendanceNotMarked.status }) { static readonly code = refusals.AttendanceNotMarked.code; }
 export class AttendanceRequestNotDraft extends Schema.TaggedError<AttendanceRequestNotDraft>()("AttendanceRequestNotDraft", { code: Schema.Literal(refusals.AttendanceRequestNotDraft.code), ...{ state: Schema.Literals(["draft", "approved", "rejected"]) } }, { httpApiStatus: refusals.AttendanceRequestNotDraft.status }) { static readonly code = refusals.AttendanceRequestNotDraft.code; }
 export class BankAccountNotOpen extends Schema.TaggedError<BankAccountNotOpen>()("BankAccountNotOpen", { code: Schema.Literal(refusals.BankAccountNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.BankAccountNotOpen.status }) { static readonly code = refusals.BankAccountNotOpen.code; }
+export class BankTransactionNotPending extends Schema.TaggedError<BankTransactionNotPending>()("BankTransactionNotPending", { code: Schema.Literal(refusals.BankTransactionNotPending.code), ...{ state: Schema.Literals(["pending", "settled", "failed"]) } }, { httpApiStatus: refusals.BankTransactionNotPending.status }) { static readonly code = refusals.BankTransactionNotPending.code; }
 export class BranchNotActive extends Schema.TaggedError<BranchNotActive>()("BranchNotActive", { code: Schema.Literal(refusals.BranchNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.BranchNotActive.status }) { static readonly code = refusals.BranchNotActive.code; }
 export class BridgeBusinessNotStarted extends Schema.TaggedError<BridgeBusinessNotStarted>()("BridgeBusinessNotStarted", { code: Schema.Literal(refusals.BridgeBusinessNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeBusinessNotStarted.status }) { static readonly code = refusals.BridgeBusinessNotStarted.code; }
 export class BridgeIndividualNotStarted extends Schema.TaggedError<BridgeIndividualNotStarted>()("BridgeIndividualNotStarted", { code: Schema.Literal(refusals.BridgeIndividualNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeIndividualNotStarted.status }) { static readonly code = refusals.BridgeIndividualNotStarted.code; }
@@ -252,6 +269,8 @@ export class JobApplicantNotOpen extends Schema.TaggedError<JobApplicantNotOpen>
 export class JobOfferNotAwaiting extends Schema.TaggedError<JobOfferNotAwaiting>()("JobOfferNotAwaiting", { code: Schema.Literal(refusals.JobOfferNotAwaiting.code), ...{ state: Schema.Literals(["awaiting", "accepted", "rejected"]) } }, { httpApiStatus: refusals.JobOfferNotAwaiting.status }) { static readonly code = refusals.JobOfferNotAwaiting.code; }
 export class JobOpeningNotOpen extends Schema.TaggedError<JobOpeningNotOpen>()("JobOpeningNotOpen", { code: Schema.Literal(refusals.JobOpeningNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.JobOpeningNotOpen.status }) { static readonly code = refusals.JobOpeningNotOpen.code; }
 export class ShiftTypeNotActive extends Schema.TaggedError<ShiftTypeNotActive>()("ShiftTypeNotActive", { code: Schema.Literal(refusals.ShiftTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ShiftTypeNotActive.status }) { static readonly code = refusals.ShiftTypeNotActive.code; }
+export class BankAccountNotFound extends Schema.TaggedError<BankAccountNotFound>()("BankAccountNotFound", { code: Schema.Literal(refusals.BankAccountNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BankAccountNotFound.status }) { static readonly code = refusals.BankAccountNotFound.code; }
+export class BankTransactionNotFound extends Schema.TaggedError<BankTransactionNotFound>()("BankTransactionNotFound", { code: Schema.Literal(refusals.BankTransactionNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BankTransactionNotFound.status }) { static readonly code = refusals.BankTransactionNotFound.code; }
 export class BridgeBusinessNotFound extends Schema.TaggedError<BridgeBusinessNotFound>()("BridgeBusinessNotFound", { code: Schema.Literal(refusals.BridgeBusinessNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeBusinessNotFound.status }) { static readonly code = refusals.BridgeBusinessNotFound.code; }
 export class BridgeIndividualNotFound extends Schema.TaggedError<BridgeIndividualNotFound>()("BridgeIndividualNotFound", { code: Schema.Literal(refusals.BridgeIndividualNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeIndividualNotFound.status }) { static readonly code = refusals.BridgeIndividualNotFound.code; }
 export class CompanyNotFound extends Schema.TaggedError<CompanyNotFound>()("CompanyNotFound", { code: Schema.Literal(refusals.CompanyNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.CompanyNotFound.status }) { static readonly code = refusals.CompanyNotFound.code; }
@@ -282,6 +301,10 @@ export const declared = {
   RequestBeforeJoining: AttendanceRequest.RequestBeforeJoining,
   KybNotApproved: BankAccount.KybNotApproved,
   BankAccountNameTaken: BankAccount.BankAccountNameTaken,
+  AccountClosed: BankTransaction.AccountClosed,
+  CurrencyNotHeld: BankTransaction.CurrencyNotHeld,
+  NothingToSend: BankTransaction.NothingToSend,
+  AlreadyRecorded: BankTransaction.AlreadyRecorded,
   BranchNameTaken: Branch.BranchNameTaken,
   KybAlreadyStarted: BridgeBusiness.KybAlreadyStarted,
   KycAlreadyStarted: BridgeIndividual.KycAlreadyStarted,
@@ -329,4 +352,4 @@ export const declared = {
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, KybNotApproved, BankAccountNameTaken, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, ShiftTypeNotActive, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, KybNotApproved, BankAccountNameTaken, AccountClosed, CurrencyNotHeld, NothingToSend, AlreadyRecorded, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, EmployeeGradeNameTaken, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BankTransactionNotPending, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeGradeNotActive, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, ShiftTypeNotActive, BankAccountNotFound, BankTransactionNotFound, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, NotAllowed, IdempotencyConflict };

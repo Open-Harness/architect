@@ -30,6 +30,16 @@
     "kind": "refers"
   },
   {
+    "from": "bank-transaction.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "bank-transaction.account",
+    "to": "bank-account.id",
+    "kind": "refers"
+  },
+  {
     "from": "branch.company",
     "to": "company.id",
     "kind": "refers"
@@ -333,6 +343,71 @@
     "from": "bank-account.open",
     "to": "company.owner",
     "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.fail",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.fail",
+    "to": "bank-transaction.TransferFailed",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.get",
+    "to": "bank-transaction",
+    "kind": "reads"
+  },
+  {
+    "from": "bank-transaction.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.land",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.land",
+    "to": "bank-transaction.DepositLanded",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.list",
+    "to": "bank-transaction",
+    "kind": "reads"
+  },
+  {
+    "from": "bank-transaction.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "bank-transaction.TransferSent",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.settle",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.settle",
+    "to": "bank-transaction.TransferSettled",
+    "kind": "emits"
   },
   {
     "from": "branch.create",

@@ -3,6 +3,7 @@ import { EventNames } from "orthograph/server";
 import * as Attendance from "../../../blueprint/things/attendance/events.ts";
 import * as AttendanceRequest from "../../../blueprint/things/attendance-request/events.ts";
 import * as BankAccount from "../../../blueprint/things/bank-account/events.ts";
+import * as BankTransaction from "../../../blueprint/things/bank-transaction/events.ts";
 import * as Branch from "../../../blueprint/things/branch/events.ts";
 import * as BridgeBusiness from "../../../blueprint/things/bridge-business/events.ts";
 import * as BridgeIndividual from "../../../blueprint/things/bridge-individual/events.ts";
@@ -31,6 +32,10 @@ EventNames.name(AttendanceRequest.AttendanceRequestRejected, "AttendanceRequestR
 EventNames.name(AttendanceRequest.AttendanceRequested, "AttendanceRequested");
 EventNames.name(BankAccount.BankAccountClosed, "BankAccountClosed");
 EventNames.name(BankAccount.BankAccountOpened, "BankAccountOpened");
+EventNames.name(BankTransaction.DepositLanded, "DepositLanded");
+EventNames.name(BankTransaction.TransferFailed, "TransferFailed");
+EventNames.name(BankTransaction.TransferSent, "TransferSent");
+EventNames.name(BankTransaction.TransferSettled, "TransferSettled");
 EventNames.name(Branch.BranchCreated, "BranchCreated");
 EventNames.name(BridgeBusiness.KybApproved, "KybApproved");
 EventNames.name(BridgeBusiness.KybRejected, "KybRejected");
@@ -69,4 +74,4 @@ EventNames.name(JobOpening.JobOpeningClosed, "JobOpeningClosed");
 EventNames.name(JobOpening.JobOpeningCreated, "JobOpeningCreated");
 EventNames.name(ShiftType.ShiftTypeCreated, "ShiftTypeCreated");
 
-export const names = ["AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "InterviewCleared", "InterviewRejected", "InterviewScheduled", "InterviewFeedbackGiven", "InterviewRoundCreated", "JobApplicantAccepted", "JobApplicantCreated", "JobApplicantHeld", "JobApplicantRejected", "JobOfferAccepted", "JobOfferMade", "JobOfferRejected", "JobOpeningClosed", "JobOpeningCreated", "ShiftTypeCreated"] as const;
+export const names = ["AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "DepositLanded", "TransferFailed", "TransferSent", "TransferSettled", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "InterviewCleared", "InterviewRejected", "InterviewScheduled", "InterviewFeedbackGiven", "InterviewRoundCreated", "JobApplicantAccepted", "JobApplicantCreated", "JobApplicantHeld", "JobApplicantRejected", "JobOfferAccepted", "JobOfferMade", "JobOfferRejected", "JobOpeningClosed", "JobOpeningCreated", "ShiftTypeCreated"] as const;

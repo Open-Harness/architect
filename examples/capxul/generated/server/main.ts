@@ -22,6 +22,12 @@ import * as attendanceRequestReject from "../api/src/attendance-request/reject.t
 import * as bankAccountClose from "../api/src/bank-account/close.ts";
 import * as bankAccountGet from "../api/src/bank-account/get.ts";
 import * as bankAccountOpen from "../api/src/bank-account/open.ts";
+import * as bankTransactionFail from "../api/src/bank-transaction/fail.ts";
+import * as bankTransactionGet from "../api/src/bank-transaction/get.ts";
+import * as bankTransactionLand from "../api/src/bank-transaction/land.ts";
+import * as bankTransactionList from "../api/src/bank-transaction/list.ts";
+import * as bankTransactionSend from "../api/src/bank-transaction/send.ts";
+import * as bankTransactionSettle from "../api/src/bank-transaction/settle.ts";
 import * as branchCreate from "../api/src/branch/create.ts";
 import * as branchGet from "../api/src/branch/get.ts";
 import * as bridgeBusinessApprove from "../api/src/bridge-business/approve.ts";
@@ -86,6 +92,10 @@ import attendanceRequestCreateHandler from "../../src/attendance-request/create.
 import attendanceRequestRejectHandler from "../../src/attendance-request/reject.ts";
 import bankAccountCloseHandler from "../../src/bank-account/close.ts";
 import bankAccountOpenHandler from "../../src/bank-account/open.ts";
+import bankTransactionFailHandler from "../../src/bank-transaction/fail.ts";
+import bankTransactionLandHandler from "../../src/bank-transaction/land.ts";
+import bankTransactionSendHandler from "../../src/bank-transaction/send.ts";
+import bankTransactionSettleHandler from "../../src/bank-transaction/settle.ts";
 import branchCreateHandler from "../../src/branch/create.ts";
 import bridgeBusinessApproveHandler from "../../src/bridge-business/approve.ts";
 import bridgeBusinessRejectHandler from "../../src/bridge-business/reject.ts";
@@ -126,6 +136,7 @@ import shiftTypeCreateHandler from "../../src/shift-type/create.ts";
 import * as attendanceThing from "../../blueprint/things/attendance/thing.ts";
 import * as attendanceRequestThing from "../../blueprint/things/attendance-request/thing.ts";
 import * as bankAccountThing from "../../blueprint/things/bank-account/thing.ts";
+import * as bankTransactionThing from "../../blueprint/things/bank-transaction/thing.ts";
 import * as branchThing from "../../blueprint/things/branch/thing.ts";
 import * as bridgeBusinessThing from "../../blueprint/things/bridge-business/thing.ts";
 import * as bridgeIndividualThing from "../../blueprint/things/bridge-individual/thing.ts";
@@ -149,6 +160,7 @@ import * as jobOpeningThing from "../../blueprint/things/job-opening/thing.ts";
 import * as shiftTypeThing from "../../blueprint/things/shift-type/thing.ts";
 import * as attendanceInvariants from "../../blueprint/things/attendance/invariants.ts";
 import * as bankAccountInvariants from "../../blueprint/things/bank-account/invariants.ts";
+import * as bankTransactionInvariants from "../../blueprint/things/bank-transaction/invariants.ts";
 import * as branchInvariants from "../../blueprint/things/branch/invariants.ts";
 import * as bridgeBusinessInvariants from "../../blueprint/things/bridge-business/invariants.ts";
 import * as bridgeIndividualInvariants from "../../blueprint/things/bridge-individual/invariants.ts";
@@ -189,6 +201,12 @@ const attendanceRequestRejectServed = Handlers.serve({ name: "attendance-request
 const bankAccountCloseServed = Handlers.serve({ name: "bank-account.close", operation: bankAccountClose.declaration, handler: bankAccountCloseHandler, notFrom: "BankAccountNotOpen", codes: Errors.codes });
 const bankAccountGetServed = Reads.serve({ name: "bank-account.get", read: bankAccountGet.declaration });
 const bankAccountOpenServed = Handlers.serve({ name: "bank-account.open", operation: bankAccountOpen.declaration, handler: bankAccountOpenHandler, invariants: { BankAccountNameTaken: "bank-account.oneNamePerCompany" }, codes: Errors.codes });
+const bankTransactionFailServed = Handlers.serve({ name: "bank-transaction.fail", operation: bankTransactionFail.declaration, handler: bankTransactionFailHandler, notFrom: "BankTransactionNotPending", notFound: { transaction: "BankTransactionNotFound" }, invariants: { AlreadyRecorded: "bank-transaction.oneTransactionPerMovement" }, codes: Errors.codes });
+const bankTransactionGetServed = Reads.serve({ name: "bank-transaction.get", read: bankTransactionGet.declaration });
+const bankTransactionLandServed = Handlers.serve({ name: "bank-transaction.land", operation: bankTransactionLand.declaration, handler: bankTransactionLandHandler, notFound: { account: "BankAccountNotFound" }, invariants: { AlreadyRecorded: "bank-transaction.oneTransactionPerMovement" }, codes: Errors.codes });
+const bankTransactionListServed = Reads.serve({ name: "bank-transaction.list", read: bankTransactionList.declaration });
+const bankTransactionSendServed = Handlers.serve({ name: "bank-transaction.send", operation: bankTransactionSend.declaration, handler: bankTransactionSendHandler, invariants: { AlreadyRecorded: "bank-transaction.oneTransactionPerMovement" }, codes: Errors.codes });
+const bankTransactionSettleServed = Handlers.serve({ name: "bank-transaction.settle", operation: bankTransactionSettle.declaration, handler: bankTransactionSettleHandler, notFrom: "BankTransactionNotPending", notFound: { transaction: "BankTransactionNotFound" }, invariants: { AlreadyRecorded: "bank-transaction.oneTransactionPerMovement" }, codes: Errors.codes });
 const branchCreateServed = Handlers.serve({ name: "branch.create", operation: branchCreate.declaration, handler: branchCreateHandler, invariants: { BranchNameTaken: "branch.oneNamePerCompany" }, codes: Errors.codes });
 const branchGetServed = Reads.serve({ name: "branch.get", read: branchGet.declaration });
 const bridgeBusinessApproveServed = Handlers.serve({ name: "bridge-business.approve", operation: bridgeBusinessApprove.declaration, handler: bridgeBusinessApproveHandler, notFrom: "BridgeBusinessNotStarted", notFound: { business: "BridgeBusinessNotFound" }, invariants: { KybAlreadyStarted: "bridge-business.oneKybPerCompany" }, codes: Errors.codes });
@@ -249,10 +267,10 @@ const shiftTypeCreateServed = Handlers.serve({ name: "shift-type.create", operat
 const shiftTypeGetServed = Reads.serve({ name: "shift-type.get", read: shiftTypeGet.declaration });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(interviewThing), "interview"], [thingIn(interviewFeedbackThing), "interview-feedback"], [thingIn(interviewRoundThing), "interview-round"], [thingIn(jobApplicantThing), "job-applicant"], [thingIn(jobOfferThing), "job-offer"], [thingIn(jobOpeningThing), "job-opening"], [thingIn(shiftTypeThing), "shift-type"]] as const;
+const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(bankTransactionThing), "bank-transaction"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(interviewThing), "interview"], [thingIn(interviewFeedbackThing), "interview-feedback"], [thingIn(interviewRoundThing), "interview-round"], [thingIn(jobApplicantThing), "job-applicant"], [thingIn(jobOfferThing), "job-offer"], [thingIn(jobOpeningThing), "job-opening"], [thingIn(shiftTypeThing), "shift-type"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
+const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("bank-transaction", bankTransactionInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
 const CallApi = Api.middleware(CallTelemetry);
@@ -294,6 +312,17 @@ const BankAccountLive = HttpApiBuilder.group(CallApi, "bank-account", Effect.fn(
       .handle("close", ({ payload, request }) => call(bankAccountCloseServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(bankAccountGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("open", ({ payload, request }) => call(bankAccountOpenServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const BankTransactionLive = HttpApiBuilder.group(CallApi, "bank-transaction", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("fail", ({ payload, request }) => call(bankTransactionFailServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(bankTransactionGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("land", ({ payload, request }) => call(bankTransactionLandServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("list", ({ payload, request }) => call(bankTransactionListServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("send", ({ payload, request }) => call(bankTransactionSendServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("settle", ({ payload, request }) => call(bankTransactionSettleServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const BranchLive = HttpApiBuilder.group(CallApi, "branch", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
@@ -486,6 +515,10 @@ export const steps = {
   "attendance-request.reject": ["attendance-request.reject.update"],
   "bank-account.close": ["bank-account.close.update"],
   "bank-account.open": ["bank-account.open.load", "bank-account.open.insert"],
+  "bank-transaction.fail": ["bank-transaction.fail.update"],
+  "bank-transaction.land": ["bank-transaction.land.load", "bank-transaction.land.insert"],
+  "bank-transaction.send": ["bank-transaction.send.load", "bank-transaction.send.insert"],
+  "bank-transaction.settle": ["bank-transaction.settle.update"],
   "branch.create": ["branch.create.insert"],
   "bridge-business.approve": ["bridge-business.approve.update"],
   "bridge-business.reject": ["bridge-business.reject.update"],
@@ -533,7 +566,7 @@ const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: WorldEntry.fenced(e
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, InterviewLive, InterviewFeedbackLive, InterviewRoundLive, JobApplicantLive, JobOfferLive, JobOpeningLive, ShiftTypeLive]),
+      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BankTransactionLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, InterviewLive, InterviewFeedbackLive, InterviewRoundLive, JobApplicantLive, JobOfferLive, JobOpeningLive, ShiftTypeLive]),
       Layer.provideMerge(CallTelemetry.layer),
       Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, WorldEntry.work(env, wakes), Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(WorldEntry.fenced(env, env.DB))),
@@ -558,7 +591,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "interview.clear": interviewClearServed, "interview.create": interviewCreateServed, "interview.get": interviewGetServed, "interview.reject": interviewRejectServed, "interview-feedback.get": interviewFeedbackGetServed, "interview-feedback.give": interviewFeedbackGiveServed, "interview-round.create": interviewRoundCreateServed, "interview-round.get": interviewRoundGetServed, "job-applicant.accept": jobApplicantAcceptServed, "job-applicant.create": jobApplicantCreateServed, "job-applicant.get": jobApplicantGetServed, "job-applicant.hold": jobApplicantHoldServed, "job-applicant.reject": jobApplicantRejectServed, "job-offer.accept": jobOfferAcceptServed, "job-offer.create": jobOfferCreateServed, "job-offer.get": jobOfferGetServed, "job-offer.reject": jobOfferRejectServed, "job-opening.close": jobOpeningCloseServed, "job-opening.create": jobOpeningCreateServed, "job-opening.get": jobOpeningGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
+  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "bank-transaction.fail": bankTransactionFailServed, "bank-transaction.get": bankTransactionGetServed, "bank-transaction.land": bankTransactionLandServed, "bank-transaction.list": bankTransactionListServed, "bank-transaction.send": bankTransactionSendServed, "bank-transaction.settle": bankTransactionSettleServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "interview.clear": interviewClearServed, "interview.create": interviewCreateServed, "interview.get": interviewGetServed, "interview.reject": interviewRejectServed, "interview-feedback.get": interviewFeedbackGetServed, "interview-feedback.give": interviewFeedbackGiveServed, "interview-round.create": interviewRoundCreateServed, "interview-round.get": interviewRoundGetServed, "job-applicant.accept": jobApplicantAcceptServed, "job-applicant.create": jobApplicantCreateServed, "job-applicant.get": jobApplicantGetServed, "job-applicant.hold": jobApplicantHoldServed, "job-applicant.reject": jobApplicantRejectServed, "job-offer.accept": jobOfferAcceptServed, "job-offer.create": jobOfferCreateServed, "job-offer.get": jobOfferGetServed, "job-offer.reject": jobOfferRejectServed, "job-opening.close": jobOpeningCloseServed, "job-opening.create": jobOpeningCreateServed, "job-opening.get": jobOpeningGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 
