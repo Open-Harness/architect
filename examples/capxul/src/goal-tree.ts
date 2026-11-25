@@ -23,7 +23,7 @@ export interface Moved {
 const goalsOf = (employee: string, appraisalCycle: string, moved: Moved) =>
   Effect.gen(function* () {
     const records = yield* Records;
-    const page = yield* records.list({ thing: Goal, where: { employee, appraisalCycle }, state: undefined, order: "oldest", limit: 1000, after: undefined });
+    const page = yield* records.list({ thing: Goal, where: { employee, appraisalCycle }, state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined });
     return (page.items as unknown as ReadonlyArray<Row>).map((g) => (g.id === moved.id ? { ...g, progress: moved.progress, state: moved.state } : g));
   });
 

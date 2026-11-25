@@ -51,7 +51,7 @@ const complete: Handler = ({ appraisalCycle }, { steps, move }) =>
 
     // Step load: database, span appraisal-cycle.complete.load. The cycle's appraisals still in draft.
     const drafts = yield* steps.load(
-      records.list({ thing: Appraisal, where: { appraisalCycle }, state: "draft", order: "oldest", limit: 1000, after: undefined }),
+      records.list({ thing: Appraisal, where: { appraisalCycle }, state: "draft", order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined }),
     );
 
     // AppraisalsNotSubmitted: exit 47, CY-007. HRMS's complete_cycle: every appraisal is submitted first.

@@ -60,7 +60,7 @@ const submit: Handler = ({ employeePerformanceFeedback }, { steps, move, subject
       Effect.all({
         held: records.find(Appraisal, appraisal),
         cycle: records.find(AppraisalCycle, subject["appraisalCycle"] as string),
-        submitted: records.list({ thing: EmployeePerformanceFeedback, where: { appraisal }, state: "submitted", order: "oldest", limit: 1000, after: undefined }),
+        submitted: records.list({ thing: EmployeePerformanceFeedback, where: { appraisal }, state: "submitted", order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined }),
       }),
     );
     if (!held) return yield* Effect.die(new Error(`appraisal ${appraisal} was read and then not found`));
