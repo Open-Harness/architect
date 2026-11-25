@@ -6,7 +6,7 @@ import { owner } from "../../company/roles.ts";
 import { self } from "../../employee/roles.ts";
 import { Appraisal } from "../../appraisal/thing.ts";
 
-// HRMS's `update_status("Completed")`: the progress becomes 100, and the parent and appraisal follow as on an update.
+// HRMS's `update_status("Completed")`: the progress becomes 100, and the parent's progress and appraisal follow as on an update.
 export default Blueprint.operation(Goal, {
   description: "Mark a goal completed, setting its progress to 100.",
   payload: { goal: Goal.fields.id },

@@ -1243,6 +1243,18 @@
       },
       "earlier": []
     },
+    "GL-012": {
+      "name": "GoalNotGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalNotGroup"
+        }
+      },
+      "earlier": []
+    },
     "GL-900": {
       "name": "GoalNotPending",
       "owner": "goal",

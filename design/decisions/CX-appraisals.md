@@ -3,8 +3,8 @@
 **Decided 25 November 2026** by Goal 16's lead (thread T-01a2093c-8643-7794-9ce7-5dbc110ce4aa), with slice 8g's checks
 author (thread T-01a210a3-ed84-7616-ad24-0b27ad67babe), who read HRMS at `46b38904`
 (`hrms/hr/doctype/{appraisal_cycle,appraisee,appraisal_template,appraisal_template_goal,kra,appraisal,appraisal_kra,appraisal_goal,goal,employee_performance_feedback,employee_feedback_criteria,employee_feedback_rating}`
-and `hrms/hr/utils.py`). Where the lead's outline and the source differed, the source won. Each difference is listed
-below for the lead to confirm.
+and `hrms/hr/utils.py`). Where the lead's outline and the source differed, the source won. Each difference is listed below; the lead confirmed every one on #1030, 25 November 2026, two
+places on every score as a deliberate departure from HRMS.
 
 ## What 8g holds
 
@@ -44,8 +44,8 @@ each journey has one such caller per move.
 - Automated Based on Goal Progress: a KRA's score is the average progress of its top-level goals that aren't archived,
   rounded; a line earns score × weightage ÷ 100, rounded (HRMS's `goal_completion` and `goal_score` have precision 2);
   the total is those rounded lines summed ÷ 20.
-- A group goal's progress is the average of its children that aren't archived, and its status follows unless it is
-  archived or closed; this climbs to the root.
+- A group goal's progress is the average of its children that aren't archived, and this climbs to the root. Its
+  status follows that progress by its own call (below, #972).
 - Self and feedback scores are Σ rating × 5 × weightage ÷ 100, summed unrounded and rounded once (0.33 and 0.33 give
   1.155 + 0.495 = 1.65). The average feedback score covers submitted feedback
   only. The final score is (total + self + average feedback) ÷ 3.
@@ -57,6 +57,21 @@ each journey has one such caller per move.
 
 The journeys pin the arithmetic with hand-worked numbers, including half-up cases (1.275 → 1.28, 3.025 → 3.03) and
 the rounding points above.
+
+## A group's status: a second call, for now (#972)
+
+HRMS's `update_parent_progress` sets each parent's progress and status as a child saves. An Orthograph handler may not
+move another record's state: `Records.update(…, state)` is reserved for sweeps, and that gap is #972 (as in
+CX-recruitment, for the offer and the applicant). So, the lead's call on 25 November 2026:
+
+- A child's move rolls its parents' **progress** up as a field update on Goal, which the move's own `writes` cover.
+- A group's **status** follows by its own call, `goal.roll-up` (`rollUp`, from and to pending, in progress or
+  completed), made by the employee or the owner. It sets the status the group's progress gives and refuses a goal that
+  isn't a group (`GoalNotGroup`) and a completed cycle (`GoalCycleCompleted`, judged first). Until it is called, a
+  group reads with its old status.
+- When #972 lands, roll-up folds into the child's moves, and the journeys lose those steps.
+
+A group is never archived or closed (`GoalIsGroup`), so no journey reaches roll-up's machine refusal.
 
 ## Writes
 
@@ -114,16 +129,19 @@ Nothing reads the clock. Cycle days are typed in, and no journey steps the clock
    got undefined"). `goal.create` no longer answers the parent; journeys reach it through `goal.list`.
 2. **A read by id that names an optional field dies on a row without it** ("answered outside its declaration: Expected
    string"). `goal.get` leaves out `parentGoal`; `goal.list` carries it.
-3. **A parent goal's status follows its children through `Records.update(…, state)`**, whose own comment reserves a
-   state argument for sweeps (like #972). The throwaway build does it that way; core should say whether a handler may.
+   Gaps 1 and 2 are #1018 (the read half #1023, the eval half #1029); they reach goal/capxul with the lead's next merge
+   of main, and `goal.create` may then answer the parent and `goal.get` read it.
+3. **A parent goal's status can't follow its children in the same call.** That is #972; `goal.roll-up` stands in
+   (above).
 4. **A docs worked example renders `undefined` differently between `generate` and `check`**, which shows up as drift.
-   Journeys avoid `undefined` in expectations.
-5. **Decimals render as `{value, scale}` in generated docs.** Cosmetic.
+   Journeys avoid `undefined` in expectations. Filed as #1031.
+5. **Decimals render as `{value, scale}` in generated docs.** Cosmetic. Filed as #1032.
 6. **`s.last` is the only answer that carries forward**, so a long journey reaches back to earlier records through list
    reads (`appraisal.list`, `goal.list`).
 
 ## Known limits, left out of 8g
 
+- A group goal's status lags its progress until someone calls `goal.roll-up` (#972).
 - Appraisal-linked promotions, energy points, reminders and emails.
 - Cycle-wide recalculation tools beyond the final score each move keeps current.
 - Cancelling and amending appraisals and feedback.

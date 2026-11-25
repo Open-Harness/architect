@@ -61,7 +61,7 @@ export type { EmploymentType, EmploymentTypeState, EmploymentTypeCreated } from 
 export type { Expense, ExpenseState, ExpenseAdded } from "./expense/types.ts";
 export type { ExpenseClaim, ExpenseClaimState, ExpenseClaimApproved, ExpenseClaimCreated, ExpenseClaimRejected } from "./expense-claim/types.ts";
 export type { ExpenseClaimType, ExpenseClaimTypeState, ExpenseClaimTypeCreated } from "./expense-claim-type/types.ts";
-export type { Goal, GoalState, GoalArchived, GoalClosed, GoalCompleted, GoalCreated, GoalProgressUpdated, GoalReopened, GoalUnarchived } from "./goal/types.ts";
+export type { Goal, GoalState, GoalArchived, GoalClosed, GoalCompleted, GoalCreated, GoalProgressUpdated, GoalReopened, GoalRolledUp, GoalUnarchived } from "./goal/types.ts";
 export type { Holiday, HolidayState, HolidayAdded } from "./holiday/types.ts";
 export type { HolidayList, HolidayListState, HolidayListCreated, WeeklyOffAdded } from "./holiday-list/types.ts";
 export type { Interview, InterviewState, InterviewCleared, InterviewRejected, InterviewScheduled } from "./interview/types.ts";

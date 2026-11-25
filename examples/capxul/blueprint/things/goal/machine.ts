@@ -6,6 +6,8 @@ import * as Events from "./events.ts";
 // Closed are set by hand and kept whatever the progress, which may still change (`update_progress` checks no status). A goal is archived or closed from pending or in progress,
 // archived from closed and closed from archived, and unarchived or reopened back to the status its progress gives
 // (goal_list.js, `get_applicable_current_statuses`). Completing by hand sets the progress to 100 (`update_status`).
+// A group's progress rolls up from its children as a field update; its status follows by its own call, `rollUp`,
+// because a handler may not move another goal's state until #972 (`decisions/CX-appraisals.md`).
 export const machine = Blueprint.machine(Goal, {
   states: ["pending", "inProgress", "completed", "archived", "closed"],
   moves: {
@@ -20,6 +22,7 @@ export const machine = Blueprint.machine(Goal, {
     close: { from: ["pending", "inProgress", "archived"], to: "closed", emits: Events.GoalClosed },
     unarchive: { from: ["archived"], to: ["pending", "inProgress", "completed"], emits: Events.GoalUnarchived },
     reopen: { from: ["closed"], to: ["pending", "inProgress", "completed"], emits: Events.GoalReopened },
+    rollUp: { from: ["pending", "inProgress", "completed"], to: ["pending", "inProgress", "completed"], emits: Events.GoalRolledUp },
   },
   notFrom: { exit: 40 },
 });

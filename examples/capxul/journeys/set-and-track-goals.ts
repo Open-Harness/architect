@@ -2,8 +2,9 @@
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone.
 // Goals follow HRMS (CX-appraisals): a goal's status follows its progress (0 pending, below 100 in progress, 100
 // completed) unless it is archived or closed; a group's progress is the average of its children that aren't archived,
-// all the way up; and under the automated method each KRA of the appraisal scores the average progress of the employee's
-// top goals under it that aren't archived, weighted by the KRA. Every score is rounded to two places, half up.
+// all the way up, and its status follows that progress only when the employee or owner rolls it up (`goal.roll-up`, a
+// second call until #972); and under the automated method each KRA of the appraisal scores the average progress of the employee's
+// top goals under it that aren't archived, weighted by the KRA. Each stored score has two places, rounded half up.
 // Refusal order on create (goal/errors.ts): GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft,
 // GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, ParentGoalNotGroup.
 import { BigDecimal } from "effect";
@@ -22,6 +23,7 @@ import {
   GoalCycleCompleted,
   GoalEmployeeNotInCompany,
   GoalIsGroup,
+  GoalNotGroup,
   GoalKraNotInAppraisal,
   GoalOwnerHasLeft,
   ParentGoalMismatch,
@@ -29,6 +31,7 @@ import {
   ProgressOutOfRange,
 } from "../blueprint/things/goal/errors.ts";
 import { machine as goals } from "../blueprint/things/goal/machine.ts";
+import { GoalRolledUp } from "../blueprint/things/goal/events.ts";
 import create from "../blueprint/things/goal/verbs/create.ts";
 import updateProgress from "../blueprint/things/goal/verbs/update-progress.ts";
 import complete from "../blueprint/things/goal/verbs/complete.ts";
@@ -36,6 +39,7 @@ import archive from "../blueprint/things/goal/verbs/archive.ts";
 import close from "../blueprint/things/goal/verbs/close.ts";
 import unarchive from "../blueprint/things/goal/verbs/unarchive.ts";
 import reopen from "../blueprint/things/goal/verbs/reopen.ts";
+import rollUp from "../blueprint/things/goal/verbs/roll-up.ts";
 import get from "../blueprint/things/goal/verbs/get.ts";
 import list from "../blueprint/things/goal/verbs/list.ts";
 import getAppraisal from "../blueprint/things/appraisal/verbs/get.ts";
@@ -125,26 +129,49 @@ export default Blueprint.journey("set and track goals", {
         goals.isIn(s.last.goal, "completed"),
       ),
       s.step(
-        "Platform follows its one child to 100, completed",
+        "Platform's progress follows its one child to 100, but its status waits for a roll-up (#972)",
         s.olga.run(list, { appraisalCycle: s.world.appraisalCycle, employee: s.world.employee }),
-        expect((a) => [a.items.length, a.items[1].goalName, n(a.items[1].progress), a.items[1].state]).toEqual([3, "Platform work", "100", "completed"]),
+        expect((a) => [a.items.length, a.items[1].goalName, n(a.items[1].progress), a.items[1].state]).toEqual([3, "Platform work", "100", "pending"]),
         noEvents(),
+      ),
+      s.step("Cy can't roll up Olga's Platform", s.cy.run(rollUp, { goal: s.last.items[1].id }), refuses(Blueprint.NotAllowed), noEvents()),
+      s.step("nor can Bo", s.bo.run(rollUp, { goal: s.last.items[1].id }), refuses(Blueprint.NotAllowed), noEvents()),
+      s.step(
+        "a goal that isn't a group isn't rolled up",
+        s.olga.run(rollUp, { goal: s.last.items[2].id }),
+        refuses(GoalNotGroup),
+        noEvents(),
+        spans({ absent: ["goal.roll-up.update"] }),
+      ),
+      s.step(
+        "Olga rolls Platform up: completed, at 100",
+        s.olga.run(rollUp, { goal: s.last.items[1].id }),
+        expect((a) => n(a.progress)).toBe("100"),
+        emits(GoalRolledUp, { goal: s.last.goal }),
+        goals.isIn(s.last.goal, "completed"),
+        spans({ present: ["goal.roll-up", "goal.roll-up.load", "goal.roll-up.update"] }),
       ),
       s.step(
         "under Platform, Write docs at 25, in progress",
-        s.olga.run(create, olgaGoal(dev, "Docs writing", "25", { parentGoal: s.last.items[1].id })),
+        s.olga.run(create, olgaGoal(dev, "Docs writing", "25", { parentGoal: s.last.goal })),
         expect((a) => a.goal).toMatch(/^gol_[0-9a-z]+$/),
         goals.isIn(s.last.goal, "inProgress"),
       ),
       s.step(
-        "Platform is now 62.5, in progress",
+        "Platform's progress is now 62.5, and it still reads completed until rolled up",
         s.olga.run(list, { appraisalCycle: s.world.appraisalCycle, employee: s.world.employee }),
-        expect((a) => [a.items.length, n(a.items[1].progress), a.items[1].state]).toEqual([4, "62.5", "inProgress"]),
+        expect((a) => [a.items.length, n(a.items[1].progress), a.items[1].state]).toEqual([4, "62.5", "completed"]),
         noEvents(),
       ),
       s.step(
+        "Ada rolls it up: back in progress",
+        s.ada.run(rollUp, { goal: s.last.items[1].id }),
+        expect((a) => n(a.progress)).toBe("62.5"),
+        goals.isIn(s.last.goal, "inProgress"),
+      ),
+      s.step(
         "under Platform, a group of its own, Guides",
-        s.olga.run(create, { ...(olgaGoal(dev, "Guides", "0", { parentGoal: s.last.items[1].id }) as object), isGroup: true } as never),
+        s.olga.run(create, { ...(olgaGoal(dev, "Guides", "0", { parentGoal: s.last.goal }) as object), isGroup: true } as never),
         goals.isIn(s.last.goal, "pending"),
       ),
       s.step(
@@ -154,18 +181,19 @@ export default Blueprint.journey("set and track goals", {
         goals.isIn(s.last.goal, "inProgress"),
       ),
       s.step(
-        "Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60",
+        "Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60; Guides is pending until rolled up",
         s.olga.run(list, { appraisalCycle: s.world.appraisalCycle, employee: s.world.employee }),
         expect(tree).toEqual([
           ["Ship the ledger", "50", false, null, "inProgress"],
           ["Platform work", "61.67", true, null, "inProgress"],
           ["API design", "100", false, 1, "completed"],
           ["Docs writing", "25", false, 1, "inProgress"],
-          ["Guides", "60", true, 1, "inProgress"],
+          ["Guides", "60", true, 1, "pending"],
           ["First guide", "60", false, 4, "inProgress"],
         ]),
         noEvents(),
       ),
+      s.step("Olga rolls Guides up: in progress", s.olga.run(rollUp, { goal: s.last.items[4].id }), goals.isIn(s.last.goal, "inProgress")),
       s.step(
         "Development scores Platform's 61.67 alone, its only top goal, earning 43.17: a total of 2.91 and a final score of 0.97",
         s.ada.run(getAppraisal, { id: s.world.appraisal }),
@@ -431,6 +459,7 @@ export default Blueprint.journey("set and track goals", {
         s.olga.run(create, { ...(manual(q, "Group", "150") as object), isGroup: true } as never),
         goals.isIn(s.last.goal, "pending"),
       ),
+      s.step("rolled up with no children, it stays pending", s.olga.run(rollUp, { goal: s.last.goal }), expect((a) => n(a.progress)).toBe("0"), goals.isIn(s.last.goal, "pending")),
       s.step("it reads back at 0, a group", s.olga.run(get, { id: s.last.goal }), expect((a) => [n(a.progress), a.isGroup, a.state]).toEqual(["0", true, "pending"]), noEvents()),
       s.step("a group, Pair", s.olga.run(create, { ...(manual(q, "Pair", "0") as object), isGroup: true } as never), goals.isIn(s.last.goal, "pending")),
       s.step("under it, Left at 40", s.olga.run(create, { ...(manual(q, "Left", "40") as object), parentGoal: s.last.goal } as never), goals.isIn(s.last.goal, "inProgress")),
@@ -440,9 +469,10 @@ export default Blueprint.journey("set and track goals", {
       s.step(
         "a closed child still counts: Pair is 60, the average of 40 and 80",
         s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }),
-        expect((a) => [a.items[6].goalName, n(a.items[6].progress), a.items[6].state]).toEqual(["Pair", "60", "inProgress"]),
+        expect((a) => [a.items[6].goalName, n(a.items[6].progress), a.items[6].state]).toEqual(["Pair", "60", "pending"]),
         noEvents(),
       ),
+      s.step("rolled up, Pair is in progress", s.olga.run(rollUp, { goal: s.last.items[6].id }), expect((a) => n(a.progress)).toBe("60"), goals.isIn(s.last.goal, "inProgress")),
       s.step("a group, Outer", s.olga.run(create, { ...(manual(dev, "Outer", "0") as object), isGroup: true } as never), goals.isIn(s.last.goal, "pending")),
       s.step("under it, a group, Inner", s.olga.run(create, { ...(manual(dev, "Inner", "0") as object), isGroup: true, parentGoal: s.last.goal } as never), goals.isIn(s.last.goal, "pending")),
       s.step("under Inner, Alpha at 60", s.olga.run(create, { ...(manual(dev, "Alpha", "60") as object), parentGoal: s.last.goal } as never), goals.isIn(s.last.goal, "inProgress")),
@@ -453,9 +483,12 @@ export default Blueprint.journey("set and track goals", {
       s.step(
         "Outer averages its children, Inner's 30 and Gamma's 100, not its leaves: 65",
         s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }),
-        expect((a) => [9, 10].map((i) => [a.items[i].goalName, n(a.items[i].progress), a.items[i].state])).toEqual([["Outer", "65", "inProgress"], ["Inner", "30", "inProgress"]]),
+        expect((a) => [9, 10].map((i) => [a.items[i].goalName, n(a.items[i].progress), a.items[i].state])).toEqual([["Outer", "65", "pending"], ["Inner", "30", "pending"]]),
         noEvents(),
       ),
+      s.step("Olga rolls Inner up: in progress", s.olga.run(rollUp, { goal: s.last.items[10].id }), goals.isIn(s.last.goal, "inProgress")),
+      s.step("Olga lists them to reach Outer", s.olga.run(list, { appraisalCycle: s.world.manualCycle, employee: s.world.employee }), expect((a) => a.items[9].goalName).toBe("Outer")),
+      s.step("and rolls Outer up at 65: in progress", s.olga.run(rollUp, { goal: s.last.items[9].id }), expect((a) => n(a.progress)).toBe("65"), goals.isIn(s.last.goal, "inProgress")),
       s.step(
         "H1 2027 is rated by hand, so none of these goals scores Olga's appraisal there",
         s.olga.run(getAppraisal, { id: s.world.manualAppraisal }),
@@ -477,6 +510,8 @@ export default Blueprint.journey("set and track goals", {
       s.step("no progress moves", s.olga.run(updateProgress, { goal: s.last.items[5].id, progress: d("70") }), refuses(GoalCycleCompleted), noEvents()),
       s.step("no group is judged before the cycle", s.olga.run(updateProgress, { goal: s.last.items[1].id, progress: d("70") }), refuses(GoalCycleCompleted), noEvents()),
       s.step("nothing is completed, a group either", s.ada.run(complete, { goal: s.last.items[1].id }), refuses(GoalCycleCompleted), noEvents()),
+      s.step("no group is rolled up", s.olga.run(rollUp, { goal: s.last.items[1].id }), refuses(GoalCycleCompleted), noEvents()),
+      s.step("and the cycle is judged before a goal that isn't a group", s.olga.run(rollUp, { goal: s.last.items[5].id }), refuses(GoalCycleCompleted), noEvents()),
       s.step("nothing archived", s.ada.run(archive, { goal: s.last.items[5].id }), refuses(GoalCycleCompleted), noEvents()),
       s.step("nothing closed", s.ada.run(close, { goal: s.last.items[5].id }), refuses(GoalCycleCompleted), noEvents()),
       s.step("nothing reopened", s.ada.run(reopen, { goal: s.world.goal }), refuses(GoalCycleCompleted), noEvents()),

@@ -25,6 +25,7 @@ import completeCycle from "../blueprint/things/appraisal-cycle/verbs/complete.ts
 import getCycle from "../blueprint/things/appraisal-cycle/verbs/get.ts";
 import createGoal from "../blueprint/things/goal/verbs/create.ts";
 import updateProgress from "../blueprint/things/goal/verbs/update-progress.ts";
+import rollUp from "../blueprint/things/goal/verbs/roll-up.ts";
 import listGoals from "../blueprint/things/goal/verbs/list.ts";
 import getAppraisal from "../blueprint/things/appraisal/verbs/get.ts";
 import selfRate from "../blueprint/things/appraisal/verbs/self-rate.ts";
@@ -107,19 +108,20 @@ export default Blueprint.journey("appraise a year", {
         goals.isIn(s.last.goal, "pending"),
       ),
       s.step(
-        "and under it the API, done: Ship v2 follows it to 100",
+        "and under it the API, done: Ship v2's progress follows it to 100",
         s.olga.run(createGoal, { employee: s.world.employee, appraisalCycle: s.last.appraisalCycle, kra: q, goalName: "API", progress: d("100"), isGroup: false, parentGoal: s.last.goal } as never),
         goals.isIn(s.last.goal, "completed"),
       ),
       s.step(
-        "Olga's goals: Ship v2 has followed the API to 100",
+        "Olga's goals: Ship v2 is at 100, pending until she rolls it up (#972)",
         s.olga.run(listGoals, { appraisalCycle: s.last.appraisalCycle, employee: s.world.employee }),
-        expect((p) => p.items.map((g: GoalItem) => [g.goalName, n(g.progress), g.state])).toEqual([["Ship v2", "100", "completed"], ["API", "100", "completed"]]),
+        expect((p) => p.items.map((g: GoalItem) => [g.goalName, n(g.progress), g.state])).toEqual([["Ship v2", "100", "pending"], ["API", "100", "completed"]]),
         noEvents(),
       ),
+      s.step("she rolls it up: completed", s.olga.run(rollUp, { goal: s.last.items[0].id }), goals.isIn(s.last.goal, "completed")),
       s.step(
         "she adds the UI under Ship v2, half done",
-        s.olga.run(createGoal, { employee: s.world.employee, appraisalCycle: s.last.items[0].appraisalCycle, kra: q, goalName: "UI", progress: d("50"), isGroup: false, parentGoal: s.last.items[0].id } as never),
+        s.olga.run(createGoal, { employee: s.world.employee, appraisalCycle: s.last.appraisalCycle, kra: q, goalName: "UI", progress: d("50"), isGroup: false, parentGoal: s.last.goal } as never),
         goals.isIn(s.last.goal, "inProgress"),
       ),
       s.step(
@@ -133,6 +135,13 @@ export default Blueprint.journey("appraise a year", {
         expect(scored).toEqual([[[q, "60", "85", "51"], [dev, "40", "0", "0"]], [[ps, "50", "0"], [ex, "50", "0"]], ["2.55", "0", "0", "0.85"], "draft"]),
         noEvents(),
       ),
+      s.step(
+        "Ship v2 still reads completed",
+        s.olga.run(listGoals, { appraisalCycle: s.last.appraisalCycle, employee: s.world.employee }),
+        expect((p) => [n(p.items[0].progress), p.items[0].state]).toEqual(["85", "completed"]),
+        noEvents(),
+      ),
+      s.step("until Olga rolls it up: in progress", s.olga.run(rollUp, { goal: s.last.items[0].id }), goals.isIn(s.last.goal, "inProgress")),
       s.step(
         "Olga sets a Development goal at 40: it earns 16, and the total is 3.35",
         s.olga.run(createGoal, { employee: s.world.employee, appraisalCycle: s.last.appraisalCycle, kra: dev, goalName: "Refactoring", progress: d("40"), isGroup: false } as never),

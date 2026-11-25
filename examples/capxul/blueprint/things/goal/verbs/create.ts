@@ -15,7 +15,8 @@ import { self } from "../../employee/roles.ts";
 import { Appraisal } from "../../appraisal/thing.ts";
 
 // HRMS's Goal insert: its company is the cycle's, and its status follows its progress; a group starts at 0, whatever is typed (`before_insert`). A child under a parent makes the parent's progress the average of
-// its children that aren't archived, and its status follow (`update_parent_progress`). Under the automated method, the
+// its children that aren't archived, up to the root (`update_parent_progress`); a parent's status follows by its own
+// `goal.roll-up` until #972. Under the automated method, the
 // employee's appraisal in the cycle takes each KRA's score as the average progress of its top goals that aren't archived,
 // and its scores follow (`update_goal_progress_in_appraisal`, `set_goal_score`). It answers that appraisal and the
 // cycle, so the next call can reach them. It doesn't answer the parent: an optional answer field fails prove's answer

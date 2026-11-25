@@ -56,6 +56,11 @@ export type GoalReopened = {
   readonly "goal": Of<(typeof Events)["GoalReopened"]["fields"]["goal"]>;
 };
 
+/** The event GoalRolledUp: what it carries when a goal moves. */
+export type GoalRolledUp = {
+  readonly "goal": Of<(typeof Events)["GoalRolledUp"]["fields"]["goal"]>;
+};
+
 /** The event GoalUnarchived: what it carries when a goal moves. */
 export type GoalUnarchived = {
   readonly "goal": Of<(typeof Events)["GoalUnarchived"]["fields"]["goal"]>;

@@ -84,6 +84,7 @@ import { declaration as goalCreate } from "../../api/src/goal/create.ts";
 import { declaration as goalGet } from "../../api/src/goal/get.ts";
 import { declaration as goalList } from "../../api/src/goal/list.ts";
 import { declaration as goalReopen } from "../../api/src/goal/reopen.ts";
+import { declaration as goalRollUp } from "../../api/src/goal/roll-up.ts";
 import { declaration as goalUnarchive } from "../../api/src/goal/unarchive.ts";
 import { declaration as goalUpdateProgress } from "../../api/src/goal/update-progress.ts";
 import { declaration as holidayAdd } from "../../api/src/holiday/add.ts";
@@ -202,6 +203,7 @@ export const catalog = {
   "goal.get": { description: "Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, state.", operation: goalGet, states: ["pending","inProgress","completed","archived","closed"] },
   "goal.list": { description: "List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.", operation: goalList, states: ["pending","inProgress","completed","archived","closed"] },
   "goal.reopen": { description: "Reopen a closed goal: its status follows its progress again. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalReopen, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"reopen","from":["closed"],"to":["pending","inProgress","completed"],"emits":"GoalReopened"} },
+  "goal.roll-up": { description: "Bring a group goal's status up to date with the progress its children have rolled up.", operation: goalRollUp, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"rollUp","from":["pending","inProgress","completed"],"to":["pending","inProgress","completed"],"emits":"GoalRolledUp"} },
   "goal.unarchive": { description: "Bring an archived goal back: its status follows its progress again. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalUnarchive, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"unarchive","from":["archived"],"to":["pending","inProgress","completed"],"emits":"GoalUnarchived"} },
   "goal.update-progress": { description: "Set how far along a goal is, from 0 to 100. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalUpdateProgress, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"updateProgress","from":["pending","inProgress","completed","archived","closed"],"to":["pending","inProgress","completed","archived","closed"],"emits":"GoalProgressUpdated"} },
   "holiday.add": { description: "Add one day off to a holiday list. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"HolidayAdded"} },

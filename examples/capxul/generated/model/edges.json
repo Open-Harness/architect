@@ -1495,6 +1495,26 @@
     "kind": "allowed-by"
   },
   {
+    "from": "goal.roll-up",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "goal.GoalRolledUp",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "goal.unarchive",
     "to": "goal",
     "kind": "acts-on"

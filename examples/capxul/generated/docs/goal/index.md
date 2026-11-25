@@ -32,6 +32,7 @@ States: pending, inProgress, completed, archived, closed. A move from the wrong 
 | close | pending, inProgress, archived | closed | GoalClosed |
 | unarchive | archived | pending, inProgress, completed | GoalUnarchived |
 | reopen | closed | pending, inProgress, completed | GoalReopened |
+| rollUp | pending, inProgress, completed | pending, inProgress, completed | GoalRolledUp |
 
 ## Events
 
@@ -41,6 +42,7 @@ States: pending, inProgress, completed, archived, closed. A move from the wrong 
 - `GoalCreated`: carries goal (goal.id), employee (goal.employee), kra (goal.kra); emitted by the move create
 - `GoalProgressUpdated`: carries goal (goal.id); emitted by the move updateProgress
 - `GoalReopened`: carries goal (goal.id); emitted by the move reopen
+- `GoalRolledUp`: carries goal (goal.id); emitted by the move rollUp
 - `GoalUnarchived`: carries goal (goal.id); emitted by the move unarchive
 
 ## Operations
@@ -52,5 +54,6 @@ States: pending, inProgress, completed, archived, closed. A move from the wrong 
 - [goal.get](get.md): Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, state.
 - [goal.list](list.md): List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.
 - [goal.reopen](reopen.md): Reopen a closed goal: its status follows its progress again.
+- [goal.roll-up](roll-up.md): Bring a group goal's status up to date with the progress its children have rolled up.
 - [goal.unarchive](unarchive.md): Bring an archived goal back: its status follows its progress again.
 - [goal.update-progress](update-progress.md): Set how far along a goal is, from 0 to 100.

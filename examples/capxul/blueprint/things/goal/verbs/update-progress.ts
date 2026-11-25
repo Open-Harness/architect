@@ -6,7 +6,7 @@ import { owner } from "../../company/roles.ts";
 import { self } from "../../employee/roles.ts";
 import { Appraisal } from "../../appraisal/thing.ts";
 
-// HRMS's `update_progress`: the goal's progress, then its status (`set_status`, which keeps Archived and Closed), its parent's progress and status, and
+// HRMS's `update_progress`: the goal's progress, then its status (`set_status`, which keeps Archived and Closed), its parents' progress (their status by `goal.roll-up` until #972), and
 // under the automated method its appraisal's scores follow, as on create. Refusal order (errors.ts).
 export default Blueprint.operation(Goal, {
   description: "Set how far along a goal is, from 0 to 100.",

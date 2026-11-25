@@ -90,6 +90,7 @@ import { create as goalCreate } from "./goal/create.ts";
 import { get as goalGet } from "./goal/get.ts";
 import { list as goalList } from "./goal/list.ts";
 import { reopen as goalReopen } from "./goal/reopen.ts";
+import { rollUp as goalRollUp } from "./goal/roll-up.ts";
 import { unarchive as goalUnarchive } from "./goal/unarchive.ts";
 import { updateProgress as goalUpdateProgress } from "./goal/update-progress.ts";
 import { add as holidayAdd } from "./holiday/add.ts";
@@ -149,7 +150,7 @@ const employmentType = Command.make("employment-type").pipe(Command.withSubcomma
 const expense = Command.make("expense").pipe(Command.withSubcommands([expenseAdd, expenseGet]));
 const expenseClaim = Command.make("expense-claim").pipe(Command.withSubcommands([expenseClaimApprove, expenseClaimCreate, expenseClaimGet, expenseClaimReject]));
 const expenseClaimType = Command.make("expense-claim-type").pipe(Command.withSubcommands([expenseClaimTypeCreate, expenseClaimTypeGet]));
-const goal = Command.make("goal").pipe(Command.withSubcommands([goalArchive, goalClose, goalComplete, goalCreate, goalGet, goalList, goalReopen, goalUnarchive, goalUpdateProgress]));
+const goal = Command.make("goal").pipe(Command.withSubcommands([goalArchive, goalClose, goalComplete, goalCreate, goalGet, goalList, goalReopen, goalRollUp, goalUnarchive, goalUpdateProgress]));
 const holiday = Command.make("holiday").pipe(Command.withSubcommands([holidayAdd, holidayGet]));
 const holidayList = Command.make("holiday-list").pipe(Command.withSubcommands([holidayListAddWeeklyOff, holidayListCreate, holidayListGet]));
 const interview = Command.make("interview").pipe(Command.withSubcommands([interviewClear, interviewCreate, interviewGet, interviewReject]));

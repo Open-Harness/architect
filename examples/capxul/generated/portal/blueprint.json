@@ -93,6 +93,7 @@
       "GoalEmployeeNotInCompany": "GL-002",
       "GoalIsGroup": "GL-009",
       "GoalKraNotInAppraisal": "GL-004",
+      "GoalNotGroup": "GL-012",
       "GoalNotPending": "GL-900",
       "GoalOwnerHasLeft": "GL-003",
       "HolidayDateTaken": "HD-001",
@@ -4456,6 +4457,19 @@
                 "completed"
               ],
               "emits": "GoalReopened"
+            },
+            "rollUp": {
+              "from": [
+                "pending",
+                "inProgress",
+                "completed"
+              ],
+              "to": [
+                "pending",
+                "inProgress",
+                "completed"
+              ],
+              "emits": "GoalRolledUp"
             }
           },
           "notFrom": {
@@ -4533,6 +4547,15 @@
               "ref": "goal.id"
             }
           },
+          "GoalRolledUp": {
+            "goal": {
+              "value": {
+                "type": "id",
+                "prefix": "gol"
+              },
+              "ref": "goal.id"
+            }
+          },
           "GoalUnarchived": {
             "goal": {
               "value": {
@@ -4579,6 +4602,11 @@
             "exit": 47,
             "code": "GL-009"
           },
+          "GoalNotGroup": {
+            "fields": {},
+            "exit": 49,
+            "code": "GL-012"
+          },
           "ParentGoalNotGroup": {
             "fields": {},
             "exit": 48,
@@ -4590,7 +4618,7 @@
         "from": {
           "kind": "app"
         },
-        "hash": "7d66ed1480b3281d"
+        "hash": "33b22ed6ff9f405f"
       },
       "holiday": {
         "name": "holiday",
@@ -14076,6 +14104,111 @@
         },
         "hash": "f778acb77f3ae63b"
       },
+      "goal.roll-up": {
+        "kind": "operation",
+        "name": "goal.roll-up",
+        "thing": "goal",
+        "verb": "roll-up",
+        "identifier": "rollUp",
+        "file": "blueprint/things/goal/verbs/roll-up.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Bring a group goal's status up to date with the progress its children have rolled up.",
+        "payload": {
+          "goal": {
+            "value": {
+              "type": "id",
+              "prefix": "gol"
+            },
+            "ref": "goal.id"
+          }
+        },
+        "answer": {
+          "goal": {
+            "value": {
+              "type": "id",
+              "prefix": "gol"
+            },
+            "ref": "goal.id"
+          },
+          "progress": {
+            "value": {
+              "type": "decimal",
+              "places": 2
+            },
+            "named": "Progress",
+            "ref": "goal.progress"
+          },
+          "appraisalCycle": {
+            "value": {
+              "type": "id",
+              "prefix": "apc"
+            },
+            "ref": "goal.appraisalCycle"
+          }
+        },
+        "move": {
+          "key": "rollUp",
+          "from": [
+            "pending",
+            "inProgress",
+            "completed"
+          ],
+          "to": [
+            "pending",
+            "inProgress",
+            "completed"
+          ],
+          "emits": "GoalRolledUp"
+        },
+        "errors": [
+          "GoalCycleCompleted",
+          "GoalNotGroup"
+        ],
+        "breaks": [],
+        "refusals": [
+          "GoalCycleCompleted",
+          "GoalNotGroup",
+          "GoalNotPending",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role-of",
+            "role": "employee.self",
+            "path": "goal.employee"
+          },
+          {
+            "kind": "role-of",
+            "role": "company.owner",
+            "path": "goal.company"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "goal": "goal"
+        },
+        "steps": {
+          "load": {
+            "name": "goal.roll-up.load",
+            "type": "database",
+            "writes": []
+          },
+          "update": {
+            "name": "goal.roll-up.update",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 200
+        },
+        "hash": "34f4bc74c7fdf97d"
+      },
       "goal.unarchive": {
         "kind": "operation",
         "name": "goal.unarchive",
@@ -18503,7 +18636,7 @@
             ]
           },
           {
-            "title": "and under it the API, done: Ship v2 follows it to 100",
+            "title": "and under it the API, done: Ship v2's progress follows it to 100",
             "call": {
               "actor": "olga",
               "operation": "goal.create",
@@ -18555,7 +18688,7 @@
             ]
           },
           {
-            "title": "Olga's goals: Ship v2 has followed the API to 100",
+            "title": "Olga's goals: Ship v2 is at 100, pending until she rolls it up (#972)",
             "call": {
               "actor": "olga",
               "operation": "goal.list",
@@ -18581,7 +18714,7 @@
                   [
                     "Ship v2",
                     "100",
-                    "completed"
+                    "pending"
                   ],
                   [
                     "API",
@@ -18592,6 +18725,36 @@
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "she rolls it up: completed",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "0",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "completed"
               }
             ]
           },
@@ -18610,8 +18773,6 @@
                 "appraisalCycle": {
                   "ref": [
                     "last",
-                    "items",
-                    "0",
                     "appraisalCycle"
                   ]
                 },
@@ -18630,9 +18791,7 @@
                 "parentGoal": {
                   "ref": [
                     "last",
-                    "items",
-                    "0",
-                    "id"
+                    "goal"
                   ]
                 }
               }
@@ -18751,6 +18910,69 @@
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ship v2 still reads completed",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.list",
+              "payload": {
+                "appraisalCycle": {
+                  "ref": [
+                    "last",
+                    "appraisalCycle"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  "85",
+                  "completed"
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "until Olga rolls it up: in progress",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "0",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "inProgress"
               }
             ]
           },
@@ -19395,7 +19617,7 @@
             ]
           }
         ],
-        "sourceHash": "98102f20e2b9557417c9324ea948d36e76a47b04ef754d6a2c55835b39f85bc1"
+        "sourceHash": "d974a7db5d8b252fdf8f552974b5bc7253f98306c4e2c12b3141967aa822d0bf"
       },
       "journeys/approve-an-attendance-request.ts": {
         "name": "approve an attendance request",
@@ -51554,7 +51776,7 @@
             ]
           },
           {
-            "title": "Platform follows its one child to 100, completed",
+            "title": "Platform's progress follows its one child to 100, but its status waits for a roll-up (#972)",
             "call": {
               "actor": "olga",
               "operation": "goal.list",
@@ -51580,11 +51802,154 @@
                   3,
                   "Platform work",
                   "100",
-                  "completed"
+                  "pending"
                 ]
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Cy can't roll up Olga's Platform",
+            "call": {
+              "actor": "cy",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "1",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "nor can Bo",
+            "call": {
+              "actor": "bo",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "1",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a goal that isn't a group isn't rolled up",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "2",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "GoalNotGroup",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "spans",
+                "present": [],
+                "absent": [
+                  "goal.roll-up.update"
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Olga rolls Platform up: completed, at 100",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "1",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "100"
+              },
+              {
+                "kind": "emits",
+                "event": "GoalRolledUp",
+                "fields": {
+                  "goal": {
+                    "ref": [
+                      "last",
+                      "goal"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "completed"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "goal.roll-up",
+                  "goal.roll-up.load",
+                  "goal.roll-up.update"
+                ],
+                "absent": []
               }
             ]
           },
@@ -51621,9 +51986,7 @@
                 "parentGoal": {
                   "ref": [
                     "last",
-                    "items",
-                    "1",
-                    "id"
+                    "goal"
                   ]
                 }
               }
@@ -51648,7 +52011,7 @@
             ]
           },
           {
-            "title": "Platform is now 62.5, in progress",
+            "title": "Platform's progress is now 62.5, and it still reads completed until rolled up",
             "call": {
               "actor": "olga",
               "operation": "goal.list",
@@ -51673,11 +52036,45 @@
                 "value": [
                   4,
                   "62.5",
-                  "inProgress"
+                  "completed"
                 ]
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Ada rolls it up: back in progress",
+            "call": {
+              "actor": "ada",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "1",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "62.5"
+              },
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "inProgress"
               }
             ]
           },
@@ -51714,9 +52111,7 @@
                 "parentGoal": {
                   "ref": [
                     "last",
-                    "items",
-                    "1",
-                    "id"
+                    "goal"
                   ]
                 }
               }
@@ -51797,7 +52192,7 @@
             ]
           },
           {
-            "title": "Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60",
+            "title": "Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60; Guides is pending until rolled up",
             "call": {
               "actor": "olga",
               "operation": "goal.list",
@@ -51853,7 +52248,7 @@
                     "60",
                     true,
                     1,
-                    "inProgress"
+                    "pending"
                   ],
                   [
                     "First guide",
@@ -51866,6 +52261,36 @@
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Olga rolls Guides up: in progress",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "4",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "inProgress"
               }
             ]
           },
@@ -55081,6 +55506,38 @@
             ]
           },
           {
+            "title": "rolled up with no children, it stays pending",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "0"
+              },
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "pending"
+              }
+            ]
+          },
+          {
             "title": "it reads back at 0, a group",
             "call": {
               "actor": "olga",
@@ -55344,11 +55801,45 @@
                 "value": [
                   "Pair",
                   "60",
-                  "inProgress"
+                  "pending"
                 ]
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "rolled up, Pair is in progress",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "6",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "60"
+              },
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "inProgress"
               }
             ]
           },
@@ -55694,17 +56185,108 @@
                   [
                     "Outer",
                     "65",
-                    "inProgress"
+                    "pending"
                   ],
                   [
                     "Inner",
                     "30",
-                    "inProgress"
+                    "pending"
                   ]
                 ]
               },
               {
                 "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Olga rolls Inner up: in progress",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "10",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "inProgress"
+              }
+            ]
+          },
+          {
+            "title": "Olga lists them to reach Outer",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.list",
+              "payload": {
+                "appraisalCycle": {
+                  "ref": [
+                    "world",
+                    "manualCycle"
+                  ]
+                },
+                "employee": {
+                  "ref": [
+                    "world",
+                    "employee"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "Outer"
+              }
+            ]
+          },
+          {
+            "title": "and rolls Outer up at 65: in progress",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "9",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": "65"
+              },
+              {
+                "kind": "is-in",
+                "thing": "goal",
+                "id": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                },
+                "state": "inProgress"
               }
             ]
           },
@@ -55990,6 +56572,60 @@
             ]
           },
           {
+            "title": "no group is rolled up",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "1",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "GoalCycleCompleted",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "and the cycle is judged before a goal that isn't a group",
+            "call": {
+              "actor": "olga",
+              "operation": "goal.roll-up",
+              "payload": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "items",
+                    "5",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "GoalCycleCompleted",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "nothing archived",
             "call": {
               "actor": "ada",
@@ -56148,7 +56784,7 @@
             ]
           }
         ],
-        "sourceHash": "69943987ad1d9926fad514d2a096bf8571ea66532f460031336ca31f45ab79c0"
+        "sourceHash": "6aeffcd1ed64ebfcad7ad813b7f544cd13148afc3c8d1e160f2cee738e318a05"
       },
       "journeys/set-up-a-company.ts": {
         "name": "set up a company",
@@ -69242,6 +69878,16 @@
         }
       },
       {
+        "id": "anomaly:GL-012",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "GL-012",
+          "severity": "ticket",
+          "owner": "blueprint/things/goal/errors.ts"
+        }
+      },
+      {
         "id": "anomaly:GL-900",
         "kind": "anomaly",
         "labels": {
@@ -73515,6 +74161,48 @@
           "operation": "goal.reopen",
           "severity": "page",
           "owner": "blueprint/things/goal/verbs/reopen.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:goal.roll-up",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "goal.roll-up",
+          "severity": "page",
+          "owner": "blueprint/things/goal/verbs/roll-up.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -78464,6 +79152,49 @@
         ]
       },
       {
+        "id": "latency:goal.roll-up",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "goal.roll-up",
+          "severity": "page",
+          "owner": "blueprint/things/goal/verbs/roll-up.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 200,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "latency:goal.unarchive",
         "kind": "latency",
         "labels": {
@@ -80850,7 +81581,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.close": {
@@ -80858,7 +81589,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.complete": {
@@ -80866,7 +81597,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.create": {
@@ -80875,7 +81606,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.get": {
@@ -80883,7 +81614,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.list": {
@@ -80891,7 +81622,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.reopen": {
@@ -80899,7 +81630,15 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
+      "thing:kra": "c9c738bfe2949c1a"
+    },
+    "goal.roll-up": {
+      "operation:goal.roll-up": "34f4bc74c7fdf97d",
+      "thing:appraisal-cycle": "681fd95c76a14b5e",
+      "thing:company": "bf9b5c8f8591f130",
+      "thing:employee": "a123a6ad8b10e9b8",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.unarchive": {
@@ -80907,7 +81646,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "goal.update-progress": {
@@ -80916,7 +81655,7 @@
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
       "thing:employee": "a123a6ad8b10e9b8",
-      "thing:goal": "7d66ed1480b3281d",
+      "thing:goal": "33b22ed6ff9f405f",
       "thing:kra": "c9c738bfe2949c1a"
     },
     "holiday-list.add-weekly-off": {
@@ -81200,11 +81939,12 @@
     "goal/archive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.archive\n\nArchive a goal: it no longer counts towards its parent or its appraisal.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`archive`: from pending or inProgress or closed to archived, emitting GoalArchived.\n\n## Steps\n\n- `goal.archive.load` (database)\n- `goal.archive.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state archive can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **nor archived.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GL-009.\n- **Cy can't archive Olga's Write docs.** `cy` (signed in) calls and sends goal the last call's items 3 id, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends goal the last call's items 3 id, and is refused with NotAllowed, AR-001.\n- **Olga archives Write docs.** `olga` (signed in) calls and sends goal the last call's items 3 id, and is answered.\n- **Ada archives the runbook.** `ada` (role company.owner) calls and sends goal the world's secondGoal, and is answered.\n- **Olga archives it from pending.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **archives it again from closed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **she archives it from in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **nor archived.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.\n- **archived.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **nothing archived.** `ada` (role company.owner) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal archive --goal <goal>\n```\n\nHTTP: `POST /goal/archive` with the payload as JSON. SDK: `Sdk.goal.archive(payload)`.\n",
     "goal/close.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.close\n\nClose a goal, keeping its progress.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`close`: from pending or inProgress or archived to closed, emitting GoalClosed.\n\n## Steps\n\n- `goal.close.load` (database)\n- `goal.close.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state close can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **nor closed.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GL-009.\n- **Cy can't close Olga's Ship the ledger.** `cy` (signed in) calls and sends goal the world's goal, and is refused with NotAllowed, AR-001.\n- **Ada closes it.** `ada` (role company.owner) calls and sends goal the world's goal, and is answered.\n- **Cy can't close it.** `cy` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.\n- **Olga closes it from pending.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **closes it from archived.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **she closes it from in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **nor closed.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.\n- **closed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **she closes Right.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **nothing closed.** `ada` (role company.owner) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal close --goal <goal>\n```\n\nHTTP: `POST /goal/close` with the payload as JSON. SDK: `Sdk.goal.close(payload)`.\n",
     "goal/complete.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.complete\n\nMark a goal completed, setting its progress to 100.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`complete`: from pending or inProgress to completed, emitting GoalCompleted.\n\n## Steps\n\n- `goal.complete.load` (database)\n- `goal.complete.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state complete can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **nor is it completed by hand.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GL-009.\n- **Cy can't complete it.** `cy` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.\n- **Olga completes it.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **a completed goal can't be completed again.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.\n- **nothing is completed, a group either.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal complete --goal <goal>\n```\n\nHTTP: `POST /goal/complete` with the payload as JSON. SDK: `Sdk.goal.complete(payload)`.\n",
-    "goal/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.create\n\nSet an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n\n**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| employee | goal.employee |  |\n| appraisalCycle | goal.appraisalCycle |  |\n| kra | goal.kra |  |\n| goalName | goal.goalName |  |\n| progress | goal.progress |  |\n| isGroup | goal.isGroup | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.parentGoal |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n| appraisal | appraisal.id |\n| appraisalCycle | goal.appraisalCycle |\n\n## Move\n\n`create`: from nothing (it creates) to pending or inProgress or completed, emitting GoalCreated.\n\n## Steps\n\n- `goal.create.load` (database)\n- `goal.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalEmployeeNotInCompany | 42 | GL-002 | declared in errors.ts |\n| GoalOwnerHasLeft | 43 | GL-003 | declared in errors.ts |\n| GoalKraNotInAppraisal | 44 | GL-004 | declared in errors.ts |\n| ParentGoalMismatch | 45 | GL-005 | declared in errors.ts |\n| ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |\n| ParentGoalNotGroup | 48 | GL-010 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| AppraisalCycleNotFound | 4 | CY-901 | nothing has the id in appraisalCycle; the handler never runs; carries `id` |\n| KraNotFound | 4 | KR-901 | nothing has the id in kra; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### appraise a year\n\nStarts from the world `a second feedback criteria`.\n\n- **Olga sets herself a group goal under Quality, Ship v2.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's kra, goalName `Ship v2`, progress { value: `0`, scale: 0 }, isGroup true, and gets back an answer matching `^gol_[0-9a-z]+$`.\n- **and under it the API, done: Ship v2 follows it to 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's kra, goalName `API`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.\n- **she adds the UI under Ship v2, half done.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's items 0 appraisalCycle, kra the world's kra, goalName `UI`, progress { value: `50`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is answered.\n- **Olga sets a Development goal at 40: it earns 16, and the total is 3.35.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's otherKra, goalName `Refactoring`, progress { value: `40`, scale: 0 }, isGroup false, and is answered.\n\n### run an appraisal cycle\n\nStarts from the world `a three-person cycle`.\n\n- **Olga may set a goal in Q1 2027 before it starts: HRMS refuses only a completed cycle.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's threePersonCycle, kra the world's kra, goalName `Early start`, progress { value: `20`, scale: 0 }, isGroup false, and is answered.\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Olga sets a group goal, Platform, typing 80: a group starts at 0.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Platform work`, progress { value: `80`, scale: 0 }, isGroup true, and gets back the world's appraisal.\n- **under it, Design API, done at 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `API design`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's goal, and gets back an answer matching `^gol_[0-9a-z]+$`.\n- **under Platform, Write docs at 25, in progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Docs writing`, progress { value: `25`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and gets back an answer matching `^gol_[0-9a-z]+$`.\n- **under Platform, a group of its own, Guides.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Guides`, progress { value: `0`, scale: 0 }, isGroup true, parentGoal the last call's items 1 id, and is answered.\n- **under Guides, Guide one at 60.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `First guide`, progress { value: `60`, scale: 0 }, isGroup false, parentGoal the last call's goal, and gets back the world's appraisal.\n- **a goal can't go under Ship the ledger, which isn't a group.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Sub-ledger`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is refused with ParentGoalNotGroup, GL-010.\n- **progress over 100 is judged before that.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Sub-ledger`, progress { value: `10001`, scale: 2 }, isGroup false, parentGoal the last call's items 0 id, and is refused with ProgressOutOfRange, GL-006.\n- **and so is progress below 0, at the top too.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Negative`, progress { value: `-1`, scale: 2 }, isGroup false, and is refused with ProgressOutOfRange, GL-006.\n- **a child under another KRA than its parent's is refused, judged before its progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Wrong KRA`, progress { value: `101`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.\n- **and so is a child in another cycle.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Wrong cycle`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.\n- **and Cy's own goal under Olga's Platform.** `cy` (signed in) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Borrowed`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.\n- **a KRA of Acme Logistics isn't on Olga's appraisal, judged before a parent.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is refused with GoalKraNotInAppraisal, GL-004.\n- **Dee has no appraisal in H2 2026, so she can't set a goal in it.** `dee` (signed in) calls and sends employee the world's newHire, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Settle in`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalKraNotInAppraisal, GL-004.\n- **Ada can't set Bo a goal in Acme Trading's cycle: he works for Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalEmployeeNotInCompany, GL-002.\n- **Bo is judged as outside Acme Trading before as a leaver.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalEmployeeNotInCompany, GL-002.\n- **a KRA of Acme Trading that Olga's appraisal doesn't hold is refused.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the last call's kra, goalName `Mentor`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalKraNotInAppraisal, GL-004.\n- **Cy can't set Olga a goal.** `cy` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Cy's idea`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Bo's idea`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with NotAllowed, AR-001.\n- **but she can't set a new goal.** `cy` (signed in) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `One more`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalOwnerHasLeft, GL-003.\n- **her leaving is judged before a KRA that isn't on her appraisal.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `One more`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalOwnerHasLeft, GL-003.\n- **Olga sets a goal at 0 in H1 2027: pending.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Idle`, progress { value: `0`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets a goal at 40: in progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Steady`, progress { value: `40`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets a goal at 100: completed.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Done already`, progress { value: `100`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets one at 50 and archives it.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Later`, progress { value: `50`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets one at 50 and closes it.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Closed early`, progress { value: `50`, scale: 0 }, isGroup false, and is answered.\n- **a group typed at 150 starts at 0, pending.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Group`, progress { value: `150`, scale: 0 }, isGroup true, and is answered.\n- **a group, Pair.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Pair`, progress { value: `0`, scale: 0 }, isGroup true, and is answered.\n- **under it, Left at 40.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Left`, progress { value: `40`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.\n- **under Pair, Right at 80.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Right`, progress { value: `80`, scale: 0 }, isGroup false, parentGoal the last call's items 6 id, and is answered.\n- **a group, Outer.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Outer`, progress { value: `0`, scale: 0 }, isGroup true, and is answered.\n- **under it, a group, Inner.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Inner`, progress { value: `0`, scale: 0 }, isGroup true, parentGoal the last call's goal, and is answered.\n- **under Inner, Alpha at 60.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Alpha`, progress { value: `60`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.\n- **under Inner, Beta at 0: Inner is 30.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Beta`, progress { value: `0`, scale: 0 }, isGroup false, parentGoal the last call's items 10 id, and is answered.\n- **under Outer, Gamma at 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Gamma`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's items 9 id, and is answered.\n- **no goal is set in it now, judged before Bo's company.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal create --employee <employee> --appraisalCycle <appraisalCycle> --kra <kra> --goalName <goalName> --progress <progress> --isGroup <isGroup> [--parentGoal <parentGoal>]\n```\n\nHTTP: `POST /goal/create` with the payload as JSON. SDK: `Sdk.goal.create(payload)`.\n",
+    "goal/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.create\n\nSet an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n\n**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| employee | goal.employee |  |\n| appraisalCycle | goal.appraisalCycle |  |\n| kra | goal.kra |  |\n| goalName | goal.goalName |  |\n| progress | goal.progress |  |\n| isGroup | goal.isGroup | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.parentGoal |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n| appraisal | appraisal.id |\n| appraisalCycle | goal.appraisalCycle |\n\n## Move\n\n`create`: from nothing (it creates) to pending or inProgress or completed, emitting GoalCreated.\n\n## Steps\n\n- `goal.create.load` (database)\n- `goal.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalEmployeeNotInCompany | 42 | GL-002 | declared in errors.ts |\n| GoalOwnerHasLeft | 43 | GL-003 | declared in errors.ts |\n| GoalKraNotInAppraisal | 44 | GL-004 | declared in errors.ts |\n| ParentGoalMismatch | 45 | GL-005 | declared in errors.ts |\n| ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |\n| ParentGoalNotGroup | 48 | GL-010 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| EmployeeNotFound | 4 | EM-901 | nothing has the id in employee; the handler never runs; carries `id` |\n| AppraisalCycleNotFound | 4 | CY-901 | nothing has the id in appraisalCycle; the handler never runs; carries `id` |\n| KraNotFound | 4 | KR-901 | nothing has the id in kra; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### appraise a year\n\nStarts from the world `a second feedback criteria`.\n\n- **Olga sets herself a group goal under Quality, Ship v2.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's kra, goalName `Ship v2`, progress { value: `0`, scale: 0 }, isGroup true, and gets back an answer matching `^gol_[0-9a-z]+$`.\n- **and under it the API, done: Ship v2's progress follows it to 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's kra, goalName `API`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.\n- **she adds the UI under Ship v2, half done.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's kra, goalName `UI`, progress { value: `50`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.\n- **Olga sets a Development goal at 40: it earns 16, and the total is 3.35.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the last call's appraisalCycle, kra the world's otherKra, goalName `Refactoring`, progress { value: `40`, scale: 0 }, isGroup false, and is answered.\n\n### run an appraisal cycle\n\nStarts from the world `a three-person cycle`.\n\n- **Olga may set a goal in Q1 2027 before it starts: HRMS refuses only a completed cycle.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's threePersonCycle, kra the world's kra, goalName `Early start`, progress { value: `20`, scale: 0 }, isGroup false, and is answered.\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Olga sets a group goal, Platform, typing 80: a group starts at 0.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Platform work`, progress { value: `80`, scale: 0 }, isGroup true, and gets back the world's appraisal.\n- **under it, Design API, done at 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `API design`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's goal, and gets back an answer matching `^gol_[0-9a-z]+$`.\n- **under Platform, Write docs at 25, in progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Docs writing`, progress { value: `25`, scale: 0 }, isGroup false, parentGoal the last call's goal, and gets back an answer matching `^gol_[0-9a-z]+$`.\n- **under Platform, a group of its own, Guides.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Guides`, progress { value: `0`, scale: 0 }, isGroup true, parentGoal the last call's goal, and is answered.\n- **under Guides, Guide one at 60.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `First guide`, progress { value: `60`, scale: 0 }, isGroup false, parentGoal the last call's goal, and gets back the world's appraisal.\n- **a goal can't go under Ship the ledger, which isn't a group.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Sub-ledger`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is refused with ParentGoalNotGroup, GL-010.\n- **progress over 100 is judged before that.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Sub-ledger`, progress { value: `10001`, scale: 2 }, isGroup false, parentGoal the last call's items 0 id, and is refused with ProgressOutOfRange, GL-006.\n- **and so is progress below 0, at the top too.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Negative`, progress { value: `-1`, scale: 2 }, isGroup false, and is refused with ProgressOutOfRange, GL-006.\n- **a child under another KRA than its parent's is refused, judged before its progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Wrong KRA`, progress { value: `101`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.\n- **and so is a child in another cycle.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Wrong cycle`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.\n- **and Cy's own goal under Olga's Platform.** `cy` (signed in) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Borrowed`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.\n- **a KRA of Acme Logistics isn't on Olga's appraisal, judged before a parent.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is refused with GoalKraNotInAppraisal, GL-004.\n- **Dee has no appraisal in H2 2026, so she can't set a goal in it.** `dee` (signed in) calls and sends employee the world's newHire, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Settle in`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalKraNotInAppraisal, GL-004.\n- **Ada can't set Bo a goal in Acme Trading's cycle: he works for Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalEmployeeNotInCompany, GL-002.\n- **Bo is judged as outside Acme Trading before as a leaver.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalEmployeeNotInCompany, GL-002.\n- **a KRA of Acme Trading that Olga's appraisal doesn't hold is refused.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the last call's kra, goalName `Mentor`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalKraNotInAppraisal, GL-004.\n- **Cy can't set Olga a goal.** `cy` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Cy's idea`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Bo's idea`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with NotAllowed, AR-001.\n- **but she can't set a new goal.** `cy` (signed in) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `One more`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalOwnerHasLeft, GL-003.\n- **her leaving is judged before a KRA that isn't on her appraisal.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `One more`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalOwnerHasLeft, GL-003.\n- **Olga sets a goal at 0 in H1 2027: pending.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Idle`, progress { value: `0`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets a goal at 40: in progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Steady`, progress { value: `40`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets a goal at 100: completed.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Done already`, progress { value: `100`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets one at 50 and archives it.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Later`, progress { value: `50`, scale: 0 }, isGroup false, and is answered.\n- **Olga sets one at 50 and closes it.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Closed early`, progress { value: `50`, scale: 0 }, isGroup false, and is answered.\n- **a group typed at 150 starts at 0, pending.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Group`, progress { value: `150`, scale: 0 }, isGroup true, and is answered.\n- **a group, Pair.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Pair`, progress { value: `0`, scale: 0 }, isGroup true, and is answered.\n- **under it, Left at 40.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Left`, progress { value: `40`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.\n- **under Pair, Right at 80.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Right`, progress { value: `80`, scale: 0 }, isGroup false, parentGoal the last call's items 6 id, and is answered.\n- **a group, Outer.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Outer`, progress { value: `0`, scale: 0 }, isGroup true, and is answered.\n- **under it, a group, Inner.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Inner`, progress { value: `0`, scale: 0 }, isGroup true, parentGoal the last call's goal, and is answered.\n- **under Inner, Alpha at 60.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Alpha`, progress { value: `60`, scale: 0 }, isGroup false, parentGoal the last call's goal, and is answered.\n- **under Inner, Beta at 0: Inner is 30.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Beta`, progress { value: `0`, scale: 0 }, isGroup false, parentGoal the last call's items 10 id, and is answered.\n- **under Outer, Gamma at 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Gamma`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's items 9 id, and is answered.\n- **no goal is set in it now, judged before Bo's company.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal create --employee <employee> --appraisalCycle <appraisalCycle> --kra <kra> --goalName <goalName> --progress <progress> --isGroup <isGroup> [--parentGoal <parentGoal>]\n```\n\nHTTP: `POST /goal/create` with the payload as JSON. SDK: `Sdk.goal.create(payload)`.\n",
     "goal/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.get\n\nRead one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, state.\n\n**Who may call:** the self of its employee, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | goal.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | goal.company |  |\n| employee | goal.employee |  |\n| appraisalCycle | goal.appraisalCycle |  |\n| kra | goal.kra |  |\n| goalName | goal.goalName |  |\n| progress | goal.progress |  |\n| isGroup | goal.isGroup | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Olga's goal reads back as she set it, pending at 0.** `olga` (signed in) calls and sends id the world's goal, and gets back [the world's company, the world's employee, the world's appraisalCycle, the world's kra, `Ship the ledger`, `0`, false, `pending`].\n- **Ada reads it too.** `ada` (role company.owner) calls and sends id the world's goal, and gets back `Ship the ledger`.\n- **Cy can't read Olga's goal.** `cy` (signed in) calls and sends id the world's goal, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends id the world's goal, and is refused with NotAllowed, AR-001.\n- **Olga's progress doesn't touch Cy's: Cy's goal still reads 50.** `cy` (signed in) calls and sends id the world's secondGoal, and gets back [`50`, `inProgress`].\n- **completing set its progress to 100.** `olga` (signed in) calls and sends id the last call's goal, and gets back [`100`, `completed`].\n- **it reads back at 0, a group.** `olga` (signed in) calls and sends id the last call's goal, and gets back [`0`, true, `pending`].\n\n## How to call\n\n```sh\ncapxul goal get --id <id>\n```\n\nHTTP: `POST /goal/get` with the payload as JSON. SDK: `Sdk.goal.get(payload)`.\n",
-    "goal/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal\n\nSomething an employee aims to do in an appraisal cycle, under one KRA.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| employee | employee.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| kra | kra.id |  |\n| goalName | GoalName |  |\n| progress | Progress |  |\n| isGroup | schema | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.id |  |\n\n## Machine\n\nStates: pending, inProgress, completed, archived, closed. A move from the wrong state is refused GoalNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | pending, inProgress, completed | GoalCreated |\n| updateProgress | pending, inProgress, completed, archived, closed | pending, inProgress, completed, archived, closed | GoalProgressUpdated |\n| complete | pending, inProgress | completed | GoalCompleted |\n| archive | pending, inProgress, closed | archived | GoalArchived |\n| close | pending, inProgress, archived | closed | GoalClosed |\n| unarchive | archived | pending, inProgress, completed | GoalUnarchived |\n| reopen | closed | pending, inProgress, completed | GoalReopened |\n\n## Events\n\n- `GoalArchived`: carries goal (goal.id); emitted by the move archive\n- `GoalClosed`: carries goal (goal.id); emitted by the move close\n- `GoalCompleted`: carries goal (goal.id); emitted by the move complete\n- `GoalCreated`: carries goal (goal.id), employee (goal.employee), kra (goal.kra); emitted by the move create\n- `GoalProgressUpdated`: carries goal (goal.id); emitted by the move updateProgress\n- `GoalReopened`: carries goal (goal.id); emitted by the move reopen\n- `GoalUnarchived`: carries goal (goal.id); emitted by the move unarchive\n\n## Operations\n\n- [goal.archive](archive.md): Archive a goal: it no longer counts towards its parent or its appraisal.\n- [goal.close](close.md): Close a goal, keeping its progress.\n- [goal.complete](complete.md): Mark a goal completed, setting its progress to 100.\n- [goal.create](create.md): Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n- [goal.get](get.md): Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, state.\n- [goal.list](list.md): List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n- [goal.reopen](reopen.md): Reopen a closed goal: its status follows its progress again.\n- [goal.unarchive](unarchive.md): Bring an archived goal back: its status follows its progress again.\n- [goal.update-progress](update-progress.md): Set how far along a goal is, from 0 to 100.\n",
-    "goal/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.list\n\nList goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n\n**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by appraisalCycle, employee; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisalCycle (optional) | goal.appraisalCycle |\n| employee (optional) | goal.employee |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |\n\n## Worked examples\n\n### appraise a year\n\nStarts from the world `a second feedback criteria`.\n\n- **Olga's goals: Ship v2 has followed the API to 100.** `olga` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, employee the world's employee, and gets back [[`Ship v2`, `100`, `completed`], [`API`, `100`, `completed`]].\n- **her goals.** `olga` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, employee the world's employee, and gets back `Refactoring`.\n- **her goals read back in the order she set them, the API and the UI under Ship v2.** `olga` (signed in) calls and sends appraisalCycle the last call's items 0 appraisalCycle, employee the world's employee, and gets back [[`Ship v2`, the world's kra, `85`, true, null, `inProgress`], [`API`, the world's kra, `100`, false, 0, `completed`], [`UI`, the world's kra, `70`, false, 0, `inProgress`], [`Refactoring`, the world's otherKra, `40`, false, null, `inProgress`]].\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Cy can't list Olga's goals.** `cy` (signed in) calls and sends employee the world's employee, and is refused with NotAllowed, AR-001.\n- **nor can Bo list the cycle's.** `bo` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.\n- **Platform follows its one child to 100, completed.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [3, `Platform work`, `100`, `completed`].\n- **Platform is now 62.5, in progress.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [4, `62.5`, `inProgress`].\n- **Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [[`Ship the ledger`, `50`, false, null, `inProgress`], [`Platform work`, `61.67`, true, null, `inProgress`], [`API design`, `100`, false, 1, `completed`], [`Docs writing`, `25`, false, 1, `inProgress`], [`Guides`, `60`, true, 1, `inProgress`], [`First guide`, `60`, false, 4, `inProgress`]].\n- **Olga lists her goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n- **Olga lists her goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n- **Platform leaves it out: the average of 100 and 60 is 80.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [[`Ship the ledger`, `50`, `inProgress`], [`Platform work`, `80`, `inProgress`], [`API design`, `100`, `completed`], [`Docs writing`, `90`, `archived`], [`Guides`, `60`, `inProgress`], [`First guide`, `60`, `inProgress`]].\n- **Olga lists her goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n- **Olga lists H1 2027's goals.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back 2.\n- **Olga lists H1 2027's goals to reach Pair.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [8, `Pair`].\n- **a closed child still counts: Pair is 60, the average of 40 and 80.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [`Pair`, `60`, `inProgress`].\n- **Olga lists them to reach Outer and Inner.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [`Outer`, `Inner`].\n- **Olga lists them again.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back 13.\n- **Outer averages its children, Inner's 30 and Gamma's 100, not its leaves: 65.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [[`Outer`, `65`, `inProgress`], [`Inner`, `30`, `inProgress`]].\n- **Olga lists her H2 2026 goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n\n## How to call\n\n```sh\ncapxul goal list [--appraisalCycle <appraisalCycle>] [--employee <employee>] [--cursor <cursor>]\n```\n\nHTTP: `POST /goal/list` with the payload as JSON. SDK: `Sdk.goal.list(payload)`.\n",
+    "goal/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal\n\nSomething an employee aims to do in an appraisal cycle, under one KRA.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| employee | employee.id |  |\n| appraisalCycle | appraisal-cycle.id |  |\n| kra | kra.id |  |\n| goalName | GoalName |  |\n| progress | Progress |  |\n| isGroup | schema | Whether the goal holds other goals, its progress following theirs (HRMS's `is_group`). |\n| parentGoal (optional) | goal.id |  |\n\n## Machine\n\nStates: pending, inProgress, completed, archived, closed. A move from the wrong state is refused GoalNotPending (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | pending, inProgress, completed | GoalCreated |\n| updateProgress | pending, inProgress, completed, archived, closed | pending, inProgress, completed, archived, closed | GoalProgressUpdated |\n| complete | pending, inProgress | completed | GoalCompleted |\n| archive | pending, inProgress, closed | archived | GoalArchived |\n| close | pending, inProgress, archived | closed | GoalClosed |\n| unarchive | archived | pending, inProgress, completed | GoalUnarchived |\n| reopen | closed | pending, inProgress, completed | GoalReopened |\n| rollUp | pending, inProgress, completed | pending, inProgress, completed | GoalRolledUp |\n\n## Events\n\n- `GoalArchived`: carries goal (goal.id); emitted by the move archive\n- `GoalClosed`: carries goal (goal.id); emitted by the move close\n- `GoalCompleted`: carries goal (goal.id); emitted by the move complete\n- `GoalCreated`: carries goal (goal.id), employee (goal.employee), kra (goal.kra); emitted by the move create\n- `GoalProgressUpdated`: carries goal (goal.id); emitted by the move updateProgress\n- `GoalReopened`: carries goal (goal.id); emitted by the move reopen\n- `GoalRolledUp`: carries goal (goal.id); emitted by the move rollUp\n- `GoalUnarchived`: carries goal (goal.id); emitted by the move unarchive\n\n## Operations\n\n- [goal.archive](archive.md): Archive a goal: it no longer counts towards its parent or its appraisal.\n- [goal.close](close.md): Close a goal, keeping its progress.\n- [goal.complete](complete.md): Mark a goal completed, setting its progress to 100.\n- [goal.create](create.md): Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.\n- [goal.get](get.md): Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, state.\n- [goal.list](list.md): List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n- [goal.reopen](reopen.md): Reopen a closed goal: its status follows its progress again.\n- [goal.roll-up](roll-up.md): Bring a group goal's status up to date with the progress its children have rolled up.\n- [goal.unarchive](unarchive.md): Bring an archived goal back: its status follows its progress again.\n- [goal.update-progress](update-progress.md): Set how far along a goal is, from 0 to 100.\n",
+    "goal/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.list\n\nList goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.\n\n**Who may call:** the self of its employee, or the owner of its appraisalCycle.company.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by appraisalCycle, employee; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| appraisalCycle (optional) | goal.appraisalCycle |\n| employee (optional) | goal.employee |\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |\n\n## Worked examples\n\n### appraise a year\n\nStarts from the world `a second feedback criteria`.\n\n- **Olga's goals: Ship v2 is at 100, pending until she rolls it up (#972).** `olga` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, employee the world's employee, and gets back [[`Ship v2`, `100`, `pending`], [`API`, `100`, `completed`]].\n- **Ship v2 still reads completed.** `olga` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, employee the world's employee, and gets back [`85`, `completed`].\n- **her goals.** `olga` (signed in) calls and sends appraisalCycle the last call's appraisalCycle, employee the world's employee, and gets back `Refactoring`.\n- **her goals read back in the order she set them, the API and the UI under Ship v2.** `olga` (signed in) calls and sends appraisalCycle the last call's items 0 appraisalCycle, employee the world's employee, and gets back [[`Ship v2`, the world's kra, `85`, true, null, `inProgress`], [`API`, the world's kra, `100`, false, 0, `completed`], [`UI`, the world's kra, `70`, false, 0, `inProgress`], [`Refactoring`, the world's otherKra, `40`, false, null, `inProgress`]].\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Cy can't list Olga's goals.** `cy` (signed in) calls and sends employee the world's employee, and is refused with NotAllowed, AR-001.\n- **nor can Bo list the cycle's.** `bo` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.\n- **Platform's progress follows its one child to 100, but its status waits for a roll-up (#972).** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [3, `Platform work`, `100`, `pending`].\n- **Platform's progress is now 62.5, and it still reads completed until rolled up.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [4, `62.5`, `completed`].\n- **Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60; Guides is pending until rolled up.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [[`Ship the ledger`, `50`, false, null, `inProgress`], [`Platform work`, `61.67`, true, null, `inProgress`], [`API design`, `100`, false, 1, `completed`], [`Docs writing`, `25`, false, 1, `inProgress`], [`Guides`, `60`, true, 1, `pending`], [`First guide`, `60`, false, 4, `inProgress`]].\n- **Olga lists her goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n- **Olga lists her goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n- **Platform leaves it out: the average of 100 and 60 is 80.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back [[`Ship the ledger`, `50`, `inProgress`], [`Platform work`, `80`, `inProgress`], [`API design`, `100`, `completed`], [`Docs writing`, `90`, `archived`], [`Guides`, `60`, `inProgress`], [`First guide`, `60`, `inProgress`]].\n- **Olga lists her goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n- **Olga lists H1 2027's goals.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back 2.\n- **Olga lists H1 2027's goals to reach Pair.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [8, `Pair`].\n- **a closed child still counts: Pair is 60, the average of 40 and 80.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [`Pair`, `60`, `pending`].\n- **Olga lists them to reach Outer and Inner.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [`Outer`, `Inner`].\n- **Olga lists them again.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back 13.\n- **Outer averages its children, Inner's 30 and Gamma's 100, not its leaves: 65.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back [[`Outer`, `65`, `pending`], [`Inner`, `30`, `pending`]].\n- **Olga lists them to reach Outer.** `olga` (signed in) calls and sends appraisalCycle the world's manualCycle, employee the world's employee, and gets back `Outer`.\n- **Olga lists her H2 2026 goals.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, employee the world's employee, and gets back 6.\n\n## How to call\n\n```sh\ncapxul goal list [--appraisalCycle <appraisalCycle>] [--employee <employee>] [--cursor <cursor>]\n```\n\nHTTP: `POST /goal/list` with the payload as JSON. SDK: `Sdk.goal.list(payload)`.\n",
     "goal/reopen.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.reopen\n\nReopen a closed goal: its status follows its progress again.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`reopen`: from closed to pending or inProgress or completed, emitting GoalReopened.\n\n## Steps\n\n- `goal.reopen.load` (database)\n- `goal.reopen.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state reopen can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Cy can't reopen it.** `cy` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.\n- **reopened at 0, it is pending again.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **it can't be reopened while archived.** `olga` (signed in) calls and sends goal the last call's goal, and is refused with GoalNotPending, GL-900, carrying state `archived`.\n- **reopened at 40, it is in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **reopened at 100, it is completed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **nothing reopened.** `ada` (role company.owner) calls and sends goal the world's goal, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal reopen --goal <goal>\n```\n\nHTTP: `POST /goal/reopen` with the payload as JSON. SDK: `Sdk.goal.reopen(payload)`.\n",
+    "goal/roll-up.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.roll-up\n\nBring a group goal's status up to date with the progress its children have rolled up.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 200ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n| progress | goal.progress |\n| appraisalCycle | goal.appraisalCycle |\n\n## Move\n\n`rollUp`: from pending or inProgress or completed to pending or inProgress or completed, emitting GoalRolledUp.\n\n## Steps\n\n- `goal.roll-up.load` (database)\n- `goal.roll-up.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalNotGroup | 49 | GL-012 | declared in errors.ts |\n| GoalNotPending | 40 | GL-900 | the goal is in a state rollUp can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### appraise a year\n\nStarts from the world `a second feedback criteria`.\n\n- **she rolls it up: completed.** `olga` (signed in) calls and sends goal the last call's items 0 id, and is answered.\n- **until Olga rolls it up: in progress.** `olga` (signed in) calls and sends goal the last call's items 0 id, and is answered.\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Cy can't roll up Olga's Platform.** `cy` (signed in) calls and sends goal the last call's items 1 id, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends goal the last call's items 1 id, and is refused with NotAllowed, AR-001.\n- **a goal that isn't a group isn't rolled up.** `olga` (signed in) calls and sends goal the last call's items 2 id, and is refused with GoalNotGroup, GL-012.\n- **Olga rolls Platform up: completed, at 100.** `olga` (signed in) calls and sends goal the last call's items 1 id, and gets back `100`.\n- **Ada rolls it up: back in progress.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and gets back `62.5`.\n- **Olga rolls Guides up: in progress.** `olga` (signed in) calls and sends goal the last call's items 4 id, and is answered.\n- **rolled up with no children, it stays pending.** `olga` (signed in) calls and sends goal the last call's goal, and gets back `0`.\n- **rolled up, Pair is in progress.** `olga` (signed in) calls and sends goal the last call's items 6 id, and gets back `60`.\n- **Olga rolls Inner up: in progress.** `olga` (signed in) calls and sends goal the last call's items 10 id, and is answered.\n- **and rolls Outer up at 65: in progress.** `olga` (signed in) calls and sends goal the last call's items 9 id, and gets back `65`.\n- **no group is rolled up.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalCycleCompleted, GL-001.\n- **and the cycle is judged before a goal that isn't a group.** `olga` (signed in) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal roll-up --goal <goal>\n```\n\nHTTP: `POST /goal/roll-up` with the payload as JSON. SDK: `Sdk.goal.roll-up(payload)`.\n",
     "goal/unarchive.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.unarchive\n\nBring an archived goal back: its status follows its progress again.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n\n## Move\n\n`unarchive`: from archived to pending or inProgress or completed, emitting GoalUnarchived.\n\n## Steps\n\n- `goal.unarchive.load` (database)\n- `goal.unarchive.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state unarchive can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Cy can't unarchive Olga's.** `cy` (signed in) calls and sends goal the last call's items 3 id, and is refused with NotAllowed, AR-001.\n- **Olga unarchives Write docs: at 90 it is in progress again.** `olga` (signed in) calls and sends goal the last call's items 3 id, and is answered.\n- **unarchived at 0, it is pending.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **it can't be unarchived twice.** `olga` (signed in) calls and sends goal the last call's goal, and is refused with GoalNotPending, GL-900, carrying state `pending`.\n- **unarchived at 40, it is in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **unarchived at 100, it is completed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.\n- **nothing unarchived.** `ada` (role company.owner) calls and sends goal the world's secondGoal, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal unarchive --goal <goal>\n```\n\nHTTP: `POST /goal/unarchive` with the payload as JSON. SDK: `Sdk.goal.unarchive(payload)`.\n",
     "goal/update-progress.md": "<!-- Generated from the blueprint. Do not edit. -->\n# goal.update-progress\n\nSet how far along a goal is, from 0 to 100.\n\n**Who may call:** the self of its goal.employee, or the owner of its goal.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 400ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| goal | goal.id |\n| progress | goal.progress |\n\n## Answer\n\n| field | value |\n|---|---|\n| goal | goal.id |\n| progress | goal.progress |\n| appraisal | appraisal.id |\n\n## Move\n\n`updateProgress`: from pending or inProgress or completed or archived or closed to pending or inProgress or completed or archived or closed, emitting GoalProgressUpdated.\n\n## Steps\n\n- `goal.update-progress.load` (database)\n- `goal.update-progress.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |\n| GoalIsGroup | 47 | GL-009 | declared in errors.ts |\n| ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |\n| AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |\n| GoalNotPending | 40 | GL-900 | the goal is in a state updateProgress can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### appraise a year\n\nStarts from the world `a second feedback criteria`.\n\n- **she moves the UI to 70.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `70`, scale: 0 }, and gets back `70`.\n- **she sets Refactoring to 40 again: the feedback and self scores stand.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `40`, scale: 0 }, and gets back `40`.\n- **and no longer move.** `olga` (signed in) calls and sends goal the last call's items 2 id, progress { value: `100`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.\n\n### run an appraisal cycle\n\nStarts from the world `a three-person cycle`.\n\n- **and move it to 40.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `40`, scale: 0 }, and gets back `40`.\n\n### set and track goals\n\nStarts from the world `a started manual cycle`.\n\n- **Cy can't move Olga's progress.** `cy` (signed in) calls and sends goal the world's goal, progress { value: `50`, scale: 0 }, and is refused with NotAllowed, AR-001.\n- **nor can Bo.** `bo` (signed in) calls and sends goal the world's goal, progress { value: `50`, scale: 0 }, and is refused with NotAllowed, AR-001.\n- **Olga moves it to 50, and it is in progress.** `olga` (signed in) calls and sends goal the world's goal, progress { value: `50`, scale: 0 }, and gets back [the world's goal, `50`, the world's appraisal].\n- **Platform's progress isn't set by hand.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `90`, scale: 0 }, and is refused with GoalIsGroup, GL-009.\n- **even out of range, the group is judged first.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `150`, scale: 0 }, and is refused with GoalIsGroup, GL-009.\n- **Write docs can't go over 100.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `10001`, scale: 2 }, and is refused with ProgressOutOfRange, GL-006.\n- **nor below 0.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `-1`, scale: 0 }, and is refused with ProgressOutOfRange, GL-006.\n- **an archived goal's progress still moves, to 90, and it stays archived.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `90`, scale: 0 }, and gets back [`90`, the world's appraisal].\n- **its progress still moves, to 100, and it stays closed.** `olga` (signed in) calls and sends goal the world's goal, progress { value: `100`, scale: 0 }, and is answered.\n- **she may still move a goal she already has, to 70.** `cy` (signed in) calls and sends goal the world's secondGoal, progress { value: `70`, scale: 0 }, and gets back [`70`, the world's secondAppraisal].\n- **back to 0, it is pending.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `0`, scale: 0 }, and is answered.\n- **at 99.99 it is still in progress.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `9999`, scale: 2 }, and is answered.\n- **at 0.01 too.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `1`, scale: 2 }, and is answered.\n- **but its progress moves back to 70, in progress.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `70`, scale: 0 }, and is answered.\n- **and up to 100, completed.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `100`, scale: 0 }, and is answered.\n- **it reaches 100 while archived.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `100`, scale: 0 }, and is answered.\n- **it reaches 100 while closed.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `100`, scale: 0 }, and is answered.\n- **no progress moves.** `olga` (signed in) calls and sends goal the last call's items 5 id, progress { value: `70`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.\n- **no group is judged before the cycle.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `70`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.\n\n## How to call\n\n```sh\ncapxul goal update-progress --goal <goal> --progress <progress>\n```\n\nHTTP: `POST /goal/update-progress` with the payload as JSON. SDK: `Sdk.goal.update-progress(payload)`.\n",
     "holiday-list/add-weekly-off.md": "<!-- Generated from the blueprint. Do not edit. -->\n# holiday-list.add-weekly-off\n\nMake every given weekday in a holiday list a day off.\n\n**Who may call:** the owner of its holidayList.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 300ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n\n## Answer\n\n| field | value |\n|---|---|\n| holidayList | holiday-list.id |\n| weekday | Weekday |\n| added | HolidayCount |\n| totalHolidays | HolidayCount |\n\n## Move\n\n`addWeeklyOff`: from active to active, emitting WeeklyOffAdded.\n\n## Steps\n\n- `holiday-list.add-weekly-off.load` (database)\n- `holiday-list.add-weekly-off.record` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| HolidayDateTaken | 41 | HD-001 | another holiday holds this holiday list and holiday date; by the rule holiday.oneHolidayPerDay, carrying holidayDate |\n| HolidayListNameTaken | 43 | HL-001 | another holiday list holds this company and holiday list name; by the rule holiday-list.oneNamePerCompany, carrying holidayListName |\n| HolidayListNotActive | 40 | HL-900 | the holiday-list is in a state addWeeklyOff can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its holidayList.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### a one-day list\n\nStarts from the world `a one-day list`.\n\n- **a weekday the list doesn't hold adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`0`, `0`].\n- **its own weekday adds its one day.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`1`, `1`].\n\n### every weekday\n\nStarts from the world `a leap fortnight`.\n\n- **the weekday the list starts and ends on adds three, the leap day among them.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Tuesday`, and gets back [`3`, `3`].\n- **the day after it adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Wednesday`, and gets back [`2`, `5`].\n- **the third weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Thursday`, and gets back [`2`, `7`].\n- **the fourth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`2`, `9`].\n- **the fifth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Saturday`, and gets back [`2`, `11`].\n- **the sixth weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [`2`, `13`].\n- **the last weekday adds two.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Monday`, and gets back [`2`, `15`].\n\n### weekly offs\n\nStarts from the world `a sunday holiday`.\n\n- **Bo can't add a weekly off to Ada's list.** `bo` (signed in) calls and sends holidayList the world's holidayList, weekday `Sunday`, and is refused with NotAllowed, AR-001.\n- **Ada makes a weekday a day off, and the day the list already held is skipped.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Sunday`, and gets back [the world's holidayList, `Sunday`, `51`, `52`].\n- **a weekday that falls on both the first and the last day counts both.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`Friday`, `53`, `105`].\n- **asking for the same weekday again adds nothing.** `ada` (role company.owner) calls and sends holidayList the world's holidayList, weekday `Friday`, and gets back [`0`, `105`].\n\n## How to call\n\n```sh\ncapxul holiday-list add-weekly-off --holidayList <holidayList> --weekday <weekday>\n```\n\nHTTP: `POST /holiday-list/add-weekly-off` with the payload as JSON. SDK: `Sdk.holiday-list.add-weekly-off(payload)`.\n",
@@ -81261,5 +82001,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "1c0c81211c1c684c75bb7b1d591bc19801d96e0698c9ef39f597b9ed92efc85b"
+  "digest": "4a1db00629beeea9342dfce7566bc1a110ce2e7ba11e8df777de0080e2eff602"
 }

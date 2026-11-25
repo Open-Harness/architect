@@ -89,6 +89,7 @@
     "GoalEmployeeNotInCompany": "GL-002",
     "GoalIsGroup": "GL-009",
     "GoalKraNotInAppraisal": "GL-004",
+    "GoalNotGroup": "GL-012",
     "GoalNotPending": "GL-900",
     "GoalOwnerHasLeft": "GL-003",
     "HolidayDateTaken": "HD-001",
@@ -4452,6 +4453,19 @@
               "completed"
             ],
             "emits": "GoalReopened"
+          },
+          "rollUp": {
+            "from": [
+              "pending",
+              "inProgress",
+              "completed"
+            ],
+            "to": [
+              "pending",
+              "inProgress",
+              "completed"
+            ],
+            "emits": "GoalRolledUp"
           }
         },
         "notFrom": {
@@ -4529,6 +4543,15 @@
             "ref": "goal.id"
           }
         },
+        "GoalRolledUp": {
+          "goal": {
+            "value": {
+              "type": "id",
+              "prefix": "gol"
+            },
+            "ref": "goal.id"
+          }
+        },
         "GoalUnarchived": {
           "goal": {
             "value": {
@@ -4575,6 +4598,11 @@
           "exit": 47,
           "code": "GL-009"
         },
+        "GoalNotGroup": {
+          "fields": {},
+          "exit": 49,
+          "code": "GL-012"
+        },
         "ParentGoalNotGroup": {
           "fields": {},
           "exit": 48,
@@ -4586,7 +4614,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "7d66ed1480b3281d"
+      "hash": "33b22ed6ff9f405f"
     },
     "holiday": {
       "name": "holiday",
@@ -14072,6 +14100,111 @@
       },
       "hash": "f778acb77f3ae63b"
     },
+    "goal.roll-up": {
+      "kind": "operation",
+      "name": "goal.roll-up",
+      "thing": "goal",
+      "verb": "roll-up",
+      "identifier": "rollUp",
+      "file": "blueprint/things/goal/verbs/roll-up.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "Bring a group goal's status up to date with the progress its children have rolled up.",
+      "payload": {
+        "goal": {
+          "value": {
+            "type": "id",
+            "prefix": "gol"
+          },
+          "ref": "goal.id"
+        }
+      },
+      "answer": {
+        "goal": {
+          "value": {
+            "type": "id",
+            "prefix": "gol"
+          },
+          "ref": "goal.id"
+        },
+        "progress": {
+          "value": {
+            "type": "decimal",
+            "places": 2
+          },
+          "named": "Progress",
+          "ref": "goal.progress"
+        },
+        "appraisalCycle": {
+          "value": {
+            "type": "id",
+            "prefix": "apc"
+          },
+          "ref": "goal.appraisalCycle"
+        }
+      },
+      "move": {
+        "key": "rollUp",
+        "from": [
+          "pending",
+          "inProgress",
+          "completed"
+        ],
+        "to": [
+          "pending",
+          "inProgress",
+          "completed"
+        ],
+        "emits": "GoalRolledUp"
+      },
+      "errors": [
+        "GoalCycleCompleted",
+        "GoalNotGroup"
+      ],
+      "breaks": [],
+      "refusals": [
+        "GoalCycleCompleted",
+        "GoalNotGroup",
+        "GoalNotPending",
+        "NotAllowed",
+        "IdempotencyConflict"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "employee.self",
+          "path": "goal.employee"
+        },
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "goal.company"
+        }
+      ],
+      "agentTool": true,
+      "refs": {
+        "goal": "goal"
+      },
+      "steps": {
+        "load": {
+          "name": "goal.roll-up.load",
+          "type": "database",
+          "writes": []
+        },
+        "update": {
+          "name": "goal.roll-up.update",
+          "type": "database"
+        }
+      },
+      "idempotent": "request",
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 200
+      },
+      "hash": "34f4bc74c7fdf97d"
+    },
     "goal.unarchive": {
       "kind": "operation",
       "name": "goal.unarchive",
@@ -18499,7 +18632,7 @@
           ]
         },
         {
-          "title": "and under it the API, done: Ship v2 follows it to 100",
+          "title": "and under it the API, done: Ship v2's progress follows it to 100",
           "call": {
             "actor": "olga",
             "operation": "goal.create",
@@ -18551,7 +18684,7 @@
           ]
         },
         {
-          "title": "Olga's goals: Ship v2 has followed the API to 100",
+          "title": "Olga's goals: Ship v2 is at 100, pending until she rolls it up (#972)",
           "call": {
             "actor": "olga",
             "operation": "goal.list",
@@ -18577,7 +18710,7 @@
                 [
                   "Ship v2",
                   "100",
-                  "completed"
+                  "pending"
                 ],
                 [
                   "API",
@@ -18588,6 +18721,36 @@
             },
             {
               "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "she rolls it up: completed",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "completed"
             }
           ]
         },
@@ -18606,8 +18769,6 @@
               "appraisalCycle": {
                 "ref": [
                   "last",
-                  "items",
-                  "0",
                   "appraisalCycle"
                 ]
               },
@@ -18626,9 +18787,7 @@
               "parentGoal": {
                 "ref": [
                   "last",
-                  "items",
-                  "0",
-                  "id"
+                  "goal"
                 ]
               }
             }
@@ -18747,6 +18906,69 @@
             },
             {
               "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ship v2 still reads completed",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "last",
+                  "appraisalCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "85",
+                "completed"
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "until Olga rolls it up: in progress",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
             }
           ]
         },
@@ -19391,7 +19613,7 @@
           ]
         }
       ],
-      "sourceHash": "98102f20e2b9557417c9324ea948d36e76a47b04ef754d6a2c55835b39f85bc1"
+      "sourceHash": "d974a7db5d8b252fdf8f552974b5bc7253f98306c4e2c12b3141967aa822d0bf"
     },
     "journeys/approve-an-attendance-request.ts": {
       "name": "approve an attendance request",
@@ -51550,7 +51772,7 @@
           ]
         },
         {
-          "title": "Platform follows its one child to 100, completed",
+          "title": "Platform's progress follows its one child to 100, but its status waits for a roll-up (#972)",
           "call": {
             "actor": "olga",
             "operation": "goal.list",
@@ -51576,11 +51798,154 @@
                 3,
                 "Platform work",
                 "100",
-                "completed"
+                "pending"
               ]
             },
             {
               "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy can't roll up Olga's Platform",
+          "call": {
+            "actor": "cy",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "1",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Bo",
+          "call": {
+            "actor": "bo",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "1",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a goal that isn't a group isn't rolled up",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "2",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "GoalNotGroup",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "goal.roll-up.update"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Olga rolls Platform up: completed, at 100",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "1",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "100"
+            },
+            {
+              "kind": "emits",
+              "event": "GoalRolledUp",
+              "fields": {
+                "goal": {
+                  "ref": [
+                    "last",
+                    "goal"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "completed"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "goal.roll-up",
+                "goal.roll-up.load",
+                "goal.roll-up.update"
+              ],
+              "absent": []
             }
           ]
         },
@@ -51617,9 +51982,7 @@
               "parentGoal": {
                 "ref": [
                   "last",
-                  "items",
-                  "1",
-                  "id"
+                  "goal"
                 ]
               }
             }
@@ -51644,7 +52007,7 @@
           ]
         },
         {
-          "title": "Platform is now 62.5, in progress",
+          "title": "Platform's progress is now 62.5, and it still reads completed until rolled up",
           "call": {
             "actor": "olga",
             "operation": "goal.list",
@@ -51669,11 +52032,45 @@
               "value": [
                 4,
                 "62.5",
-                "inProgress"
+                "completed"
               ]
             },
             {
               "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada rolls it up: back in progress",
+          "call": {
+            "actor": "ada",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "1",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "62.5"
+            },
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
             }
           ]
         },
@@ -51710,9 +52107,7 @@
               "parentGoal": {
                 "ref": [
                   "last",
-                  "items",
-                  "1",
-                  "id"
+                  "goal"
                 ]
               }
             }
@@ -51793,7 +52188,7 @@
           ]
         },
         {
-          "title": "Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60",
+          "title": "Guides follows to 60, and Platform, two levels up, to 61.67, the average of 100, 25 and 60; Guides is pending until rolled up",
           "call": {
             "actor": "olga",
             "operation": "goal.list",
@@ -51849,7 +52244,7 @@
                   "60",
                   true,
                   1,
-                  "inProgress"
+                  "pending"
                 ],
                 [
                   "First guide",
@@ -51862,6 +52257,36 @@
             },
             {
               "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga rolls Guides up: in progress",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "4",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
             }
           ]
         },
@@ -55077,6 +55502,38 @@
           ]
         },
         {
+          "title": "rolled up with no children, it stays pending",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "0"
+            },
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "pending"
+            }
+          ]
+        },
+        {
           "title": "it reads back at 0, a group",
           "call": {
             "actor": "olga",
@@ -55340,11 +55797,45 @@
               "value": [
                 "Pair",
                 "60",
-                "inProgress"
+                "pending"
               ]
             },
             {
               "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "rolled up, Pair is in progress",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "6",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "60"
+            },
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
             }
           ]
         },
@@ -55690,17 +56181,108 @@
                 [
                   "Outer",
                   "65",
-                  "inProgress"
+                  "pending"
                 ],
                 [
                   "Inner",
                   "30",
-                  "inProgress"
+                  "pending"
                 ]
               ]
             },
             {
               "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Olga rolls Inner up: in progress",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "10",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
+            }
+          ]
+        },
+        {
+          "title": "Olga lists them to reach Outer",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.list",
+            "payload": {
+              "appraisalCycle": {
+                "ref": [
+                  "world",
+                  "manualCycle"
+                ]
+              },
+              "employee": {
+                "ref": [
+                  "world",
+                  "employee"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "Outer"
+            }
+          ]
+        },
+        {
+          "title": "and rolls Outer up at 65: in progress",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "9",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "65"
+            },
+            {
+              "kind": "is-in",
+              "thing": "goal",
+              "id": {
+                "ref": [
+                  "last",
+                  "goal"
+                ]
+              },
+              "state": "inProgress"
             }
           ]
         },
@@ -55986,6 +56568,60 @@
           ]
         },
         {
+          "title": "no group is rolled up",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "1",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "GoalCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and the cycle is judged before a goal that isn't a group",
+          "call": {
+            "actor": "olga",
+            "operation": "goal.roll-up",
+            "payload": {
+              "goal": {
+                "ref": [
+                  "last",
+                  "items",
+                  "5",
+                  "id"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "GoalCycleCompleted",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "nothing archived",
           "call": {
             "actor": "ada",
@@ -56144,7 +56780,7 @@
           ]
         }
       ],
-      "sourceHash": "69943987ad1d9926fad514d2a096bf8571ea66532f460031336ca31f45ab79c0"
+      "sourceHash": "6aeffcd1ed64ebfcad7ad813b7f544cd13148afc3c8d1e160f2cee738e318a05"
     },
     "journeys/set-up-a-company.ts": {
       "name": "set up a company",
@@ -69238,6 +69874,16 @@
       }
     },
     {
+      "id": "anomaly:GL-012",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "GL-012",
+        "severity": "ticket",
+        "owner": "blueprint/things/goal/errors.ts"
+      }
+    },
+    {
       "id": "anomaly:GL-900",
       "kind": "anomaly",
       "labels": {
@@ -73511,6 +74157,48 @@
         "operation": "goal.reopen",
         "severity": "page",
         "owner": "blueprint/things/goal/verbs/reopen.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:goal.roll-up",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "goal.roll-up",
+        "severity": "page",
+        "owner": "blueprint/things/goal/verbs/roll-up.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -78428,6 +79116,49 @@
       "target": 0.95,
       "windowDays": 28,
       "thresholdMs": 400,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:goal.roll-up",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "goal.roll-up",
+        "severity": "page",
+        "owner": "blueprint/things/goal/verbs/roll-up.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 200,
       "minCalls": 20,
       "alerts": [
         {
