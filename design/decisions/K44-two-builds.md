@@ -207,8 +207,9 @@ Parked means the code stays in the repository untouched and its goal stops; noth
 - **Labels, by hand at merge:** the sync sets a release label only when it makes an issue, and a slice's label is its
   goal's. So, by hand: Goal 16's goal issue (#426) and its slices for the beta (1, 3 to 9) move from `release:1.0` to
   `release:beta`; its slices 2, 10 and 12 (the Safe and getting paid, Bridge, budgets) carry `release:1.0`, the new
-  slice 12 included; slice 11, the CRM, loses its release label (a module, not core). Goal 18's existing issues (#718 to
-  #721) move from `release:1.0` to `release:preview`, and Goal 17's lose `release:beta`.
+  slice 12 included; slice 11, the CRM, keeps `release:1.0` until it is scheduled, since the Project shows an issue
+  with no release label at its goal's release, `beta`. Goal 18's existing issues (#718 to #721) move from
+  `release:1.0` to `release:preview`, and Goal 17's lose `release:beta`.
 - **The board's links:** the sync now removes a "blocked by" link between two of a goal's slices that its brief no
   longer gives, before it adds any, so Goal 16's reordered slices leave no stale link (#713 blocked by #428) and no
   cycle. Links to snags, asks and other goals' slices stay.
