@@ -91,11 +91,23 @@ Starts from the world `a separation`.
 
 - **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **Dee leaves.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-11-30`, and gets back the world's newHire.
+
 ### schedule an interview
 
 Starts from the world `an outside employee`.
 
 - **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
 ### set up interview rounds
 

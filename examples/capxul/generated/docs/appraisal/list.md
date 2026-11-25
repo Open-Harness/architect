@@ -30,6 +30,20 @@ List appraisals, oldest first, 50 to a page, filtered by appraisalCycle, employe
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |
 
+## Worked examples
+
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **no appraisal is made before it starts.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and gets back 0.
+- **the cycle's appraisals are Olga's, now submitted, then Cy's, each copying the template with every score 0.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and gets back [[the world's company, the world's employee, the world's appraisalCycle, the world's appraisalTemplate, `Automated Based on Goal Progress`, `submitted`, [[the world's kra, `30`, `0`, `0`], [the world's otherKra, `70`, `0`, `0`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], [`0`, `0`, `0`, `0`]], [the world's company, the world's secondEmployee, the world's appraisalCycle, the world's appraisalTemplate, `Automated Based on Goal Progress`, `draft`, [[the world's kra, `30`, `0`, `0`], [the world's otherKra, `70`, `0`, `0`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], [`0`, `0`, `0`, `0`]]].
+- **Olga sees hers alone.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[the world's company, the world's employee, the world's appraisalCycle, the world's appraisalTemplate, `Automated Based on Goal Progress`, `submitted`, [[the world's kra, `30`, `0`, `0`], [the world's otherKra, `70`, `0`, `0`]], [[the world's criteria, `70`, `0`], [the world's otherCriteria, `30`, `0`]], [`0`, `0`, `0`, `0`]]].
+- **Bo can't list the cycle's.** `bo` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **nor Olga's.** `bo` (signed in) calls and sends employee the world's employee, and is refused with NotAllowed, AR-001.
+- **Ada lists them again.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and gets back [`submitted`, `draft`].
+- **Q1 2027 holds Olga's and Cy's, rated by hand, and none of Dee's.** `ada` (role company.owner) calls and sends appraisalCycle the world's threePersonCycle, and gets back [[the world's employee, `Manual Rating`, `draft`], [the world's secondEmployee, `Manual Rating`, `draft`]].
+
 ## How to call
 
 ```sh

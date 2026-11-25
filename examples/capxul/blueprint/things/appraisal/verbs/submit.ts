@@ -11,7 +11,7 @@ import { owner } from "../../company/roles.ts";
 export default Blueprint.operation(Appraisal, {
   description: "Submit an appraisal.",
   payload: { appraisal: Appraisal.fields.id },
-  answer: { appraisal: Appraisal.fields.id, finalScore: Appraisal.fields.finalScore },
+  answer: { appraisal: Appraisal.fields.id, finalScore: Appraisal.fields.finalScore, appraisalCycle: Appraisal.fields.appraisalCycle },
   move: machine.moves.submit,
   allowed: [owner.of("appraisal.company")],
   steps: { load: Blueprint.step.database({ writes: [] }), update: Blueprint.step.database() },

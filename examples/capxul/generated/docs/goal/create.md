@@ -26,6 +26,8 @@ Set an employee a goal in a cycle, under a KRA, perhaps under another of their g
 | field | value |
 |---|---|
 | goal | goal.id |
+| appraisal | appraisal.id |
+| parentGoal (optional) | goal.parentGoal |
 
 ## Move
 
@@ -53,6 +55,38 @@ Set an employee a goal in a cycle, under a KRA, perhaps under another of their g
 | KraNotFound | 4 | KR-901 | nothing has the id in kra; the handler never runs; carries `id` |
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its employee, or the owner of its appraisalCycle.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
+
+## Worked examples
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **Olga sets a group goal, Platform, typing 80: a group starts at 0.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Platform`, progress { value: `80`, scale: 0 }, isGroup true, and gets back [the world's appraisal, false].
+- **under it, Design API, done at 100.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Design API`, progress { value: `100`, scale: 0 }, isGroup false, parentGoal the last call's goal, and gets back an answer matching `^gol_[0-9a-z]+$`.
+- **under Platform, Write docs at 25, in progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Write docs`, progress { value: `25`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and gets back an answer matching `^gol_[0-9a-z]+$`.
+- **under Platform, a group of its own, Guides.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Guides`, progress { value: `0`, scale: 0 }, isGroup true, parentGoal the last call's items 1 id, and is answered.
+- **under Guides, Guide one at 60.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Guide one`, progress { value: `60`, scale: 0 }, isGroup false, parentGoal the last call's goal, and gets back the world's appraisal.
+- **a goal can't go under Ship the ledger, which isn't a group.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Sub-ledger`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is refused with ParentGoalNotGroup, GL-010.
+- **progress over 100 is judged before that.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Sub-ledger`, progress { value: `10001`, scale: 2 }, isGroup false, parentGoal the last call's items 0 id, and is refused with ProgressOutOfRange, GL-006.
+- **and so is progress below 0, at the top too.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Negative`, progress { value: `-1`, scale: 2 }, isGroup false, and is refused with ProgressOutOfRange, GL-006.
+- **a child under another KRA than its parent's is refused, judged before its progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Wrong KRA`, progress { value: `101`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.
+- **and so is a child in another cycle.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Wrong cycle`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.
+- **and Cy's own goal under Olga's Platform.** `cy` (signed in) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's otherKra, goalName `Borrowed`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 1 id, and is refused with ParentGoalMismatch, GL-005.
+- **a KRA of Acme Logistics isn't on Olga's appraisal, judged before a parent.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `10`, scale: 0 }, isGroup false, parentGoal the last call's items 0 id, and is refused with GoalKraNotInAppraisal, GL-004.
+- **Dee has no appraisal in H2 2026, so she can't set a goal in it.** `dee` (signed in) calls and sends employee the world's newHire, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Settle in`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalKraNotInAppraisal, GL-004.
+- **Ada can't set Bo a goal in Acme Trading's cycle: he works for Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalEmployeeNotInCompany, GL-002.
+- **Cy can't set Olga a goal.** `cy` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Cy's idea`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends employee the world's employee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `Bo's idea`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with NotAllowed, AR-001.
+- **but she can't set a new goal.** `cy` (signed in) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's kra, goalName `One more`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalOwnerHasLeft, GL-003.
+- **her leaving is judged before a KRA that isn't on her appraisal.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `One more`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalOwnerHasLeft, GL-003.
+- **Olga sets a goal at 0 in H1 2027: pending.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Idle`, progress { value: `0`, scale: 0 }, isGroup false, and is answered.
+- **Olga sets a goal at 40: in progress.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Steady`, progress { value: `40`, scale: 0 }, isGroup false, and is answered.
+- **Olga sets a goal at 100: completed.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Done already`, progress { value: `100`, scale: 0 }, isGroup false, and is answered.
+- **Olga sets one at 50 and archives it.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Later`, progress { value: `50`, scale: 0 }, isGroup false, and is answered.
+- **Olga sets one at 50 and closes it.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's otherKra, goalName `Closed early`, progress { value: `50`, scale: 0 }, isGroup false, and is answered.
+- **a group typed at 150 starts at 0, pending.** `olga` (signed in) calls and sends employee the world's employee, appraisalCycle the world's manualCycle, kra the world's kra, goalName `Group`, progress { value: `150`, scale: 0 }, isGroup true, and is answered.
+- **no goal is set in it now, judged before Bo's company.** `ada` (role company.owner) calls and sends employee the world's outsider, appraisalCycle the world's appraisalCycle, kra the world's outsideKra, goalName `Drive`, progress { value: `0`, scale: 0 }, isGroup false, and is refused with GoalCycleCompleted, GL-001.
 
 ## How to call
 

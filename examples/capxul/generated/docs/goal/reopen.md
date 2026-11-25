@@ -40,6 +40,20 @@ Reopen a closed goal: its status follows its progress again.
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **Cy can't reopen it.** `cy` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.
+- **reopened at 0, it is pending again.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **it can't be reopened while archived.** `olga` (signed in) calls and sends goal the last call's goal, and is refused with GoalNotPending, GL-900, carrying state `archived`.
+- **reopened at 40, it is in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **reopened at 100, it is completed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **nothing reopened.** `ada` (role company.owner) calls and sends goal the world's goal, and is refused with GoalCycleCompleted, GL-001.
+
 ## How to call
 
 ```sh

@@ -29,6 +29,16 @@ Read one employee-feedback-criteria by its id: company, criteria, state.
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |
 
+## Worked examples
+
+### set up kras and criteria
+
+Starts from the world `three companies`.
+
+- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's employeeFeedbackCriteria, and is refused with NotAllowed, AR-001.
+- **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's employeeFeedbackCriteria, and gets back [the world's company, `Problem Solving`, `active`].
+- **it reads back in lower case.** `ada` (role company.owner) calls and sends id the last call's employeeFeedbackCriteria, and gets back [the world's company, `teamwork`].
+
 ## How to call
 
 ```sh

@@ -11,7 +11,7 @@ import { Appraisal } from "../../appraisal/thing.ts";
 export default Blueprint.operation(EmployeePerformanceFeedback, {
   description: "Submit your feedback, counting it in the appraisal's average.",
   payload: { employeePerformanceFeedback: EmployeePerformanceFeedback.fields.id },
-  answer: { employeePerformanceFeedback: EmployeePerformanceFeedback.fields.id, avgFeedbackScore: Appraisal.fields.avgFeedbackScore },
+  answer: { employeePerformanceFeedback: EmployeePerformanceFeedback.fields.id, avgFeedbackScore: Appraisal.fields.avgFeedbackScore, appraisal: Appraisal.fields.id },
   move: machine.moves.submit,
   errors: [FeedbackCycleCompleted],
   allowed: [self.of("employeePerformanceFeedback.reviewer")],

@@ -46,6 +46,16 @@ Make an employee's appraisal in a cycle, by a template.
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisalCycle.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **no appraisal is made in it now.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's appraisalCycle, appraisalTemplate the world's appraisalTemplate, and is refused with AppraisalCycleCompleted, AP-003.
+- **and may then add Dee's appraisal by hand.** `ada` (role company.owner) calls and sends employee the world's newHire, appraisalCycle the world's appraisalCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
+- **Ada makes Olga's Q1 2027 appraisal by hand before it starts.** `ada` (role company.owner) calls and sends employee the world's employee, appraisalCycle the world's threePersonCycle, appraisalTemplate the world's appraisalTemplate, and gets back an answer matching `^apr_[0-9a-z]+$`.
+
 ## How to call
 
 ```sh

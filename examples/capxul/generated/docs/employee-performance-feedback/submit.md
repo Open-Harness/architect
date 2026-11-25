@@ -21,6 +21,7 @@ Submit your feedback, counting it in the appraisal's average.
 |---|---|---|
 | employeePerformanceFeedback | employee-performance-feedback.id |  |
 | avgFeedbackScore | appraisal.avgFeedbackScore | The average of the submitted feedback's scores, out of 5 (HRMS's `avg_feedback_score`). |
+| appraisal | appraisal.id |  |
 
 ## Move
 

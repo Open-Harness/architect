@@ -41,6 +41,23 @@ Close a goal, keeping its progress.
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **nor closed.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GL-009.
+- **Cy can't close Olga's Ship the ledger.** `cy` (signed in) calls and sends goal the world's goal, and is refused with NotAllowed, AR-001.
+- **Ada closes it.** `ada` (role company.owner) calls and sends goal the world's goal, and is answered.
+- **Cy can't close it.** `cy` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.
+- **Olga closes it from pending.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **closes it from archived.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **she closes it from in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **nor closed.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.
+- **closed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **nothing closed.** `ada` (role company.owner) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GL-001.
+
 ## How to call
 
 ```sh

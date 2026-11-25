@@ -7,11 +7,11 @@ import create from "../things/appraisal-template/verbs/create.ts";
 const d = BigDecimal.fromStringUnsafe;
 
 /**
- * From a second feedback criteria: Ada has made the template Engineers: Quality 30 and Development 70, rated on
+ * From an outside criteria: Ada has made the template Engineers: Quality 30 and Development 70, rated on
  * Problem Solving 70 and Excellence 30 (HRMS's own test template).
  */
 export default Blueprint.startingWorld("an appraisal template", {
-  from: "a second feedback criteria",
+  from: "an outside criteria",
   cast: { ada: owner },
   makes: (s) => [
     s.ada.run(create, {

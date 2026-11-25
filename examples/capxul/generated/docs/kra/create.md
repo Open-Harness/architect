@@ -38,6 +38,18 @@ Add a key result area to a company.
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### set up kras and criteria
+
+Starts from the world `three companies`.
+
+- **Ada adds a KRA to Acme Trading.** `ada` (role company.owner) calls and sends company the world's company, title `Quality`, and gets back an answer matching `^kra_[0-9a-z]+$`.
+- **the same title can't be added to Acme Trading twice.** `ada` (role company.owner) calls and sends company the world's company, title `Quality`, and is refused with KraTitleTaken, KR-001, carrying title `Quality`.
+- **but Acme Logistics may have its own.** `ada` (role company.owner) calls and sends company the world's otherCompany, title `Quality`, and gets back an answer matching `^kra_[0-9a-z]+$`.
+- **Bo can't add a KRA to Acme Trading.** `bo` (signed in) calls and sends company the world's company, title `Speed`, and is refused with NotAllowed, AR-001.
+- **Bo may use the title in Bo Ltd.** `bo` (signed in) calls and sends company the world's boCompany, title `Quality`, and gets back an answer matching `^kra_[0-9a-z]+$`.
+
 ## How to call
 
 ```sh

@@ -42,6 +42,20 @@ Start a cycle, making an appraisal for each appraisee who has none yet.
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisalCycle.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **but it can't start.** `ada` (role company.owner) calls and sends appraisalCycle the last call's appraisalCycle, and is refused with CycleWithoutAppraisees, CY-006.
+- **Bo can't start H2 2026.** `bo` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **nor can Olga.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **Ada starts it, making two appraisals.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and gets back [the world's appraisalCycle, 2, true].
+- **it can't start twice.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and is refused with AppraisalCycleNotNotStarted, CY-900, carrying state `inProgress`.
+- **nor start again.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and is refused with AppraisalCycleNotNotStarted, CY-900, carrying state `completed`.
+- **Ada starts Q1 2027: Olga has one already and Dee has left, so it makes Cy's alone.** `ada` (role company.owner) calls and sends appraisalCycle the world's threePersonCycle, and gets back 1.
+
 ## How to call
 
 ```sh

@@ -10,4 +10,4 @@ export const updateProgress = Command.make(
   "update-progress",
   { goal: Flag.String("goal").pipe(Flag.withMetavar("id"), Flag.withDescription("Goal id: an id (gol_...).")), progress: Flag.String("progress").pipe(Flag.withMetavar("progress"), Flag.withDescription("Goal progress: text.")), json: Flag.Boolean("json").pipe(Flag.withDefault(false)) },
   ({ json, ...flags }) => Schema.decodeUnknownEffect(Declaration.payloadSchema)(flags).pipe(Effect.flatMap(Sdk.goal.updateProgress), Output.answer(json)),
-).pipe(Command.withDescription("Set how far along a goal is, from 0 to 100. Moves a goal from pending or inProgress or completed to pending or inProgress or completed."));
+).pipe(Command.withDescription("Set how far along a goal is, from 0 to 100. Moves a goal from pending or inProgress or completed or archived or closed to pending or inProgress or completed or archived or closed."));

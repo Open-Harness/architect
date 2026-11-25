@@ -40,6 +40,20 @@ Bring an archived goal back: its status follows its progress again.
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **Cy can't unarchive Olga's.** `cy` (signed in) calls and sends goal the last call's items 3 id, and is refused with NotAllowed, AR-001.
+- **Olga unarchives Write docs: at 90 it is in progress again.** `olga` (signed in) calls and sends goal the last call's items 3 id, and is answered.
+- **unarchived at 0, it is pending.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **it can't be unarchived twice.** `olga` (signed in) calls and sends goal the last call's goal, and is refused with GoalNotPending, GL-900, carrying state `pending`.
+- **unarchived at 40, it is in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **unarchived at 100, it is completed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **nothing unarchived.** `ada` (role company.owner) calls and sends goal the world's secondGoal, and is refused with GoalCycleCompleted, GL-001.
+
 ## How to call
 
 ```sh

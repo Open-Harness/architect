@@ -41,6 +41,19 @@ Mark a goal completed, setting its progress to 100.
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **nor is it completed by hand.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GL-009.
+- **Cy can't complete it.** `cy` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.
+- **Olga completes it.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **a completed goal can't be completed again.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.
+- **nothing is completed, a group either.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalCycleCompleted, GL-001.
+
 ## How to call
 
 ```sh

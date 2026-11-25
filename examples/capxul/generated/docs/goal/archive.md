@@ -41,6 +41,24 @@ Archive a goal: it no longer counts towards its parent or its appraisal.
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **nor archived.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GL-009.
+- **Cy can't archive Olga's Write docs.** `cy` (signed in) calls and sends goal the last call's items 3 id, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends goal the last call's items 3 id, and is refused with NotAllowed, AR-001.
+- **Olga archives Write docs.** `olga` (signed in) calls and sends goal the last call's items 3 id, and is answered.
+- **Ada archives the runbook.** `ada` (role company.owner) calls and sends goal the world's secondGoal, and is answered.
+- **Olga archives it from pending.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **archives it again from closed.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **she archives it from in progress.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **nor archived.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.
+- **archived.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
+- **nothing archived.** `ada` (role company.owner) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GL-001.
+
 ## How to call
 
 ```sh

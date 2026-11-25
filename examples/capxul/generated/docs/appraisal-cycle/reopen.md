@@ -38,6 +38,18 @@ Put a completed cycle back in progress.
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its appraisalCycle.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
+## Worked examples
+
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **nor reopen it.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and is refused with AppraisalCycleNotNotStarted, CY-900, carrying state `notStarted`.
+- **nor be reopened while in progress.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and is refused with AppraisalCycleNotNotStarted, CY-900, carrying state `inProgress`.
+- **Bo can't reopen it.** `bo` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **nor can Olga.** `olga` (signed in) calls and sends appraisalCycle the world's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **Ada puts it back in progress.** `ada` (role company.owner) calls and sends appraisalCycle the world's appraisalCycle, and gets back the world's appraisalCycle.
+
 ## How to call
 
 ```sh

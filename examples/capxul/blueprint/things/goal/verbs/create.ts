@@ -17,7 +17,8 @@ import { Appraisal } from "../../appraisal/thing.ts";
 // HRMS's Goal insert: its company is the cycle's, and its status follows its progress; a group starts at 0, whatever is typed (`before_insert`). A child under a parent makes the parent's progress the average of
 // its children that aren't archived, and its status follow (`update_parent_progress`). Under the automated method, the
 // employee's appraisal in the cycle takes each KRA's score as the average progress of its top goals that aren't archived,
-// and its scores follow (`update_goal_progress_in_appraisal`, `set_goal_score`). Refusal order (errors.ts).
+// and its scores follow (`update_goal_progress_in_appraisal`, `set_goal_score`). It answers that appraisal and the
+// parent it named, so the next call can reach them. Refusal order (errors.ts).
 export default Blueprint.operation(Goal, {
   description: "Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals.",
   payload: {
@@ -29,7 +30,7 @@ export default Blueprint.operation(Goal, {
     isGroup: Goal.fields.isGroup,
     parentGoal: Goal.fields.parentGoal,
   },
-  answer: { goal: Goal.fields.id },
+  answer: { goal: Goal.fields.id, appraisal: Appraisal.fields.id, parentGoal: Goal.fields.parentGoal },
   move: machine.moves.create,
   errors: [GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, ParentGoalNotGroup],
   allowed: [self.of("employee"), owner.of("appraisalCycle.company")],

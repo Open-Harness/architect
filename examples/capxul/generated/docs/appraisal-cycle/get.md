@@ -33,6 +33,17 @@ Read one appraisal-cycle by its id: company, cycleName, startDate, endDate, kraE
 |---|---|---|---|
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |
 
+## Worked examples
+
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **H2 2026 reads back not started, appraising Olga then Cy.** `ada` (role company.owner) calls and sends id the world's appraisalCycle, and gets back [the world's company, `H2 2026`, `2026-07-01`, `2026-12-31`, `Automated Based on Goal Progress`, [{ employee: the world's employee, appraisalTemplate: the world's appraisalTemplate }, { employee: the world's secondEmployee, appraisalTemplate: the world's appraisalTemplate }], `notStarted`].
+- **Olga can't read the cycle.** `olga` (signed in) calls and sends id the world's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **nor can Bo.** `bo` (signed in) calls and sends id the world's appraisalCycle, and is refused with NotAllowed, AR-001.
+- **the cycle's settings read back unchanged.** `ada` (role company.owner) calls and sends id the world's appraisalCycle, and gets back [`H2 2026`, `2026-07-01`, `2026-12-31`, `Automated Based on Goal Progress`, [{ employee: the world's employee, appraisalTemplate: the world's appraisalTemplate }, { employee: the world's secondEmployee, appraisalTemplate: the world's appraisalTemplate }], `inProgress`].
+
 ## How to call
 
 ```sh
