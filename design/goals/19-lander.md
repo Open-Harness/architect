@@ -115,8 +115,8 @@ said no Claude-led goal is running now.
     by taking `status.md` and Goal 16's brief whole from `goal/capxul`, which undid `main`'s board rows; the 🔍
     blocked it, and #979 was cut on #973's merge instead.
   - #990 brought slice 8e's recruitment, at `2a22de48`: #982, the checks, and #985, the build. #982 had no 🔍 posted,
-    so the lander's 🔍 tested it: all six recruitment journeys fail on blank handlers, and each of 12 planted wrong builds
-    fails a named step.
+    so the lander's 🔍 tested it: all six recruitment journeys fail on blank handlers, and each of 12 planted wrong
+    builds fails a named step.
 
   Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
   it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
