@@ -85,7 +85,8 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   scaffolded `src/written.ts` may export `exit`, one base: its four errors take base to base+3. Unset, they stay 81 to 84,
   so one adapter needs no setting. Two adapters whose exits clash in one operation are refused by `generate`, naming both
   adapters and the `exit` in `src/written.ts` that fixes it. A base whose four exits leave 5 to 119 is refused, naming the
-  adapter and the setting. Not from a hash of the name, which can still clash and can't be fixed by hand; not assigned by
+  adapter, the setting, and the base or the exit that leaves. The scaffold may write the `exit` line itself, as it
+  writes `code`'s. Not from a hash of the name, which can still clash and can't be fixed by hand; not assigned by
   the compiler, which would move exits when an unrelated adapter is added, as `refusals.lock` exists to stop. Check 07
   pins it, red until #1012 is built.
 

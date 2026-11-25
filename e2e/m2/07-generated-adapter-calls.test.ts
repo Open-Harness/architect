@@ -403,9 +403,13 @@ describe("07 two generated adapters whose names share their first two letters (s
   });
 });
 
-/** `rate.both`, whose steps call `rates` and `fx-rates`, listing both adapters' eight errors; `setting` is appended to fx-rates' `src/written.ts`. */
+/**
+ * `rate.both`, whose steps call `rates` and `fx-rates`, listing both adapters' eight errors. `setting` replaces the `exit`
+ * line fx-rates' scaffolded `src/written.ts` has, as `codeOf` does for `code`, or is appended when it has none.
+ */
+const EXIT_LINE = /^export const exit\b.*$/m;
 const both = (setting: string | null): App => {
-  const app = bare({ rates: null, "fx-rates": setting === null ? null : (written) => `${written}\n${setting}\n` });
+  const app = bare({ rates: null, "fx-rates": setting === null ? null : (written) => (EXIT_LINE.test(written) ? written.replace(EXIT_LINE, setting) : `${written}\n${setting}\n`) });
   const { root } = app;
   const errors = ["Rates", "FxRates"].flatMap((p) => FOUR.map((f) => `${p}${f}`));
   mkdirSync(join(root, "blueprint/things/rate/verbs"), { recursive: true });
@@ -446,23 +450,26 @@ describe("07 one operation calls two generated adapters (snag #1012)", () => {
     expect(exitsOf(root, "FxRates")).toEqual({ FxRatesApiFailure: 85, FxRatesInputRefused: 86, FxRatesAnswerRefused: 87, FxRatesUnreachable: 88 });
   });
 
-  it("with neither setting an exit base, generate refuses the clash, naming both adapters and the setting in src/written.ts that fixes it", () => {
-    const { root } = both(null);
-    const said = run(root, "generate");
-    expect(said.status, said.out).not.toBe(0);
-    expect(namesTheFix(said.out), `a line naming rates, fx-rates, src/written.ts and exit:\n${said.out}`).toBe(true);
-  });
+  // Neither set, the two bases are equal; at 83, fx-rates' 83 to 86 overlap rates' 81 to 84 on two exits only.
+  for (const [what, setting] of [["with neither setting an exit base", null], ["with fx-rates' base at 83, overlapping rates' 81 to 84", "export const exit: number | undefined = 83;"]] as const) {
+    it(`${what}, generate refuses the clash, naming both adapters and the setting in src/written.ts that fixes it`, () => {
+      const { root } = both(setting);
+      const said = run(root, "generate");
+      expect(said.status, said.out).not.toBe(0);
+      expect(namesTheFix(said.out), `a line naming rates, fx-rates, src/written.ts and exit:\n${said.out}`).toBe(true);
+    });
+  }
 
-  // The refusal names the exit that leaves the range. 120 is past it; 117 is inside it, but its fourth exit, 120, is
-  // not: the four must fit. Both land on exits the runtime keeps (0 to 4, 120 to 125), so each edge needs a base whose
-  // only way out is the edge itself: 123's fourth exit, 126, is past the top, and -1 is below the bottom (0 to 2 are
-  // the runtime's too). A build that checks one edge only fails one of them.
-  for (const [base, out] of [[120, 120], [117, 120], [123, 126], [-1, -1]] as const) {
+  // The refusal names the base or the exit that leaves the range. 120 is past it; 117 is inside it, but its fourth exit,
+  // 120, is not: the four must fit. Both land on exits the runtime keeps (0 to 4, 120 to 125), refused even without a
+  // range check, so each edge also needs a base that leaves only past it and is no exit the runtime keeps: 126 (126 to
+  // 129) past the top, -1 below the bottom. A build that checks one edge only fails one of them.
+  for (const [base, out] of [[120, 120], [117, 120], [126, 126], [-1, -1]] as const) {
     it(`an exit base whose four exits leave 5 to 119 (${base}) is refused, naming the adapter and the setting`, () => {
       const { root } = both(`export const exit: number | undefined = ${base};`);
       const said = run(root, "generate");
       expect(said.status, said.out).not.toBe(0);
-      const names = new RegExp(`(?<![\\w-])${out}(?!\\d)`);
+      const names = new RegExp(`(?<!\\d)(?:${base}|${out})(?!\\d)`);
       expect(said.out.split("\n").some((l) => l.includes("fx-rates") && l.includes("src/written.ts") && /\bexit\b/.test(l) && names.test(l)), said.out).toBe(true);
     });
   }
