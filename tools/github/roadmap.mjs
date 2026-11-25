@@ -66,7 +66,8 @@ export const forecast = ({ rows, started = {}, today, pace: perDay, perItem: wor
     needsOf(r).forEach((n) => take(byId.get(n)));
   };
   rows.filter((r) => r.milestone).forEach(take);
-  // Urgency: an app milestone's rank (the superagent's first, then Capxul's); an item needed earlier takes its dependent's.
+  // Urgency: an app milestone's rank (the superagent's first, then Capxul's, as K42 ranked them; Goal 18's slice 4 changes
+  // it for K44); an item needed earlier takes its dependent's.
   const rank = new Map([...want].map((id) => [id, milestoneRank(byId.get(id))]));
   for (let changed = true; changed; ) {
     changed = false;

@@ -127,6 +127,23 @@ test("a slice's order becomes a blocked-by link, made once", () => {
   assert.deepEqual(fresh.map((s) => [s.issue, s.blocker]), [["slice 6.2", "slice 6.1"]]);
 });
 
+test("a link between two slices that the brief no longer orders is removed before any is added", () => {
+  const text = brief.replace('  - "2 · The checks (after 1)"', '  - "2 · The checks"\n  - "3 · The docs (after 2)"').replace('"1 · The theme"', '"1 · The theme (after 3)"');
+  const { goal } = readGoal("design/goals/06-portal.md", text);
+  const state = {
+    labels: LABELS,
+    milestones: [],
+    issues: [
+      { number: 11, title: "Goal 6 · 1 · The theme", body: sliceMarker(6, 1), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [] },
+      { number: 12, title: "Goal 6 · 2 · The checks", body: sliceMarker(6, 2), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [11, 20] },
+      { number: 13, title: "Goal 6 · 3 · The docs", body: sliceMarker(6, 3), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [12] },
+      { number: 20, title: "a snag", body: "", state: "open", labels: ["kind:snag"] },
+    ],
+  };
+  const links = plan({ goals: [goal], state, briefUrl: url }).filter((s) => /BlockedBy$/.test(s.do)).map((s) => [s.do, s.issue, s.blocker]);
+  assert.deepEqual(links, [["removeBlockedBy", 12, 11], ["addBlockedBy", 11, 13]], "the stale 2-after-1 goes first, the snag's link stays");
+});
+
 test("the goal page: the plain card, the progress, what is stuck and on whom, and where it stands", () => {
   const { goal } = readGoal("design/goals/06-portal.md", brief);
   const state = {

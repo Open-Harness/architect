@@ -1,20 +1,22 @@
 ---
 goal: 18
-title: the framework, always running
+title: the framework, always running, building the Orthograph alpha
 milestone: "Goal 18: the framework"
-release: "1.0"
+release: preview
 branch: main
 base: main
-status: parked         # ready | running | landing | done | parked
+status: ready          # ready | running | landing | done | parked
 lead:
-  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
-  model: claude-opus-5-5 # the model id it runs on
-  since: 2026-11-23    # the date it started
-done_check: never done; it runs while Orthograph is being built (K42)
+  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
+  model: null          # the model id it runs on
+  since: null          # the date it started
+done_check: from a registry, `ortho new app` makes an app that declares, generates, proves and runs, and its generated CLI, SDK and MCP answer; then the same from npm (slices 11 and 12)
 owns:
   - design/goals/
   - docs/canon/status.md
   - tools/github/
+  - tools/release/
+  - packages/preset/
   - .agents/skills/conductor/
   - .agents/skills/github/
   - .agents/skills/threads/
@@ -22,56 +24,75 @@ slices:
   - "1 · The goals K42 stops, wound down"
   - "2 · The board: the status page's items, claims, the split, and the sync that writes the Project"
   - "3 · The loop (after 1, 2)"
+  - "4 · The board re-sorted for K44: rows, release rule, milestones and roadmap; Goal 17's claims released"
+  - "5 · Publishing that works: a real version, pnpm publish, the starter in the preset, the release-age exemption, a dry run that refuses each mistake"
+  - "6 · A command that creates an app: ortho new app and npm create orthograph"
+  - "7 · Getting started and help text for every command and flag"
+  - "8 · The portal ships without its screens, and says so"
+  - "9 · The chain basics in the alpha: their on-chain checks run on main, and the relayer fixed or marked experimental"
+  - "10 · Framework fixes no goal has claimed that any TypeScript app hits, the starter's #446 and #449 first"
+  - "11 · The acceptance check: install from a registry, create an app, prove, run and call it (after 5, 6)"
+  - "12 · Publish under next with Aaron, and the acceptance check against npm (after 7, 8, 9, 10, 11)"
 ---
-# Goal 18: the framework, always running
+# Goal 18: the framework, always running, building the Orthograph alpha
 
-> **Parked by K44** (25 November 2026, `design/decisions/K44-two-builds.md`). With two builds, the Orthograph alpha (Goal
-> 20) and Capxul (Goal 16) each rank their own slices and Aaron sets the order between them. Slices 1 and 2 are done; the
-> board stays, written by the sync on every push to `main`. Slice 3, the loop, waits for this goal to resume.
-
-Branch `main`. Written 23 November 2026 from K42 (`design/decisions/K42-goals-are-agents.md`), with Aaron, by voice (#694).
-Milestone `Goal 18: the framework`, label `release:1.0`.
+Branch `main`, by this goal's own pull requests. Written 23 November 2026 from K42
+(`design/decisions/K42-goals-are-agents.md`), with Aaron, by voice (#694); given the alpha on 25 November by K44
+(`design/decisions/K44-two-builds.md`). Milestone `Goal 18: the framework`, label `release:preview`.
 
 **To start it, in any harness** (Claude Code, Codex, OpenCode, Amp): "You lead Goal 18. Read `AGENTS.md`,
-`design/decisions/K42-goals-are-agents.md` and `design/goals/18-framework.md`, and run it." Nothing else is needed.
+`design/decisions/K44-two-builds.md` and `design/goals/18-framework.md`, and run it." Nothing else is needed.
 
 ## The goal, in plain words
 
-- **In one sentence:** Keep Orthograph moving as a whole. Every round, find what can be built right now, start the most
-  important pieces in parallel, and keep the board and the roadmap accurate.
-- **Why:** The apps find what the framework is missing. Something has to see all
-  of it at once and make sure the pieces an app is stuck on get built first.
-- **When it's done, you can:** it is never done. At any moment, the board shows where every piece stands, how close
-  1.0 is, and which agent is on what.
-- **It is:** the one manager. It took over the conductor's job, starting and briefing every other agent.
-- **It isn't:** an app, or the lander. The apps' goals build the apps and the framework gaps they find; the lander
-  brings their finished work into the main branch.
-- **Done when:** never; it stops only when Aaron says so.
-- **Waits on:** nothing.
+- **In one sentence:** Make Orthograph installable and usable by someone outside this repository: one command makes an
+  app, and the whole TypeScript loop works from npm. Meanwhile keep the framework's work in order for Capxul.
+- **Why:** Inside the repository a new app goes from nothing to proved and running in about thirty minutes. From npm it
+  doesn't work at all, and none of the reasons is the framework itself.
+- **When it's done, you can:** install Orthograph from npm, make an app with one command, declare what it holds,
+  generate its server and its tools, write its handlers in TypeScript, prove it, run it, and use the chain's basics.
+- **It is:** the framework's one always-running goal: packaging, a command that creates an app, a getting-started page,
+  framework fixes no one else has claimed, and settling anything two goals both claim.
+- **It isn't:** the portal's screens, Capxul, or the chain beyond keys, wallets, reads, sends and the follower.
+- **Done when:** a check installs Orthograph from a package registry, makes a fresh app, proves it, runs it and calls
+  it; then the same works from npm.
+- **Waits on:** Aaron, for the publish itself, which needs his npm account.
 - **Words used:**
-  - a goal: one long-running agent driving one piece of work; an app goal builds one real app;
-  - the board: the "Orthograph" project on GitHub, listing every piece with its stage;
-  - a claim: a goal marking a piece, and the code it touches, as its own while it works;
-  - a grill: a question only Aaron can answer;
-  - Capxul: the business app being rebuilt on Orthograph, the first real app;
-  - the superagent: an always-on agent anyone can make for a job, built first because it then helps build Capxul;
-  - the lander: the goal that brings each app's finished work into the main branch;
-  - the beta and 1.0: framework releases, the beta proved by the superagent and 1.0 by Capxul's core.
+  - a blueprint: the typed description of an app that everything else is generated from;
+  - its tools: the generated command line, the SDK (a typed library for calling the app) and MCP (the same calls for AI
+    agents);
+  - proving: running the app's journeys, its scripted user stories, and judging it from real evidence;
+  - npm, a package registry: where JavaScript packages are published; `next` is the tag for early releases;
+  - the portal: the web page every app gets for looking inside it;
+  - Capxul: the business app being rebuilt on Orthograph;
+  - the chain's basics: keys, signing, wallets, sending and reading, and following what happens on chain.
 
 ## Read first
 
-- K42, then K43 (what Capxul is), K39 and K40 (the superagent), K38 (early landing), `docs/canon/status.md` and
-  `.agents/skills/kanban/STATE.md`.
-- The `conductor`, `threads`, `github` and `reviewer` skills. Use the conductor's steps for starting, briefing and
-  landing threads; where the conductor skill and K42 disagree, K42 wins (the skill follows K42 since slice 2).
+- K44, then K42 (how goals work) and K28 (the preview).
+- The trial of 25 November (K44, The problem): a fresh app made from `main` and proved, and every place it broke for an
+  outsider. `tools/e2e/starter.sh` is the route that works inside the repository; `tools/release/preview.mjs` is the dry
+  run.
+- `docs/canon/status.md`, the board; the `conductor`, `github` and `reviewer` skills.
 
 ## The slices
+
+Slices 1 and 2 are done; slice 3 is the loop that runs throughout. Slices 4 to 10 can run side by side.
 
 | # | Slice | After |
 |---|---|---|
 | 1 | The goals K42 stops, wound down: each lands what it has in review (K42, section 7), sets `status: parked` and stops; the lander brings their finished work into `main`. Their open slices become board items, and the 33 open Ask issues are sorted | — |
-| 2 | The board: the capability map in `docs/canon/status.md` rewritten as one row per item, with its stage, which app pulled it, the split (K42, section 3) and its release label. `tools/github/sync.mjs` writes one issue per row and fills the Project's fields and views from them (K42, section 5): the apps' milestones, a framework piece in the milestone of the first app milestone that pulls it, "Not yet needed" for the rest, and a roadmap whose dates are computed every round. The sync's `release:beta` label description (`tools/github/plan.mjs`) says K42's beta. The `conductor` and `github` skills rewritten to match | — |
-| 3 | The loop (K42, section 4), run from then on | 1, 2 |
+| 2 | The board: the capability map in `docs/canon/status.md`, one row per item, written by `tools/github/sync.mjs` to one issue per row and the Project's fields | — |
+| 3 | The loop (below), run from then on | 1, 2 |
+| 4 | The board re-sorted for K44: each row the superagent pulled goes to the alpha, to Capxul or to "Not yet needed", and the chain basics to the alpha; `tools/github/board.mjs`'s release rule, pulled-by list and app milestones, and `roadmap.mjs`'s ranking, follow K44 section 4; the 11 rows Goal 17 claimed are released, and the labels of any issue K44's merge left unchanged are set to K44's | — |
+| 5 | Publishing that works: a real version (`0.1.0-next.<n>`), published with pnpm so `workspace:` links and the `bin` are rewritten; the starter copied into the preset when it is packed; the preset's new workspace exempting `orthograph` and `@orthograph/*` from pnpm's minimum release age; the dry run refusing a `workspace:` link, a `bin` outside the tarball, or a preset with no starter | — |
+| 6 | A command that creates an app: `ortho new app <name>`, spelled beside the existing `ortho new adapter`, and `npm create orthograph`, both making the app the preset makes | — |
+| 7 | Getting started: one page from install to a proved, running app and its generated tools (`<APP>_URL`, `<APP>_TOKEN`); a description on every command and flag; the stale READMEs (the CLI's says it has only `model`) | — |
+| 8 | The portal ships without its screens: the server and the blueprint feed answer; asking for the screens says they aren't in this release, not a 404 | — |
+| 9 | The chain basics in the alpha: the on-chain checks of keys, wallets, the chain adapter, money and the follower run on `main`; the relayer's #784 fixed, or the relayer marked experimental | — |
+| 10 | Framework fixes any TypeScript app hits that no goal has claimed: the starter's sign-in bugs #446 (an agent's key can mint a person's key) and #449 (API keys refused after ten calls a day) first. A gap a goal has claimed stays with that goal (K42, section 3); Capxul builds the ones it claimed | — |
+| 11 | The acceptance check: in CI, publish to a local registry, run `ortho new app`, declare one thing, generate, prove, run it and call it through the generated CLI, SDK and MCP | 5, 6 |
+| 12 | Publish under `next` with Aaron, with Gate M1 green on `main` (it doesn't wait for the portal's graphs, M1.50), then run the acceptance check against npm | 7, 8, 9, 10, 11 |
 
 ## The loop
 
@@ -81,31 +102,31 @@ Each round:
 2. Find what can run now: items whose needs have landed and that nobody else has claimed.
 3. Rank them:
    1. an app goal is waiting on it now;
-   2. it is on the superagent's next slice, then on Capxul's next feature;
+   2. it is the alpha's next slice, or on Capxul's next feature;
    3. it makes scaffolding better for every app;
    4. it keeps `main` green and CI fast;
    5. a piece no app has pulled yet, and only with capacity to spare.
 4. Start workers from the top, as many as CI holds (20 jobs at once; at most two ready pull requests per goal).
-5. Rebuild the board as the lander lands work. Send every running goal what was decided, grills included.
-
-**The first items to rank**, from K42: `ortho new` for an app (M2.09); `ortho add` for events, errors, roles and moves
-(M2.14, M2.15); adapters from an ABI (#474); and the npm preview (M1.51).
+5. Rebuild the board as work lands. Send every running goal what was decided, grills included.
 
 ## How it runs
 
-- **Collisions and the split.** When two goals claim overlapping paths, this goal settles who builds it, or how they
-  split it (K42, section 3, case 2). It keeps the split of shared pieces between the two apps on the board, and
-  reshuffles it as the pace shows.
+- **Collisions.** When two goals claim overlapping paths, this goal settles who builds it, or how they split it
+  (K42, section 3, case 2).
 - **Grills.** A grill is a Decision issue labelled `needs-aaron`. Batch them and bring them to Aaron by voice, as the
   `threads` skill says in "Talking to Aaron". Record each answer as a decision and send it to every running goal.
-- **Merging.** This goal's own pull requests: drafts first, a 🔍 that wrote none of it, then ready, at most two ready,
-  and merge when CI is green and every thread is resolved (`AGENTS.md`). App work reaches `main` through the lander.
+- **Merging.** This goal's own pull requests: drafts first, checks before builds by a different agent (the `author`
+  skill), a 🔍 that wrote none of it, then ready, at most two ready, and merge when CI is green and every thread is
+  resolved (`AGENTS.md`). Capxul's work reaches `main` through the lander.
 - **Limits.** `AGENTS.md`'s standing rules: at most $10 a day on cloud resources, no keys printed or written, every
-  world destroyed, and processes stopped by their id.
+  world destroyed, processes stopped by their id, and no publish without Aaron.
 
 ## Where it stands
 
-24 November 2026, about 00:30 UTC. Running since 23 November in Claude Code (claude-opus-5-5), in the session that was
+25 November 2026: given the alpha by K44 (slices 4 to 12), and waiting for a lead. Aaron starts it with the line above.
+The history below is from before K44.
+
+24 November 2026, about 00:30 UTC (before K44). Running since 23 November in Claude Code, in the session that was
 the 🎼 conductor. The lander, Goal 19, runs as its own thread and in Amp.
 
 **Slice 1, the goals K42 stops, wound down: done.**

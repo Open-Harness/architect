@@ -27,15 +27,15 @@ Two truths feed GitHub, and the sync reads both:
 | A snag (your goal's own) | an issue, type Snag, `kind:snag`, in your goal's milestone | you, with the Snag form |
 | A case-2 ask | an issue, type Ask, `kind:ask`: two goals' claims overlap, so Goal 18 settles who builds it (K42, section 3) | you, with the Ask form |
 | A grill | an issue, type Decision, `kind:decision`, labelled **`needs-aaron`** | you, with the Decision form |
-| A release (K28, K42 section 6) | a label: `release:preview`, `release:beta` (what Capxul's books, HR and payroll prove, K44), `release:1.0` (what Capxul core proves) | the sync |
+| A release (K28, K42 section 6) | a label: `release:preview`, `release:beta` (what Capxul's books, HR and payroll prove, K44), `release:1.0` (what the rest of Capxul core proves) | the sync |
 | Who did it | labels `role:<role>` and `harness:<harness>`, and the template's lines | you, on every pull request |
 | What waits on what | a **blocked-by** link from the slice to the snag or ask that stops it | you (below) |
 | Blocked | the label `blocked`; `needs-aaron` when only Aaron can unblock it | you |
 | Where a goal is | the **goal issue's body**: card, progress, snags, waits, lead, "Where it stands" | the sync, rerun by the `goals` workflow |
 | Every item and goal at once | the **"Orthograph" Project**: Stage, Pulled by, Release, Lane, Status, Start and End on each item; views "All goals", "By status", "Roadmap" and one per goal (K42's by-app, by-lane and grills views are not made yet; filter by field) | the sync, `--project` |
 
-**Milestones are the apps'** (K42, section 5): the superagent's coding agent end to end, triage agent, extraction and
-launch; Capxul's getting paid, the books, people and payroll, and banking. A framework piece takes the milestone of the
+**Milestones are the apps'** (K42, section 5): Capxul's books, people and payroll, banking, and getting paid (later, with
+the chain, K44); the parked superagent's coding agent end to end, triage agent, extraction and launch. A framework piece takes the milestone of the
 first app milestone that pulls it; a piece no app has pulled sits in "Not yet needed", with no dates. GitHub allows one
 milestone per issue, so an item's issue sits in its app milestone and the release is a label. A goal's own issues (its goal
 issue, slices, snags) stay in its `Goal <n>:` milestone, which closes when the goal stops. A model is never a label (models
@@ -95,7 +95,8 @@ makes sense.
 The lead sets `lead:` and `status:` when it starts and whenever they change, in the pull request that changes them. Only
 the parser's subset is allowed: `key: value`, `key: [a, b]`, a block list of `- item`, and one level of nested map. The
 sync refuses anything else. A goal that stops sets `status: parked` or `done`, rewrites "Where it stands", and releases
-its claims.
+its claims. A goal parked on `main` shows parked whatever its branch says; a goal that resumes sets `status:` on `main`
+too.
 
 ## The sync (one run at a time)
 

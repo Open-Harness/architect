@@ -64,7 +64,7 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
 
 ### 1. Four goals
 
-(Superseded by K44, 25 November 2026: Goals 17 and 18 are parked; Goal 20, the Orthograph alpha, and Goal 16, Capxul, build; the lander keeps running.)
+(Superseded by K44, 25 November 2026: Goal 17 is parked; Goal 18 keeps running and builds the Orthograph alpha, Goal 16 builds Capxul, and the lander keeps running.)
 
 - **The framework goal (Goal 18)** always runs. It owns the engine and every package no app goal has claimed, the
   board, the roadmap and the releases. It takes over the 🎼 conductor's loop: it decides what runs next.

@@ -62,8 +62,8 @@ adds the slices no milestone had (ids `ST<stage>.<n>`), and gives each stage its
 Codex's branch `links/stage-1` (#56) keeps its name. [`decisions/K15-plugged-in.md`](decisions/K15-plugged-in.md).
 
 **Three releases** ([`decisions/K28-releases.md`](decisions/K28-releases.md), Aaron, 21 November 2026). The **preview** is Gate M1 on `main` and
-the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51). The **beta** is the framework with every piece Capxul's books, HR and payroll pulled, extracted and published, Capxul running on it (K44). **v1.0** is
-the same for every piece Capxul core pulled (K43), plus the release (K42), as the next paragraph says.
+the `@orthograph/*` packages, `orthograph` and the preset on npm under `next` (M1.51); K44 calls it the alpha and adds an outsider's install, `ortho new app`, the chain basics and an acceptance check (Goal 18's slices 4 to 12). The **beta** is the framework with every piece Capxul's books, HR and payroll pulled, extracted and published, Capxul running on it (K44). **v1.0** is
+the same for every piece the rest of Capxul core pulled (K43, K44), plus the release (K42), as the next paragraph says.
 
 **v1.0** is the framework with every piece Capxul core pulled, extracted and published (K42, K43), plus the release: M7.01 to M7.04, M7.06 and M7.13 (the cloud passes for staging and for the release, the npm
 release, the infra projection, a deploy and destroy that leaves nothing, real releases), each credential with Aaron's
@@ -480,13 +480,13 @@ forced reorg is corrected; a pending chain call shows its in-between state (S25)
 ## M7: The cloud, then Capxul
 
 **Goal.** Every local destination swapped for the real one, each credential created only with Aaron's written yes and
-the spend under $10 a day; then Capxul's first feature running on Orthograph.
+the spend under $10 a day; then Capxul's books, HR and payroll running on Orthograph (K44).
 **Staging first** (K10 section 8, Aaron, 18 November): `spikes/staging-pass` any time (acme up on the shared, prefixed
 Cloudflare account, proved there, destroyed, the account listing nothing of the run's after); then, once an app pulls them, M7.01, M7.03,
 M7.04 and M7.08 for staging alone. npm's `latest` tag, Homebrew and the rest of M7 still wait on 1.0 (Capxul core, K42); the preview under `next` is M1.51 (K28).
 **Gate.** `nx run e2e:m7`: acme goes from a pull request to test, staging and production on Cloudflare with a verdict
 in each, Orthograph's packages are released under `@orthograph` on npm, and everything the gate made is destroyed after.
-Capxul's first feature runs in its staging.
+Capxul's books, HR and payroll run in its staging (K44).
 
 | id | what | needs | kind | done when | size |
 |---|---|---|---|---|---|
@@ -500,7 +500,7 @@ Capxul's first feature runs in its staging.
 | M7.08 ∥ | The builder's read-only staging telemetry token (with Aaron's yes) | M7.04 | build | an unattended builder reads staging traces, redacted | S |
 | M7.09 ∥ | Contracts on a testnet (L4.08, cloud part) | M7.04, M7.13 | build | a changed vault is redeployed and verified | M |
 | M7.10 ✅ | Capxul's plugins mapped: which exist, which are new, which are Capxul's own | none (K34) | decision | `decisions/M7-capxul.md` written. **Proof:** the decision, landed by #487 | S |
-| M7.11 | Capxul's first feature on Orthograph, in its staging: one person gets paid ([`decisions/M7-capxul.md`](decisions/M7-capxul.md), section 4) | M7.10, M7.05, ST2.02, M6.09, M5.03, M7.04 | build | its journeys are green in Capxul's staging | M |
+| M7.11 | Capxul's first features on Orthograph, in its staging: the books, HR and payroll (K44, section 3; getting paid on chain comes later, [`decisions/M7-capxul.md`](decisions/M7-capxul.md), section 4) | M7.10, M7.05, ST2.02, M6.09, M5.03, M7.04 | build | its journeys are green in Capxul's staging | M |
 | M7.13 | The release pass: the credentials the release needs (npm, Homebrew tap, GitHub, Stripe test mode, a testnet), each with Aaron's written yes, and the cost under the cap | M7.01 (K34) | decision | `decisions/M7-release.md` written, with Aaron's yes per credential | S |
 | M7.14 | Monitors to the sink ([`decisions/K18-monitoring-falls-out.md`](decisions/K18-monitoring-falls-out.md)): the same rule list written to each declared sink (Axiom monitors with the burn rate in APL; Grafana alert rules and dashboards through its Foundation SDK); `alerts` routes on the environment file, which can only lower a severity | M1.49, M7.01 | build | in the staging pass the generated monitors exist with their labels; 20 slowed calls fire the builder route; a route that raises a severity fails `ortho check`; every monitor is destroyed afterwards; production routes compile, and nothing pages without Aaron's written yes | M |
 | M7.12 | **Gate M7** | all of M7 | e2e | `nx run e2e:m7` passes, and the gate's resources are destroyed | S |

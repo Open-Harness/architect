@@ -5,8 +5,8 @@ description: Goal 18's loop for building Orthograph, in any agent (K42). Use it 
 
 # 🎼 Conductor: Goal 18's loop
 
-> **Parked by K44 (25 November 2026).** Two goals build now, the Orthograph alpha (Goal 20) and Capxul (Goal 16), each
-> ranking its own slices; the lander keeps running. This loop is kept for when Goal 18 resumes.
+> **K44 (25 November 2026).** Two things are built now: the Orthograph alpha, by Goal 18 itself (its slices 4 to 12),
+> and Capxul (Goal 16). The superagent (Goal 17) is parked. The loop below ranks the alpha and Capxul's next feature.
 
 Since K42 (23 November 2026) the conductor is **Goal 18, the framework goal**: one long-running agent that always runs
 and decides what runs next. It writes no feature code. Its brief is `design/goals/18-framework.md`, its rules are
@@ -17,10 +17,10 @@ emojis, their finish lines and your agent's word for each action are in the `thr
 
 | Goal | What it is | Its work reaches `main` by |
 |---|---|---|
-| 18 · the framework | the loop below, the engine and every package no app goal has claimed, the board, the roadmap, the releases | its own pull requests (drafts, a 🔍, then ready) |
+| 18 · the framework | the loop below, the Orthograph alpha (K44), the engine and every package no app goal has claimed, the board, the roadmap, the releases | its own pull requests (drafts, a 🔍, then ready) |
 | 19 · the lander | brings each app goal's green slices into `main` as reviewed pull requests; keeps `main` green | the lander's pull requests (K42, section 8) |
-| 17 · the superagent | an app goal, and **first**: once it works, its coding agent helps build Capxul | the lander |
-| 16 · Capxul | an app goal, second: the north star, 1.0 is Capxul core | the lander |
+| 16 · Capxul | the one app goal building (K44): the north star; its books, HR and payroll prove the beta, the rest of Capxul core 1.0 | the lander |
+| 17 · the superagent | parked by K44; its code stays | — |
 
 A goal is a long-running agent, today a thread that manages other threads. It exists while it runs; when it stops it
 rewrites "Where it stands", releases its claims, and its open items go back to the board. The beta is the framework as
@@ -37,7 +37,7 @@ Each round:
    claimed by you.
 3. **Rank them**, first match wins:
    1. an app goal is waiting on it now;
-   2. it is on the superagent's next slice, then on Capxul's next feature;
+   2. it is the alpha's next slice, or on Capxul's next feature;
    3. it makes scaffolding better for every app (`ortho new` for an app, `ortho add`, adapters from an ABI);
    4. it keeps `main` green and CI fast;
    5. a piece no app has pulled yet, and only with capacity to spare.

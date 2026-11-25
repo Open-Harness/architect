@@ -121,9 +121,11 @@ for (const s of sources) {
 }
 
 // Until a goal lands, its lead keeps its own lines on the goal branch: its status, its lead and "Where it stands". So
-// those come from the brief on that branch when the branch has one, even when main has the rest of the brief.
+// those come from the brief on that branch when the branch has one, even when main has the rest of the brief. A goal
+// parked on main stays parked: parking a stopped goal is the framework goal's call (K42, section 7; K44), and a branch
+// whose lead stopped can't show it running.
 for (const g of goals) {
-  if (!g.branch || g.ref) continue;
+  if (!g.branch || g.ref || g.status === "parked") continue;
   const spec = `origin/${g.branch}:${g.brief}`;
   if (spawnSync("git", ["cat-file", "-e", spec]).status !== 0) continue;
   const r = readGoal(g.brief, git("show", spec));

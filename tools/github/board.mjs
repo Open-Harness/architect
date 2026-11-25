@@ -17,7 +17,7 @@ export const APP_MILESTONES = {
   "triage agent": { app: "superagent", title: "Superagent: the triage agent", description: "The superagent's triage agent, made from data with no new code, its slice 13." },
   extraction: { app: "superagent", title: "Superagent: extraction", description: "The superagent's plugins moved from its plugins/ into packages/ and published, its slice 14." },
   launch: { app: "superagent", title: "Superagent: launch", description: "The superagent's launch: real sign-in, teams, a live deploy with a public address for webhooks, a sandbox and a model endpoint off Aaron's Mac." },
-  "getting paid": { app: "Capxul", title: "Capxul: getting paid", description: "Capxul's first milestone: a sales invoice with a pay link, the payment that settles it and the ledger lines it posts (K43)." },
+  "getting paid": { app: "Capxul", title: "Capxul: getting paid", description: "Capxul's milestone for getting paid, later with the chain (K44): a sales invoice with a pay link, the payment that settles it and the ledger lines it posts." },
   books: { app: "Capxul", title: "Capxul: the books", description: "Capxul's books, in ERPNext's shapes (K43)." },
   "people and payroll": { app: "Capxul", title: "Capxul: people and payroll", description: "Capxul's HR and payroll (K43)." },
   banking: { app: "Capxul", title: "Capxul: banking", description: "Capxul's bank accounts through Bridge (K43)." },
@@ -114,6 +114,7 @@ export const parseBoard = (text) => {
       if (adopts.some((n) => folds.includes(n))) bad("adopts and folds the same issue");
       if (pulledBy === "framework" && !none(milestone)) bad("a framework row has no app milestone: an app pulls it, or it is not yet needed");
       // K42, section 5: a piece the superagent pulls for its slices 1 to 14 ships in the beta; its launch alone, or Capxul alone, in 1.0.
+      // K44 moves Capxul's books, HR and payroll to the beta; Goal 18's slice 4 changes this rule with the board's rows.
       if (pulledBy === "Capxul" && !none(release) && release !== "1.0") bad("a piece only Capxul pulls ships in 1.0");
       if (pulledBy === "superagent" && !none(milestone) && !none(release)) {
         const want = milestone === "launch" ? "1.0" : "beta";
