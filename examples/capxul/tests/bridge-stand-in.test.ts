@@ -1,7 +1,8 @@
 // Journey-author file: the Bridge stand-in keeps Bridge's header rules and answers with deposit details a bank would
 // give, so the bridge-* journeys can judge a relay against it once a step can reach it (#995, gap 3).
 import { createHash, createVerify, generateKeyPairSync, createSign } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { client } from "../plugins/bridge/src/client.ts";
 import { createWorld, ibanOf } from "../plugins/bridge/src/stand-in/world.ts";
 import { depositActivity, envelope, signatureHeader } from "../plugins/bridge/src/stand-in/webhooks.ts";
 import { isBicFor, isIban, isRoutingNumber, isUsAccountNumber } from "../journeys/support/deposit-details.ts";
@@ -77,6 +78,28 @@ describe("the Bridge stand-in", () => {
     };
     expect(verify(signatureHeader(body, 1_700_000_000_000, sign(ours.privateKey)), ours.publicKey)).toBe(true);
     expect(verify(signatureHeader(body, 1_700_000_000_000, sign(theirs.privateKey)), ours.publicKey)).toBe(false);
+  });
+
+  it("answers every call Capxul makes in a shape Bridge's description accepts, so the strict generated client takes it", () => {
+    // Bridge's own examples leave out fields its schemas require (CX-bridge.md); the stand-in answers to the schemas.
+    const world = fresh();
+    vi.stubGlobal("fetch", (url: string, init: { method: string; headers: Record<string, string>; body?: string }) => {
+      const reply = world.handle({ method: init.method, path: new URL(url).pathname, apiKey: init.headers["Api-Key"], idempotencyKey: init.headers["Idempotency-Key"], body: init.body });
+      return Promise.resolve(Response.json(reply.body, { status: reply.status }));
+    });
+    const calls = client({ baseUrl: "http://bridge.test/v0", token: "test-key" }).calls as unknown as Record<string, any>;
+    const usdc = { currency: "usdc", payment_rail: "ethereum", address: "0x3f5CE5FBFe3E9af3971dD833D26BA9b5C936f0bE" };
+    let customer = "";
+    return calls["kycLinks"].create({ type: "business", full_name: "Acme Trading Limited", email: "finance@acme-trading.test" })
+      .then((link: { id: string; customer_id: string }) => { world.decide(link.id, "approved"); customer = link.customer_id; return calls["kycLinks"].get({ kycLinkID: link.id }); })
+      .then(() => Promise.all(["usd", "eur"].map((currency) => calls["customers"].virtualAccounts.create({ customerID: customer, source: { currency }, destination: usdc }))))
+      .then(([usd, eur]: Array<{ id: string; source_deposit_instructions: Record<string, string> }>) => {
+        expect([usd!.source_deposit_instructions["bank_routing_number"], eur!.source_deposit_instructions["iban"]]).toEqual(["101019644", "IE34MODR14035307970528"]);
+        return calls["transfers"].create({ on_behalf_of: customer, amount: "300.25", source: { currency: "usdc", payment_rail: "ethereum", from_address: usdc.address }, destination: { currency: "usd", payment_rail: "ach", external_account_id: "ea_1" } })
+          .then((transfer: { id: string; state: string }) => Promise.all([transfer.state, calls["transfers"].get({ transferID: transfer.id }), calls["customers"].virtualAccounts.deactivate.create({ customerID: customer, virtualAccountID: usd!.id })]));
+      })
+      .then(([state, , closed]: [string, unknown, { status: string }]) => expect([state, closed.status]).toEqual(["awaiting_funds", "deactivated"]))
+      .finally(() => vi.unstubAllGlobals());
   });
 
   it("reports one deposit as three activity events, each with its own id and the deposit's one deposit_id", () => {

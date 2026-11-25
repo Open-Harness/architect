@@ -110,8 +110,11 @@ movement instead, for this reason: one deposit is three `virtual_account.activit
 `event_id`, a handler that lands on more than one of them counts the deposit up to three times. So would a catch-up
 read (`virtualAccounts.history.list`), which has no `event_id` at all. Keyed on `deposit_id`, a retried event, a later
 activity of the same deposit and a poll all hit the same rule, which is what the replay check in the second author pull
-request needs. A transfer's reference is Bridge's transfer `id`. The lead may overrule this; changing the key changes
-one line of `invariants.ts` and the journeys' references.
+request needs. A transfer's reference is Bridge's transfer `id`. Goal 16's lead confirmed this key on #1007, replacing
+the earlier call for `event_id`. Two things follow. A later event for the same movement updates its row's status and is
+never refused: the door's handler (#995 gap 4) finds the row by its reference first, so it never trips the rule, and
+`land`'s `AlreadyRecorded` is the rule itself answering a second report of the same deposit. And redelivery of the same
+`event_id` is the door's journal's job (gap 4), not this rule's.
 
 ## The world's clock in the journeys
 
@@ -147,6 +150,22 @@ would fail the checksum checks, so the stand-in can't use them. Bridge's virtual
   mod 97: the remainder is 57, checked by two independent computations. So the stand-in keeps the guide's bank, BIC, sort
   code (140353) and account (07970528), and computes the true check digits: `IE34MODR14035307970528`.
 
+**Its answers fit Bridge's schemas, where Bridge's own examples don't.** The generated client is strict by default: it
+refuses an answer that misfits the call's schema. Bridge's published examples leave out fields its schemas require, so
+the stand-in adds them, and `tests/bridge-stand-in.test.ts` runs the strict client against it on every call Capxul
+makes:
+
+- **Transfers:** every example's `receipt` lacks the `*_currency` field beside each amount (`initial_amount_currency`,
+  `developer_fee_currency`, `exchange_fee_currency`, `subtotal_amount_currency`), which `Receipt` requires. The stand-in
+  gives the source currency for those and the destination's for `final_amount_currency`.
+- **USD virtual accounts:** `bank_beneficiary_address` is required. The stand-in gives the schema example's
+  `1234 Main St., Kansas City, MO 64108`.
+- **EUR virtual accounts:** `payment_rails` is the string `"sepa"` in `VirtualAccountSourceDepositInstructionsEu`, not
+  a list as on USD, and there is no `payment_rail`. The stand-in follows the schema. If Bridge in fact sends a list, the
+  strict client refuses it, and the adapter runs lenient (`answers: "lenient"`, #946) until Bridge's description is fixed.
+- **Virtual account create** answers 200, the only success the description documents, and a transfer's
+  `client_reference_id` is left out unless the caller gave one.
+
 ## The checks this pull request adds, and those that wait on #995
 
 **Added:**
@@ -166,6 +185,7 @@ would fail the checksum checks, so the stand-in can't use them. Bridge's virtual
 | a transfer retried with the same request sends the same `Idempotency-Key` to Bridge, and Bridge holds one transfer | gaps 1, 2 and 3 |
 | KYC and KYB decided by Bridge's `kyc_link` event, an event for an unknown customer ignored | gaps 4 and 5 |
 | a deposit's activity events land one Bank Transaction, replayed too | gaps 3, 4 and 5 |
+| a deposit's second and third activity events leave exactly one Bank Transaction, in its latest status, none refused | gaps 3, 4 and 5 |
 | an unsigned, wrongly signed or stale event refused, and nothing written | gaps 3 and 5 |
 | a transfer's state events move its Bank Transaction | gaps 3, 4 and 5 |
 

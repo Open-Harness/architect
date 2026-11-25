@@ -97,9 +97,9 @@ export const createWorld = (context: Context) => {
     const destination = fields["destination"] as Json | undefined;
     if (destination === undefined || typeof destination["address"] !== "string") return failed(400, "invalid_parameters", "destination is required");
     const instructions: Json | undefined = currency === "usd"
-      ? { currency: "usd", ...LEAD_BANK, bank_account_number: String(next.usd++), bank_beneficiary_name: "Capxul customer", payment_rail: "ach_push", payment_rails: ["ach_push", "wire"] }
+      ? { currency: "usd", ...LEAD_BANK, bank_account_number: String(next.usd++), bank_beneficiary_name: "Capxul customer", bank_beneficiary_address: "1234 Main St., Kansas City, MO 64108", payment_rail: "ach_push", payment_rails: ["ach_push", "wire"] }
       : currency === "eur"
-        ? { currency: "eur", iban: ibanOf(next.eur++), ...MODULR, payment_rail: "sepa", payment_rails: ["sepa"] }
+        ? { currency: "eur", iban: ibanOf(next.eur++), ...MODULR, payment_rails: "sepa" }
         : undefined;
     if (instructions === undefined) return failed(400, "invalid_parameters", "source.currency must be usd or eur here");
     const account: VirtualAccount = {
@@ -107,7 +107,8 @@ export const createWorld = (context: Context) => {
       source_deposit_instructions: instructions, destination: { currency: destination["currency"], payment_rail: destination["payment_rail"], address: destination["address"] },
     };
     accounts.set(account.id, account);
-    return { status: 201, body: account };
+    // Bridge documents 200 for this call, though it creates (`latest.json`).
+    return { status: 200, body: account };
   };
 
   const deactivate = (customerId: string, accountId: string): Reply => {
@@ -117,7 +118,10 @@ export const createWorld = (context: Context) => {
     return { status: 200, body: account };
   };
 
-  /** `POST /v0/transfers`: Bridge's AchOfframpTransferResponse, awaiting funds, with the `currency` its schema requires. */
+  /**
+   * `POST /v0/transfers`: Bridge's AchOfframpTransferResponse, awaiting funds, with the `currency` and the receipt's
+   * `*_currency` fields its schema requires and its example leaves out.
+   */
   const transfer = (fields: Json, key: string): Reply => {
     const source = fields["source"] as Json | undefined;
     const destination = fields["destination"] as Json | undefined;
@@ -127,8 +131,11 @@ export const createWorld = (context: Context) => {
     const amount = fields["amount"];
     const id = context.random();
     const made = {
-      id, client_reference_id: fields["client_reference_id"] ?? null, state: "awaiting_funds", on_behalf_of: fields["on_behalf_of"], amount, currency: destination["currency"], developer_fee: "0.0",
-      source, destination, receipt: { initial_amount: amount, developer_fee: "0.0", exchange_fee: "0.0", subtotal_amount: amount, gas_fee: "0.0", final_amount: amount },
+      id, ...(typeof fields["client_reference_id"] === "string" ? { client_reference_id: fields["client_reference_id"] } : {}), state: "awaiting_funds", on_behalf_of: fields["on_behalf_of"], amount, currency: destination["currency"], developer_fee: "0.0",
+      source, destination, receipt: {
+        initial_amount: amount, initial_amount_currency: source["currency"], developer_fee: "0.0", developer_fee_currency: source["currency"], exchange_fee: "0.0", exchange_fee_currency: source["currency"],
+        subtotal_amount: amount, subtotal_amount_currency: source["currency"], gas_fee: "0.0", gas_fee_currency: source["currency"], final_amount: amount, final_amount_currency: destination["currency"],
+      },
       created_at: iso(context.now()), updated_at: iso(context.now()), idempotency_key: key,
     };
     transfers.set(id, made);
