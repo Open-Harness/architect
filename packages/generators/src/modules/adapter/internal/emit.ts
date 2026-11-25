@@ -1,6 +1,7 @@
 // The text of each generated file. Data (the operations, the schemas) is JSON parsed when the file loads, so a plugin of
 // thousands of calls is quick to read and to type-check; the descriptor and the client are plain code.
 import type { Event, Node, Op } from "./extract.ts";
+import { errorsOf } from "./names.ts";
 
 export const generatedLine = (title: string, version: string) => `// Generated from ${title} ${version}. Do not edit.`;
 
@@ -52,16 +53,20 @@ const key = (name: string) => (name === "__proto__" ? `[${JSON.stringify(name)}]
 
 const callsText = (tree: Tree, indent: string): string =>
   Object.entries(tree).map(([name, sub]) => sub === null
-    ? `${indent}${key(name)}: Blueprint.call(),`
+    ? `${indent}${key(name)}: Blueprint.call({ errors }),`
     : `${indent}${key(name)}: {\n${callsText(sub, `${indent}  `)}\n${indent}},`).join("\n");
 
-export const indexFile = (head: string, title: string, version: string, tree: Tree, events: ReadonlyArray<Event>) => [
+export const indexFile = (head: string, name: string, title: string, version: string, tree: Tree, events: ReadonlyArray<Event>) => [
   head, `import { Blueprint } from "orthograph";`,
+  `import { ${errorsOf(name).join(", ")} } from "../blueprint/things/${name}/errors.ts";`,
   ...(events.length === 0 ? [] : [
     `import { schemaOf } from "./runtime/json-schema.ts";`,
     `import { components } from "./spec/components.ts";`,
     `import { eventPayloads } from "./spec/events.ts";`]),
   `import { door, events as written, standIn } from "./written.ts";`, "",
+  `export { ${errorsOf(name).join(", ")} };`, "",
+  `/** What every call may fail with: the client's four failures, as errors an operation can refuse with. */`,
+  `const errors = [${errorsOf(name).join(", ")}];`, "",
   ...(events.length === 0 ? [] : [
     `/** The payload of an event: any one of the payloads its service documents for it. */`,
     `const payload = (event: string) => Blueprint.incoming(schemaOf(components, { oneOf: eventPayloads[event] ?? [] }));`, ""]),

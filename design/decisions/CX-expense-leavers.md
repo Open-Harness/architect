@@ -22,3 +22,8 @@ a request opened before the employee left can still be approved and mark its day
 `validate_employee_status` refuse only an Inactive employee, so HRMS lets a Left employee be marked; Capxul's rule is
 stricter, and payroll revisits it with the rest. HRMS's relieving-day bound on a request's days waits on a stored
 relieving day (#742, item 5).
+
+**Extended 25 November 2026** (slice 8f, CX-employee-moves): promotions and transfers follow the same rule.
+`employee-promotion.create` refuses `PromotedEmployeeHasLeft` and `employee-transfer.create` refuses
+`TransferredEmployeeHasLeft`, judged on create only, and one drafted before the employee left can still be submitted and
+cancelled. A separation is not refused for a leaver, as HRMS's Employee Separation doesn't judge the employee's status.

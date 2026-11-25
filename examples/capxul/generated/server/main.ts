@@ -3,7 +3,7 @@
 import { Context, Effect, Layer } from "effect";
 import { ManagedRuntime, Tracer } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
-import { HttpApiBuilder } from "effect/http-api";
+import { HttpApi, HttpApiBuilder } from "effect/http-api";
 import { SqlClient } from "effect/sql";
 import type { Principal } from "orthograph";
 import { AuthD1, Database, JournalD1, StoreD1, Telemetry, WorldEntry, toWorld } from "@orthograph/host-cloudflare";
@@ -43,6 +43,18 @@ import * as employeeHire from "../api/src/employee/hire.ts";
 import * as employeeRelieve from "../api/src/employee/relieve.ts";
 import * as employeeGradeCreate from "../api/src/employee-grade/create.ts";
 import * as employeeGradeGet from "../api/src/employee-grade/get.ts";
+import * as employeePromotionCancel from "../api/src/employee-promotion/cancel.ts";
+import * as employeePromotionCreate from "../api/src/employee-promotion/create.ts";
+import * as employeePromotionGet from "../api/src/employee-promotion/get.ts";
+import * as employeePromotionSubmit from "../api/src/employee-promotion/submit.ts";
+import * as employeeSeparationBegin from "../api/src/employee-separation/begin.ts";
+import * as employeeSeparationComplete from "../api/src/employee-separation/complete.ts";
+import * as employeeSeparationCreate from "../api/src/employee-separation/create.ts";
+import * as employeeSeparationGet from "../api/src/employee-separation/get.ts";
+import * as employeeTransferCancel from "../api/src/employee-transfer/cancel.ts";
+import * as employeeTransferCreate from "../api/src/employee-transfer/create.ts";
+import * as employeeTransferGet from "../api/src/employee-transfer/get.ts";
+import * as employeeTransferSubmit from "../api/src/employee-transfer/submit.ts";
 import * as employmentTypeCreate from "../api/src/employment-type/create.ts";
 import * as employmentTypeGet from "../api/src/employment-type/get.ts";
 import * as expenseAdd from "../api/src/expense/add.ts";
@@ -99,6 +111,15 @@ import designationCreateHandler from "../../src/designation/create.ts";
 import employeeHireHandler from "../../src/employee/hire.ts";
 import employeeRelieveHandler from "../../src/employee/relieve.ts";
 import employeeGradeCreateHandler from "../../src/employee-grade/create.ts";
+import employeePromotionCancelHandler from "../../src/employee-promotion/cancel.ts";
+import employeePromotionCreateHandler from "../../src/employee-promotion/create.ts";
+import employeePromotionSubmitHandler from "../../src/employee-promotion/submit.ts";
+import employeeSeparationBeginHandler from "../../src/employee-separation/begin.ts";
+import employeeSeparationCompleteHandler from "../../src/employee-separation/complete.ts";
+import employeeSeparationCreateHandler from "../../src/employee-separation/create.ts";
+import employeeTransferCancelHandler from "../../src/employee-transfer/cancel.ts";
+import employeeTransferCreateHandler from "../../src/employee-transfer/create.ts";
+import employeeTransferSubmitHandler from "../../src/employee-transfer/submit.ts";
 import employmentTypeCreateHandler from "../../src/employment-type/create.ts";
 import expenseAddHandler from "../../src/expense/add.ts";
 import expenseClaimApproveHandler from "../../src/expense-claim/approve.ts";
@@ -134,6 +155,9 @@ import * as departmentThing from "../../blueprint/things/department/thing.ts";
 import * as designationThing from "../../blueprint/things/designation/thing.ts";
 import * as employeeThing from "../../blueprint/things/employee/thing.ts";
 import * as employeeGradeThing from "../../blueprint/things/employee-grade/thing.ts";
+import * as employeePromotionThing from "../../blueprint/things/employee-promotion/thing.ts";
+import * as employeeSeparationThing from "../../blueprint/things/employee-separation/thing.ts";
+import * as employeeTransferThing from "../../blueprint/things/employee-transfer/thing.ts";
 import * as employmentTypeThing from "../../blueprint/things/employment-type/thing.ts";
 import * as expenseThing from "../../blueprint/things/expense/thing.ts";
 import * as expenseClaimThing from "../../blueprint/things/expense-claim/thing.ts";
@@ -157,6 +181,7 @@ import * as departmentInvariants from "../../blueprint/things/department/invaria
 import * as designationInvariants from "../../blueprint/things/designation/invariants.ts";
 import * as employeeInvariants from "../../blueprint/things/employee/invariants.ts";
 import * as employeeGradeInvariants from "../../blueprint/things/employee-grade/invariants.ts";
+import * as employeeSeparationInvariants from "../../blueprint/things/employee-separation/invariants.ts";
 import * as employmentTypeInvariants from "../../blueprint/things/employment-type/invariants.ts";
 import * as expenseClaimTypeInvariants from "../../blueprint/things/expense-claim-type/invariants.ts";
 import * as holidayInvariants from "../../blueprint/things/holiday/invariants.ts";
@@ -210,6 +235,18 @@ const employeeHireServed = Handlers.serve({ name: "employee.hire", operation: em
 const employeeRelieveServed = Handlers.serve({ name: "employee.relieve", operation: employeeRelieve.declaration, handler: employeeRelieveHandler, notFrom: "EmployeeNotActive", codes: Errors.codes });
 const employeeGradeCreateServed = Handlers.serve({ name: "employee-grade.create", operation: employeeGradeCreate.declaration, handler: employeeGradeCreateHandler, invariants: { EmployeeGradeNameTaken: "employee-grade.oneNamePerCompany" }, codes: Errors.codes });
 const employeeGradeGetServed = Reads.serve({ name: "employee-grade.get", read: employeeGradeGet.declaration });
+const employeePromotionCancelServed = Handlers.serve({ name: "employee-promotion.cancel", operation: employeePromotionCancel.declaration, handler: employeePromotionCancelHandler, notFrom: "EmployeePromotionNotDraft", invariants: { EmployeeAlreadyHired: "employee.onePlacePerPerson" }, codes: Errors.codes });
+const employeePromotionCreateServed = Handlers.serve({ name: "employee-promotion.create", operation: employeePromotionCreate.declaration, handler: employeePromotionCreateHandler, notFound: { employee: "EmployeeNotFound", newDesignation: "DesignationNotFound" }, codes: Errors.codes });
+const employeePromotionGetServed = Reads.serve({ name: "employee-promotion.get", read: employeePromotionGet.declaration });
+const employeePromotionSubmitServed = Handlers.serve({ name: "employee-promotion.submit", operation: employeePromotionSubmit.declaration, handler: employeePromotionSubmitHandler, notFrom: "EmployeePromotionNotDraft", invariants: { EmployeeAlreadyHired: "employee.onePlacePerPerson" }, codes: Errors.codes });
+const employeeSeparationBeginServed = Handlers.serve({ name: "employee-separation.begin", operation: employeeSeparationBegin.declaration, handler: employeeSeparationBeginHandler, notFrom: "EmployeeSeparationNotPending", invariants: { SeparationAlreadyOpen: "employee-separation.oneOpenSeparationPerEmployee" }, codes: Errors.codes });
+const employeeSeparationCompleteServed = Handlers.serve({ name: "employee-separation.complete", operation: employeeSeparationComplete.declaration, handler: employeeSeparationCompleteHandler, notFrom: "EmployeeSeparationNotPending", codes: Errors.codes });
+const employeeSeparationCreateServed = Handlers.serve({ name: "employee-separation.create", operation: employeeSeparationCreate.declaration, handler: employeeSeparationCreateHandler, notFound: { employee: "EmployeeNotFound" }, invariants: { SeparationAlreadyOpen: "employee-separation.oneOpenSeparationPerEmployee" }, codes: Errors.codes });
+const employeeSeparationGetServed = Reads.serve({ name: "employee-separation.get", read: employeeSeparationGet.declaration });
+const employeeTransferCancelServed = Handlers.serve({ name: "employee-transfer.cancel", operation: employeeTransferCancel.declaration, handler: employeeTransferCancelHandler, notFrom: "EmployeeTransferNotDraft", invariants: { EmployeeAlreadyHired: "employee.onePlacePerPerson" }, codes: Errors.codes });
+const employeeTransferCreateServed = Handlers.serve({ name: "employee-transfer.create", operation: employeeTransferCreate.declaration, handler: employeeTransferCreateHandler, notFound: { employee: "EmployeeNotFound", newDepartment: "DepartmentNotFound" }, codes: Errors.codes });
+const employeeTransferGetServed = Reads.serve({ name: "employee-transfer.get", read: employeeTransferGet.declaration });
+const employeeTransferSubmitServed = Handlers.serve({ name: "employee-transfer.submit", operation: employeeTransferSubmit.declaration, handler: employeeTransferSubmitHandler, notFrom: "EmployeeTransferNotDraft", invariants: { EmployeeAlreadyHired: "employee.onePlacePerPerson" }, codes: Errors.codes });
 const employmentTypeCreateServed = Handlers.serve({ name: "employment-type.create", operation: employmentTypeCreate.declaration, handler: employmentTypeCreateHandler, invariants: { EmploymentTypeNameTaken: "employment-type.oneNamePerCompany" }, codes: Errors.codes });
 const employmentTypeGetServed = Reads.serve({ name: "employment-type.get", read: employmentTypeGet.declaration });
 const expenseAddServed = Handlers.serve({ name: "expense.add", operation: expenseAdd.declaration, handler: expenseAddHandler, notFound: { expenseType: "ExpenseClaimTypeNotFound" }, codes: Errors.codes });
@@ -249,13 +286,14 @@ const shiftTypeCreateServed = Handlers.serve({ name: "shift-type.create", operat
 const shiftTypeGetServed = Reads.serve({ name: "shift-type.get", read: shiftTypeGet.declaration });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(interviewThing), "interview"], [thingIn(interviewFeedbackThing), "interview-feedback"], [thingIn(interviewRoundThing), "interview-round"], [thingIn(jobApplicantThing), "job-applicant"], [thingIn(jobOfferThing), "job-offer"], [thingIn(jobOpeningThing), "job-opening"], [thingIn(shiftTypeThing), "shift-type"]] as const;
+const tables = [[thingIn(attendanceThing), "attendance"], [thingIn(attendanceRequestThing), "attendance-request"], [thingIn(bankAccountThing), "bank-account"], [thingIn(branchThing), "branch"], [thingIn(bridgeBusinessThing), "bridge-business"], [thingIn(bridgeIndividualThing), "bridge-individual"], [thingIn(companyThing), "company"], [thingIn(departmentThing), "department"], [thingIn(designationThing), "designation"], [thingIn(employeeThing), "employee"], [thingIn(employeeGradeThing), "employee-grade"], [thingIn(employeePromotionThing), "employee-promotion"], [thingIn(employeeSeparationThing), "employee-separation"], [thingIn(employeeTransferThing), "employee-transfer"], [thingIn(employmentTypeThing), "employment-type"], [thingIn(expenseThing), "expense"], [thingIn(expenseClaimThing), "expense-claim"], [thingIn(expenseClaimTypeThing), "expense-claim-type"], [thingIn(holidayThing), "holiday"], [thingIn(holidayListThing), "holiday-list"], [thingIn(interviewThing), "interview"], [thingIn(interviewFeedbackThing), "interview-feedback"], [thingIn(interviewRoundThing), "interview-round"], [thingIn(jobApplicantThing), "job-applicant"], [thingIn(jobOfferThing), "job-offer"], [thingIn(jobOpeningThing), "job-opening"], [thingIn(shiftTypeThing), "shift-type"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
-const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
+const rules = [...invariantsIn("attendance", attendanceInvariants), ...invariantsIn("bank-account", bankAccountInvariants), ...invariantsIn("branch", branchInvariants), ...invariantsIn("bridge-business", bridgeBusinessInvariants), ...invariantsIn("bridge-individual", bridgeIndividualInvariants), ...invariantsIn("company", companyInvariants), ...invariantsIn("department", departmentInvariants), ...invariantsIn("designation", designationInvariants), ...invariantsIn("employee", employeeInvariants), ...invariantsIn("employee-grade", employeeGradeInvariants), ...invariantsIn("employee-separation", employeeSeparationInvariants), ...invariantsIn("employment-type", employmentTypeInvariants), ...invariantsIn("expense-claim-type", expenseClaimTypeInvariants), ...invariantsIn("holiday", holidayInvariants), ...invariantsIn("holiday-list", holidayListInvariants), ...invariantsIn("interview", interviewInvariants), ...invariantsIn("interview-feedback", interviewFeedbackInvariants), ...invariantsIn("interview-round", interviewRoundInvariants), ...invariantsIn("job-offer", jobOfferInvariants), ...invariantsIn("shift-type", shiftTypeInvariants)] as const;
 
 const refusals = Wire.refusals(Errors.wire);
-const CallApi = Api.middleware(CallTelemetry);
+// A refused payload names every field it was refused for, not only the first (#988).
+const CallApi = Api.middleware(CallTelemetry).annotate(HttpApi.PayloadParseOptions, { errors: "all" });
 type Services = SqlClient.SqlClient | Store | Busy | Principals | Journal | Auth | Timers | DurableTimers;
 
 /** Who is calling, then the operation or read, its refusals sent as their wire classes. */
@@ -355,6 +393,33 @@ const EmployeeGradeLive = HttpApiBuilder.group(CallApi, "employee-grade", Effect
   return handlers
       .handle("create", ({ payload, request }) => call(employeeGradeCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
       .handle("get", ({ payload, request }) => call(employeeGradeGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const EmployeePromotionLive = HttpApiBuilder.group(CallApi, "employee-promotion", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("cancel", ({ payload, request }) => call(employeePromotionCancelServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(employeePromotionCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(employeePromotionGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("submit", ({ payload, request }) => call(employeePromotionSubmitServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const EmployeeSeparationLive = HttpApiBuilder.group(CallApi, "employee-separation", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("begin", ({ payload, request }) => call(employeeSeparationBeginServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("complete", ({ payload, request }) => call(employeeSeparationCompleteServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(employeeSeparationCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(employeeSeparationGetServed, payload, request.headers).pipe(Effect.provideContext(services)));
+}));
+const EmployeeTransferLive = HttpApiBuilder.group(CallApi, "employee-transfer", Effect.fn(function* (handlers) {
+  // The services are taken once, when the routes are built; each request keeps its own tracer and span.
+  const services = Context.pick(SqlClient.SqlClient, Store, Busy, Principals, Journal, Auth, Timers, DurableTimers)(yield* Effect.context<Services>());
+  return handlers
+      .handle("cancel", ({ payload, request }) => call(employeeTransferCancelServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("create", ({ payload, request }) => call(employeeTransferCreateServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("get", ({ payload, request }) => call(employeeTransferGetServed, payload, request.headers).pipe(Effect.provideContext(services)))
+      .handle("submit", ({ payload, request }) => call(employeeTransferSubmitServed, payload, request.headers).pipe(Effect.provideContext(services)));
 }));
 const EmploymentTypeLive = HttpApiBuilder.group(CallApi, "employment-type", Effect.fn(function* (handlers) {
   // The services are taken once, when the routes are built; each request keeps its own tracer and span.
@@ -499,6 +564,15 @@ export const steps = {
   "employee.hire": ["employee.hire.load", "employee.hire.insert"],
   "employee.relieve": ["employee.relieve.load", "employee.relieve.update"],
   "employee-grade.create": ["employee-grade.create.insert"],
+  "employee-promotion.cancel": ["employee-promotion.cancel.update"],
+  "employee-promotion.create": ["employee-promotion.create.load", "employee-promotion.create.insert"],
+  "employee-promotion.submit": ["employee-promotion.submit.update"],
+  "employee-separation.begin": ["employee-separation.begin.update"],
+  "employee-separation.complete": ["employee-separation.complete.update"],
+  "employee-separation.create": ["employee-separation.create.load", "employee-separation.create.insert"],
+  "employee-transfer.cancel": ["employee-transfer.cancel.update"],
+  "employee-transfer.create": ["employee-transfer.create.load", "employee-transfer.create.insert"],
+  "employee-transfer.submit": ["employee-transfer.submit.update"],
   "employment-type.create": ["employment-type.create.insert"],
   "expense.add": ["expense.add.load", "expense.add.insert"],
   "expense-claim.approve": ["expense-claim.approve.load", "expense-claim.approve.update"],
@@ -533,7 +607,7 @@ const routesOf = (env: Env) => (routes ??= AuthD1.make({ db: WorldEntry.fenced(e
 const build = (env: Env) =>
   HttpRouter.toWebHandler(
     HttpApiBuilder.layer(CallApi).pipe(
-      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, InterviewLive, InterviewFeedbackLive, InterviewRoundLive, JobApplicantLive, JobOfferLive, JobOpeningLive, ShiftTypeLive]),
+      Layer.provide([AttendanceLive, AttendanceRequestLive, BankAccountLive, BranchLive, BridgeBusinessLive, BridgeIndividualLive, CompanyLive, DepartmentLive, DesignationLive, EmployeeLive, EmployeeGradeLive, EmployeePromotionLive, EmployeeSeparationLive, EmployeeTransferLive, EmploymentTypeLive, ExpenseLive, ExpenseClaimLive, ExpenseClaimTypeLive, HolidayLive, HolidayListLive, InterviewLive, InterviewFeedbackLive, InterviewRoundLive, JobApplicantLive, JobOfferLive, JobOpeningLive, ShiftTypeLive]),
       Layer.provideMerge(CallTelemetry.layer),
       Layer.provide([StoreD1.layer({ tables, rules }), JournalD1.layer, WorldEntry.work(env, wakes), Layer.succeed(Environment, env.ORTHO_ENVIRONMENT || "local"), AuthD1.layer(AuthD1.make({ db: WorldEntry.fenced(env, env.DB), secret: env.AUTH_SECRET, worlds: hostsWorlds(env) }))]),
       Layer.provideMerge(Database.d1(WorldEntry.fenced(env, env.DB))),
@@ -558,7 +632,7 @@ const hostsWorlds = (env: Env) =>
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
-  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "interview.clear": interviewClearServed, "interview.create": interviewCreateServed, "interview.get": interviewGetServed, "interview.reject": interviewRejectServed, "interview-feedback.get": interviewFeedbackGetServed, "interview-feedback.give": interviewFeedbackGiveServed, "interview-round.create": interviewRoundCreateServed, "interview-round.get": interviewRoundGetServed, "job-applicant.accept": jobApplicantAcceptServed, "job-applicant.create": jobApplicantCreateServed, "job-applicant.get": jobApplicantGetServed, "job-applicant.hold": jobApplicantHoldServed, "job-applicant.reject": jobApplicantRejectServed, "job-offer.accept": jobOfferAcceptServed, "job-offer.create": jobOfferCreateServed, "job-offer.get": jobOfferGetServed, "job-offer.reject": jobOfferRejectServed, "job-opening.close": jobOpeningCloseServed, "job-opening.create": jobOpeningCreateServed, "job-opening.get": jobOpeningGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
+  served: { "attendance.get": attendanceGetServed, "attendance.list": attendanceListServed, "attendance.mark": attendanceMarkServed, "attendance-request.approve": attendanceRequestApproveServed, "attendance-request.create": attendanceRequestCreateServed, "attendance-request.get": attendanceRequestGetServed, "attendance-request.reject": attendanceRequestRejectServed, "bank-account.close": bankAccountCloseServed, "bank-account.get": bankAccountGetServed, "bank-account.open": bankAccountOpenServed, "branch.create": branchCreateServed, "branch.get": branchGetServed, "bridge-business.approve": bridgeBusinessApproveServed, "bridge-business.get": bridgeBusinessGetServed, "bridge-business.reject": bridgeBusinessRejectServed, "bridge-business.start": bridgeBusinessStartServed, "bridge-individual.approve": bridgeIndividualApproveServed, "bridge-individual.get": bridgeIndividualGetServed, "bridge-individual.reject": bridgeIndividualRejectServed, "bridge-individual.start": bridgeIndividualStartServed, "company.create": companyCreateServed, "company.get": companyGetServed, "department.create": departmentCreateServed, "department.get": departmentGetServed, "designation.create": designationCreateServed, "designation.get": designationGetServed, "employee.get": employeeGetServed, "employee.hire": employeeHireServed, "employee.relieve": employeeRelieveServed, "employee-grade.create": employeeGradeCreateServed, "employee-grade.get": employeeGradeGetServed, "employee-promotion.cancel": employeePromotionCancelServed, "employee-promotion.create": employeePromotionCreateServed, "employee-promotion.get": employeePromotionGetServed, "employee-promotion.submit": employeePromotionSubmitServed, "employee-separation.begin": employeeSeparationBeginServed, "employee-separation.complete": employeeSeparationCompleteServed, "employee-separation.create": employeeSeparationCreateServed, "employee-separation.get": employeeSeparationGetServed, "employee-transfer.cancel": employeeTransferCancelServed, "employee-transfer.create": employeeTransferCreateServed, "employee-transfer.get": employeeTransferGetServed, "employee-transfer.submit": employeeTransferSubmitServed, "employment-type.create": employmentTypeCreateServed, "employment-type.get": employmentTypeGetServed, "expense.add": expenseAddServed, "expense.get": expenseGetServed, "expense-claim.approve": expenseClaimApproveServed, "expense-claim.create": expenseClaimCreateServed, "expense-claim.get": expenseClaimGetServed, "expense-claim.reject": expenseClaimRejectServed, "expense-claim-type.create": expenseClaimTypeCreateServed, "expense-claim-type.get": expenseClaimTypeGetServed, "holiday.add": holidayAddServed, "holiday.get": holidayGetServed, "holiday-list.add-weekly-off": holidayListAddWeeklyOffServed, "holiday-list.create": holidayListCreateServed, "holiday-list.get": holidayListGetServed, "interview.clear": interviewClearServed, "interview.create": interviewCreateServed, "interview.get": interviewGetServed, "interview.reject": interviewRejectServed, "interview-feedback.get": interviewFeedbackGetServed, "interview-feedback.give": interviewFeedbackGiveServed, "interview-round.create": interviewRoundCreateServed, "interview-round.get": interviewRoundGetServed, "job-applicant.accept": jobApplicantAcceptServed, "job-applicant.create": jobApplicantCreateServed, "job-applicant.get": jobApplicantGetServed, "job-applicant.hold": jobApplicantHoldServed, "job-applicant.reject": jobApplicantRejectServed, "job-offer.accept": jobOfferAcceptServed, "job-offer.create": jobOfferCreateServed, "job-offer.get": jobOfferGetServed, "job-offer.reject": jobOfferRejectServed, "job-opening.close": jobOpeningCloseServed, "job-opening.create": jobOpeningCreateServed, "job-opening.get": jobOpeningGetServed, "shift-type.create": shiftTypeCreateServed, "shift-type.get": shiftTypeGetServed },
   refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals },
 });
 
