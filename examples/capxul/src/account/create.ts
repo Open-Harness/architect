@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/account/verbs/create.ts. Yours from now on.
 import { Effect, Match } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import type { InstanceOf } from "orthograph";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler, Outcome } from "../../generated/api/src/account/create.handler.ts";
+import { Account } from "../../blueprint/things/account/thing.ts";
 
 const { ParentAccountNotInCompany, ParentAccountIsLedger, RootAccountIsLedger, RootTypeMissing, RootTypeNotParents } = Errors.declared;
 
@@ -54,48 +56,69 @@ const { ParentAccountNotInCompany, ParentAccountIsLedger, RootAccountIsLedger, R
  *   once it answers, it writes AccountCreated: account and rootType from the answer, company from the payload;
  *   the call is the span account.create, and its commit account.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, accountName, parentAccount, isGroup, rootType, accountType }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span account.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // ParentAccountNotInCompany: exit 41, AC-001.
-    if (yield* Handlers.blank<boolean>("refuse ParentAccountNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentAccountNotInCompany was refused"));
-      return yield* new ParentAccountNotInCompany({});
+    // Step load: database, span account.create.load. The runtime read the parent, when one is named, and hands it in.
+    const parent = yield* steps.load(Effect.succeed(refs.parentAccount));
+
+    // Refusal order (errors.ts). A child is judged on its parent; a root on itself.
+    let root: NonNullable<typeof rootType>;
+    if (parentAccount !== undefined) {
+      // ParentAccountNotInCompany: exit 41, AC-001. A parent that isn't there is no account of this company's.
+      if (!parent || parent["company"] !== company) {
+        yield* Effect.logInfo("the parent account belongs to another company");
+        return yield* new ParentAccountNotInCompany({});
+      }
+
+      // ParentAccountIsLedger: exit 42, AC-002.
+      if (parent.state !== "group") {
+        yield* Effect.logInfo("the parent account is a ledger, not a group");
+        return yield* new ParentAccountIsLedger({});
+      }
+
+      // RootTypeNotParents: exit 45, AC-005. A child carries its parent's root type; naming another is refused.
+      root = parent["rootType"] as typeof root;
+      if (rootType !== undefined && rootType !== root) {
+        yield* Effect.logInfo(`the parent's root type is ${root}, not ${rootType}`);
+        return yield* new RootTypeNotParents({ rootType: root });
+      }
+    } else {
+      // RootAccountIsLedger: exit 43, AC-003.
+      if (!isGroup) {
+        yield* Effect.logInfo("a root account must be a group");
+        return yield* new RootAccountIsLedger({});
+      }
+
+      // RootTypeMissing: exit 44, AC-004.
+      if (rootType === undefined) {
+        yield* Effect.logInfo("a root account names its root type");
+        return yield* new RootTypeMissing({});
+      }
+      root = rootType;
     }
 
-    // ParentAccountIsLedger: exit 42, AC-002.
-    if (yield* Handlers.blank<boolean>("refuse ParentAccountIsLedger when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentAccountIsLedger was refused"));
-      return yield* new ParentAccountIsLedger({});
-    }
+    // The report type follows the root type (ERPNext's set_root_and_report_type).
+    const reportType = root === "Income" || root === "Expense" ? "Profit and Loss" : "Balance Sheet";
 
-    // RootAccountIsLedger: exit 43, AC-003.
-    if (yield* Handlers.blank<boolean>("refuse RootAccountIsLedger when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RootAccountIsLedger was refused"));
-      return yield* new RootAccountIsLedger({});
-    }
-
-    // RootTypeMissing: exit 44, AC-004.
-    if (yield* Handlers.blank<boolean>("refuse RootTypeMissing when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RootTypeMissing was refused"));
-      return yield* new RootTypeMissing({});
-    }
-
-    // RootTypeNotParents: exit 45, AC-005.
-    if (yield* Handlers.blank<boolean>("refuse RootTypeNotParents when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RootTypeNotParents was refused"));
-      return yield* new RootTypeNotParents({
-        rootType: yield* Handlers.blank("RootTypeNotParents.rootType, a RootType"),
-      });
-    }
-
-    // Step insert: database, span account.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span account.create.insert. A name already used is the runtime's refusal
+    // (oneNamePerCompany). An optional field not given is left out and stored empty; the cast is only because
+    // `InstanceOf` types every field as required.
+    yield* steps.insert(
+      records.insert(Account, {
+        id,
+        company,
+        accountName,
+        rootType: root,
+        reportType,
+        ...(parentAccount !== undefined ? { parentAccount } : {}),
+        ...(accountType !== undefined ? { accountType } : {}),
+      } as Omit<InstanceOf<typeof Account>, "state">),
+    );
 
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where create ends: group or ledger");
+    const outcome: Outcome = isGroup ? "group" : "ledger";
     yield* Match.value(outcome).pipe(
       // To group. From there the account can: makeLedger (to ledger).
       Match.when("group", () => move("group")),
@@ -107,8 +130,8 @@ const create: Handler = (_payload, { steps, move, id }) =>
     return {
       // AccountCreated needs account, and only the answer can give it.
       account: id,
-      rootType: yield* Handlers.blank("rootType, an account.rootType"),
-      reportType: yield* Handlers.blank("reportType, an account.reportType"),
+      rootType: root,
+      reportType,
     };
   });
 

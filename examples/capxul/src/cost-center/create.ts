@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/cost-center/verbs/create.ts. Yours from now on.
 import { Effect, Match } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import type { InstanceOf } from "orthograph";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler, Outcome } from "../../generated/api/src/cost-center/create.handler.ts";
+import { CostCenter } from "../../blueprint/things/cost-center/thing.ts";
 
 const { ParentCostCenterNotInCompany, ParentCostCenterIsLedger, RootCostCenterIsLedger } = Errors.declared;
 
@@ -47,34 +49,46 @@ const { ParentCostCenterNotInCompany, ParentCostCenterIsLedger, RootCostCenterIs
  *   once it answers, it writes CostCenterCreated: costCenter from the answer, company from the payload;
  *   the call is the span cost-center.create, and its commit cost-center.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, costCenterName, parentCostCenter, isGroup }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span cost-center.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // ParentCostCenterNotInCompany: exit 41, CC-001.
-    if (yield* Handlers.blank<boolean>("refuse ParentCostCenterNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentCostCenterNotInCompany was refused"));
-      return yield* new ParentCostCenterNotInCompany({});
-    }
+    // Step load: database, span cost-center.create.load. The runtime read the parent, when one is named, and hands it in.
+    const parent = yield* steps.load(Effect.succeed(refs.parentCostCenter));
 
-    // ParentCostCenterIsLedger: exit 42, CC-002.
-    if (yield* Handlers.blank<boolean>("refuse ParentCostCenterIsLedger when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentCostCenterIsLedger was refused"));
-      return yield* new ParentCostCenterIsLedger({});
-    }
+    // Refusal order (errors.ts): ParentCostCenterNotInCompany, ParentCostCenterIsLedger, RootCostCenterIsLedger.
+    if (parentCostCenter !== undefined) {
+      // ParentCostCenterNotInCompany: exit 41, CC-001. A parent that isn't there is no cost center of this company's.
+      if (!parent || parent["company"] !== company) {
+        yield* Effect.logInfo("the parent cost center belongs to another company");
+        return yield* new ParentCostCenterNotInCompany({});
+      }
 
-    // RootCostCenterIsLedger: exit 43, CC-003.
-    if (yield* Handlers.blank<boolean>("refuse RootCostCenterIsLedger when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why RootCostCenterIsLedger was refused"));
+      // ParentCostCenterIsLedger: exit 42, CC-002.
+      if (parent.state !== "group") {
+        yield* Effect.logInfo("the parent cost center is a ledger, not a group");
+        return yield* new ParentCostCenterIsLedger({});
+      }
+    } else if (!isGroup) {
+      // RootCostCenterIsLedger: exit 43, CC-003.
+      yield* Effect.logInfo("a root cost center must be a group");
       return yield* new RootCostCenterIsLedger({});
     }
 
-    // Step insert: database, span cost-center.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span cost-center.create.insert. A name already used is the runtime's refusal
+    // (oneNamePerCompany). A root's parent is left out and stored empty; the cast is only because `InstanceOf` types
+    // every field as required.
+    yield* steps.insert(
+      records.insert(CostCenter, {
+        id,
+        company,
+        costCenterName,
+        ...(parentCostCenter !== undefined ? { parentCostCenter } : {}),
+      } as Omit<InstanceOf<typeof CostCenter>, "state">),
+    );
 
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where create ends: group or ledger");
+    const outcome: Outcome = isGroup ? "group" : "ledger";
     yield* Match.value(outcome).pipe(
       // To group. From there the cost-center can: nothing more.
       Match.when("group", () => move("group")),

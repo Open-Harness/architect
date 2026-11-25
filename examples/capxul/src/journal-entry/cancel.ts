@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/journal-entry/verbs/cancel.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Ids, Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/journal-entry/cancel.handler.ts";
+import { GLEntry } from "../../blueprint/things/gl-entry/thing.ts";
 
 /**
  * journal-entry.cancel: Cancel a submitted journal entry, posting a reversing ledger line for each it posted.
@@ -39,21 +40,54 @@ import type { Handler } from "../../generated/api/src/journal-entry/cancel.handl
  *   once it answers, it writes JournalEntryCancelled: journalEntry and reversed from the answer;
  *   the call is the span journal-entry.cancel, and its commit journal-entry.cancel.commit.
  */
-const cancel: Handler = (_payload, { steps, move }) =>
+const cancel: Handler = ({ journalEntry }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step load: database, span journal-entry.cancel.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // Step reverse: database, in the store journal-entry, gl-entry, span journal-entry.cancel.reverse.
-    yield* steps.reverse(Handlers.blank("reverse: the work this step does"));
+    // Step load: database, span journal-entry.cancel.load. The ledger lines the submit posted, oldest first. A list
+    // reads every matching row whatever its limit, so one call takes them all.
+    const posted = yield* steps.load(
+      records.list({
+        thing: GLEntry,
+        where: { voucherType: "Journal Entry", voucherId: journalEntry, isCancelled: false },
+        state: undefined,
+        order: "oldest",
+        limit: Number.MAX_SAFE_INTEGER,
+        after: undefined,
+      }),
+    );
+
+    // Step reverse: database, in the store journal-entry, gl-entry, span journal-entry.cancel.reverse. ERPNext's
+    // make_reverse_gl_entries with the immutable ledger off: each line is marked cancelled, and a reversal is posted
+    // for it, debit and credit swapped, on the same account, cost center and day, cancelled too. Nothing is deleted.
+    yield* steps.reverse(
+      Effect.forEach(posted.items, (line) =>
+        Effect.gen(function* () {
+          yield* records.update(GLEntry, line["id"] as string, { isCancelled: true });
+          const id = yield* Ids.of(GLEntry.fields.id);
+          yield* records.insert(GLEntry, {
+            id,
+            company: line["company"] as never,
+            account: line["account"] as never,
+            costCenter: line["costCenter"] as never,
+            postingDate: line["postingDate"] as never,
+            debit: line["credit"] as bigint,
+            credit: line["debit"] as bigint,
+            voucherType: "Journal Entry",
+            voucherId: journalEntry,
+            isCancelled: true,
+          });
+        }),
+      ),
+    );
 
     // The move cancel, from submitted, to cancelled.
     yield* move();
 
     return {
-      journalEntry: yield* Handlers.blank("journalEntry, a journal-entry.id"),
+      journalEntry,
       // JournalEntryCancelled needs reversed, and only the answer can give it.
-      reversed: yield* Handlers.blank("reversed, a LineCount"),
+      reversed: BigInt(posted.items.length),
     };
   });
 

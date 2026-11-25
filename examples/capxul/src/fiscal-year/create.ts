@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/fiscal-year/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Days } from "orthograph";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/fiscal-year/create.handler.ts";
+import { FiscalYear } from "../../blueprint/things/fiscal-year/thing.ts";
 
 const { FiscalYearEndsBeforeStart, FiscalYearWrongLength, FiscalYearOverlaps } = Errors.declared;
 
@@ -46,37 +48,56 @@ const { FiscalYearEndsBeforeStart, FiscalYearWrongLength, FiscalYearOverlaps } =
  *   once it answers, it writes FiscalYearCreated: fiscalYear from the answer, company, yearStartDate and yearEndDate from the payload;
  *   the call is the span fiscal-year.create, and its commit fiscal-year.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+/**
+ * The last day of a full year from `start`: the same date a year on, less a day. A year on from 29 February is 28
+ * February, as `relativedelta` has it, so a year from a leap day ends on 27 February.
+ */
+const fullYearEnd = (start: string): string => {
+  const [y, m, d] = start.split("-").map(Number) as [number, number, number];
+  const next = y + 1;
+  const leap = (next % 4 === 0 && next % 100 !== 0) || next % 400 === 0;
+  const day = m === 2 && d === 29 && !leap ? 28 : d;
+  return Days.add(`${String(next).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}` as never, -1);
+};
+
+const create: Handler = ({ company, year, yearStartDate, yearEndDate, isShortYear }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span fiscal-year.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // FiscalYearEndsBeforeStart: exit 41, FY-001.
-    if (yield* Handlers.blank<boolean>("refuse FiscalYearEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FiscalYearEndsBeforeStart was refused"));
-      return yield* new FiscalYearEndsBeforeStart({
-        yearStartDate: yield* Handlers.blank("FiscalYearEndsBeforeStart.yearStartDate, a Day"),
-      });
+    // Step load: database, span fiscal-year.create.load. The company's years, for the overlap check. A list reads
+    // every matching row whatever its limit, so one call takes them all.
+    const years = yield* steps.load(
+      records.list({ thing: FiscalYear, where: { company }, state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined }),
+    );
+
+    // Refusal order (errors.ts): FiscalYearEndsBeforeStart, FiscalYearWrongLength, FiscalYearOverlaps. Days are
+    // YYYY-MM-DD, so they compare as text.
+    // FiscalYearEndsBeforeStart: exit 41, FY-001. A one-day year (end on the start) is allowed.
+    if (yearEndDate < yearStartDate) {
+      yield* Effect.logInfo("the year ends before it starts");
+      return yield* new FiscalYearEndsBeforeStart({ yearStartDate });
     }
 
-    // FiscalYearWrongLength: exit 42, FY-002.
-    if (yield* Handlers.blank<boolean>("refuse FiscalYearWrongLength when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FiscalYearWrongLength was refused"));
-      return yield* new FiscalYearWrongLength({
-        yearEndDate: yield* Handlers.blank("FiscalYearWrongLength.yearEndDate, a Day"),
-      });
+    // FiscalYearWrongLength: exit 42, FY-002. A full year ends exactly a year less a day on; a short one no later.
+    const shouldEnd = fullYearEnd(yearStartDate) as typeof yearEndDate;
+    if (isShortYear ? yearEndDate > shouldEnd : yearEndDate !== shouldEnd) {
+      yield* Effect.logInfo(`a ${isShortYear ? "short " : ""}year from ${yearStartDate} ends ${isShortYear ? "no later than" : "on"} ${shouldEnd}`);
+      return yield* new FiscalYearWrongLength({ yearEndDate: shouldEnd });
     }
 
-    // FiscalYearOverlaps: exit 43, FY-003.
-    if (yield* Handlers.blank<boolean>("refuse FiscalYearOverlaps when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why FiscalYearOverlaps was refused"));
-      return yield* new FiscalYearOverlaps({
-        fiscalYear: yield* Handlers.blank("FiscalYearOverlaps.fiscalYear, a fiscal-year.id"),
-      });
+    // FiscalYearOverlaps: exit 43, FY-003. Sharing a day, both ends counted; the earliest-starting year is named.
+    const overlapping = years.items
+      .filter((other) => (other["yearStartDate"] as string) <= yearEndDate && (other["yearEndDate"] as string) >= yearStartDate)
+      .sort((a, b) => ((a["yearStartDate"] as string) < (b["yearStartDate"] as string) ? -1 : 1));
+    const first = overlapping[0];
+    if (first) {
+      yield* Effect.logInfo(`the year shares days with ${String(first["year"])}`);
+      return yield* new FiscalYearOverlaps({ fiscalYear: first["id"] as never });
     }
 
-    // Step insert: database, span fiscal-year.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span fiscal-year.create.insert. A name already used is the runtime's refusal
+    // (oneNamePerCompany).
+    yield* steps.insert(records.insert(FiscalYear, { id, company, year, yearStartDate, yearEndDate, isShortYear }));
 
     // The move create, to active.
     yield* move();
