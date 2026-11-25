@@ -39,6 +39,15 @@ const Placed = Blueprint.derive(Account, {
     return (r.name === "Bank" ? { depth: r.parentAccount === undefined ? "0" : "1", nickname: "bk" } : { depth: r.parentAccount === undefined ? "0" : "1" }) as never;
   },
 });
+// A cost center's derive: its level always, a region only for some.
+const Levelled = Blueprint.derive(CostCenter, {
+  looks: {},
+  adds: { level: Blueprint.text({ max: 4 }), region: Blueprint.optional(Blueprint.text({ max: 20 })) },
+  is: (root) => {
+    const r = root as { parentCostCenter?: string; label?: string };
+    return (r.label === "Ops" ? { level: "1", region: "west" } : { level: r.parentCostCenter === undefined ? "0" : "1" }) as never;
+  },
+});
 
 const ada = { kind: "person", person: "per_ada", via: "session" } as const;
 const ACCOUNTS = [
@@ -57,6 +66,7 @@ const READS = {
   account: Reads.serve({ name: "account.get", read: Blueprint.read(Account, { by: "id", fields: ["name", "parentAccount", "accountType"], allowed: [Blueprint.signedIn] }) }),
   center: Reads.serve({ name: "cost-center.get", read: Blueprint.read(CostCenter, { by: "id", fields: ["label", "parentCostCenter", "owner"], allowed: [Blueprint.signedIn] }) }),
   placed: Reads.serve({ name: "account.placed", read: Blueprint.read(Account, { by: "id", fields: ["name", "parentAccount", "accountType"], derive: Placed, allowed: [Blueprint.signedIn] }) } as never),
+  levelled: Reads.serve({ name: "cost-center.levelled", read: Blueprint.read(CostCenter, { by: "id", fields: ["label", "parentCostCenter", "owner"], derive: Levelled, allowed: [Blueprint.signedIn] }) } as never),
 } as const;
 
 /** How a read of one id ended: its answer, or whether it died and why. */
@@ -95,6 +105,10 @@ describe("a read by id of a thing with optional fields (#1018)", () => {
 describe("a read by id with a derive, of a thing with optional fields (#1018)", () => {
   it("answers a root account with neither optional field's key, nor the derive's nickname it worked out none of", () =>
     expectAnswer("placed", "acc_root", { name: "Assets", depth: "0" }));
-  it("control: answers every field and add that has a value", () =>
-    expectAnswer("placed", "acc_bank", { name: "Bank", parentAccount: "acc_root", accountType: "Bank", depth: "1", nickname: "bk" }));
+  it("answers a top cost center with neither optional field's key, nor the derive's region it worked out none of", () =>
+    expectAnswer("levelled", "ccr_top", { label: "Main", level: "0" }));
+  it("control: answers every field and add that has a value", async () => {
+    await expectAnswer("placed", "acc_bank", { name: "Bank", parentAccount: "acc_root", accountType: "Bank", depth: "1", nickname: "bk" });
+    await expectAnswer("levelled", "ccr_ops", { label: "Ops", parentCostCenter: "ccr_top", owner: "olga", level: "1", region: "west" });
+  });
 });

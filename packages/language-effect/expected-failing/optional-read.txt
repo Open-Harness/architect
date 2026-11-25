@@ -3,3 +3,4 @@ src/modules/handler/optional-read.test.ts > a read by id of a thing with optiona
 src/modules/handler/optional-read.test.ts > a read by id of a thing with optional fields (#1018) > answers a top cost center with neither optional field's key
 src/modules/handler/optional-read.test.ts > a read by id of a thing with optional fields (#1018) > answers one optional field without the other
 src/modules/handler/optional-read.test.ts > a read by id with a derive, of a thing with optional fields (#1018) > answers a root account with neither optional field's key, nor the derive's nickname it worked out none of
+src/modules/handler/optional-read.test.ts > a read by id with a derive, of a thing with optional fields (#1018) > answers a top cost center with neither optional field's key, nor the derive's region it worked out none of

@@ -4,7 +4,7 @@
 // what a watch runs). A value that is there is still held to the field (a wrong type, or `null`, fails), and a required
 // field that is missing still fails. The model writes `optional: true` beside a field's `value`, as the compiler does
 // (`compiler/src/modules/model/internal/fields.ts`). Two reads with other field names hold it, so no eval keyed on one
-// name passes. Red on main until #1018 is built.
+// name passes. A required id goes on the span, so a missing one is judged live as well as recorded. Red on main until #1018 is built.
 import { describe, expect, it } from "vitest";
 import { Blueprint, type FieldsInput } from "orthograph";
 import { traceable } from "orthograph/server";
@@ -23,8 +23,8 @@ const readOf = (name: string, thing: string, prefix: string, answer: FieldsInput
 });
 const READS = {
   account: readOf("account.get", "account", "acc",
-    { name: Blueprint.text({ max: 140 }), parentAccount: Blueprint.optional(Blueprint.id("acc")), accountType: Blueprint.optional(Blueprint.text({ max: 40 })) },
-    { name: { value: { type: "text", max: 140 } }, parentAccount: { value: { type: "id", prefix: "acc" }, optional: true }, accountType: { value: { type: "text", max: 40 }, optional: true } }),
+    { name: Blueprint.text({ max: 140 }), keeper: Blueprint.id("per"), parentAccount: Blueprint.optional(Blueprint.id("acc")), accountType: Blueprint.optional(Blueprint.text({ max: 40 })) },
+    { name: { value: { type: "text", max: 140 } }, keeper: { value: { type: "id", prefix: "per" } }, parentAccount: { value: { type: "id", prefix: "acc" }, optional: true }, accountType: { value: { type: "text", max: 40 }, optional: true } }),
   center: readOf("cost-center.get", "cost-center", "ccr",
     { label: Blueprint.text({ max: 140 }), parentCostCenter: Blueprint.optional(Blueprint.id("ccr")), owner: Blueprint.optional(Blueprint.text({ max: 40 })) },
     { label: { value: { type: "text", max: 140 } }, parentCostCenter: { value: { type: "id", prefix: "ccr" }, optional: true }, owner: { value: { type: "text", max: 40 }, optional: true } }),
@@ -49,34 +49,37 @@ const shape = (which: keyof typeof READS, body: Record<string, unknown>, live = 
 
 describe("answer shape: an optional answer field with no value (#1018)", () => {
   it("passes a root whose answer and span have neither optional field", () => {
-    expect(shape("account", { name: "Assets" })).toEqual([]);
+    expect(shape("account", { name: "Assets", keeper: "per_olga" })).toEqual([]);
     expect(shape("center", { label: "Main" })).toEqual([]);
   });
 
   it("passes an answer with one optional field and not the other", () => {
-    expect(shape("account", { name: "Cash", parentAccount: "acc_root" })).toEqual([]);
+    expect(shape("account", { name: "Cash", keeper: "per_olga", parentAccount: "acc_root" })).toEqual([]);
     expect(shape("center", { label: "Lab", owner: "cy" })).toEqual([]);
   });
 
   it("passes it live, from the span alone, with no response", () => {
-    expect(shape("account", { name: "Assets" }, true)).toEqual([]);
+    expect(shape("account", { name: "Assets", keeper: "per_olga" }, true)).toEqual([]);
     expect(shape("center", { label: "Lab", owner: "cy" }, true)).toEqual([]);
   });
 
   it("control: passes an answer with both", () => {
-    expect(shape("account", { name: "Bank", parentAccount: "acc_root", accountType: "Bank" })).toEqual([]);
+    expect(shape("account", { name: "Bank", keeper: "per_olga", parentAccount: "acc_root", accountType: "Bank" })).toEqual([]);
     expect(shape("center", { label: "Ops", parentCostCenter: "ccr_top", owner: "olga" })).toEqual([]);
   });
 
   it("control: still fails an optional field that is there with the wrong value, or null", () => {
-    expect(shape("account", { name: "Bank", parentAccount: 7 }).join("\n")).toContain("answer.parentAccount");
-    expect(shape("account", { name: "Bank", accountType: null }).join("\n")).toContain("answer.accountType");
+    expect(shape("account", { name: "Bank", keeper: "per_olga", parentAccount: 7 }).join("\n")).toContain("answer.parentAccount");
+    expect(shape("account", { name: "Bank", keeper: "per_olga", accountType: null }).join("\n")).toContain("answer.accountType");
     expect(shape("center", { label: "Ops", parentCostCenter: "acc_root" }).join("\n")).toContain("answer.parentCostCenter");
     expect(shape("center", { label: "Ops", parentCostCenter: "acc_root" }, true).join("\n")).toContain("answer.parentCostCenter");
   });
 
   it("control: still fails a required field that is missing", () => {
-    expect(shape("account", { parentAccount: "acc_root" }).join("\n")).toContain("answer.name");
+    expect(shape("account", { keeper: "per_olga", parentAccount: "acc_root" }).join("\n")).toContain("answer.name");
     expect(shape("center", { parentCostCenter: "ccr_top" }).join("\n")).toContain("answer.label");
+    // A required id goes on the span: missing, it fails recorded and live, as on main.
+    expect(shape("account", { name: "Assets", parentAccount: "acc_root" }).join("\n")).toContain("answer.keeper");
+    expect(shape("account", { name: "Assets", parentAccount: "acc_root" }, true).join("\n")).toContain("answer.keeper");
   });
 });
