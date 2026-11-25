@@ -1,7 +1,9 @@
 // Scaffolded from blueprint/things/bank-transaction/verbs/land.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bank-transaction/land.handler.ts";
+import { BankAccount } from "../../blueprint/things/bank-account/thing.ts";
+import { BankTransaction } from "../../blueprint/things/bank-transaction/thing.ts";
 
 /**
  * bank-transaction.land: Record a deposit Bridge landed on a company's bank account.
@@ -44,13 +46,31 @@ import type { Handler } from "../../generated/api/src/bank-transaction/land.hand
  *   once it answers, it writes DepositLanded: transaction from the answer, account and reference from the payload, deposit from the bank-transaction as the call left it;
  *   the call is the span bank-transaction.land, and its commit bank-transaction.land.commit.
  */
-const land: Handler = (_payload, { steps, move, id }) =>
+const land: Handler = ({ account, reference, amount, party, date }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span bank-transaction.land.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Step load: database, span bank-transaction.land.load. The account the deposit landed on: the transaction is its
+    // company's, in its currency.
+    const held = yield* steps.load(records.find(BankAccount, account));
+    if (!held) return yield* Effect.die(new Error(`bank account ${account} was read for the call and then not found`));
 
-    // Step insert: database, span bank-transaction.land.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span bank-transaction.land.insert. Bridge's dollars, at most six places, are USDC base
+    // units exactly: scaled to six places, the unscaled value is the count of millionths (CX-bridge, "Base units"). The
+    // reference is Bridge's deposit_id; a second report of it is refused AlreadyRecorded by
+    // bank-transaction.oneTransactionPerMovement, so it is recorded once.
+    yield* steps.insert(
+      records.insert(BankTransaction, {
+        id,
+        company: held["company"] as never,
+        account,
+        date,
+        deposit: BigDecimal.scale(amount, 6).value,
+        withdrawal: 0n,
+        currency: held["currency"] as never,
+        reference,
+        party,
+      }),
+    );
 
     // The move land, to settled.
     yield* move();
