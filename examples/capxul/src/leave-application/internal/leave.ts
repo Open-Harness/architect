@@ -48,6 +48,14 @@ export const leaveDaysOf = (leaveType: Instance, company: string, from: string, 
     return days.filter((day) => !holidays.has(day));
   });
 
+/** How many leave days `leaveDaysOf` gives, counted without listing every day, so a long range costs no more than a short one. */
+export const leaveDayCountOf = (leaveType: Instance, company: string, from: string, to: string) =>
+  Effect.gen(function* () {
+    const days = Days.between(from, to) + 1;
+    if (leaveType["includeHoliday"] === true) return days;
+    return days - (yield* holidaysOf(company, from, to)).size;
+  });
+
 /** The one submitted allocation of the employee and type holding both the first and the last day (validate_dates_across_allocation). */
 export const coveringAllocation = (employee: string, leaveType: string, from: string, to: string) =>
   Effect.gen(function* () {
@@ -83,7 +91,7 @@ export const attendancesOf = (employee: string) =>
 
 /** The first day from `from` to `to` the employee is marked Present or Work From Home (validate_attendance), if any. */
 export const firstDayAttended = (attendances: ReadonlyMap<string, Instance>, from: string, to: string) =>
-  daysFrom(from, to).find((day) => {
-    const status = attendances.get(day)?.["status"];
-    return status === "Present" || status === "Work From Home";
-  });
+  [...attendances.entries()]
+    .filter(([day, a]) => day >= from && day <= to && (a["status"] === "Present" || a["status"] === "Work From Home"))
+    .map(([day]) => day)
+    .sort()[0];

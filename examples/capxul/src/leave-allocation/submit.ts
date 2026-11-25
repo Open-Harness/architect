@@ -2,11 +2,14 @@
 import { Effect } from "effect";
 import { Records } from "@orthograph/language-effect";
 import { LeaveAllocation } from "../../blueprint/things/leave-allocation/thing.ts";
-import { all, overlaps } from "../leave-application/internal/leave.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/leave-allocation/submit.handler.ts";
 
 const { AllocationOverlaps } = Errors.declared;
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+/** Two ranges share a day when one's last day is on or after the other's first and its first on or before the other's last. */
+const overlaps = (a: { readonly [field: string]: unknown }, from: string, to: string) => (a["toDate"] as string) >= from && (a["fromDate"] as string) <= to;
 
 /**
  * leave-allocation.submit: Submit an allocation, so its leave days can be taken.

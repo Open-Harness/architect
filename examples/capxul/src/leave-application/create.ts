@@ -3,7 +3,7 @@ import { BigDecimal, Effect } from "effect";
 import { Days } from "orthograph";
 import { Records } from "@orthograph/language-effect";
 import { LeaveApplication } from "../../blueprint/things/leave-application/thing.ts";
-import { all, attendancesOf, balanceOf, coveringAllocation, firstDayAttended, leaveDaysOf, overlaps } from "./internal/leave.ts";
+import { all, attendancesOf, balanceOf, coveringAllocation, firstDayAttended, leaveDayCountOf, overlaps } from "./internal/leave.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/leave-application/create.handler.ts";
 
@@ -83,7 +83,7 @@ const create: Handler = ({ company, employee, leaveType, fromDate, toDate, reaso
     const loaded = yield* steps.load(
       Effect.gen(function* () {
         if (toDate < fromDate) return undefined;
-        const leaveDays = yield* leaveDaysOf(type, company, fromDate, toDate);
+        const leaveDays = yield* leaveDayCountOf(type, company, fromDate, toDate);
         const allocation = isLwp ? undefined : yield* coveringAllocation(employee, leaveType, fromDate, toDate);
         const balance = allocation === undefined ? undefined : yield* balanceOf(allocation);
         const theirs = yield* records.list({ ...all, thing: LeaveApplication, where: { employee } });
@@ -132,15 +132,15 @@ const create: Handler = ({ company, employee, leaveType, fromDate, toDate, reaso
     }
 
     // LeaveAllHolidays: exit 47, LP-007. Every day asked for is a holiday the type doesn't count.
-    if (leaveDays.length === 0) {
+    if (leaveDays <= 0) {
       yield* Effect.logInfo("every day asked for is a holiday");
       return yield* new LeaveAllHolidays({});
     }
 
     // InsufficientLeaveBalance: exit 48, LP-008. Only approved applications take the balance. Leave without pay skips it.
-    const totalLeaveDays = BigDecimal.fromBigInt(BigInt(leaveDays.length));
+    const totalLeaveDays = BigDecimal.fromBigInt(BigInt(leaveDays));
     if (balance !== undefined && BigDecimal.isLessThan(balance, totalLeaveDays)) {
-      yield* Effect.logInfo(`${leaveDays.length} days are more than the ${BigDecimal.format(balance)} left`);
+      yield* Effect.logInfo(`${leaveDays} days are more than the ${BigDecimal.format(balance)} left`);
       return yield* new InsufficientLeaveBalance({});
     }
 

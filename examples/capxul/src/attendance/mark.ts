@@ -3,11 +3,12 @@ import { Effect } from "effect";
 import { Records } from "@orthograph/language-effect";
 import { Attendance } from "../../blueprint/things/attendance/thing.ts";
 import { LeaveApplication } from "../../blueprint/things/leave-application/thing.ts";
-import { all } from "../leave-application/internal/leave.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/attendance/mark.handler.ts";
 
 const { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceOnLeave } = Errors.declared;
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
 /**
  * attendance.mark: Mark whether an employee was at work on a day.

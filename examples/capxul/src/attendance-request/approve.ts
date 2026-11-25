@@ -5,8 +5,10 @@ import { Ids, Records } from "@orthograph/language-effect";
 import { Attendance } from "../../blueprint/things/attendance/thing.ts";
 import { oneAttendancePerDay } from "../../blueprint/things/attendance/invariants.ts";
 import { LeaveApplication } from "../../blueprint/things/leave-application/thing.ts";
-import { all } from "../leave-application/internal/leave.ts";
 import type { Handler } from "../../generated/api/src/attendance-request/approve.handler.ts";
+
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
 /**
  * attendance-request.approve: Approve a request, marking each of its days.

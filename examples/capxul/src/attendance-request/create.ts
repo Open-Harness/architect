@@ -2,11 +2,14 @@
 import { Effect } from "effect";
 import { Records } from "@orthograph/language-effect";
 import { AttendanceRequest } from "../../blueprint/things/attendance-request/thing.ts";
-import { all, overlaps } from "../leave-application/internal/leave.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/attendance-request/create.handler.ts";
 
 const { RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, AttendanceRequestOverlaps } = Errors.declared;
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+/** Two ranges share a day when one's last day is on or after the other's first and its first on or before the other's last. */
+const overlaps = (a: { readonly [field: string]: unknown }, from: string, to: string) => (a["toDate"] as string) >= from && (a["fromDate"] as string) <= to;
 
 /**
  * attendance-request.create: Ask for an employee to be marked at work, from one day to another, and why.
