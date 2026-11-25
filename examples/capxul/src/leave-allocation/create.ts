@@ -1,10 +1,16 @@
 // Scaffolded from blueprint/things/leave-allocation/verbs/create.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Days } from "orthograph";
+import { Records } from "@orthograph/language-effect";
+import { LeaveAllocation } from "../../blueprint/things/leave-allocation/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/leave-allocation/create.handler.ts";
 
 const { AllocateeNotInCompany, AllocateeHasLeft, AllocationTypeNotInCompany, AllocationEndsBeforeStart, AllocationOverlaps, LeaveWithoutPayNotAllocated, NoLeavesAllocated, AllocationExceedsPeriod } = Errors.declared;
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+/** Two ranges share a day when one's last day is on or after the other's first and its first on or before the other's last. */
+const overlaps = (a: { readonly [field: string]: unknown }, from: string, to: string) => (a["toDate"] as string) >= from && (a["fromDate"] as string) <= to;
 
 /**
  * leave-allocation.create: Give an employee leave days of one type, between two days, as a draft.
@@ -56,63 +62,73 @@ const { AllocateeNotInCompany, AllocateeHasLeft, AllocationTypeNotInCompany, All
  *   once it answers, it writes LeaveAllocationCreated: leaveAllocation from the answer, company, employee and leaveType from the payload;
  *   the call is the span leave-allocation.create, and its commit leave-allocation.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, employee, leaveType, fromDate, toDate, newLeavesAllocated }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span leave-allocation.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
+    // Step load: database, span leave-allocation.create.load. The runtime read the employee and the type and hands them
+    // in; this step lists the employee's submitted allocations of the type (HRMS's docstatus=1).
+    const { allocatee, type, submitted } = yield* steps.load(
+      Effect.gen(function* () {
+        const submitted = yield* records.list({ ...all, thing: LeaveAllocation, where: { employee, leaveType }, state: "submitted" });
+        return { allocatee: refs.employee, type: refs.leaveType, submitted: submitted.items };
+      }),
+    );
+    if (!allocatee || !type) return yield* Effect.die(new Error(`employee ${employee} or leave type ${leaveType} was read and then not found`));
+
+    // Refusal order (errors.ts): Capxul's own checks, then HRMS's validate order.
     // AllocateeNotInCompany: exit 41, LL-001.
-    if (yield* Handlers.blank<boolean>("refuse AllocateeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AllocateeNotInCompany was refused"));
+    if (allocatee["company"] !== company) {
+      yield* Effect.logInfo("the employee works for another company");
       return yield* new AllocateeNotInCompany({});
     }
 
-    // AllocateeHasLeft: exit 42, LL-002.
-    if (yield* Handlers.blank<boolean>("refuse AllocateeHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AllocateeHasLeft was refused"));
+    // AllocateeHasLeft: exit 42, LL-002. Judged on create only (CX-expense-leavers): a draft made before the employee
+    // left can still be submitted.
+    if (allocatee.state !== "active") {
+      yield* Effect.logInfo(`the employee is ${allocatee.state ?? "in no state"}, not active`);
       return yield* new AllocateeHasLeft({});
     }
 
-    // AllocationTypeNotInCompany: exit 43, LL-003.
-    if (yield* Handlers.blank<boolean>("refuse AllocationTypeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AllocationTypeNotInCompany was refused"));
+    // AllocationTypeNotInCompany: exit 43, LL-003. Leave types are per company (CX-leave, call 8).
+    if (type["company"] !== company) {
+      yield* Effect.logInfo("the leave type is another company's");
       return yield* new AllocationTypeNotInCompany({});
     }
 
-    // AllocationEndsBeforeStart: exit 44, LL-004.
-    if (yield* Handlers.blank<boolean>("refuse AllocationEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AllocationEndsBeforeStart was refused"));
-      return yield* new AllocationEndsBeforeStart({
-        fromDate: yield* Handlers.blank("AllocationEndsBeforeStart.fromDate, a Day"),
-      });
+    // AllocationEndsBeforeStart: exit 44, LL-004. The same day is allowed.
+    if (toDate < fromDate) {
+      yield* Effect.logInfo("the allocation's last day is before its first");
+      return yield* new AllocationEndsBeforeStart({ fromDate });
     }
 
-    // AllocationOverlaps: exit 45, LL-005.
-    if (yield* Handlers.blank<boolean>("refuse AllocationOverlaps when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AllocationOverlaps was refused"));
+    // AllocationOverlaps: exit 45, LL-005. validate_allocation_overlap, against submitted allocations only.
+    if (submitted.some((a) => overlaps(a, fromDate, toDate))) {
+      yield* Effect.logInfo("a submitted allocation of the employee and type shares a day with this one");
       return yield* new AllocationOverlaps({});
     }
 
-    // LeaveWithoutPayNotAllocated: exit 46, LL-006.
-    if (yield* Handlers.blank<boolean>("refuse LeaveWithoutPayNotAllocated when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveWithoutPayNotAllocated was refused"));
+    // LeaveWithoutPayNotAllocated: exit 46, LL-006. validate_lwp.
+    if (type["isLwp"] === true) {
+      yield* Effect.logInfo("the leave type is leave without pay");
       return yield* new LeaveWithoutPayNotAllocated({});
     }
 
-    // NoLeavesAllocated: exit 47, LL-007.
-    if (yield* Handlers.blank<boolean>("refuse NoLeavesAllocated when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NoLeavesAllocated was refused"));
+    // NoLeavesAllocated: exit 47, LL-007. HRMS refuses 0; Capxul refuses below it too.
+    if (!BigDecimal.isPositive(newLeavesAllocated)) {
+      yield* Effect.logInfo(`${BigDecimal.format(newLeavesAllocated)} leaves allocated is not more than none`);
       return yield* new NoLeavesAllocated({});
     }
 
-    // AllocationExceedsPeriod: exit 48, LL-008.
-    if (yield* Handlers.blank<boolean>("refuse AllocationExceedsPeriod when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AllocationExceedsPeriod was refused"));
+    // AllocationExceedsPeriod: exit 48, LL-008. At most a leave a day, from the first to the last, both counted.
+    const period = Days.between(fromDate, toDate) + 1;
+    if (BigDecimal.isGreaterThan(newLeavesAllocated, BigDecimal.fromBigInt(BigInt(period)))) {
+      yield* Effect.logInfo(`${BigDecimal.format(newLeavesAllocated)} leaves are more than the allocation's ${period} days`);
       return yield* new AllocationExceedsPeriod({});
     }
 
     // Step insert: database, span leave-allocation.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    yield* steps.insert(records.insert(LeaveAllocation, { id, company, employee, leaveType, fromDate, toDate, newLeavesAllocated }));
 
     // The move create, to draft.
     yield* move();

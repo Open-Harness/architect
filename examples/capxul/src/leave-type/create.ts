@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/leave-type/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { LeaveType } from "../../blueprint/things/leave-type/thing.ts";
 import type { Handler } from "../../generated/api/src/leave-type/create.handler.ts";
 
 /**
@@ -40,10 +41,13 @@ import type { Handler } from "../../generated/api/src/leave-type/create.handler.
  *   once it answers, it writes LeaveTypeCreated: leaveType from the answer, company from the payload;
  *   the call is the span leave-type.create, and its commit leave-type.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, leaveTypeName, maxContinuousDaysAllowed, isLwp, includeHoliday }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step insert: database, span leave-type.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const records = yield* Records;
+
+    // Step insert: database, span leave-type.create.insert. A name the company holds already is the runtime's refusal
+    // (leave-type.oneNamePerCompany).
+    yield* steps.insert(records.insert(LeaveType, { id, company, leaveTypeName, maxContinuousDaysAllowed, isLwp, includeHoliday }));
 
     // The move create, to active.
     yield* move();

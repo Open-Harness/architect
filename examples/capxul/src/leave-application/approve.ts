@@ -1,6 +1,9 @@
 // Scaffolded from blueprint/things/leave-application/verbs/approve.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Ids, Records } from "@orthograph/language-effect";
+import { Attendance } from "../../blueprint/things/attendance/thing.ts";
+import { LeaveType } from "../../blueprint/things/leave-type/thing.ts";
+import { attendancesOf, balanceOf, coveringAllocation, firstDayAttended, leaveDaysOf } from "./internal/leave.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/leave-application/approve.handler.ts";
 
@@ -48,38 +51,69 @@ const { InsufficientLeaveBalance, LeaveDayAttended } = Errors.declared;
  *   once it answers, it writes LeaveApplicationApproved: leaveApplication, marked and changed from the answer;
  *   the call is the span leave-application.approve, and its commit leave-application.approve.commit.
  */
-const approve: Handler = (_payload, { steps, move }) =>
+const approve: Handler = ({ leaveApplication }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span leave-application.approve.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // InsufficientLeaveBalance: exit 48, LP-008.
-    if (yield* Handlers.blank<boolean>("refuse InsufficientLeaveBalance when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why InsufficientLeaveBalance was refused"));
+    // Step load: database, span leave-application.approve.load. The runtime read the application for its role and state
+    // checks and hands it in; this step reads its type, its balance as it is now, the leave days and the employee's
+    // attendance. The employee isn't judged again (CX-expense-leavers).
+    const { application, balance, leaveDays, attendances } = yield* steps.load(
+      Effect.gen(function* () {
+        if (!subject) return yield* Effect.die(new Error(`leave application ${leaveApplication} was checked and then not found`));
+        const [employee, leaveType, fromDate, toDate] = [subject["employee"], subject["leaveType"], subject["fromDate"], subject["toDate"]] as ReadonlyArray<string>;
+        const type = yield* records.find(LeaveType, leaveType!);
+        if (!type) return yield* Effect.die(new Error(`leave type ${leaveType} of leave application ${leaveApplication} not found`));
+        const allocation = type["isLwp"] === true ? undefined : yield* coveringAllocation(employee!, leaveType!, fromDate!, toDate!);
+        const balance = type["isLwp"] === true ? undefined : allocation === undefined ? BigDecimal.fromBigInt(0n) : yield* balanceOf(allocation);
+        const leaveDays = yield* leaveDaysOf(type, subject["company"] as string, fromDate!, toDate!);
+        const attendances = yield* attendancesOf(employee!);
+        return { application: subject, balance, leaveDays, attendances };
+      }),
+    );
+
+    // Refusal order (errors.ts): InsufficientLeaveBalance, then LeaveDayAttended, as HRMS's validate runs again.
+    // InsufficientLeaveBalance: exit 48, LP-008. The approved days as they are now, against the count kept from create.
+    const totalLeaveDays = application["totalLeaveDays"] as BigDecimal.BigDecimal;
+    if (balance !== undefined && BigDecimal.isLessThan(balance, totalLeaveDays)) {
+      yield* Effect.logInfo(`${BigDecimal.format(totalLeaveDays)} days are more than the ${BigDecimal.format(balance)} left`);
       return yield* new InsufficientLeaveBalance({});
     }
 
-    // LeaveDayAttended: exit 51, LP-011.
-    if (yield* Handlers.blank<boolean>("refuse LeaveDayAttended when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why LeaveDayAttended was refused"));
-      return yield* new LeaveDayAttended({
-        attendanceDate: yield* Handlers.blank("LeaveDayAttended.attendanceDate, a Day"),
-      });
+    // LeaveDayAttended: exit 51, LP-011. Marked Present or Work From Home since the application was made.
+    const attended = firstDayAttended(attendances, application["fromDate"] as string, application["toDate"] as string);
+    if (attended !== undefined) {
+      yield* Effect.logInfo(`the employee was at work on ${attended}`);
+      return yield* new LeaveDayAttended({ attendanceDate: attended as never });
     }
 
-    // Step mark: database, in the store leave-application, attendance, span leave-application.approve.mark.
-    yield* steps.mark(Handlers.blank("mark: the work this step does"));
+    // Step mark: database, in the store leave-application, attendance, span leave-application.approve.mark. Every leave
+    // day is On Leave, in the application's company: a new attendance where none is, another status changed, On Leave
+    // left (update_attendance). A holiday the type doesn't count is no leave day, so one already marked is left as it is
+    // (CX-leave, call 10).
+    const fresh = leaveDays.filter((day) => !attendances.has(day));
+    const other = leaveDays.flatMap((day) => {
+      const held = attendances.get(day);
+      return held !== undefined && held["status"] !== "On Leave" ? [held] : [];
+    });
+    yield* steps.mark(
+      Effect.gen(function* () {
+        for (const day of fresh) {
+          const id = yield* Ids.of(Attendance.fields.id);
+          yield* records.insert(
+            Attendance,
+            { id, company: application["company"] as never, employee: application["employee"] as never, attendanceDate: day as never, status: "On Leave" },
+            "marked",
+          );
+        }
+        for (const held of other) yield* records.update(Attendance, held["id"] as string, { status: "On Leave" });
+      }),
+    );
 
     // The move approve, from open, to approved.
     yield* move();
 
-    return {
-      leaveApplication: yield* Handlers.blank("leaveApplication, a leave-application.id"),
-      // LeaveApplicationApproved needs marked, and only the answer can give it.
-      marked: yield* Handlers.blank("marked, a DayCount"),
-      // LeaveApplicationApproved needs changed, and only the answer can give it.
-      changed: yield* Handlers.blank("changed, a DayCount"),
-    };
+    return { leaveApplication, marked: BigInt(fresh.length), changed: BigInt(other.length) };
   });
 
 export default approve;
