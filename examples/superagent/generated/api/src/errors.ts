@@ -4,6 +4,9 @@ import { ErrorNames, wireStruct } from "orthograph/server";
 import * as Account from "@orthograph/intake/blueprint/things/account/errors.js";
 import * as Agent from "@orthograph/agents/blueprint/things/agent/errors.js";
 import * as Assignment from "@orthograph/tickets/blueprint/things/assignment/errors.js";
+import * as Github from "@orthograph/github/blueprint/things/github/errors.js";
+import * as Posthog from "@orthograph/posthog/blueprint/things/posthog/errors.js";
+import * as Slack from "@orthograph/slack/blueprint/things/slack/errors.js";
 import * as Subscription from "@orthograph/tickets/blueprint/things/subscription/errors.js";
 import * as Superagent from "@orthograph/superagent/blueprint/things/superagent/errors.js";
 
@@ -14,6 +17,18 @@ export const refusals = {
   NoSeat: { code: "AS-001", exit: 95, status: 422 },
   SeatTaken: { code: "AS-002", exit: 96, status: 422 },
   ExecutorAlreadyQueued: { code: "AS-003", exit: 97, status: 422 },
+  GithubApiFailure: { code: "GI-001", exit: 81, status: 422 },
+  GithubInputRefused: { code: "GI-002", exit: 82, status: 422 },
+  GithubAnswerRefused: { code: "GI-003", exit: 83, status: 422 },
+  GithubUnreachable: { code: "GI-004", exit: 84, status: 422 },
+  PosthogApiFailure: { code: "PH-001", exit: 81, status: 422 },
+  PosthogInputRefused: { code: "PH-002", exit: 82, status: 422 },
+  PosthogAnswerRefused: { code: "PH-003", exit: 83, status: 422 },
+  PosthogUnreachable: { code: "PH-004", exit: 84, status: 422 },
+  SlackApiFailure: { code: "SL-001", exit: 81, status: 422 },
+  SlackInputRefused: { code: "SL-002", exit: 82, status: 422 },
+  SlackAnswerRefused: { code: "SL-003", exit: 83, status: 422 },
+  SlackUnreachable: { code: "SL-004", exit: 84, status: 422 },
   AlreadyFollowing: { code: "SB-001", exit: 93, status: 422 },
   SlotsOutOfRange: { code: "SU-001", exit: 61, status: 422 },
   StaleRevision: { code: "SU-002", exit: 62, status: 422 },
@@ -65,6 +80,30 @@ ErrorNames.name(Assignment.SeatTaken, "SeatTaken");
 export class SeatTaken extends Schema.TaggedError<SeatTaken>()("SeatTaken", { code: Schema.Literal(refusals.SeatTaken.code), ...wireStruct(Assignment.SeatTaken.fields).fields }, { httpApiStatus: refusals.SeatTaken.status }) { static readonly code = refusals.SeatTaken.code; }
 ErrorNames.name(Assignment.ExecutorAlreadyQueued, "ExecutorAlreadyQueued");
 export class ExecutorAlreadyQueued extends Schema.TaggedError<ExecutorAlreadyQueued>()("ExecutorAlreadyQueued", { code: Schema.Literal(refusals.ExecutorAlreadyQueued.code), ...wireStruct(Assignment.ExecutorAlreadyQueued.fields).fields }, { httpApiStatus: refusals.ExecutorAlreadyQueued.status }) { static readonly code = refusals.ExecutorAlreadyQueued.code; }
+ErrorNames.name(Github.GithubApiFailure, "GithubApiFailure");
+export class GithubApiFailure extends Schema.TaggedError<GithubApiFailure>()("GithubApiFailure", { code: Schema.Literal(refusals.GithubApiFailure.code), ...wireStruct(Github.GithubApiFailure.fields).fields }, { httpApiStatus: refusals.GithubApiFailure.status }) { static readonly code = refusals.GithubApiFailure.code; }
+ErrorNames.name(Github.GithubInputRefused, "GithubInputRefused");
+export class GithubInputRefused extends Schema.TaggedError<GithubInputRefused>()("GithubInputRefused", { code: Schema.Literal(refusals.GithubInputRefused.code), ...wireStruct(Github.GithubInputRefused.fields).fields }, { httpApiStatus: refusals.GithubInputRefused.status }) { static readonly code = refusals.GithubInputRefused.code; }
+ErrorNames.name(Github.GithubAnswerRefused, "GithubAnswerRefused");
+export class GithubAnswerRefused extends Schema.TaggedError<GithubAnswerRefused>()("GithubAnswerRefused", { code: Schema.Literal(refusals.GithubAnswerRefused.code), ...wireStruct(Github.GithubAnswerRefused.fields).fields }, { httpApiStatus: refusals.GithubAnswerRefused.status }) { static readonly code = refusals.GithubAnswerRefused.code; }
+ErrorNames.name(Github.GithubUnreachable, "GithubUnreachable");
+export class GithubUnreachable extends Schema.TaggedError<GithubUnreachable>()("GithubUnreachable", { code: Schema.Literal(refusals.GithubUnreachable.code), ...wireStruct(Github.GithubUnreachable.fields).fields }, { httpApiStatus: refusals.GithubUnreachable.status }) { static readonly code = refusals.GithubUnreachable.code; }
+ErrorNames.name(Posthog.PosthogApiFailure, "PosthogApiFailure");
+export class PosthogApiFailure extends Schema.TaggedError<PosthogApiFailure>()("PosthogApiFailure", { code: Schema.Literal(refusals.PosthogApiFailure.code), ...wireStruct(Posthog.PosthogApiFailure.fields).fields }, { httpApiStatus: refusals.PosthogApiFailure.status }) { static readonly code = refusals.PosthogApiFailure.code; }
+ErrorNames.name(Posthog.PosthogInputRefused, "PosthogInputRefused");
+export class PosthogInputRefused extends Schema.TaggedError<PosthogInputRefused>()("PosthogInputRefused", { code: Schema.Literal(refusals.PosthogInputRefused.code), ...wireStruct(Posthog.PosthogInputRefused.fields).fields }, { httpApiStatus: refusals.PosthogInputRefused.status }) { static readonly code = refusals.PosthogInputRefused.code; }
+ErrorNames.name(Posthog.PosthogAnswerRefused, "PosthogAnswerRefused");
+export class PosthogAnswerRefused extends Schema.TaggedError<PosthogAnswerRefused>()("PosthogAnswerRefused", { code: Schema.Literal(refusals.PosthogAnswerRefused.code), ...wireStruct(Posthog.PosthogAnswerRefused.fields).fields }, { httpApiStatus: refusals.PosthogAnswerRefused.status }) { static readonly code = refusals.PosthogAnswerRefused.code; }
+ErrorNames.name(Posthog.PosthogUnreachable, "PosthogUnreachable");
+export class PosthogUnreachable extends Schema.TaggedError<PosthogUnreachable>()("PosthogUnreachable", { code: Schema.Literal(refusals.PosthogUnreachable.code), ...wireStruct(Posthog.PosthogUnreachable.fields).fields }, { httpApiStatus: refusals.PosthogUnreachable.status }) { static readonly code = refusals.PosthogUnreachable.code; }
+ErrorNames.name(Slack.SlackApiFailure, "SlackApiFailure");
+export class SlackApiFailure extends Schema.TaggedError<SlackApiFailure>()("SlackApiFailure", { code: Schema.Literal(refusals.SlackApiFailure.code), ...wireStruct(Slack.SlackApiFailure.fields).fields }, { httpApiStatus: refusals.SlackApiFailure.status }) { static readonly code = refusals.SlackApiFailure.code; }
+ErrorNames.name(Slack.SlackInputRefused, "SlackInputRefused");
+export class SlackInputRefused extends Schema.TaggedError<SlackInputRefused>()("SlackInputRefused", { code: Schema.Literal(refusals.SlackInputRefused.code), ...wireStruct(Slack.SlackInputRefused.fields).fields }, { httpApiStatus: refusals.SlackInputRefused.status }) { static readonly code = refusals.SlackInputRefused.code; }
+ErrorNames.name(Slack.SlackAnswerRefused, "SlackAnswerRefused");
+export class SlackAnswerRefused extends Schema.TaggedError<SlackAnswerRefused>()("SlackAnswerRefused", { code: Schema.Literal(refusals.SlackAnswerRefused.code), ...wireStruct(Slack.SlackAnswerRefused.fields).fields }, { httpApiStatus: refusals.SlackAnswerRefused.status }) { static readonly code = refusals.SlackAnswerRefused.code; }
+ErrorNames.name(Slack.SlackUnreachable, "SlackUnreachable");
+export class SlackUnreachable extends Schema.TaggedError<SlackUnreachable>()("SlackUnreachable", { code: Schema.Literal(refusals.SlackUnreachable.code), ...wireStruct(Slack.SlackUnreachable.fields).fields }, { httpApiStatus: refusals.SlackUnreachable.status }) { static readonly code = refusals.SlackUnreachable.code; }
 ErrorNames.name(Subscription.AlreadyFollowing, "AlreadyFollowing");
 export class AlreadyFollowing extends Schema.TaggedError<AlreadyFollowing>()("AlreadyFollowing", { code: Schema.Literal(refusals.AlreadyFollowing.code), ...wireStruct(Subscription.AlreadyFollowing.fields).fields }, { httpApiStatus: refusals.AlreadyFollowing.status }) { static readonly code = refusals.AlreadyFollowing.code; }
 ErrorNames.name(Superagent.SlotsOutOfRange, "SlotsOutOfRange");
@@ -120,10 +159,22 @@ export const declared = {
   NoSeat: Assignment.NoSeat,
   SeatTaken: Assignment.SeatTaken,
   ExecutorAlreadyQueued: Assignment.ExecutorAlreadyQueued,
+  GithubApiFailure: Github.GithubApiFailure,
+  GithubInputRefused: Github.GithubInputRefused,
+  GithubAnswerRefused: Github.GithubAnswerRefused,
+  GithubUnreachable: Github.GithubUnreachable,
+  PosthogApiFailure: Posthog.PosthogApiFailure,
+  PosthogInputRefused: Posthog.PosthogInputRefused,
+  PosthogAnswerRefused: Posthog.PosthogAnswerRefused,
+  PosthogUnreachable: Posthog.PosthogUnreachable,
+  SlackApiFailure: Slack.SlackApiFailure,
+  SlackInputRefused: Slack.SlackInputRefused,
+  SlackAnswerRefused: Slack.SlackAnswerRefused,
+  SlackUnreachable: Slack.SlackUnreachable,
   AlreadyFollowing: Subscription.AlreadyFollowing,
   SlotsOutOfRange: Superagent.SlotsOutOfRange,
   StaleRevision: Superagent.StaleRevision,
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { AccountExists, StaleAssignment, NoSeat, SeatTaken, ExecutorAlreadyQueued, AlreadyFollowing, SlotsOutOfRange, StaleRevision, AccountNotSeen, AgentNotIdle, AssignmentNotPending, AttentionNotOpen, DecisionNotRecorded, EvalNotQueued, InputNotWaiting, MandateNotHeld, OutgoingMessageNotPending, PolicyNotCurrent, ProposalNotWaiting, ReportNotProgress, SettingsNotCurrent, SourceNotSetup, SubscriptionNotLive, SuperagentNotObserving, ThreadNotIdle, TicketNotOpen, TriggerNotStored, AccountNotFound, AgentNotFound, AssignmentNotFound, DecisionNotFound, EvalNotFound, InputNotFound, OutgoingMessageNotFound, ProposalNotFound, SourceNotFound, SuperagentNotFound, ThreadNotFound, TicketNotFound, TriggerNotFound, NotAllowed, IdempotencyConflict, ReadNotServed };
+export const wire = { AccountExists, StaleAssignment, NoSeat, SeatTaken, ExecutorAlreadyQueued, GithubApiFailure, GithubInputRefused, GithubAnswerRefused, GithubUnreachable, PosthogApiFailure, PosthogInputRefused, PosthogAnswerRefused, PosthogUnreachable, SlackApiFailure, SlackInputRefused, SlackAnswerRefused, SlackUnreachable, AlreadyFollowing, SlotsOutOfRange, StaleRevision, AccountNotSeen, AgentNotIdle, AssignmentNotPending, AttentionNotOpen, DecisionNotRecorded, EvalNotQueued, InputNotWaiting, MandateNotHeld, OutgoingMessageNotPending, PolicyNotCurrent, ProposalNotWaiting, ReportNotProgress, SettingsNotCurrent, SourceNotSetup, SubscriptionNotLive, SuperagentNotObserving, ThreadNotIdle, TicketNotOpen, TriggerNotStored, AccountNotFound, AgentNotFound, AssignmentNotFound, DecisionNotFound, EvalNotFound, InputNotFound, OutgoingMessageNotFound, ProposalNotFound, SourceNotFound, SuperagentNotFound, ThreadNotFound, TicketNotFound, TriggerNotFound, NotAllowed, IdempotencyConflict, ReadNotServed };

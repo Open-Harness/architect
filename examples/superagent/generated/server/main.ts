@@ -187,14 +187,17 @@ import * as attentionThing from "@orthograph/tickets/blueprint/things/attention/
 import * as correlationThing from "@orthograph/intake/blueprint/things/correlation/thing.js";
 import * as decisionThing from "@orthograph/intake/blueprint/things/decision/thing.js";
 import * as evalThing from "@orthograph/intake/blueprint/things/eval/thing.js";
+import * as githubThing from "@orthograph/github/blueprint/things/github/thing.js";
 import * as inputThing from "@orthograph/tickets/blueprint/things/input/thing.js";
 import * as mandateThing from "@orthograph/tickets/blueprint/things/mandate/thing.js";
 import * as outgoingMessageThing from "@orthograph/tickets/blueprint/things/outgoing-message/thing.js";
 import * as policyThing from "@orthograph/intake/blueprint/things/policy/thing.js";
+import * as posthogThing from "@orthograph/posthog/blueprint/things/posthog/thing.js";
 import * as promptSetThing from "@orthograph/prompts/blueprint/things/prompt-set/thing.js";
 import * as proposalThing from "@orthograph/superagent/blueprint/things/proposal/thing.js";
 import * as reportThing from "@orthograph/tickets/blueprint/things/report/thing.js";
 import * as settingsThing from "../../blueprint/things/settings/thing.ts";
+import * as slackThing from "@orthograph/slack/blueprint/things/slack/thing.js";
 import * as sourceThing from "@orthograph/intake/blueprint/things/source/thing.js";
 import * as subscriptionThing from "@orthograph/tickets/blueprint/things/subscription/thing.js";
 import * as superagentThing from "@orthograph/superagent/blueprint/things/superagent/thing.js";
@@ -297,7 +300,7 @@ const triggerReevaluateServed = Handlers.serve({ name: "trigger.reevaluate", ope
 const triggerRequeueServed = Handlers.serve({ name: "trigger.requeue", operation: triggerRequeue.declaration, handler: Mount.serving(intakeMount, triggerRequeueHandler), notFrom: "TriggerNotStored", notFound: { trigger: "TriggerNotFound" }, codes: Errors.codes });
 
 /** Each thing and its table: a D1 table, or the name its actors go by. */
-const tables = [[thingIn(accountThing), "account"], [thingIn(agentThing), "agent"], [thingIn(assignmentThing), "assignment"], [thingIn(attentionThing), "attention"], [thingIn(correlationThing), "correlation"], [thingIn(decisionThing), "decision"], [thingIn(evalThing), "eval"], [thingIn(inputThing), "input"], [thingIn(mandateThing), "mandate"], [thingIn(outgoingMessageThing), "outgoing-message"], [thingIn(policyThing), "policy"], [thingIn(promptSetThing), "prompt-set"], [thingIn(proposalThing), "proposal"], [thingIn(reportThing), "report"], [thingIn(settingsThing), "settings"], [thingIn(sourceThing), "source"], [thingIn(subscriptionThing), "subscription"], [thingIn(superagentThing), "superagent"], [thingIn(threadThing), "thread"], [thingIn(ticketThing), "ticket"], [thingIn(triggerThing), "trigger"]] as const;
+const tables = [[thingIn(accountThing), "account"], [thingIn(agentThing), "agent"], [thingIn(assignmentThing), "assignment"], [thingIn(attentionThing), "attention"], [thingIn(correlationThing), "correlation"], [thingIn(decisionThing), "decision"], [thingIn(evalThing), "eval"], [thingIn(githubThing), "github"], [thingIn(inputThing), "input"], [thingIn(mandateThing), "mandate"], [thingIn(outgoingMessageThing), "outgoing-message"], [thingIn(policyThing), "policy"], [thingIn(posthogThing), "posthog"], [thingIn(promptSetThing), "prompt-set"], [thingIn(proposalThing), "proposal"], [thingIn(reportThing), "report"], [thingIn(settingsThing), "settings"], [thingIn(slackThing), "slack"], [thingIn(sourceThing), "source"], [thingIn(subscriptionThing), "subscription"], [thingIn(superagentThing), "superagent"], [thingIn(threadThing), "thread"], [thingIn(ticketThing), "ticket"], [thingIn(triggerThing), "trigger"]] as const;
 
 /** Each rule (G5) under its full name, `<thing>.<rule>`: the store's index refuses a second holder at commit, and the runtime refuses before it. */
 const rules = [...invariantsIn("account", accountInvariants), ...invariantsIn("assignment", assignmentInvariants), ...invariantsIn("eval", evalInvariants), ...invariantsIn("subscription", subscriptionInvariants), ...invariantsIn("thread", threadInvariants), ...invariantsIn("trigger", triggerInvariants), ...Versions.rulesOf("policy", thingIn(policyThing)), ...Versions.rulesOf("prompt-set", thingIn(promptSetThing)), ...Versions.rulesOf("settings", thingIn(settingsThing))] as const;
