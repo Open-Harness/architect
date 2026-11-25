@@ -15,7 +15,7 @@ const goalId = Blueprint.id("gol");
 
 export const Goal = Blueprint.thing({
   description: "Something an employee aims to do in an appraisal cycle, under one KRA.",
-  code: "GL",
+  code: "GO",
   fields: {
     id: goalId,
     company: Company.fields.id,

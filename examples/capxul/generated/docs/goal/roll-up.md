@@ -36,9 +36,9 @@ Bring a group goal's status up to date with the progress its children have rolle
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |
-| GoalNotGroup | 49 | GL-012 | declared in errors.ts |
-| GoalNotPending | 40 | GL-900 | the goal is in a state rollUp can't start from; carries `state` |
+| GoalCycleCompleted | 41 | GO-001 | declared in errors.ts |
+| GoalNotGroup | 49 | GO-008 | declared in errors.ts |
+| GoalNotPending | 40 | GO-900 | the goal is in a state rollUp can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
@@ -57,7 +57,7 @@ Starts from the world `a started manual cycle`.
 
 - **Cy can't roll up Olga's Platform.** `cy` (signed in) calls and sends goal the last call's items 1 id, and is refused with NotAllowed, AR-001.
 - **nor can Bo.** `bo` (signed in) calls and sends goal the last call's items 1 id, and is refused with NotAllowed, AR-001.
-- **a goal that isn't a group isn't rolled up.** `olga` (signed in) calls and sends goal the last call's items 2 id, and is refused with GoalNotGroup, GL-012.
+- **a goal that isn't a group isn't rolled up.** `olga` (signed in) calls and sends goal the last call's items 2 id, and is refused with GoalNotGroup, GO-008.
 - **Olga rolls Platform up: completed, at 100.** `olga` (signed in) calls and sends goal the last call's items 1 id, and gets back `100`.
 - **Ada rolls it up: back in progress.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and gets back `62.5`.
 - **Olga rolls Guides up: in progress.** `olga` (signed in) calls and sends goal the last call's items 4 id, and is answered.
@@ -65,8 +65,8 @@ Starts from the world `a started manual cycle`.
 - **rolled up, Pair is in progress.** `olga` (signed in) calls and sends goal the last call's items 6 id, and gets back `60`.
 - **Olga rolls Inner up: in progress.** `olga` (signed in) calls and sends goal the last call's items 10 id, and is answered.
 - **and rolls Outer up at 65: in progress.** `olga` (signed in) calls and sends goal the last call's items 9 id, and gets back `65`.
-- **no group is rolled up.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalCycleCompleted, GL-001.
-- **and the cycle is judged before a goal that isn't a group.** `olga` (signed in) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GL-001.
+- **no group is rolled up.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalCycleCompleted, GO-001.
+- **and the cycle is judged before a goal that isn't a group.** `olga` (signed in) calls and sends goal the last call's items 5 id, and is refused with GoalCycleCompleted, GO-001.
 
 ## How to call
 

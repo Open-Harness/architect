@@ -2,6 +2,110 @@
   "generated": "Generated from blueprint/. Append-only. Do not edit.",
   "lockVersion": 1,
   "refusals": {
+    "AC-001": {
+      "name": "ParentAccountNotInCompany",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AC-002": {
+      "name": "ParentAccountIsLedger",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentAccountIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "AC-003": {
+      "name": "RootAccountIsLedger",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RootAccountIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "AC-004": {
+      "name": "RootTypeMissing",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RootTypeMissing"
+        }
+      },
+      "earlier": []
+    },
+    "AC-005": {
+      "name": "RootTypeNotParents",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {
+        "rootType": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RootTypeNotParents"
+        }
+      },
+      "earlier": []
+    },
+    "AC-006": {
+      "name": "AccountHasChildren",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AccountHasChildren"
+        }
+      },
+      "earlier": []
+    },
+    "AC-007": {
+      "name": "AccountNameTaken",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AccountNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "AC-900": {
+      "name": "AccountNotGroup",
+      "owner": "account",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountNotGroup"
+        }
+      },
+      "earlier": []
+    },
     "AN-001": {
       "name": "AttendeeNotInCompany",
       "owner": "attendance",
@@ -504,6 +608,70 @@
       "wire": {
         "effect": {
           "tag": "BankTransactionNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "CC-001": {
+      "name": "ParentCostCenterNotInCompany",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentCostCenterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CC-002": {
+      "name": "ParentCostCenterIsLedger",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentCostCenterIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "CC-003": {
+      "name": "RootCostCenterIsLedger",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RootCostCenterIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "CC-004": {
+      "name": "CostCenterNameTaken",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CostCenterNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CC-900": {
+      "name": "CostCenterNotGroup",
+      "owner": "cost-center",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CostCenterNotGroup"
         }
       },
       "earlier": []
@@ -1147,7 +1315,84 @@
       },
       "earlier": []
     },
-    "GL-001": {
+    "FY-001": {
+      "name": "FiscalYearEndsBeforeStart",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {
+        "yearStartDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "FY-002": {
+      "name": "FiscalYearWrongLength",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {
+        "yearEndDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearWrongLength"
+        }
+      },
+      "earlier": []
+    },
+    "FY-003": {
+      "name": "FiscalYearOverlaps",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {
+        "fiscalYear": {
+          "value": "id",
+          "prefix": "fyr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "FY-004": {
+      "name": "FiscalYearNameTaken",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "FY-900": {
+      "name": "FiscalYearNotActive",
+      "owner": "fiscal-year",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "GO-001": {
       "name": "GoalCycleCompleted",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1159,7 +1404,7 @@
       },
       "earlier": []
     },
-    "GL-002": {
+    "GO-002": {
       "name": "GoalEmployeeNotInCompany",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1171,7 +1416,7 @@
       },
       "earlier": []
     },
-    "GL-003": {
+    "GO-003": {
       "name": "GoalOwnerHasLeft",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1183,7 +1428,7 @@
       },
       "earlier": []
     },
-    "GL-004": {
+    "GO-004": {
       "name": "GoalKraNotInAppraisal",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1195,7 +1440,7 @@
       },
       "earlier": []
     },
-    "GL-005": {
+    "GO-005": {
       "name": "ParentGoalMismatch",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1207,7 +1452,7 @@
       },
       "earlier": []
     },
-    "GL-006": {
+    "GO-006": {
       "name": "ProgressOutOfRange",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1219,7 +1464,7 @@
       },
       "earlier": []
     },
-    "GL-009": {
+    "GO-007": {
       "name": "GoalIsGroup",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1231,19 +1476,7 @@
       },
       "earlier": []
     },
-    "GL-010": {
-      "name": "ParentGoalNotGroup",
-      "owner": "goal",
-      "from": "blueprint/things/goal/errors.ts",
-      "fields": {},
-      "wire": {
-        "effect": {
-          "tag": "ParentGoalNotGroup"
-        }
-      },
-      "earlier": []
-    },
-    "GL-012": {
+    "GO-008": {
       "name": "GoalNotGroup",
       "owner": "goal",
       "from": "blueprint/things/goal/errors.ts",
@@ -1255,7 +1488,19 @@
       },
       "earlier": []
     },
-    "GL-900": {
+    "GO-009": {
+      "name": "ParentGoalNotGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentGoalNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "GO-900": {
       "name": "GoalNotPending",
       "owner": "goal",
       "fields": {
@@ -1640,6 +1885,173 @@
       "wire": {
         "effect": {
           "tag": "JobApplicantNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "JE-001": {
+      "name": "JournalEntryTooFewLines",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "JournalEntryTooFewLines"
+        }
+      },
+      "earlier": []
+    },
+    "JE-002": {
+      "name": "LineAccountNotInCompany",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "JE-003": {
+      "name": "LineAccountIsGroup",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineAccountIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "JE-004": {
+      "name": "LineCostCenterNotInCompany",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineCostCenterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "JE-005": {
+      "name": "LineCostCenterIsGroup",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineCostCenterIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "JE-006": {
+      "name": "LineWithoutAmount",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineWithoutAmount"
+        }
+      },
+      "earlier": []
+    },
+    "JE-007": {
+      "name": "LineDebitAndCredit",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineDebitAndCredit"
+        }
+      },
+      "earlier": []
+    },
+    "JE-008": {
+      "name": "JournalEntryUnbalanced",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "difference": {
+          "value": "money",
+          "bits": 128,
+          "signed": true,
+          "asset": {
+            "token": "usdc"
+          }
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JournalEntryUnbalanced"
+        }
+      },
+      "earlier": []
+    },
+    "JE-009": {
+      "name": "PostingDateOutsideFiscalYear",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "postingDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PostingDateOutsideFiscalYear"
+        }
+      },
+      "earlier": []
+    },
+    "JE-900": {
+      "name": "JournalEntryNotDraft",
+      "owner": "journal-entry",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JournalEntryNotDraft"
         }
       },
       "earlier": []
@@ -2359,54 +2771,5 @@
       "earlier": []
     }
   },
-  "retired": {
-    "GL-007": {
-      "name": "GoalHasChildren",
-      "owner": "goal",
-      "from": "blueprint/things/goal/errors.ts",
-      "fields": {},
-      "wire": {
-        "effect": {
-          "tag": "GoalHasChildren"
-        }
-      },
-      "earlier": []
-    },
-    "GL-008": {
-      "name": "ParentGoalHasProgress",
-      "owner": "goal",
-      "from": "blueprint/things/goal/errors.ts",
-      "fields": {},
-      "wire": {
-        "effect": {
-          "tag": "ParentGoalHasProgress"
-        }
-      },
-      "earlier": []
-    },
-    "GL-011": {
-      "name": "GoalNotOnTemplate",
-      "owner": "goal",
-      "from": "blueprint/things/goal/errors.ts",
-      "fields": {},
-      "wire": {
-        "effect": {
-          "tag": "GoalNotOnTemplate"
-        }
-      },
-      "earlier": []
-    },
-    "PF-001": {
-      "name": "FeedbackCycleNotInProgress",
-      "owner": "employee-performance-feedback",
-      "from": "blueprint/things/employee-performance-feedback/errors.ts",
-      "fields": {},
-      "wire": {
-        "effect": {
-          "tag": "FeedbackCycleNotInProgress"
-        }
-      },
-      "earlier": []
-    }
-  }
+  "retired": {}
 }

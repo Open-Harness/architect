@@ -34,10 +34,10 @@ Mark a goal completed, setting its progress to 100.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |
-| GoalIsGroup | 47 | GL-009 | declared in errors.ts |
+| GoalCycleCompleted | 41 | GO-001 | declared in errors.ts |
+| GoalIsGroup | 47 | GO-007 | declared in errors.ts |
 | AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |
-| GoalNotPending | 40 | GL-900 | the goal is in a state complete can't start from; carries `state` |
+| GoalNotPending | 40 | GO-900 | the goal is in a state complete can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
@@ -47,12 +47,12 @@ Mark a goal completed, setting its progress to 100.
 
 Starts from the world `a started manual cycle`.
 
-- **nor is it completed by hand.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GL-009.
+- **nor is it completed by hand.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalIsGroup, GO-007.
 - **Cy can't complete it.** `cy` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.
 - **nor can Bo.** `bo` (signed in) calls and sends goal the last call's goal, and is refused with NotAllowed, AR-001.
 - **Olga completes it.** `olga` (signed in) calls and sends goal the last call's goal, and is answered.
-- **a completed goal can't be completed again.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GL-900, carrying state `completed`.
-- **nothing is completed, a group either.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalCycleCompleted, GL-001.
+- **a completed goal can't be completed again.** `olga` (signed in) calls and sends goal the last call's items 1 id, and is refused with GoalNotPending, GO-900, carrying state `completed`.
+- **nothing is completed, a group either.** `ada` (role company.owner) calls and sends goal the last call's items 1 id, and is refused with GoalCycleCompleted, GO-001.
 
 ## How to call
 

@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/bank-transaction/verbs/settle.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bank-transaction/settle.handler.ts";
 
 /**
@@ -41,17 +40,14 @@ import type { Handler } from "../../generated/api/src/bank-transaction/settle.ha
  *   once it answers, it writes TransferSettled: transaction from the answer;
  *   the call is the span bank-transaction.settle, and its commit bank-transaction.settle.commit.
  */
-const settle: Handler = (_payload, { steps, move }) =>
+const settle: Handler = ({ transaction }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bank-transaction.settle.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
+    // Step update: database, span bank-transaction.settle.update. Bridge paid the transfer: the state
+    // changes and nothing else.
     // The move settle, from pending, to settled.
-    yield* move();
+    yield* steps.update(move());
 
-    return {
-      transaction: yield* Handlers.blank("transaction, a bank-transaction.id"),
-    };
+    return { transaction };
   });
 
 export default settle;

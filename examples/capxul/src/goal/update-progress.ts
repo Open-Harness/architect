@@ -23,11 +23,11 @@ const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
  *   appraisal  appraisal.id
  *
  * Refusals:
- *   GoalCycleCompleted      exit 41   GL-001  yours to refuse below; from blueprint/things/goal/errors.ts
- *   GoalIsGroup             exit 47   GL-009  yours to refuse below; from blueprint/things/goal/errors.ts
- *   ProgressOutOfRange      exit 46   GL-006  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalCycleCompleted      exit 41   GO-001  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalIsGroup             exit 47   GO-007  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   ProgressOutOfRange      exit 46   GO-006  yours to refuse below; from blueprint/things/goal/errors.ts
  *   AppraisalAlreadyExists  exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
- *   GoalNotPending          exit 40   GL-900  the runtime's, when the goal isn't in pending or inProgress or completed or archived or closed, carrying state; from blueprint/things/goal/machine.ts
+ *   GoalNotPending          exit 40   GO-900  the runtime's, when the goal isn't in pending or inProgress or completed or archived or closed, carrying state; from blueprint/things/goal/machine.ts
  *   NotAllowed              exit 3    AR-001  the runtime's, when the caller isn't the self of its goal.employee, or the owner of its goal.company; from blueprint/things/employee/roles.ts
  *   IdempotencyConflict     exit 120  AR-002  the runtime's, when the same request key comes with another payload; from blueprint/things/goal/verbs/update-progress.ts
  *
@@ -78,6 +78,15 @@ const { GoalCycleCompleted, GoalIsGroup, ProgressOutOfRange } = Errors.declared;
  *     closed      reopen          pending     GoalReopened
  *     closed      reopen          inProgress  GoalReopened
  *     closed      reopen          completed   GoalReopened
+ *     pending     rollUp          pending     GoalRolledUp
+ *     pending     rollUp          inProgress  GoalRolledUp
+ *     pending     rollUp          completed   GoalRolledUp
+ *     inProgress  rollUp          pending     GoalRolledUp
+ *     inProgress  rollUp          inProgress  GoalRolledUp
+ *     inProgress  rollUp          completed   GoalRolledUp
+ *     completed   rollUp          pending     GoalRolledUp
+ *     completed   rollUp          inProgress  GoalRolledUp
+ *     completed   rollUp          completed   GoalRolledUp
  *
  * What the runtime does, so this handler doesn't:
  *   before it runs, it refuses NotAllowed unless the caller is the self of its goal.employee, or the owner of its goal.company;
@@ -93,19 +102,19 @@ const updateProgress: Handler = (_payload, { steps, move }) =>
     // Step load: database, span goal.update-progress.load.
     yield* steps.load(Handlers.blank("load: the work this step does"));
 
-    // GoalCycleCompleted: exit 41, GL-001.
+    // GoalCycleCompleted: exit 41, GO-001.
     if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
       return yield* new GoalCycleCompleted({});
     }
 
-    // GoalIsGroup: exit 47, GL-009.
+    // GoalIsGroup: exit 47, GO-007.
     if (yield* Handlers.blank<boolean>("refuse GoalIsGroup when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalIsGroup was refused"));
       return yield* new GoalIsGroup({});
     }
 
-    // ProgressOutOfRange: exit 46, GL-006.
+    // ProgressOutOfRange: exit 46, GO-006.
     if (yield* Handlers.blank<boolean>("refuse ProgressOutOfRange when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why ProgressOutOfRange was refused"));
       return yield* new ProgressOutOfRange({});
@@ -117,11 +126,11 @@ const updateProgress: Handler = (_payload, { steps, move }) =>
     // The move updateProgress, from pending or inProgress or completed or archived or closed: one branch per outcome. A new outcome won't compile until it has its branch.
     const outcome = yield* Handlers.blank<Outcome>("where updateProgress ends: pending or inProgress or completed or archived or closed");
     yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
+      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
       Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
+      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
       Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed).
+      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), rollUp (to pending or inProgress or completed).
       Match.when("completed", () => move("completed")),
       // To archived. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), close (to closed), unarchive (to pending or inProgress or completed).
       Match.when("archived", () => move("archived")),

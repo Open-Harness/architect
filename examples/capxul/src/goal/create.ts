@@ -28,13 +28,13 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *   appraisalCycle  goal.appraisalCycle
  *
  * Refusals:
- *   GoalCycleCompleted        exit 41   GL-001  yours to refuse below; from blueprint/things/goal/errors.ts
- *   GoalEmployeeNotInCompany  exit 42   GL-002  yours to refuse below; from blueprint/things/goal/errors.ts
- *   GoalOwnerHasLeft          exit 43   GL-003  yours to refuse below; from blueprint/things/goal/errors.ts
- *   GoalKraNotInAppraisal     exit 44   GL-004  yours to refuse below; from blueprint/things/goal/errors.ts
- *   ParentGoalMismatch        exit 45   GL-005  yours to refuse below; from blueprint/things/goal/errors.ts
- *   ProgressOutOfRange        exit 46   GL-006  yours to refuse below; from blueprint/things/goal/errors.ts
- *   ParentGoalNotGroup        exit 48   GL-010  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalCycleCompleted        exit 41   GO-001  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalEmployeeNotInCompany  exit 42   GO-002  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalOwnerHasLeft          exit 43   GO-003  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalKraNotInAppraisal     exit 44   GO-004  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   ParentGoalMismatch        exit 45   GO-005  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   ProgressOutOfRange        exit 46   GO-006  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   ParentGoalNotGroup        exit 48   GO-009  yours to refuse below; from blueprint/things/goal/errors.ts
  *   AppraisalAlreadyExists    exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
  *   EmployeeNotFound          exit 4    EM-901  the runtime's, when no employee has that id, carrying id; from blueprint/things/employee/thing.ts
  *   AppraisalCycleNotFound    exit 4    CY-901  the runtime's, when no appraisal-cycle has that id, carrying id; from blueprint/things/appraisal-cycle/thing.ts
@@ -89,6 +89,15 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *     closed      reopen          pending     GoalReopened
  *     closed      reopen          inProgress  GoalReopened
  *     closed      reopen          completed   GoalReopened
+ *     pending     rollUp          pending     GoalRolledUp
+ *     pending     rollUp          inProgress  GoalRolledUp
+ *     pending     rollUp          completed   GoalRolledUp
+ *     inProgress  rollUp          pending     GoalRolledUp
+ *     inProgress  rollUp          inProgress  GoalRolledUp
+ *     inProgress  rollUp          completed   GoalRolledUp
+ *     completed   rollUp          pending     GoalRolledUp
+ *     completed   rollUp          inProgress  GoalRolledUp
+ *     completed   rollUp          completed   GoalRolledUp
  *
  * What the runtime does, so this handler doesn't:
  *   before it runs, it refuses NotAllowed unless the caller is the self of its employee, or the owner of its appraisalCycle.company;
@@ -107,43 +116,43 @@ const create: Handler = (_payload, { steps, move, id }) =>
     // Step load: database, span goal.create.load.
     yield* steps.load(Handlers.blank("load: the work this step does"));
 
-    // GoalCycleCompleted: exit 41, GL-001.
+    // GoalCycleCompleted: exit 41, GO-001.
     if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
       return yield* new GoalCycleCompleted({});
     }
 
-    // GoalEmployeeNotInCompany: exit 42, GL-002.
+    // GoalEmployeeNotInCompany: exit 42, GO-002.
     if (yield* Handlers.blank<boolean>("refuse GoalEmployeeNotInCompany when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalEmployeeNotInCompany was refused"));
       return yield* new GoalEmployeeNotInCompany({});
     }
 
-    // GoalOwnerHasLeft: exit 43, GL-003.
+    // GoalOwnerHasLeft: exit 43, GO-003.
     if (yield* Handlers.blank<boolean>("refuse GoalOwnerHasLeft when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalOwnerHasLeft was refused"));
       return yield* new GoalOwnerHasLeft({});
     }
 
-    // GoalKraNotInAppraisal: exit 44, GL-004.
+    // GoalKraNotInAppraisal: exit 44, GO-004.
     if (yield* Handlers.blank<boolean>("refuse GoalKraNotInAppraisal when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalKraNotInAppraisal was refused"));
       return yield* new GoalKraNotInAppraisal({});
     }
 
-    // ParentGoalMismatch: exit 45, GL-005.
+    // ParentGoalMismatch: exit 45, GO-005.
     if (yield* Handlers.blank<boolean>("refuse ParentGoalMismatch when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why ParentGoalMismatch was refused"));
       return yield* new ParentGoalMismatch({});
     }
 
-    // ProgressOutOfRange: exit 46, GL-006.
+    // ProgressOutOfRange: exit 46, GO-006.
     if (yield* Handlers.blank<boolean>("refuse ProgressOutOfRange when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why ProgressOutOfRange was refused"));
       return yield* new ProgressOutOfRange({});
     }
 
-    // ParentGoalNotGroup: exit 48, GL-010.
+    // ParentGoalNotGroup: exit 48, GO-009.
     if (yield* Handlers.blank<boolean>("refuse ParentGoalNotGroup when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why ParentGoalNotGroup was refused"));
       return yield* new ParentGoalNotGroup({});
@@ -155,11 +164,11 @@ const create: Handler = (_payload, { steps, move, id }) =>
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
     const outcome = yield* Handlers.blank<Outcome>("where create ends: pending or inProgress or completed");
     yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
+      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
       Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
+      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
       Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed).
+      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), rollUp (to pending or inProgress or completed).
       Match.when("completed", () => move("completed")),
       Match.exhaustive,
     );

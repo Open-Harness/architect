@@ -22,9 +22,9 @@ const { GoalCycleCompleted, GoalNotGroup } = Errors.declared;
  *   appraisalCycle  goal.appraisalCycle
  *
  * Refusals:
- *   GoalCycleCompleted   exit 41   GL-001  yours to refuse below; from blueprint/things/goal/errors.ts
- *   GoalNotGroup         exit 49   GL-012  yours to refuse below; from blueprint/things/goal/errors.ts
- *   GoalNotPending       exit 40   GL-900  the runtime's, when the goal isn't in pending or inProgress or completed, carrying state; from blueprint/things/goal/machine.ts
+ *   GoalCycleCompleted   exit 41   GO-001  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalNotGroup         exit 49   GO-008  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalNotPending       exit 40   GO-900  the runtime's, when the goal isn't in pending or inProgress or completed, carrying state; from blueprint/things/goal/machine.ts
  *   NotAllowed           exit 3    AR-001  the runtime's, when the caller isn't the self of its goal.employee, or the owner of its goal.company; from blueprint/things/employee/roles.ts
  *   IdempotencyConflict  exit 120  AR-002  the runtime's, when the same request key comes with another payload; from blueprint/things/goal/verbs/roll-up.ts
  *
@@ -99,13 +99,13 @@ const rollUp: Handler = (_payload, { steps, move }) =>
     // Step load: database, span goal.roll-up.load.
     yield* steps.load(Handlers.blank("load: the work this step does"));
 
-    // GoalCycleCompleted: exit 41, GL-001.
+    // GoalCycleCompleted: exit 41, GO-001.
     if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
       return yield* new GoalCycleCompleted({});
     }
 
-    // GoalNotGroup: exit 49, GL-012.
+    // GoalNotGroup: exit 49, GO-008.
     if (yield* Handlers.blank<boolean>("refuse GoalNotGroup when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalNotGroup was refused"));
       return yield* new GoalNotGroup({});

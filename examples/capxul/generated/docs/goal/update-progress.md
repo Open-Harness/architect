@@ -37,11 +37,11 @@ Set how far along a goal is, from 0 to 100.
 
 | refusal | exit | code | when |
 |---|---|---|---|
-| GoalCycleCompleted | 41 | GL-001 | declared in errors.ts |
-| GoalIsGroup | 47 | GL-009 | declared in errors.ts |
-| ProgressOutOfRange | 46 | GL-006 | declared in errors.ts |
+| GoalCycleCompleted | 41 | GO-001 | declared in errors.ts |
+| GoalIsGroup | 47 | GO-007 | declared in errors.ts |
+| ProgressOutOfRange | 46 | GO-006 | declared in errors.ts |
 | AppraisalAlreadyExists | 51 | AP-005 | another appraisal holds this employee and appraisal cycle; by the rule appraisal.oneAppraisalPerCycle |
-| GoalNotPending | 40 | GL-900 | the goal is in a state updateProgress can't start from; carries `state` |
+| GoalNotPending | 40 | GO-900 | the goal is in a state updateProgress can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't the self of its goal.employee, or the owner of its goal.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
 
@@ -53,7 +53,7 @@ Starts from the world `a second feedback criteria`.
 
 - **she moves the UI to 70.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `70`, scale: 0 }, and gets back `70`.
 - **she sets Refactoring to 40 again: the feedback and self scores stand.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `40`, scale: 0 }, and gets back `40`.
-- **and no longer move.** `olga` (signed in) calls and sends goal the last call's items 2 id, progress { value: `100`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.
+- **and no longer move.** `olga` (signed in) calls and sends goal the last call's items 2 id, progress { value: `100`, scale: 0 }, and is refused with GoalCycleCompleted, GO-001.
 
 ### run an appraisal cycle
 
@@ -68,10 +68,10 @@ Starts from the world `a started manual cycle`.
 - **Cy can't move Olga's progress.** `cy` (signed in) calls and sends goal the world's goal, progress { value: `50`, scale: 0 }, and is refused with NotAllowed, AR-001.
 - **nor can Bo.** `bo` (signed in) calls and sends goal the world's goal, progress { value: `50`, scale: 0 }, and is refused with NotAllowed, AR-001.
 - **Olga moves it to 50, and it is in progress.** `olga` (signed in) calls and sends goal the world's goal, progress { value: `50`, scale: 0 }, and gets back [the world's goal, `50`, the world's appraisal].
-- **Platform's progress isn't set by hand.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `90`, scale: 0 }, and is refused with GoalIsGroup, GL-009.
-- **even out of range, the group is judged first.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `150`, scale: 0 }, and is refused with GoalIsGroup, GL-009.
-- **Write docs can't go over 100.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `10001`, scale: 2 }, and is refused with ProgressOutOfRange, GL-006.
-- **nor below 0.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `-1`, scale: 0 }, and is refused with ProgressOutOfRange, GL-006.
+- **Platform's progress isn't set by hand.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `90`, scale: 0 }, and is refused with GoalIsGroup, GO-007.
+- **even out of range, the group is judged first.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `150`, scale: 0 }, and is refused with GoalIsGroup, GO-007.
+- **Write docs can't go over 100.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `10001`, scale: 2 }, and is refused with ProgressOutOfRange, GO-006.
+- **nor below 0.** `olga` (signed in) calls and sends goal the last call's items 3 id, progress { value: `-1`, scale: 0 }, and is refused with ProgressOutOfRange, GO-006.
 - **an archived goal's progress still moves, to 90, and it stays archived.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `90`, scale: 0 }, and gets back [`90`, the world's appraisal].
 - **its progress still moves, to 100, and it stays closed.** `olga` (signed in) calls and sends goal the world's goal, progress { value: `100`, scale: 0 }, and is answered.
 - **she may still move a goal she already has, to 70.** `cy` (signed in) calls and sends goal the world's secondGoal, progress { value: `70`, scale: 0 }, and gets back [`70`, the world's secondAppraisal].
@@ -82,8 +82,8 @@ Starts from the world `a started manual cycle`.
 - **and up to 100, completed.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `100`, scale: 0 }, and is answered.
 - **it reaches 100 while archived.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `100`, scale: 0 }, and is answered.
 - **it reaches 100 while closed.** `olga` (signed in) calls and sends goal the last call's goal, progress { value: `100`, scale: 0 }, and is answered.
-- **no progress moves.** `olga` (signed in) calls and sends goal the last call's items 5 id, progress { value: `70`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.
-- **no group is judged before the cycle.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `70`, scale: 0 }, and is refused with GoalCycleCompleted, GL-001.
+- **no progress moves.** `olga` (signed in) calls and sends goal the last call's items 5 id, progress { value: `70`, scale: 0 }, and is refused with GoalCycleCompleted, GO-001.
+- **no group is judged before the cycle.** `olga` (signed in) calls and sends goal the last call's items 1 id, progress { value: `70`, scale: 0 }, and is refused with GoalCycleCompleted, GO-001.
 
 ## How to call
 

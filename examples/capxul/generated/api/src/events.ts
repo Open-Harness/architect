@@ -1,5 +1,6 @@
 // Generated from the blueprint. Do not edit.
 import { EventNames } from "orthograph/server";
+import * as Account from "../../../blueprint/things/account/events.ts";
 import * as Appraisal from "../../../blueprint/things/appraisal/events.ts";
 import * as AppraisalCycle from "../../../blueprint/things/appraisal-cycle/events.ts";
 import * as AppraisalTemplate from "../../../blueprint/things/appraisal-template/events.ts";
@@ -11,6 +12,7 @@ import * as Branch from "../../../blueprint/things/branch/events.ts";
 import * as BridgeBusiness from "../../../blueprint/things/bridge-business/events.ts";
 import * as BridgeIndividual from "../../../blueprint/things/bridge-individual/events.ts";
 import * as Company from "../../../blueprint/things/company/events.ts";
+import * as CostCenter from "../../../blueprint/things/cost-center/events.ts";
 import * as Department from "../../../blueprint/things/department/events.ts";
 import * as Designation from "../../../blueprint/things/designation/events.ts";
 import * as Employee from "../../../blueprint/things/employee/events.ts";
@@ -24,6 +26,7 @@ import * as EmploymentType from "../../../blueprint/things/employment-type/event
 import * as Expense from "../../../blueprint/things/expense/events.ts";
 import * as ExpenseClaim from "../../../blueprint/things/expense-claim/events.ts";
 import * as ExpenseClaimType from "../../../blueprint/things/expense-claim-type/events.ts";
+import * as FiscalYear from "../../../blueprint/things/fiscal-year/events.ts";
 import * as Goal from "../../../blueprint/things/goal/events.ts";
 import * as Holiday from "../../../blueprint/things/holiday/events.ts";
 import * as HolidayList from "../../../blueprint/things/holiday-list/events.ts";
@@ -33,9 +36,12 @@ import * as InterviewRound from "../../../blueprint/things/interview-round/event
 import * as JobApplicant from "../../../blueprint/things/job-applicant/events.ts";
 import * as JobOffer from "../../../blueprint/things/job-offer/events.ts";
 import * as JobOpening from "../../../blueprint/things/job-opening/events.ts";
+import * as JournalEntry from "../../../blueprint/things/journal-entry/events.ts";
 import * as Kra from "../../../blueprint/things/kra/events.ts";
 import * as ShiftType from "../../../blueprint/things/shift-type/events.ts";
 
+EventNames.name(Account.AccountCreated, "AccountCreated");
+EventNames.name(Account.AccountMadeLedger, "AccountMadeLedger");
 EventNames.name(Appraisal.AppraisalCreated, "AppraisalCreated");
 EventNames.name(Appraisal.AppraisalRated, "AppraisalRated");
 EventNames.name(Appraisal.AppraisalSelfRated, "AppraisalSelfRated");
@@ -63,6 +69,7 @@ EventNames.name(BridgeIndividual.KycApproved, "KycApproved");
 EventNames.name(BridgeIndividual.KycRejected, "KycRejected");
 EventNames.name(BridgeIndividual.KycStarted, "KycStarted");
 EventNames.name(Company.CompanyCreated, "CompanyCreated");
+EventNames.name(CostCenter.CostCenterCreated, "CostCenterCreated");
 EventNames.name(Department.DepartmentCreated, "DepartmentCreated");
 EventNames.name(Designation.DesignationCreated, "DesignationCreated");
 EventNames.name(Employee.EmployeeHired, "EmployeeHired");
@@ -86,6 +93,7 @@ EventNames.name(ExpenseClaim.ExpenseClaimApproved, "ExpenseClaimApproved");
 EventNames.name(ExpenseClaim.ExpenseClaimCreated, "ExpenseClaimCreated");
 EventNames.name(ExpenseClaim.ExpenseClaimRejected, "ExpenseClaimRejected");
 EventNames.name(ExpenseClaimType.ExpenseClaimTypeCreated, "ExpenseClaimTypeCreated");
+EventNames.name(FiscalYear.FiscalYearCreated, "FiscalYearCreated");
 EventNames.name(Goal.GoalArchived, "GoalArchived");
 EventNames.name(Goal.GoalClosed, "GoalClosed");
 EventNames.name(Goal.GoalCompleted, "GoalCompleted");
@@ -111,7 +119,10 @@ EventNames.name(JobOffer.JobOfferMade, "JobOfferMade");
 EventNames.name(JobOffer.JobOfferRejected, "JobOfferRejected");
 EventNames.name(JobOpening.JobOpeningClosed, "JobOpeningClosed");
 EventNames.name(JobOpening.JobOpeningCreated, "JobOpeningCreated");
+EventNames.name(JournalEntry.JournalEntryCancelled, "JournalEntryCancelled");
+EventNames.name(JournalEntry.JournalEntryDrafted, "JournalEntryDrafted");
+EventNames.name(JournalEntry.JournalEntrySubmitted, "JournalEntrySubmitted");
 EventNames.name(Kra.KraCreated, "KraCreated");
 EventNames.name(ShiftType.ShiftTypeCreated, "ShiftTypeCreated");
 
-export const names = ["AppraisalCreated", "AppraisalRated", "AppraisalSelfRated", "AppraisalSubmitted", "AppraisalCycleCompleted", "AppraisalCycleCreated", "AppraisalCycleReopened", "AppraisalCycleStarted", "AppraisalTemplateCreated", "AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "DepositLanded", "TransferFailed", "TransferSent", "TransferSettled", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "FeedbackCriteriaCreated", "EmployeeGradeCreated", "PerformanceFeedbackDrafted", "PerformanceFeedbackSubmitted", "EmployeePromoted", "EmployeePromotionCancelled", "EmployeePromotionDrafted", "EmployeeSeparationBegun", "EmployeeSeparationCompleted", "EmployeeSeparationStarted", "EmployeeTransferCancelled", "EmployeeTransferDrafted", "EmployeeTransferred", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "GoalArchived", "GoalClosed", "GoalCompleted", "GoalCreated", "GoalProgressUpdated", "GoalReopened", "GoalRolledUp", "GoalUnarchived", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "InterviewCleared", "InterviewRejected", "InterviewScheduled", "InterviewFeedbackGiven", "InterviewRoundCreated", "JobApplicantAccepted", "JobApplicantCreated", "JobApplicantHeld", "JobApplicantRejected", "JobOfferAccepted", "JobOfferMade", "JobOfferRejected", "JobOpeningClosed", "JobOpeningCreated", "KraCreated", "ShiftTypeCreated"] as const;
+export const names = ["AccountCreated", "AccountMadeLedger", "AppraisalCreated", "AppraisalRated", "AppraisalSelfRated", "AppraisalSubmitted", "AppraisalCycleCompleted", "AppraisalCycleCreated", "AppraisalCycleReopened", "AppraisalCycleStarted", "AppraisalTemplateCreated", "AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "DepositLanded", "TransferFailed", "TransferSent", "TransferSettled", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "CostCenterCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "FeedbackCriteriaCreated", "EmployeeGradeCreated", "PerformanceFeedbackDrafted", "PerformanceFeedbackSubmitted", "EmployeePromoted", "EmployeePromotionCancelled", "EmployeePromotionDrafted", "EmployeeSeparationBegun", "EmployeeSeparationCompleted", "EmployeeSeparationStarted", "EmployeeTransferCancelled", "EmployeeTransferDrafted", "EmployeeTransferred", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "FiscalYearCreated", "GoalArchived", "GoalClosed", "GoalCompleted", "GoalCreated", "GoalProgressUpdated", "GoalReopened", "GoalRolledUp", "GoalUnarchived", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "InterviewCleared", "InterviewRejected", "InterviewScheduled", "InterviewFeedbackGiven", "InterviewRoundCreated", "JobApplicantAccepted", "JobApplicantCreated", "JobApplicantHeld", "JobApplicantRejected", "JobOfferAccepted", "JobOfferMade", "JobOfferRejected", "JobOpeningClosed", "JobOpeningCreated", "JournalEntryCancelled", "JournalEntryDrafted", "JournalEntrySubmitted", "KraCreated", "ShiftTypeCreated"] as const;

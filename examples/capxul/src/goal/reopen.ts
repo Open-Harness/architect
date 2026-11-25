@@ -20,9 +20,9 @@ const { GoalCycleCompleted } = Errors.declared;
  *   goal  goal.id
  *
  * Refusals:
- *   GoalCycleCompleted      exit 41   GL-001  yours to refuse below; from blueprint/things/goal/errors.ts
+ *   GoalCycleCompleted      exit 41   GO-001  yours to refuse below; from blueprint/things/goal/errors.ts
  *   AppraisalAlreadyExists  exit 51   AP-005  the runtime's: another appraisal holds this employee and appraisal cycle (appraisal.oneAppraisalPerCycle); from blueprint/things/appraisal/invariants.ts
- *   GoalNotPending          exit 40   GL-900  the runtime's, when the goal isn't in closed, carrying state; from blueprint/things/goal/machine.ts
+ *   GoalNotPending          exit 40   GO-900  the runtime's, when the goal isn't in closed, carrying state; from blueprint/things/goal/machine.ts
  *   NotAllowed              exit 3    AR-001  the runtime's, when the caller isn't the self of its goal.employee, or the owner of its goal.company; from blueprint/things/employee/roles.ts
  *   IdempotencyConflict     exit 120  AR-002  the runtime's, when the same request key comes with another payload; from blueprint/things/goal/verbs/reopen.ts
  *
@@ -73,6 +73,15 @@ const { GoalCycleCompleted } = Errors.declared;
  *   ▶ closed      reopen          pending     GoalReopened
  *   ▶ closed      reopen          inProgress  GoalReopened
  *   ▶ closed      reopen          completed   GoalReopened
+ *     pending     rollUp          pending     GoalRolledUp
+ *     pending     rollUp          inProgress  GoalRolledUp
+ *     pending     rollUp          completed   GoalRolledUp
+ *     inProgress  rollUp          pending     GoalRolledUp
+ *     inProgress  rollUp          inProgress  GoalRolledUp
+ *     inProgress  rollUp          completed   GoalRolledUp
+ *     completed   rollUp          pending     GoalRolledUp
+ *     completed   rollUp          inProgress  GoalRolledUp
+ *     completed   rollUp          completed   GoalRolledUp
  *
  * What the runtime does, so this handler doesn't:
  *   before it runs, it refuses NotAllowed unless the caller is the self of its goal.employee, or the owner of its goal.company;
@@ -88,7 +97,7 @@ const reopen: Handler = (_payload, { steps, move }) =>
     // Step load: database, span goal.reopen.load.
     yield* steps.load(Handlers.blank("load: the work this step does"));
 
-    // GoalCycleCompleted: exit 41, GL-001.
+    // GoalCycleCompleted: exit 41, GO-001.
     if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
       yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
       return yield* new GoalCycleCompleted({});
@@ -100,11 +109,11 @@ const reopen: Handler = (_payload, { steps, move }) =>
     // The move reopen, from closed: one branch per outcome. A new outcome won't compile until it has its branch.
     const outcome = yield* Handlers.blank<Outcome>("where reopen ends: pending or inProgress or completed");
     yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
+      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
       Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed).
+      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
       Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed).
+      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), rollUp (to pending or inProgress or completed).
       Match.when("completed", () => move("completed")),
       Match.exhaustive,
     );
