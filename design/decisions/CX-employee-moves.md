@@ -43,10 +43,12 @@ no journey reaches it, since neither move touches the company or the person.
 | The new job title (department) is the company's (`NewDesignationNotInCompany`, `NewDepartmentNotInCompany`) | Capxul's own; HRMS's are site-wide. For a transfer this also keeps it inside its company | `create` |
 | The new job title (department) isn't the one held (`DesignationUnchanged`, `DepartmentUnchanged`) | HRMS's property dialog, "Nothing to change", in the browser; here on the server | `create` |
 | One open (pending or in process) separation per employee (`SeparationAlreadyOpen`) | Capxul's own; HRMS has no such check | unique rule `employee-separation.oneOpenSeparationPerEmployee` |
+| A separation may start for an employee who has already left | HRMS: Employee Separation doesn't judge the employee's status | `employee-separation.create` |
 | A separation doesn't relieve the employee | HRMS: nothing in Employee Separation sets the employee Left | `employee.relieve` stays its own call |
 
-On create, the order is: the employee's company, then leaving, then the new value's company, then unchanged. A
-separation's company check comes before the rule's refusal at commit. Journeys pin each order.
+On create, the order is: the employee's company, then leaving, then the new value's company, then unchanged. Journeys
+pin each pair that can both apply. The new value's company and unchanged can't: a value the employee holds is always
+the company's. A separation's company check comes before the rule's refusal at commit, and is pinned too.
 
 ## Where the source changed the outline
 
@@ -70,7 +72,9 @@ separation's company check comes before the rule's refusal at commit. Journeys p
 The submit rules read the world's clock, so they run against Capxul's stepped local clock (CX-recruitment, Time). One
 `prove` run shares that clock across every journey, it never goes back (`host-cloudflare`'s clock refuses `BadMove`),
 and journeys run in file-name order. So a journey that moves the clock keeps its days after those of the journeys
-before it: `give-interview-feedback` 3 December, `promote-an-employee` 7 December, `transfer-an-employee` 14 December.
+before it: `give-interview-feedback` 3 December, `promote-an-employee` 7 December, `transfer-an-employee` 8 December. A clock step also stays within seven days of its journey's start: further, and
+every call is refused `NotAllowed`, which looks like the cast's sessions expiring (Better Auth's default lasts seven
+days).
 The end-to-end journey uses days already due on 1 December and never moves the clock. A new journey that moves the
 clock picks days after the last of these, or a name that sorts before them.
 

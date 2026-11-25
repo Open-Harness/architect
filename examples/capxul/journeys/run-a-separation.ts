@@ -2,7 +2,8 @@
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone.
 // A separation goes pending → inProcess → completed, moved by the company's owner, or straight from pending to
 // completed. One open (pending or inProcess) separation per employee: SeparationAlreadyOpen, the rule's, at commit,
-// after SeparatedEmployeeNotInCompany. Completing one doesn't relieve the employee (CX-employee-moves).
+// after SeparatedEmployeeNotInCompany. Completing one doesn't relieve the employee, and one may start for an employee
+// who has already left (CX-employee-moves).
 import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
 import { EmployeeSeparationBegun, EmployeeSeparationCompleted, EmployeeSeparationStarted } from "../blueprint/things/employee-separation/events.ts";
@@ -13,11 +14,12 @@ import begin from "../blueprint/things/employee-separation/verbs/begin.ts";
 import complete from "../blueprint/things/employee-separation/verbs/complete.ts";
 import get from "../blueprint/things/employee-separation/verbs/get.ts";
 import getEmployee from "../blueprint/things/employee/verbs/get.ts";
+import relieve from "../blueprint/things/employee/verbs/relieve.ts";
 
 export default Blueprint.journey("run a separation", {
   // Olga and Cy are engineers at Acme Trading; Bo drives for Acme Logistics. Ada runs both and has started Olga's
   // separation, from her letter of 20 November, beginning on 1 December.
-  cast: { ada: owner, olga: Blueprint.signedIn, bo: Blueprint.signedIn },
+  cast: { ada: owner, olga: Blueprint.signedIn, cy: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "a separation",
   steps: (s) => [
     s.step(
@@ -61,6 +63,7 @@ export default Blueprint.journey("run a separation", {
       noEvents(),
     ),
     s.step("Bo can't mark Olga's in process", s.bo.run(begin, { employeeSeparation: s.world.employeeSeparation }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor can Olga", s.olga.run(begin, { employeeSeparation: s.world.employeeSeparation }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
       "Ada marks it in process",
       s.ada.run(begin, { employeeSeparation: s.world.employeeSeparation }),
@@ -82,6 +85,8 @@ export default Blueprint.journey("run a separation", {
       noEvents(),
     ),
     s.step("Bo can't complete it", s.bo.run(complete, { employeeSeparation: s.world.employeeSeparation }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor can Cy", s.cy.run(complete, { employeeSeparation: s.world.employeeSeparation }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor Olga", s.olga.run(complete, { employeeSeparation: s.world.employeeSeparation }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
       "Ada completes it",
       s.ada.run(complete, { employeeSeparation: s.world.employeeSeparation }),
@@ -142,7 +147,12 @@ export default Blueprint.journey("run a separation", {
       noEvents(),
     ),
     s.step(
-      "Cy's separation is her own: Ada starts it while Olga's are done",
+      "Ada relieves Cy on 30 November",
+      s.ada.run(relieve, { employee: s.world.secondEmployee, relievingDate: "2026-11-30" }),
+      expect((a) => a.employee).toBe(s.world.secondEmployee),
+    ),
+    s.step(
+      "Cy has left, and Ada may still start her separation, as HRMS doesn't judge the employee's status",
       s.ada.run(create, { company: s.world.company, employee: s.world.secondEmployee, resignationLetterDate: "2026-11-23", boardingBeginsOn: "2026-12-02" }),
       expect((a) => a.employeeSeparation).toMatch(/^esp_[0-9a-z]+$/),
       emits(EmployeeSeparationStarted, { employeeSeparation: s.last.employeeSeparation, employee: s.world.secondEmployee }),

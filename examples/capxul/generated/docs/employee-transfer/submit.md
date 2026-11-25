@@ -53,9 +53,10 @@ Starts from the world `a new hire`.
 
 Starts from the world `a second transfer`.
 
-- **Ada can't submit Olga's thirteen days before its day.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and is refused with TransferNotYetDue, TR-005, carrying transferDate `2026-12-14`.
+- **Ada can't submit Olga's before its day.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and is refused with TransferNotYetDue, TR-005, carrying transferDate `2026-12-08`.
 - **Bo can't submit it.** `bo` (signed in) calls and sends employeeTransfer the world's employeeTransfer, and is refused with NotAllowed, AR-001.
-- **Ada still can't submit it.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and is refused with TransferNotYetDue, TR-005, carrying transferDate `2026-12-14`.
+- **nor can Olga submit her own.** `olga` (signed in) calls and sends employeeTransfer the world's employeeTransfer, and is refused with NotAllowed, AR-001.
+- **Ada still can't submit it.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and is refused with TransferNotYetDue, TR-005, carrying transferDate `2026-12-08`.
 - **Ada submits it on the day itself.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and gets back [the world's employeeTransfer, the world's employee, the world's secondDepartment].
 - **Ada can't submit it twice.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and is refused with EmployeeTransferNotDraft, TR-900, carrying state `submitted`.
 - **nor submit it again.** `ada` (role company.owner) calls and sends employeeTransfer the world's employeeTransfer, and is refused with EmployeeTransferNotDraft, TR-900, carrying state `cancelled`.

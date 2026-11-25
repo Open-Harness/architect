@@ -2,7 +2,8 @@
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone. A read's answer carries no
 // id, so the employee is the world's `newHire`, hired by `employee.hire` in the world "a new hire".
 // End to end: hired, promoted, transferred, separated, then relieved, the employee read back after each step.
-// Every day here is already due when the suite starts (Tuesday 1 December 2026), so this journey never moves the clock:
+// Every promotion and transfer day here is due when the suite starts (Tuesday 1 December 2026), so this journey never
+// moves the clock:
 // one prove run shares one clock that never goes back, and journeys run in file-name order (CX-employee-moves).
 import { Blueprint, emits, expect, noEvents } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
@@ -45,7 +46,7 @@ export default Blueprint.journey("move an employee through the company", {
       noEvents(),
     ),
     s.step(
-      "Ada drafts Dee's promotion to Lead Engineer, from today",
+      "Ada drafts Dee's promotion to Lead Engineer, from 1 December",
       s.ada.run(promote, { company: s.world.company, employee: s.world.newHire, promotionDate: "2026-12-01", newDesignation: s.world.otherDesignation }),
       expect((a) => a.employeePromotion).toMatch(/^epr_[0-9a-z]+$/),
       emits(EmployeePromotionDrafted, { employeePromotion: s.last.employeePromotion, employee: s.world.newHire }),
@@ -65,7 +66,7 @@ export default Blueprint.journey("move an employee through the company", {
       noEvents(),
     ),
     s.step(
-      "Ada drafts Dee's transfer to Platform, from today too",
+      "Ada drafts Dee's transfer to Platform, from 1 December too",
       s.ada.run(transfer, { company: s.world.company, employee: s.world.newHire, transferDate: "2026-12-01", newDepartment: s.world.secondDepartment }),
       expect((a) => a.employeeTransfer).toMatch(/^etr_[0-9a-z]+$/),
       emits(EmployeeTransferDrafted, { employeeTransfer: s.last.employeeTransfer, employee: s.world.newHire }),
@@ -85,8 +86,8 @@ export default Blueprint.journey("move an employee through the company", {
       noEvents(),
     ),
     s.step(
-      "Dee resigns: Ada starts her separation, from her letter of 9 December, beginning 14 December",
-      s.ada.run(separate, { company: s.world.company, employee: s.world.newHire, resignationLetterDate: "2026-12-09", boardingBeginsOn: "2026-12-14" }),
+      "Dee resigns: Ada starts her separation, from her letter of 30 November, beginning 14 December",
+      s.ada.run(separate, { company: s.world.company, employee: s.world.newHire, resignationLetterDate: "2026-11-30", boardingBeginsOn: "2026-12-14" }),
       expect((a) => a.employeeSeparation).toMatch(/^esp_[0-9a-z]+$/),
       emits(EmployeeSeparationStarted, { employeeSeparation: s.last.employeeSeparation, employee: s.world.newHire }),
       separations.isIn(s.last.employeeSeparation, "pending"),
@@ -111,7 +112,7 @@ export default Blueprint.journey("move an employee through the company", {
       expect((a) => [a.company, a.employee, a.resignationLetterDate, a.boardingBeginsOn, a.state]).toEqual([
         s.world.company,
         s.world.newHire,
-        "2026-12-09",
+        "2026-11-30",
         "2026-12-14",
         "completed",
       ]),

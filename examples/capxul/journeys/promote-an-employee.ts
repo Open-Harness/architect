@@ -5,7 +5,7 @@
 // (employee-promotion/errors.ts): PromotedEmployeeNotInCompany, PromotedEmployeeHasLeft, NewDesignationNotInCompany,
 // DesignationUnchanged. Cancelling puts back the job title the promotion replaced (HRMS's `on_cancel`).
 // One prove run shares one clock that never goes back, and journeys run in file-name order: this one's days (7
-// December) come after give-interview-feedback's (3 December) and before transfer-an-employee's (14 December).
+// December) come after give-interview-feedback's (3 December) and before transfer-an-employee's (8 December).
 import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
 import { EmployeePromoted, EmployeePromotionCancelled, EmployeePromotionDrafted } from "../blueprint/things/employee-promotion/events.ts";
@@ -64,13 +64,14 @@ export default Blueprint.journey("promote an employee", {
       spans({ absent: ["employee-promotion.create", "employee-promotion.create.insert"] }),
     ),
     s.step(
-      "Ada can't submit Olga's six days before its day",
+      "Ada can't submit Olga's before its day",
       s.ada.run(submit, { employeePromotion: s.world.employeePromotion }),
       refuses(PromotionNotYetDue, { promotionDate: "2026-12-07" }),
       noEvents(),
       spans({ absent: ["employee-promotion.submit.update"] }),
     ),
     s.step("Bo can't submit it", s.bo.run(submit, { employeePromotion: s.world.employeePromotion }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor can Olga submit her own", s.olga.run(submit, { employeePromotion: s.world.employeePromotion }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
       "Ada can't cancel it while it is a draft",
       s.ada.run(cancel, { employeePromotion: s.world.employeePromotion }),
@@ -143,6 +144,8 @@ export default Blueprint.journey("promote an employee", {
       noEvents(),
     ),
     s.step("Bo can't cancel Olga's first", s.bo.run(cancel, { employeePromotion: s.world.employeePromotion }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor can Olga", s.olga.run(cancel, { employeePromotion: s.world.employeePromotion }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor Cy", s.cy.run(cancel, { employeePromotion: s.world.employeePromotion }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
       "Ada cancels it, putting back Engineer",
       s.ada.run(cancel, { employeePromotion: s.world.employeePromotion }),
@@ -222,8 +225,8 @@ export default Blueprint.journey("promote an employee", {
       promotions.isIn(s.world.secondPromotion, "submitted"),
     ),
     s.step(
-      "Cy reads back a lead engineer who has left",
-      s.ada.run(getEmployee, { id: s.world.secondEmployee }),
+      "Cy reads herself back a lead engineer who has left",
+      s.cy.run(getEmployee, { id: s.world.secondEmployee }),
       expect((a) => [a.department, a.designation, a.state]).toEqual([s.world.department, s.world.otherDesignation, "left"]),
       noEvents(),
     ),

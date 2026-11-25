@@ -50,6 +50,8 @@ Starts from the world `a new hire`.
 Starts from the world `a separation`.
 
 - **Bo can't complete it.** `bo` (signed in) calls and sends employeeSeparation the world's employeeSeparation, and is refused with NotAllowed, AR-001.
+- **nor can Cy.** `cy` (signed in) calls and sends employeeSeparation the world's employeeSeparation, and is refused with NotAllowed, AR-001.
+- **nor Olga.** `olga` (signed in) calls and sends employeeSeparation the world's employeeSeparation, and is refused with NotAllowed, AR-001.
 - **Ada completes it.** `ada` (role company.owner) calls and sends employeeSeparation the world's employeeSeparation, and gets back the world's employeeSeparation.
 - **Ada can't complete it twice.** `ada` (role company.owner) calls and sends employeeSeparation the world's employeeSeparation, and is refused with EmployeeSeparationNotPending, SP-900, carrying state `completed`.
 - **and complete it straight from pending.** `ada` (role company.owner) calls and sends employeeSeparation the last call's employeeSeparation, and gets back an answer matching `^esp_[0-9a-z]+$`.

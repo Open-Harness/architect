@@ -37,7 +37,7 @@ Read one employee-separation by its id: company, employee, resignationLetterDate
 
 Starts from the world `a new hire`.
 
-- **the separation reads back completed, Dee's.** `ada` (role company.owner) calls and sends id the last call's employeeSeparation, and gets back [the world's company, the world's newHire, `2026-12-09`, `2026-12-14`, `completed`].
+- **the separation reads back completed, Dee's.** `ada` (role company.owner) calls and sends id the last call's employeeSeparation, and gets back [the world's company, the world's newHire, `2026-11-30`, `2026-12-14`, `completed`].
 
 ### run a separation
 

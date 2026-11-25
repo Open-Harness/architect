@@ -52,7 +52,7 @@ Draft a promotion: an employee's new job title, from a day.
 
 Starts from the world `a new hire`.
 
-- **Ada drafts Dee's promotion to Lead Engineer, from today.** `ada` (role company.owner) calls and sends company the world's company, employee the world's newHire, promotionDate `2026-12-01`, newDesignation the world's otherDesignation, and gets back an answer matching `^epr_[0-9a-z]+$`.
+- **Ada drafts Dee's promotion to Lead Engineer, from 1 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's newHire, promotionDate `2026-12-01`, newDesignation the world's otherDesignation, and gets back an answer matching `^epr_[0-9a-z]+$`.
 
 ### promote an employee
 

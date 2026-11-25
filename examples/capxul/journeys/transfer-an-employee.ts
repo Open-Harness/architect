@@ -4,8 +4,9 @@
 // after its day, by the clock's day in UTC (HRMS's `before_submit`). Refusal order on create (employee-transfer/errors.ts):
 // TransferredEmployeeNotInCompany, TransferredEmployeeHasLeft, NewDepartmentNotInCompany, DepartmentUnchanged.
 // Cancelling puts back the department the transfer replaced. A transfer stays in its company (CX-employee-moves).
-// One prove run shares one clock that never goes back, and journeys run in file-name order: this one's days (14
-// December) come after promote-an-employee's (7 December), which runs before it.
+// One prove run shares one clock that never goes back, and journeys run in file-name order: this one's days (8
+// December) come after promote-an-employee's (7 December), which runs before it. A clock step keeps within seven days
+// of the journey's start, since the cast's sessions last seven days.
 import { Blueprint, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { owner } from "../blueprint/things/company/roles.ts";
 import { EmployeeTransferCancelled, EmployeeTransferDrafted, EmployeeTransferred } from "../blueprint/things/employee-transfer/events.ts";
@@ -26,18 +27,18 @@ import relieve from "../blueprint/things/employee/verbs/relieve.ts";
 
 export default Blueprint.journey("transfer an employee", {
   // Olga and Cy are engineers in Acme Trading's Engineering; Acme Trading also has Platform. Bo drives in Acme
-  // Logistics' Logistics. Ada runs both companies and has drafted Olga's transfer to Platform from Monday 14 December,
+  // Logistics' Logistics. Ada runs both companies and has drafted Olga's transfer to Platform from Tuesday 8 December,
   // and Cy's from Tuesday 1 December.
   cast: { ada: owner, olga: Blueprint.signedIn, cy: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "a second transfer",
   steps: (s) => [
     s.step(
-      "Olga's transfer reads back a draft, from Engineering to Platform, from 14 December",
+      "Olga's transfer reads back a draft, from Engineering to Platform, from 8 December",
       s.ada.run(get, { id: s.world.employeeTransfer }),
       expect((a) => [a.company, a.employee, a.transferDate, a.currentDepartment, a.newDepartment, a.state]).toEqual([
         s.world.company,
         s.world.employee,
-        "2026-12-14",
+        "2026-12-08",
         s.world.department,
         s.world.secondDepartment,
         "draft",
@@ -60,13 +61,14 @@ export default Blueprint.journey("transfer an employee", {
       spans({ absent: ["employee-transfer.create", "employee-transfer.create.insert"] }),
     ),
     s.step(
-      "Ada can't submit Olga's thirteen days before its day",
+      "Ada can't submit Olga's before its day",
       s.ada.run(submit, { employeeTransfer: s.world.employeeTransfer }),
-      refuses(TransferNotYetDue, { transferDate: "2026-12-14" }),
+      refuses(TransferNotYetDue, { transferDate: "2026-12-08" }),
       noEvents(),
       spans({ absent: ["employee-transfer.submit.update"] }),
     ),
     s.step("Bo can't submit it", s.bo.run(submit, { employeeTransfer: s.world.employeeTransfer }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor can Olga submit her own", s.olga.run(submit, { employeeTransfer: s.world.employeeTransfer }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
       "Ada can't cancel it while it is a draft",
       s.ada.run(cancel, { employeeTransfer: s.world.employeeTransfer }),
@@ -75,20 +77,20 @@ export default Blueprint.journey("transfer an employee", {
     ),
     s.step(
       "the clock reaches a second before midnight on the eve of its day",
-      s.clock.moveTo("2026-12-13T23:59:59Z"),
-      expect((a) => a.now).toBe("2026-12-13T23:59:59.000Z"),
+      s.clock.moveTo("2026-12-07T23:59:59Z"),
+      expect((a) => a.now).toBe("2026-12-07T23:59:59.000Z"),
     ),
     s.step(
       "Ada still can't submit it",
       s.ada.run(submit, { employeeTransfer: s.world.employeeTransfer }),
-      refuses(TransferNotYetDue, { transferDate: "2026-12-14" }),
+      refuses(TransferNotYetDue, { transferDate: "2026-12-08" }),
       noEvents(),
     ),
     s.step("Olga still reads back in Engineering", s.olga.run(getEmployee, { id: s.world.employee }), expect((a) => a.department).toBe(s.world.department), noEvents()),
     s.step(
       "the clock reaches midnight on its day",
-      s.clock.moveTo("2026-12-14T00:00:00Z"),
-      expect((a) => a.now).toBe("2026-12-14T00:00:00.000Z"),
+      s.clock.moveTo("2026-12-08T00:00:00Z"),
+      expect((a) => a.now).toBe("2026-12-08T00:00:00.000Z"),
     ),
     s.step(
       "Ada submits it on the day itself",
@@ -134,6 +136,8 @@ export default Blueprint.journey("transfer an employee", {
       noEvents(),
     ),
     s.step("Bo can't cancel Olga's first", s.bo.run(cancel, { employeeTransfer: s.world.employeeTransfer }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor can Olga", s.olga.run(cancel, { employeeTransfer: s.world.employeeTransfer }), refuses(Blueprint.NotAllowed), noEvents()),
+    s.step("nor Cy", s.cy.run(cancel, { employeeTransfer: s.world.employeeTransfer }), refuses(Blueprint.NotAllowed), noEvents()),
     s.step(
       "Ada cancels it, putting back Engineering",
       s.ada.run(cancel, { employeeTransfer: s.world.employeeTransfer }),
@@ -219,8 +223,8 @@ export default Blueprint.journey("transfer an employee", {
       transfers.isIn(s.world.secondTransfer, "submitted"),
     ),
     s.step(
-      "Cy reads back in Platform, an engineer who has left",
-      s.ada.run(getEmployee, { id: s.world.secondEmployee }),
+      "Cy reads herself back in Platform, an engineer who has left",
+      s.cy.run(getEmployee, { id: s.world.secondEmployee }),
       expect((a) => [a.department, a.designation, a.state]).toEqual([s.world.secondDepartment, s.world.designation, "left"]),
       noEvents(),
     ),

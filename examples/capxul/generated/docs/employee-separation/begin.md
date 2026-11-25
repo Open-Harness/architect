@@ -51,6 +51,7 @@ Starts from the world `a new hire`.
 Starts from the world `a separation`.
 
 - **Bo can't mark Olga's in process.** `bo` (signed in) calls and sends employeeSeparation the world's employeeSeparation, and is refused with NotAllowed, AR-001.
+- **nor can Olga.** `olga` (signed in) calls and sends employeeSeparation the world's employeeSeparation, and is refused with NotAllowed, AR-001.
 - **Ada marks it in process.** `ada` (role company.owner) calls and sends employeeSeparation the world's employeeSeparation, and gets back the world's employeeSeparation.
 - **Ada can't mark it in process twice.** `ada` (role company.owner) calls and sends employeeSeparation the world's employeeSeparation, and is refused with EmployeeSeparationNotPending, SP-900, carrying state `inProcess`.
 - **nor mark it in process again.** `ada` (role company.owner) calls and sends employeeSeparation the world's employeeSeparation, and is refused with EmployeeSeparationNotPending, SP-900, carrying state `completed`.

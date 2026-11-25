@@ -3,7 +3,7 @@ import { Blueprint } from "orthograph";
 import { owner } from "../things/company/roles.ts";
 import create from "../things/employee-promotion/verbs/create.ts";
 
-/** From a transfer: Ada has drafted Cy's promotion from Engineer to Lead Engineer, from Tuesday 1 December 2026, the world's today. It is still a draft. */
+/** From a transfer: Ada has drafted Cy's promotion from Engineer to Lead Engineer, from Tuesday 1 December 2026, the day the world's clock starts. It is still a draft. */
 export default Blueprint.startingWorld("a second promotion", {
   from: "a transfer",
   cast: { ada: owner },

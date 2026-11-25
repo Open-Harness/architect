@@ -38,7 +38,7 @@ Read one employee-transfer by its id: company, employee, transferDate, currentDe
 
 Starts from the world `a second transfer`.
 
-- **Olga's transfer reads back a draft, from Engineering to Platform, from 14 December.** `ada` (role company.owner) calls and sends id the world's employeeTransfer, and gets back [the world's company, the world's employee, `2026-12-14`, the world's department, the world's secondDepartment, `draft`].
+- **Olga's transfer reads back a draft, from Engineering to Platform, from 8 December.** `ada` (role company.owner) calls and sends id the world's employeeTransfer, and gets back [the world's company, the world's employee, `2026-12-08`, the world's department, the world's secondDepartment, `draft`].
 - **Olga reads her own.** `olga` (signed in) calls and sends id the world's employeeTransfer, and gets back [the world's employee, the world's department, the world's secondDepartment, `draft`].
 - **Cy can't read Olga's.** `cy` (signed in) calls and sends id the world's employeeTransfer, and is refused with NotAllowed, AR-001.
 - **nor can Bo.** `bo` (signed in) calls and sends id the world's employeeTransfer, and is refused with NotAllowed, AR-001.

@@ -53,8 +53,9 @@ Starts from the world `a new hire`.
 
 Starts from the world `a second transfer`.
 
-- **Ada can't submit Olga's six days before its day.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with PromotionNotYetDue, PM-005, carrying promotionDate `2026-12-07`.
+- **Ada can't submit Olga's before its day.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with PromotionNotYetDue, PM-005, carrying promotionDate `2026-12-07`.
 - **Bo can't submit it.** `bo` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.
+- **nor can Olga submit her own.** `olga` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.
 - **Ada still can't submit it.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with PromotionNotYetDue, PM-005, carrying promotionDate `2026-12-07`.
 - **Ada submits it on the day itself.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and gets back [the world's employeePromotion, the world's employee, the world's otherDesignation].
 - **Ada can't submit it twice.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with EmployeePromotionNotDraft, PM-900, carrying state `submitted`.

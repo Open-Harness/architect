@@ -52,7 +52,7 @@ Draft a transfer: an employee's new department, from a day.
 
 Starts from the world `a new hire`.
 
-- **Ada drafts Dee's transfer to Platform, from today too.** `ada` (role company.owner) calls and sends company the world's company, employee the world's newHire, transferDate `2026-12-01`, newDepartment the world's secondDepartment, and gets back an answer matching `^etr_[0-9a-z]+$`.
+- **Ada drafts Dee's transfer to Platform, from 1 December too.** `ada` (role company.owner) calls and sends company the world's company, employee the world's newHire, transferDate `2026-12-01`, newDepartment the world's secondDepartment, and gets back an answer matching `^etr_[0-9a-z]+$`.
 
 ### transfer an employee
 

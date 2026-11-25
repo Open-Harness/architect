@@ -48,6 +48,8 @@ Starts from the world `a second transfer`.
 
 - **Ada can't cancel it while it is a draft.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with EmployeePromotionNotDraft, PM-900, carrying state `draft`.
 - **Bo can't cancel Olga's first.** `bo` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.
+- **nor can Olga.** `olga` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.
+- **nor Cy.** `cy` (signed in) calls and sends employeePromotion the world's employeePromotion, and is refused with NotAllowed, AR-001.
 - **Ada cancels it, putting back Engineer.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and gets back [the world's employeePromotion, the world's employee, the world's designation].
 - **Ada can't cancel it twice.** `ada` (role company.owner) calls and sends employeePromotion the world's employeePromotion, and is refused with EmployeePromotionNotDraft, PM-900, carrying state `cancelled`.
 

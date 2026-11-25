@@ -49,7 +49,7 @@ Start an employee's separation, from their resignation letter.
 
 Starts from the world `a new hire`.
 
-- **Dee resigns: Ada starts her separation, from her letter of 9 December, beginning 14 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's newHire, resignationLetterDate `2026-12-09`, boardingBeginsOn `2026-12-14`, and gets back an answer matching `^esp_[0-9a-z]+$`.
+- **Dee resigns: Ada starts her separation, from her letter of 30 November, beginning 14 December.** `ada` (role company.owner) calls and sends company the world's company, employee the world's newHire, resignationLetterDate `2026-11-30`, boardingBeginsOn `2026-12-14`, and gets back an answer matching `^esp_[0-9a-z]+$`.
 
 ### run a separation
 
@@ -61,7 +61,7 @@ Starts from the world `a separation`.
 - **Olga in Acme Logistics is refused for her company, before her open separation is.** `ada` (role company.owner) calls and sends company the world's otherCompany, employee the world's employee, resignationLetterDate `2026-11-25`, boardingBeginsOn `2026-12-03`, and is refused with SeparatedEmployeeNotInCompany, SP-001.
 - **nor start a second for Olga while hers is in process.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, resignationLetterDate `2026-11-25`, boardingBeginsOn `2026-12-03`, and is refused with SeparationAlreadyOpen, SP-002.
 - **with that one completed, Ada may start a new one for Olga.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, resignationLetterDate `2026-11-25`, boardingBeginsOn `2026-12-03`, and gets back an answer matching `^esp_[0-9a-z]+$`.
-- **Cy's separation is her own: Ada starts it while Olga's are done.** `ada` (role company.owner) calls and sends company the world's company, employee the world's secondEmployee, resignationLetterDate `2026-11-23`, boardingBeginsOn `2026-12-02`, and gets back an answer matching `^esp_[0-9a-z]+$`.
+- **Cy has left, and Ada may still start her separation, as HRMS doesn't judge the employee's status.** `ada` (role company.owner) calls and sends company the world's company, employee the world's secondEmployee, resignationLetterDate `2026-11-23`, boardingBeginsOn `2026-12-02`, and gets back an answer matching `^esp_[0-9a-z]+$`.
 - **and a third for Olga is allowed beside Cy's open one.** `ada` (role company.owner) calls and sends company the world's company, employee the world's employee, resignationLetterDate `2026-11-27`, boardingBeginsOn `2026-12-04`, and gets back an answer matching `^esp_[0-9a-z]+$`.
 
 ## How to call

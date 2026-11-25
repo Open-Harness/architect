@@ -25756,7 +25756,7 @@
           ]
         },
         {
-          "title": "Ada drafts Dee's promotion to Lead Engineer, from today",
+          "title": "Ada drafts Dee's promotion to Lead Engineer, from 1 December",
           "call": {
             "actor": "ada",
             "operation": "employee-promotion.create",
@@ -25933,7 +25933,7 @@
           ]
         },
         {
-          "title": "Ada drafts Dee's transfer to Platform, from today too",
+          "title": "Ada drafts Dee's transfer to Platform, from 1 December too",
           "call": {
             "actor": "ada",
             "operation": "employee-transfer.create",
@@ -26110,7 +26110,7 @@
           ]
         },
         {
-          "title": "Dee resigns: Ada starts her separation, from her letter of 9 December, beginning 14 December",
+          "title": "Dee resigns: Ada starts her separation, from her letter of 30 November, beginning 14 December",
           "call": {
             "actor": "ada",
             "operation": "employee-separation.create",
@@ -26127,7 +26127,7 @@
                   "newHire"
                 ]
               },
-              "resignationLetterDate": "2026-12-09",
+              "resignationLetterDate": "2026-11-30",
               "boardingBeginsOn": "2026-12-14"
             }
           },
@@ -26288,7 +26288,7 @@
                     "newHire"
                   ]
                 },
-                "2026-12-09",
+                "2026-11-30",
                 "2026-12-14",
                 "completed"
               ]
@@ -26435,7 +26435,7 @@
           ]
         }
       ],
-      "sourceHash": "fd43e5aff9f006baf888a3ae155103f17bd3d943a1fea2fed94a2efe2358ff3d"
+      "sourceHash": "5ad444f49c2999c1fcb3a0285b8e0eb69cb5c5c6e6cea1c6e3f0a0fcab5dcac7"
     },
     "journeys/open-a-job.ts": {
       "name": "open a job",
@@ -27467,7 +27467,7 @@
           ]
         },
         {
-          "title": "Ada can't submit Olga's six days before its day",
+          "title": "Ada can't submit Olga's before its day",
           "call": {
             "actor": "ada",
             "operation": "employee-promotion.submit",
@@ -27504,6 +27504,31 @@
           "title": "Bo can't submit it",
           "call": {
             "actor": "bo",
+            "operation": "employee-promotion.submit",
+            "payload": {
+              "employeePromotion": {
+                "ref": [
+                  "world",
+                  "employeePromotion"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Olga submit her own",
+          "call": {
+            "actor": "olga",
             "operation": "employee-promotion.submit",
             "payload": {
               "employeePromotion": {
@@ -27943,6 +27968,56 @@
           "title": "Bo can't cancel Olga's first",
           "call": {
             "actor": "bo",
+            "operation": "employee-promotion.cancel",
+            "payload": {
+              "employeePromotion": {
+                "ref": [
+                  "world",
+                  "employeePromotion"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Olga",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-promotion.cancel",
+            "payload": {
+              "employeePromotion": {
+                "ref": [
+                  "world",
+                  "employeePromotion"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor Cy",
+          "call": {
+            "actor": "cy",
             "operation": "employee-promotion.cancel",
             "payload": {
               "employeePromotion": {
@@ -28562,9 +28637,9 @@
           ]
         },
         {
-          "title": "Cy reads back a lead engineer who has left",
+          "title": "Cy reads herself back a lead engineer who has left",
           "call": {
-            "actor": "ada",
+            "actor": "cy",
             "operation": "employee.get",
             "payload": {
               "id": {
@@ -28638,7 +28713,7 @@
           ]
         }
       ],
-      "sourceHash": "be119fce6d667e53cd87277845d8de526f1afe91725732d0573a74a50e6cd4b5"
+      "sourceHash": "7f8897dccf167e74998c8ae1791037d49b84753b277a6837ff8500ef3c8e5028"
     },
     "journeys/reject-an-attendance-request.ts": {
       "name": "reject an attendance request",
@@ -30291,6 +30366,9 @@
         "olga": {
           "kind": "signed-in"
         },
+        "cy": {
+          "kind": "signed-in"
+        },
         "bo": {
           "kind": "signed-in"
         }
@@ -30560,6 +30638,31 @@
           ]
         },
         {
+          "title": "nor can Olga",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-separation.begin",
+            "payload": {
+              "employeeSeparation": {
+                "ref": [
+                  "world",
+                  "employeeSeparation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Ada marks it in process",
           "call": {
             "actor": "ada",
@@ -30680,6 +30783,56 @@
           "title": "Bo can't complete it",
           "call": {
             "actor": "bo",
+            "operation": "employee-separation.complete",
+            "payload": {
+              "employeeSeparation": {
+                "ref": [
+                  "world",
+                  "employeeSeparation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Cy",
+          "call": {
+            "actor": "cy",
+            "operation": "employee-separation.complete",
+            "payload": {
+              "employeeSeparation": {
+                "ref": [
+                  "world",
+                  "employeeSeparation"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor Olga",
+          "call": {
+            "actor": "olga",
             "operation": "employee-separation.complete",
             "payload": {
               "employeeSeparation": {
@@ -31044,7 +31197,34 @@
           ]
         },
         {
-          "title": "Cy's separation is her own: Ada starts it while Olga's are done",
+          "title": "Ada relieves Cy on 30 November",
+          "call": {
+            "actor": "ada",
+            "operation": "employee.relieve",
+            "payload": {
+              "employee": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              },
+              "relievingDate": "2026-11-30"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "secondEmployee"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "title": "Cy has left, and Ada may still start her separation, as HRMS doesn't judge the employee's status",
           "call": {
             "actor": "ada",
             "operation": "employee-separation.create",
@@ -31144,7 +31324,7 @@
           ]
         }
       ],
-      "sourceHash": "00dd85b424ab17908676b8f7d827beb7bbf4bd7f46b82c316f0663de2403de20"
+      "sourceHash": "22244f6b5ce15b36ae0a7e4275891091f6e84a602d6c7aba0d308763cd649f7f"
     },
     "journeys/schedule-an-interview.ts": {
       "name": "schedule an interview",
@@ -37011,7 +37191,7 @@
       "starts": "a second transfer",
       "steps": [
         {
-          "title": "Olga's transfer reads back a draft, from Engineering to Platform, from 14 December",
+          "title": "Olga's transfer reads back a draft, from Engineering to Platform, from 8 December",
           "call": {
             "actor": "ada",
             "operation": "employee-transfer.get",
@@ -37040,7 +37220,7 @@
                     "employee"
                   ]
                 },
-                "2026-12-14",
+                "2026-12-08",
                 {
                   "ref": [
                     "world",
@@ -37202,7 +37382,7 @@
           ]
         },
         {
-          "title": "Ada can't submit Olga's thirteen days before its day",
+          "title": "Ada can't submit Olga's before its day",
           "call": {
             "actor": "ada",
             "operation": "employee-transfer.submit",
@@ -37220,7 +37400,7 @@
               "kind": "refuses",
               "error": "TransferNotYetDue",
               "fields": {
-                "transferDate": "2026-12-14"
+                "transferDate": "2026-12-08"
               }
             },
             {
@@ -37239,6 +37419,31 @@
           "title": "Bo can't submit it",
           "call": {
             "actor": "bo",
+            "operation": "employee-transfer.submit",
+            "payload": {
+              "employeeTransfer": {
+                "ref": [
+                  "world",
+                  "employeeTransfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Olga submit her own",
+          "call": {
+            "actor": "olga",
             "operation": "employee-transfer.submit",
             "payload": {
               "employeeTransfer": {
@@ -37310,7 +37515,7 @@
               "kind": "refuses",
               "error": "TransferNotYetDue",
               "fields": {
-                "transferDate": "2026-12-14"
+                "transferDate": "2026-12-08"
               }
             },
             {
@@ -37678,6 +37883,56 @@
           "title": "Bo can't cancel Olga's first",
           "call": {
             "actor": "bo",
+            "operation": "employee-transfer.cancel",
+            "payload": {
+              "employeeTransfer": {
+                "ref": [
+                  "world",
+                  "employeeTransfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor can Olga",
+          "call": {
+            "actor": "olga",
+            "operation": "employee-transfer.cancel",
+            "payload": {
+              "employeeTransfer": {
+                "ref": [
+                  "world",
+                  "employeeTransfer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "nor Cy",
+          "call": {
+            "actor": "cy",
             "operation": "employee-transfer.cancel",
             "payload": {
               "employeeTransfer": {
@@ -38335,9 +38590,9 @@
           ]
         },
         {
-          "title": "Cy reads back in Platform, an engineer who has left",
+          "title": "Cy reads herself back in Platform, an engineer who has left",
           "call": {
-            "actor": "ada",
+            "actor": "cy",
             "operation": "employee.get",
             "payload": {
               "id": {
@@ -38411,7 +38666,7 @@
           ]
         }
       ],
-      "sourceHash": "eea4c3635cf7e0c5e70c0aff93f7fd9424cc773942fcf6a74d0009653930668c"
+      "sourceHash": "4c15f6a0a097de2b8dadd169856d72001a2910fbe7680ac59f2605218c0b335d"
     },
     "journeys/weekly-offs.ts": {
       "name": "weekly offs",
@@ -39594,7 +39849,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "72fae7fc05d3d26e1041c667ef1a029b4f456f036161d4e7654fc2e0c9310f8e",
+      "sourceHash": "07a4699bc2366184fa3509333daa11f1103b297c396c482986fd2b354ed7623a",
       "makes": [
         {
           "actor": "ada",
@@ -39641,7 +39896,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "5139be9f4735d06b6e71de75c10d00fdbbe645a0cf5fb9f549683ee978a5e467",
+      "sourceHash": "cb5f5809c6204b731003c4cc7fdd9c16ebe00b5499554a9f169f6c98cec75060",
       "makes": [
         {
           "actor": "ada",
@@ -39868,7 +40123,7 @@
           "role": "company.owner"
         }
       },
-      "sourceHash": "cefabfaf1bc4e7e610f59c1b71a1f444a9f040ec98be0d33824a28fcea0754b7",
+      "sourceHash": "54cf4a8fa4d5a45a3563e4e787a7dfe07ba4a5af4a7d25a69fdd1688048fbe20",
       "makes": [
         {
           "actor": "ada",
@@ -39886,7 +40141,7 @@
                 "employee"
               ]
             },
-            "transferDate": "2026-12-14",
+            "transferDate": "2026-12-08",
             "newDepartment": {
               "ref": [
                 "world",

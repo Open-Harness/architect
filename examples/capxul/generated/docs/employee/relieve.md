@@ -85,6 +85,12 @@ Starts from the world `a second transfer`.
 - **Ada relieves Bo on 30 November.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
 - **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
 
+### run a separation
+
+Starts from the world `a separation`.
+
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
 ### schedule an interview
 
 Starts from the world `an outside employee`.
