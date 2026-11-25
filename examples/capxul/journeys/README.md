@@ -61,8 +61,23 @@ record types are listed in `../doctypes.md`.
   `otherDesignation`.
 - `a technical round`, from `an employee`: Ada adds the round Technical, with Olga, before any job is open. It adds
   `interviewRound`.
+- `a second department`, from `a second job title`: Ada adds Platform to Acme Trading. It adds `secondDepartment`.
+- `a new hire`, from `a second department`: Ada hires Dee Otieno (signed in) as an engineer in Engineering, joining
+  2026-02-02. It adds `newHire`.
+- `a promotion`, from `a second department`: Ada drafts Olga's promotion from Engineer to Lead Engineer, from Monday
+  2026-12-07. It adds `employeePromotion`.
+- `a transfer`, from `a promotion`: Ada drafts Olga's transfer from Engineering to Platform, from Tuesday 2026-12-08. It
+  adds `employeeTransfer`.
+- `a second promotion` and `a second transfer`, each from the one before: the same for Cy, from 2026-12-01, the day the
+  world's clock starts. They add `secondPromotion` and `secondTransfer`.
+- `a separation`, from `a second transfer`: Ada starts Olga's separation, from her letter of 2026-11-20, beginning
+  2026-12-01. It adds `employeeSeparation`.
 
-Capxul's local world's clock stands at Tuesday 2026-12-01 09:00 UTC until a journey moves it; a world adds its keys to
+Capxul's local world's clock stands at Tuesday 2026-12-01 09:00 UTC until a journey moves it. One `prove` run shares
+that clock across every journey, it never goes back, and journeys run in file-name order, so a journey that moves it
+keeps its days after those of the journeys before it (`give-interview-feedback` 3 December, `promote-an-employee`
+7 December, `transfer-an-employee` 8 December; a clock step stays within seven days of its journey's start, as the cast's
+sessions seem to last seven days (snag #1001); `decisions/CX-employee-moves.md`); a world adds its keys to
 what the worlds before it gave.
 
 A world can hand on only the answer of its latest call (`s.last`), so most add one record; `two kybs started` and
@@ -111,6 +126,10 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `schedule-an-interview` | `an outside employee` | Ada (owner), Bo, Olga (signed in) | `interview.create` answers an `ivw_` id, emits `InterviewScheduled`, `pending`, and reads back with its interviewers in order. Refusals, each pinned before the next: `ApplicantRejected`, `RoundNotInCompany` (a round of Ada's other company), `InterviewEndsBeforeStart` (the same minute, a quarter hour back within an hour, past midnight), `InterviewerNotInCompany` and `InterviewerHasLeft` wherever they stand. One interview per applicant per round, also once it is rejected (`InterviewAlreadyScheduled`). An applicant on hold may be interviewed. A leaver is refused on a day already past, and at a round that lists her. A rejected applicant is refused before a round of another company. Only the owner clears or rejects, once; a minute-long interview, a day already past and one still to come are allowed |
 | `give-interview-feedback` | `an interview` | Ada (owner), Olga, Cy, Bo (signed in) | Only an interviewer gives feedback, as themselves (`NotAllowed` for Ada and Bo; `FeedbackGiverNotInterviewer` for an employee not on it, judged before the day). Nothing before the interview's own day by the world's clock, to the last second of the eve (`FeedbackBeforeInterview`, carrying that interview's day); the day itself is allowed. One per interviewer per interview (`FeedbackAlreadyGiven`), but one on another interview is allowed. Feedback doesn't decide the interview. A leaver still gives feedback on a pending interview she was on, and feedback may be given on an interview already cleared. Each reads back as given, by the giver or the owner |
 | `hire-from-a-job-opening` | `a technical round` | Ada (owner), Olga, Pat (signed in) | The whole way: an opening, Pat's application, an interview the same day, Olga's feedback, the interview cleared, an offer, its acceptance, Pat accepted (the second call, #972), the opening closed and Pat hired. Each step reaches the record the one before it made or read |
+| `promote-an-employee` | `a second transfer` | Ada (owner), Olga, Cy, Bo (signed in) | A promotion copies the employee's job title as its current one and reads back a draft, to the owner and the employee only. It isn't submitted before its day by the world's clock, to the last second of the eve (`PromotionNotYetDue`); on the day itself it is, and the employee reads back the new title, in the same department. It can't be submitted twice or cancelled as a draft. A new draft copies the title held now, and the title held is refused (`DesignationUnchanged`). Cancelling puts the old title back. The refusals on create, in order: `PromotedEmployeeNotInCompany`, `PromotedEmployeeHasLeft`, `NewDesignationNotInCompany`, `DesignationUnchanged`. A promotion drafted before the employee left is still submitted |
+| `transfer-an-employee` | `a second transfer` | Ada (owner), Olga, Cy, Bo (signed in) | The same for a department, from 8 December (`TransferNotYetDue`, `DepartmentUnchanged`, `TransferredEmployeeNotInCompany`, `TransferredEmployeeHasLeft`, `NewDepartmentNotInCompany`); another company's department is refused, so a transfer stays in its company |
+| `run-a-separation` | `a separation` | Ada (owner), Olga, Bo (signed in) | A separation reads back pending, to the owner only, and the owner marks it in process, then completed, or completes it straight from pending; none of those twice. One open separation per employee (`SeparationAlreadyOpen`), judged after `SeparatedEmployeeNotInCompany`; once completed, another may start. Completing one doesn't relieve the employee, and one may start for an employee who has already left. Only the owner moves one |
+| `move-an-employee-through-the-company` | `a new hire` | Ada (owner), Dee (signed in) | End to end: Dee is hired, promoted, transferred, separated and then relieved, and reads herself back after each step |
 
 ## Where the docs were silent
 
