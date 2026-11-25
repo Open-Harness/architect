@@ -163,10 +163,14 @@ against the stand-in on every call Capxul makes:
 - **EUR virtual accounts: the schema and the examples disagree.** `VirtualAccountSourceDepositInstructionsEu` types
   `payment_rails` as the string `"sepa"`, with no `payment_rail`. Bridge's own EUR examples give `payment_rails:
   ["sepa"]` (a list, as on USD) or the deprecated `payment_rail: "sepa"`, never the string. The stand-in follows the
-  schema, because the schema is what the generated client judges. The examples are the only evidence of what Bridge
-  sends, so expect the strict client to refuse a real EUR answer. Until Bridge confirms one or the other, the adapter
-  reads virtual accounts leniently (`answers: "lenient"`, #946), and the builder of the call steps (#995 gap 1) decides
-  that with Goal 16's lead.
+  schema, because the schema is what the generated client judges. **Goal 16's lead settled it on #1007: the client
+  stays strict, and the description is corrected.** A lenient client stops catching real drift. In part two, the
+  adapter's description takes a string or an array of strings at `payment_rails` in
+  `VirtualAccountSourceDepositInstructionsEu`. Part two records the exact JSON path, the before and after, and why
+  (Bridge's own EUR examples), then regenerates and has the stand-in answer EUR with the array. The deprecated
+  `payment_rail` stays undeclared, so an answer that carries it alone fails loudly. When a real Bridge sandbox answer is
+  available, part two compares it once and notes the result here. latest.json itself is never committed, so part two
+  also says where the corrected description is kept. USD is unaffected.
 - **Virtual account create** answers 200, the only success the description documents, and a transfer's
   `client_reference_id` is left out unless the caller gave one.
 
@@ -189,6 +193,7 @@ against the stand-in on every call Capxul makes:
 | a transfer retried with the same request sends the same `Idempotency-Key` to Bridge, and Bridge holds one transfer | gaps 1, 2 and 3 |
 | KYC and KYB decided by Bridge's `kyc_link` event, an event for an unknown customer ignored | gaps 4 and 5 |
 | a deposit's activity events land one Bank Transaction, replayed too | gaps 3, 4 and 5 |
+| an EUR virtual account answered with `payment_rails: ["sepa"]` taken by the strict client, from the corrected description | the description patch above |
 | a deposit's second and third activity events leave exactly one Bank Transaction, in its latest status (`settled`, a deposit's one state today), none refused | gaps 3, 4 and 5 |
 | an unsigned, wrongly signed or stale event refused, and nothing written | gaps 3 and 5 |
 | a transfer's state events move its Bank Transaction | gaps 3, 4 and 5 |
