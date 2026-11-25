@@ -76,6 +76,9 @@ Gaps 2 and 3 are built small, from GOAL17-check-harness's own surface, not by la
   - A mount is wired as a generated adapter's when its plugin declares a `baseUrl` secret, which the generator always writes. A
     hand-written adapter that declares one too would be wired to a `client` it may not have (#1021's review). Nothing does
     today; a positive marker in the mount model is the fix when one does.
+  - Every generated adapter's four errors take exits 81 to 84, so one operation that calls two generated adapters and lists
+    both adapters' errors is refused (`operationExitClashes`). Snag #1012; check 07 pins it red, and a fix keeps each exit
+    inside the blueprint's 5 to 119 and the eight of such an operation distinct (found by Codex on #1021, 25 November 2026).
   - The key is the adapter's, not the mount's calls': a mount that includes only calls needing no key still lists one, and so
     does a description whose every operation overrides its top-level requirement with `security: []`.
 

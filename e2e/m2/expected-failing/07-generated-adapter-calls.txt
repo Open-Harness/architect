@@ -1,0 +1,2 @@
+# Snag #1012: every generated adapter's four errors take exits 81 to 84, so one operation calling two generated adapters is refused (operationExitClashes). Red until each adapter's exits differ, inside the blueprint's 5 to 119. A builder only deletes lines (G9).
+m2/07-generated-adapter-calls.test.ts > 07 one operation calls two generated adapters (snag #1012) > an operation whose steps call two generated adapters, declaring both adapters' errors, is accepted by ortho generate
