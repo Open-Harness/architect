@@ -55,6 +55,14 @@ Starts from the world `a team`.
 
 - **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
+### attendance stays in its company
+
+Starts from the world `an attendance request`.
+
+- **Ada sets up a second company of her own.** `ada` (role company.owner) calls and sends companyName `Acme Logistics`, abbr `AL`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo sets up a second company.** `bo` (signed in) calls and sends companyName `Bo Ventures`, abbr `BV`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
 ### companies are kept apart
 
 Starts from the world `a company`.
@@ -63,6 +71,14 @@ Starts from the world `a company`.
 - **nor the same abbreviation.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AT`, country `Kenya`, defaultCurrency `USD`, and is refused with CompanyAbbrTaken, CO-002, carrying abbr `AT`.
 - **Bo may use both for his own company, because her names don't bind him.** `bo` (signed in) calls and sends companyName `Acme Trading`, abbr `AT`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
 - **Ada sets up a second company under other names, which she runs too.** `ada` (role company.owner) calls and sends companyName `Acme Holdings`, abbr `AH`, country `Uganda`, defaultCurrency `UGX`, and gets back an answer matching `^com_[0-9a-z]+$`.
+
+### expense claims stay in their company
+
+Starts from the world `an expense claim`.
+
+- **Bo sets up a company of his own.** `bo` (signed in) calls and sends companyName `Bo Ltd`, abbr `BL`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo sets up a second company.** `bo` (signed in) calls and sends companyName `Bo Ventures`, abbr `BV`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
+- **Bo sets up a third company.** `bo` (signed in) calls and sends companyName `Bo Holdings`, abbr `BH`, country `Kenya`, defaultCurrency `KES`, and gets back an answer matching `^com_[0-9a-z]+$`.
 
 ### set up a company
 

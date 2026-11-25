@@ -4,7 +4,7 @@ import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { Effect, Layer, Option, Schema } from "effect";
 import type { Operation, Read, Principal, Thing } from "orthograph";
-import { structOf } from "orthograph/server";
+import { fromColumns, structOf } from "orthograph/server";
 import { Access, Records, type Instance } from "@orthograph/language-effect";
 import type { CallRecord, Facts } from "../types.ts";
 import { PROVE_SPAN_PREFIX } from "#modules/telemetry/types.js";
@@ -145,7 +145,7 @@ export const callOperation = (url: string, facts: Facts, name: string, op: Opera
     return { wire, status: r.status, body: r.body, trace, parent, journal };
   });
 
-/** Records read from the world's facts: the same rows the server reads, decoded the same way. */
+/** Records read from the world's facts: the same rows the server reads, decoded the same way (its column rules, `fromColumns`). */
 export const factsRecords = (facts: Facts, tableOf: (thing: Thing) => string | undefined) =>
   Layer.succeed(Records, Records.of({
     find: (thing, id) =>
@@ -154,12 +154,13 @@ export const factsRecords = (facts: Facts, tableOf: (thing: Thing) => string | u
         if (!table) return undefined;
         const row = yield* facts.record(table, id);
         if (!row) return undefined;
-        const fields = yield* Schema.decodeUnknownEffect(structOf(thing.fields) as unknown as Codec)(row).pipe(Effect.orDie);
+        const fields = yield* Schema.decodeUnknownEffect(structOf(thing.fields) as unknown as Codec)(fromColumns(thing, row)).pipe(Effect.orDie);
         return (typeof row["state"] === "string" ? { ...fields, state: row["state"] } : fields) as Instance;
       }),
     // A role's rule reads by id only. A lookup by a rule (G5, `findBy(rule, value)`) is a handler's, and a handler
     // runs on the world's own server, where the runtime holds the rules and makes the refusal: it never reaches this stand-in, which reads rows and enforces nothing.
     findBy: () => Effect.die(new Error("prove reads the world's rows by id; a lookup by a rule is a handler's, run by the world's server")),
+    list: () => Effect.die(new Error("prove reads the world's rows by id; a list is a handler's, run by the world's server")),
     insert: () => Effect.die(new Error("prove reads the world; it never writes to it")),
     update: () => Effect.die(new Error("prove reads the world; it never writes to it")),
   }));

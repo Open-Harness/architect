@@ -6,6 +6,13 @@ import { Effect, Layer } from "effect";
 import { CliOutput, Command } from "effect/cli";
 import * as Sdk from "../../sdk/src/index.ts";
 import { ExitCode } from "./output.ts";
+import { get as attendanceGet } from "./attendance/get.ts";
+import { list as attendanceList } from "./attendance/list.ts";
+import { mark as attendanceMark } from "./attendance/mark.ts";
+import { approve as attendanceRequestApprove } from "./attendance-request/approve.ts";
+import { create as attendanceRequestCreate } from "./attendance-request/create.ts";
+import { get as attendanceRequestGet } from "./attendance-request/get.ts";
+import { reject as attendanceRequestReject } from "./attendance-request/reject.ts";
 import { close as bankAccountClose } from "./bank-account/close.ts";
 import { get as bankAccountGet } from "./bank-account/get.ts";
 import { open as bankAccountOpen } from "./bank-account/open.ts";
@@ -30,15 +37,29 @@ import { hire as employeeHire } from "./employee/hire.ts";
 import { relieve as employeeRelieve } from "./employee/relieve.ts";
 import { create as employeeGradeCreate } from "./employee-grade/create.ts";
 import { get as employeeGradeGet } from "./employee-grade/get.ts";
+import { create as employmentTypeCreate } from "./employment-type/create.ts";
+import { get as employmentTypeGet } from "./employment-type/get.ts";
+import { add as expenseAdd } from "./expense/add.ts";
+import { get as expenseGet } from "./expense/get.ts";
+import { approve as expenseClaimApprove } from "./expense-claim/approve.ts";
+import { create as expenseClaimCreate } from "./expense-claim/create.ts";
+import { get as expenseClaimGet } from "./expense-claim/get.ts";
+import { reject as expenseClaimReject } from "./expense-claim/reject.ts";
+import { create as expenseClaimTypeCreate } from "./expense-claim-type/create.ts";
+import { get as expenseClaimTypeGet } from "./expense-claim-type/get.ts";
 import { add as holidayAdd } from "./holiday/add.ts";
 import { get as holidayGet } from "./holiday/get.ts";
 import { addWeeklyOff as holidayListAddWeeklyOff } from "./holiday-list/add-weekly-off.ts";
 import { create as holidayListCreate } from "./holiday-list/create.ts";
 import { get as holidayListGet } from "./holiday-list/get.ts";
+import { create as shiftTypeCreate } from "./shift-type/create.ts";
+import { get as shiftTypeGet } from "./shift-type/get.ts";
 
 // The release version is stamped in when the CLI is published (`ortho publish`); run from source, it says 0.0.0.
 declare const ORTHO_VERSION: string | undefined;
 
+const attendance = Command.make("attendance").pipe(Command.withSubcommands([attendanceGet, attendanceList, attendanceMark]));
+const attendanceRequest = Command.make("attendance-request").pipe(Command.withSubcommands([attendanceRequestApprove, attendanceRequestCreate, attendanceRequestGet, attendanceRequestReject]));
 const bankAccount = Command.make("bank-account").pipe(Command.withSubcommands([bankAccountClose, bankAccountGet, bankAccountOpen]));
 const branch = Command.make("branch").pipe(Command.withSubcommands([branchCreate, branchGet]));
 const bridgeBusiness = Command.make("bridge-business").pipe(Command.withSubcommands([bridgeBusinessApprove, bridgeBusinessGet, bridgeBusinessReject, bridgeBusinessStart]));
@@ -48,11 +69,16 @@ const department = Command.make("department").pipe(Command.withSubcommands([depa
 const designation = Command.make("designation").pipe(Command.withSubcommands([designationCreate, designationGet]));
 const employee = Command.make("employee").pipe(Command.withSubcommands([employeeGet, employeeHire, employeeRelieve]));
 const employeeGrade = Command.make("employee-grade").pipe(Command.withSubcommands([employeeGradeCreate, employeeGradeGet]));
+const employmentType = Command.make("employment-type").pipe(Command.withSubcommands([employmentTypeCreate, employmentTypeGet]));
+const expense = Command.make("expense").pipe(Command.withSubcommands([expenseAdd, expenseGet]));
+const expenseClaim = Command.make("expense-claim").pipe(Command.withSubcommands([expenseClaimApprove, expenseClaimCreate, expenseClaimGet, expenseClaimReject]));
+const expenseClaimType = Command.make("expense-claim-type").pipe(Command.withSubcommands([expenseClaimTypeCreate, expenseClaimTypeGet]));
 const holiday = Command.make("holiday").pipe(Command.withSubcommands([holidayAdd, holidayGet]));
 const holidayList = Command.make("holiday-list").pipe(Command.withSubcommands([holidayListAddWeeklyOff, holidayListCreate, holidayListGet]));
+const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, holiday, holidayList]),
+  Command.withSubcommands([attendance, attendanceRequest, bankAccount, branch, bridgeBusiness, bridgeIndividual, company, department, designation, employee, employeeGrade, employmentType, expense, expenseClaim, expenseClaimType, holiday, holidayList, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

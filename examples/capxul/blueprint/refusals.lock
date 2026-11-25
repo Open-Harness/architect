@@ -2,6 +2,150 @@
   "generated": "Generated from blueprint/. Append-only. Do not edit.",
   "lockVersion": 1,
   "refusals": {
+    "AN-001": {
+      "name": "AttendeeNotInCompany",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AttendeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AN-002": {
+      "name": "AttendeeHasLeft",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AttendeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "AN-003": {
+      "name": "AttendanceBeforeJoining",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "AN-004": {
+      "name": "AttendanceAlreadyMarked",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {
+        "attendanceDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceAlreadyMarked"
+        }
+      },
+      "earlier": []
+    },
+    "AN-900": {
+      "name": "AttendanceNotMarked",
+      "owner": "attendance",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceNotMarked"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-001": {
+      "name": "RequesterNotInCompany",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RequesterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-002": {
+      "name": "RequesterHasLeft",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RequesterHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-003": {
+      "name": "RequestEndsBeforeStart",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RequestEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-004": {
+      "name": "RequestBeforeJoining",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RequestBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-900": {
+      "name": "AttendanceRequestNotDraft",
+      "owner": "attendance-request",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceRequestNotDraft"
+        }
+      },
+      "earlier": []
+    },
     "AR-001": {
       "name": "NotAllowed",
       "owner": "runtime",
@@ -152,6 +296,22 @@
       },
       "earlier": []
     },
+    "CO-901": {
+      "name": "CompanyNotFound",
+      "owner": "company",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "com"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyNotFound"
+        }
+      },
+      "earlier": []
+    },
     "DE-001": {
       "name": "DepartmentNameTaken",
       "owner": "department",
@@ -246,6 +406,58 @@
       "wire": {
         "effect": {
           "tag": "DesignationNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "EC-001": {
+      "name": "ClaimantNotActive",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimantNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "EC-002": {
+      "name": "EmployeeNotInCompany",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "EmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EC-003": {
+      "name": "ClaimHasNoExpenses",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimHasNoExpenses"
+        }
+      },
+      "earlier": []
+    },
+    "EC-900": {
+      "name": "ExpenseClaimNotDraft",
+      "owner": "expense-claim",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimNotDraft"
         }
       },
       "earlier": []
@@ -368,6 +580,132 @@
       "wire": {
         "effect": {
           "tag": "EmployeeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "EM-901": {
+      "name": "EmployeeNotFound",
+      "owner": "employee",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "emp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "ET-001": {
+      "name": "ExpenseTypeTaken",
+      "owner": "expense-claim-type",
+      "from": "blueprint/things/expense-claim-type/errors.ts",
+      "fields": {
+        "expenseType": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseTypeTaken"
+        }
+      },
+      "earlier": []
+    },
+    "ET-900": {
+      "name": "ExpenseClaimTypeNotActive",
+      "owner": "expense-claim-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "ET-901": {
+      "name": "ExpenseClaimTypeNotFound",
+      "owner": "expense-claim-type",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "ect"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimTypeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "EX-001": {
+      "name": "SanctionedOverClaimed",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {
+        "amount": {
+          "value": "money",
+          "bits": 128,
+          "signed": false,
+          "asset": {
+            "token": "usdc"
+          }
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SanctionedOverClaimed"
+        }
+      },
+      "earlier": []
+    },
+    "EX-002": {
+      "name": "ExpenseTypeNotInCompany",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ExpenseTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EX-003": {
+      "name": "ClaimNotDraft",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "EX-900": {
+      "name": "ExpenseNotActive",
+      "owner": "expense",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseNotActive"
         }
       },
       "earlier": []
@@ -566,6 +904,84 @@
       "wire": {
         "effect": {
           "tag": "BridgeIndividualNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "SH-001": {
+      "name": "ShiftTypeNameTaken",
+      "owner": "shift-type",
+      "from": "blueprint/things/shift-type/errors.ts",
+      "fields": {
+        "shiftTypeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ShiftTypeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SH-002": {
+      "name": "ShiftStartsWhenItEnds",
+      "owner": "shift-type",
+      "from": "blueprint/things/shift-type/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ShiftStartsWhenItEnds"
+        }
+      },
+      "earlier": []
+    },
+    "SH-900": {
+      "name": "ShiftTypeNotActive",
+      "owner": "shift-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ShiftTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "TY-001": {
+      "name": "EmploymentTypeNameTaken",
+      "owner": "employment-type",
+      "from": "blueprint/things/employment-type/errors.ts",
+      "fields": {
+        "employmentTypeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmploymentTypeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "TY-900": {
+      "name": "EmploymentTypeNotActive",
+      "owner": "employment-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmploymentTypeNotActive"
         }
       },
       "earlier": []

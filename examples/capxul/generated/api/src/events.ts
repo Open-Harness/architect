@@ -1,5 +1,7 @@
 // Generated from the blueprint. Do not edit.
 import { EventNames } from "orthograph/server";
+import * as Attendance from "../../../blueprint/things/attendance/events.ts";
+import * as AttendanceRequest from "../../../blueprint/things/attendance-request/events.ts";
 import * as BankAccount from "../../../blueprint/things/bank-account/events.ts";
 import * as Branch from "../../../blueprint/things/branch/events.ts";
 import * as BridgeBusiness from "../../../blueprint/things/bridge-business/events.ts";
@@ -9,9 +11,18 @@ import * as Department from "../../../blueprint/things/department/events.ts";
 import * as Designation from "../../../blueprint/things/designation/events.ts";
 import * as Employee from "../../../blueprint/things/employee/events.ts";
 import * as EmployeeGrade from "../../../blueprint/things/employee-grade/events.ts";
+import * as EmploymentType from "../../../blueprint/things/employment-type/events.ts";
+import * as Expense from "../../../blueprint/things/expense/events.ts";
+import * as ExpenseClaim from "../../../blueprint/things/expense-claim/events.ts";
+import * as ExpenseClaimType from "../../../blueprint/things/expense-claim-type/events.ts";
 import * as Holiday from "../../../blueprint/things/holiday/events.ts";
 import * as HolidayList from "../../../blueprint/things/holiday-list/events.ts";
+import * as ShiftType from "../../../blueprint/things/shift-type/events.ts";
 
+EventNames.name(Attendance.AttendanceMarked, "AttendanceMarked");
+EventNames.name(AttendanceRequest.AttendanceRequestApproved, "AttendanceRequestApproved");
+EventNames.name(AttendanceRequest.AttendanceRequestRejected, "AttendanceRequestRejected");
+EventNames.name(AttendanceRequest.AttendanceRequested, "AttendanceRequested");
 EventNames.name(BankAccount.BankAccountClosed, "BankAccountClosed");
 EventNames.name(BankAccount.BankAccountOpened, "BankAccountOpened");
 EventNames.name(Branch.BranchCreated, "BranchCreated");
@@ -27,8 +38,15 @@ EventNames.name(Designation.DesignationCreated, "DesignationCreated");
 EventNames.name(Employee.EmployeeHired, "EmployeeHired");
 EventNames.name(Employee.EmployeeRelieved, "EmployeeRelieved");
 EventNames.name(EmployeeGrade.EmployeeGradeCreated, "EmployeeGradeCreated");
+EventNames.name(EmploymentType.EmploymentTypeCreated, "EmploymentTypeCreated");
+EventNames.name(Expense.ExpenseAdded, "ExpenseAdded");
+EventNames.name(ExpenseClaim.ExpenseClaimApproved, "ExpenseClaimApproved");
+EventNames.name(ExpenseClaim.ExpenseClaimCreated, "ExpenseClaimCreated");
+EventNames.name(ExpenseClaim.ExpenseClaimRejected, "ExpenseClaimRejected");
+EventNames.name(ExpenseClaimType.ExpenseClaimTypeCreated, "ExpenseClaimTypeCreated");
 EventNames.name(Holiday.HolidayAdded, "HolidayAdded");
 EventNames.name(HolidayList.HolidayListCreated, "HolidayListCreated");
 EventNames.name(HolidayList.WeeklyOffAdded, "WeeklyOffAdded");
+EventNames.name(ShiftType.ShiftTypeCreated, "ShiftTypeCreated");
 
-export const names = ["BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded"] as const;
+export const names = ["AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "EmployeeGradeCreated", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "ShiftTypeCreated"] as const;

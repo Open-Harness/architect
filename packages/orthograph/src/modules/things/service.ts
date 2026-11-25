@@ -36,3 +36,5 @@ export const Things: ThingsApi = {
 
 // The struct schema for any declared fields: payloads, answers, events and errors use it.
 export { structOf, valueOf } from "./internal/fields.ts";
+// How a row sits in a SQL store, shared by the server's store and prove's world reader.
+export { fromColumns, toColumn } from "./internal/columns.ts";

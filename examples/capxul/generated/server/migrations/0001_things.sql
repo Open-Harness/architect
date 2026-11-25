@@ -1,5 +1,25 @@
 -- Generated from the blueprint. Do not edit.
 -- Stage one rebuilds the local database on every `ortho dev`; migrations between versions arrive in stage three.
+CREATE TABLE "attendance" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "attendanceDate" TEXT NOT NULL,
+  "status" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "attendance_oneAttendancePerDay" ON "attendance" ("employee", "attendanceDate");
+CREATE TABLE "attendance-request" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "bank-account" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -96,6 +116,42 @@ CREATE TABLE "employee-grade" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee-grade_oneNamePerCompany" ON "employee-grade" ("company", "gradeName");
+CREATE TABLE "employment-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employmentTypeName" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employment-type_oneNamePerCompany" ON "employment-type" ("company", "employmentTypeName");
+CREATE TABLE "expense" (
+  "id" TEXT PRIMARY KEY,
+  "expenseClaim" TEXT NOT NULL,
+  "expenseDate" TEXT NOT NULL,
+  "expenseType" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "sanctionedAmount" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "expense-claim" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "totalClaimedAmount" TEXT NOT NULL,
+  "totalSanctionedAmount" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "expense-claim-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "expenseType" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "expense-claim-type_oneNamePerCompany" ON "expense-claim-type" ("company", "expenseType");
 CREATE TABLE "holiday" (
   "id" TEXT PRIMARY KEY,
   "holidayList" TEXT NOT NULL,
@@ -116,6 +172,16 @@ CREATE TABLE "holiday-list" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "holiday-list_oneNamePerCompany" ON "holiday-list" ("company", "holidayListName");
+CREATE TABLE "shift-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "shiftTypeName" TEXT NOT NULL,
+  "startTime" TEXT NOT NULL,
+  "endTime" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "shift-type_oneNamePerCompany" ON "shift-type" ("company", "shiftTypeName");
 -- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).
 CREATE TABLE "_journal" (
   "seq" INTEGER PRIMARY KEY AUTOINCREMENT,
