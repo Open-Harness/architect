@@ -52,6 +52,40 @@ Starts from the world `a team`.
 - **Olga reads her own record, with every field Ada typed.** `olga` (signed in) calls and sends id the last call's employee, and gets back [the world's company, the cast's olga person, `Olga Petrova`, `Female`, `1994-03-17`, `2026-01-05`, the world's department, the world's designation, `active`].
 - **Ada reads Bo's record back with every field she typed for him.** `ada` (role company.owner) calls and sends id the last call's employee, and gets back [the world's company, the cast's bo person, `Bo Mensah`, `Male`, `1990-06-01`, `1990-06-01`, the world's department, the world's designation, `active`].
 
+### move an employee through the company
+
+Starts from the world `a new hire`.
+
+- **Dee reads herself back hired, an engineer in Engineering.** `dee` (signed in) calls and sends id the world's newHire, and gets back [the world's company, the cast's dee person, `2026-02-02`, the world's department, the world's designation, `active`].
+- **Dee reads herself back a lead engineer, still in Engineering.** `dee` (signed in) calls and sends id the world's newHire, and gets back [the world's company, the world's department, the world's otherDesignation, `active`].
+- **Dee reads herself back a lead engineer in Platform.** `dee` (signed in) calls and sends id the world's newHire, and gets back [the world's company, the world's secondDepartment, the world's otherDesignation, `active`].
+- **Dee is still at work: the separation didn't relieve her.** `dee` (signed in) calls and sends id the world's newHire, and gets back [the world's secondDepartment, the world's otherDesignation, `active`].
+- **Dee reads herself back a lead engineer in Platform who has left.** `dee` (signed in) calls and sends id the world's newHire, and gets back [the world's company, the world's secondDepartment, the world's otherDesignation, `left`].
+
+### promote an employee
+
+Starts from the world `a second transfer`.
+
+- **Olga still reads back an engineer.** `olga` (signed in) calls and sends id the world's employee, and gets back the world's designation.
+- **Olga reads herself back a lead engineer, still in Engineering at Acme Trading.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's department, the world's otherDesignation, `active`].
+- **Olga reads herself back an engineer again, still in Engineering.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's department, the world's designation, `active`].
+- **Cy reads back a lead engineer who has left.** `ada` (role company.owner) calls and sends id the world's secondEmployee, and gets back [the world's department, the world's otherDesignation, `left`].
+
+### run a separation
+
+Starts from the world `a separation`.
+
+- **Olga is still at work: a separation doesn't relieve her.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's department, the world's designation, `active`].
+
+### transfer an employee
+
+Starts from the world `a second transfer`.
+
+- **Olga still reads back in Engineering.** `olga` (signed in) calls and sends id the world's employee, and gets back the world's department.
+- **Olga reads herself back in Platform, still an engineer at Acme Trading.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's secondDepartment, the world's designation, `active`].
+- **Olga reads herself back in Engineering again, still an engineer.** `olga` (signed in) calls and sends id the world's employee, and gets back [the world's company, the world's department, the world's designation, `active`].
+- **Cy reads back in Platform, an engineer who has left.** `ada` (role company.owner) calls and sends id the world's secondEmployee, and gets back [the world's secondDepartment, the world's designation, `left`].
+
 ## How to call
 
 ```sh
