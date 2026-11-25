@@ -59,6 +59,10 @@ CREATE TABLE "eval" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "eval_oneLiveEvalPerThread" ON "eval" ("thread") WHERE "state" IN ('queued', 'delivered');
+CREATE TABLE "github" (
+  "id" TEXT PRIMARY KEY,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "input" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -106,6 +110,10 @@ CREATE TABLE "policy" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "policy_oneVersionPerRevision" ON "policy" ("superagent", "revision");
+CREATE TABLE "posthog" (
+  "id" TEXT PRIMARY KEY,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "prompt-set" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,
@@ -145,6 +153,10 @@ CREATE TABLE "settings" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "settings_oneVersionPerRevision" ON "settings" ("revision");
+CREATE TABLE "slack" (
+  "id" TEXT PRIMARY KEY,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "source" (
   "id" TEXT PRIMARY KEY,
   "superagent" TEXT NOT NULL,

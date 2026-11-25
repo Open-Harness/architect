@@ -1,9 +1,0 @@
-# #995 gap 5's checks (rsa-door.test.ts, G16-adapter-mounts call 2), red until the door verifies Bridge's RSA signature. A builder only deletes lines (G11).
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > accepts a delivery Bridge signed, once, and sees the same event again
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > hashes the body's bytes as they came: spaces and a final newline are signed, and kept
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > holds the ten-minute window at both edges, either way, on the door's clock
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > judges the window to the millisecond when the clock is between seconds
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > reads the header by its name in any case, as HTTP does
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > takes a public key whose PEM has its body on one line, or CRLF line ends, as an environment may hold it
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > takes its header and its window from the door's rule, not Bridge's defaults
-src/modules/inbound/rsa-door.test.ts > a door that verifies Bridge's RSA signature (#995 gap 5) > verifies every delivery afresh: an accepted header on a new body is refused
