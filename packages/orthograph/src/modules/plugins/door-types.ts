@@ -29,7 +29,7 @@ export interface AdapterDoor {
         /**
          * Bridge's form (G16-adapter-mounts call 2): `header` holds `t=<ms>,v0=<base64>`, RSASSA-PKCS1-v1_5 (SHA-256) over
          * SHA256("<t>.<raw body>") under the public key whose PEM is the door's secret. A `t` more than `within` seconds from
-         * the door's clock, either way, is refused.
+         * the door's clock, either way, is refused (`within` is in seconds; `t` is milliseconds).
          */
         readonly scheme: "rsa-pkcs1-sha256";
         readonly header: string;

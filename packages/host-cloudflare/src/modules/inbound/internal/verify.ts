@@ -32,9 +32,10 @@ const rsaVerified = (rule: Rsa, pem: string, headers: Headers, body: Uint8Array)
     const parts = BRIDGE.exec(headers.get(rule.header) ?? "");
     const key = PEM.exec(pem.trim());
     if (parts === null || key === null) return false;
-    const [, t, v0] = parts as unknown as [string, string, string];
+    const [, t = "", v0 = ""] = parts;
     const now = yield* Clock.currentTimeMillis;
-    if (Math.abs(now - Number(t)) > rule.within * 1000) return false;
+    // Written as "not inside", so a window that is not a number refuses rather than turning itself off.
+    if (!(Math.abs(now - Number(t)) <= rule.within * 1000)) return false;
     const publicKey = yield* Effect.tryPromise(() =>
       crypto.subtle.importKey("spki", decoded((key[1] ?? "").replace(/\s+/g, "")), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]),
     );

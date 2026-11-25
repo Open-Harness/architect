@@ -5,7 +5,7 @@ built in Goal 17 slice 11, GOAL17-slice11-build). The adapter's `door` says how 
 mount says which events are included and the secret's name (`<MOUNT>_WEBHOOK_SIGNING`).
 
 A request is judged in this order: a mount with no door is 404 and any method but POST 405; the signature is checked over the raw bytes
-(constant time; GitHub's `X-Hub-Signature-256`, Slack's v0 with a five-minute window, or Bridge's RSA form below) and a bad one is 401 `{ _tag: "BadSignature" }` with nothing
+(GitHub's `X-Hub-Signature-256` and Slack's v0 with a five-minute window, both HMAC compared in constant time; or Bridge's RSA form below) and a bad one is 401 `{ _tag: "BadSignature" }` with nothing
 written; a handshake (Slack's `url_verification`) is answered; an event the mount leaves out, one nobody knows, one that does not decode,
 and one no active source takes are each 200 `{ ignored: true }`; otherwise the delivery is one row of the journal, `id` `<mount>:<the
 event's identity>` (unique, so one change settles once, however many deliveries or polls carry it), `operation` `in:<mount>`, in the
