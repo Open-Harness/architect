@@ -42,6 +42,12 @@ Start your own KYC with Bridge: answers the form you fill in, and Bridge's terms
 
 ## Worked examples
 
+### bridge: a bank account, end to end
+
+Starts from an empty world.
+
+- **Ada starts her own KYC and gets Bridge's form and terms.** `ada` (signed in) calls and sends fullName `Ada Wanjiru Kamau`, email `ada@acme-trading.test`, with the request key `ada-kyc`, and gets back true.
+
 ### bridge: a person is checked
 
 Starts from an empty world.

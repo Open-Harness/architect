@@ -14,6 +14,12 @@ import { declaration as attendanceRequestReject } from "../../api/src/attendance
 import { declaration as bankAccountClose } from "../../api/src/bank-account/close.ts";
 import { declaration as bankAccountGet } from "../../api/src/bank-account/get.ts";
 import { declaration as bankAccountOpen } from "../../api/src/bank-account/open.ts";
+import { declaration as bankTransactionFail } from "../../api/src/bank-transaction/fail.ts";
+import { declaration as bankTransactionGet } from "../../api/src/bank-transaction/get.ts";
+import { declaration as bankTransactionLand } from "../../api/src/bank-transaction/land.ts";
+import { declaration as bankTransactionList } from "../../api/src/bank-transaction/list.ts";
+import { declaration as bankTransactionSend } from "../../api/src/bank-transaction/send.ts";
+import { declaration as bankTransactionSettle } from "../../api/src/bank-transaction/settle.ts";
 import { declaration as branchCreate } from "../../api/src/branch/create.ts";
 import { declaration as branchGet } from "../../api/src/branch/get.ts";
 import { declaration as bridgeBusinessApprove } from "../../api/src/bridge-business/approve.ts";
@@ -111,6 +117,12 @@ export const catalog = {
   "bank-account.close": { description: "Close a company's bank account; it takes no more deposits.", operation: bankAccountClose, states: ["open","closed"], move: {"key":"close","from":["open"],"to":["closed"],"emits":"BankAccountClosed"} },
   "bank-account.get": { description: "Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.", operation: bankAccountGet, states: ["open","closed"] },
   "bank-account.open": { description: "Open a bank account for a company whose KYB Bridge approved: answers where to send deposits. Refuses BankAccountNameTaken when another open bank account holds this company and account name.", operation: bankAccountOpen, states: ["open","closed"], move: {"key":"open","from":[],"to":["open"],"emits":"BankAccountOpened"} },
+  "bank-transaction.fail": { description: "Record that Bridge couldn't pay a transfer out, and how it ended. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionFail, states: ["pending","settled","failed"], move: {"key":"fail","from":["pending"],"to":["failed"],"emits":"TransferFailed"} },
+  "bank-transaction.get": { description: "Read one bank-transaction by its id: company, account, date, deposit, withdrawal, currency, reference, party, state.", operation: bankTransactionGet, states: ["pending","settled","failed"] },
+  "bank-transaction.land": { description: "Record a deposit Bridge landed on a company's bank account. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionLand, states: ["pending","settled","failed"], move: {"key":"land","from":[],"to":["settled"],"emits":"DepositLanded"} },
+  "bank-transaction.list": { description: "List bank-transactions, oldest first, 50 to a page, filtered by account.", operation: bankTransactionList, states: ["pending","settled","failed"] },
+  "bank-transaction.send": { description: "Send money out of a company's bank account to a payee, through Bridge. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionSend, states: ["pending","settled","failed"], move: {"key":"send","from":[],"to":["pending"],"emits":"TransferSent"} },
+  "bank-transaction.settle": { description: "Record that Bridge paid a transfer out. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionSettle, states: ["pending","settled","failed"], move: {"key":"settle","from":["pending"],"to":["settled"],"emits":"TransferSettled"} },
   "branch.create": { description: "Add a branch to a company. Refuses BranchNameTaken when another branch holds this company and branch name.", operation: branchCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"BranchCreated"} },
   "branch.get": { description: "Read one branch by its id: company, branchName, state.", operation: branchGet, states: ["active"] },
   "bridge-business.approve": { description: "Record that Bridge approved a company's KYB. Refuses KybAlreadyStarted when another bridge business holds this company.", operation: bridgeBusinessApprove, states: ["started","approved","rejected"], move: {"key":"approve","from":["started"],"to":["approved"],"emits":"KybApproved"} },

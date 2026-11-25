@@ -317,6 +317,22 @@
       },
       "earlier": []
     },
+    "BA-901": {
+      "name": "BankAccountNotFound",
+      "owner": "bank-account",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "bac"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BankAccountNotFound"
+        }
+      },
+      "earlier": []
+    },
     "BR-001": {
       "name": "BranchNameTaken",
       "owner": "branch",
@@ -346,6 +362,100 @@
       "wire": {
         "effect": {
           "tag": "BranchNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "BT-001": {
+      "name": "AccountClosed",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {
+        "account": {
+          "value": "id",
+          "prefix": "bac"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountClosed"
+        }
+      },
+      "earlier": []
+    },
+    "BT-002": {
+      "name": "CurrencyNotHeld",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {
+        "currency": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CurrencyNotHeld"
+        }
+      },
+      "earlier": []
+    },
+    "BT-003": {
+      "name": "NothingToSend",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NothingToSend"
+        }
+      },
+      "earlier": []
+    },
+    "BT-004": {
+      "name": "AlreadyRecorded",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {
+        "reference": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AlreadyRecorded"
+        }
+      },
+      "earlier": []
+    },
+    "BT-900": {
+      "name": "BankTransactionNotPending",
+      "owner": "bank-transaction",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BankTransactionNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "BT-901": {
+      "name": "BankTransactionNotFound",
+      "owner": "bank-transaction",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "btx"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BankTransactionNotFound"
         }
       },
       "earlier": []
