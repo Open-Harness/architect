@@ -368,6 +368,7 @@ export default Blueprint.journey("post a payment entry", {
         s.ada.run(cancel, { paymentEntry: s.last.items[0].voucherId }),
         refuses(PartyDisabled),
         noEvents(),
+        payments.isIn(s.last.items[0].voucherId, "submitted"),
         spans({ absent: ["payment-entry.cancel.reverse"] }),
       ),
       s.step(
