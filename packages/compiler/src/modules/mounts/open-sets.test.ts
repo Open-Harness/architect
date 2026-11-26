@@ -4,10 +4,11 @@
 // same union. An installed feature that isn't mounted adds nothing. What the compiler refuses is open-sets-refused.test.ts; the scratch books
 // are ./testing.ts. Written by the checks author for Goal 16; the builder never edits this file and only removes lines from
 // `expected-failing/open-sets.txt`.
+import { isDeepStrictEqual } from "node:util";
 import { describe, expect, it } from "vitest";
 import { Blueprint } from "orthograph";
 import type { FieldModel, Model } from "#modules/model/types.js";
-import { MOUNTED, OWN_CHANNELS, books, modelOf, optionsOf, surface } from "./testing.ts";
+import { MOUNTED, OWN_CHANNELS, WRAPPERS, books, cells, modelOf, optionsOf, surface } from "./testing.ts";
 
 // What the fixtures declare, so what every field holding the set must hold: the ledger's own, then the four the mounted features add, by name.
 const VOUCHERS = ["Journal Entry", "Contra Entry", "Expense Claim", "Payment Entry", "Salary Slip"];
@@ -118,16 +119,37 @@ describe("#1132: an open set holds the members of the features that add to it", 
     expect(optionsOf(m.things["posting"]?.fields["channel"])).toEqual([...OWN_CHANNELS, "Email"]);
   });
 
-  it("a list of an open set, or of a reference to one, holds the same union in its item", async () => {
+  it("a set held anywhere a value can hold a value holds the mounted union there: every position, every wrapper, the set and a reference", async () => {
+    // Expected shapes come from WRAPPERS in testing.ts and the members the fixtures declare; never from the model judged.
+    const withInvoicing = ["Journal Entry", "Contra Entry", "Expense Claim", "Payment Entry", "Salary Slip", "Sales Invoice"];
+    for (const [mounts, vouchers] of [[MOUNTED, VOUCHERS], [{ ...MOUNTED, invoicing: "invoicing" }, withInvoicing]] as const) {
+      const m = await modelOf(books(), { mounts });
+      const valueOf = (f: unknown) => (f as { readonly value?: unknown } | undefined)?.value;
+      const positions: Readonly<Record<string, (n: string) => unknown>> = {
+        "thing matrix field": (n) => valueOf(m.things["matrix"]?.fields[n]),
+        "matrix.check payload": (n) => valueOf(m.operations["matrix.check"]?.payload[n]),
+        "matrix.check answer": (n) => valueOf((m.operations["matrix.check"]?.answer as Readonly<Record<string, unknown>> | undefined)?.[n]),
+        "event Checked": (n) => valueOf(m.things["matrix"]?.events["Checked"]?.[n]),
+      };
+      const leaf = { set: choice(vouchers), ref: reference(vouchers) };
+      const wrong: Array<string> = [];
+      for (const [where, at] of Object.entries(positions)) {
+        for (const [name, wrapper, l] of cells()) {
+          const got = at(name);
+          const want = WRAPPERS[wrapper]!.model(leaf[l], l);
+          if (!isDeepStrictEqual(got, want)) wrong.push(`${where} ${name}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`);
+        }
+      }
+      expect(wrong, `mounted: ${Object.keys(mounts).join(", ")}`).toEqual([]);
+    }
+  });
+
+  it("a list or a struct that holds no set keeps the model it has today", async () => {
     const m = await modelOf(books(), { mounts: MOUNTED });
-    expect(m.things["posting"]?.fields["kinds"]?.value, "a list of the voucher set").toMatchObject({ type: "schema", format: "list", item: choice(VOUCHERS) });
-    expect(m.things["posting"]?.fields["vouchers"]?.value, "a list of voucher references").toMatchObject({ type: "schema", format: "list", item: reference(VOUCHERS) });
-    const plain = await modelOf(books(), { mounts: { ledger: "ledger" } });
-    expect(plain.things["posting"]?.fields["kinds"]?.value).toMatchObject({ type: "schema", format: "list", item: choice(["Journal Entry", "Contra Entry"]) });
-    // A list of anything else is as it was: no item.
     const payload = m.operations["gl-entry.post"]?.payload;
     expect(payload?.["notes"]?.value, "a list of text").toEqual({ type: "schema", format: "list" });
     expect(payload?.["plainLines"]?.value, "a list of structs holding no set").toEqual({ type: "schema", format: "list", fields: ["note"] });
+    expect(payload?.["plainLine"]?.value, "a struct holding no set").toEqual({ type: "schema" });
   });
 
   it("a need with `when` counts once the mount picks it: bookkeeping, picked to post, adds to the ledger's set", async () => {
@@ -135,17 +157,4 @@ describe("#1132: an open set holds the members of the features that add to it", 
     expect(m.things["gl-entry"]?.fields["voucherType"]?.value).toMatchObject(choice(["Journal Entry", "Contra Entry", "Expense Claim", "Opening Balance", "Payment Entry", "Salary Slip"]));
   });
 
-  it("a struct that holds an open set, at any depth and in a list, holds the union in that field; a struct holding none is as it was", async () => {
-    const m = await modelOf(books(), { mounts: MOUNTED });
-    const payload = m.operations["gl-entry.post"]?.payload;
-    // Only the fields that hold a set are named, each with its model: `note` is plain text and isn't.
-    expect(payload?.["line"]?.value, "a struct").toEqual({ type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)), against: expect.objectContaining(reference(VOUCHERS)) } });
-    expect(payload?.["deep"]?.value, "a struct inside a struct").toEqual({ type: "schema", struct: { inner: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } } });
-    expect(payload?.["deeper"]?.value, "three structs deep").toEqual({ type: "schema", struct: { a: { type: "schema", struct: { b: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } } } } });
-    expect(payload?.["lines"]?.value, "a list of structs").toEqual({ type: "schema", format: "list", fields: ["kind", "note"], item: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } });
-    expect(payload?.["plainLine"]?.value, "a struct holding no set").toEqual({ type: "schema" });
-    // With invoicing mounted, the member it adds is in the struct's field too.
-    const withIt = await modelOf(books(), { mounts: { ...MOUNTED, invoicing: "invoicing" } });
-    expect(optionsOf({ value: (withIt.operations["gl-entry.post"]?.payload["deep"]?.value as { struct?: { inner?: { struct?: { kind?: unknown } } } }).struct?.inner?.struct?.kind })).toContain("Sales Invoice");
-  });
 });

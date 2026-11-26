@@ -42,18 +42,21 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
 3. **The compiled model holds the union.** Every field that holds the set has
    `{ type: "schema", format: "choice", options: [...], open: true }`, where `options` is the owner's members in the
    owner's order, then each member a **mounted** feature (or the app) adds, sorted by plain string order (JavaScript's
-   default sort, by UTF-16 code unit, never by locale). So renaming a mount moves nothing. **A field holds the set
-   wherever the set sits inside it, at any depth** (the features lead, on the 🔍's finding, 26 November 2026):
-   - In a list (`Blueprint.list(VoucherType)`, or a list of a reference to one), the list's model is
-     `{ type: "schema", format: "list", item: <the set's or reference's model> }`, and it takes only a list (MCP:
-     `type: "array"` with the members as `items.enum`, and nothing else beside them).
-   - In a struct (`Blueprint.value(Schema.Struct({ kind: VoucherType.schema, note: Schema.String }))`), the struct's
-     model is `{ type: "schema", struct: { kind: <the set's model> } }`. It names only the fields that hold a set (or a
-     reference to one, or a struct that does), each with its model, so a struct inside a struct nests the same way. A
-     list of such structs is `{ type: "schema", format: "list", fields: [...], item: <the struct's model> }`. The
-     compiler finds the set by its schema: the struct's field is the set's own `schema`.
-   - A list or a struct that holds no set keeps the model it has today (`{ type: "schema", format: "list" }`,
+   default sort, by UTF-16 code unit, never by locale). So renaming a mount moves nothing. **A set held anywhere a value can hold a value,
+   optional or not, holds the union there** (the features lead, on the 🔍's findings, 26 November 2026). The places are
+   every position a value sits in (a thing's field, an operation's payload and answer, an event) and, inside each, every
+   wrapper: bare, optional, a list, a struct's field, an optional struct field (`Schema.optionalKey`), a list in a
+   struct (`Schema.Array`), a struct in a list, and structs nested to any depth. Each holds the set or a reference to
+   one. The compiler finds the set by its schema, through `optionalKey` and `Array` and struct fields. The models:
+   - a list: `{ type: "schema", format: "list", item: <the inner model> }`, keeping the `fields` a list of structs names
+     today (a list of references names `kind` and `id`);
+   - a struct: `{ type: "schema", struct: { <key>: <the inner model> } }`, naming only the keys that hold a set, a
+     reference, or a list or struct that does; an optional key is named as a required one is;
+   - a list or a struct that holds no set keeps the model it has today (`{ type: "schema", format: "list" }`,
      `{ type: "schema" }`), so nothing generated today changes.
+
+   The matrix in the compiler's checks is this list: every position by every wrapper by both leaves, judged against
+   the shapes in `mounts/testing.ts` (`WRAPPERS`), with and without a feature that adds.
 
    An installed feature that isn't mounted is never read: what it would add is absent from the model and from everything generated from it, and a
    wrong addition in it refuses nothing. Because the members are in every field's model, an operation's and a thing's
@@ -96,7 +99,7 @@ that declared it, and a re-export adds nothing; no fixture re-exports a set yet.
 
 ## Checks
 
-- `packages/compiler/src/modules/mounts/open-sets.test.ts` (12) and `open-sets-refused.test.ts` (16), with the scratch
+- `packages/compiler/src/modules/mounts/open-sets.test.ts` (12, one of them the matrix of call 3) and `open-sets-refused.test.ts` (16), with the scratch
   books in `mounts/testing.ts`: the model (calls 1 to 4) and the refusals (call 6), over an in-memory source with
   thirteen installed feature packages and an app that owns a `Channel` set. Among them: a crm with its own `PartyType`
   and an empty `Segment`, leads (needs only the crm), payments owning `PaymentMethod`, projects (owns `ProjectKind`,
@@ -106,8 +109,9 @@ that declared it, and a re-export adds nothing; no fixture re-exports a set yet.
   graph that the compiled model reports says.
 - `e2e/m2/14-open-sets.test.ts`: the doors (call 5), in a copy of acme with five installed feature packages, four of
   them mounted (the crm's `PartyType` beside the ledger's), and the app's own `Channel` and `Tag` sets, made with the
-  real `ortho generate` and run in a world over local D1, plus the generated SDK on its own. It also sends a list of a
-  set, a struct holding one and a list of such structs, a reference whose id is a number, a member in another case or padded, and any value of `Tag` (no member), and
+  real `ortho generate` and run in a world over local D1, plus the generated SDK on its own. Its `posting.probe`
+  takes the matrix's cells (every wrapper, the set and a reference): the API and the SDK judge every cell, MCP's
+  schema every cell, and MCP's and the CLI's calls one cell per wrapper. It also sends a reference whose id is a number, a member in another case or padded, and any value of `Tag` (no member), and
   MCP's `enum` must sit where it constrains the field, in the model's order, with nothing beside it that loosens it.
 
 ## Supersedes

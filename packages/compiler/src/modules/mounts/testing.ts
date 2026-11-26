@@ -85,16 +85,22 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
     description: "Post a line.",
     payload: {
       voucherType: GlEntry.fields.voucherType, voucher: GlEntry.fields.voucher, party: GlEntry.fields.party, account: GlEntry.fields.account,
-      // A struct holding the set and a reference to it, a struct inside a struct, a list of structs, and plain ones beside them.
-      line: Blueprint.value(Schema.Struct({ kind: VoucherType.schema, against: Voucher.schema, note: Schema.String })),
-      deep: Blueprint.value(Schema.Struct({ inner: Schema.Struct({ kind: VoucherType.schema }) })),
-      deeper: Blueprint.value(Schema.Struct({ a: Schema.Struct({ b: Schema.Struct({ kind: VoucherType.schema }) }) })),
-      lines: Blueprint.list(Blueprint.value(Schema.Struct({ kind: VoucherType.schema, note: Schema.String }))),
+      // Structs and lists holding no set, beside the matrix: their models are as they were.
       plainLine: Blueprint.value(Schema.Struct({ note: Schema.String })),
       plainLines: Blueprint.list(Blueprint.value(Schema.Struct({ note: Schema.String }))),
       notes: Blueprint.list(Blueprint.text()),
     },
     answer: { entry: GlEntry.fields.id },
+    allowed: [Blueprint.signedIn],
+  });
+
+  // The matrix: every cell (a wrapper around the set or a reference to it) as a thing's field, an operation's payload and answer, and an event.
+  const Matrix = Blueprint.thing({ description: "Every place a set can sit.", fields: { id: Blueprint.id("mtx"), ...matrixValues(VoucherType, Voucher) }, code: "MX" });
+  const Checked = Blueprint.event({ matrix: Matrix.fields.id, ...matrixValues(VoucherType, Voucher) });
+  const check = Blueprint.operation(Matrix, {
+    description: "Check every place.",
+    payload: { matrix: Matrix.fields.id, ...matrixValues(VoucherType, Voucher) },
+    answer: { matrix: Matrix.fields.id, ...matrixValues(VoucherType, Voucher) },
     allowed: [Blueprint.signedIn],
   });
 
@@ -120,6 +126,9 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
         file("things/gl-entry/thing.js", { GlEntry }),
         file("things/gl-entry/events.js", { Posted }),
         file("things/gl-entry/verbs/post.js", { default: post }),
+        file("things/matrix/thing.js", { Matrix }),
+        file("things/matrix/events.js", { Checked }),
+        file("things/matrix/verbs/check.js", { default: check }),
       ],
     },
     payments: { descriptor: payments, files: [file("values/vouchers.js", adds("payments", (x, l) => ({ paymentEntry: x.add(l.VoucherType, ["Payment Entry"]) })))] },
@@ -233,3 +242,32 @@ export const problemsOf = (exit: Exit.Exit<unknown, unknown>): ReadonlyArray<str
 export const MOUNTED: AppSpec["mounts"] = { ledger: "ledger", payments: "payments", expenses: "expenses", parties: "parties", payroll: "payroll" };
 /** Every feature package but invoicing, mounted under its own name: what the whole dependency relation is judged on. */
 export const ALL: AppSpec["mounts"] = { ...MOUNTED, rogue: "rogue", crm: "crm", leads: "leads", projects: "projects", bookkeeping: "bookkeeping", reports: "reports", audit: "audit" };
+
+// ---- Where a set sits: the matrix (CX-open-sets call 3) ----
+
+/** One way a value can hold a value, with the model it must have once its leaf's model is known. Expected shapes come from here, never from the output. */
+export interface Wrapper {
+  readonly build: (leaf: Value) => Value;
+  /** The model, given the leaf's model and which leaf it is: a list of references names the reference's own fields, as any list of structs does today. */
+  readonly model: (leaf: unknown, which: "set" | "ref") => unknown;
+}
+const struct = (fields: Readonly<Record<string, unknown>>) => ({ type: "schema", struct: fields });
+const listOf = (item: unknown, fields?: ReadonlyArray<string>) => ({ type: "schema", format: "list", ...(fields ? { fields } : {}), item });
+export const WRAPPERS: Readonly<Record<string, Wrapper>> = {
+  bare: { build: (l) => l, model: (m) => m },
+  optional: { build: (l) => Blueprint.optional(l), model: (m) => m },
+  list: { build: (l) => Blueprint.list(l), model: (m, which) => listOf(m, which === "ref" ? ["kind", "id"] : undefined) },
+  structField: { build: (l) => Blueprint.value(Schema.Struct({ x: l.schema })), model: (m) => struct({ x: m }) },
+  optionalStructField: { build: (l) => Blueprint.value(Schema.Struct({ x: Schema.optionalKey(l.schema) })), model: (m) => struct({ x: m }) },
+  listInStruct: { build: (l) => Blueprint.value(Schema.Struct({ xs: Schema.Array(l.schema) })), model: (m) => struct({ xs: listOf(m) }) },
+  structInList: { build: (l) => Blueprint.list(Blueprint.value(Schema.Struct({ x: l.schema }))), model: (m) => listOf(struct({ x: m }), ["x"]) },
+  threeDeep: { build: (l) => Blueprint.value(Schema.Struct({ a: Schema.Struct({ b: Schema.Struct({ x: l.schema }) }) })), model: (m) => struct({ a: struct({ b: struct({ x: m }) }) }) },
+};
+/** The two leaves: the voucher set itself, and a reference whose kind is from it. */
+export const LEAVES = ["set", "ref"] as const;
+/** A cell's field name: `<wrapper>_<leaf>`, the same in every position. */
+export const cells = (): ReadonlyArray<readonly [string, string, (typeof LEAVES)[number]]> =>
+  Object.keys(WRAPPERS).flatMap((w) => LEAVES.map((leaf) => [`${w}_${leaf}`, w, leaf] as const));
+/** Every cell built from the set and the reference. */
+const matrixValues = (VoucherType: Value, Voucher: Value): Readonly<Record<string, Value>> =>
+  Object.fromEntries(cells().map(([name, w, leaf]) => [name, WRAPPERS[w]!.build(leaf === "set" ? VoucherType : Voucher)]));

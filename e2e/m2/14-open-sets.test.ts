@@ -7,23 +7,26 @@
 // (its own member: Lead): a set is its owner's and its export's, so the two never share a member. The app owns two open sets itself,
 // `Channel` (Web, Phone) and `Tag` (no member). The app mounts the ledger, payments, parties and the crm; invoicing is installed and never
 // mounted. The app's own `posting` thing holds a voucher type, a reference to a voucher and to a party, the crm's party type and a channel;
-// `posting.record` takes those, an optional tag, a list of voucher types, a list of voucher references, a struct holding a voucher type and a reference, and a list of structs. The real command generates the app; a world runs it over
+// `posting.record` takes those, an optional tag and a list of voucher types. `posting.probe` takes one cell for every place a set can sit
+// (bare, optional, a list, a struct's field, an optional struct field, a list in a struct, a struct in a list, three structs deep), each
+// holding the voucher set and, in a second cell, a reference to it: the same wrappers as the compiler's matrix. The real command generates the app; a world runs it over
 // local D1, and ada calls it through the API, MCP and the generated CLI. The generated SDK is called on its own, with nothing listening.
 // Once the world has stopped, its D1 file is read.
 //
 // The contract judged, the same as the compiler's mounts/open-sets*.test.ts on the model:
 //  - nothing generated names the unmounted feature's member;
 //  - the API takes a member of the set, from the owner or a mounted feature, as a value, as a reference's kind and in a list, and refuses
-//    with 400 InvalidPayload: a member of an unmounted feature (plain, as a kind, in a list, in a struct, in a list of structs), a name in no set, a member of another set
-//    (the ledger's other set, or the crm's set of the same name, either way round, or inside a struct), a reference of refAny()'s shape, a reference whose id
+//    with 400 InvalidPayload: a member of an unmounted feature (plain, as a kind, in a list, and in every cell of the probe), a name in no set, a member of another set
+//    (the ledger's other set, or the crm's set of the same name, either way round), a reference of refAny()'s shape, a reference whose id
 //    is empty or a number, a member in another case or padded, a bare member where a list is taken, and any value of a set with no member;
 //  - MCP lists, as each field's own enum (a reference's at its kind, a list's at its items), exactly the union in the model's order, with
-//    nothing beside it that lets other text through (a list is `type: "array"` with nothing but `items`; a struct's set is its `kind`
-//    property's enum); it refuses a call with the unmounted member and one with the crm's member given the
+//    nothing beside it that lets other text through (a list is `type: "array"` with nothing but `items`); for every probe cell, the
+//    members at the leaf through every struct and list, each struct key required as declared; it refuses one cell per wrapper; it refuses a call with the unmounted member and one with the crm's member given the
 //    ledger's party type;
 //  - the CLI's help names, for each flag, its own set's members in order and no other set's, and the CLI's call is refused with the
-//    unmounted member and with the crm's set given the ledger's Customer, and takes a mounted feature's;
-//  - the SDK refuses the unmounted member (plain, as a kind, in a list, in a struct, in a list of structs) and the other same-name set's member with InvalidPayload before it sends anything, and sends a
+//    unmounted member and with the crm's set given the ledger's Customer, and takes a mounted feature's; it refuses one probe cell
+//    per wrapper, naming that cell;
+//  - the SDK refuses the unmounted member (plain, as a kind, in a list, and in every probe cell) and the other same-name set's member with InvalidPayload before it sends anything, and sends a
 //    mounted feature's;
 //  - only the accepted calls wrote a row.
 // Written by the checks author for Goal 16; a builder never edits this file and only removes lines from `expected-failing/14-open-sets.txt`.
@@ -85,6 +88,27 @@ const MOUNTED = ["ledger", "payments", "parties", "crm"] as const;
 // ---- the app's own posting ----
 
 const FILES: Readonly<Record<string, string>> = {
+  "blueprint/things/posting/verbs/probe.ts": `import { Blueprint, Schema } from "orthograph";
+import { Posting } from "../thing.ts";
+import { Voucher, VoucherType } from "@fixture/ledger/blueprint/values/ledger.js";
+const wrappers = {
+  bare: (l: any) => l,
+  optional: (l: any) => Blueprint.optional(l),
+  list: (l: any) => Blueprint.list(l),
+  structField: (l: any) => Blueprint.value(Schema.Struct({ x: l.schema })),
+  optionalStructField: (l: any) => Blueprint.value(Schema.Struct({ x: Schema.optionalKey(l.schema) })),
+  listInStruct: (l: any) => Blueprint.value(Schema.Struct({ xs: Schema.Array(l.schema) })),
+  structInList: (l: any) => Blueprint.list(Blueprint.value(Schema.Struct({ x: l.schema }))),
+  threeDeep: (l: any) => Blueprint.value(Schema.Struct({ a: Schema.Struct({ b: Schema.Struct({ x: l.schema }) }) })),
+};
+const cells = Object.fromEntries(Object.entries(wrappers).flatMap(([n, w]) => [[n + "Set", w(VoucherType)], [n + "Ref", w(Voucher)]]));
+export default Blueprint.operation(Posting, {
+  description: "Probe every place a set can sit.",
+  payload: { posting: Blueprint.id("pst"), ...cells },
+  answer: { posting: Posting.fields.id },
+  allowed: [Blueprint.signedIn],
+});
+`,
   ...Object.fromEntries(MOUNTED.map((n) => [`blueprint/features/${n}.ts`, `import { Blueprint } from "orthograph";\nimport plugin from "@fixture/${n}";\n\nexport default Blueprint.use(plugin, (_p) => []);\n`])),
   // The app's own open set: its owner is the app, and no feature depends on the app.
   "blueprint/values/channels.ts": `import { Blueprint } from "orthograph";
@@ -106,9 +130,6 @@ import { Voucher, VoucherType } from "@fixture/ledger/blueprint/values/ledger.js
 export default Blueprint.operation(Posting, {
   description: "Record a posting.",
   payload: { posting: Blueprint.id("pst"), tag: Blueprint.optional(Tag), kinds: Blueprint.list(VoucherType),
-    line: Blueprint.value(Schema.Struct({ kind: VoucherType.schema, against: Voucher.schema, note: Schema.String })),
-    refs: Blueprint.list(Voucher),
-    lines: Blueprint.list(Blueprint.value(Schema.Struct({ kind: VoucherType.schema }))),
     voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party, contactType: Posting.fields.contactType, channel: Posting.fields.channel },
   answer: { posting: Posting.fields.id },
   allowed: [Blueprint.signedIn],
@@ -116,7 +137,11 @@ export default Blueprint.operation(Posting, {
 });
 `,
 };
+// Where a set sits (CX-open-sets call 3): one cell per wrapper and leaf, the same wrappers as the compiler's matrix (mounts/testing.ts).
 const HANDLERS: Readonly<Record<string, string>> = {
+  "src/posting/probe.ts": `import { Effect } from "effect";
+export default ((payload: any) => Effect.succeed({ posting: payload.posting })) as never;
+`,
   "src/posting/record.ts": `import { Effect } from "effect";
 import { Records } from "@orthograph/language-effect";
 import { Posting } from "../../blueprint/things/posting/thing.ts";
@@ -177,16 +202,7 @@ const resolved = (s: unknown, root: unknown): Record<string, unknown> | undefine
  * The members a property takes, read where they constrain it: its own `enum`, in order, with no `anyOf`, `oneOf`, `allOf` or `not`
  * beside it that could let other text through; for a reference, its `kind`'s. Anything else is reported as what it is.
  */
-const membersAt = (property: unknown, root: unknown, shape: boolean | "list" | "struct" | "structs"): unknown => {
-  if (shape === "struct" || shape === "structs") {
-    // A struct's `kind` property, or each item's in a list of structs: an object whose `kind` is judged like any field.
-    const outer = resolved(property, root);
-    if (shape === "structs" && (outer?.["type"] !== "array" || ["prefixItems", "additionalItems", "contains", "anyOf", "oneOf", "allOf", "not"].some((k) => outer !== undefined && k in outer))) return `the list is loosened: ${JSON.stringify(outer)}`;
-    const object = resolved(shape === "structs" ? outer?.["items"] : outer, root);
-    if (["anyOf", "oneOf", "allOf", "not"].some((k) => object !== undefined && k in object)) return `the struct is loosened: ${JSON.stringify(object)}`;
-    if (!Array.isArray(object?.["required"]) || !(object["required"] as ReadonlyArray<unknown>).includes("kind")) return `the struct's kind isn't required: ${JSON.stringify(object)}`;
-    return membersAt((object?.["properties"] as Record<string, unknown> | undefined)?.["kind"], root, false);
-  }
+const membersAt = (property: unknown, root: unknown, shape: boolean | "list"): unknown => {
   const outer = resolved(property, root);
   // A list is an array and nothing else, its every item judged by `items`.
   if (shape === "list" && (outer?.["type"] !== "array" || ["prefixItems", "additionalItems", "contains", "anyOf", "oneOf", "allOf", "not"].some((k) => outer !== undefined && k in outer))) return `the list is loosened: ${JSON.stringify(outer)}`;
@@ -244,6 +260,47 @@ const flagsOf = (help: string): ReadonlyMap<string, string> => {
   return flags;
 };
 
+/** Each wrapper: how a value is sent, and the path in MCP's input schema from the cell's property to the leaf (each step a key to follow). */
+const WRAP: Readonly<Record<string, { readonly send: (leaf: unknown) => unknown; readonly path: ReadonlyArray<string>; readonly optional?: true }>> = {
+  bare: { send: (v) => v, path: [] },
+  optional: { send: (v) => v, path: [], optional: true },
+  list: { send: (v) => [v], path: ["items"] },
+  structField: { send: (v) => ({ x: v }), path: ["properties", "x"] },
+  optionalStructField: { send: (v) => ({ x: v }), path: ["properties", "x"] },
+  listInStruct: { send: (v) => ({ xs: [v] }), path: ["properties", "xs", "items"] },
+  structInList: { send: (v) => [{ x: v }], path: ["items", "properties", "x"] },
+  threeDeep: { send: (v) => ({ a: { b: { x: v } } }), path: ["properties", "a", "properties", "b", "properties", "x"] },
+};
+const CELLS = Object.keys(WRAP).flatMap((w) => (["set", "ref"] as const).map((leaf) => ({ name: `${w}${leaf === "set" ? "Set" : "Ref"}`, wrapper: w, leaf })));
+/** A probe payload: every cell holding `member`, but `bad` holding `instead`. */
+const probePayload = (posting: string, member: string, bad?: string, instead = "Sales Invoice") =>
+  Object.fromEntries([["posting", posting], ...CELLS.map((c) => {
+    const m = c.name === bad ? instead : member;
+    return [c.name, WRAP[c.wrapper]!.send(c.leaf === "set" ? m : { kind: m, id: "v_1" })];
+  })]);
+/** Following a path through MCP's schema, every step resolved and nothing beside it that loosens it; then the leaf's members. */
+const LOOSE = ["anyOf", "oneOf", "allOf", "not", "const", "prefixItems", "additionalItems", "contains"];
+const leafMembers = (property: unknown, root: unknown, path: ReadonlyArray<string>, leaf: "set" | "ref"): unknown => {
+  let at = resolved(property, root);
+  for (let i = 0; i < path.length; i++) {
+    const loose = LOOSE.filter((k) => at !== undefined && k in at);
+    if (loose.length > 0) return `loosened by ${loose.join(", ")} at ${path.slice(0, i).join(".") || "the field"}`;
+    if (path[i] === "items" && at?.["type"] !== "array") return `not an array at ${path.slice(0, i).join(".") || "the field"}`;
+    at = resolved((at as Record<string, unknown> | undefined)?.[path[i]!], root);
+  }
+  return membersAt(at, root, leaf === "ref");
+};
+/** Whether each struct key on the path is required in MCP's schema, as the declaration says. */
+const requiredOnPath = (property: unknown, root: unknown, path: ReadonlyArray<string>): ReadonlyArray<string> => {
+  const said: Array<string> = [];
+  let at = resolved(property, root);
+  for (let i = 0; i < path.length; i++) {
+    if (path[i] === "properties") said.push(`${path[i + 1]}:${Array.isArray(at?.["required"]) && (at["required"] as ReadonlyArray<unknown>).includes(path[i + 1]) ? "required" : "optional"}`);
+    at = resolved((at as Record<string, unknown> | undefined)?.[path[i]!], root);
+  }
+  return said;
+};
+
 // In the model's order: the owner's own, in its order, then what the mounted features add, by name.
 const VOUCHERS = ["Journal Entry", "Contra Entry", "Payment Entry"];
 const PARTIES = ["Customer", "Supplier"];
@@ -272,10 +329,10 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         const post = sender(url, ada);
         let n = 0;
         const next = () => `pst_${String(++n)}`;
-        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string; tag?: string; kinds?: ReadonlyArray<string>; line?: object; lines?: ReadonlyArray<object>; refs?: ReadonlyArray<object> } = {}) =>
-          post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], line: { kind: "Journal Entry", against: voucher("Journal Entry"), note: "n" }, lines: [{ kind: "Journal Entry" }], refs: [voucher("Journal Entry")], ...more });
+        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string; tag?: string; kinds?: ReadonlyArray<string> } = {}) =>
+          post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], ...more });
         const api = {
-          payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Contra Entry"], line: { kind: "Payment Entry", against: voucher("Payment Entry"), note: "a mounted feature's member, in a struct" }, lines: [{ kind: "Payment Entry" }, { kind: "Contra Entry" }], refs: [voucher("Payment Entry")] }),
+          payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Contra Entry"] }),
           journal: await record("Journal Entry", voucher("Journal Entry", "j_1"), { kind: "Supplier", id: "s_1" }, { channel: "Phone" }),
           unmountedKind: await record("Sales Invoice", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
           unmountedRef: await record("Payment Entry", voucher("Sales Invoice"), { kind: "Customer", id: "c_1" }),
@@ -296,11 +353,6 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           // A set with no member takes nothing.
           emptySet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { tag: "Anything" }),
           listBare: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: "Payment Entry" as never }),
-          structUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Sales Invoice", against: voucher("Payment Entry"), note: "n" } }),
-          structUnmountedRef: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Journal Entry", against: voucher("Sales Invoice"), note: "n" } }),
-          refsUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { refs: [voucher("Payment Entry"), voucher("Sales Invoice")] }),
-          structsUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { lines: [{ kind: "Payment Entry" }, { kind: "Sales Invoice" }] }),
-          structOtherSet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Customer", against: voucher("Payment Entry"), note: "n" } }),
           listUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Sales Invoice"] }),
           noSuchChannel: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { channel: "Fax" }),
         };
@@ -314,13 +366,26 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         };
         const tool = (await rpc("tools/list", {})).result?.tools?.find((t) => t.name === "posting.record");
         const mcpCall = async (kind: string, contactType = "Lead") =>
-          (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" }, contactType, channel: "Web", kinds: [kind], line: { kind, against: voucher(kind), note: "n" }, lines: [{ kind }], refs: [voucher(kind)] } })).result;
+          (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" }, contactType, channel: "Web", kinds: [kind] } })).result;
         // The crm's set is another set of the same name: the ledger's member is not one of it.
         const mcp = { tool, accepted: await mcpCall("Payment Entry"), refused: await mcpCall("Sales Invoice"), otherSameName: await mcpCall("Payment Entry", "Customer") };
-        const cli = (kind: string, contactType = "Lead", lineKind = kind) => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }), "--contactType", contactType, "--channel", "Web", "--kinds", JSON.stringify([kind]), "--line", JSON.stringify({ kind: lineKind, against: voucher(kind), note: "n" }), "--lines", JSON.stringify([{ kind }]), "--refs", JSON.stringify([voucher(kind)]));
+        const cli = (kind: string, contactType = "Lead") => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }), "--contactType", contactType, "--channel", "Web", "--kinds", JSON.stringify([kind]));
         const help = acmeCli(root, url, ada, "posting", "record", "--help");
         // The accepted call is a mounted feature's member: a CLI that knows only the owner's own members would refuse it.
-        return { api, mcp, cli: { help, accepted: cli("Payment Entry"), refused: cli("Sales Invoice"), otherSameName: cli("Payment Entry", "Customer"), inLine: cli("Payment Entry", "Lead", "Sales Invoice") } };
+        // The matrix: every cell through the API, a mounted member accepted and an unmounted one refused; one cell per wrapper through MCP
+        // and the CLI (the set's leaf for half the wrappers, the reference's for the rest).
+        const probeTool = (await rpc("tools/list", {})).result?.tools?.find((t) => t.name === "posting.probe");
+        const apiRefused: Record<string, Answer> = {};
+        for (const c of CELLS) apiRefused[c.name] = await post("posting/probe", probePayload(next(), "Payment Entry", c.name));
+        const picked = Object.keys(WRAP).map((w, i) => CELLS.find((c) => c.wrapper === w && c.leaf === (i % 2 === 0 ? "set" : "ref"))!);
+        const mcpProbe = async (bad?: string) => (await rpc("tools/call", { name: "posting.probe", arguments: probePayload(next(), "Payment Entry", bad) })).result;
+        const mcpRefused: Record<string, unknown> = {};
+        for (const c of picked) mcpRefused[c.name] = await mcpProbe(c.name);
+        const cliProbe = (bad?: string) => acmeCli(root, url, ada, "posting", "probe", ...Object.entries(probePayload(next(), "Payment Entry", bad)).flatMap(([k, v]) => [`--${k}`, typeof v === "string" ? v : JSON.stringify(v)]));
+        const cliRefused: Record<string, ReturnType<typeof acmeCli>> = {};
+        for (const c of picked) cliRefused[c.name] = cliProbe(c.name);
+        const matrix = { probeTool, apiAccepted: await post("posting/probe", probePayload(next(), "Payment Entry")), apiRefused, mcpAccepted: await mcpProbe(), mcpRefused, cliAccepted: cliProbe(), cliRefused, picked };
+        return { api, mcp, matrix, cli: { help, accepted: cli("Payment Entry"), refused: cli("Sales Invoice"), otherSameName: cli("Payment Entry", "Customer") } };
       });
     })));
     nothingRunning(root);
@@ -329,37 +394,73 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     // and fails only for want of a server.
     writeFileSync(join(root, "sdk-probe.ts"), `import { Effect, Exit, Cause } from "effect";
 import * as Sdk from "./generated/sdk/src/index.ts";
-const base = { posting: "pst_99", voucher: { kind: "Payment Entry", id: "v_1" }, party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], line: { kind: "Journal Entry", against: { kind: "Journal Entry", id: "v_1" }, note: "n" }, lines: [{ kind: "Journal Entry" }], refs: [{ kind: "Journal Entry", id: "v_1" }] };
+const base = { posting: "pst_99", voucher: { kind: "Payment Entry", id: "v_1" }, party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"] };
 const tag = (over: object) => Effect.runPromiseExit(Sdk.posting.record({ ...base, voucherType: "Payment Entry", ...over } as never).pipe(Effect.provide(Sdk.layer("http://127.0.0.1:9", "t"))))
   .then((exit) => Exit.isSuccess(exit) ? "sent and answered" : String((Cause.squash(exit.cause) as { _tag?: unknown })?._tag ?? Cause.pretty(exit.cause)));
-Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" }), tag({ voucher: { kind: "Sales Invoice", id: "v_1" } }), tag({ kinds: ["Sales Invoice"] }), tag({ line: { kind: "Sales Invoice", against: { kind: "Journal Entry", id: "v_1" }, note: "n" } }), tag({ lines: [{ kind: "Sales Invoice" }] }),
-  tag({ line: { kind: "Journal Entry", against: { kind: "Sales Invoice", id: "v_1" }, note: "n" } }), tag({ refs: [{ kind: "Sales Invoice", id: "v_1" }] })])
-  .then(([accepted, unmounted, otherSameName, unmountedKind, unmountedInList, inStruct, inStructs, refInStruct, inRefs]) => console.log(JSON.stringify({ accepted, unmounted, otherSameName, unmountedKind, unmountedInList, inStruct, inStructs, refInStruct, inRefs })));
+const cells = ${JSON.stringify(CELLS.map((c) => c.name))};
+const probe = (body: object) => Effect.runPromiseExit(Sdk.posting.probe(body as never).pipe(Effect.provide(Sdk.layer("http://127.0.0.1:9", "t"))))
+  .then((exit) => Exit.isSuccess(exit) ? "sent and answered" : String((Cause.squash(exit.cause) as { _tag?: unknown })?._tag ?? Cause.pretty(exit.cause)));
+const bodies = ${JSON.stringify(Object.fromEntries([["accepted", probePayload("pst_98", "Payment Entry")], ...CELLS.map((c) => [c.name, probePayload("pst_98", "Payment Entry", c.name)])]))};
+Promise.all(Object.entries(bodies).map(([k, b]) => probe(b).then((t) => [k, t]))).then((pairs) => console.log("MATRIX " + JSON.stringify(Object.fromEntries(pairs))));
+void cells;
+Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" }), tag({ voucher: { kind: "Sales Invoice", id: "v_1" } }), tag({ kinds: ["Sales Invoice"] })])
+  .then(([accepted, unmounted, otherSameName, unmountedKind, unmountedInList]) => console.log(JSON.stringify({ accepted, unmounted, otherSameName, unmountedKind, unmountedInList })));
 `);
     const probe = spawnSync(process.execPath, [join(root, "sdk-probe.ts")], { cwd: root, encoding: "utf8", timeout: 120_000 });
-    const sdk = JSON.parse(probe.stdout.trim().split("\n").pop() || "{}") as Record<string, string>;
+    const lines = probe.stdout.trim().split("\n");
+    const sdk = JSON.parse(lines.filter((l) => l.startsWith("{")).pop() || "{}") as Record<string, string>;
+    const sdkMatrix = JSON.parse(lines.find((l) => l.startsWith("MATRIX "))?.slice(7) || "{}") as Record<string, string>;
+    expect(sdkMatrix["accepted"], `the SDK sends every cell with a mounted member: ${probe.stdout}${probe.stderr}`).not.toBe("InvalidPayload");
+    expect(sdkMatrix["accepted"]).not.toBe(undefined);
+    expect(CELLS.filter((c) => sdkMatrix[c.name] !== "InvalidPayload").map((c) => `${c.name}: ${sdkMatrix[c.name]}`), "the SDK refuses an unmounted member in every cell, before sending").toEqual([]);
     expect(sdk["unmounted"], `the SDK refuses Sales Invoice before sending: ${probe.stdout}${probe.stderr}`).toBe("InvalidPayload");
     expect(sdk["otherSameName"], "the SDK refuses the ledger's Customer as the crm's party type").toBe("InvalidPayload");
     expect(sdk["unmountedKind"], "the SDK refuses Sales Invoice as a reference's kind").toBe("InvalidPayload");
     expect(sdk["unmountedInList"], "the SDK refuses Sales Invoice in a list").toBe("InvalidPayload");
-    expect(sdk["inStruct"], "the SDK refuses Sales Invoice in a struct").toBe("InvalidPayload");
-    expect(sdk["inStructs"], "the SDK refuses Sales Invoice in a list of structs").toBe("InvalidPayload");
-    expect(sdk["refInStruct"], "the SDK refuses Sales Invoice as a reference's kind in a struct").toBe("InvalidPayload");
-    expect(sdk["inRefs"], "the SDK refuses Sales Invoice in a list of references").toBe("InvalidPayload");
     expect(sdk["accepted"], "the SDK sends Payment Entry (and finds no server)").not.toBe("InvalidPayload");
     expect(sdk["accepted"]).not.toBe(undefined);
 
     // The API: a member of the set, the owner's or a mounted feature's, is taken; anything else is refused before the handler runs.
     expect(got.api.payment.status, JSON.stringify(got.api.payment.body)).toBe(200);
     expect(got.api.journal.status, JSON.stringify(got.api.journal.body)).toBe(200);
-    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "listBare", "structUnmounted", "structUnmountedRef", "refsUnmounted", "structsUnmounted", "structOtherSet", "listUnmounted", "noSuchChannel"] as const) {
+    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "listBare", "listUnmounted", "noSuchChannel"] as const) {
       expect(got.api[key], `${key}: ${JSON.stringify(got.api[key].body)}`).toMatchObject({ status: 400, body: { _tag: "InvalidPayload" } });
+    }
+
+    // The matrix at the API: every cell takes a mounted member and refuses an unmounted one.
+    expect(got.matrix.apiAccepted.status, JSON.stringify(got.matrix.apiAccepted.body)).toBe(200);
+    expect(CELLS.filter((c) => got.matrix.apiRefused[c.name]?.status !== 400 || got.matrix.apiRefused[c.name]?.body["_tag"] !== "InvalidPayload").map((c) => `${c.name}: ${JSON.stringify(got.matrix.apiRefused[c.name])}`), "the API refuses Sales Invoice in every cell").toEqual([]);
+    // The matrix at MCP: every cell's members where they constrain it, each struct key required as declared; one refused call per wrapper.
+    expect(got.matrix.probeTool, "MCP lists posting.probe").toBeDefined();
+    const probeInput = got.matrix.probeTool!.inputSchema as { properties?: Record<string, unknown>; required?: ReadonlyArray<string> };
+    const mcpWrong: Array<string> = [];
+    for (const c of CELLS) {
+      const members = leafMembers(probeInput.properties?.[c.name], probeInput, WRAP[c.wrapper]!.path, c.leaf);
+      if (JSON.stringify(members) !== JSON.stringify(VOUCHERS)) mcpWrong.push(`${c.name}: ${JSON.stringify(members)}`);
+      const keys = requiredOnPath(probeInput.properties?.[c.name], probeInput, WRAP[c.wrapper]!.path);
+      const want = WRAP[c.wrapper]!.path.flatMap((k, i, a) => (k === "properties" ? [`${a[i + 1]}:${c.wrapper === "optionalStructField" ? "optional" : "required"}`] : []));
+      if (JSON.stringify(keys) !== JSON.stringify(want)) mcpWrong.push(`${c.name} keys: ${JSON.stringify(keys)}, want ${JSON.stringify(want)}`);
+      if ((probeInput.required ?? []).includes(c.name) === (WRAP[c.wrapper]!.optional === true)) mcpWrong.push(`${c.name}: required is ${String((probeInput.required ?? []).includes(c.name))}`);
+    }
+    expect(mcpWrong, "MCP's schema for every cell").toEqual([]);
+    expect((got.matrix.mcpAccepted as { isError?: boolean } | undefined)?.isError, JSON.stringify(got.matrix.mcpAccepted)).not.toBe(true);
+    for (const c of got.matrix.picked) {
+      const r = got.matrix.mcpRefused[c.name] as { isError?: boolean } | undefined;
+      expect(r?.isError, `MCP refuses Sales Invoice in ${c.name}: ${JSON.stringify(r)}`).toBe(true);
+      expect(JSON.stringify(r), c.name).toContain("InvalidPayload");
+    }
+    // The matrix at the CLI: one refused call per wrapper, refused at that cell.
+    expect(got.matrix.cliAccepted.status, got.matrix.cliAccepted.stderr).toBe(0);
+    for (const c of got.matrix.picked) {
+      const r = got.matrix.cliRefused[c.name]!;
+      expect(r.status, `the CLI refuses Sales Invoice in ${c.name}`).not.toBe(0);
+      expect(r.stderr, `the CLI's refusal names ${c.name}`).toMatch(new RegExp(`(SchemaError|InvalidPayload)[\\s\\S]*${c.name}`));
     }
 
     // MCP: the tool's input lists exactly the mounted members for each field, and refuses the unmounted one.
     expect(got.mcp.tool, "MCP lists posting.record").toBeDefined();
     const input = got.mcp.tool!.inputSchema as { properties?: Record<string, unknown> };
-    for (const [field, kinds, reference] of [["voucherType", VOUCHERS, false], ["voucher", VOUCHERS, true], ["party", PARTIES, true], ["contactType", CONTACTS, false], ["channel", CHANNELS, false], ["tag", [], false], ["kinds", VOUCHERS, "list"], ["line", VOUCHERS, "struct"], ["lines", VOUCHERS, "structs"]] as const) {
+    for (const [field, kinds, reference] of [["voucherType", VOUCHERS, false], ["voucher", VOUCHERS, true], ["party", PARTIES, true], ["contactType", CONTACTS, false], ["channel", CHANNELS, false], ["tag", [], false], ["kinds", VOUCHERS, "list"]] as const) {
       // Exactly the union, in the model's order, once each, where it constrains the field; and no other member allowed anywhere under it.
       expect(membersAt(input.properties?.[field], input, reference), `${field}'s members`).toEqual(kinds);
       expect(kindsIn(input.properties?.[field], input), `${field}: no other member under it`).toEqual([...kinds].sort());
@@ -367,11 +468,6 @@ Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: 
     expect(got.mcp.accepted?.isError, JSON.stringify(got.mcp.accepted)).not.toBe(true);
     expect(got.mcp.refused?.isError, JSON.stringify(got.mcp.refused)).toBe(true);
     expect(JSON.stringify(got.mcp.refused)).toContain("InvalidPayload");
-    // A reference inside the struct, and a list of references, are judged the same way.
-    const lineObject = resolved(input.properties?.["line"], input);
-    expect(membersAt((lineObject?.["properties"] as Record<string, unknown> | undefined)?.["against"], input, true), "line.against's kinds").toEqual(VOUCHERS);
-    expect(membersAt(resolved(input.properties?.["refs"], input)?.["items"], input, true), "refs' kinds").toEqual(VOUCHERS);
-    expect(resolved(input.properties?.["refs"], input)?.["type"], "refs is a list").toBe("array");
     expect(got.mcp.otherSameName?.isError, `MCP refuses the ledger's Customer as the crm's party type: ${JSON.stringify(got.mcp.otherSameName)}`).toBe(true);
     expect(JSON.stringify(got.mcp.otherSameName)).toContain("InvalidPayload");
 
@@ -394,8 +490,6 @@ Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: 
     // Each refused for its member, at the field that holds it, not for anything else.
     expect(got.cli.refused.stderr, "the refusal names the payload's schema").toMatch(/SchemaError|InvalidPayload/);
     expect(got.cli.otherSameName.stderr, "refused at contactType").toMatch(/(SchemaError|InvalidPayload)[\s\S]*contactType/);
-    expect(got.cli.inLine.status, "the CLI's call whose only unmounted member is inside --line is refused").not.toBe(0);
-    expect(got.cli.inLine.stderr, "refused at line.kind").toMatch(/(SchemaError|InvalidPayload)[\s\S]*line[\s\S]*kind/);
 
     // Only the accepted calls wrote: the API's two, MCP's one and the CLI's one.
     const rows = postingsOf(root, name);
