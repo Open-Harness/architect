@@ -81,7 +81,7 @@ const prove = Command.make(
     port: Flag.Int("port").pipe(Flag.withDefault(0), Flag.withDescription("The local port for the app under proof; 0 picks a free one")),
     empty: Flag.Boolean("empty").pipe(Flag.withDefault(false), Flag.withDescription("Run the journeys on the scaffolded handlers, recording no verdict")),
     // The journeys to judge, by name: any number of times with `--env staging` (CX-staging), at most once with `--env local`.
-    only: Flag.String("only").pipe(Flag.atLeast(0), Flag.withDescription("Run only the journey with this declared name; repeat it to name several with --env staging")),
+    only: Flag.String("only").pipe(Flag.atLeast(0), Flag.withDescription("Run only this journey, named by its declared name or by its file as ortho brief lists it; repeat it to name several with --env staging")),
     // Only the journeys a change since the last proof's record touches; everything, saying why, when it cannot tell (ST1.23).
     changed: Flag.Boolean("changed").pipe(Flag.withDefault(false), Flag.withDescription("Run only the journeys a change since the last proof touches")),
     // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).
@@ -221,7 +221,7 @@ const addPlugin = (kind: Kind) =>
         Effect.catchTag("MountRefused", (e) => fail(e.message, 2)),
       ),
   ).pipe(Command.withDescription(ADD_PLUGIN[kind]));
-// `ortho add journeys <thing>`: a stub per path, role and declared error, writing only the ones that are missing (K16 e).
+// `ortho add journeys <thing>`: a stub per path, role, declared error and rule an operation can break, writing only the ones that are missing (K16 e).
 const addJourneys = Command.make(
   "journeys",
   { thing: Argument.String("thing").pipe(Argument.withDescription("The declared thing whose journeys are stubbed")), root: rootFlag("whose model is read") },
@@ -242,7 +242,7 @@ const addJourneys = Command.make(
       }),
       Effect.catchTags({ BlueprintInvalid: (e) => fail(e.problems.join("\n"), 2), SourceError: (e) => fail(e.message, 2) }),
     ),
-).pipe(Command.withDescription("Stub a journey for each path, role and declared error of a thing, keeping those already written"));
+).pipe(Command.withDescription("Stub a journey for each path, role, declared error and rule of a thing's operations, keeping those already written"));
 const add = Command.make("add").pipe(
   Command.withDescription("Add a declaration, a journey or a plugin to the app"),
   Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),

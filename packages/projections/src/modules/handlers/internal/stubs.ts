@@ -1,12 +1,12 @@
 // `ortho add journeys <thing>` (K16 e): a journey stub per path through the thing's machine, then, per operation and read
-// by name, one per allowed role no machine stub casts, one caller turned away, and one per declared error. Every world,
-// payload and expected field is a `Blueprint.todo`, so `ortho check` names each until it is filled.
+// by name, one per allowed role no machine stub casts, one caller turned away, one per declared error and one per refusal
+// a rule gives. Every world, payload and expected field is a `Blueprint.todo`, so `ortho check` names each until it is filled.
 import type { AllowedModel, Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
-import { camel, lines, local, scaffolded } from "#modules/names/service.js";
+import { camel, lines, local, ruleBehind, scaffolded } from "#modules/names/service.js";
 import { whoLines } from "./header.ts";
 import { callsOf, machinePaths, type MachinePath } from "./paths.ts";
-import { allowedFile, an, callerOf, columns, refusalsOf, roleName, thingFile } from "./words.ts";
+import { allowedFile, an, callerOf, columns, refusalsOf, roleName, thingFile, type Refusal } from "./words.ts";
 
 /** A blueprint file as a journey in `blueprint/journeys/` imports it. */
 const rel = (file: string) => (file.startsWith("blueprint/") ? `../${file.slice("blueprint/".length)}` : file);
@@ -135,20 +135,39 @@ const roleStubs = (model: Model, op: OperationModel, machined: boolean): Readonl
   })];
 };
 
-/** One stub per declared error, cast as the first allowed role, its fields a blank. */
-const errorStubs = (model: Model, op: OperationModel): ReadonlyArray<RenderedFile> =>
-  refusalsOf(model, op).filter((r) => r.giver === "yours").map((r) => {
-    const cast = castOf(model, op, op.allowed[0]);
-    const caller = op.allowed[0] ? callerOf(op.allowed[0]) : "anyone";
-    return render(op, {
-      name: `refused-${kebab(r.name)}`, from: r.file, title: `refused ${r.name}`, cast,
-      imports: [`import { Blueprint, noEvents, refuses } from "orthograph";`, ...cast.imports, `import { ${r.name} } from "${rel(r.file)}";`],
-      doc: [`One refusal of ${op.name}, from ${r.file}:`, `  ${r.name} (exit ${r.exit}, ${r.code})${r.fields.length ? `, carrying ${r.fields.join(", ")}` : ""}`,
-        `Refused: ${caller} calls ${op.name} with a payload that triggers it, and nothing changes.`],
-      starts: `a starting world where ${op.name} can be refused ${r.name}`, payload: payloadOf(op, ` that triggers ${r.name}`),
-      checks: [`refuses(${r.name}${r.fields.length ? `, ${todo(`${r.name}'s fields: ${r.fields.join(", ")}`)}` : ""})`, "noEvents()"],
-    });
+/**
+ * One stub per refusal a journey can cause by what it sends or the world it starts in: each declared error (the handler's
+ * to give), then each refusal a rule gives (the runtime's, G5), cast as the first allowed role, its fields a blank. A
+ * rule's stub cites the rule and says the world must already hold what the call would break.
+ */
+const errorStubs = (model: Model, op: OperationModel): ReadonlyArray<RenderedFile> => {
+  const cast = castOf(model, op, op.allowed[0]);
+  const caller = op.allowed[0] ? callerOf(op.allowed[0]) : "anyone";
+  const stub = (r: Refusal, s: Pick<Stub, "from" | "doc" | "starts" | "payload"> & { readonly errors: string }) => render(op, {
+    ...s, name: `refused-${kebab(r.name)}`, title: `refused ${r.name}`, cast,
+    imports: [`import { Blueprint, noEvents, refuses } from "orthograph";`, ...cast.imports, `import { ${r.name} } from "${rel(s.errors)}";`],
+    checks: [`refuses(${r.name}${r.fields.length ? `, ${todo(`${r.name}'s fields: ${r.fields.join(", ")}`)}` : ""})`, "noEvents()"],
   });
+  const said = (r: Refusal) => `  ${r.name} (exit ${r.exit}, ${r.code})${r.fields.length ? `, carrying ${r.fields.join(", ")}` : ""}`;
+  const refusals = refusalsOf(model, op);
+  return [
+    ...refusals.filter((r) => r.giver === "yours").map((r) => stub(r, {
+      from: r.file, errors: r.file,
+      doc: [`One refusal of ${op.name}, from ${r.file}:`, said(r), `Refused: ${caller} calls ${op.name} with a payload that triggers it, and nothing changes.`],
+      starts: `a starting world where ${op.name} can be refused ${r.name}`, payload: payloadOf(op, ` that triggers ${r.name}`),
+    })),
+    ...refusals.flatMap((r) => {
+      const rule = r.giver === "runtime" ? ruleBehind(model, op, r.name) : undefined;
+      if (rule === undefined) return [];
+      return [stub(r, {
+        from: r.file, errors: thingFile(model, rule.thing, "errors"),
+        doc: [`One refusal of ${op.name}, the runtime's, for a rule in ${r.file}:`, said(r), `  ${rule.full}: ${rule.sentence}`,
+          `Refused: ${caller} calls ${op.name} in a world where it would break the rule, and nothing changes.`],
+        starts: `a starting world where ${op.name} would break ${rule.full}`, payload: payloadOf(op, ` that breaks ${rule.full}`),
+      })];
+    }),
+  ];
+};
 
 export const renderJourneyStubs = (model: Model, thing: string): ReadonlyArray<RenderedFile> => {
   const paths = machinePaths(model, thing);
