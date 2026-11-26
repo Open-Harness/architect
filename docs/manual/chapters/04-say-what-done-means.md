@@ -4,8 +4,8 @@ Film: `docs/explainer/films/say-done/` · App: `examples/plugged-in`
 
 **How it stands.** Every command here runs today, and every line of output was recorded by `docs/manual/capture.sh`.
 That a *different* agent writes the journeys is this repository's practice: no command starts an agent in a role, and
-nothing in a new app stops a builder editing a journey. The journey commands are rough in four places, the last four
-items under "What goes wrong", and are being fixed (26 November 2026): this page shows what ran on the day it was
+nothing in a new app stops a builder editing a journey. The journey commands are rough in four places, the four items
+marked "rough" under "What goes wrong", and are being fixed (26 November 2026): this page shows what ran on the day it was
 recorded.
 
 ## What you do
@@ -99,13 +99,13 @@ journey claim a handle ✘ 0/8 steps
   sessions. Nothing enforces this for you yet.
 - **A stub is left as it was written.** `ortho check` keeps listing its blanks, and `ortho model` shows the file as
   unfinished. A blank is a question for you, never a default.
-- **A refusal has no stub.** A refusal that a rule gives, such as a name that is taken, gets none today. The author
+- **Rough: A refusal has no stub.** A refusal that a rule gives, such as a name that is taken, gets none today. The author
   writes that journey unprompted, and you check it is there.
-- **A blank is not listed.** `ortho check` lists blanks only under `blueprint/`. The stubs are written there; Plugged
+- **Rough: A blank is not listed.** `ortho check` lists blanks only under `blueprint/`. The stubs are written there; Plugged
   In keeps its finished journeys in `journeys/` at the root, and both places are read.
-- **Adding stubs turns the check red.** That is right while they are blanks, and the same run also reports drift in
+- **Rough: Adding stubs turns the check red.** That is right while they are blanks, and the same run also reports drift in
   `generated/` until `ortho generate` is run again. Nobody builds until the author has filled them.
-- **A single new journey breaks the check.** `ortho add journey <name>` writes a stub with a blank cast, and the
+- **Rough: A single new journey breaks the check.** `ortho add journey <name>` writes a stub with a blank cast, and the
   commands that read the model then stop with an error, not a question, until the cast is filled in:
 
 ```sh capture=stub-one-check.txt

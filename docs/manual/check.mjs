@@ -82,6 +82,8 @@ let quotes = 0;
 for (const name of chapters) {
   const file = join(here, "chapters", name), text = read(file), at = `chapters/${name}`, say = (what) => problems.push(`${at}: ${what}`);
   const heads = [...text.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  const others = [...text.matchAll(/^(#|###+) (.+)$/gm)].filter((m) => !(m[1] === "#" && m.index === 0));
+  if (others.length) say(`has a heading that is not one of its four parts: "${others[0][2]}"`);
   if (heads.join(" | ") !== parts.join(" | ")) say(`its parts are "${heads.join('", "')}", and a chapter has exactly "${parts.join('", "')}"`);
   if (!/^\*\*How it stands\.\*\* /m.test(text)) say("it does not say how it stands");
   const film = /^Film: `(docs\/explainer\/films\/[a-z-]+)\/`/m.exec(text);
@@ -95,13 +97,17 @@ for (const name of chapters) {
   // Code a chapter shows is always a fence that starts its line: no fence set in from the margin, no ~~~, no indented block.
   const rows = text.split("\n"); let open = false;
   rows.forEach((row, k) => {
-    if (/^```/.test(row)) { open = !open; return; }
+    // A fence is exactly ``` and its info at the start of a line to open, and exactly ``` to close. Anything else that could
+    // show code (a longer or indented or quoted fence, a trailing space, ~~~, a tab, <pre> or <code>) is refused.
+    if (open ? row === "```" : /^```[^`\s][^`]*[^`\s]$|^```[^`\s]?$/.test(row) && row !== "```") { open = !open; return; }
+    if (row.includes("```") || /^\s*~~~/.test(row)) say(`line ${k + 1}: a fence is \`\`\` and its info at the start of a line, and \`\`\` alone to close, so the check can read it`);
     if (open) return;
-    if (/^\s+```|^\s*~~~/.test(row)) say(`line ${k + 1}: a fence must be \`\`\` at the start of its line, so the check can read it`);
+    if (/\t/.test(row) || /<\/?(pre|code)\b/i.test(row)) say(`line ${k + 1}: a tab or a <pre> or <code> tag is code the check cannot read: quote it in a fence`);
     if (/^ {4,}\S/.test(row) && !/^\s*([-*]|\d+\.) /.test(rows[k - 1] ?? "") && (rows[k - 1] ?? "").trim() === "") say(`line ${k + 1}: an indented block is code the check cannot read: quote it in a fence`);
     // Output written in a sentence is held to the recordings too: anything in backticks with a verdict mark is a line of one.
     for (const m of row.matchAll(/`([^`]*[✔✘][^`]*)`/g)) if (!recordings.some((r) => r.includes(m[1]))) say(`line ${k + 1}: \`${m[1]}\` is in no recording`);
   });
+  if (open) say("ends inside a fence that is never closed");
   for (const m of text.matchAll(/^```(\S*)([^\n]*)\n([\s\S]*?)\n```$/gm)) {
     quotes++;
     const [, , info, body] = m, lines = body.split("\n"), capture = /capture=(\S+)/.exec(info), source = /file=(\S+) lines=(\d+)-(\d+)/.exec(info);
