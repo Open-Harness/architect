@@ -139,6 +139,12 @@ a journey checks what was stored, not just what was said. The journeys are the p
 citing its page. When gap 3 lands, slice 8 fills payroll's contract, "the tax on a slip", with the same computation, and
 the interim operation's journeys keep passing.
 
+**Mounted early, filling nothing.** The piece is mounted from slice 0, because `ortho prove` runs only what the app
+mounts. A mounted `payroll-tax-us` that fills no contract leaves payroll exactly as it is, so this is still "no tax piece
+filling payroll's contract", the interim CX-composable-pieces and CX-money-global-payroll describe. Until `payroll` is a
+plugin and gap 3 lands, the piece imports nothing of payroll's (Salary Slip, Employee, components) and nothing of the
+app's.
+
 ## Calls this brief makes
 
 The building agent owns the architecture (`AGENTS.md`). These are this designer's, for the lane to record in
@@ -186,7 +192,7 @@ thread with its label, `thread-author`, `thread-builder`, `thread-reviewer`.
 | 5 | **California and New York,** each its own method: California's Method B with Tables 1 to 28 per frequency and its estimated-deduction allowances, SDI; New York's NYS-50-T-NYS per-period and annual methods with Method III's three top rates, and its paid family leave. New York City and Yonkers stay out (local taxes, CX-payroll-tax point 6) | 3 | California's Examples A to F, New York's examples (Example 2's two slips judged against the tables the booklet says to use, as the spike did), and constructed cases for the top brackets and the quarterly and daily tables no example reaches |
 | 6 | **The rest,** in batches of about five states, each batch its own pair of pull requests: first the spike's other checked states (DE, NJ, IL, MA, GA), then the rest of the income-taxing states and DC in the order open-withholding's data is most complete. Massachusetts waits for a person to read Circular M: the lane writes its journeys and leaves its two open rows marked open | 5 | each state's printed worked examples, judged against the tables the publication says to use; New Jersey's A3, B2 and B3 as the spike found them; a constructed case per state's top bracket |
 | 7 | **Each company's own SUTA rate:** a thing per company, state and year, entered by its owner, refused outside the state's range for that year | 4; the `company` move | journeys: a rate in range is used by `withholding.compute`; one outside it is refused by name |
-| 8 | **Into payroll,** once gap 3 lands (a contract one piece declares and another fills when the app is built, CX-composable-pieces section 5). `payroll-tax-us` fills `payroll`'s contract "the tax on a slip": a payroll entry's submit gives each US employee's slip its tax lines, taken off net pay, and the accrual posts them to the tax liability accounts. Here the lane may touch `payroll`'s files, in the pair the gap names, and only after the payroll lane agrees on the Gap issue. Pay frequency comes from payroll settings (9c) or the entry's days, as the payroll lane decides | 3, 7; gap 3 on `goal/capxul`; payroll 9c for the frequency | journeys: a payroll entry for a Texas and a California employee posts slips whose tax lines equal `withholding.compute`'s for the same figures; with no tax piece mounted, payroll's own journeys still pass |
+| 8 | **Into payroll,** once gap 3 lands (a contract one piece declares and another fills when the app is built, CX-composable-pieces section 5). `payroll-tax-us` fills `payroll`'s contract "the tax on a slip": a payroll entry's submit gives each US employee's slip its tax lines, taken off net pay, and the accrual posts them to the tax liability accounts. Here the lane may touch `payroll`'s files, in the pair the gap names, and only after the payroll lane agrees on the Gap issue. Pay frequency comes from payroll settings (9c) or the entry's days, as the payroll lane decides | 3, 7; `payroll` moved into its plugin (CX-composable-pieces, move step 6, the last of today's things), since a plugin may import only plugins; gap 3 on `goal/capxul`; payroll 9c for the frequency | journeys: a payroll entry for a Texas and a California employee posts slips whose tax lines equal `withholding.compute`'s for the same figures; with no tax piece mounted, payroll's own journeys still pass |
 
 ## Staying up to date
 
