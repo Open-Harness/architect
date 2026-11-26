@@ -20,8 +20,8 @@ import { join } from "node:path";
 import { APP_MILESTONES, STAGES, parseBoard } from "./board.mjs";
 import { STAGE_SHARE } from "./roadmap.mjs";
 
-/** The alpha's suites (K44, section 2): the core, Gate M1, ortho new and add, the chain basics, and prove's own checks. */
-export const ALPHA_SUITES = ["m0", "m1", "m2", "layer1", "layer2", "stage1", "on-chain", "climb", "grid"];
+/** The alpha's suites (K44, section 2): the core, Gate M1, ortho new and add, the acceptance check (slice 11), the chain basics, and prove's own checks. */
+export const ALPHA_SUITES = ["m0", "m1", "m2", "acceptance", "layer1", "layer2", "stage1", "on-chain", "climb", "grid"];
 /** Check files the alpha leaves out: the portal's graphs, which wait with its screens (K44, call 2; M1.50). */
 export const NOT_ALPHA = ["m1/40-m1-50-graph.test.ts"];
 /** The board was first whole on the evening of 23 November (#780, #791); its history starts there. */
