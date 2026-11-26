@@ -82,7 +82,8 @@ Taken from ERPNext's own shape at `a6f54f9c` (the commit `examples/capxul/doctyp
    money), and here its source. A rate comes, in order, from the movement itself (a receipt shows what left and what
    arrived, so a payment needs no outside rate); from a row typed by the company, for invoices and period end; and
    later from a feed, a new outside dependency (section 4). USDC to US dollars is a standing row of one (ERPNext's
-   Pegged Currencies) until a rate says otherwise; how a change in that rate is booked is open to
+   Pegged Currencies) until a rate says otherwise (Superseded by CX-crypto-accounting, 26 November 2026: marked each
+   month end at Chainlink's USDC/USD price); how a change in that rate is booked is open to
    `CX-crypto-accounting`, a separate research record.
 6. **A payment between currencies** is one Payment Entry (ERPNext's shape): `paidAmount` in the paying account's
    currency, `receivedAmount` in the receiving account's, and each in the company's currency (`basePaidAmount`,
