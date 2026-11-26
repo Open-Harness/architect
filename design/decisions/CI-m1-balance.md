@@ -58,7 +58,12 @@ Measured in "After" below.
 
 ## After
 
-To be measured on this change's own pull request.
+Run 45818890007 (#1092, head 4caa23a6, 26 November): **13.5 minutes**, `ready` at 12:21:49 to `e2e-m1` at 12:35:19, against 21
+before. The six shards' jobs took 7.0 to 9.6 minutes (tests 5.9 to 8.0); file 29's shard was the lightest this time (5.9). `e2e-m1`
+took 0.9 minutes, against 1.7. `e2e-totals` ran beside the shards in 1.9. The rest of the longest path was waiting for a runner:
+the shards started 0.1 to 1.7 minutes after `portal-ui` ended, and `e2e-m1` 0.5 after the last shard, because this pull request
+also ran the four parked suites (it changes their workflow). On a pull request that does not, those four runners are free.
+Every other job had finished by 12:31:50: `prove-tests` 7.3 to 9.0 minutes, `check-static` 7.9, `e2e-layer2` 7.5, `e2e-m2` 7.1.
 
 ## Not done, and why
 
