@@ -23,10 +23,17 @@ export interface RolesDeployment {
   readonly call: ContractCall;
 }
 
+/** A parameter of `fn`: its index in `fn`'s inputs, or `[input, component]` for a field of a tuple input (V3 `send`'s item). */
+export type BudgetParam = number | readonly [input: number, component: number];
+
 /**
  * An Org Budget: one role, held by its members, that may call one function of one contract, within an allowance
- * (`P/budget-permissions.ts:117-155`, CX-bridge-rails "Who signs: every payout is on a budget"). Parameters are named by
- * their index in `fn`'s inputs, and each is a static type.
+ * (`P/budget-permissions.ts:113-263`, CX-bridge-rails "Who signs: every payout is on a budget").
+ *
+ * A scoped parameter (the amount, the recipient, the token) is a static type (`address`, `uint<N>`, `int<N>`, `bool`,
+ * `bytes<N>`), at its own place: two never share one. Every other input or field is passed unchecked; it may be static,
+ * `bytes` or `string`. A tuple input must hold a scoped field and only such components. Arrays and nested tuples are
+ * not supported. Anything else is refused as a `configuration` `ChainFault`, and so is a recipient list that is empty.
  */
 export interface OrgBudget {
   /** The role's key, a `bytes32`. */
@@ -37,10 +44,12 @@ export interface OrgBudget {
   readonly target: Address;
   /** The one function of `target` the role may call. */
   readonly fn: AbiFunction;
-  /** The amount parameter: `and(lteUint256(limit), withinAllowance(allowance.key))`, or `withinAllowance` alone with no limit. */
-  readonly amount: { readonly param: number; readonly limit?: bigint };
-  /** The recipient parameter: one of these addresses, or `"anyone"` (it passes everything, as `recipientCondition` does). */
-  readonly recipients: "anyone" | { readonly param: number; readonly anyOf: ReadonlyArray<Address> };
+  /** The amount: at most `limit` a call and within the allowance, `and(lteUint256(limit), withinAllowance(allowance.key))`; within the allowance alone with no limit. */
+  readonly amount: { readonly param: BudgetParam; readonly limit?: bigint };
+  /** The recipient: one of these addresses, or `"anyone"` (it passes everything, as `recipientCondition` does). */
+  readonly recipients: "anyone" | { readonly param: BudgetParam; readonly anyOf: ReadonlyArray<Address> };
+  /** The token, when it is a parameter: exactly this address (`equalAddress`). */
+  readonly token?: { readonly param: BudgetParam; readonly address: Address };
   /** The allowance the amount is spent from. `maxRefill`, `refill` and `period` default to 0: no refill. */
   readonly allowance: {
     readonly key: Hex;
@@ -81,9 +90,10 @@ export interface RolesApi {
   /** Deploy a modifier for `safe` through the factory, with `safe` as its owner, avatar and target. */
   readonly deploy: (input: { readonly safe: Address; readonly saltNonce: bigint }) => Effect.Effect<RolesDeployment, ChainFault>;
   /**
-   * The Org Budget compiled to direct calls on `modifier`, for its owner (the Safe) to make in order: the role assigned to
-   * each member, `target` scoped, `fn` scoped with its conditions and no value or delegate call, and `setAllowance`
-   * (timestamp 0, so the modifier takes the block's). A parameter that does not exist or is not static is a `ChainFault`.
+   * The Org Budget compiled to direct calls on `modifier`, for its owner (the Safe) to make in this order, the
+   * implementation's: `setAllowance` (timestamp 0, so the modifier takes the block's), `scopeTarget`, `scopeFunction`
+   * (its conditions, no value and no delegate call), then `assignRoles` for each member, in the members' order. A budget
+   * the rules on `OrgBudget` refuse is a `configuration` `ChainFault`.
    */
   readonly budgetCalls: (modifier: Address, budget: OrgBudget) => Effect.Effect<ReadonlyArray<ContractCall>, ChainFault>;
   /** A member's call through its role: `execTransactionWithRole(to, value, data, 0, roleKey, shouldRevert)` on `modifier`. `value` defaults to 0, `shouldRevert` to true. */

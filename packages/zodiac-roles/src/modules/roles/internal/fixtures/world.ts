@@ -10,8 +10,8 @@ import {
 import { Roles } from "../../service.ts";
 import type { ContractCall, OrgBudget } from "../../types.ts";
 import { ZodiacWorld } from "../../../world/service.ts";
-import { safeL2Bytecode, safeProxyFactoryBytecode, tokenBytecode } from "./bytecode.ts";
-import { addressWord, decodeArgs, encode, fn, hex, jsonRpc, keccak, utf8, word } from "./evm.ts";
+import { paymentsStandInBytecode, safeL2Bytecode, safeProxyFactoryBytecode, tokenBytecode } from "./bytecode.ts";
+import { addressWord, decodeArgs, encode, fn, hex, jsonRpc, keccak, selector, utf8, word } from "./evm.ts";
 
 export const anvilGate = process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1";
 export const zeroAddress: Address = "0x0000000000000000000000000000000000000000";
@@ -42,6 +42,12 @@ export const safeAbi = {
   isModuleEnabled: fn("isModuleEnabled", [["address"]], [["bool"]], "view"),
 };
 const createProxyWithNonce = fn("createProxyWithNonce", [["address"], ["bytes"], ["uint256"]], [["address"]]);
+/** The stand-in's send((bytes32 settlementId, address recipient, address token, uint256 amount) item). */
+export const paymentsAbi = {
+  send: fn("send", [["tuple", "item", [
+    { type: "bytes32", name: "settlementId" }, { type: "address", name: "recipient" }, { type: "address", name: "token" }, { type: "uint256", name: "amount" },
+  ]]]),
+};
 export const modifierAbi = {
   owner: fn("owner", [], [["address"]], "view"),
   avatar: fn("avatar", [], [["address"]], "view"),
@@ -75,9 +81,10 @@ export const world = Effect.gen(function* () {
   const now = rpc("eth_getBlockByNumber", ["latest", false]).pipe(Effect.map((block) => BigInt((block as { readonly timestamp: Hex }).timestamp)));
   const nonceOf = (address: Address) => rpc("eth_getTransactionCount", [address, "pending"]).pipe(Effect.map((count) => BigInt(count as Hex)));
   const codeOf = (address: Address) => rpc("eth_getCode", [address, "latest"]).pipe(Effect.map((code) => code as Hex));
+  const blockTime = (number: bigint) => rpc("eth_getBlockByNumber", [`0x${number.toString(16)}`, false]).pipe(Effect.map((block) => BigInt((block as { readonly timestamp: Hex }).timestamp)));
   const later = (seconds: number) => rpc("evm_increaseTime", [seconds]).pipe(Effect.andThen(rpc("evm_mine")));
   const fund = (address: Address, wei: bigint) => rpc("anvil_setBalance", [address, `0x${wei.toString(16)}`]);
-  return { anvil, rpc, port, owner, member, stranger, deployer, send, deploy, read, now, nonceOf, codeOf, later, fund };
+  return { anvil, rpc, port, owner, member, stranger, deployer, send, deploy, read, now, blockTime, nonceOf, codeOf, later, fund };
 });
 export type World = Effect.Success<typeof world>;
 
@@ -101,22 +108,35 @@ export const bySafe = (w: World, safe: Address, owner: Key, call: ContractCall) 
   return receipt;
 });
 
-/** The world with a budget on it: Zodiac installed, the Safe holding the token's 100 units, its modifier deployed and enabled, and the budget's calls made by the Safe. */
-export const budgetWorld = (budgetFor: (ctx: { readonly token: Address; readonly member: Address }) => OrgBudget) => Effect.gen(function* () {
+/**
+ * The world with a budget on it: Zodiac installed; the Safe holding one test token's 100 units; a payments stand-in
+ * holding another token's 100; the Safe's modifier deployed and enabled; and the budget's calls made by the Safe, in order.
+ */
+export const budgetWorld = (budgetFor: (ctx: {
+  readonly token: Address; readonly member: Address; readonly payments: Address; readonly paymentsToken: Address;
+}) => OrgBudget) => Effect.gen(function* () {
   const w = yield* world;
   yield* ZodiacWorld.install(w.anvil.rpcUrl);
   const safe = yield* safeOf(w, w.owner);
   const tokenAddress = yield* w.deploy(w.deployer, tokenBytecode);
+  const paymentsToken = yield* w.deploy(w.deployer, tokenBytecode);
+  const payments = yield* w.deploy(w.deployer, paymentsStandInBytecode);
   const transfer = (to: Address, amount: bigint) => encode(token.transfer, [to, amount]);
   yield* w.send(w.deployer, { to: tokenAddress, data: yield* transfer(safe, 100n) });
+  yield* w.send(w.deployer, { to: paymentsToken, data: yield* transfer(payments, 100n) });
   const deployment = yield* Roles.deploy({ safe, saltNonce: 1n });
   const deployed = yield* w.send(w.deployer, deployment.call);
   const modifier = deployment.address;
   yield* bySafe(w, safe, w.owner, { to: safe, value: 0n, data: yield* encode(safeAbi.enableModule, [modifier]) });
-  const budget = budgetFor({ token: tokenAddress, member: w.member.address });
-  for (const call of yield* Roles.budgetCalls(modifier, budget)) yield* bySafe(w, safe, w.owner, call);
-  const balanceOf = (who: Address) => w.read(tokenAddress, token.balanceOf, [who]).pipe(Effect.map(([balance]) => balance as bigint));
-  return { ...w, safe, token: tokenAddress, modifier, budget, deployed, transfer, balanceOf };
+  const budget = budgetFor({ token: tokenAddress, member: w.member.address, payments, paymentsToken });
+  const setAllowance = selector("setAllowance(bytes32,uint128,uint128,uint128,uint64,uint64)");
+  const allowanceSetAt: Array<bigint> = [];
+  for (const call of yield* Roles.budgetCalls(modifier, budget)) {
+    const receipt = yield* bySafe(w, safe, w.owner, call);
+    if (call.data.slice(0, 10) === setAllowance) allowanceSetAt.push(yield* w.blockTime(receipt.blockNumber));
+  }
+  const balanceOf = (who: Address, of: Address = tokenAddress) => w.read(of, token.balanceOf, [who]).pipe(Effect.map(([balance]) => balance as bigint));
+  return { ...w, safe, token: tokenAddress, payments, paymentsToken, modifier, budget, deployed, transfer, balanceOf, allowanceSetAt };
 });
 export type BudgetWorld = Effect.Success<ReturnType<typeof budgetWorld>>;
 

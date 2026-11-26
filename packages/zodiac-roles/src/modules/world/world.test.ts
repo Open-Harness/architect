@@ -27,6 +27,24 @@ test.skipIf(gate)("install puts the factory and the Roles 2.1.1 mastercopy, with
   run(Effect.gen(function* () {
     const w = yield* chainOf;
     for (const { address } of Object.values(canonical)) expect(yield* w.codeHash(address)).toBeUndefined();
+    const before = yield* w.now;
+    expect(yield* ZodiacWorld.install(w.anvil.rpcUrl)).toEqual(installed);
+    for (const { address, code } of Object.values(canonical)) expect(yield* w.codeHash(address)).toBe(code);
+    // The mastercopy as its constructor left it: owner, avatar and target 0x…01 (its storage, not only its code).
+    const one = checksum("0x0000000000000000000000000000000000000001");
+    const read = (item: typeof modifierAbi.owner) => w.read(canonical.mastercopy.address, item).pipe(Effect.map(([address]) => address));
+    expect([yield* read(modifierAbi.owner), yield* read(modifierAbi.avatar), yield* read(modifierAbi.target)]).toEqual([one, one, one]);
+    // The world's clock is left as it was: a few seconds of blocks, no jump.
+    expect((yield* w.now) - before).toBeLessThan(60n);
+  })), 30_000);
+
+test.skipIf(gate)("a chain that has the factory but not Roles gets Roles, with its libraries", () =>
+  run(Effect.gen(function* () {
+    const source = yield* chainOf;
+    yield* ZodiacWorld.install(source.anvil.rpcUrl);
+    const factoryCode = yield* source.codeOf(canonical.factory.address);
+    const w = yield* chainOf;
+    yield* w.rpc("anvil_setCode", [canonical.factory.address, factoryCode]);
     expect(yield* ZodiacWorld.install(w.anvil.rpcUrl)).toEqual(installed);
     for (const { address, code } of Object.values(canonical)) expect(yield* w.codeHash(address)).toBe(code);
   })), 30_000);

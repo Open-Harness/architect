@@ -6,9 +6,9 @@
 import { Effect } from "effect";
 import { decodeRevert, type AbiError, type Address, type ChainError, type Hex } from "@orthograph/chain-evm/device";
 import { describe, expect, test } from "vitest";
-import { checksum, create2, decodeArgs, encode, fn, hex, keccak, selector, signatureOf, utf8, word } from "./internal/fixtures/evm.ts";
+import { checksum, create2, encode, fn, hex, keccak, selector, utf8, word } from "./internal/fixtures/evm.ts";
 import { Roles } from "./service.ts";
-import { MODULE_PROXY_FACTORY, ROLES_MASTERCOPY, type Allowance, type ContractCall, type OrgBudget } from "./types.ts";
+import { MODULE_PROXY_FACTORY, ROLES_MASTERCOPY, type Allowance } from "./types.ts";
 
 const safe: Address = "0x5afe00000000000000000000000000000000cafe";
 const modifier: Address = "0x0000000000000000000000000000000000000d01";
@@ -16,22 +16,13 @@ const tokenAddress: Address = "0x00000000000000000000000000000000000070c3";
 const alice: Address = "0x00000000000000000000000000000000000a11ce";
 const bob: Address = "0x0000000000000000000000000000000000000b0b";
 const member: Address = "0x000000000000000000000000000000000000beef";
-const second: Address = "0x000000000000000000000000000000000000f00d";
 const roleKey = keccak(utf8("org-budget"));
 const allowanceKey = keccak(utf8("org-budget:usdc"));
 const transfer = fn("transfer", [["address", "to"], ["uint256", "value"]], [["bool"]]);
-const pay = fn("pay", [["bytes", "memo"], ["address", "to"], ["uint256", "value"]]);
 
 // Roles 2.1.1's own functions, as its ABI has them, and the factory's.
-const condition = [["uint8", "parent"], ["uint8", "paramType"], ["uint8", "operator"], ["bytes", "compValue"]].map(([type, name]) => ({ type, name })) as never;
 const roles = {
   setUp: fn("setUp", [["bytes", "initParams"]]),
-  assignRoles: fn("assignRoles", [["address", "module"], ["bytes32[]", "roleKeys"], ["bool[]", "memberOf"]]),
-  scopeTarget: fn("scopeTarget", [["bytes32", "roleKey"], ["address", "targetAddress"]]),
-  scopeFunction: fn("scopeFunction", [
-    ["bytes32", "roleKey"], ["address", "targetAddress"], ["bytes4", "selector"], ["tuple[]", "conditions", condition], ["uint8", "options"],
-  ]),
-  setAllowance: fn("setAllowance", [["bytes32", "key"], ["uint128", "balance"], ["uint128", "maxRefill"], ["uint128", "refill"], ["uint64", "period"], ["uint64", "timestamp"]]),
   execTransactionWithRole: fn("execTransactionWithRole", [
     ["address", "to"], ["uint256", "value"], ["bytes", "data"], ["uint8", "operation"], ["bytes32", "roleKey"], ["bool", "shouldRevert"],
   ], [["bool", "success"]]),
@@ -74,6 +65,13 @@ describe("Roles.deploy", () => {
     expect(new Set([a.address, b.address, c.address]).size).toBe(3);
     expect(again).toEqual(a);
   });
+
+  test("every bit of the salt nonce counts: 0, 256, 2^64 + 1 and 2^256 - 1", async () => {
+    const nonces = [0n, 256n, 2n ** 64n + 1n, 2n ** 256n - 1n];
+    const made = await run(Effect.forEach(nonces, (saltNonce) => Roles.deploy({ safe, saltNonce })));
+    expect(made).toEqual(await run(Effect.forEach(nonces, (saltNonce) => expected(safe, saltNonce))));
+    expect(new Set(made.map((deployment) => deployment.address)).size).toBe(nonces.length);
+  });
 });
 
 describe("Roles.execTransactionWithRole", () => {
@@ -88,60 +86,9 @@ describe("Roles.execTransactionWithRole", () => {
     expect(await run(Roles.execTransactionWithRole(modifier, { to: bob, data: "0x", value: 5n, roleKey, shouldRevert: false }))).toEqual({
       to: modifier, value: 0n, data: await run(encode(roles.execTransactionWithRole, [bob, 5n, "0x", 0, roleKey, false])),
     });
-  });
-});
-
-// The implementation assigns membership in a call of its own (P/roles-module.ts:199-221) and compiles a budget to
-// setAllowance and the scoping only (P/budget-permissions.ts:113-263). Here an OrgBudget names its members, so one list of
-// calls sets the whole budget up: a choice of this adapter's, not lifted.
-describe("Roles.budgetCalls", () => {
-  const budget: OrgBudget = {
-    roleKey, members: [member, second], target: tokenAddress, fn: transfer,
-    amount: { param: 1, limit: 60n }, recipients: { param: 0, anyOf: [alice, bob] },
-    allowance: { key: allowanceKey, balance: 100n, maxRefill: 120n, refill: 50n, period: 3600n },
-  };
-  // Each call read back by its selector: which of Roles' functions it is, and its arguments.
-  const decoded = (calls: ReadonlyArray<ContractCall>) => run(Effect.forEach(calls, (call) => {
-    const item = Object.values(roles).find((candidate) => selector(signatureOf(candidate)) === call.data.slice(0, 10));
-    return item === undefined
-      ? Effect.succeed({ to: call.to, value: call.value, name: `unknown ${call.data.slice(0, 10)}`, args: [] as ReadonlyArray<unknown> })
-      : decodeArgs(item, call.data).pipe(Effect.map((args) => ({ to: call.to, value: call.value, name: item.name, args })));
-  }));
-
-  test("every call is the Safe's to its modifier, with no value", async () => {
-    const calls = await run(Roles.budgetCalls(modifier, budget));
-    expect(calls.length).toBeGreaterThan(0);
-    for (const call of calls) expect({ to: call.to, value: call.value }).toEqual({ to: modifier, value: 0n });
-  });
-
-  test("the role assigned to each member once, the target scoped, the one function scoped with no value or delegate call, the allowance set", async () => {
-    const calls = await decoded(await run(Roles.budgetCalls(modifier, budget)));
-    const named = (name: string) => calls.filter((call) => call.name === name);
-    expect(named("assignRoles").map((call) => call.args)).toEqual([
-      [checksum(member), [roleKey], [true]], [checksum(second), [roleKey], [true]],
-    ]);
-    expect(named("scopeTarget").map((call) => call.args)).toEqual([[roleKey, checksum(tokenAddress)]]);
-    const scoped = named("scopeFunction");
-    expect(scoped.map((call) => call.args.slice(0, 3))).toEqual([[roleKey, checksum(tokenAddress), selector("transfer(address,uint256)")]]);
-    // ExecutionOptions None (0): no value, no delegate call. Chosen here, not lifted: the implementation never sets it and
-    // relies on zodiac-roles-sdk's default (the conductor's reading of P/budget-permissions.ts, #1163).
-    expect(scoped[0]?.args[4]).toBe(0);
-    // The modifier takes the block's timestamp for a 0 (Roles 2.1.1, setAllowance).
-    expect(named("setAllowance").map((call) => call.args)).toEqual([[allowanceKey, 100n, 120n, 50n, 3600n, 0n]]);
-    expect(calls.map((call) => call.name).sort()).toEqual(["assignRoles", "assignRoles", "scopeFunction", "scopeTarget", "setAllowance"]);
-  });
-
-  test("an allowance with no refill sets maxRefill, refill and period to 0", async () => {
-    const calls = await decoded(await run(Roles.budgetCalls(modifier, { ...budget, allowance: { key: allowanceKey, balance: 9n } })));
-    expect(calls.filter((call) => call.name === "setAllowance").map((call) => call.args)).toEqual([[allowanceKey, 9n, 0n, 0n, 0n, 0n]]);
-  });
-
-  test("a parameter that is not one of the function's is refused, and so is one that is not static", async () => {
-    for (const wrong of [
-      { ...budget, amount: { param: 2, limit: 60n } },
-      { ...budget, recipients: { param: 5, anyOf: [alice] } },
-      { ...budget, fn: pay, amount: { param: 0 } },
-    ]) expect(await fails(Roles.budgetCalls(modifier, wrong))).toMatchObject({ _tag: "ChainFault", kind: "configuration" });
+    expect(await run(Roles.execTransactionWithRole(modifier, { to: bob, data: "0x", value: 10n ** 18n + 1n, roleKey }))).toEqual({
+      to: modifier, value: 0n, data: await run(encode(roles.execTransactionWithRole, [bob, 10n ** 18n + 1n, "0x", 0, roleKey, true])),
+    });
   });
 });
 
@@ -159,6 +106,8 @@ describe("Roles.accrued", () => {
     ["over maxRefill (an owner set it so): it stays", at(500n), 1_000n + 36_000n, 500n],
     ["spent to 0, three periods", at(0n), 1_000n + 10_800n, 120n],
     ["spent to 0, one period", at(0n), 1_000n + 3600n, 50n],
+    ["a timestamp an owner set in the future: the balance until a period after it", at(30n, 10_000n), 1_000n, 30n],
+    ["amounts over 2^53, exact", { refill: 1n, maxRefill: 10n ** 19n, period: 1n, balance: 10n ** 18n + 1n, timestamp: 0n }, 1n, 10n ** 18n + 2n],
   ] as const)("%s", (_name, allowance, now, balance) => {
     expect(Roles.accrued(allowance, now)).toBe(balance);
   });
@@ -218,6 +167,21 @@ describe("Roles.refusalOf", () => {
     expect(await typed("NotAuthorized", word(BigInt(member)))).toEqual({ _tag: "NotAuthorized", sender: checksum(member) });
     expect(await typed("ModuleTransactionFailed")).toEqual({ _tag: "ModuleTransactionFailed" });
     expect(await typed("OwnableUnauthorizedAccount", word(BigInt(bob)))).toEqual({ _tag: "OwnableUnauthorizedAccount", account: checksum(bob) });
+  });
+
+  const typedNames = ["ConditionViolation", "NoMembership", "NotAuthorized", "ModuleTransactionFailed", "OwnableUnauthorizedAccount"];
+  test.each(errors.filter(([name]) => !typedNames.includes(name)).map(([name, inputs]) => [name, inputs.length] as const))(
+    "the modifier's %s is not one of the typed refusals", async (name, inputs) => {
+      expect(Roles.refusalOf(await reverted(revertData(name, ...Array.from({ length: inputs }, () => word(1n)))))).toBeUndefined();
+    },
+  );
+
+  test("another contract's error of the same name as one of the modifier's is not the modifier's", async () => {
+    const foreign: AbiError = { type: "error", name: "NoMembership", inputs: [{ type: "uint256", name: "id" }] };
+    const lock = [...Roles.refusals, { code: "X-1", name: "NoMembership", selector: selector("NoMembership(uint256)"), signature: "NoMembership(uint256)", abi: foreign }];
+    const theirs = await fails(decodeRevert(hex(selector("NoMembership(uint256)"), word(7n)), tokenAddress, lock));
+    expect(theirs).toMatchObject({ _tag: "ChainRefusal", name: "NoMembership", code: "X-1" });
+    expect(Roles.refusalOf(theirs)).toBeUndefined();
   });
 
   test("a status the enum does not have, another contract's refusal and a fault are not the modifier's refusals", async () => {

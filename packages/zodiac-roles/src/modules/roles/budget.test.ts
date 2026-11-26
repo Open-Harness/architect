@@ -8,7 +8,7 @@ import { expect, test } from "vitest";
 import { tokenBytecode } from "./internal/fixtures/bytecode.ts";
 import { checksum, encode, hex, keccak, utf8, word } from "./internal/fixtures/evm.ts";
 import {
-  anvilGate as gate, attempt, budgetWorld, bySafe, modifierAbi, run, safeAbi, token, topicOf, type BudgetWorld,
+  anvilGate as gate, attempt, budgetWorld, bySafe, modifierAbi, paymentsAbi, run, safeAbi, token, topicOf, type BudgetWorld,
 } from "./internal/fixtures/world.ts";
 import { Roles } from "./service.ts";
 import type { OrgBudget } from "./types.ts";
@@ -53,8 +53,7 @@ test.skipIf(gate)("a send within the budget passes, pays exactly that, and the a
     // A maxRefill of 0 is stored as type(uint128).max (Roles 2.1.1, setAllowance), and timestamp 0 as the block's.
     expect(before).toMatchObject({ balance: 100n, refill: 0n, maxRefill: 2n ** 128n - 1n, period: 0n });
     expect(Object.keys(before).sort()).toEqual(["balance", "maxRefill", "period", "refill", "timestamp"]);
-    expect(before.timestamp).toBeGreaterThan(0n);
-    expect(before.timestamp).toBeLessThanOrEqual(yield* w.now);
+    expect(before.timestamp).toBe(w.allowanceSetAt[0]);
     const receipt = yield* spend(w, alice, 30n);
     expect(receipt.status).toBe("success");
     expect([yield* w.balanceOf(alice), yield* w.balanceOf(w.safe)]).toEqual([30n, 70n]);
@@ -96,6 +95,12 @@ test.skipIf(gate)("each send is capped at the budget's limit: the limit passes, 
     expect(yield* typed(w, w.member.address, alice, 60n)).toBeUndefined();
     yield* spend(w, alice, 60n);
     expect(yield* left(w)).toBe(40n);
+  })), 60_000);
+
+test.skipIf(gate)("a limit of 0 lets nothing through", () =>
+  run(Effect.gen(function* () {
+    const w = yield* budgetWorld(budgetOf({ amount: { param: 1, limit: 0n } }));
+    expect(yield* typed(w, w.member.address, alice, 1n)).toMatchObject({ _tag: "ConditionViolation", status: "ParameterGreaterThanAllowed" });
   })), 60_000);
 
 test.skipIf(gate)("a budget with no limit is bounded by its allowance alone", () =>
@@ -167,4 +172,42 @@ test.skipIf(gate)("only the Safe, the modifier's owner, can change the budget", 
     if (!first) return yield* Effect.fail(new Error("No budget call"));
     expect(typedOf(yield* attempt(w, w.stranger.address, first))).toEqual({ _tag: "OwnableUnauthorizedAccount", account: checksum(w.stranger.address) });
     yield* bySafe(w, w.safe, w.owner, first);
+  })), 60_000);
+
+// V3 send's shape (P/budget-permissions.ts:113-263): the payments stand-in's send(item), the item's recipient, token and
+// amount scoped inside its tuple. The stand-in pays from its own 100 units of its token; Roles judges only the calldata.
+const paymentsBudget = (overrides: Partial<OrgBudget> = {}) => (ctx: { readonly member: Address; readonly payments: Address; readonly paymentsToken: Address }): OrgBudget => ({
+  roleKey, members: [ctx.member], target: ctx.payments, fn: paymentsAbi.send,
+  amount: { param: [0, 3], limit: 60n }, recipients: { param: [0, 1], anyOf: [alice, bob, carol] },
+  token: { param: [0, 2], address: ctx.paymentsToken },
+  allowance: { key, balance: 100n },
+  ...overrides,
+});
+const pay = (w: BudgetWorld, from: Address, item: { readonly recipient: Address; readonly token: Address; readonly amount: bigint }) =>
+  encode(paymentsAbi.send, [{ settlementId: keccak(utf8(`settlement:${item.amount}`)), ...item }]).pipe(
+    Effect.flatMap((data) => Roles.execTransactionWithRole(w.modifier, { to: w.payments, data, roleKey })),
+    Effect.flatMap((call) => attempt(w, from, call)), Effect.map(typedOf));
+
+test.skipIf(gate)("V3 send's shape: a payment to the third recipient passes, the wrong token, recipient or amount is refused", () =>
+  run(Effect.gen(function* () {
+    const w = yield* budgetWorld(paymentsBudget());
+    const right = { recipient: carol, token: w.paymentsToken, amount: 30n };
+    expect(yield* pay(w, w.member.address, { ...right, token: w.token })).toMatchObject({ _tag: "ConditionViolation", status: "ParameterNotAllowed" });
+    expect(yield* pay(w, w.member.address, { ...right, recipient: w.member.address })).toMatchObject({ _tag: "ConditionViolation", status: "OrViolation" });
+    expect(yield* pay(w, w.member.address, { ...right, amount: 61n })).toMatchObject({ _tag: "ConditionViolation", status: "ParameterGreaterThanAllowed" });
+    expect(yield* pay(w, w.member.address, right)).toBeUndefined();
+    const data = yield* encode(paymentsAbi.send, [{ settlementId: keccak(utf8("settlement:1")), ...right }]);
+    yield* w.send(w.member, yield* Roles.execTransactionWithRole(w.modifier, { to: w.payments, data, roleKey }));
+    expect([yield* w.balanceOf(carol, w.paymentsToken), yield* w.balanceOf(w.payments, w.paymentsToken)]).toEqual([30n, 70n]);
+    expect(yield* left(w)).toBe(70n);
+  })), 60_000);
+
+test.skipIf(gate)("amounts over 2^53 are judged exactly: the limit itself passes the role, one more does not", () =>
+  run(Effect.gen(function* () {
+    const limit = 10n ** 18n + 1n;
+    const w = yield* budgetWorld(paymentsBudget({ amount: { param: [0, 3], limit }, allowance: { key, balance: 2n ** 127n } }));
+    const item = { recipient: alice, token: w.paymentsToken };
+    expect(yield* pay(w, w.member.address, { ...item, amount: limit + 1n })).toMatchObject({ _tag: "ConditionViolation", status: "ParameterGreaterThanAllowed" });
+    // Within the role, the stand-in cannot pay it: the role let it through, and the call then failed.
+    expect(yield* pay(w, w.member.address, { ...item, amount: limit })).toEqual({ _tag: "ModuleTransactionFailed" });
   })), 60_000);

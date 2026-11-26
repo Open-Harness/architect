@@ -3,7 +3,7 @@
 export { Roles } from "./modules/roles/service.ts";
 export {
   MODULE_PROXY_FACTORY, ROLES_MASTERCOPY,
-  type Allowance, type ContractCall, type OrgBudget, type RolesApi, type RolesDeployment, type RolesRefusal, type RolesStatus,
+  type Allowance, type BudgetParam, type ContractCall, type OrgBudget, type RolesApi, type RolesDeployment, type RolesRefusal, type RolesStatus,
 } from "./modules/roles/types.ts";
 export { ZodiacWorld } from "./modules/world/service.ts";
 export type { ZodiacInstalled, ZodiacWorldApi } from "./modules/world/types.ts";
