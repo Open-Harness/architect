@@ -19,10 +19,11 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { Effect } from "effect";
 import { Render } from "@orthograph/generators/render";
-import { IGNORES, TSCONFIG, WORKSPACE, mergeWorkspace, packageJson } from "../../packages/preset/src/modules/starter/internal/project.ts";
 import { afterEach, describe, expect, it } from "vitest";
 import { cli, repo } from "../layer1/support.ts";
 
+// The preset's own project files, read by path through `repo` (packages are imported by scope, and this module is internal).
+const { IGNORES, TSCONFIG, WORKSPACE, mergeWorkspace, packageJson } = (await import(/* @vite-ignore */ join(repo, "packages/preset/src/modules/starter/internal/project.ts"))) as typeof import("../../packages/preset/src/modules/starter/internal/project.ts");
 const starter = join(repo, "examples/starter");
 const presetVersion = (JSON.parse(readFileSync(join(repo, "packages/preset/package.json"), "utf8")) as { readonly version: string }).version;
 
