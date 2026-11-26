@@ -91,7 +91,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         if (said.status !== undefined && said.failure === undefined) env["last"] = said.body;
         const record: CallRecord = {
           journey: journey.name, step, actor: "stand", person: "", operation: `${call.mount}/_stand/${call.command}`,
-          payload: (resolved.value ?? {}) as Record<string, unknown>, status: said.failure === undefined && said.status !== undefined ? 200 : said.status ?? 0, body: said.body,
+          payload: (resolved.value ?? {}) as Record<string, unknown>, status: said.failure === undefined && said.status !== undefined ? 200 : said.status !== undefined && (said.status < 200 || said.status > 299) ? said.status : 0, body: said.body,
           trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], stand: true,
         };
         calls.push(record);
