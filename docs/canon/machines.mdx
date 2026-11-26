@@ -13,7 +13,7 @@ questions:
 status: draft
 milestone: M5
 slices: [M5.04, M5.05, M3.16]
-decisions: [D2, D3, K5, K16]
+decisions: [D2, D3, K5, K16, K46]
 links: [things, invariants, operations, views, stores, journeys, handlers, traces]
 ---
 
@@ -340,4 +340,15 @@ and a missing instance.
   or the thing's own declared error of that name. When every way in is a role check that reads it, the miss stays
   `NotAllowed`, so a stranger learns nothing about what exists. A join on a sheet that was never opened is now a refusal
   the caller can name, not a defect. Ledger: MAC-07.
+</Note>
+
+<Note kind="decision" decision="K46">
+  Things last, and operations are short (Aaron, 26 November 2026). An operation is one call and one commit. If something
+  has to wait, it is a thing, in a state, and its machine is where the wait is held. So every move should say what makes
+  it: a caller in a role (`allowed`), an event from another thing (`on`), or a clock (`by`, K23). Read the other way, the
+  moves out of a waiting state are what the thing needs, and the framework can ask for it: show the move to whoever
+  holds the role, listen for the event, set the timer. Owners approving a grant is a thing that asks for enough of them,
+  not a workflow. Designed, with no slice: a way to say a move is asked for and of how many, a check that every waiting
+  state has a way out for yes, for no and for silence, and the outcome of a chain call (reverted, dropped) as something
+  that makes a move. K46 has the sketches.
 </Note>

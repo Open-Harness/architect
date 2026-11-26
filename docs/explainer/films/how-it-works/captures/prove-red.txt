@@ -1,0 +1,189 @@
+journey a name is claimed once ✘ 0/5 steps
+  ✘ "the same request again answers the same handle and claims nothing": hdl_x4fbi6jpdzgifwjb is in no state, expected "claimed"
+  ✘ "the same request again answers the same handle and claims nothing": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+  ✘ "a taken name is refused": expected refused with HandleTaken, answered
+  ✘ "a taken name is refused": span handle.claim.commit present, expected absent
+  ✘ "a taken name is refused": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+  ✘ "another person's request key is not aaron's: still refused": expected refused with HandleTaken, answered
+  ✘ "another person's request key is not aaron's: still refused": span handle.claim.commit present, expected absent
+  ✘ "another person's request key is not aaron's: still refused": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+  ✘ "the name still resolves to aaron's handle": expected an answer, refused with HandleNotFound
+  ✘ "the name still resolves to aaron's handle": handler src/handle/resolve.ts, declared in blueprint/things/handle/verbs/resolve.ts (handle.resolve)
+  ✘ "the refusal left bob free to claim a name of his own": expected HandleClaimed, journal has nothing
+  ✘ "the refusal left bob free to claim a name of his own": hdl_i0qbm0b3bfuswltr is in no state, expected "claimed"
+  ✘ "the refusal left bob free to claim a name of his own": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+journey a stranger cannot edit a page ✘ starting world page-to-guard: link.add answered 422: {"_tag":"LinkNeedsHandle","code":"LN-001"}; no step ran
+journey add, order and remove a link ✘ starting world page-to-edit: link.add answered 422: {"_tag":"LinkNeedsHandle","code":"LN-001"}; no step ran
+journey anyone reads a public page ✘ starting world page-with-links: link.add answered 422: {"_tag":"LinkNeedsHandle","code":"LN-001"}; no step ran
+journey claim a handle ✘ 4/8 steps
+  ✘ "aaron claims the free name": expected HandleClaimed, journal has nothing
+  ✘ "aaron claims the free name": hdl_i3we01yhnyxmdat4 is in no state, expected "claimed"
+  ✘ "aaron claims the free name": span handle.claim.record missing: expected present, the call produced handle.claim, handle.claim.commit, journey.claim a handle
+  ✘ "aaron claims the free name": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+  ✘ "the name now resolves to a handle": expected an answer, refused with HandleNotFound
+  ✘ "the name now resolves to a handle": handler src/handle/resolve.ts, declared in blueprint/things/handle/verbs/resolve.ts (handle.resolve)
+  ✘ "the claim made a public page, with no links yet": expected an answer, refused with ProfileNotFound
+  ✘ "the claim made a public page, with no links yet": handler src/profile/get.ts, declared in blueprint/things/profile/verbs/get.ts (profile.get)
+  ✘ "aaron cannot claim a second name while he holds one": expected refused with HandleAlreadyOwned, answered
+  ✘ "aaron cannot claim a second name while he holds one": span handle.claim.commit present, expected absent
+  ✘ "aaron cannot claim a second name while he holds one": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+journey release a handle ✘ 3/13 steps
+  ✘ "aaron puts a link on his page before he lets the name go": expected an answer, refused with LinkNeedsHandle
+  ✘ "aaron puts a link on his page before he lets the name go": handler src/link/add.ts, declared in blueprint/things/link/verbs/add.ts (link.add)
+  ✘ "bob cannot release aaron's name": hdl_znv2eln0qf5njkpc is in no state, expected "claimed"
+  ✘ "bob cannot release aaron's name": handler src/handle/release.ts, declared in blueprint/things/handle/verbs/release.ts (handle.release)
+  ✘ "aaron releases his name": expected HandleReleased, journal has nothing
+  ✘ "aaron releases his name": hdl_znv2eln0qf5njkpc is in no state, expected "released"
+  ✘ "aaron releases his name": span handle.release missing: expected present, the call produced handle.release.refused, journey.release a handle
+  ✘ "aaron releases his name": span handle.release.record missing: expected present, the call produced handle.release.refused, journey.release a handle
+  ✘ "aaron releases his name": span handle.release.commit missing: expected present, the call produced handle.release.refused, journey.release a handle
+  ✘ "aaron releases his name": handler src/handle/release.ts, declared in blueprint/things/handle/verbs/release.ts (handle.release)
+  ✘ "he cannot release it twice": expected refused with HandleNotClaimed, refused with NotAllowed
+  ✘ "he cannot release it twice": hdl_znv2eln0qf5njkpc is in no state, expected "released"
+  ✘ "he cannot release it twice": handler src/handle/release.ts, declared in blueprint/things/handle/verbs/release.ts (handle.release)
+  ✘ "someone else claims the released name": expected HandleClaimed, journal has nothing
+  ✘ "someone else claims the released name": hdl_nnwa2zeya6snvmqs is in no state, expected "claimed"
+  ✘ "someone else claims the released name": hdl_znv2eln0qf5njkpc is in no state, expected "released"
+  ✘ "someone else claims the released name": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+  ✘ "the new page has none of the old owner's links": expected an answer, refused with ProfileNotFound
+  ✘ "the new page has none of the old owner's links": handler src/profile/get.ts, declared in blueprint/things/profile/verbs/get.ts (profile.get)
+  ✘ "the old handle is not bob's: he cannot release it, and it stays released": hdl_znv2eln0qf5njkpc is in no state, expected "released"
+  ✘ "the old handle is not bob's: he cannot release it, and it stays released": handler src/handle/release.ts, declared in blueprint/things/handle/verbs/release.ts (handle.release)
+  ✘ "aaron can claim again: a released handle does not count as one he holds": expected HandleClaimed, journal has nothing
+  ✘ "aaron can claim again: a released handle does not count as one he holds": hdl_zlm2zzij1mqyzoyv is in no state, expected "claimed"
+  ✘ "aaron can claim again: a released handle does not count as one he holds": span handle.claim.record missing: expected present, the call produced handle.claim, handle.claim.commit, journey.release a handle
+  ✘ "aaron can claim again: a released handle does not count as one he holds": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+  ✘ "aaron can add a link again, to his new page": expected an answer, refused with LinkNeedsHandle
+  ✘ "aaron can add a link again, to his new page": emits: nothing at last.link
+  ✘ "aaron can add a link again, to his new page": handler src/link/add.ts, declared in blueprint/things/link/verbs/add.ts (link.add)
+  ✘ "his new page has only the new link, and the old name's page is still bob's and empty": expected an answer, refused with ProfileNotFound
+  ✘ "his new page has only the new link, and the old name's page is still bob's and empty": handler src/profile/get.ts, declared in blueprint/things/profile/verbs/get.ts (profile.get)
+journey a person claims a page and shares it ✘ 0/5 steps
+  ✘ "aaron claims @aaron": expected HandleClaimed, journal has nothing
+  ✘ "aaron claims @aaron": hdl_hexqxxmrio7fw66f is in no state, expected "claimed"
+  ✘ "aaron claims @aaron": span handle.claim.record missing: expected present, the call produced handle.claim, handle.claim.commit, journey.a person claims a page and shares it
+  ✘ "aaron claims @aaron": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)
+  ✘ "aaron adds his GitHub": emits: nothing at last.link
+  ✘ "aaron adds his GitHub": span link.add.record missing: expected present, the call produced journey.a person claims a page and shares it, link.add, link.add.load, sqlite
+  ✘ "aaron adds his GitHub": span link.add.commit missing: expected present, the call produced journey.a person claims a page and shares it, link.add, link.add.load, sqlite
+  ✘ "aaron adds his GitHub": handler src/link/add.ts, declared in blueprint/things/link/verbs/add.ts (link.add)
+  ✘ "aaron adds his blog": emits: nothing at last.link
+  ✘ "aaron adds his blog": handler src/link/add.ts, declared in blueprint/things/link/verbs/add.ts (link.add)
+  ✘ "aaron adds his talks": emits: nothing at last.link
+  ✘ "aaron adds his talks": handler src/link/add.ts, declared in blueprint/things/link/verbs/add.ts (link.add)
+  ✘ "anyone sees his public page at @aaron: three links in the order he added them": expected an answer, refused with ProfileNotFound
+  ✘ "anyone sees his public page at @aaron: three links in the order he added them": expected an answer, refused with ProfileNotFound
+  ✘ "anyone sees his public page at @aaron: three links in the order he added them": handler src/profile/get.ts, declared in blueprint/things/profile/verbs/get.ts (profile.get)
+handle.claim answer shape ✔
+handle.claim declared errors ✔
+handle.claim machine path ✘ a-name-is-claimed-once "starting world claimed": answered without making its move claim
+handle.claim machine path ✘ a-name-is-claimed-once "a taken name is refused": answered without making its move claim
+handle.claim machine path ✘ a-name-is-claimed-once "another person's request key is not aaron's: still refused": answered without making its move claim
+handle.claim machine path ✘ a-name-is-claimed-once "the refusal left bob free to claim a name of his own": answered without making its move claim
+handle.claim machine path ✘ a-stranger-cannot-edit-a-page "starting world page-to-guard": answered without making its move claim
+handle.claim machine path ✘ add-order-and-remove-a-link "starting world page-to-edit": answered without making its move claim
+handle.claim machine path ✘ anyone-reads-a-public-page "starting world page-with-links": answered without making its move claim
+handle.claim machine path ✘ claim-a-handle "aaron claims the free name": answered without making its move claim
+handle.claim machine path ✘ claim-a-handle "aaron cannot claim a second name while he holds one": answered without making its move claim
+handle.claim machine path ✘ release-a-handle "starting world claimed-to-release": answered without making its move claim
+handle.claim machine path ✘ release-a-handle "someone else claims the released name": answered without making its move claim
+handle.claim machine path ✘ release-a-handle "aaron can claim again: a released handle does not count as one he holds": answered without making its move claim
+handle.claim machine path ✘ a-person-claims-a-page-and-shares-it "aaron claims @aaron": answered without making its move claim
+handle.claim events ✘ a-name-is-claimed-once "starting world claimed": move claim emitted no HandleClaimed
+handle.claim events ✘ a-name-is-claimed-once "a taken name is refused": move claim emitted no HandleClaimed
+handle.claim events ✘ a-name-is-claimed-once "another person's request key is not aaron's: still refused": move claim emitted no HandleClaimed
+handle.claim events ✘ a-name-is-claimed-once "the refusal left bob free to claim a name of his own": move claim emitted no HandleClaimed
+handle.claim events ✘ a-stranger-cannot-edit-a-page "starting world page-to-guard": move claim emitted no HandleClaimed
+handle.claim events ✘ add-order-and-remove-a-link "starting world page-to-edit": move claim emitted no HandleClaimed
+handle.claim events ✘ anyone-reads-a-public-page "starting world page-with-links": move claim emitted no HandleClaimed
+handle.claim events ✘ claim-a-handle "aaron claims the free name": move claim emitted no HandleClaimed
+handle.claim events ✘ claim-a-handle "aaron cannot claim a second name while he holds one": move claim emitted no HandleClaimed
+handle.claim events ✘ release-a-handle "starting world claimed-to-release": move claim emitted no HandleClaimed
+handle.claim events ✘ release-a-handle "someone else claims the released name": move claim emitted no HandleClaimed
+handle.claim events ✘ release-a-handle "aaron can claim again: a released handle does not count as one he holds": move claim emitted no HandleClaimed
+handle.claim events ✘ a-person-claims-a-page-and-shares-it "aaron claims @aaron": move claim emitted no HandleClaimed
+handle.claim who may call ✔
+handle.claim steps ✘ a-name-is-claimed-once "starting world claimed": declared step handle.claim.record ran no span
+handle.claim steps ✘ a-name-is-claimed-once "a taken name is refused": declared step handle.claim.record ran no span
+handle.claim steps ✘ a-name-is-claimed-once "another person's request key is not aaron's: still refused": declared step handle.claim.record ran no span
+handle.claim steps ✘ a-name-is-claimed-once "the refusal left bob free to claim a name of his own": declared step handle.claim.record ran no span
+handle.claim steps ✘ a-stranger-cannot-edit-a-page "starting world page-to-guard": declared step handle.claim.record ran no span
+handle.claim steps ✘ add-order-and-remove-a-link "starting world page-to-edit": declared step handle.claim.record ran no span
+handle.claim steps ✘ anyone-reads-a-public-page "starting world page-with-links": declared step handle.claim.record ran no span
+handle.claim steps ✘ claim-a-handle "aaron claims the free name": declared step handle.claim.record ran no span
+handle.claim steps ✘ claim-a-handle "aaron cannot claim a second name while he holds one": declared step handle.claim.record ran no span
+handle.claim steps ✘ release-a-handle "starting world claimed-to-release": declared step handle.claim.record ran no span
+handle.claim steps ✘ release-a-handle "someone else claims the released name": declared step handle.claim.record ran no span
+handle.claim steps ✘ release-a-handle "aaron can claim again: a released handle does not count as one he holds": declared step handle.claim.record ran no span
+handle.claim steps ✘ a-person-claims-a-page-and-shares-it "aaron claims @aaron": declared step handle.claim.record ran no span
+handle.claim performance ✔ p50 1ms p95 34ms budget p95 150ms
+handle.claim coverage ✘ move handle.claim made by no journey
+handle.claim coverage ✘ outcome handle claimed reached by no journey
+handle.claim coverage ✘ rule handle.oneHolderPerName refused by no journey
+handle.claim coverage ✘ rule handle.oneNamePerPerson refused by no journey
+handle.claim explainability ✔
+handle.claim 4 of 9 evals ✘ p50 1ms p95 34ms budget p95 150ms
+handle.release answer shape ✔
+handle.release declared errors ✔
+handle.release machine path ✔
+handle.release events ✔
+handle.release who may call ✔
+handle.release steps ✔
+handle.release performance ✔ no timed calls
+handle.release coverage ✘ move handle.release made by no journey
+handle.release coverage ✘ outcome handle released reached by no journey
+handle.release explainability ✔
+handle.release 1 of 9 evals ✘ no timed calls
+handle.resolve answer shape ✔
+handle.resolve declared errors ✔
+handle.resolve machine path ✔
+handle.resolve events ✔
+handle.resolve who may call ✔
+handle.resolve steps ✔
+handle.resolve performance ✔ p50 5ms p95 13ms budget p95 150ms
+handle.resolve coverage ✔
+handle.resolve explainability ✔
+handle.resolve 9 evals ✔ p50 5ms p95 13ms budget p95 150ms
+link.add answer shape ✔
+link.add declared errors ✔
+link.add machine path ✔
+link.add events ✔
+link.add who may call ✔
+link.add steps ✔
+link.add performance ✔ p50 4ms p95 11ms budget p95 150ms
+link.add coverage ✘ move link.add made by no journey
+link.add coverage ✘ outcome link listed reached by no journey
+link.add explainability ✔
+link.add 1 of 9 evals ✘ p50 4ms p95 11ms budget p95 150ms
+link.order answer shape ✔
+link.order declared errors ✔
+link.order machine path ✔
+link.order events ✔
+link.order who may call ✔
+link.order steps ✔
+link.order performance ✔ no timed calls
+link.order coverage ✘ link.order reached by no journey
+link.order explainability ✔
+link.order 1 of 9 evals ✘ no timed calls
+link.remove answer shape ✔
+link.remove declared errors ✔
+link.remove machine path ✔
+link.remove events ✔
+link.remove who may call ✔
+link.remove steps ✔
+link.remove performance ✔ no timed calls
+link.remove coverage ✘ link.remove reached by no journey
+link.remove explainability ✔
+link.remove 1 of 9 evals ✘ no timed calls
+profile.get answer shape ✔
+profile.get declared errors ✔
+profile.get machine path ✔
+profile.get events ✔
+profile.get who may call ✔
+profile.get steps ✔
+profile.get performance ✔ p50 5ms p95 5ms budget p95 150ms
+profile.get coverage ✔
+profile.get explainability ✔
+profile.get 9 evals ✔ p50 5ms p95 5ms budget p95 150ms
+coverage ✔ moves 0/4 · outcomes 0/4 · refusals 3/6 · runtime refusals 1/7 (not counted: IdempotencyConflict, which no journey can cause: a step cannot send a second payload under a held request key)
+prove ✘ 35 failing

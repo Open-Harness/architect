@@ -14,7 +14,7 @@ questions:
 status: draft
 milestone: M1
 slices: [M1.19, M1.17]
-decisions: [N1, D3, O2, K3, K5]
+decisions: [N1, D3, O2, K3, K5, K46]
 links: [blueprint, data, machines, stores, operations, roles, secrets, traces, views, doors]
 ---
 
@@ -455,4 +455,10 @@ secret field at rest. Everything else on it is proved or specified.
   `packages/orthograph/src/modules/values/types.ts:8` ("readable by every target") and
   `packages/orthograph/src/modules/visibility/types.ts:2` ("A target that has no private state"). It is due to be renamed
   to language.
+</Note>
+
+<Note kind="decision" decision="K46">
+  A thing is what lasts (Aaron, 26 November 2026). It is used the same way wherever it lives: by its state, its fields
+  and its moves. If something in a system has to wait, for a person, for another thing or for a date, that is a thing in
+  a state, and never an operation held open ([machines](machines.mdx), [operations](operations.mdx)).
 </Note>

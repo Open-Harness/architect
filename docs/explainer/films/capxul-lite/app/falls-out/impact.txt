@@ -1,0 +1,9 @@
+$ ortho impact
+changed   budget · renew        every "1 month"  →  every "1 week"
+stale     the contract          a new version, v4
+          the client            what is left to spend
+          the app               the budget's panel
+          the docs              budgets
+          2 journeys            they use renew
+live      3 treasuries on v3    their owners take v4 in place, when they choose
+proven    everything else

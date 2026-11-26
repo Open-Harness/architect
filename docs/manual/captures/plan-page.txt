@@ -1,0 +1,60 @@
+# the first page an agent drew for "pay by name", before any answer from the owner
+
+The idea, said back
+A claimed @name becomes a place money can be sent. Every claimed handle has one wallet, and anyone
+who knows the name can pay its holder without knowing anything else about them.
+It is NOT a bank, a shop checkout, an exchange or a way to ask for money. One currency (guess).
+
+Things
+- Wallet (new): a handle's money. States: opening, open, frozen, closed. One per claimed handle.
+- Payment (new): an amount sent to a name. States: started, held, settled, failed, returned.
+- Withdrawal (new, guess): money leaving a wallet to its holder. States: asked, sent, failed.
+- Touches Handle: claiming opens a wallet; releasing must deal with the wallet first.
+- Touches the public page: it shows that the name can be paid. It never shows a balance.
+
+Who may do what
+- The holder of a name sees their own wallet's balance and its payments.
+- Anyone signed in (guess) sends a payment to a claimed name.
+- A visitor looks up a name and sees whether it can be paid, nothing more.
+- The sender sees the payments they sent, and takes one back while it is still held (guess).
+- The holder withdraws from their own wallet. Nobody else moves money out of it.
+- The holder releases the name only once its wallet is empty (guess).
+- An operator freezes a wallet or returns a payment (guess: no operator exists today).
+
+What must stay true
+- A name has at most one open wallet, and it belongs to whoever holds the name now.
+- Money sent to @name reaches the person who held the name when it was sent, never a later one.
+- A payment is counted once, however many times the sender presses send.
+- A balance is exactly the settled payments in, minus the withdrawals and returns out.
+- A balance never goes below zero.
+- A payment to a released or unknown name is refused before any money moves.
+- Every payment ends settled, failed or returned. None is left in between.
+- Only the holder learns the balance; a sender learns only what became of their own payment.
+
+What waits
+- A wallet in opening waits for the money provider to say the wallet exists.
+- A payment in started waits for the provider to confirm the sender's money.
+- A payment in held waits for a clearing time to pass, or for the sender to take it back (guess).
+- A withdrawal in asked waits for the provider to say the money arrived or bounced.
+- A release that was asked for waits for the wallet to be emptied and closed.
+- A frozen wallet waits for an operator.
+
+Where two places must agree
+- The app's balance and the money the provider really holds for that wallet.
+- The app's payment state and the provider's record of it, including a late reversal.
+- Who holds the name and who owns the wallet, at the moment of each payment.
+- The person as the sign-in knows them and as the provider has verified them, if it must.
+- The page saying "can be paid" and the wallet being open.
+
+Doubts
+- Is the money real, and who holds it: a provider, a chain, or points inside the app? Blank.
+- Can a provider open a wallet per person and reliably tell us when money lands? Spike.
+- What happens to the money when a name is released: withdrawn first, returned, kept? Blank.
+- Must a person prove who they are before receiving or withdrawing? Blank.
+- Can a late reversal be mirrored without a balance going below zero? Spike.
+- Must the sender hold a name and wallet too, or may anyone with a card pay? Blank.
+- Are there limits and fees: a smallest and largest payment, a cut for the app? Blank.
+
+First question
+Is this real money, and if so who holds it while it sits in a wallet?
+Why: every thing, wait and join above changes shape with the answer, and so does the law on us.
