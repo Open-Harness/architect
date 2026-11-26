@@ -51,6 +51,7 @@ describe("the starter preset", () => {
     const once = addToList(nx, "minimumReleaseAgeExclude", AGE_EXEMPT);
     expect(once).toBe("minimumReleaseAgeExclude:\n  - 'x@1'\n  - orthograph\n  - '@orthograph/*'\n");
     expect(addToList(once, "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe(once);
+    expect(addToList("minimumReleaseAgeExclude: []\n", "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe("minimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\n");
     expect(addToList("", "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe("minimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\n");
   });
 });

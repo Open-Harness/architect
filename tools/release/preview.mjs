@@ -77,10 +77,13 @@ const packed = async (m, scratch) => {
     const files = listed.stdout.split("\n").filter((f) => f !== "" && !f.endsWith("/")).map((f) => f.replace(/^package\//, "")).sort();
     return { files, size: statSync(tgz).size, manifest: JSON.parse(manifest.stdout) };
   } catch (e) {
-    const { stdout } = await run("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: m.dir, maxBuffer: 64 * 1024 * 1024 });
-    const [info] = JSON.parse(stdout);
     const { dir: _dir, ...disk } = m;
-    return { files: info.files.map((f) => f.path).sort(), size: info.size, manifest: { ...disk, ...(m.publishConfig?.bin === undefined ? {} : { bin: m.publishConfig.bin }) }, error: failure(e) };
+    const manifest = { ...disk, ...(m.publishConfig?.bin === undefined ? {} : { bin: m.publishConfig.bin }) };
+    try {
+      const { stdout } = await run("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: m.dir, maxBuffer: 64 * 1024 * 1024 });
+      const [info] = JSON.parse(stdout);
+      return { files: info.files.map((f) => f.path).sort(), size: info.size, manifest, error: failure(e) };
+    } catch { return { files: [], size: 0, manifest, error: failure(e) }; }
   }
 };
 

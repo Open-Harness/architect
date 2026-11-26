@@ -68,8 +68,9 @@ export const AGE_EXEMPT = ["orthograph", "'@orthograph/*'"];
 /** Add entries to a top-level list of a pnpm-workspace.yaml (created if missing), each once, keeping every entry already there. */
 export const addToList = (yaml: string, key: string, entries: ReadonlyArray<string>): string => {
   const lines = yaml.trimEnd() === "" ? [] : yaml.trimEnd().split("\n");
-  let at = lines.findIndex((l) => l === `${key}:`);
+  let at = lines.findIndex((l) => l === `${key}:` || l === `${key}: []`);
   if (at === -1) { lines.push(`${key}:`); at = lines.length - 1; }
+  else lines[at] = `${key}:`;
   let end = at + 1;
   while (end < lines.length && /^(\s|-)/.test(lines[end]!)) end++;
   const bare = (s: string) => s.replace(/^\s*-\s*/, "").replace(/^['"]|['"]$/g, "");
