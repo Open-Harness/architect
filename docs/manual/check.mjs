@@ -107,6 +107,7 @@ for (const name of chapters) {
     // Output written in a sentence is held to the recordings too: anything in backticks with a verdict mark is a line of one.
     for (const m of row.matchAll(/`([^`]*[✔✘][^`]*)`/g)) if (!recordings.some((r) => r.includes(m[1]))) say(`line ${k + 1}: \`${m[1]}\` is in no recording`);
   });
+  if (open) say("ends inside a fence that is never closed");
   for (const m of text.matchAll(/^```(\S*)([^\n]*)\n([\s\S]*?)\n```$/gm)) {
     quotes++;
     const [, , info, body] = m, lines = body.split("\n"), capture = /capture=(\S+)/.exec(info), source = /file=(\S+) lines=(\d+)-(\d+)/.exec(info);
