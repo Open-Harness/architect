@@ -68,16 +68,18 @@ describe("#1133: what the compiler refuses about contracts", () => {
 
   // Who may run or fill a contract is judged whole, pair by pair, in contracts-touch.test.ts.
 
-  it("refuses a contract step where no commit is: on an operation that runs on the caller's device, and on one of a chain-stored thing, word for word", async () => {
+  it("refuses a contract step where no commit is: on an operation that runs on the caller's device, optional or required, and on one of a chain-stored thing, word for word", async () => {
+    const client = (thing: unknown, payload: object, steps: object) =>
+      Blueprint.operation(thing as never, { description: "Run a contract on the device.", payload: payload as never, answer: {}, runs: "client", allowed: [Blueprint.anyone], steps: steps as never });
     const device: Change = {
       extra: {
-        payroll: (s, o) => [{
-          path: "things/slip/verbs/preview.js",
-          exports: { default: Blueprint.operation(o.Slip, { description: "Preview a slip's tax on the device.", payload: { slip: o.Slip.fields.id, gross: o.Slip.fields.gross, country: o.Slip.fields.country }, answer: {}, runs: "client", allowed: [Blueprint.anyone], steps: { tax: s.step(o.slipTax) } }) },
-        }],
+        payroll: (s, o) => [{ path: "things/slip/verbs/preview.js", exports: { default: client(o.Slip, { slip: o.Slip.fields.id }, { tax: s.step(o.slipTax) }) } }],
+        // The ledger's required contract, run on the device by its owner.
+        ledger: (s, o) => [{ path: "things/account/verbs/preview.js", exports: { default: client(o.Account, { name: o.Account.fields.name }, { code: s.step(o.accountCode) }) } }],
       },
     };
-    expect(problemsOf(await modelExit(features(device), { mounts: MOUNTED }))).toEqual([
+    expect(problemsOf(await modelExit(features(device), { mounts: MOUNTED })).slice().sort()).toEqual([
+      `blueprint/features/ledger.ts: ${at("ledger", "things/account/verbs/preview.js")}: a client operation can't run a contract: it has no store and no commit for a filler to join`,
       `blueprint/features/payroll.ts: ${at("payroll", "things/slip/verbs/preview.js")}: a client operation can't run a contract: it has no store and no commit for a filler to join`,
     ]);
     const chain: Change = { extra: { payroll: (s, o) => vaultFiles(o, "payroll", { tax: s.step(o.slipTax) }) } };
@@ -86,43 +88,75 @@ describe("#1133: what the compiler refuses about contracts", () => {
     ]);
   });
 
-  it("refuses a fill that writes a thing in a chain store, or holds a call, contract or wait step, word for word", async () => {
+  it("refuses a fill that writes a thing in a chain store, or holds call, contract or wait steps, each step once, word for word, the fill named by its mount and file", async () => {
     // A chain store and a thing in it, payroll-tax-us's own, that its fill writes.
     const chainWrite: Change = {
       extra: { "payroll-tax-us": (_s, o) => vaultFiles(o, "payroll-tax-us") },
       fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), steps: { keep: Blueprint.step.database({ writes: [o.vaults["payroll-tax-us"].Vault] }) } }) },
     };
-    const exit = await modelExit(features(chainWrite), { mounts: MOUNTED });
-    expect(problemsOf(exit)).toEqual([
+    expect(problemsOf(await modelExit(features(chainWrite), { mounts: MOUNTED }))).toEqual([
       `blueprint/features/payroll-tax-us.ts: ${TAX_FILL}: the fill payroll-tax-us.slip-tax writes vault, which lives in a chain store: a fill runs inside its caller's commit, so it writes only things in a database`,
     ]);
-    for (const [type, step] of [["call", (_s: Contracts, _o: Owners) => Blueprint.step.call(Blueprint.call())], ["contract", (s: Contracts, o: Owners) => s.step(o.postingCheck)], ["wait", () => Blueprint.step.wait()]] as const) {
-      const change: Change = { fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), steps: { more: step(s, o) } }) } };
-      expect(problemsOf(await modelExit(features(change), { mounts: MOUNTED })), type).toEqual([
-        `blueprint/features/payroll-tax-us.ts: ${TAX_FILL}: the fill payroll-tax-us.slip-tax declares the ${type} step more: a fill holds only database and operation steps`,
-      ]);
-    }
+    const kinds = (s: Contracts, o: Owners) => ({ ask: Blueprint.step.call(Blueprint.call()), check: s.step(o.postingCheck), hold: Blueprint.step.wait() });
+    const said = (mount: string, fill: string, file: string) =>
+      [["ask", "call"], ["check", "contract"], ["hold", "wait"]].map(([key, type]) => `blueprint/features/${mount}.ts: ${file}: the fill ${fill} declares the ${type} step ${key}: a fill holds only database and operation steps`);
+    const allKinds: Change = { fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), steps: { save: Blueprint.step.database(), ...kinds(s, o) } }) } };
+    expect(problemsOf(await modelExit(features(allKinds), { mounts: MOUNTED }))).toEqual(said("payroll-tax-us", "payroll-tax-us.slip-tax", TAX_FILL));
+    // Its file isn't named after its contract, and its mount isn't named after its package: the fill is named `<mount>.<file>`.
+    const codes: Change = { fills: { "chart-us": (s, o) => ({ ...RIGHT["chart-us"](s, o), steps: kinds(s, o) }) } };
+    expect(problemsOf(await modelExit(features(codes), { mounts: { ...without("chart-us"), chart: "chart-us" } }))).toEqual(said("chart", "chart.us-codes", at("chart-us", "fills/us-codes.js")));
+    expect(problemsOf(await modelExit(features(allKinds), { mounts: { ...without("payroll-tax-us"), tax: "payroll-tax-us" } }))).toEqual(said("tax", "tax.slip-tax", TAX_FILL));
   });
 
-  it("refuses a fill that writes the contract owner's thing, or its caller's, with CX-feature-ownership call 6's sentence, word for word", async () => {
-    const owners: Change = { fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), steps: { save: Blueprint.step.database({ writes: [o.Slip] }) } }) } };
+  it("refuses a fill that writes another feature's thing or the app's, with CX-feature-ownership call 6's sentence, word for word, whatever else it holds", async () => {
+    const sentence = (mount: string, file: string, fill: string, thing: string, how: string, owner: string, offers: string) =>
+      `blueprint/features/${mount}.ts: ${file}: the feature ${mount} writes ${thing} in the fill ${fill} (${how}), and ${thing} is the feature ${owner}'s: a feature writes only its own things. ` +
+      `Run one of ${owner}'s operations that write it inside this commit instead, as a step (Blueprint.step.operation): ${offers}`;
+    // The owner's slip, written by two steps. The way out is every payroll operation that writes a slip, the one on a pay run through
+    // `writes: [...]` too, but never slip.submit: it runs the tax contract again (call 9's cycle).
+    const owners: Change = { fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), steps: { save: Blueprint.step.database({ writes: [o.Slip] }), stamp: Blueprint.step.database({ writes: [o.Slip] }) } }) } };
     expect(problemsOf(await modelExit(features(owners), { mounts: MOUNTED }))).toEqual([
-      `blueprint/features/payroll-tax-us.ts: ${TAX_FILL}: the feature payroll-tax-us writes slip in the fill payroll-tax-us.slip-tax (step save), and slip is the feature payroll's: a feature writes only its own things. ` +
-        "Run one of payroll's operations that write it inside this commit instead, as a step (Blueprint.step.operation): slip.submit",
+      sentence("payroll-tax-us", TAX_FILL, "payroll-tax-us.slip-tax", "slip", "step save and step stamp", "payroll", "pay-run.close, slip.adjust"),
     ]);
-    // Budgets' fill runs for payment.post, among others, and writes the payment: the caller's thing, payments' own.
-    const callers: Change = { fills: { budgets: (s, o) => ({ ...RIGHT.budgets(s, o), steps: { save: Blueprint.step.database({ writes: [o.Payment] }) } }) } };
+    // The caller's payment, beside an operation step: a fill is judged for its writes whatever else it holds. payment.post runs the posting
+    // check again, so only payment.note is offered.
+    const callers: Change = { fills: { budgets: (s, o) => ({ ...RIGHT.budgets(s, o), steps: { note: operationStep(o.paymentNote), save: Blueprint.step.database({ writes: [o.Payment] }) } }) } };
     expect(problemsOf(await modelExit(features(callers), { mounts: MOUNTED }))).toEqual([
-      `blueprint/features/budgets.ts: ${at("budgets", "fills/posting-check.js")}: the feature budgets writes payment in the fill budgets.posting-check (step save), and payment is the feature payments's: a feature writes only its own things. ` +
-        "Run one of payments's operations that write it inside this commit instead, as a step (Blueprint.step.operation): payment.post",
+      sentence("budgets", at("budgets", "fills/posting-check.js"), "budgets.posting-check", "payment", "step save", "payments", "payment.note"),
+    ]);
+    // A thing of a feature the filler doesn't depend on: chart-us needs the ledger only, and writes payroll's slip.
+    const stranger: Change = { fills: { "chart-us": (s, o) => ({ ...RIGHT["chart-us"](s, o), steps: { save: Blueprint.step.database({ writes: [o.Slip] }) } }) } };
+    expect(problemsOf(await modelExit(features(stranger), { mounts: MOUNTED }))).toEqual([
+      sentence("chart-us", at("chart-us", "fills/us-codes.js"), "chart-us.us-codes", "slip", "step save", "payroll", "pay-run.close, slip.adjust, slip.submit"),
+    ]);
+    // One of the app's own things.
+    const app: Change = { fills: { "chart-us": (s, o) => ({ ...RIGHT["chart-us"](s, o), steps: { save: Blueprint.step.database({ writes: [o.Cheque] }) } }) } };
+    const f = features(app);
+    expect(problemsOf(await modelExit(f, { mounts: MOUNTED, files: [{ path: "things/cheque/thing.ts", exports: { Cheque: f.o.Cheque } }] }))).toEqual([
+      `blueprint/features/chart-us.ts: ${at("chart-us", "fills/us-codes.js")}: the feature chart-us writes cheque in the fill chart-us.us-codes (step save), and cheque is the app's: a feature writes only its own things.`,
     ]);
   });
 
-  it("refuses a fill that runs its own contract again, through an operation step at any depth, naming the path (needs #1079's build)", async () => {
-    // payroll-tax-us's fill runs slip.submit, which runs payroll.slip-tax, whose fill is this one.
-    const cycle: Change = { fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), steps: { again: operationStep(o.slipSubmit) } }) } };
-    expect(problemsOf(await modelExit(features(cycle), { mounts: MOUNTED }))).toEqual([
-      `blueprint/features/payroll-tax-us.ts: ${TAX_FILL}: the fill payroll-tax-us.slip-tax runs payroll.slip-tax again, through payroll-tax-us.slip-tax → slip.submit → payroll.slip-tax: a contract never runs itself`,
+  it("refuses a fill that runs its own contract again, through operation steps at any depth and through another contract's fill, naming the path (needs #1079's build)", async () => {
+    const cycle = (step: (o: Owners) => unknown, extra?: Change["extra"]): Change => ({ ...(extra ? { extra } : {}), fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), steps: { again: operationStep(step(o)) } }) } });
+    const line = (path: string) => `blueprint/features/payroll-tax-us.ts: ${TAX_FILL}: the fill payroll-tax-us.slip-tax runs payroll.slip-tax again, through ${path}: a contract never runs itself`;
+    // One deep: the fill runs slip.submit, which runs payroll.slip-tax.
+    expect(problemsOf(await modelExit(features(cycle((o) => o.slipSubmit)), { mounts: MOUNTED }))).toEqual([line("payroll-tax-us.slip-tax → slip.submit → payroll.slip-tax")]);
+    // Three deep: rerun runs batch, which runs submit.
+    const deep = cycle((o) => o.slipRerun, { payroll: (_s, o) => [{ path: "things/slip/verbs/batch.js", exports: { default: o.slipBatch } }, { path: "things/slip/verbs/rerun.js", exports: { default: o.slipRerun } }] });
+    expect(problemsOf(await modelExit(features(deep), { mounts: MOUNTED }))).toEqual([line("payroll-tax-us.slip-tax → slip.rerun → slip.batch → slip.submit → payroll.slip-tax")]);
+    // Through another contract's fill: budgets' fill runs payment.code (the account code); chart-us's fill of it runs payment.post (the
+    // posting check). Each fill is refused, its own path from itself.
+    const through: Change = {
+      extra: { payments: (_s, o) => [{ path: "things/payment/verbs/code.js", exports: { default: o.paymentCode } }] },
+      fills: {
+        budgets: (s, o) => ({ ...RIGHT.budgets(s, o), steps: { code: operationStep(o.paymentCode) } }),
+        "chart-us": (s, o) => ({ ...RIGHT["chart-us"](s, o), steps: { post: operationStep(o.paymentPost) } }),
+      },
+    };
+    expect(problemsOf(await modelExit(features(through), { mounts: MOUNTED })).slice().sort()).toEqual([
+      `blueprint/features/budgets.ts: ${at("budgets", "fills/posting-check.js")}: the fill budgets.posting-check runs ledger.posting-check again, through budgets.posting-check → payment.code → ledger.account-code → payment.post → ledger.posting-check: a contract never runs itself`,
+      `blueprint/features/chart-us.ts: ${at("chart-us", "fills/us-codes.js")}: the fill chart-us.us-codes runs ledger.account-code again, through chart-us.us-codes → payment.post → ledger.posting-check → payment.code → ledger.account-code: a contract never runs itself`,
     ]);
   });
 

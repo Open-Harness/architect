@@ -44,8 +44,14 @@ spend (#1133).
    `database` step naming none writes nothing), and an `operation` step writes nothing itself. So a fill writes only its
    own feature's things. Writing the contract owner's things, or the calling feature's, is refused with
    CX-feature-ownership call 6's sentence, word for word, where `<operation>` is `the fill <filler mount>.<file>` (as
-   `the fill payroll-tax-us.slip-tax`). The way out it offers is the owner's operation, run as the fill's `operation`
-   step. One owner says who may write what: CX-feature-ownership, not this record.
+   `the fill payroll-tax-us.slip-tax`, or `the fill chart-us.us-codes` for `fills/us-codes.ts`, its mount's name and
+   never its package's). The way out it offers is the owner's operation, run as the fill's `operation` step: every
+   operation of the owner's mount that writes the thing by call 2's ways, except one that would run the fill's own
+   contract again at any depth (that way out is the cycle call 9 refuses). A fill that writes one of the app's own
+   things is refused with the sentence's first part, the thing named as the app's:
+   `the feature <writer> writes <thing> in the fill <name> (<how>), and <thing> is the app's: a feature writes only its own things.`
+   (A package can't import the app that mounts it, so only a fixture reaches this.) A fill is judged for its writes
+   whatever other steps it holds. One owner says who may write what: CX-feature-ownership, not this record.
 
    **Its handler's type** is `FillHandler<typeof fill, R>`, exported from `@orthograph/language-effect` beside `Handler`:
    `(input: InputOf<F>, context: { readonly steps: StepRunners<…> }) => Effect<OutputOf<F>, ErrorOf<F>, R>`, typed from

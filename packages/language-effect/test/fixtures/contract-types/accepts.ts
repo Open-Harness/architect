@@ -3,7 +3,7 @@
 // error channel (they are the operation's, CX-feature-contracts call 4). A fill's handler is typed from its own fill declaration (call 2).
 import { Effect } from "effect";
 import type { FillHandler, Handler } from "../../../src/modules/handler/types.ts";
-import { CodeTaken, SlipLate, TaxRateDisputed, TaxTableMissing, codesUs, slipQuick, slipSubmit, slipTaxUs } from "./features.ts";
+import { CodeTaken, SlipLate, TaxRateDisputed, TaxTableMissing, codesUs, slipQuick, slipSubmit, slipTaxUs, slipTaxWide } from "./features.ts";
 
 /** Hands back `run` unchanged; compiles only when each refusal given is one `run` says it may fail with (the refusals never widen what it says). */
 export const refusesWith = <A, E, R>(run: Effect.Effect<A, E, R>, ..._refusals: ReadonlyArray<NoInfer<E>>): Effect.Effect<A, E, R> => run;
@@ -56,3 +56,6 @@ export const usCodes: FillHandler<typeof codesUs> = ({ name }) =>
     if (name === "XX") return yield* new CodeTaken({ code: name });
     return { code: `${name}-1` };
   });
+
+/** Typed from its own fill, not its contract: it is handed the region its fill's input adds, and answers the note its fill's output adds. */
+export const usWide: FillHandler<typeof slipTaxWide> = ({ gross, region }) => Effect.succeed({ tax: gross / 10n, note: region });

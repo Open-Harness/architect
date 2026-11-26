@@ -122,11 +122,31 @@ export const owners = () => {
     return { store, Vault, VaultOpened, machine, holder };
   };
   const vaults = { payroll: vault(), "payroll-tax-us": vault() };
-  // payments' own way to write a payment, which runs no contract: exported only when a check adds `things/payment/verbs/note.js`.
+  // payments' own way to write a payment, which runs no contract: the way out a fill that writes a payment is offered.
   const paymentNote = Blueprint.operation(Payment, { description: "Note a payment.", payload: { account: Account.fields.id, amount: Amount }, answer: {}, allowed: [Blueprint.signedIn], steps: { save: Blueprint.step.database() } });
   // The leave feature's contract: installed, never mounted, so it is in no app's model.
   const leaveDays = s.contract({ description: "Days of leave a request takes.", input: { days: Amount }, output: {}, optional: true });
-  return { s, Payment, paymentNote, vaults, leaveDays, Amount, Country, Code, Account, BudgetExceeded, CodeTaken, postingCheck, accountCode, closePeriod, accountOpen, Slip, TaxTableMissing, slipTax, slipSubmit, RateMissing };
+  // Payroll's ways to write a slip that run no contract: the way out a fill that writes a slip is offered (call 2). One is on the slip itself,
+  // the other on a pay run, writing the slip through `writes: [...]`.
+  const slipAdjust = Blueprint.operation(Slip, { description: "Adjust a slip.", payload: { slip: Slip.fields.id }, answer: {}, allowed: [Blueprint.signedIn], steps: { save: Blueprint.step.database() } });
+  const PayRun = Blueprint.thing({ description: "A pay run.", fields: { id: Blueprint.id("prn") }, code: "PR" });
+  const payRunClose = Blueprint.operation(PayRun, { description: "Close a pay run and its slips.", payload: { run: PayRun.fields.id }, answer: {}, allowed: [Blueprint.signedIn], steps: { close: Blueprint.step.database({ writes: [PayRun, Slip] }) } });
+  // Inner operations two deep (#1079): batch runs submit, rerun runs batch. Exported only by a check that adds them.
+  const slipBatch = Blueprint.operation(Slip, { description: "Submit a slip in a batch.", payload: { slip: Slip.fields.id, gross: Slip.fields.gross, country: Slip.fields.country }, answer: {}, allowed: [Blueprint.signedIn], steps: { one: operationStep(slipSubmit) } });
+  const slipRerun = Blueprint.operation(Slip, { description: "Run a batch again.", payload: { slip: Slip.fields.id, gross: Slip.fields.gross, country: Slip.fields.country }, answer: {}, allowed: [Blueprint.signedIn], steps: { again: operationStep(slipBatch) } });
+  const paymentPost = Blueprint.operation(Payment, {
+    description: "Post a payment, checked before it lands.",
+    payload: { account: Account.fields.id, amount: Amount },
+    answer: { payment: Payment.fields.id },
+    errors: [BudgetExceeded],
+    allowed: [Blueprint.signedIn],
+    steps: { check: s.step(postingCheck), save: Blueprint.step.database() },
+  });
+  // A payment that takes its account's code: payments runs the ledger's required contract. Exported only by a check that adds it.
+  const paymentCode = Blueprint.operation(Payment, { description: "Code a payment's account.", payload: { name: Account.fields.name }, answer: {}, allowed: [Blueprint.signedIn], steps: { code: s.step(accountCode) } });
+  // One of the app's own things, for a check whose fill writes it.
+  const Cheque = Blueprint.thing({ description: "A cheque the app writes.", fields: { id: Blueprint.id("chq"), account: Account.fields.id, amount: Amount }, code: "CQ" });
+  return { s, paymentPost, slipAdjust, PayRun, payRunClose, slipBatch, slipRerun, paymentCode, Cheque, Payment, paymentNote, vaults, leaveDays, Amount, Country, Code, Account, BudgetExceeded, CodeTaken, postingCheck, accountCode, closePeriod, accountOpen, Slip, TaxTableMissing, slipTax, slipSubmit, RateMissing };
 };
 export type Owners = ReturnType<typeof owners>;
 
@@ -182,14 +202,6 @@ export const features = (change: Change = {}) => {
   // A payment runs the ledger's check: payments depends on the ledger, so it may. It declares the check's error itself too (it maps it to its own
   // refusal), so the operation lists it once whether it declares it or the contract brings it.
   const { Payment } = o;
-  const paymentPost = Blueprint.operation(Payment, {
-    description: "Post a payment, checked before it lands.",
-    payload: { account: o.Account.fields.id, amount: o.Amount },
-    answer: { payment: Payment.fields.id },
-    errors: [o.BudgetExceeded],
-    allowed: [Blueprint.signedIn],
-    steps: { check: s.step(o.postingCheck), save: Blueprint.step.database() },
-  });
 
   // Payroll's add-on needs payroll only when its mount picks `link.on`: a conditional need (Blueprint.need(payroll, { when })).
   const link = Blueprint.choice({ off: "Stands alone.", on: "Pays through payroll." });
@@ -208,7 +220,7 @@ export const features = (change: Change = {}) => {
         ...extra("ledger"),
       ],
     },
-    payments: { descriptor: payments, files: [file("things/payment/thing.js", { Payment }), file("things/payment/verbs/post.js", { default: paymentPost }), ...extra("payments")] },
+    payments: { descriptor: payments, files: [file("things/payment/thing.js", { Payment }), file("things/payment/verbs/post.js", { default: o.paymentPost }), file("things/payment/verbs/note.js", { default: o.paymentNote }), ...extra("payments")] },
     // Budgets needs payments, not the ledger: it depends on the ledger through payments.
     budgets: { descriptor: feature("Budgets.", [payments]), files: [file("fills/posting-check.js", { default: fillOf("budgets", "Refuse a posting over budget.") }), ...extra("budgets")] },
     // Its fill's file isn't named after the contract: a fill is matched to its contract by the contract it imports, never by a name.
@@ -224,6 +236,9 @@ export const features = (change: Change = {}) => {
         file("things/slip/thing.js", { Slip: o.Slip }),
         file("things/slip/errors.js", { TaxTableMissing: o.TaxTableMissing }),
         file("things/slip/verbs/submit.js", { default: o.slipSubmit }),
+        file("things/slip/verbs/adjust.js", { default: o.slipAdjust }),
+        file("things/pay-run/thing.js", { PayRun: o.PayRun }),
+        file("things/pay-run/verbs/close.js", { default: o.payRunClose }),
         file("contracts/slip-tax.js", { default: o.slipTax }),
         ...extra("payroll"),
       ],
@@ -297,12 +312,8 @@ export const problemsOf = (exit: Exit.Exit<unknown, unknown>): ReadonlyArray<str
 
 /** What the model holds for one contract, as #1133 says it does (`model.contracts`): read by a cast, since `Model` has no such field on `main`. */
 export interface ContractModel {
-  readonly owner: string;
-  readonly file: string;
-  readonly optional: boolean;
-  readonly input: Readonly<Record<string, unknown>>;
-  readonly output: Readonly<Record<string, unknown>>;
-  readonly errors: ReadonlyArray<string>;
+  readonly owner: string; readonly file: string; readonly optional: boolean; readonly errors: ReadonlyArray<string>;
+  readonly input: Readonly<Record<string, unknown>>; readonly output: Readonly<Record<string, unknown>>;
   readonly filler: { readonly mount: string; readonly file: string; readonly writes: ReadonlyArray<string> } | null;
 }
 export const contractsOf = (m: Model): Readonly<Record<string, ContractModel>> | undefined => (m as unknown as { readonly contracts?: Readonly<Record<string, ContractModel>> }).contracts;
@@ -319,14 +330,8 @@ export const at = (pkg: Name, path: string) => `@fixture/${pkg}/blueprint/${path
  */
 export const vaultFiles = (o: Owners, who: keyof Owners["vaults"], steps?: Readonly<Record<string, unknown>>): ReadonlyArray<LoadedFile> => {
   const v = o.vaults[who];
-  return [
-    file("stores/vault.js", { default: v.store }),
-    file("things/vault/thing.js", { Vault: v.Vault }),
-    file("things/vault/events.js", { VaultOpened: v.VaultOpened }),
-    file("things/vault/machine.js", { machine: v.machine }),
-    file("things/vault/roles.js", { holder: v.holder }),
-    ...(steps === undefined ? [] : [file("things/vault/verbs/open.js", {
-      default: Blueprint.operation(v.Vault, { description: "Open a vault.", payload: { id: v.Vault.fields.id, safe: v.Vault.fields.safe }, answer: {}, move: v.machine.moves.open, allowed: [v.holder], steps: steps as never } as never),
-    })]),
-  ];
+  const open = steps === undefined ? [] : [file("things/vault/verbs/open.js", {
+    default: Blueprint.operation(v.Vault, { description: "Open a vault.", payload: { id: v.Vault.fields.id, safe: v.Vault.fields.safe }, answer: {}, move: v.machine.moves.open, allowed: [v.holder], steps: steps as never } as never),
+  })];
+  return [file("stores/vault.js", { default: v.store }), file("things/vault/thing.js", { Vault: v.Vault }), file("things/vault/events.js", { VaultOpened: v.VaultOpened }), file("things/vault/machine.js", { machine: v.machine }), file("things/vault/roles.js", { holder: v.holder }), ...open];
 };

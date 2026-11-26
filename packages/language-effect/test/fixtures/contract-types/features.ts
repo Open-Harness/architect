@@ -53,3 +53,13 @@ export const slipTaxUs = Blueprint.fill(slipTax, {
   steps: { save: Blueprint.step.database() },
 });
 export const codesUs = Blueprint.fill(accountCode, { description: "US account codes.", input: { name: Country }, output: { code: Code }, errors: [CodeTaken] });
+/**
+ * A fill whose shape isn't its contract's: an input and an output field the contract lacks. The compiler refuses it (call 8); tsc doesn't run the
+ * compiler, so here it shows that a fill handler is typed from its fill, never from the contract it fills.
+ */
+export const slipTaxWide = Blueprint.fill(slipTax, {
+  description: "Tax with a note.",
+  input: { slip: Slip.fields.id, gross: Amount, country: Country, region: Country },
+  output: { tax: Amount, note: Code },
+  errors: [TaxTableMissing],
+});
