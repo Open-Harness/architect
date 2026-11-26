@@ -1,0 +1,2 @@
+$ ortho env up test --port 4629
+test up http://127.0.0.1:4629

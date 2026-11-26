@@ -83,7 +83,7 @@
           "n": 9,
           "title": "Watch it",
           "question": "Is it healthy, and what changed this week?",
-          "planned": "chapters/09-watch-it.md",
+          "file": "chapters/09-watch-it.md",
           "film": "watch",
           "section": "watch"
         }

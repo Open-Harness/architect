@@ -1,0 +1,3 @@
+$ ortho env up local
+"local" is not kept running: it is what `ortho dev` and `ortho prove --env local` start
+exit 2
