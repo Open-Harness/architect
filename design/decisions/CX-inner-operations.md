@@ -26,6 +26,16 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
    own error. An idempotent inner's `IdempotencyConflict` stays its own: run inside another operation, it keeps no
    request key, so the outer never refuses with it. **Addition (Goal 16's lead):** when the outer and an inner declare one error name with two shapes or exits,
    the compiler refuses it, naming both operations; it never merges them.
+
+   **The handler's error channel (26 November 2026, from the 🔍 review of #1176).** The types say the same as the model.
+   `steps.<key>(payload)` fails with every refusal its inner operation can make: its declared errors, `NotAllowed`,
+   `<Thing>Not<State>`, `<Thing>NotFound`, and every refusal of the inner's own inner steps, at any depth. `Handler<O>`
+   lets out the operation's declared errors and every refusal of each of its operation steps, at any depth, so the
+   scaffold's `yield* steps.draft(...)` compiles with no cast, and a handler may refuse with an inner's refusal itself.
+   Nothing else widens: an error no operation declares, the refusal of an operation no step runs, the outer's own
+   refusal in an inner's handler or runner (refusals go up, never down), and one sibling step's refusal in another's
+   runner all stay type errors. An inner step widens the error channel and nothing else: the answer, the runner's
+   payload and the step keys are judged as before.
 3. **The whole inner pipeline runs, for the same caller, inside the outer's one commit.** Its access rule (judged for the
    caller, never as system), what its payload names and `<Thing>NotFound`, its from-check, its handler, its answer's
    declaration, its move and event, and its G5 rules. It never commits on its own: its writes and journal entries join
@@ -68,6 +78,9 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
 
 - `packages/language-effect/src/modules/handler/inner-operation.test.ts`: the runtime over `storeMemory`, the commit;
   `inner-operation-rules.test.ts`: the inner operation's own rules and its span. The scratch ledger is `handler/testing.ts`.
+- `packages/language-effect/src/modules/handler/inner-operation-types.test.ts`: the handler's error channel (call 2), judged by
+  one tsc run over `test/fixtures/inner-operation-types/`: `accepts.ts` compiles with no cast, and each file in `refuses/` is
+  one of its handlers with one fault, an error on that line alone.
 - `packages/compiler/src/modules/model/inner-operations.test.ts`: what the model records;
   `inner-operations-refused.test.ts`: what the compiler refuses. The scratch ledger is `model/testing.ts`.
 - `e2e/m2/13-inner-operations.test.ts` (m2 check 13): the generated server over local D1, through HTTP, read back from the D1 file.
@@ -91,3 +104,7 @@ acme's generated files don't move (the checks build their own scratch ledger), s
 - A clash between two inner operations' error names (rather than the outer's and an inner's) isn't judged on its own.
   Today the compiler already refuses two error classes of one name anywhere in a project ("declared twice"), so it can't
   arise.
+- The error channel is judged by fields, not by name. A declared error's `_tag` is a `string` in the type, so tsc tells
+  two errors apart only by their fields: an error with every field of an allowed one (or with an `id` or a `state` text
+  field, which `<Thing>NotFound` and `<Thing>Not<State>` carry) is let through. Each error in the fixture has a field no
+  other has. Narrowing `_tag` to the class's export name is generated code's (errors/types.ts), not this slice's.
