@@ -31,10 +31,10 @@
 //
 // Red today on the missing keeper only: no row is armed and nothing fires, every journey shares one world's clock, and the
 // compiler refuses `after(field, "0 seconds")`; the hush handler also dies clearing `nextCheckAt` (#1205).
-import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import { club, failedAt, generated, nothingRunning, once, ortho, passedWhole, plant, prove } from "./support.ts";
+import { club, copyOf, failedAt, fixtures, generated, nothingRunning, once, ortho, passedWhole, plant, prove, signup } from "./support.ts";
 import { advance, call, clockOf, inWorld } from "./world.ts";
 
 const JOURNEYS = {
@@ -235,6 +235,27 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
       expect(run.stdout + run.stderr).toMatch(/0 seconds/);
     } finally {
       copy.remove();
+    }
+  });
+
+  it("a real clock: a blueprint with a move made by time generates the keeper's wake route and the world's entry; one without, what it always did", () => {
+    // CX-keeper call 1 widens M8.07 calls 9 and 10: production runs on a real clock, and its moves made by time must fire there.
+    const timed = club("keeper");
+    const plain = copyOf(signup);
+    try {
+      cpSync(join(fixtures, "real-clock"), timed.root, { recursive: true });
+      const main = readFileSync(join(generated(timed.root), "generated/server/main.ts"), "utf8");
+      expect(main, "the World subclass with its wake route").toMatch(/export class World extends \w+/);
+      expect(main, "the keeper's kind in the world's wakes").toMatch(/const wakes: WorldWakes = \{[^;]*\bkeeper\s*:/);
+      expect(main, "the world's entry, in place of BusyLive").toContain("WorldEntry.work(env, wakes)");
+      expect(main).not.toMatch(/\bBusyLive\b/);
+      // The control: signup declares no move made by time and no clock, so its Worker is what it always was.
+      const before = readFileSync(join(generated(plain.root), "generated/server/main.ts"), "utf8");
+      expect(before).not.toContain("WorldEntry");
+      expect(before).toContain("BusyLive");
+    } finally {
+      timed.remove();
+      plain.remove();
     }
   });
 

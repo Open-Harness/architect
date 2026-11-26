@@ -1,6 +1,8 @@
 # Written before the keeper is built (M8.10, #1199; CX-keeper). Red until the keeper arms, fires and fences rows, journeys that
-# move time get worlds of their own, the compiler allows after(field, "0 seconds"), and a handler can clear an optional field
+# move time get worlds of their own, a real-clock blueprint with a move made by time gets the wake route, the compiler allows
+# after(field, "0 seconds"), and a handler can clear an optional field
 # (#1205); due before M8's gate.
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > a real clock: a blueprint with a move made by time generates the keeper's wake route and the world's entry; one without, what it always did
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > after: "a held desk expires an hour after it was held" passes all 5 steps
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > after: each planted break fails exactly its own step
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > armed: "a desk left held when the journey ends" passes all 1 steps

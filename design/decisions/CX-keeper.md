@@ -39,7 +39,18 @@ because every journey shares one world's clock.
    blueprint that declares a move made by time, whatever its environments' clocks, and the generated Worker's
    `WorldEntry.work(env, wakes)` gets the same map. A real world fires the kind from the Durable Object's alarm (M8.07
    call 7), a stepped or scaled one from the clock controller. The builder adds a unit test that the real alarm routes
-   the keeper kind, beside `timers/timers.test.ts`. The wake runs the move in the world's own isolate, counted under the row's
+   the keeper kind, beside `timers/timers.test.ts`.
+
+   **This widens M8.07 calls 9 and 10**, and projections' `timed` gate with them (`clocksOf` in
+   `packages/projections/src/modules/server/internal/worker-config.ts:15`, read at `server.ts:16,41`). Those gave the World
+   subclass, `WorldEntry` and `Timers` only to a blueprint with a stepped or scaled clock, so a real-clock world had no wake
+   route. Capxul's production world runs on a real clock, and its Safe's `recover` must fire there. So the gate becomes:
+   some environment's clock is stepped or scaled, **or** the blueprint declares a move made by time. A real-clock world of
+   such a blueprint gets `ORTHO_CLOCKS` naming its clock, the generated `World` subclass with the keeper in its `wakes`,
+   and `WorldEntry.work(env, wakes)` in place of `BusyLive`. In a real world the count still counts nothing (M8.07 call 3).
+   A blueprint with no move made by time and no stepped or scaled clock generates what it did before. Check 05 judges the
+   generated Worker for a real-clock blueprint with an `after` move; `packages/projections/src/modules/server` is in
+   this slice's paths. The wake runs the move in the world's own isolate, counted under the row's
    owner (M8.07 call 10), and returns once the operation's run holds its own token.
 
 2. **The arming key is (thing, move, generation).** A row's owner is the move's operation name
@@ -130,5 +141,10 @@ the keeper also turns.
 
 - `docs/canon/status.md` (`gap-signature-collection`): "stage 3's signature collection and the keeper rest on workflows" → "stage 3's signature collection rests on workflows; the keeper does not (CX-keeper)"
 - `docs/canon/status.md` (open items, 5): "Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike" → "Stage 3's signature collection rests on workflows, which have no decision or spike; the keeper needs only timers (CX-keeper)"
-- design/history/artifacts-2026-11-21/scope.html: "Stage 3's signature collection and the keeper rest on workflows" → "Stage 3's signature collection and the keeper rest on workflows (Superseded by CX-keeper, 26 November 2026: the keeper needs only timers.)"
-- design/history/retired-2026-11-23/scope.md: "Stage 3's signature collection and the keeper rest on workflows" → "Stage 3's signature collection and the keeper rest on workflows (Superseded by CX-keeper, 26 November 2026: the keeper needs only timers.)"
+- design/history/artifacts-2026-11-21/scope.html: "Stage 3's signature collection and the keeper rest on workflows" → "Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike. (Superseded by CX-keeper, 26 November 2026: the keeper needs only timers.)"
+- design/history/retired-2026-11-23/scope.md: "Stage 3's signature collection and the keeper rest on workflows" → "Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike. (Superseded by CX-keeper, 26 November 2026: the keeper needs only timers.)"
+- design/decisions/M8-07-timers-and-quiet.md (the table): "The generated Worker, for a blueprint with a stepped or scaled clock only" → "The generated Worker, for a blueprint with a stepped or scaled clock, or with any move made by time"
+- design/decisions/M8-07-timers-and-quiet.md (call 9): "A blueprint with no clock, or a real one," → "A blueprint with no clock, or a real one, and no move made by time,"
+- design/decisions/M8-07-timers-and-quiet.md (call 10): "A generated Worker for a blueprint with a stepped or scaled clock" → "A generated Worker for a blueprint with a stepped or scaled clock, or with any move made by time,"
+- design/goals/09-time.md: "The wake route exists only when some environment declares a stepped or scaled clock" → "The wake route exists when some environment declares a stepped or scaled clock, or the blueprint declares a move made by time"
+- design/goals/09-time.md: "Widen projections' `timed` gate and register the wake kind." → "A feature that needs the route on a real clock for another reason widens the gate the same way and registers its kind."
