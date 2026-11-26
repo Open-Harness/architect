@@ -229,9 +229,9 @@ each dated record, and `git grep` finds each old phrase only in dated records an
 Live docs:
 
 - `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)" → "contractors worldwide first, then tax from a piece per jurisdiction (CX-money-global-payroll)"
-- `design/goals/16-capxul.md`: "in USDC, the one dollar asset every Capxul company uses for now" → "in the company's own currency (CX-money-global-payroll)"
+- `design/goals/16-capxul.md`: "in USDC, the one dollar asset every Capxul company uses for now" → "in USDC, the reporting currency of today's companies (CX-money-global-payroll)"
 - `design/goals/16-capxul.md`: "parked by Aaron's one-dollar-asset call and unclaimed while parked" → "unparked by CX-money-global-payroll and claimed by Goal 16"
-- `design/goals/16-capxul.md`: "payslips, the pay run and taxes, each run posting" → "payslips, the pay run, contractors and later taxes, each run posting"
+- `design/goals/16-capxul.md`: "payslips, the pay run and taxes, each run posting" → "payslips, the pay run and later taxes, contractors beside it, each run posting"
 - `examples/capxul/doctypes.md`: "These are deferred by Aaron's call of 24 November 2026" → "Each is taken with its rate and base fields as its slice builds it (CX-money-global-payroll)"
 - `examples/capxul/doctypes.md`: "amount is in USDC, the one dollar asset, so an `FX` row is taken without its exchange-rate and `base_*` fields" → "company keeps its books in its own currency"
 - `examples/capxul/doctypes.md`: "35 carry exchange rates (`FX`, deferred: amounts are USDC alone)" → "35 carry exchange rates (`FX`, CX-money-global-payroll)"
@@ -240,21 +240,28 @@ Live docs:
 - `examples/capxul/doctypes.md`: "pegged_currencies.json` | money-units question (CX-grill §3) |" → "pegged_currencies.json` | in `rates` (CX-money-global-payroll) |"
 - `examples/capxul/blueprint/assets/usdc.ts`: "The one dollar asset every Capxul company keeps its books in, for now" → "USDC, held in a Safe or at Bridge, its own asset beside US dollars"
 - `docs/canon/status.md`: "| books | none | `packages/orthograph/src/modules/values`" → "| books | goal-16 | `packages/orthograph/src/modules/values`"
-- `docs/canon/status.md`: "deferred by Aaron's call of 24 November 2026: every Capxul amount is USDC for now" → "unparked by CX-money-global-payroll: a company keeps its books in its own currency"
+- `docs/canon/status.md`: "deferred by Aaron's call of 24 November 2026: every Capxul amount is USDC for now (`CX-grill.md`, section 3, #926); unclaimed while parked, its checks draft #923; `M6-money.md` leaves a per-row currency for later; 35 doctypes carry exchange rates; base units stand, and a mismatch is Orthograph's money-units question (`CX-grill.md`, section 3); after M6.10" → "unparked and claimed by CX-money-global-payroll; its checks draft #923, rewritten to it; `M6-money.md`'s per-row currency is built here; 35 doctypes carry exchange rates; after M6.10"
 
 Dated records, each gaining "(Superseded by CX-money-global-payroll, <date>)" beside the words:
 
 - `design/decisions/CX-grill.md`: "For now every Capxul company keeps its books in one dollar asset." → "A company keeps its books in its own reporting currency, with accounts in any currency."
 - `design/decisions/CX-grill.md`: "A company's own currency and exchange rates are deferred by this call." → "A company's own currency and exchange rates are built in slice 7."
 - `design/decisions/CX-grill.md`: "Company currency (#882) is parked and unclaimed" → "Company currency (#882) is claimed by Goal 16"
+- `design/decisions/CX-grill.md`: "The one asset is USDC" → "Today's companies report in USDC"
+- `design/decisions/CX-grill.md`: "each is taken in USDC alone, and its exchange-rate and `base_*` fields are left out until a new call from Aaron" → "each is taken with its exchange-rate and `base_*` fields as its slice builds it"
 - `design/decisions/CX-payroll-tax.md`: "Capxul's payroll is built for the United States alone, in USDC" → "Capxul's payroll pays contractors worldwide first; the United States tax piece comes later"
 - `design/decisions/CX-payroll-tax.md`: "These are not in dollars, so their modules" → "Their pieces follow the US piece, in each country's currency, and"
+- `design/decisions/CX-payroll-tax.md`: "a company's own currency stays deferred" → "a company's own currency is built in slice 7"
 - `design/decisions/CX-bridge.md`: "every company uses one dollar asset, USDC" → "a company keeps its books in its own currency"
 - `design/decisions/CX-bridge.md`: "Unlike ERPNext's, the two amounts are not in the row's `currency`" → "The account's own amount is added beside them"
 - `design/decisions/CX-ledger.md`: "Every amount is USDC in base units" → "Every amount names its asset, in base units"
 - `design/decisions/CX-payroll.md`: "USDC in base units (`Amount`, and `Balance` where a draft may go below nothing); no field holds a currency or a rate" → "in base units naming its asset"
 - `design/decisions/M6-money.md`: "A per-row currency is later" → "A per-row currency is built for Capxul (#882, CX-money-global-payroll)"
 - `design/decisions/CX-parties-payments.md`, once #1116 lands: "Every amount is USDC in base units" → "Every amount names its asset, in base units"
+
+Stays as it is: `examples/capxul/journeys/keep-the-books.ts` line 4, "Every amount is USDC in base units". It describes
+that journey's own company, which reports in USDC, and stays true under this record; a journal entry journey in another
+currency is new, the currency slice's.
 
 ## Appendix A: the cases, with their sources
 
