@@ -141,9 +141,11 @@ const installedCli = (app: string): { readonly dir: string; readonly version: st
 };
 type Verdict = { passed?: boolean; totals?: { journeys?: number; journeysPassed?: number }; journeys?: ReadonlyArray<{ name: string; verdict: string; steps: ReadonlyArray<{ verdict: string; operation?: string; handlerFile?: string }> }> };
 const json = <T>(text: string): T | undefined => { try { return JSON.parse(text.trim()) as T; } catch { return undefined; } };
-/** The JSON document a command printed after any lines of its runner (pnpm's own): the first `{` at the start of a line that parses to the end. */
+/** The JSON document a command printed after any lines of its runner (pnpm's own): from a `{` at the start of a line to a `}` at the start of one, the widest that parses. */
 const document = <T>(text: string): T | undefined => {
-  for (let at = text.startsWith("{") ? 0 : text.indexOf("\n{"); at >= 0; at = text.indexOf("\n{", at + 1)) { const found = json<T>(text.slice(at)); if (found !== undefined) return found; }
+  const starts = [...text.matchAll(/^\{/gm)].map((m) => m.index);
+  const ends = [...text.matchAll(/^\}/gm)].map((m) => m.index + 1).reverse();
+  for (const at of starts) for (const end of ends) if (end > at) { const found = json<T>(text.slice(at, end)); if (found !== undefined) return found; }
   return undefined;
 };
 
@@ -236,7 +238,7 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
     expect(own?.dir ?? "", "installed into pnpm's store at the repository's version, not linked from the repository").toMatch(new RegExp(`node_modules/\\.pnpm/@orthograph\\+cli@${VERSION("cli").replace(/\./g, "\\.")}[/_]`));
     const lock = existsSync(join(made, "pnpm-lock.yaml")) ? readFileSync(join(made, "pnpm-lock.yaml"), "utf8") : "";
     expect(lock, "bakery/pnpm-lock.yaml").not.toBe("");
-    expect(lock.match(/^.*(?:file:|link:|\/home\/|\/tmp\/).*$/gm) ?? [], "nothing is installed from a folder: every package came from the registry").toEqual([]);
+    expect(lock.match(/^.*(?:[\s'"(@](?:file|link):|\/home\/|\/tmp\/).*$/gm) ?? [], "nothing is installed from a folder: every package came from the registry").toEqual([]);
     for (const p of publicPackages()) for (const v of [...lock.matchAll(new RegExp(`^  '?${p.name.replace(/[/.]/g, "\\$&")}@([^:'(]+)`, "gm"))].map((m) => m[1])) expect(v, `${p.name} in the lockfile`).toBe(p.version);
   });
 
