@@ -70,12 +70,14 @@ flowchart LR
    Capxul's developer account, with terms accepted, KYC or KYB approved, and the endorsement for the rail (below).
    Bridge: "Customers must be onboarded and KYC/KYB-approved before creating virtual accounts" (`virtualaccounts`).
 2. **A virtual account.** `POST /v0/customers/{customerID}/virtual_accounts` with `source.currency` and a `destination`
-   of `{ payment_rail: "base", currency, address }`. USD and GBP (Faster Payments) settle to USDC; EUR settles to EURC by
-   default. The answer's `source_deposit_instructions` are the bank details the company shows its customers. They are
-   permanent; the implementation keeps one per party and currency, its creation key stored before the POST. **The
-   destination is the company's Safe address, derived from the stored company, never from the caller.** Bridge accepts
-   any string there, so the address and chain are validated before the call, and the stored destination is read back
-   against the Safe. An `account_update` event says the destination changed; one Capxul didn't make is an alarm.
+   of `{ payment_rail: "base", currency, address }`. USD, EUR and GBP (Faster Payments) all settle to USDC: the Safe
+   holds only USDC, ETH and cbBTC (CX-crypto-accounting). Bridge supports EUR to USDC, and the implementation funds EUR
+   payouts from USDC (va10; `infrastructure:B/banking/bank-details/external.ts:97`); its EURC default is not lifted. The
+   answer's `source_deposit_instructions` are the bank details the company shows its customers. They are permanent; the
+   implementation keeps one per party and currency, its creation key stored before the POST. **The destination is the
+   company's Safe address, derived from the stored company, never from the caller.** Bridge accepts any string there, so
+   the address and chain are validated before the call, and the stored destination is read back against the Safe. An
+   `account_update` event says the destination changed; one Capxul didn't make is an alarm.
 3. **A deposit.** Each incoming payment has a `deposit_id` and a run of `virtual_account.activity` events, each with
    its own `id`: `funds_scheduled` (ACH only), `funds_received` (gross, before fees, in the source currency),
    sometimes `in_review`, then `payment_submitted` (its hash "may be preliminary") and `payment_processed` ("Payment
@@ -84,13 +86,14 @@ flowchart LR
    The implementation keeps the gross (`initial_amount`) and the net (`final_amount`), not the fees.
 4. **Bridge converts.** Below the route's minimum (1 USDC, after fees) a deposit is dust: Bridge holds microdeposits
    until they pass it (`mins`). The implementation marks one `below_minimum` and never credits it.
-5. **On chain to the Safe, on Base.** Bridge's rail is `base`. Production is Base mainnet, not yet wired (ADR-0025's
-   Bridge amendment R10); staging is Base Sepolia (84532) with Capxul's own test USDC and EURC
+5. **On chain to the Safe, on Base.** Bridge's rail is `base`. Production on Base mainnet is ADR-0025's release gate (its
+   Bridge amendment R10); staging is Base Sepolia (84532) with Capxul's own test USDC
    (`infrastructure:B/banking/payouts/rules.ts:13-19`). A Safe has the same address on every EVM chain (R9).
 6. **Credited.** A deposit counts when **both** hold: Bridge has said `payment_processed` for that `deposit_id`, and the
    chain shows the exact ERC-20 `Transfer` of the net amount, of that token, to the company's Safe, in that
    `destination_tx_hash` (the implementation's `exactDepositTransfer`, through its Ponder indexer:
-   `infrastructure:B/banking/deposits/rules.ts:210-226`, `credit.ts:77-93`). It confirms by inclusion in a block and
+   `infrastructure:B/banking/deposits/rules.ts:210-226`, `deposits/operations/credit.ts:77-93`). It confirms by inclusion in a
+   block and
    corrects for a reorg (ADR-0018's chain-head correction) rather than waiting a fixed depth. Bridge's sandbox doesn't
    move real tokens ("Do not assume that a blockchain testnet is used"), so staging credits against Capxul's own mint of
    its test token, and Capxul's prove must use a chain stand-in.
@@ -106,7 +109,7 @@ flowchart LR
 `POST /v0/transfers` with:
 
 - `on_behalf_of`: the company's customer;
-- `source`: `{ payment_rail: "base", currency: "usdc" | "eurc", from_address: <the Safe> }`;
+- `source`: `{ payment_rail: "base", currency: "usdc", from_address: <the Safe> }`;
 - `destination`: `{ payment_rail: "ach" | "sepa" | "faster_payments", currency, external_account_id, amount }`, a
   **fixed output**: the supplier receives exactly `destination.amount`, and Bridge quotes the input;
 - `return_instructions.return_address`: the Safe (not sent by the implementation today; Bridge question 14 is open in
@@ -120,7 +123,8 @@ The answer is checked field by field (`infrastructure:Br/internal/answer-checks.
 - **Leg 1, the Safe pays.** It is an ordinary Capxul Payment of kind Payout, to Bridge's deposit address: a sponsored
   ERC-4337 UserOperation through the CapxulPayments settlement contract, carrying a `settlementId`, proved by its
   `PaymentSent` event and the exact ERC-20 `Transfer`. **M1:** the Safe pays only a live quote, exactly its amount, to
-  the saved deposit address, before its deadline, once (`infrastructure:B/banking/payouts/rules/funding.ts:121-146`).
+  the saved deposit address, before its deadline, once
+  (`infrastructure:B/banking/payouts/rules/funding.ts:32-56`, `claimSend`).
 - **Leg 2, Bridge pays the bank.** `funds_received`, `payment_submitted`, `payment_processed`. **M3:** Bridge's word
   that it delivered is held until leg 1 is proved on chain, because Bridge's sandbox completes an unfunded
   crypto-source transfer by itself after about 30 seconds (recording va12).
@@ -144,7 +148,8 @@ implementation sends `returned`, `undeliverable`, `error`, the refunds and `canc
 only when the refund is seen on chain. Webhooks also carry `payment_validated`, `kyc_required` and `kyc_in_review`.
 
 **M2: never cancel while the send's outcome is unknown.** If leg 1 might have gone out, a canceled transfer could
-strand the money; after 24 hours a person looks (`funding.ts:238-247`). A `not_awaiting_funds` answer to a cancel is an
+strand the money; after 24 hours a person looks (`funding.ts:149-158`; the person's cancel
+at `rules/attention.ts:44-50`, the 24 hours at `rules/timers.ts:38`). A `not_awaiting_funds` answer to a cancel is an
 answer, not an error. A `transferConflict` (the same key, a different body) stops the payout.
 
 **Where a return goes** (`returns`): the Bridge wallet it came from; else a liquidation address's `return_address`;
@@ -173,7 +178,9 @@ status runs `not_started`, `incomplete`, `awaiting_questionnaire`, `awaiting_ubo
 straight from `not_started`. Every rail needs an **endorsement**: `base` for USD, `sepa` for EUR, `faster_payments` for
 GBP (`kyclinks`, `endorsements`, `api`). The implementation refuses in a fixed order
 (`infrastructure:B/banking/bank-details/rules.ts:61-95`) and treats `paused`, `offboarded` and `deposits_restricted`
-alike as restricted. It doesn't keep `rejection_reasons`.
+alike as restricted (`infrastructure:B/parties/verifications/rules/snapshot.ts:71-76,94-106`). It doesn't keep
+`rejection_reasons`. Bridge's docs call an approved customer's status `approved`; the implementation's Customer schema
+reads `active` (`infrastructure:Br/customer-answers.ts:43-55`). R5 decodes both.
 
 ### Webhooks
 
@@ -188,13 +195,14 @@ alike as restricted. It doesn't keep `rejection_reasons`.
   strict base64, about ten minutes' tolerance (`webhooks/signature`). The implementation's verifier
   (`infrastructure:Br/internal/signature.ts:11-44`) was checked on 39 real deliveries.
 - **Catch-up.** Two days of retries can still end in silence. The implementation runs a scheduled catch-up over
-  `GET /v0/webhook_events` with a cursor, a lease and a 90-day reach, plus per-payout reads and virtual-account history
-  read with `limit=1`. One lesson from it: a sandbox shared between environments sends every environment's events, so
-  each receiver must ignore what isn't its own (CAP-818, `readsFrom`).
+  `GET /v0/webhook_events` with a cursor and a lease, plus per-payout reads and virtual-account history read with
+  `limit=1`. CAP-818's `readsFrom` stops a fresh DevNet's catch-up from reading events created before it started
+  (`infrastructure:B/banking/reconcile/README.md:7`). Ignoring another environment's later events, on a sandbox they
+  share, is new in R4, not lifted.
 
 ### Fees
 
-- **Developer fee.** Capxul's own: a fixed `developer_fee` in USD (two places) on fixed-amount transfers;
+- **Developer fee.** Capxul's own: a fixed `developer_fee` in US dollars and cents on fixed-amount transfers;
   `developer_fee_percent` on virtual accounts. Withheld from the customer's amount and "paid out monthly on the 5th of
   each month" in USD to Capxul's fee account (`devfees`, `mins`). **Not set anywhere in the implementation.** Question 3.
 - **Bridge's own:** `exchange_fee_amount` and `gas_fee`, on each event and receipt.
@@ -216,20 +224,20 @@ prove, in Orthograph's terms, before the lift counts.
 |---|---|---|---|
 | V1 | A virtual account's `destination` is the company's Safe, derived from the stored company; the open's input is only who and which currency; the address and chain are validated before Bridge is called; the stored destination is read back against the Safe; **and Bridge's answered `destination.address` is checked too** | prove | **matches**, validated (`B/banking/bank-details/reads.ts:42-77,127-134`, `writes.ts:48-64,84-88`, `operations/open.ts:28-36`). Gap: Bridge's answered destination isn't decoded or checked (`Br/answers.ts:82-92`) |
 | V2 | An `account_update` that changes a destination Capxul didn't change raises an alarm and credits nothing after it | prove | **absent**: it only refreshes the token (`writes/lifecycle.ts:95-97`); assumed |
-| V3 | A deposit is credited only on `payment_processed` and the exact ERC-20 `Transfer` (chain, hash, Safe, token, raw net); confirmed by inclusion, corrected on a reorg | chain | **matches**, validated (b4) (`deposits/rules.ts:210-226`, `credit.ts:77-93`). Differs from this record's first draft: inclusion plus reorg correction, not a depth; staging credits on Capxul's own mint |
+| V3 | A deposit is credited only on `payment_processed` and the exact ERC-20 `Transfer` (chain, hash, Safe, token, raw net); confirmed by inclusion, corrected on a reorg | chain | **matches**, validated (b4) (`deposits/rules.ts:210-226`, `deposits/operations/credit.ts:77-93`). Differs from this record's first draft: inclusion plus reorg correction, not a depth; staging credits on Capxul's own mint |
 | V4 | A deposit keeps the net, the gross and each fee; net equals the chain's amount | prove | **partial**: gross and net kept, fees not (`B/banking/tables.ts:84-127`) |
 | V5 | One deposit is one row, keyed on `deposit_id`, however many events and polls report it | prove | **matches**, validated (a `by_ref` index, a rank machine) |
-| V6 | `funds_scheduled`, `in_review`, the refunds and `microdeposit` credit nothing; a refund without `deposit_id` is refused once and alerts | prove | **matches**, validated (`deposits/rules.ts:49-56,155-194`) |
-| V7 | A payout is one transfer: source `{base, usdc or eurc, from_address: Safe}`, destination `{ach, sepa or faster_payments, currency, external_account_id, amount}` as a fixed output, `return_instructions.return_address` the Safe, `Idempotency-Key` and `client_reference_id` the payout's id, minted once per request key with a body digest; the answer checked field by field | prove | **differs**, validated (b5, live staging payouts): no `return_instructions`, no developer fee; otherwise as written (`payouts/operations/prepare.ts:110-116`, `Br/internal/answer-checks.ts:77-112`) |
-| V8 | M1: the Safe pays only a live quote, exactly, to the saved deposit address, before the deadline, once; leg 1 proved by `PaymentSent` and the exact `Transfer` | chain | **matches**, validated (`payouts/rules/funding.ts:121-146`) |
-| V9 | M2: never cancel while leg 1's outcome is unknown; a person looks after 24 hours; a cancel answered `not_awaiting_funds` is an answer | prove | **matches**, validated (`funding.ts:238-247`) |
+| V6 | `funds_scheduled`, `in_review`, the refunds and `microdeposit` credit nothing; a refund without `deposit_id` credits nothing and goes to a person | prove | **matches**, validated (`deposits/rules.ts:49-56,155-194`) |
+| V7 | A payout is one transfer: source `{base, usdc, from_address: Safe}`, destination `{ach, sepa or faster_payments, currency, external_account_id, amount}` as a fixed output, `return_instructions.return_address` the Safe, `Idempotency-Key` and `client_reference_id` the payout's id, minted once per request key with a body digest; the answer checked field by field | prove | **differs**, validated (b5, live staging payouts): no `return_instructions`, no developer fee; otherwise as written (`payouts/operations/prepare.ts:110-116`, `Br/internal/answer-checks.ts:77-112`) |
+| V8 | M1: the Safe pays only a live quote, exactly, to the saved deposit address, before the deadline, once; leg 1 proved by `PaymentSent` and the exact `Transfer` | chain | **matches**, validated (`payouts/rules/funding.ts:32-56`) |
+| V9 | M2: never cancel while leg 1's outcome is unknown; a person looks after 24 hours; a cancel answered `not_awaiting_funds` is an answer | prove | **matches**, validated (`funding.ts:149-158`, `rules/attention.ts:44-50`, `rules/timers.ts:38`) |
 | V10 | `returned`, `undeliverable`, `error`, the refunds and `canceled` go to Returning; Refunded only when the refund is seen on chain; `underfunded` is `funding_short` for a person; **`missing_return_policy` is an alarm at once** | prove, chain | **matches**, validated, with a gap: `missing_return_policy` counts as working until the 7-day `delivery_stalled` (`rules/news.ts:15`) |
 | V11 | Webhook signatures: double SHA-256, RSA PKCS#1 v1.5, strict base64, ten minutes; a bad one is a 400 and writes nothing | prove | **matches**, validated (`Br/internal/signature.ts:11-44`; 39 real deliveries, b0) |
 | V12 | The same `event_id` twice is one journal entry | prove | **matches**, validated (`webhooks/writes.ts:25-34`) |
 | V13 | A late event never moves a record back (`updated_at`, then `event_sequence`, then rank) | prove | **matches**, validated |
 | V14 | Stored before the 200; back-off 1 to 60 minutes, parked after 10; catch-up over `/v0/webhook_events` with a cursor and a lease; per-movement reads | prove | **matches**, validated |
-| V15 | Eligibility refused in order; endorsement per currency (`base` USD, `sepa` EUR, `faster_payments` GBP); `paused`, `offboarded`, `deposits_restricted` restricted; **`rejection_reasons` kept** | prove, sandbox | **matches**, validated (q01–q21; `bank-details/rules.ts:61-95`), with a gap: rejection reasons aren't kept |
-| V16 | The developer fee and the fixed-output buffer's excess are recorded per movement, each with its owner, and the excess is refunded to the Safe | prove | **absent**, assumed: no developer fee set; the excess stays in Capxul's wallet, with no refund (ADR-0025 R4 amended) |
+| V15 | Eligibility refused in order; endorsement per currency (`base` USD, `sepa` EUR, `faster_payments` GBP); `paused`, `offboarded`, `deposits_restricted` restricted; **`rejection_reasons` kept** | prove, sandbox | **matches**, validated (q01–q21; `bank-details/rules.ts:61-95`, `parties/verifications/rules/snapshot.ts:71-76,94-106`), with a gap: rejection reasons aren't kept |
+| V16 | The developer fee and the fixed-output buffer's excess are recorded per movement, each with its owner, and the excess handled as question 4 decides | prove | **absent**, assumed: no developer fee set; the excess stays in Capxul's wallet, with no refund (ADR-0025 R4 amended) |
 | V17 | Payout minimums: refused before Bridge is called, or Bridge's refusal answered as Refused; a dust deposit never credited | prove | **differs**, defensibly: no pre-check (Bridge's refusal becomes `INVALID_INPUT`, then Refused); dust is `below_minimum` |
 | V18 | An event for one company's customer never touches another's | prove | **matches** (deposits routed by `railAccountRef`; payout news must name the same transfer, customer, account and rail), but no isolation test for deposits |
 | V19 | Every recording Capxul relies on loads straight into its tests under the strict generated client | prove | **partial**: many recordings, but CI loads only b2 directly; the rest through hand-made copies |
@@ -254,8 +262,8 @@ prove, in Orthograph's terms, before the lift counts.
 6. **Returns go nowhere.** `TransferFailure` treats `returned` and `refunded` as a failure only. A refunded payout is
    USDC back in the Safe, and without a return address it may not come back at all (V7, V10).
 7. **Deposit refunds and holds** have no place (V6), and a deposit return (`fiat_deposit_return`) isn't modelled.
-8. **Currencies.** `AccountCurrency` is USD and EUR; the implementation runs GBP too, and EUR settles to EURC, not USDC,
-   so CX-bridge's "an EUR account's rows hold USDC too" is wrong for EUR by default.
+8. **Currencies.** `AccountCurrency` is USD and EUR; the implementation runs GBP too. Every currency settles to USDC in
+   the Safe, as CX-bridge says; the implementation's EURC default for EUR is not lifted.
 9. **KYB and KYC.** Three states; no endorsements; the `base` endorsement for USD is missing.
 10. **The stand-in.** A crypto-source transfer answers no `source_deposit_instructions`; no fixed output; no chain
     behind it; a destination is never checked.
@@ -292,10 +300,12 @@ the `infrastructure:` file it lifts from.
 
 **Not lifted** (Convex's, or the host's): Convex operations, its scheduler, `runId` holds, 10-minute leases and the
 `railSyncState` row; the convert migrations, the hard-coded staging mint fence and the give-up divisor; the PostHog
-fields, the feature flag and the Ponder helpers; the AES secret helper (encryption at rest is the host's, K40).
+fields, the feature flag and the Ponder helpers; the AES secret helper (encryption at rest is the host's, K40); the
+EURC default for EUR virtual accounts (`bank-details/rules.ts:26-27`), because the Safe holds only USDC, ETH and cbBTC
+and CX-crypto-accounting covers only those three.
 
 **On the ADRs.** ADR-0017's only Bridge rule is that fiat custody needs its own spend authorization (delegated fiat
-caps, above). ADR-0018's "router" was a package since retired; there is no router contract. ADR-0025 holds the payout
+caps, above). ADR-0018 adds no Bridge rule here, and no router contract is used. ADR-0025 holds the payout
 model (one front door, two legs, rail-scoped settlement, no liquidation addresses).
 
 ## 4. What changes in CX-bridge and the Capxul things
@@ -309,8 +319,8 @@ Applied in this pull request (comments and dated notes only; no handler, journey
 
 Proposed, for the slices below and their authors and builders:
 
-- `bank-account`: no `destination` input; the handler reads the company's Safe; GBP joins USD and EUR; EUR settles to
-  EURC, so `bank-transaction`'s amounts carry their token.
+- `bank-account`: no `destination` input; the handler reads the company's Safe; GBP joins USD and EUR, all settling to
+  USDC.
 - `bank-transaction`: deposits `received`, `settled` (on the chain's proof), `refunded`; payouts follow the lifted
   twelve-state machine; fields for the gross, its currency, each fee, the fixed output, the buffer and the chain hash; a
   refunded payout's USDC recorded back into the Safe.
@@ -330,12 +340,12 @@ Each slice is one branch and ends green with its check. Authors write the journe
 | Slice | What | Done when |
 |---|---|---|
 | R0 | Read the implementation and fill section 2 | **Done**, 26 November 2026, by Goal 16's lead (a5ad185) |
-| R1 | The company's Safe address as a fact Capxul holds (the smallest part of slice 2), and `bank-account.open` deriving the destination from it, with GBP and EURC | V1 passes in `prove`, including the check of Bridge's answered destination; an open that tries to set a destination fails |
+| R1 | The company's Safe address as a fact Capxul holds (the smallest part of slice 2), and `bank-account.open` deriving the destination from it, with GBP | V1 passes in `prove`, including the check of Bridge's answered destination; an open that tries to set a destination fails |
 | R2 | Deposits in two steps: Bridge's word (`received`, gross and fees) then the chain's (`settled`, net, the exact `Transfer`, reorg-corrected); refunds | V3 to V6 pass against the stand-in and a chain stand-in; `bridge-a-deposit-lands` lands only after the chain |
 | R3 | Payouts as the lifted machine: fixed output, return address the Safe, leg 1 a Capxul Payment, M1, M2, M3, M5, M6, save before dispatch, `transferConflict` | V7 to V10 pass against the stand-in and a chain stand-in, including `missing_return_policy` as an alarm at once and a returned payout's USDC back in the Safe |
 | R4 | Bridge's webhook door: RSA signature, journal on `event_id`, states only forward, catch-up over `webhook_events`, events for other environments ignored (#995 gaps 4 and 5) | V11 to V14 pass, with events from the stand-in signed as Bridge signs |
 | R5 | KYB and KYC states, terms, endorsements, rejection reasons | V15 passes in `prove` |
-| R6 | Fees, the buffer and minimums | V16 and V17 pass; the books show the fee as the company's expense, the buffer's excess back in the Safe, and the net in the Safe |
+| R6 | Fees, the buffer and minimums | V16 and V17 pass; the books show the fee as the company's expense, the buffer's excess recorded with its owner and handled as question 4 decides, and the net in the Safe |
 | R7 | Recordings straight into the tests; the stand-in gains the devnet's chain moves and the sandbox's quirks | V18 to V20 pass in `prove`; most of V20 is recorded already, and anything the sandbox shows later is recorded here |
 
 R1 waits on question 1. R2 and R3 need M6's chain door and Capxul's Payments on a Safe (slice 2). R4 waits on #995.
@@ -365,6 +375,8 @@ output, not liquidation addresses.
 - examples/capxul/blueprint/things/bank-transaction/verbs/send.ts: "Bridge makes the transfer (`POST /v0/transfers`, from Capxul's" → "Bridge makes the transfer (`POST /v0/transfers`) from the company's Safe"
 - examples/capxul/blueprint/assets/usdc.ts: "USDC, held in a Safe or at Bridge" → "USDC, held in the company's Safe (never at Bridge: CX-bridge-rails)"
 - design/decisions/CX-money-global-payroll.md: "the Bridge account is what Bridge holds" → "Bridge holds nothing; there is no Bridge account balance"
+- design/decisions/CX-money-global-payroll.md: "Bridge lands deposits as USDC in custody and sends from it, so the company's Bridge account is a USDC account too" → "Bridge lands deposits in the company's Safe and payouts are paid from it, so there is no Bridge USDC account"
+- design/decisions/CX-money-global-payroll.md: "whose asset is the balance at Bridge, the customer's or Capxul's" → "answered by Aaron, \"its never in bridge its in the safe which is self custodial\""
 
 ## Appendix: sources
 
