@@ -32,6 +32,9 @@ A warm world (ST1.24): `run` first asks `warm` for a live `ortho dev`. When ther
 deployed at `url`, in no world of the run's own: people sign up through Better Auth's routes (`/_world` is closed there), and no step is failed for
 spans, since staging has no collector, so the nine evals are not judged (`totals.evalsFailed` is 0). Before any journey runs, one GET of
 `/api/auth/ok` must not be a 404 (a Worker that was never deployed answers 404 to every route) and must answer at all; otherwise `ProveFailed`
-names the address and the run. `--only`, `--json` and `--report` mean what they mean for `--env local`. `internal/staged.ts`.
+names the address and the run. `--json` and `--report` mean what they mean for `--env local`. `--only` may be given any number of times here
+(CX-staging, check 50): `only` is a list, each named journey is judged once in file order, every one runs even after one fails, and `passed` and
+the exit are all of theirs. The first name that is no journey is refused before the address is asked anything. `--env local` takes one `--only`;
+the CLI refuses several there, exit 2. `internal/staged.ts`.
 
 `staged` over https and the database (Codex review of #445): the sign-up transport is `node:https` or `node:http` by the address's protocol. A deployed Worker closes `/_world` (D3 #126), so its facts (`record`, `journal`) come from its D1 databases through Cloudflare's query API (`Journeys.d1Facts`, `d1` option: the token, the account, and the plan's `owns` test of the run's prefix; the databases are found by name) when `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are set, as D3 #127 says. Without them the facts come from the door, and a door that answers 404 is a `ProveFailed` naming both variables. Neither value is printed: an API error has both replaced first. Test: `journeys/facts.test.ts`.
