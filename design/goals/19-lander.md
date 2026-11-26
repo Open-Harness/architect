@@ -146,18 +146,18 @@ said no Claude-led goal is running now.
     the lander's 🔍 reviewed its three files too and passed them, and Goal 16 was asked to post a 🔍 on every slice.
 
   Capxul has no ratchet, so a checks slice lands only with its build. Since #1107, `e2e-capxul` runs `prove` on
-  `examples/capxul` for pull requests into `goal/capxul` and `main`; it is not required, and it skips on push (noted
-  for Goal 18 on #718), on docs-only pull requests and on those that can't change what `prove` does. A 🔍 failed #919
-  while it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut
-  before #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks)
-  turned `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
+  `examples/capxul` for pull requests into `goal/capxul` and `main`; it is not required, and it skips on push (noted for
+  Goal 18 on #718), on docs-only pull requests and on those that can't change what `prove` does. A 🔍 failed #919 while
+  it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
+  #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
+  `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
   way: #939 (`check` refuses a role path that walks to nothing, and a `Blueprint.todo` in `allowed` is a blank), #943
-  (exact decimals and two-way links, the build) and #928 (CX-takeover). #928's board rows turned the `goals` sync red
-  on `main` at `2cdfa9b3`: `webhook-doors` and Goal 16's rows overlapped in
-  `packages/host-cloudflare/src/modules/store`. #948 narrowed `webhook-doors`' Touches to `inbound/`, as CX-takeover
-  says ("inbound/ stays Goal 17's"), and the sync is green again at `f72338b2`. The row
-  still leaves out the doors' other homes from #747 (`projections/src/modules/server`, compiler mounts and the
-  generators' adapter); a complete row would overlap Goal 16's gap-optional-columns, which is noted for Goal 18 on #718.
+  (exact decimals and two-way links, the build) and #928 (CX-takeover). #928's board rows turned the `goals` sync red on
+  `main` at `2cdfa9b3`: `webhook-doors` and Goal 16's rows overlapped in `packages/host-cloudflare/src/modules/store`.
+  #948 narrowed `webhook-doors`' Touches to `inbound/`, as CX-takeover says ("inbound/ stays Goal 17's"), and the sync
+  is green again at `f72338b2`. The row still leaves out the doors' other homes from #747
+  (`projections/src/modules/server`, compiler mounts and the generators' adapter); a complete row would overlap Goal
+  16's gap-optional-columns, which is noted for Goal 18 on #718.
 
   #887 landed `goal/superagent` through `4123b1cb` in `main`, at `dbbdee56`, and the branch is 0 commits ahead of it.
   Goal 16 has run Goal 17's lane since CX-takeover. A reviewer thread that wrote none of them recorded the 18 🔍
