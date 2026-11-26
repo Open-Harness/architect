@@ -75,7 +75,8 @@ const prove = Command.make(
     root: rootFlag("whose journeys are proved"),
     port: Flag.Int("port").pipe(Flag.withDefault(0), Flag.withDescription("The local port for the app under proof; 0 picks a free one")),
     empty: Flag.Boolean("empty").pipe(Flag.withDefault(false), Flag.withDescription("Run the journeys on the scaffolded handlers, recording no verdict")),
-    only: Flag.String("only").pipe(Flag.optional, Flag.withDescription("Run one journey by its declared name, recording no verdict")),
+    // The journeys to judge, by name: any number of times with `--env staging` (CX-staging), at most once with `--env local`.
+    only: Flag.String("only").pipe(Flag.atLeast(0), Flag.withDescription("Run only the journey with this declared name; repeat it to name several with --env staging")),
     // Only the journeys a change since the last proof's record touches; everything, saying why, when it cannot tell (ST1.23).
     changed: Flag.Boolean("changed").pipe(Flag.withDefault(false), Flag.withDescription("Run only the journeys a change since the last proof touches")),
     // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).
@@ -87,14 +88,15 @@ const prove = Command.make(
   ({ env, root, port, empty, only, changed, json, report, run }) => {
     if (env !== "staging" && Option.isSome(run)) return fail("--run requires --env staging", 2);
     if (env === "staging" && (empty || changed)) return fail(`${empty ? "--empty" : "--changed"} can't be used with --env staging: it judges the deployed Worker, not a world of its own`, 2);
-    if (env === "test" && (empty || Option.isSome(only))) return fail("--empty and --only require --env local", 2);
+    if (env === "test" && (empty || only.length > 0)) return fail("--empty and --only require --env local", 2);
+    if (env === "local" && only.length > 1) return fail("--only names one journey with --env local; several are judged only with --env staging", 2);
     if (env === "test" && changed) return fail("--changed requires --env local", 2);
-    if (changed && (empty || Option.isSome(only))) return fail("--changed can't be combined with --empty or --only", 2);
+    if (changed && (empty || only.length > 0)) return fail("--changed can't be combined with --empty or --only", 2);
     if (env === "test" && (json || Option.isSome(report))) return fail("--json and --report require --env local", 2);
     const proved = env === "staging"
       ? proveAddress({ root, run: Option.getOrUndefined(run), subdomain: process.env[Names.variable("STAGING_SUBDOMAIN")], origin: process.env[Names.variable("STAGING_ORIGIN")] }).pipe(
           Effect.mapError((e) => e.message),
-          Effect.flatMap(({ url, label, owns }) => Prove.staged({ root, url, label, ...(process.env["CLOUDFLARE_API_TOKEN"] && process.env["CLOUDFLARE_ACCOUNT_ID"] ? { d1: { token: process.env["CLOUDFLARE_API_TOKEN"], account: process.env["CLOUDFLARE_ACCOUNT_ID"], owns } } : {}), ...(Option.isSome(only) ? { only: only.value } : {}) })),
+          Effect.flatMap(({ url, label, owns }) => Prove.staged({ root, url, label, ...(process.env["CLOUDFLARE_API_TOKEN"] && process.env["CLOUDFLARE_ACCOUNT_ID"] ? { d1: { token: process.env["CLOUDFLARE_API_TOKEN"], account: process.env["CLOUDFLARE_ACCOUNT_ID"], owns } } : {}), only })),
           Effect.tap((proved) => Effect.sync(() => {
             if (Option.isSome(report)) writeFileSync(report.value, JSON.stringify(proved.structured, null, 2) + "\n");
             process.stdout.write(json ? JSON.stringify(proved.structured, null, 2) + "\n" : proved.lines.join("\n") + "\n");
@@ -110,7 +112,7 @@ const prove = Command.make(
           Effect.tap((report) => Effect.sync(() => (process.exitCode = report.passed ? 0 : 1))),
           Effect.catchTag("EnvironmentFailed", (e) => Effect.fail(new ProveFailed({ message: e.message }))),
         )
-      : Effect.scoped(Prove.run({ root, port, empty, changed, env: process.env, ...(changed && !json ? { say: (line: string) => Console.log(line) } : {}), ...(Option.isSome(only) ? { only: only.value } : {}) })).pipe(
+      : Effect.scoped(Prove.run({ root, port, empty, changed, env: process.env, ...(changed && !json ? { say: (line: string) => Console.log(line) } : {}), ...(only[0] !== undefined ? { only: only[0] } : {}) })).pipe(
           Effect.tap((proved) => Effect.sync(() => {
             if (Option.isSome(report)) writeFileSync(report.value, JSON.stringify(proved.structured, null, 2) + "\n");
             process.stdout.write(json ? JSON.stringify(proved.structured, null, 2) + "\n" : proved.lines.slice(proved.said ?? 0).join("\n") + "\n");
