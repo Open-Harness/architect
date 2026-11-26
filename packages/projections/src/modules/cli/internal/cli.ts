@@ -1,17 +1,13 @@
 // generated/cli: `<project> <thing> <verb> --<field> ...`, one command per operation, calling the SDK.
 import type { Model, OperationModel } from "@orthograph/compiler";
-import { flagCode, helpOf } from "#modules/names/service.js";
+import { flagCode, helpOf, refAny } from "#modules/names/service.js";
 import { renderSessionCommands, sessionOperations } from "./session.ts";
 import { GENERATED, camel, exportedAs, lines, local, opVar } from "#modules/names/service.js";
 import type { RenderedFile } from "#modules/names/types.js";
 
 const command = (op: OperationModel): RenderedFile => {
   const optional = Object.values(op.payload).some((f) => f.optional);
-  const flags = Object.entries(op.payload).map(([k, f]) => {
-    const text = flagCode(k, f);
-    const flag = f.value.type === "schema" && f.value.format === "ref-any" ? `${text}.pipe(Flag.withSchema(Schema.fromJsonString(Schema.Unknown)))` : text;
-    return `${k}: ${f.optional ? `Flag.optional(${flag})` : flag}`;
-  });
+  const flags = Object.entries(op.payload).map(([k, f]) => `${k}: ${f.optional ? `Flag.optional(${flagCode(k, f)})` : flagCode(k, f)}`);
   return {
     path: `generated/cli/src/${op.thing}/${op.verb}.ts`,
     scaffold: false,
@@ -23,7 +19,7 @@ const command = (op: OperationModel): RenderedFile => {
       `import * as Sdk from "../../../sdk/src/index.ts";`,
       `import * as Output from "../output.ts"; // a namespace, so a verb named like a helper (answer) cannot clash`,
       "",
-      `/** ${op.description} Each flag is handed on as text${Object.values(op.payload).some((f) => f.value.type === "schema" && f.value.format === "ref-any") ? " (any-thing references are JSON objects)" : ""}; the declaration decodes it${optional ? "; a flag left out is not sent" : ""}. \`--json\` prints the whole answer as JSON. */`,
+      `/** ${op.description} Each flag is handed on as text${Object.values(op.payload).some(refAny) ? " (any-thing references are JSON objects)" : ""}${Object.values(op.payload).some((f) => f.json !== undefined) ? " (lists and objects are JSON)" : ""}; the declaration decodes it${optional ? "; a flag left out is not sent" : ""}. \`--json\` prints the whole answer as JSON. */`,
       `export const ${local(camel(op.verb))} = Command.make(`,
       `  "${op.verb}",`,
       `  { ${[...flags, `json: Flag.Boolean("json").pipe(Flag.withDefault(false))`].join(", ")} },`,

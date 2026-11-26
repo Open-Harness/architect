@@ -2,7 +2,7 @@
 
 `nx run e2e:ui-layer` is the done check of `design/goals/05-ui-layer.md`. It is built up a slice at a time; this folder holds what exists.
 It runs `ui-layer/*.test.ts` through the ratchet (`e2e/ratchet/README.md`): a failure not on `expected-failing/` fails it, and so does a
-hook error. The list shrinks only. CI runs it as the job `e2e-ui-layer`, on pull requests into `goal/ui-layer` and pushes to it.
+hook error. The list shrinks only. CI runs it as the job `e2e-ui-layer` of the `parked` workflow: every night on `main`, and on a pull request into `goal/ui-layer` or one that changes Goal 5's paths (`design/decisions/CI-parked-suites-nightly.md`).
 
 ## What it checks today
 

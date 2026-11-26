@@ -1484,6 +1484,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "TaskKinds",
             "ref": "milestone.kinds"
           },
@@ -1553,7 +1554,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "343a86926bb38881"
+        "hash": "0719bd4018335d3a"
       },
       "milestone.drop": {
         "kind": "operation",
@@ -2472,6 +2473,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "Options",
             "ref": "question.options"
           }
@@ -2526,7 +2528,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "ad554a00d4c4326a"
+        "hash": "34b919d702a344e6"
       },
       "question.list": {
         "kind": "read",
@@ -5693,7 +5695,7 @@
       "thing:mission": "0ce414120027dab4"
     },
     "milestone.add": {
-      "operation:milestone.add": "343a86926bb38881",
+      "operation:milestone.add": "0719bd4018335d3a",
       "thing:milestone": "10bfc73701266a5a",
       "thing:mission": "0ce414120027dab4"
     },
@@ -5758,7 +5760,7 @@
       "thing:question": "eb3656bcee0f85ef"
     },
     "question.ask": {
-      "operation:question.ask": "ad554a00d4c4326a",
+      "operation:question.ask": "34b919d702a344e6",
       "thing:mission": "0ce414120027dab4",
       "thing:question": "eb3656bcee0f85ef"
     },
@@ -5851,5 +5853,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "c45f5b574d4fce5dafcdccb25e517110022d9fe73c5a469ff244b44349f1fb67"
+  "digest": "e6da1b0a76c056a1e1610310c3e7a167abc5355bbcc30673b0fd4d4282662e91"
 }
