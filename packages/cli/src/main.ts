@@ -233,6 +233,7 @@ const addJourneys = Command.make(
             process.stdout.write(`wrote ${f.path}\n`);
           }
           for (const path of planned.there) process.stdout.write(`kept ${path} (already there)\n`);
+          for (const what of planned.unfinished) process.stdout.write(`no stubs yet: ${what} (fill the blanks ortho check names, then run this again)\n`);
         });
       }),
       Effect.catchTags({ BlueprintInvalid: (e) => fail(e.problems.join("\n"), 2), SourceError: (e) => fail(e.message, 2) }),

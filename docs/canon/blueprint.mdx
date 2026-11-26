@@ -268,12 +268,13 @@ worlds, role rules and blanks.</Note>
 
 
 
-<Note kind="status" slice="M1.03">Journeys have two places (`BLU-02`). Prove reads both `blueprint/journeys/` and a
-`journeys` folder at the project's root (`packages/prove/src/modules/journeys/internal/load.ts:36`). The design and
-`ortho add journey` use `blueprint/journeys/` (`packages/cli/src/modules/add/internal/templates.ts:95`); acme's and
-the sign-up sheet's journeys are both at the root, in `examples/signup/journeys/`. The canon teaches
-`blueprint/journeys/`, the place the picture draws them; the examples move there when M1.03 puts journeys in the
-model.</Note>
+<Note kind="status" slice="M1.03">Journeys have two places (`BLU-02`, `ADD-journey-places`). The compiler, prove,
+`ortho brief` and `ortho check` all read both `blueprint/journeys/` and a `journeys` folder at the project's root
+(`packages/prove/src/modules/journeys/internal/load.ts`, `packages/compiler/src/modules/source/service.ts`). The design,
+`ortho add journey` and `ortho add journeys` use `blueprint/journeys/`
+(`packages/cli/src/modules/add/internal/templates.ts`); every example's journeys are at the root, as in
+`examples/signup/journeys/`. The canon teaches `blueprint/journeys/`, the place the picture draws them; the examples
+stay at the root until a journey author moves them (`ADD-journey-places`).</Note>
 
 <Note kind="status">The design shows `ortho check` printing the model's hash and counts (`BLU-03`). The real output
 is the five parts above, with no hash and no counts, and the model has no hash of its own: only each declaration has

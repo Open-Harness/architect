@@ -15,6 +15,8 @@ export type What = "thing" | "operation" | "read" | "journey";
 export interface Planned {
   readonly write: ReadonlyArray<Written>;
   readonly there: ReadonlyArray<string>;
+  /** What of the thing got no stub because it still has blanks, each in words: `handle.rename still has 4 blanks in <file>`. */
+  readonly unfinished: ReadonlyArray<string>;
 }
 
 /** The name doesn't fit what is being added, or a file it would write is already there. */
