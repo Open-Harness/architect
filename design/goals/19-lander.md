@@ -101,7 +101,8 @@ said no Claude-led goal is running now.
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
 - **Slice 3, the landing loop, is running.** Fifteen Capxul rounds have landed. `goal/capxul` is ahead of `main`
-  by #1078 (payroll's checks, slice 9a) and #1105 after it, which wait for #1078's build, #1102:
+  by payroll, slice 9a: #1078's checks with #1102's build, and #1105 (CX-payroll-tax: the United States only)
+  between them, which the next round lands together:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -146,9 +147,9 @@ said no Claude-led goal is running now.
 
   Capxul has no ratchet, so a checks slice lands only with its build. Since #1107, `e2e-capxul` runs `prove` on
   `examples/capxul` for pull requests into `goal/capxul` and `main`; it is not required, and it skips on push (noted
-  for Goal 18 on #718). A 🔍 failed #919 while
-  it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
-  #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
+  for Goal 18 on #718), on docs-only pull requests and on those that can't change what `prove` does. A 🔍 failed #919
+  while it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut
+  before #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
   `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
   way: #939 (`check` refuses a role path that walks to nothing, and a `Blueprint.todo` in `allowed` is a blank), #943
   (exact decimals and two-way links, the build) and #928 (CX-takeover). #928's board rows turned the `goals` sync red
