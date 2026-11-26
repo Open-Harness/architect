@@ -30,7 +30,7 @@ import type { CallRecord, JourneyRun } from "./types.ts";
 
 /** What CX-journey-signs adds to a cast member, as a script sees them. */
 interface Signing {
-  readonly signs: { (strings: TemplateStringsArray, ...values: ReadonlyArray<unknown>): never; (message: string): never };
+  readonly signs: { (strings: TemplateStringsArray, ...values: ReadonlyArray<unknown>): never; (message: string | ReadonlyArray<unknown>): never };
   readonly signer: unknown;
 }
 const as = (actor: unknown) => actor as Signing;
@@ -87,7 +87,7 @@ const server = createServer((request, response) => {
       const safe = String(asked["safe"]);
       const owner = safes.get(safe);
       if (caller === undefined || owner === undefined) return json(404, { _tag: "SafeNotFound" });
-      const text = `Claim ${safe} for ${owner}`;
+      const text = `Capxul: claim Safe ${safe} for ${owner}`;
       const signature = String(asked["signature"]);
       const by = await recoverMessageAddress({ message: text, signature: signature as `0x${string}` }).catch(() => undefined);
       if (by === undefined) return json(422, { _tag: "BadSignature" });
@@ -140,17 +140,18 @@ const claims0 = Blueprint.journey("ada claims her safe", {
   cast: { ada: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "a safe",
   steps: (s) => [
-    s.step("ada signs the claim", as(s.ada).signs`Claim ${s.world.safe} for ${s.ada.person}`, check((a) => a.signer).toBe(as(s.ada).signer)),
+    s.step("ada signs the claim", as(s.ada).signs`Capxul: claim Safe ${s.world.safe} for ${s.ada.person}`, check((a) => a.signer).toBe(as(s.ada).signer)),
     s.step("the claim names ada", s.ada.run(claim, { safe: s.world.safe, signature: s.last.signature }), check((a) => a.by).toBe(as(s.ada).signer)),
     s.step("ada signs again, with the same key", as(s.ada).signs("hello, Capxul"), check((a) => a.signer).toBe(as(s.ada).signer)),
     s.step("bo signs too", as(s.bo).signs`I am ${s.bo.person}`, check((a) => a.signer).toBe(as(s.bo).signer)),
+    s.step("ada signs the claim again, as parts", as(s.ada).signs(["Capxul: claim Safe ", s.world.safe, " for ", s.ada.person]), check((a) => a.signer).toBe(as(s.ada).signer)),
   ],
 });
 const another = Blueprint.journey("bo signs ada's claim", {
   cast: { ada: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "a safe",
   steps: (s) => [
-    s.step("bo signs ada's claim text", as(s.bo).signs`Claim ${s.world.safe} for ${s.ada.person}`, check((a) => a.signer).toBe(as(s.bo).signer)),
+    s.step("bo signs ada's claim text", as(s.bo).signs`Capxul: claim Safe ${s.world.safe} for ${s.ada.person}`, check((a) => a.signer).toBe(as(s.bo).signer)),
     s.step("the claim names ada", s.ada.run(claim, { safe: s.world.safe, signature: s.last.signature }), check((a) => a.by).toBe(as(s.ada).signer)),
   ],
 });
@@ -158,34 +159,66 @@ const otherText = Blueprint.journey("ada signs another text", {
   cast: { ada: Blueprint.signedIn, bo: Blueprint.signedIn },
   starts: "a safe",
   steps: (s) => [
-    s.step("ada signs a claim for bo", as(s.ada).signs`Claim ${s.world.safe} for ${s.bo.person}`, check((a) => a.signer).toBe(as(s.ada).signer)),
+    s.step("ada signs a claim for bo", as(s.ada).signs`Capxul: claim Safe ${s.world.safe} for ${s.bo.person}`, check((a) => a.signer).toBe(as(s.ada).signer)),
     s.step("the claim names ada", s.ada.run(claim, { safe: s.world.safe, signature: s.last.signature }), check((a) => a.by).toBe(as(s.ada).signer)),
   ],
+});
+/** A world that begins from `a safe`: ada signs the claim in `makes`, then claims with `s.last`, and the world gives who it recovered. */
+const aClaimedSafe = Blueprint.startingWorld("a claimed safe", {
+  from: "a safe",
+  cast: { ada: Blueprint.signedIn },
+  makes: (s) => [
+    as(s.ada).signs`Capxul: claim Safe ${s.world.safe} for ${s.ada.person}`,
+    s.ada.run(claim, { safe: s.world.safe, signature: s.last.signature }),
+  ],
+  gives: (s) => ({ safe: s.world.safe, claimedBy: s.last.by }),
+});
+const onClaimed = Blueprint.journey("ada's key in the world is hers in the journey", {
+  // bo is here so that a world signing with someone else's key has someone else's key to sign with.
+  cast: { ada: Blueprint.signedIn, bo: Blueprint.signedIn },
+  starts: "a claimed safe",
+  steps: (s) => [s.step("ada signs once the world has claimed", as(s.ada).signs("hello, Capxul"), check((a) => a.signer).toBe(s.world.claimedBy), check((a) => a.signer).toBe(as(s.ada).signer))],
+});
+/** A world whose sign names a ref the world never gave: the journey must stop on it, never run on a claim of nothing. */
+const aClaimOfNothing = Blueprint.startingWorld("a claim of nothing", {
+  from: "a safe",
+  cast: { ada: Blueprint.signedIn },
+  makes: (s) => [as(s.ada).signs`Capxul: claim Safe ${s.world.nope} for ${s.ada.person}`],
+  gives: (s) => ({ safe: s.world.safe }),
+});
+const onNothing = Blueprint.journey("a journey on a world that signed nothing", {
+  cast: { ada: Blueprint.signedIn },
+  starts: "a claim of nothing",
+  steps: (s) => [s.step("ada signs once the world has claimed nothing", as(s.ada).signs("hello, Capxul"))],
+});
+const keyless = Blueprint.journey("the system has no key", {
+  cast: { ada: Blueprint.signedIn, sys: Blueprint.system },
+  steps: (s) => [s.step("the system tries to sign", as(s.sys).signs("hello, Capxul"))],
 });
 const unsaid = Blueprint.journey("a message with a ref the world never gave", {
   cast: { ada: Blueprint.signedIn },
   starts: "a safe",
-  steps: (s) => [s.step("ada signs a claim of nothing", as(s.ada).signs`Claim ${s.last.nope} for ${s.ada.person}`)],
+  steps: (s) => [s.step("ada signs a claim of nothing", as(s.ada).signs`Capxul: claim Safe ${s.last.nope} for ${s.ada.person}`)],
 });
 
 const project = {
   root: "", model: { operations: {} },
   operations: new Map<string, unknown>([["safe.open", open], ["safe.claim", claim]]),
   things: new Map<string, unknown>([["safe", Safe]]),
-  journeys: [], startingWorlds: new Map([["a safe", aSafe]]),
+  journeys: [], startingWorlds: new Map<string, unknown>([["a safe", aSafe], ["a claimed safe", aClaimedSafe], ["a claim of nothing", aClaimOfNothing]]),
 } as never;
 const facts = { record: () => Effect.succeed(null), journal: () => Effect.succeed([]) } as never;
 
 const runOf = (journey: unknown, index: number) => Effect.runPromise(Journeys.run(project, url, journey as never, index, "world", facts));
-/** Every run, once, in order: the four journeys, then the first again as another journey of the same run. */
+/** Every run, once, in order: the four journeys, the first again as another journey of the same run, then the claimed world's, the keyless one and the one on a world that signed nothing. */
 let runs: ReadonlyArray<JourneyRun> = [];
 const ran = async () => {
-  if (runs.length === 0) runs = [await runOf(claims0, 0), await runOf(another, 1), await runOf(otherText, 2), await runOf(unsaid, 3), await runOf(claims0, 4)];
+  if (runs.length === 0) runs = [await runOf(claims0, 0), await runOf(another, 1), await runOf(otherText, 2), await runOf(unsaid, 3), await runOf(claims0, 4), await runOf(onClaimed, 5), await runOf(keyless, 6), await runOf(onNothing, 7)];
   return runs;
 };
 
 // ---- reading what came back ----------------------------------------------------------------------------------------
-const SIGNS = new Set(["ada signs the claim", "ada signs again, with the same key", "bo signs too", "bo signs ada's claim text", "ada signs a claim for bo", "ada signs a claim of nothing"]);
+const SIGNS = new Set(["ada signs the claim again, as parts", "ada signs once the world has claimed", "the system tries to sign", "ada signs the claim", "ada signs again, with the same key", "bo signs too", "bo signs ada's claim text", "ada signs a claim for bo", "ada signs a claim of nothing"]);
 /** A step's own call, by its title: the record of what it did. */
 const recordOf = (run: JourneyRun, step: string): CallRecord | undefined => run.calls.find((c) => c.step === step);
 /** The answer a sign step recorded, or what is wrong with its record. */
@@ -209,6 +242,7 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     expect(run!.stopped, `journey "${run!.name}" stopped: ${run!.stopped}`).toBeUndefined();
     expect(run!.steps.map((s) => [s.title, s.failures]), `journey "${run!.name}"`).toEqual([
       ["ada signs the claim", []], ["the claim names ada", []], ["ada signs again, with the same key", []], ["bo signs too", []],
+      ["ada signs the claim again, as parts", []],
     ]);
   });
 
@@ -217,7 +251,7 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     const answer = answerOf(run!, "ada signs the claim");
     const safe = safeOf(run!);
     expect(safe, "the world opened a Safe for this run's ada").toBeDefined();
-    const text = `Claim ${safe} for ${personsIn(run!).ada}`;
+    const text = `Capxul: claim Safe ${safe} for ${personsIn(run!).ada}`;
     expect(Object.keys(answer).sort(), `journey "${run!.name}" step "ada signs the claim": the answer's fields`).toEqual(["message", "signature", "signer"]);
     expect(answer.message, "the message signed: the template with the world's ids").toBe(text);
     expect(answer.signature, "an EIP-191 signature: 0x and 130 lower-case hex digits").toMatch(/^0x[0-9a-f]{130}$/);
@@ -247,6 +281,46 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     expect(bo.signer, "bo's key is not ada's").not.toBe(first.signer);
   });
 
+  it("one key and one text give one signature: the claim signed again, as a parts array, is the very same signature", async () => {
+    const [run] = await ran();
+    const first = answerOf(run!, "ada signs the claim");
+    const again = answerOf(run!, "ada signs the claim again, as parts");
+    expect(again.message, "the parts array joined is the template's text").toBe(first.message);
+    expect(again.signature, "a deterministic signature (RFC 6979): a replayed claim carries the same proof").toBe(first.signature);
+    expect(again.signer).toBe(first.signer);
+  });
+
+  it("a starting world signs in its makes, s.last moving to the claim, and ada's key there is her key in the journey", async () => {
+    const all = await ran();
+    const run = all[5]!;
+    expect(run.stopped, `journey "${run.name}" stopped: ${run.stopped}`).toBeUndefined();
+    expect(run.steps.map((s) => [s.title, s.failures]), `journey "${run.name}"`).toEqual([["ada signs once the world has claimed", []]]);
+    const safe = safeOf(run);
+    const handed = claims.filter((c) => c.safe === safe);
+    expect(handed.map((c) => c.text), "the world was handed one claim, over its own text").toEqual([`Capxul: claim Safe ${safe} for ${personsIn(run).ada}`]);
+    const signed = answerOf(run, "ada signs once the world has claimed");
+    expect(handed[0]!.by, "who the world recovered in the starting world is who signs in the journey").toBe(signed.signer);
+    expect(await recoverMessageAddress({ message: "hello, Capxul", signature: signed.signature })).toBe(signed.signer);
+  });
+
+  it("a starting world whose sign names a ref the world never gave stops the journey, naming the world and the ref", async () => {
+    const all = await ran();
+    const run = all[7]!;
+    expect(run.stopped, `journey "${run.name}"`).toMatch(/^starting world a claim of nothing: .*\bnothing at world\.nope\b/);
+    expect(run.steps, "no step ran").toEqual([]);
+    expect(JSON.stringify(run, wire), "no signature in the run").not.toMatch(/0x[0-9a-fA-F]{130}/);
+  });
+
+  it("a cast member with no key, the system, cannot sign: the step fails, naming them, and nothing is signed", async () => {
+    const all = await ran();
+    const run = all[6]!;
+    expect(run.stopped, `journey "${run.name}" stopped: ${run.stopped}`).toBeUndefined();
+    const failures = stepOf(run, "the system tries to sign")?.failures ?? [];
+    expect(failures, `journey "${run.name}" step "the system tries to sign"`).toHaveLength(1);
+    expect(failures[0], "the failure names the cast member and that it holds no key").toMatch(/\bsys\b.*\bno key\b/);
+    expect(JSON.stringify(run, wire), "no signature in the run").not.toMatch(/0x[0-9a-fA-F]{130}/);
+  });
+
   it("the same name in another journey is another person, with another key", async () => {
     const all = await ran();
     const ada0 = answerOf(all[0]!, "ada signs the claim").signer;
@@ -270,7 +344,9 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     const paths = requests.map((r) => r.path);
     expect([...new Set(paths)].filter((p) => !["/_world/cast", "/_world/clock", "/safe/open", "/safe/claim"].includes(p)), "paths the world was asked").toEqual([]);
     const claimSteps = all.flatMap((run) => run.steps.filter((s) => s.title === "the claim names ada")).length;
-    expect(paths.filter((p) => p === "/safe/claim").length, "one claim request per claim step").toBe(claimSteps);
+    // and one for each journey that starts on `a claimed safe`, whose makes claims once.
+    const worldClaims = all.filter((run) => run.name === onClaimed.name).length;
+    expect(paths.filter((p) => p === "/safe/claim").length, "one claim request per claim step, and per claimed world").toBe(claimSteps + worldClaims);
   });
 
   it("prove's printed lines pass the signing journey whole: a sign step waits for no span", async () => {
@@ -278,7 +354,7 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     // Each operation's call gets a span, as a world's collector would give it; a sign step's trace gets none.
     const traces = new Map(all.flatMap((run) => run.steps.filter((s) => !SIGNS.has(s.title)).map((s) => [s.trace, { spans: [{ name: "safe.claim", attrs: {} }], logs: [] }] as const)));
     const printed = journeyLines([all[0]!], traces as never);
-    expect(printed.lines, printed.lines.join("\n")).toEqual(["journey ada claims her safe ✔ 4/4 steps"]);
+    expect(printed.lines, printed.lines.join("\n")).toEqual(["journey ada claims her safe ✔ 5/5 steps"]);
   });
 });
 
@@ -287,7 +363,7 @@ describe("a signature for another text, or by another person, fails the check th
     const [, run] = await ran();
     expect(run!.stopped, `journey "${run!.name}" stopped: ${run!.stopped}`).toBeUndefined();
     const bo = answerOf(run!, "bo signs ada's claim text");
-    expect(bo.message).toBe(`Claim ${safeOf(run!)} for ${personsIn(run!).ada}`);
+    expect(bo.message).toBe(`Capxul: claim Safe ${safeOf(run!)} for ${personsIn(run!).ada}`);
     expect(stepOf(run!, "bo signs ada's claim text")?.failures, `journey "${run!.name}" step "bo signs ada's claim text"`).toEqual([]);
     const failures = stepOf(run!, "the claim names ada")?.failures ?? [];
     expect(failures, `journey "${run!.name}" step "the claim names ada"`).toHaveLength(1);
@@ -301,7 +377,7 @@ describe("a signature for another text, or by another person, fails the check th
     const [, , run] = await ran();
     expect(run!.stopped, `journey "${run!.name}" stopped: ${run!.stopped}`).toBeUndefined();
     const ada = answerOf(run!, "ada signs a claim for bo");
-    expect(ada.message).toBe(`Claim ${safeOf(run!)} for ${personsIn(run!).bo}`);
+    expect(ada.message).toBe(`Capxul: claim Safe ${safeOf(run!)} for ${personsIn(run!).bo}`);
     expect(stepOf(run!, "ada signs a claim for bo")?.failures, `journey "${run!.name}" step "ada signs a claim for bo"`).toEqual([]);
     const failures = stepOf(run!, "the claim names ada")?.failures ?? [];
     expect(failures, `journey "${run!.name}" step "the claim names ada"`).toHaveLength(1);
@@ -350,8 +426,8 @@ const holds = (text: string, forms: ReadonlyArray<string>) => forms.some((form) 
 describe("no key is ever shown (CX-journey-signs, call 5)", () => {
   it("prove made a key for each person who signed", async () => {
     await ran();
-    // ada and bo in two journeys of the first kind, bo in the second, ada in the third: six at least.
-    expect(made.length, "keys made with Keys.generate during the runs").toBeGreaterThanOrEqual(6);
+    // ada and bo in two journeys of the first kind, bo in the second, ada in the third and in the claimed world: seven at least.
+    expect(made.length, "keys made with Keys.generate during the runs").toBeGreaterThanOrEqual(7);
   });
 
   it("no key is in a run, prove's printed lines, its structured details, or any request the world got", async () => {

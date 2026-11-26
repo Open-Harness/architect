@@ -11,7 +11,7 @@ import { Journeys, Scripting } from "./service.ts";
 interface Signing {
   readonly signs: {
     (strings: TemplateStringsArray, ...values: ReadonlyArray<unknown>): unknown;
-    (message: string): unknown;
+    (message: string | ReadonlyArray<unknown>): unknown;
   };
   readonly signer: unknown;
 }
@@ -57,6 +57,15 @@ describe("s.<name>.signs: a step's call that signs a message (CX-journey-signs, 
     want(signed.kind).toBe("sign-call");
     want(signed.actor).toBe("ada");
     want(text(signed.message, env)).toEqual({ text: "hello, Capxul", missing: [] });
+  });
+
+  it("a parts array is the same message as the template: literal text and refs in order", () => {
+    const parts = call(as(s.ada).signs(["Capxul: claim Safe ", s.world.safe, " for ", s.ada.person]));
+    want(parts.kind).toBe("sign-call");
+    want(parts.actor).toBe("ada");
+    want(text(parts.message, env)).toEqual({ text: "Capxul: claim Safe saf_9x for per_ada1", missing: [] });
+    want(text(call(as(s.ada).signs`Capxul: claim Safe ${s.world.safe} for ${s.ada.person}`).message, env).text).toBe("Capxul: claim Safe saf_9x for per_ada1");
+    want(text(call(as(s.bo).signs([s.bo.person])).message, env).text).toBe("per_bo2");
   });
 
   it("a ref the world never gave is named when resolved, never signed as empty", () => {
