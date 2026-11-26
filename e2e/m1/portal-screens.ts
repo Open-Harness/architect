@@ -11,20 +11,24 @@
 //   on npm under `next`, `docs/canon/status.md`; not a "Preview 2"), and never the old "client is not installed" text. Who asks
 //   picks the form, by `accept`, as the data's errors already do:
 //     a browser (Chrome's and Firefox's or Safari's `accept` for a navigation) gets a page: `text/html`, starting `<!doctype html>`,
-//     whose visible text (not a comment, the title, a script or a style) says it, and says no "404" or "not found";
+//     whose text a person sees says it and says no "404" or "not found". What a person sees is what Chromium renders with scripts off
+//     (`innerText`): no comment, title, script, style, `template` or `noscript`, nothing `hidden`, `aria-hidden="true"`,
+//     `display:none` or `visibility:hidden`; the words are in the page as served, not written by a script;
 //     an API client (`accept: application/json`, or axios's `application/json, text/plain, */*`) gets `application/json`,
 //     `{ "_tag": "NotInThisRelease", "message": "..." }`, the message saying it (the shape of the data's own `{ _tag: "NotFound" }`);
-//     a request with no `accept` (curl) gets either form, and still says it; a HEAD gets the 501 (its body is not judged).
+//     a request with no `accept` (curl) gets either form, and still says it; a HEAD gets the 501 (its body is not judged);
+//     every form carries `cache-control: no-store`, as today's 404 does, so a cached notice cannot hide a later build that has the screens.
 //   The data is as today: `/_portal/v1/blueprint` (GET and HEAD 200 `application/json`, ETag the digest, and the blueprint file's
 //   digest, project, and things and operations each with the file's `hash`; the server re-encodes the rest, so the rest is not compared), `/_portal/v1/snapshot?digest=<the digest>` (200, a JSON object for that digest), a snapshot for another digest (409
 //   `BlueprintChanged` naming the current one), an unknown data path (404 `application/json` `{ _tag: "NotFound" }`); POST, PUT,
 //   PATCH and DELETE on the screens and on the data are 405, `allow` GET and HEAD.
 //   Not judged: what a path beside the portal (`/portalfoo`, `/_portal`) answers; the host routes those, and this slice changes neither.
 import { readFileSync } from "node:fs";
+import { chromium, type Browser } from "playwright";
 import { join } from "node:path";
 import { acme } from "./support.ts";
 
-export interface Seen { readonly status: number; readonly type: string; readonly body: string; readonly etag: string | null; readonly allow: string | null }
+export interface Seen { readonly status: number; readonly type: string; readonly body: string; readonly etag: string | null; readonly allow: string | null; readonly cache: string | null }
 /** One request: a path, a method (GET when left out) and an `accept` header (none when left out). */
 export type Ask = (path: string, method?: string, accept?: string) => Promise<Seen>;
 
@@ -65,20 +69,52 @@ const is501 = (at: string, seen: Seen, problems: string[]) => {
 };
 const isType = (type: string, want: string) => new RegExp(`^${want.replace("/", "\\/")}\\s*(;|$)`, "i").test(type);
 
-/** The text a person sees on a page: no comment, no head's title, no script and no style, and no tag. */
-export const visible = (html: string): string => html.replace(/<!--[\s\S]*?-->/g, " ").replace(/<(title|script|style)\b[\s\S]*?<\/\1\s*>/gi, " ").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+const noStore = (at: string, seen: Seen, problems: string[]) => {
+  if (!/(^|,)\s*no-store\s*(,|$)/i.test(seen.cache ?? "")) problems.push(`${at}: cache-control ${JSON.stringify(seen.cache)}, not no-store`);
+};
 
-const page = (at: string, seen: Seen, problems: string[]) => {
+let browser: Promise<Browser> | undefined;
+const seenText = new Map<string, Promise<string>>();
+/**
+ * The text a person sees on a page: Chromium renders it with scripts off and reads `document.body.innerText`, after taking out what a
+ * browser with scripts on would not show (`noscript`) and what is hidden from a reader (`aria-hidden="true"`). `innerText` already leaves
+ * out comments, the title, scripts, styles, `template`, `hidden`, `display:none` and `visibility:hidden`. One browser, each body once.
+ */
+export const visible = (html: string): Promise<string> => {
+  const known = seenText.get(html);
+  if (known !== undefined) return known;
+  const text = (async () => {
+    browser ??= chromium.launch({ headless: true });
+    const context = await (await browser).newContext({ javaScriptEnabled: false });
+    try {
+      const tab = await context.newPage();
+      await tab.setContent(html, { waitUntil: "domcontentloaded" });
+      const seen = await tab.evaluate(() => {
+        for (const hidden of Array.from(document.querySelectorAll("noscript, [aria-hidden='true' i]"))) hidden.remove();
+        return document.body?.innerText ?? "";
+      });
+      return seen.replace(/\s+/g, " ").trim();
+    } finally { await context.close(); }
+  })();
+  seenText.set(html, text);
+  return text;
+};
+/** Closes the browser `visible` opened; a test file's `afterAll` calls it. */
+export const closeBrowser = async (): Promise<void> => { const open = browser; browser = undefined; seenText.clear(); if (open !== undefined) await (await open).close(); };
+
+const page = async (at: string, seen: Seen, problems: string[]) => {
   is501(at, seen, problems);
+  noStore(at, seen, problems);
   if (!isType(seen.type, "text/html")) problems.push(`${at}: content-type "${seen.type}", not text/html`);
   if (!/^\s*<!doctype html>/i.test(seen.body)) problems.push(`${at}: the body is not a page (no <!doctype html>): ${seen.body.slice(0, 80)}`);
-  const text = visible(seen.body);
+  const text = await visible(seen.body);
   says(at, text, seen.body, problems);
   if (/\b404\b|not found/i.test(text)) problems.push(`${at}: the page says 404 or not found: ${text.slice(0, 80)}`);
 };
 
 const answer = (at: string, seen: Seen, problems: string[]) => {
   is501(at, seen, problems);
+  noStore(at, seen, problems);
   if (!isType(seen.type, "application/json")) problems.push(`${at}: content-type "${seen.type}", not application/json`);
   const parsed = jsonOf(seen.body);
   if (parsed === undefined) { problems.push(`${at}: the body is not a JSON object: ${seen.body.slice(0, 80)}`); says(at, "", seen.body, problems); return; }
@@ -92,7 +128,7 @@ export const screens = async (ask: Ask): Promise<ReadonlyArray<string>> => {
   const problems: string[] = [];
   for (const [n, accept] of BROWSERS.entries()) for (const path of SCREENS) {
     const seen = await tried(ask, path, "GET", accept);
-    if (typeof seen === "string") problems.push(seen); else page(`a browser's GET ${path}${n === 0 ? "" : ` (browser ${n + 1})`}`, seen, problems);
+    if (typeof seen === "string") problems.push(seen); else await page(`a browser's GET ${path}${n === 0 ? "" : ` (browser ${n + 1})`}`, seen, problems);
   }
   return problems;
 };
@@ -116,8 +152,9 @@ export const screensForAnyone = async (ask: Ask): Promise<ReadonlyArray<string>>
     else {
       const at = `a GET ${path} with no accept`;
       is501(at, bare, problems);
+      noStore(at, bare, problems);
       const parsed = jsonOf(bare.body);
-      says(at, isType(bare.type, "application/json") && typeof parsed?.message === "string" ? parsed.message : visible(bare.body), bare.body, problems);
+      says(at, isType(bare.type, "application/json") && typeof parsed?.message === "string" ? parsed.message : await visible(bare.body), bare.body, problems);
     }
     const head = await tried(ask, path, "HEAD", BROWSER);
     if (typeof head === "string") problems.push(head); else is501(`a HEAD ${path}`, head, problems);
@@ -200,5 +237,5 @@ export const methods = async (ask: Ask): Promise<ReadonlyArray<string>> => {
 
 /** A response as `Seen`. */
 export const seenOf = async (response: Response): Promise<Seen> => ({
-  status: response.status, type: response.headers.get("content-type") ?? "", body: await response.text(), etag: response.headers.get("etag"), allow: response.headers.get("allow"),
+  status: response.status, type: response.headers.get("content-type") ?? "", body: await response.text(), etag: response.headers.get("etag"), allow: response.headers.get("allow"), cache: response.headers.get("cache-control"),
 });

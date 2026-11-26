@@ -7,14 +7,20 @@
 //   B  the data and the rules of reading, as today: blueprint, snapshot, an unknown data path, a POST (controls: they pass today);
 //   C  in a real world on workerd, from a project whose installed `@orthograph/portal` has no `dist/client`, with the licence token
 //      unset: `ortho build` exits 0 and ships no client, the feed answers, and A holds over HTTP;
-//   D  the licence: building any package that is published builds no package that needs HeroUI Pro (the `build` task graph of every
-//      public package, read from nx, holds no project, anywhere in the workspace, that declares `@heroui-pro/*`, and no command in it
-//      reaches one), and the `@orthograph/portal` tarball, packed by pnpm from a checkout where the licensed client was built (its files
-//      where nx says the `client` target writes them), holds only the server's built files, and its published manifest needs no UI package.
-// What a builder owes: a client that is not installed answers A (`packages/portal/src/modules/server/internal/client.ts`'s 404 becomes
-// the notice), and `portal`'s build stops depending on `portal-ui` (the client build, which needs the licence, is a target that no
-// package's `build` waits for); `portal-ui` is not published; and the portal's tarball leaves out a client that a licensed checkout
-// built. A built client, where CI has one, is still served at `/portal` (checks 21 and 27 keep passing).
+//   D  the licence: building a published package that does not itself take Pro builds no package that needs it (the `build` task
+//      graph of those packages, read from nx, holds no project, anywhere in the workspace, that declares `@heroui-pro/*`, and no command in
+//      it reaches one), and the `@orthograph/portal` tarball, packed by pnpm from a checkout where the licensed client was built, holds only
+//      the server's built files, and its published manifest needs no UI package. `portal-ui` stays published with Pro as a peer (Aaron's
+//      F7 call of 19 November 2026; check 15): whether it is published is not this slice's.
+// What a builder owes:
+//   - a client that is not installed answers A (`packages/portal/src/modules/server/internal/client.ts`'s 404 becomes the notice, with
+//     `cache-control: no-store` as the 404 has); the unit tests that pin today's 404 change with it, as the builder's own:
+//     `packages/portal/src/modules/server/server.test.ts` ("a Worker with no assets says the client is not installed") and
+//     `packages/prove/src/modules/environments/portal.test.ts` (the `else` branch expecting "not installed");
+//   - `portal`'s build stops waiting for `portal-ui`'s (the client build, which needs the licence, is a target no package's `build` waits for);
+//   - the portal's tarball leaves out a client a licensed checkout built. Where that client is, the check reads from the `outputs` of the
+//     `portal:client` target in `packages/portal/project.json`, and always also `dist/client`: move the client and its `outputs` together.
+//   A built client, where CI has one, is still served at `/portal` (checks 21 and 27 keep passing).
 // Every judge is proved fair in the "controls" below: a correct stand-in passes, and each planted wrong answer is named.
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
@@ -25,7 +31,7 @@ import { PortalServer } from "@orthograph/portal/server";
 import { Worlds } from "@orthograph/prove";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { freePort } from "./clients.ts";
-import { API, APIS, BROWSER, BROWSERS, feed, methods, screens, screensForAnyone, screensForApi, seenOf, blueprint, things, type Ask, type Seen } from "./portal-screens.ts";
+import { API, APIS, BROWSER, BROWSERS, closeBrowser, feed, methods, screens, screensForAnyone, screensForApi, seenOf, blueprint, things, type Ask, type Seen } from "./portal-screens.ts";
 import { acme, copyOf, repo } from "./support.ts";
 
 // ---- the portal's server in this process: today's, a correct stand-in, and the plants ----
@@ -35,10 +41,10 @@ const real = (assets?: { fetch: (request: Request) => Promise<Response> }): Ask 
   seenOf(await Effect.runPromise(PortalServer.serve(blueprint, new Request(`http://portal${path}`, { method, headers: accept === undefined ? {} : { accept } }), assets === undefined ? {} : { PORTAL_ASSETS: assets })));
 
 const NOTICE = "<!doctype html><title>Portal</title><p>The portal's screens are not in this release (Preview). Its data is at /_portal/v1/blueprint.</p>";
-const notice = (over: Partial<Seen> = {}): Seen => ({ status: 501, type: "text/html; charset=utf-8", body: NOTICE, etag: null, allow: null, ...over });
+const notice = (over: Partial<Seen> = {}): Seen => ({ status: 501, type: "text/html; charset=utf-8", body: NOTICE, etag: null, allow: null, cache: "no-store", ...over });
 const MESSAGE = "The portal's screens are not in this release (Preview). Its data is at /_portal/v1/blueprint.";
 const apiNotice = (over: Partial<Seen> = {}, body: unknown = { _tag: "NotInThisRelease", message: MESSAGE }): Seen =>
-  ({ status: 501, type: "application/json", body: JSON.stringify(body), etag: null, allow: null, ...over });
+  ({ status: 501, type: "application/json", body: JSON.stringify(body), etag: null, allow: null, cache: "no-store", ...over });
 /** Whether a request asks for JSON over HTML, as a server reading `accept` would decide. */
 const wantsJson = (accept: string | undefined) => accept !== undefined && accept.includes("application/json") && !accept.includes("text/html");
 const isScreen = (path: string) => path === "/portal" || path.startsWith("/portal/");
@@ -132,7 +138,23 @@ describe("49 controls: each judge passes a correct stand-in and names each plant
     ["a page that says it and also 404", plant((p) => isScreen(p) ? notice({ body: `${NOTICE}<p>404 Not Found</p>` }) : undefined), /says 404 or not found/],
     ["another release named", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><p>The screens are not in this release. They come in Preview 2.</p>" }) : undefined), /does not name the release/],
     ["a look-alike type", plant((p) => isScreen(p) ? notice({ type: "text/html-fragment" }) : undefined), /not text\/html/],
+    // the 🔍 review's rows: words a person does not see, under another heading
+    ["the words only in a template, under another heading", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><template><p>The screens are not in this release (Preview).</p></template>" }) : undefined), /does not say "not in this release"/],
+    ["the words only in a hidden paragraph", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p hidden>The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words only in display:none", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p style=\"display:none\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words only in visibility:hidden", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p style=\"visibility: hidden\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words only aria-hidden", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><div aria-hidden=\"true\"><p>The screens are not in this release (Preview).</p></div>" }) : undefined), /does not say "not in this release"/],
+    ["the words only in noscript", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><noscript>The screens are not in this release (Preview).</noscript>" }) : undefined), /does not say "not in this release"/],
+    ["the words hidden by a sheet", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><style>.n{display:none}</style><h1>Welcome</h1><p class=\"n\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words written by a script only", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p id=\"n\"></p><script>n.textContent = 'The screens are not in this release (Preview).'</script>" }) : undefined), /does not say "not in this release"/],
+    ["a notice that may be cached", plant((p) => isScreen(p) ? notice({ cache: "public, max-age=3600" }) : undefined), /cache-control "public, max-age=3600", not no-store/],
+    ["a notice with no cache-control", plant((p) => isScreen(p) ? notice({ cache: null }) : undefined), /cache-control null, not no-store/],
   ];
+  it("the page judge reads what a person sees: the words visible under a heading of its own, and in a main, pass", async () => {
+    for (const body of ["<!doctype html><h1>The portal's screens are not in this release (Preview)</h1>", "<!doctype html><main><section><p>The screens are</p><p>not in this release (Preview).</p></section></main>", `${NOTICE}<p hidden>404 Not Found</p>`]) {
+      expect(await screens(plant((p) => isScreen(p) ? notice({ body }) : undefined)), body).toEqual([]);
+    }
+  });
 
   const wrongApi: ReadonlyArray<readonly [string, Ask, RegExp]> = [
     ["a 404 (today's)", plantApi(() => apiNotice({ status: 404 })), /status 404, not 501/],
@@ -157,6 +179,7 @@ describe("49 controls: each judge passes a correct stand-in and names each plant
     // the hostile pass's rows
     ["the page's HTML to axios's accept", plant((p, _m, a) => isScreen(p) && a === APIS[1] ? notice() : undefined), /\(client 2\): content-type/],
     ["a look-alike type", plantApi(() => apiNotice({ type: "application/json-seq" })), /not application\/json/],
+    ["an answer that may be cached", plantApi(() => apiNotice({ cache: "max-age=60" })), /cache-control "max-age=60", not no-store/],
     ["a 404 for a path no list holds", plantApi((p) => p.includes("/x-") ? apiNotice({ status: 404 }) : undefined), /x-[0-9a-f]{12}\/deeper: status 404/],
     ["another release named", plantApi(() => apiNotice({}, { _tag: "NotInThisRelease", message: "The screens are not in this release; see Preview 2." })), /does not name the release/],
   ];
@@ -167,6 +190,8 @@ describe("49 controls: each judge passes a correct stand-in and names each plant
     ["JSON with no message to a request with no accept", plant((p, m, a) => m === "GET" && isScreen(p) && a === undefined ? apiNotice({}, { _tag: "NotInThisRelease" }) : undefined), /no accept: it does not say/],
     ["a HEAD that is a 404", plant((p, m) => m === "HEAD" && isScreen(p) ? notice({ status: 404, body: "" }) : undefined), /a HEAD \/portal: status 404/],
     ["a HEAD that is a 200", plant((p, m) => m === "HEAD" && isScreen(p) ? notice({ status: 200, body: "" }) : undefined), /a HEAD \/portal: status 200/],
+    ["a cached answer to a request with no accept", plant((p, m, a) => m === "GET" && isScreen(p) && a === undefined ? notice({ cache: "max-age=60" }) : undefined), /no accept: cache-control "max-age=60"/],
+    ["the words only hidden, to a request with no accept", plant((p, m, a) => m === "GET" && isScreen(p) && a === undefined ? notice({ body: "<!doctype html><p hidden>The screens are not in this release (Preview).</p>" }) : undefined), /no accept: it does not say/],
   ];
   it.each(wrongAnyone)("screens (anyone else): %s is named", async (_name, ask, expected) => {
     const problems = await screensForAnyone(ask);
@@ -184,7 +209,7 @@ describe("49 controls: each judge passes a correct stand-in and names each plant
     expect(problems.join("\n")).toMatch(expected);
   });
 
-  const json = (body: unknown, over: Partial<Seen> = {}): Seen => ({ status: 200, type: "application/json", body: JSON.stringify(body), etag: null, allow: null, ...over });
+  const json = (body: unknown, over: Partial<Seen> = {}): Seen => ({ status: 200, type: "application/json", body: JSON.stringify(body), etag: null, allow: null, cache: null, ...over });
   const wrongFeed: ReadonlyArray<readonly [string, Ask, RegExp]> = [
     ["a blueprint that is a 404", plant((p) => p === "/_portal/v1/blueprint" ? json({ _tag: "NotFound" }, { status: 404, etag: `"${blueprint.digest}"` }) : undefined), /blueprint \(GET\): status 404/],
     ["a blueprint with another etag", plant((p) => p === "/_portal/v1/blueprint" ? json(blueprint, { etag: '"other"' }) : undefined), /blueprint \(GET\): etag/],
@@ -249,7 +274,7 @@ const unlicensed = (): NodeJS.ProcessEnv => { const env = { ...process.env }; de
 const cli = join(repo, "packages/cli/src/main.ts");
 const portalPackage = join(repo, "packages/portal");
 const spare: string[] = [];
-afterAll(() => { for (const dir of spare) rmSync(dir, { recursive: true, force: true }); });
+afterAll(async () => { for (const dir of spare) rmSync(dir, { recursive: true, force: true }); await closeBrowser(); });
 
 /**
  * A project as a published install leaves it: its `@orthograph/portal` is a folder with the manifest (a real file, so the project resolves
@@ -353,6 +378,12 @@ const licensed = projects.filter((p) => { const m = manifestOf(p.root); return m
 const licensedRoots = projects.filter((p) => licensed.includes(p.name)).map((p) => p.root);
 const licensedNames = [...licensed, ...licensedRoots.map((r) => manifestOf(r)!.name)];
 const published = manifests.filter((m) => m.manifest.private !== true);
+/**
+ * The published packages that do not themselves declare the licensed package. `portal-ui` is published and takes Pro as a peer (Aaron,
+ * 19 November 2026, F7: a published package may import Pro without containing it; check 15 holds it so): building it needs the licence,
+ * so no other published package's build may wait for it. Whether `portal-ui` itself is published is not this slice's (the 🔍 review of #1098).
+ */
+const unlicensedPublished = published.filter((m) => !licensed.includes(m.dir));
 /** A dependency that is a UI package: React and Preact, the portal's components and the new portal, the web kit, HeroUI, a client bundler. */
 const UI = /^(react|react-dom|preact|@orthograph\/(portal-ui|portal-next|web|shell|theme)|@heroui|@heroui-pro|@ui-sdk|@tanstack\/react-[^/]+|vite|@vitejs)(\/|$)/;
 /** The text of a target's command(s). */
@@ -431,24 +462,22 @@ const pack = () => {
 
 describe("49 D: nothing a published package builds from needs the HeroUI Pro licence", () => {
   it("the oracle is real: portal-ui declares the licensed package, and the portal is among the published packages", () => {
+    expect(unlicensedPublished.map((m) => m.dir), "the graph starts from the unlicensed published packages").toContain("portal");
+    expect(unlicensedPublished.map((m) => m.dir)).not.toContain("portal-ui");
     expect(licensed, "the packages that declare @heroui-pro/*").toContain("portal-ui");
     expect(published.map((m) => m.manifest.name)).toContain("@orthograph/portal");
     expect(published.map((m) => m.manifest.name)).toContain("orthograph");
   });
 
-  it("no published package declares @heroui-pro/*: the screens' components (portal-ui) wait with the screens, so they are not published", () => {
-    expect(published.map((m) => m.dir).filter((d) => licensed.includes(d)), "K44 call 2: a published package that needs the licence").toEqual([]);
-  });
-
   it("the build tasks of every published package include no project that declares @heroui-pro/*", { timeout: 300_000 }, () => {
-    const tasks = buildGraph(published.map((m) => m.dir));
-    expect(tasks.length, "the graph has tasks").toBeGreaterThanOrEqual(published.length);
+    const tasks = buildGraph(unlicensedPublished.map((m) => m.dir));
+    expect(tasks.length, "the graph has tasks").toBeGreaterThanOrEqual(unlicensedPublished.length);
     const pulled = tasks.filter((t) => licensed.includes(t.split(":")[0]!));
     expect(pulled, "K44 call 2: building a package that ships needs no licence, so no `build` here may wait for a package that needs it").toEqual([]);
   });
 
   it("no build task a published package runs reaches the licence from its command (a licensed folder or project, Pro's gate, the token)", { timeout: 300_000 }, () => {
-    const tasks = buildGraph(published.map((m) => m.dir));
+    const tasks = buildGraph(unlicensedPublished.map((m) => m.dir));
     // a licensed project's own task is the graph's finding above; this one judges what every other task's command reaches
     const reaching = tasks.filter((t) => { const [name, target] = t.split(":"); return !licensed.includes(name!) && reachesLicence(commandOf(projects.find((p) => p.name === name)?.targets[target!])); });
     expect(reaching, "a build command that shells out to the licence").toEqual([]);
