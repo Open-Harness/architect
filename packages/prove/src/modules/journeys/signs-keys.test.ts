@@ -122,5 +122,5 @@ describe("no key is ever shown (CX-journey-signs, call 5)", () => {
       } catch { return false; }
     });
     expect(holding, "files written during the runs that hold a key").toEqual([]);
-  });
+  }, 60_000); // The walk reads every file written meanwhile: a crowded /tmp or home folder takes seconds, past vitest's default five.
 });

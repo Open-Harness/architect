@@ -165,7 +165,9 @@ export const signing = () => {
       const bytes = Buffer.from(hex, "hex");
       return [hex, bytes.toString("base64").replace(/=+$/, ""), bytes.toString("base64url"), [...bytes].join(","), BigInt(`0x${hex}`).toString()];
     });
-    const text = forms.reduce((t, form) => t.replace(new RegExp(form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "<key>"), JSON.stringify(runs, wire));
+    // A Uint8Array serialises as {"0":..,"1":..}: written as its byte list instead, so the byte-list form scrubs it (a Buffer already is one).
+    const json = JSON.stringify(runs, (key, v: unknown) => (v instanceof Uint8Array ? [...v] : wire(key, v)));
+    const text = forms.reduce((t, form) => t.replace(new RegExp(form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "<key>"), json);
     return JSON.parse(text) as ReadonlyArray<JourneyRun>;
   };
   const world = () => state.world!;
