@@ -255,7 +255,7 @@ export const workflowProblems = (workflow: Json): ReadonlyArray<string> => {
       for (const shard of shardsOf(workflow) ?? [undefined]) {
         const when = `${said(a)}${shard === undefined ? "" : `, shard ${String(shard)}`}`;
         try {
-          const steps = stepsThatRun(workflow, { ...ev, ...a, shard: shard === undefined ? undefined : Number(shard) });
+          const steps = stepsThatRun(workflow, { ...ev, ...a, ...(shard === undefined ? {} : { shard: Number(shard) }) });
           if (must === "run") for (const p of problemsOf(steps)) add(`${ev.name}: ${p}`, when);
           else if (steps?.some((step) => typeof step.run === "string" && step.run.includes(RATCHET))) add(`${ev.name}: the ratchet runs on a docs-only run, which passes without its steps`, when);
         } catch (e) { add(`${ev.name}: ${(e as Error).message}`, when); }
