@@ -1,8 +1,8 @@
-// Draws the film frame by frame in a headless browser and encodes it: out/how-orthograph-works.mp4, with sound and captions.
-// node tools/render.mjs [--fps 30] [--workers 4] [--from 0] [--to <seconds>] [--silent]
+// Draws the film frame by frame in a headless browser and encodes it: out/<film>/<film>.mp4, with sound and captions.
+// node tools/render.mjs <film> [--fps 30] [--workers 4] [--from 0] [--to <seconds>] [--silent]
 import { createRequire } from "node:module"; import { spawn, spawnSync } from "node:child_process"; import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"; import { join, resolve } from "node:path";
 const { chromium } = createRequire(import.meta.url)("playwright");
-const here = resolve(import.meta.dirname, ".."), out = join(here, "out"), tmp = join(out, "segments");
+const film = process.argv[2], here = resolve(import.meta.dirname, ".."), out = join(here, "out", film), tmp = join(out, "segments");
 const arg = (name, fallback) => { const i = process.argv.indexOf("--" + name); return i < 0 ? fallback : process.argv[i + 1]; };
 const fps = Number(arg("fps", 30)), workers = Number(arg("workers", 4)), silent = process.argv.includes("--silent");
 const total = JSON.parse(readFileSync(join(out, "timing.json"), "utf8")).total, t0 = Number(arg("from", 0)), t1 = Number(arg("to", total));
@@ -36,8 +36,8 @@ if (!muxOnly) {
   writeFileSync(join(tmp, "list.txt"), files.map((f) => `file '${f}'`).join("\n"));
   run(["-f", "concat", "-safe", "0", "-i", join(tmp, "list.txt"), "-c", "copy", video]);
 }
-const film = join(out, arg("name", "how-orthograph-works") + ".mp4");
-if (silent || !existsSync(join(out, "narration.wav"))) run(["-i", video, "-c", "copy", "-movflags", "+faststart", film]);
+const meta = JSON.parse(readFileSync(join(here, "films", film, "script.json"), "utf8")), movie = join(out, arg("name", film) + ".mp4");
+if (silent || !existsSync(join(out, "narration.wav"))) run(["-i", video, "-c", "copy", "-movflags", "+faststart", movie]);
 else {
   // The voice, cleaned a little, over the pad. Then one gain for the whole film, measured, so the level never pumps.
   const sound = join(out, "sound.wav"), mixed = join(tmp, "mixed.wav"), pad = join(out, "pad.wav"), voice = "[0:a]aresample=48000,highpass=f=70,acompressor=threshold=-20dB:ratio=2.2:attack=8:release=140:makeup=2,pan=stereo|c0=c0|c1=c0[v]";
@@ -49,6 +49,6 @@ else {
   run(["-i", sound, "-c:a", "libmp3lame", "-b:a", "112k", join(out, "narration.mp3")]);
   const partial = t0 > 0 || t1 < total, cut = partial ? ["-ss", String(t0), "-t", String(t1 - t0)] : [];
   run(["-i", video, ...cut, "-i", sound, ...(partial ? [] : ["-i", join(out, "captions.srt")]), "-map", "0:v", "-map", "1:a", ...(partial ? [] : ["-map", "2:s", "-c:s", "mov_text", "-metadata:s:s:0", "language=eng"]),
-    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-metadata", "title=How Orthograph Works", film]);
+    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-metadata", "title=" + meta.title, movie]);
 }
-console.log(film);
+console.log(movie);

@@ -2,7 +2,7 @@
 # Records what `ortho` really prints on examples/plugged-in, into captures/. The film replays these files; it invents no output.
 # Every edit it makes to the example is undone on the way out, whether it finishes or fails. Needs Node 24 and an installed workspace.
 set -euo pipefail
-here="$(cd "$(dirname "$0")/.." && pwd)"; repo="$(cd "$here/../.." && pwd)"; app="$repo/examples/plugged-in"; out="$here/captures"
+here="$(cd "$(dirname "$0")/.." && pwd)"; repo="$(cd "$here/../.." && pwd)"; app="$repo/examples/plugged-in"; out="$here/films/how-it-works/captures"
 ortho() { (cd "$app" && node "$repo/packages/cli/src/main.ts" "$@" 2>&1) || true; }
 restore() { git -C "$repo" checkout -- examples/plugged-in; }
 trap restore EXIT

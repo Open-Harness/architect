@@ -1,0 +1,87 @@
+<script>
+(() => {
+  // ---- paint the code blocks -------------------------------------------------------------------------------------
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const span = (c, t) => (c ? `<span class="${c}">${esc(t)}</span>` : esc(t));
+  const KW = new Set("import export from const let var function return if else class extends new default type as".split(" "));
+  function ts(line) {
+    let out = "", i = 0;
+    while (i < line.length) {
+      const rest = line.slice(i); let m;
+      if (rest.startsWith("//")) { out += span("c", rest); break; }
+      if ((m = /^("(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/.exec(rest))) { out += span("s", m[0]); i += m[0].length; continue; }
+      if ((m = /^\d[\d_.]*/.exec(rest))) { out += span("n", m[0]); i += m[0].length; continue; }
+      if ((m = /^[A-Za-z_$][\w$]*/.exec(rest))) { const w = m[0], after = rest.slice(w.length); out += span(KW.has(w) ? "k" : /^\s*\(/.test(after) ? "f" : /^[A-Z]/.test(w) ? "t" : "", w); i += w.length; continue; }
+      out += /[{}()[\];,.<>=:/|&?!+-]/.test(rest[0]) ? span("x", rest[0]) : esc(rest[0]); i++;
+    }
+    return out;
+  }
+  document.querySelectorAll("pre.code").forEach((pre) => {
+    const plain = pre.dataset.lang === "text";
+    pre.innerHTML = pre.textContent.replace(/\n$/, "").split("\n").map((raw) => {
+      const m = /^(.*?)\s*\/\/ new(?::\s*(.*))?$/.exec(raw), line = m ? m[1] + (m[2] ? "  // " + m[2] : "") : raw;
+      const html = plain ? esc(line).replace(/✘/g, '<span style="color:var(--red)">✘</span>') : ts(line);
+      return `<span class="ln${m ? " isnew" : ""}">${html || " "}</span>`;
+    }).join("");
+  });
+
+  // ---- the simulation: everything below is derived from these tables -----------------------------------------------
+  const moves = { spend: { from: ["active"], by: ["holder"] }, revoke: { from: ["active", "exhausted"], by: ["owner"] }, renew: { from: ["active", "exhausted"], by: ["time"] } };
+  const people = [["holder", "Ada, who holds the budget"], ["owner", "Bob, an owner"], ["other", "Someone else"]];
+  const movesFor = (state, who) => Object.keys(moves).filter((m) => moves[m].from.includes(state) && moves[m].by.includes(who));
+  const $ = (id) => document.getElementById(id), money = (n) => n.toLocaleString("en-GB") + " USDC", later = (ms, f) => setTimeout(() => { f(); draw(); }, ms);
+  const budget = { state: "active", limit: 1000, spent: 0 }, journal = []; let who = "holder", spend = null, n = 0, back = false, orphans = 0;
+  const log = (cls, text, where) => journal.unshift(`<li><span class="${cls}">${text}</span> <span class="who">${where}</span></li>`);
+  const stages = ["drafted", "simulated", "signed", "seen", "confirmed"], shown = { drafted: "drafted", simulated: "tried", signed: "signed", seen: "sent", confirmed: "paid" };
+
+  function start(amount) {
+    spend = { id: "spd_" + ++n, amount, at: "drafted" }; log("ev", "SpendDrafted " + spend.id, "our server");
+    if (budget.spent + amount > budget.limit) { spend.at = "refused"; spend.why = "BudgetExceeded: the contract would refuse this. Nothing was signed and nothing is on the chain."; log("no", "✘ simulate: BudgetExceeded", "the chain, asked for free"); log("ev", "SpendDiscarded " + spend.id, "our server"); return; }
+    spend.at = "simulated"; log("sys", "simulate: would pass", "the chain, asked for free");
+  }
+  function sign() {
+    const s = spend; s.at = "signed"; log("sys", "signed and sent", "Ada's wallet");
+    later(900, () => { budget.spent += s.amount; if (budget.spent >= budget.limit) budget.state = "exhausted"; log("ev", "BudgetSpent " + money(s.amount), "the chain"); s.at = "seen"; log("ev", "SpendSent " + s.id, "our server");
+      later(1400, () => {
+        if (back) { budget.spent -= s.amount; budget.state = "active"; s.at = "dropped"; s.why = "The chain took it back. The money never left, and the books never changed."; log("no", "the chain took it back", "the chain"); log("ev", "SpendDropped " + s.id, "our server"); return; }
+        s.at = "confirmed"; log("ev", "SpendPaid " + s.id, "our server"); log("sys", "entry written", "the books, same commit"); }); });
+  }
+  const act = {
+    revoke() { budget.state = "revoked"; log("ev", "BudgetRevoked", "the chain, signed by an owner"); },
+    renew() { budget.spent = 0; budget.state = "active"; log("ev", "BudgetRenewed", "the chain, by time"); },
+    reject() { spend.at = "refused"; spend.why = "Ada said no in her wallet. The draft was discarded."; log("ev", "SpendDiscarded " + spend.id, "our server"); },
+    around() { const amount = 150; if (budget.spent + amount > budget.limit) { log("no", "✘ refused by the contract: over the limit", "the chain, no event"); return; }
+      later(900, () => { budget.spent += amount; if (budget.spent >= budget.limit) budget.state = "exhausted"; log("ev", "transfer of " + money(amount), "the chain, straight from her wallet"); orphans++; log("no", "no draft matches it", "our server"); log("ev", "SpendAppeared: unexplained", "our server"); }); },
+    explain() { orphans--; log("ev", "SpendExplained", "our server, by Ada"); log("sys", "entry written", "the books, same commit"); },
+  };
+
+  function draw() {
+    $("who").innerHTML = people.map(([id, name]) => `<button type="button" data-who="${id}" aria-pressed="${id === who}">${name}</button>`).join("");
+    const can = movesFor(budget.state, who), pct = (v) => Math.min(100, 100 * v / budget.limit).toFixed(1) + "%", busy = spend && ["simulated", "signed", "seen"].includes(spend.at);
+    $("budget").innerHTML = `<span class="state">${budget.state}</span>
+      <div class="meter" style="margin-top:12px" role="img" aria-label="Spent ${money(budget.spent)} of ${money(budget.limit)}"><i class="spent" style="width:${pct(budget.spent)}"></i></div>
+      <div class="kv">limit <b>${money(budget.limit)}</b> a month<br>spent <b>${money(budget.spent)}</b><br>left <b>${money(budget.limit - budget.spent)}</b><br>can <b>${JSON.stringify(can)}</b></div>
+      <div class="moves">${can.includes("revoke") ? `<button type="button" class="soft" data-act="revoke">Revoke</button>` : ""}${movesFor(budget.state, "time").length ? `<button type="button" class="soft" data-act="renew">A month passes</button>` : ""}${can.includes("spend") ? `<button type="button" class="soft" data-act="around">Ada pays around the app</button>` : ""}</div>
+      ${orphans ? `<div class="refusal">${orphans} spend${orphans > 1 ? "s" : ""} with no note. The money moved and the books don't know why.${who === "holder" ? ` <button type="button" class="again" data-act="explain" style="margin-left:8px">Explain one</button>` : ""}</div>` : ""}`;
+    const strip = spend ? `<div class="steps">${stages.map((s) => `<span class="${stages.indexOf(spend.at) >= stages.indexOf(s) ? "on" : ""}">${shown[s]}</span>`).join("")}${["refused", "dropped"].includes(spend.at) ? `<span class="bad">${spend.at === "refused" ? "discarded" : "dropped"}</span>` : ""}</div>` : "";
+    const form = can.includes("spend") && !busy ? `<div class="moves"><label for="amount">Amount</label><input id="amount" type="number" min="1" step="50" value="400"><button type="button" data-act="start">Spend</button></div>` : !busy ? `<p class="nomove">${who === "holder" ? "No spend is open to you in this state." : "Spending is not open to you. You don't hold this budget."}</p>` : "";
+    const wallet = spend && spend.at === "simulated" ? (who === "holder" ? `<div class="wallet"><b>Ada's wallet asks</b>Pay someone from the treasury, out of this budget.<br>${money(spend.amount)} to 0x51…c2<div class="moves"><button type="button" data-act="sign">Sign</button><button type="button" class="soft" data-act="reject">Reject</button></div></div>` : `<p class="nomove">Waiting for Ada's wallet.</p>`) : "";
+    $("spend").innerHTML = `${spend ? `<div class="kv" style="margin-top:0">id <b>${spend.id}</b> · <b>${money(spend.amount)}</b></div>` : ""}${strip}${wallet}${spend && spend.why ? `<div class="refusal">${spend.why}</div>` : ""}${form}
+      <label class="opt"><input type="checkbox" id="back" ${back ? "checked" : ""}> The chain takes the next spend back</label>`;
+    $("journal").innerHTML = journal.join("") || `<li class="who">Nothing yet. Spend as Ada.</li>`;
+  }
+  $("sim").addEventListener("click", (e) => {
+    const w = e.target.closest("[data-who]"), a = e.target.closest("[data-act]");
+    if (w) who = w.dataset.who;
+    else if (a) { const name = a.dataset.act; if (name === "start") start(Math.max(1, Math.round(+$("amount").value || 0))); else if (name === "sign") sign(); else act[name](); }
+    else return;
+    draw();
+  });
+  $("sim").addEventListener("change", (e) => { if (e.target.id === "back") back = e.target.checked; });
+
+  const cols = [...people, ["time", "Time"]];
+  $("matrix").innerHTML = `<tr><th>The budget is</th>${cols.map(([, name]) => `<th>${name}</th>`).join("")}</tr>` + ["active", "exhausted", "revoked"].map((s) =>
+    `<tr><td class="mono">${s}</td>${cols.map(([id]) => { const ms = movesFor(s, id); return `<td>${ms.length ? ms.map((m) => `<span class="pill${id === "time" ? " sys" : ""}">${m}</span>`).join("") : '<span class="pill none">nothing</span>'}</td>`; }).join("")}</tr>`).join("");
+  draw();
+})();
+</script>

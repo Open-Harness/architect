@@ -3,10 +3,10 @@
 Reads out/narration.wav and out/timing.json, writes out/pad.wav. tools/render.mjs mixes the two and sets the loudness.
 The pad is plain synthesis (sines, a little detune, slow swells), so nothing here is anyone's recording.
 """
-import json, os
+import json, os, sys
 import numpy as np, soundfile as sf
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); OUT = os.path.join(HERE, "out"); SR = 48000
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); OUT = os.path.join(HERE, "out", sys.argv[1] if len(sys.argv) > 1 else "how-it-works"); SR = 48000
 timing = json.load(open(os.path.join(OUT, "timing.json"))); total = timing["total"]; n = int(total * SR)
 t = np.arange(n) / SR; rng = np.random.default_rng(7)
 hz = lambda midi: 440.0 * 2 ** ((midi - 69) / 12)

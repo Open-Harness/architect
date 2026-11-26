@@ -1,0 +1,5 @@
+waiting states   spend
+  drafted   out on yes: send     out on no: discard    out on silence: nothing
+  sent      out on yes: settle   out on no: discard    out on silence: nothing
+    A spend can wait in `sent` for ever. Give it a move made by time.
+check ✘

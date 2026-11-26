@@ -25,7 +25,7 @@ const Film = (() => {
   // ---- text to marked-up lines -------------------------------------------------------------------------------------
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const span = (cls, text) => (cls ? `<span class="${cls}">${esc(text)}</span>` : esc(text));
-  const KW = new Set("import export from const let var function return if else class extends new default type interface as satisfies readonly yield typeof".split(" "));
+  const KW = new Set("import export from const let var function return if else class extends new default type interface as satisfies readonly yield typeof contract is internal external override returns storage memory emit revert error event private".split(" "));
   function ts(line, st) {
     let out = "", i = 0;
     while (i < line.length) {
@@ -52,8 +52,10 @@ const Film = (() => {
 
   /** A file's lines as an editor body. `from`/`to` are the file's own line numbers, so a quote can't drift from its numbers. */
   function code(text, { lang = "ts", from = 1, to, size = "" } = {}) {
-    const all = text.replace(/\n$/, "").split("\n"), marked = paint[lang](all);
-    const rows = marked.slice(from - 1, to ?? all.length).map((html, k) => `<div class="ln" data-n="${from + k}"><i>${from + k}</i><code>${html || " "}</code></div>`);
+    // A line that ends `// new` is a proposal, not something that exists: it gets an amber edge and loses the mark.
+    const raw = text.replace(/\n$/, "").split("\n"), fresh = raw.map((l) => /\s*\/\/ new(?::.*)?$/.test(l));
+    const all = raw.map((l) => l.replace(/\s*\/\/ new(?::\s*(.*))?$/, (_, why) => (why ? "  // " + why : ""))), marked = paint[lang](all);
+    const rows = marked.slice(from - 1, to ?? all.length).map((html, k) => `<div class="ln${fresh[from - 1 + k] ? " isnew" : ""}" data-n="${from + k}"><i>${from + k}</i><code>${html || " "}</code></div>`);
     return `<div class="code ${size}"><div class="focusbar"></div>${rows.join("")}</div>`;
   }
   const editor = (id, path, body, tag = "") => {
@@ -118,7 +120,9 @@ const Film = (() => {
   }
 
   // ---- what follows the clock but isn't a tween: the sheet's lettering, the cursor, the caption --------------------------
-  const STEPS = ["describe", "compile", "generate", "enforce", "behave", "prove", "change"];
+  const STEPS = D.meta.steps.map((s) => s.toLowerCase());
+  document.getElementById("steps").innerHTML = D.meta.steps.map((s) => `<b>${s}</b>`).join("<u></u>");
+  document.getElementById("railsrc").textContent = D.meta.source; document.getElementById("filmtitle").textContent = D.meta.title;
   let last = -1;
   function chrome(t) {
     const cur = built.find((s) => t < s.end) ?? built[built.length - 1];

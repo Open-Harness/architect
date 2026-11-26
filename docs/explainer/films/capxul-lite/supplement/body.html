@@ -1,0 +1,152 @@
+<div class="wrap">
+  <div>
+    <div class="eyebrow">Orthograph · the reading that goes with the film</div>
+    <h1>Capxul Lite, the whole design</h1>
+  </div>
+  <p class="lede">A company's treasury on chain, controlled by its owners together. Budgets people and agents can spend alone. Books that record every payment with its reason. One contract, one server, and everything else made from the description.</p>
+  <p>The film says this in eight minutes. This page is the detail: every file, what falls out of it, where each thing has to go and why, and where the design strains. It is a design. Most of its syntax already exists in the repository or is decided; four ideas are new, and they are marked.</p>
+  <div class="legend">
+    <span class="key"><i></i>Exists in the repository, or is decided (K20, K23, K25, M6-chain, M6-money)</span>
+    <span class="key new"><i></i>Proposed by this design. Not built, not decided.</span>
+  </div>
+
+  <h2>The system</h2>
+  <p>It is small, and it is whole. There is money, a limit nobody can talk their way past, wallets that sign, private facts that can't go on a chain, and five kinds of user.</p>
+  <div class="cast">
+    <div><span>the chain decides</span><b>Treasury, Seat, Budget</b><p>One contract of ours. The money, who the owners are, and every budget. Every field public.</p></div>
+    <div><span>our server decides</span><b>Spend, Entry</b><p>Why money left: who was paid, the reason, the receipt. And the books.</p></div>
+    <div><span>a wallet decides</span><b>Whether to sign</b><p>A person's key or an agent's. It lives in one place and never leaves it.</p></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Who</th><th>How the system knows them</th><th>What is made for them</th></tr>
+    <tr><td><b>An owner</b></td><td>a person, and an account with a seat on the treasury</td><td>The app. A grant that gathers the other owners' approvals. A revoke they can do alone.</td></tr>
+    <tr><td><b>A member</b></td><td>a person whose wallet holds a budget</td><td>The app, with one Spend button. Her wallet signs and a relayer sends it, so she needs no gas.</td></tr>
+    <tr><td><b>An agent</b></td><td>its own account, its key in its own signer</td><td>The same operation, as a tool. It signs for itself. The contract holds its limit, which is why it can be trusted to spend.</td></tr>
+    <tr><td><b>The accountant</b></td><td>a person with a role on the books</td><td>Every payment with its reason, and the entries. Nothing on the chain.</td></tr>
+    <tr><td><b>Anyone</b></td><td>an address</td><td>The contract itself: who holds which role, through the standard interface, and every event.</td></tr>
+    <tr><td><b>The system</b></td><td>no credential</td><td>No way in. It brings the chain's events back and writes the entries.</td></tr>
+  </table></div>
+
+  <h2>What you declare</h2>
+  <h3>Where things live</h3>
+  <p>A store is a file. A chain store's contract takes its name from the file's path, and every thing that lives in it shares that one contract. The environment says which network.</p>
+  <div class="cols">
+    <figure class="file"><figcaption>blueprint/stores/treasury.ts <em class="is">decided, K25</em></figcaption><pre class="code"><!--file:blueprint/stores/treasury.ts--></pre></figure>
+    <figure class="file"><figcaption>blueprint/environments/staging.ts <em class="is">decided, K25</em></figcaption><pre class="code"><!--file:blueprint/environments/staging.ts--></pre></figure>
+  </div>
+
+  <h3>The treasury and its owners</h3>
+  <p>An owner is whoever holds a seat. That is a role declared as data, which is the only kind that can be rendered into Solidity. The last line is new: enough owners to reach the threshold, treated as one caller.</p>
+  <div class="cols">
+    <figure class="file"><figcaption>blueprint/things/treasury/thing.ts</figcaption><pre class="code"><!--file:blueprint/things/treasury/thing.ts--></pre></figure>
+    <figure class="file"><figcaption>blueprint/things/treasury/roles.ts</figcaption><pre class="code"><!--file:blueprint/things/treasury/roles.ts--></pre></figure>
+  </div>
+
+  <h3>A budget</h3>
+  <p>Its machine is the one <code>examples/budgets</code> already has, plus renewal. Renewing is a move made by time, in the syntax of K23. The rule that spent never passes the limit is said as data, so both languages can enforce it; today that check would sit inside a handler.</p>
+  <div class="cols">
+    <figure class="file"><figcaption>blueprint/things/budget/thing.ts</figcaption><pre class="code"><!--file:blueprint/things/budget/thing.ts--></pre></figure>
+    <figure class="file"><figcaption>blueprint/things/budget/roles.ts</figcaption><pre class="code"><!--file:blueprint/things/budget/roles.ts--></pre></figure>
+  </div>
+  <figure class="file"><figcaption>blueprint/things/budget/machine.ts</figcaption><pre class="code"><!--file:blueprint/things/budget/machine.ts--></pre></figure>
+  <div class="cols">
+    <figure class="file"><figcaption>blueprint/things/budget/verbs/spend.ts</figcaption><pre class="code"><!--file:blueprint/things/budget/verbs/spend.ts--></pre></figure>
+    <figure class="file"><figcaption>blueprint/things/budget/verbs/grant.ts</figcaption><pre class="code"><!--file:blueprint/things/budget/verbs/grant.ts--></pre></figure>
+  </div>
+
+  <h3>A spend, and the join</h3>
+  <p>A spend is our note. It can't live on the chain because two of its fields are private, and your compiler already refuses a private field on a chain store. Its machine names every wait, and one state nobody plans for: money that moved with no note.</p>
+  <div class="cols">
+    <figure class="file"><figcaption>blueprint/things/spend/thing.ts</figcaption><pre class="code"><!--file:blueprint/things/spend/thing.ts--></pre></figure>
+    <figure class="file"><figcaption>blueprint/things/spend/machine.ts</figcaption><pre class="code"><!--file:blueprint/things/spend/machine.ts--></pre></figure>
+  </div>
+  <div class="cols">
+    <figure class="file"><figcaption>blueprint/things/spend/verbs/draft.ts</figcaption><pre class="code"><!--file:blueprint/things/spend/verbs/draft.ts--></pre></figure>
+    <figure class="file"><figcaption>blueprint/things/spend/verbs/settle.ts</figcaption><pre class="code"><!--file:blueprint/things/spend/verbs/settle.ts--></pre></figure>
+  </div>
+  <p class="says"><b><code>next</code> is the join.</b> One press of "Spend" is two operations, decided in two places, by one caller. Without <code>next</code> that sequence lives in a screen's code, where the model can't see it. With it, the button, the agent's tool, the journey's step and the trace all know the same thing.</p>
+
+  <h2>What falls out</h2>
+  <h3>On the chain</h3>
+  <p>The frame is generated and the behaviour is yours. The frame checks in the same order the server's wrapper does: the row, the role, the machine, your handler, the rules, the event. That is the rule of one enforcer per operation, with the contract as the enforcer. Each operation also gets a signed entry, so anyone can submit a call the holder signed.</p>
+  <figure class="file"><figcaption>generated: TreasuryBase.sol <em class="sim">a sketch of the frame, not generated output</em></figcaption><pre class="code" data-lang="text"><!--file:falls-out/TreasuryBase.sol--></pre></figure>
+  <figure class="file"><figcaption>src/Treasury.sol <em class="is">yours, scaffolded once</em></figcaption><pre class="code" data-lang="text"><!--file:src/Treasury.sol--></pre></figure>
+  <h3>For a client, and for the app</h3>
+  <div class="cols">
+    <figure class="file"><figcaption>the same lines in the app, the CLI and an agent's tool <em class="new">proposed</em></figcaption><pre class="code"><!--file:falls-out/client.ts--></pre></figure>
+    <figure class="file"><figcaption>a reference to one budget <em class="new">proposed</em></figcaption><pre class="code"><!--file:falls-out/panel.tsx--></pre></figure>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>From</th><th>Falls out</th></tr>
+    <tr><td><b>The chain store</b></td><td>The contract's frame and its interface. A copy of every budget kept from its events, so the app can list them. The deployment, per environment. A local chain for <code>ortho prove</code>.</td></tr>
+    <tr><td><b>Each operation on the chain</b></td><td>A direct entry and a signed one. The typed call a client prepares, tries, signs and follows. A command, an agent's tool, a docs page.</td></tr>
+    <tr><td><b>Each operation on the server</b></td><td>What you get today: the API, the client, the command, the agent's tool, the docs.</td></tr>
+    <tr><td><b>Each thing</b></td><td>Its reference: state, fields this caller may see, and what they can do now. The hook and the headless parts are two faces of it.</td></tr>
+    <tr><td><b><code>next</code></b></td><td>One button and one tool that do both steps. One step in a journey. One line in the portal from the draft to the entry.</td></tr>
+    <tr><td><b>Owners together</b></td><td>A proposal, an approve button for each owner, and the operation itself once the threshold is met.</td></tr>
+    <tr><td><b>The machines</b></td><td>The check that every waiting state has a way out.</td></tr>
+  </table></div>
+
+  <h2>Try it</h2>
+  <p>A simulation in this page, not Orthograph and not a chain. It runs from a budget's machine and its roles. Spend as Ada. Then go over the limit, revoke as Bob, let a month pass, have the chain take a spend back, or pay around the app.</p>
+  <div class="sim" id="sim">
+    <header><span class="eyebrow" style="color:var(--muted)">Viewing as</span><span class="seg" id="who" role="group" aria-label="Who is looking"></span></header>
+    <div class="simgrid">
+      <section><h3>The budget <span class="lane chain">the chain decides</span></h3><div id="budget"></div></section>
+      <section><h3>One spend <span class="lane us">our server</span> <span class="lane dev">a wallet</span></h3><div id="spend"></div></section>
+      <section><h3>What was written, and where</h3><ol class="journal" id="journal" aria-live="polite"></ol></section>
+    </div>
+  </div>
+  <p>Who can do what to the budget, computed here from the machine and the roles:</p>
+  <div class="tablewrap"><table id="matrix"></table></div>
+
+  <h2>What goes where</h2>
+  <p>The stress test comes down to five questions you ask of each fact. They decide where it lives, and you answer them in the blueprint, out loud.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Ask of each fact</th><th>If yes</th><th>In Capxul Lite</th></tr>
+    <tr><td>Must it hold even if our server is down, or wrong?</td><td>the chain</td><td>the money, the owners, the limit</td></tr>
+    <tr><td>Is it private?</td><td>our server</td><td>the reason, the receipt</td></tr>
+    <tr><td>Does it need a list, a filter or a report?</td><td>our server, or a copy kept from the chain's events</td><td>the books; the list of budgets</td></tr>
+    <tr><td>Does money obey it?</td><td>the chain, and it has to be data</td><td>spent never passes the limit</td></tr>
+    <tr><td>Does it need a person's or an agent's yes?</td><td>a wallet. The server prepares. It never signs.</td><td>every spend, every approval</td></tr>
+  </table></div>
+
+  <h2>The primitives, sorted</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Primitive</th><th>What it is</th><th>Standing</th></tr>
+    <tr><td>thing, machine, operation, event</td><td>a noun, how it moves, a verb on it, what a move records</td><td><span class="have">runs today</span></td></tr>
+    <tr><td>a role by <code>who</code>, <code>holds</code>, and <code>.of</code></td><td>who may act, said as data; a role held on another thing</td><td><span class="have">runs today</span></td></tr>
+    <tr><td>a rule, <code>unique</code></td><td>true across many records, refused before the commit</td><td><span class="have">runs today</span></td></tr>
+    <tr><td><code>on</code>, with <code>onRefused</code></td><td>an operation started by an event, with a path for a refusal</td><td><span class="have">declared today</span></td></tr>
+    <tr><td>a chain store, <code>account()</code>, money</td><td>a contract named by a file; a person on chain; an amount of a token</td><td><span class="dec">decided</span> K25, M6-money</td></tr>
+    <tr><td>the signed entry, the relayer</td><td>a call the holder signs and anyone submits</td><td><span class="dec">decided</span> M6-chain</td></tr>
+    <tr><td>the follower</td><td>hands on a chain event only once it is confirmed, and a correction if it is taken back</td><td><span class="dec">decided</span> M6-chain</td></tr>
+    <tr><td>a move made by time</td><td><code>by: Blueprint.time.every(...)</code>, on one clock a world can move</td><td><span class="dec">decided</span> K23</td></tr>
+    <tr><td>a page, a component</td><td>what a screen shows and offers, with its wiring generated</td><td><span class="dec">decided</span> K31, K36</td></tr>
+    <tr><td><b>a reference to a thing</b>, with <code>can</code></td><td>state, visible fields, and the moves open now, for this caller</td><td><span class="gap">proposed</span></td></tr>
+    <tr><td><b><code>next</code></b></td><td>what the same caller does after this operation, and what is carried across</td><td><span class="gap">proposed</span></td></tr>
+    <tr><td><b>owners together</b></td><td>enough holders of a role, acting as one caller</td><td><span class="gap">proposed</span></td></tr>
+    <tr><td><b>a rule inside one record</b></td><td><code>invariant.atMost</code>: said as data, enforced in both languages</td><td><span class="gap">proposed</span></td></tr>
+    <tr><td><b>the check on waiting states</b></td><td>every wait needs a way out for yes, for no, and for silence</td><td><span class="gap">proposed</span></td></tr>
+  </table></div>
+
+  <h2>Where it strains</h2>
+  <ol class="holes">
+    <li><b>Changing a rule on chain is a migration with money in it.</b><span>The film changes renewal from a month to a week and the model says the contract is stale. That is true and it hides the hard part. A deployed contract can't be regenerated in place. Either it was built to be upgraded, or the money and the budgets move to a new one. The blueprint has no word for that yet, and it is the largest gap here.</span></li>
+    <li><b>Owners together is one word that stands for a small system.</b><span>Proposing, approving once each, counting, expiring, cancelling, and what happens if an owner is removed halfway. If the framework makes all that from one word, each of those choices needs a default you would agree with. The other way is to declare the proposal as a thing of your own.</span></li>
+    <li><b>One contract holds every company's money.</b><span>K25 has no contract per instance. So the treasury is rows in one contract, and its balance is a number in that contract, not an address of its own. Nobody can pay a company by sending to an address. If each company needs its own address, that is a factory, and the blueprint needs a way to say so.</span></li>
+    <li><b>On a chain, "can" is a guess.</b><span>Only the contract knows, and things change between asking and signing. The reference says what it expects. Trying the call is the real answer.</span></li>
+    <li><b>A refusal on chain leaves no event.</b><span>The server never hears "no" from the chain. The relayer knows when a submission is definitely refused, and that has to reach the spend's machine as its way out for "no".</span></li>
+    <li><b>Anyone can pay around the app.</b><span>The contract is a way in that you don't control. A holder can call it from any wallet and give a note id that matches nothing. So "unexplained" is a real state, and somebody has to be asked to explain.</span></li>
+    <li><b>Time has no one to run it.</b><span>Nothing wakes a contract on the first of the month. Renewal is worked out when someone next spends, or a keeper sends it. Either way the app must work out what is left by the same rule, from the same declaration.</span></li>
+    <li><b>A person is not an account.</b><span>Ada the person holds the budget only because one of her wallets is its holder, and an agent has an account of its own. The role on a spend, which is ours, has to cross from the person to the account.</span></li>
+    <li><b>A handler in two languages is two handlers.</b><span>The frame keeps them honest: the same checks, in the same order, with the same refusals. But the behaviour in Solidity and any behaviour in TypeScript are written separately, and only journeys show that they agree.</span></li>
+  </ol>
+
+  <h2>What this is for</h2>
+  <div class="answer">
+    <p><b>The problem.</b> An agent can write a system like this in an afternoon. What it can't give you is a reason to trust it the next morning, or a way to know what a change touches, without reading all of it.</p>
+    <p><b>The position.</b> You work on the system: the things, who may do what, what must always be true, and how the pieces join. You read that. The agent builds below it, the framework keeps every piece in step, and the running system is proved against stories you agreed to.</p>
+    <p><b>Why a chain is the best test of it.</b> It forces every hidden decision into the open: who has the last word, what is private, what money obeys, who has to say yes. Those are the decisions a person should be making, and here the blueprint makes you make them.</p>
+  </div>
+</div>

@@ -1,16 +1,18 @@
-"""Speak script.json: one clip per line, the words' times, and the whole narration laid on one track.
+"""Speak films/<film>/script.json (python tools/narrate.py <film>): one clip per line, the words' times, and the whole narration laid on one track.
 
-Writes out/timing.json (every scene, line and word, in seconds) and out/narration.wav. A clip is kept in .cache/ under
+Writes out/<film>/timing.json (every scene, line and word, in seconds) and out/<film>/narration.wav. A clip is kept in .cache/ under
 the hash of what was said, so a line is spoken again only when its words change.
 """
 import hashlib, json, os, sys
+
+FILM = sys.argv[1] if len(sys.argv) > 1 else "how-it-works"
 import numpy as np, soundfile as sf
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS = os.environ.get("EXPLAINER_MODELS", os.path.join(HERE, ".cache", "models"))
-CACHE, OUT, SR = os.path.join(HERE, ".cache", "clips"), os.path.join(HERE, "out"), 24000
+CACHE, OUT, SR = os.path.join(HERE, ".cache", "clips"), os.path.join(HERE, "out", FILM), 24000
 os.makedirs(CACHE, exist_ok=True); os.makedirs(OUT, exist_ok=True)
-script = json.load(open(os.path.join(HERE, "script.json")))
+script = json.load(open(os.path.join(HERE, "films", FILM, "script.json")))
 
 _kokoro = _whisper = None
 def speak(text):
