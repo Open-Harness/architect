@@ -61,26 +61,35 @@ const submit: Handler = ({ payrollEntry }, { steps, move, subject }) =>
     const endDate = subject["endDate"] as string;
 
     // Step load: database, span payroll-entry.submit.load. The entry's employees in its order, each with their record,
-    // their slips and their submitted assignments.
+    // their slips, their submitted assignments starting by the last day, the structure of the latest of those, and
+    // that structure's lines.
     const employees = yield* steps.load(
       Effect.gen(function* () {
         const rows = yield* records.list({ ...all, thing: PayrollEmployeeDetail, where: { payrollEntry }, state: undefined });
-        return yield* Effect.forEach(rows.items, (row) => {
-          const employee = row["employee"] as string;
-          return Effect.all({
-            id: Effect.succeed(employee),
-            record: records.find(Employee, employee),
-            slips: records.list({ ...all, thing: SalarySlip, where: { employee }, state: undefined }),
-            assignments: records.list({ ...all, thing: SalaryStructureAssignment, where: { employee }, state: "submitted" }),
-          });
-        });
+        return yield* Effect.forEach(rows.items, (row) =>
+          Effect.gen(function* () {
+            const id = row["employee"] as string;
+            const record = yield* records.find(Employee, id);
+            const slips = (yield* records.list({ ...all, thing: SalarySlip, where: { employee: id }, state: undefined })).items;
+            const held = yield* records.list({ ...all, thing: SalaryStructureAssignment, where: { employee: id }, state: "submitted" });
+            const byEnd = held.items.filter((a) => (a["fromDate"] as string) <= endDate);
+            const latest = byEnd.reduce<(typeof byEnd)[number] | undefined>(
+              (best, a) => (best === undefined || (a["fromDate"] as string) > (best["fromDate"] as string) ? a : best),
+              undefined,
+            );
+            const structure = latest?.["salaryStructure"] as string | undefined;
+            const lines =
+              structure === undefined ? [] : (yield* records.list({ ...all, thing: SalaryDetail, where: { salaryStructure: structure }, state: undefined })).items;
+            return { id, record, slips, byEnd, structure, lines };
+          }),
+        );
       }),
     );
 
     // Refusal order (errors.ts): SalarySlipExists over every employee, then NoAssignmentAtStart.
     // SalarySlipExists: exit 48, PE-008. A slip from another entry, draft or submitted, for these very days.
     const paid = employees.find(({ slips }) =>
-      slips.items.some((s) => s["payrollEntry"] !== payrollEntry && s["startDate"] === startDate && s["endDate"] === endDate),
+      slips.some((s) => s["payrollEntry"] !== payrollEntry && s["startDate"] === startDate && s["endDate"] === endDate),
     );
     if (paid) {
       yield* Effect.logInfo(`${paid.id} already has a slip from ${startDate} to ${endDate}`);
@@ -89,17 +98,11 @@ const submit: Handler = ({ payrollEntry }, { steps, move, subject }) =>
 
     // NoAssignmentAtStart: exit 49, PE-009. The structure is that of the latest submitted assignment starting by the
     // last day; one of its submitted assignments must start by the first day, or by the joining day for a joiner.
-    const paying = employees.map((e) => {
-      const byEnd = e.assignments.items.filter((a) => (a["fromDate"] as string) <= endDate);
-      const latest = byEnd.reduce<(typeof byEnd)[number] | undefined>(
-        (best, a) => (best === undefined || (a["fromDate"] as string) > (best["fromDate"] as string) ? a : best),
-        undefined,
-      );
-      const structure = latest?.["salaryStructure"] as string | undefined;
-      const joined = (e.record?.["dateOfJoining"] as string | undefined) ?? startDate;
+    const paying = employees.map(({ id, record, byEnd, structure, lines }) => {
+      const joined = (record?.["dateOfJoining"] as string | undefined) ?? startDate;
       const from = joined > startDate ? joined : startDate;
       const started = structure !== undefined && byEnd.some((a) => a["salaryStructure"] === structure && (a["fromDate"] as string) <= from);
-      return { id: e.id, structure, started };
+      return { id, structure, lines, started };
     });
     const unstarted = paying.find((p) => !p.started);
     if (unstarted) {
@@ -111,9 +114,8 @@ const submit: Handler = ({ payrollEntry }, { steps, move, subject }) =>
     // A draft slip per employee in the entry's order, its lines its structure's (earnings, then deductions, numbered
     // as on the structure), every line paid in full.
     yield* steps.slips(
-      Effect.forEach(paying, ({ id: employee, structure }) =>
+      Effect.forEach(paying, ({ id: employee, structure, lines }) =>
         Effect.gen(function* () {
-          const lines = (yield* records.list({ ...all, thing: SalaryDetail, where: { salaryStructure: structure }, state: undefined })).items;
           const ordered = [...lines.filter((l) => l["type"] === "Earning"), ...lines.filter((l) => l["type"] === "Deduction")];
           const sum = (type: string) => ordered.filter((l) => l["type"] === type).reduce((total, l) => total + (l["amount"] as bigint), 0n);
           const grossPay = sum("Earning");
@@ -132,7 +134,8 @@ const submit: Handler = ({ payrollEntry }, { steps, move, subject }) =>
             totalDeduction,
             netPay: grossPay - totalDeduction,
             status: "Draft",
-            // No journal entry until submit-slips books it. `InstanceOf` types every field as required.
+            // No journal entry until submit-slips books it. `InstanceOf` types every field as required, and neither
+            // `journalEntry: undefined` nor a single cast compiles, so the cast goes through unknown.
           } as unknown as Omit<InstanceOf<typeof SalarySlip>, "state">);
           for (const l of ordered) {
             const lineId = yield* Ids.of(SalarySlipDetail.fields.id);

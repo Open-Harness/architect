@@ -72,11 +72,11 @@ const submitSlips: Handler = ({ payrollEntry }, { steps, move, subject }) =>
             Effect.gen(function* () {
               const details = yield* records.list({ ...all, thing: SalarySlipDetail, where: { salarySlip: slip["id"] }, state: undefined });
               const lines = yield* Effect.forEach(details.items, (line) =>
-                Effect.map(records.find(SalaryComponent, line["salaryComponent"] as string), (component) => ({
-                  type: line["type"] as string,
-                  amount: line["amount"] as bigint,
-                  account: component?.["account"] as string,
-                })),
+                Effect.gen(function* () {
+                  const component = yield* records.find(SalaryComponent, line["salaryComponent"] as string);
+                  if (!component) return yield* Effect.die(new Error(`salary component ${line["salaryComponent"]} on a slip was not found`));
+                  return { type: line["type"] as string, amount: line["amount"] as bigint, account: component["account"] as string };
+                }),
               );
               return { slip, lines };
             }),
