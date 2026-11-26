@@ -75504,6 +75504,19 @@
               "kind": "no-events"
             },
             {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "voucherId"
+                ]
+              },
+              "state": "submitted"
+            },
+            {
               "kind": "spans",
               "present": [],
               "absent": [
@@ -76208,7 +76221,7 @@
           ]
         }
       ],
-      "sourceHash": "f0072d460b3491e61ec2c4698b3a2a8d1745589f0d5de30e574716ac798edce6"
+      "sourceHash": "0d8067963fae556cc49c28f31d22d1739c4432ce408f13ab0bb6e5e0176de9be"
     },
     "journeys/promote-an-employee.ts": {
       "name": "promote an employee",
