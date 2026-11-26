@@ -228,7 +228,8 @@ most; Rise's per-contractor price is from a third party only (*unsure*).
    (import open-withholding at a pinned commit, checked against the second dataset) is how the module starts when it
    does. Payroll's 9a core stays built; its 9b and 9c (payment days, the rest of the slip) go on, as they are
    jurisdiction-free.
-2. **Add, next in slice 7: money in several currencies** (section 3), after #1116 and before invoices. It unparks
+2. **Add, in slice 7: money in several currencies** (section 3), after #1116 and the move of `company` and `ledger`
+   into pieces (CX-composable-pieces), and before invoices. It unparks
    Company currency (#882) as a framework gap Goal 16 claims, and its checks (#923, a draft) are rewritten to this
    record by an author.
 3. **#1116 (parties and payments) lands as it is.** Its amounts in USDC are right for a company whose reporting
@@ -299,9 +300,22 @@ records, as `AGENTS.md` says:
 
 ## The pieces, agreed with the composable-pieces thread
 
-Proposed to session_01S8RF7CccTeLkaVUQpKSExm on 26 November 2026; its answer is recorded here when it comes.
-Money (assets and amounts) is the framework's. Rates are their own piece the ledger reads. The ledger owns accounts,
-lines, gain and loss and revaluation. Payments own Payment Entry and move between any two accounts; the rails (the Safe,
-Bridge, a bank) are adapters beneath them. Payroll calculates and produces what is owed to each person and authority;
-payments settle it. A contractor is a supplier with a tax form and a payout method; an employer of record is a
-supplier too.
+The composable-pieces record (#1123, `CX-composable-pieces.md`, session_01S8RF7CccTeLkaVUQpKSExm) splits Capxul into
+pieces chosen when its app is built. This record's work lands inside those pieces. Proposed to that thread on
+26 November 2026; its answer is recorded here when it comes.
+
+- **`company`:** the asset files, a company's reporting currency, Currency Exchange and Pegged Currencies (that record
+  already puts the currency records here).
+- **`ledger`:** an account's currency, the account-currency pair on every line, the two gain-or-loss accounts, rounding
+  remainders and revaluation. `ledger.post` takes lines that carry both amounts.
+- **`invoicing`:** Payment Entry between currencies (#1116's Payment Entry is born here).
+- **`contractors`, a new core piece:** a supplier from `parties` with a tax form and a payout method; paying many; the
+  1099 year-end. It pays through `invoicing`'s Payment Entry. Payroll stays employees only.
+- **`bridge`:** external accounts in a payee's currency and transfers out; their receipts go to `banking` and are
+  booked as a Payment Entry at the realised rate.
+- **`payroll-tax-us`:** optional, as that record says, and later by decision 1.
+- **An employer of record** is no piece: it is a supplier.
+
+**Order.** That record's move of `company` and `ledger` into pieces comes first, then the currency slice inside them,
+then invoices (slice 7b). The rest of the move runs alongside. Contractors come once `invoicing` holds Payment Entry, and
+before `payroll-tax-us`.
