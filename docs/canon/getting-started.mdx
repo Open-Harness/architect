@@ -64,7 +64,7 @@ prints `ok` and exits 0, and when nothing is listening at that address it fails 
 MY_LINKS_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health
 ```
 
-Run `node generated/cli/src/main.ts --help` to see every operation the generated CLI can call.
+`node generated/cli/src/main.ts --help` lists the things it can call, and `<thing> --help` each one's operations.
 
 An operation that needs a signed-in caller also needs a session token: set `MY_LINKS_TOKEN` to the token a sign-in gave
 you, beside `MY_LINKS_URL`.
