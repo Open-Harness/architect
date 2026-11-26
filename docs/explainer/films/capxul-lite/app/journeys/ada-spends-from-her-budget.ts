@@ -23,7 +23,8 @@ export default Blueprint.journey("ada spends from her budget", {
     ),
     s.step(
       "she pays around the app, and the books ask why",
-      s.ada.wallet.call(s.world.treasury, "spend", { budget: s.world.budget, to: s.world.supplier, amount: 150n }),
+      // Straight from her wallet, with a seal nobody gave us the words for.
+      s.ada.wallet.call(s.world.treasury, "spend", { budget: s.world.budget, to: s.world.supplier, amount: 150n, reasonSeal: s.world.unknownSeal }),
       receipts({ sent: 1, reverted: 0 }),
       recorded(Spend, { amount: 150n }).isIn("unexplained"),
     ),
