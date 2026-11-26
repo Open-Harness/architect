@@ -13,7 +13,6 @@ import { WorldEntry } from "./service.ts";
 const T = Date.parse("2027-01-10T09:00:00.000Z");
 const DAY = 86_400_000;
 const CLOCKS = JSON.stringify({ local: { kind: "stepped", starts: "2027-01-10T09:00:00.000Z" } });
-const pause = (ms = 10) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
 
 const worldOf = (name: string, use: (timers: ReturnType<typeof WorldTimers.state>, clock: ReturnType<typeof WorldClock.state>, at: EntryEnv) => Promise<void>) =>
   runInDurableObject(env.WORLD.get(env.WORLD.idFromName(name)), async (_instance, state) => {
@@ -30,12 +29,14 @@ const worldOf = (name: string, use: (timers: ReturnType<typeof WorldTimers.state
     return use(timers, clock, { WORLD: { idFromName: (n: string) => n, get: () => stub } as unknown as DurableObjectNamespace, DB: env.DB, ORTHO_CLOCKS: CLOCKS, ORTHO_ENVIRONMENT: "local" });
   });
 
-/** A request held at its gate, which the handler's `program` then continues from. */
+/** A request held at its gate, which the handler's `program` then continues from. `parked` settles once the request has reached the gate (all it does before the gate has run), so no test waits on a wall-clock guess; `open` lets it on. */
 const requestOf = (at: EntryEnv, program: (gate: () => Promise<void>) => Promise<unknown>) => {
   const gates: Array<() => void> = [];
-  const gate = () => new Promise<void>((resolve) => { gates.push(resolve); });
+  let arrived = () => {};
+  const reached = new Promise<void>((resolve) => { arrived = resolve; });
+  const gate = () => new Promise<void>((resolve) => { gates.push(resolve); arrived(); });
   const entry = WorldEntry.entry<EntryEnv>({ fetch: async () => { await program(gate); return new Response("ok"); } });
-  return { open: async () => { gates.shift()?.(); await pause(); }, send: () => entry.fetch!(new Request("http://app/probe/spin"), at, undefined as never) };
+  return { parked: () => reached, open: () => { gates.shift()?.(); return Promise.resolve(); }, send: () => entry.fetch!(new Request("http://app/probe/spin"), at, undefined as never) };
 };
 describe("a request that went stale across a reset", () => {
   it("cannot put a sleep or a durable timer in the new run's table", async () => {
@@ -53,7 +54,7 @@ describe("a request that went stale across a reset", () => {
         }));
       }).pipe(Effect.provide(work(at, {})))));
       const response = request.send();
-      await pause(30);
+      await request.parked();
       clock.reset();
       timers.reset();
       await request.open();
@@ -76,7 +77,7 @@ describe("a request that went stale across a reset", () => {
         }));
       }).pipe(Effect.provide(work(at, {})))));
       const response = request.send();
-      await pause(30);
+      await request.parked();
       clock.reset();
       timers.reset();
       // The new run sets the same row; the old run's request, resumed, must not take it away.
@@ -111,7 +112,7 @@ describe("a request that went stale across a reset", () => {
         }).pipe(Effect.provide(work(at))));
       });
       const response = request.send();
-      await pause(30);
+      await request.parked();
       expect(ran).toEqual(["INSERT live"]);
       clock.reset();
       timers.reset();
@@ -151,7 +152,7 @@ describe("a request that went stale across a reset", () => {
         }).pipe(Effect.provide(work(at))));
       });
       const response = request.send();
-      await pause(30);
+      await request.parked();
       expect(ran).toEqual(["INSERT lent"]);
       expect(heldDuring).toEqual([["probe.spin"]]);
       clock.reset();
@@ -185,7 +186,7 @@ describe("a request that went stale across a reset", () => {
         }).pipe(Effect.provide(work(at))));
       });
       const response = request.send();
-      await pause(30);
+      await request.parked();
       clock.reset();
       timers.reset();
       await request.open();
@@ -204,7 +205,7 @@ describe("a request that went stale across a reset", () => {
         await WorldEntry.section(at, () => { wrote = true; return Promise.resolve(); }).catch(() => undefined);
       });
       const response = request.send();
-      await pause(30);
+      await request.parked();
       clock.reset();
       timers.reset();
       await request.open();

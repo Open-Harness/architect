@@ -1,0 +1,11 @@
+$ for d in e2e/*/expected-failing packages/*/expected-failing; do echo "$(ls $d | wc -l) $d"; done
+2 e2e/m1/expected-failing
+3 e2e/m2/expected-failing
+8 e2e/m7/expected-failing
+4 e2e/m8/expected-failing
+5 e2e/on-chain/expected-failing
+1 e2e/stage1/expected-failing
+10 e2e/superagent/expected-failing
+5 e2e/ui-layer/expected-failing
+2 packages/compiler/expected-failing
+4 packages/language-effect/expected-failing

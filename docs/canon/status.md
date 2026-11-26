@@ -124,7 +124,7 @@ journeys find a hole.
 | teams | Teams: the superagent's organisations (who shares and owns an agent), as a plugin: the things are copied into the starter | building | framework | — | — | none | `examples/starter`, `packages/organizations` | sign-in, roles-who-holds | slices M2.07, M2.11; K42 call 10 |
 | companies | Companies: Capxul's organisations, as a plugin, apart from the superagent's teams | building | Capxul | beta | books | goal-16 | `examples/capxul`, `packages/organizations` | sign-in, roles-who-holds | slice M2.07; K42 call 10; #757 (Capxul's app and its Company, merged on `goal/capxul`), `company.create` built by #786 |
 | secrets | Secrets by declaration: per environment only, no plugin secrets, no `ortho secrets set` | building | Capxul | 1.0 | banking | none | `packages/orthograph/src/modules/secrets`, `packages/host-cloudflare` | — | slice M2.04; #690 |
-| ortho-new | `ortho new app`: one command makes the app the preset makes, beside `ortho new adapter`, and `npm create orthograph` makes the same | provisional | framework | preview | alpha | none | `packages/preset`, `packages/cli` | npm-preview | K44, section 2, call 3; Goal 18's slice 6. M2.09's Plugged In scaffold (auth, handles and teams mounted, M2.07) and M2.10's `ortho new feature` wait until teams are needed (K45); M2.27 stays M2.09's check half |
+| ortho-new | `ortho new app`: one command makes the app the preset makes, beside `ortho new adapter`, and `npm create orthograph` makes the same | building | framework | preview | alpha | none | `packages/preset`, `packages/cli`, `packages/create-orthograph` | npm-preview | K44, section 2, call 3; Goal 18's slice 6; check `e2e/m2/08-new-app.test.ts` passes (#1082); `ortho new app` and `create-orthograph` both call `App.create` in the preset. M2.09's Plugged In scaffold (auth, handles and teams mounted, M2.07) and M2.10's `ortho new feature` wait until teams are needed (K45); M2.27 stays M2.09's check half |
 | ortho-add | `ortho add` for events, errors, roles and moves: thing, operation, read and journey only today | building | framework | preview | alpha | none | `packages/cli`, `packages/generators` | — | slices M2.14, M2.15 |
 | adopt-mounted-thing | Adopt a mounted thing: so a running app can switch a plugin on after the fact (Capxul's modules, K43) | provisional | Capxul | 1.0 | — | none | `packages/compiler/src/modules/mounts` | plugins-mounts | slices M2.19, M2.20; the CRM comes after payroll, so no milestone yet |
 | journeys-through-clients | Journeys through the CLI, MCP and the page: no `--through` | provisional | framework | — | — | none | `packages/prove` | generated-outputs | slices M2.08, ST1.25 |
@@ -360,7 +360,8 @@ packages/
                                                    publish, releases
   lint/              @orthograph/lint              oxlint rules for what types can't see, and against the old names
   cli/               @orthograph/cli               the `ortho` command
-  preset/            @orthograph/preset            the Nx preset that makes a starter project (until `ortho new`, M2.09)
+  preset/            @orthograph/preset            the Nx preset that makes a starter project, and `App.create`, which makes it as a folder
+  create-orthograph/ create-orthograph             `npm create orthograph <name>`: the same app, from npm
   portal/            @orthograph/portal            the portal every project gets
   portal-ui/         @orthograph/portal-ui         the portal's components under our names (F7, M1.34); deleted at cutover (K31, Goal 6)
   shell/             @orthograph/shell             designed: the app's map at run time: router, layouts, navigation, palette (K31)

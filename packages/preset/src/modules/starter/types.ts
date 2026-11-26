@@ -22,4 +22,6 @@ export interface StarterApi {
   readonly write: (tree: Tree, options: PresetOptions, source: StarterSource) => () => void;
   /** Read the starter from a folder holding `blueprint/`, `src/`, `journeys/` and `generated/model/`. */
   readonly read: (root: string, version: string) => StarterSource;
+  /** The starter this package carries: `files/` beside the published package, or `examples/starter` in the repository. */
+  readonly bundled: () => StarterSource;
 }

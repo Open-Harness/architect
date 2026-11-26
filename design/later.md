@@ -253,3 +253,10 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
   stand-ins too, and `Warm.reset` would restart them so a reused world starts with fresh stand-in state; prove could then
   reuse a warm world for a model with stand-ins. **Trigger:** a developer needs a generated call to answer under `ortho dev`.
   Check 10's world-of-its-own test counts stand-in starts assuming dev starts none; its author changes that count then.
+
+## From the 🔍 review of #1087 (`ortho new app`, Goal 18, 26 November 2026)
+
+- **An app's folder made all at once.** `App.create` checks the folder, then writes the starter file by file, so two
+  runs at once, or a write that fails part way, can leave a half-made folder. It would write into a sibling temporary
+  folder and rename it into place, so the folder is either whole or absent. **Trigger:** a person reports a half-made
+  folder, or something runs `ortho new app` concurrently (a test harness, a portal button).

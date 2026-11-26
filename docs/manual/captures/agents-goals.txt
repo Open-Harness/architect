@@ -1,0 +1,4 @@
+$ grep '^| 1' design/goals/map.md | cut -d'|' -f2,3
+ 18 · The framework | framework, always running 
+ 16 · Capxul core | app, the north star 
+ 19 · The lander | landing, always running 
