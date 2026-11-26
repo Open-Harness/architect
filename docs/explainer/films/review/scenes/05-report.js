@@ -34,15 +34,15 @@ Film.scene("report", {
     <div class="kbox finding hidden0 ph1"><div class="lbl">a finding names</div><div class="part p1 hidden0">a file</div><div class="part p2 hidden0">a line</div><div class="part p3 hidden0">what would make it right</div></div>
     ${Kit.term(D, { id: "rp-early", cap: "review-check-early", x: 96, y: 262, w: 1100, h: 430, size: 19, keep: (l) => /^drift |^  generated\/|^check /.test(l), cls: "hidden0 ph2", tag: '<span class="tag">handed over before generate</span>' })}
     ${Kit.term(D, { id: "rp-hand", cap: "review-impact-handler", x: 1236, y: 262, w: 588, h: 244, size: 19, cls: "hidden0 ph2", tag: '<span class="tag">a handler line added</span>' })}
-    <div class="kbox moved hidden0 ph2"><div class="lbl">no line says what changed</div><div class="kbig">The code moved. The blueprint did not.</div><span class="chip rh hidden0">the reviewer reads src/handle/claim.ts</span></div>
+    <div class="kbox moved hidden0 ph2"><div class="lbl">no line says what changed</div><div class="kbig">The code moved.<br>The blueprint did not.</div><span class="chip rh hidden0">the reviewer reads src/handle/claim.ts</span></div>
     <div class="abs order hidden0 ph3"><span class="lbl">ask first</span><span class="chip first">ortho impact</span><i>→</i><span class="lbl">then</span><span class="chip">ortho prove</span></div>
     <div class="abs writes hidden0 ph3"><div class="say">A full proof writes a new record.</div><div class="say mu aft hidden0" style="margin-top:12px">After it, nothing is stale.</div></div>
     <div class="abs staged hidden0 ph4"><div class="lbl" style="font-size:24px">honest notes</div><div class="big">This was staged.</div>
       <div class="facts"><div class="f1 hidden0"><b>The recording</b> made the change.</div><div class="f2 hidden0"><b>No reviewer</b> was filmed reading it.</div><div class="f3 hidden0"><b>No command</b> checks who wrote what.</div></div></div>
     <div class="abs next hidden0"><div class="lbl" style="font-size:24px">next</div><div class="row"><span class="chip k1 hidden0">run the app</span><span class="chip k2 hidden0">break it</span><span class="chip k3 hidden0">read the trace</span></div></div>
     <div class="stands">
-      <div class="sd1 hidden0">${Kit.stand("real", "every command on these sheets, replayed from its recording", "left:96px;top:800px")}</div>
-      <div class="sd2 hidden0">${Kit.stand("practice", "a reviewer that wrote none of it; who wrote what, which no command checks", "left:96px;top:852px")}</div>
+      <div class="sd1 hidden0">${Kit.stand("real", "every command on these sheets, replayed from its recording; the change itself was staged by the recording", "left:96px;top:800px")}</div>
+      <div class="sd2 hidden0">${Kit.stand("practice", "a reviewer that wrote none of it: no command checks who wrote what", "left:96px;top:852px")}</div>
       <div class="sd3 hidden0">${Kit.stand("missing", "a printed brief for a change to the blueprint", "left:96px;top:904px")}</div>
     </div>
     ${Rv.ops(D, ["review-impact-after", "review-impact-handler"])}`;
@@ -63,7 +63,7 @@ Film.scene("report", {
     const E = s.$("#rp-early"); s.in(E, t2, { y: 14 }); Rv.type(s, E, c("e2", "Generate"), 0.45);
     const er = s.$$("#rp-early .o"), drift = Rv.rows(s, "#rp-early", /^drift ✘/), files = Rv.rows(s, "#rp-early", /^  generated\//), fail = Rv.rows(s, "#rp-early", /^check ✘$/);
     Rv.print(s, [...drift, ...fail], c("e2", "check") - 0.1, 0.1); Rv.lit(s, "#rp-early", fail, c("e2", "fails"));
-    Rv.print(s, files, c("e2", "names"), 0.1); Rv.lit(s, "#rp-early", [...drift, ...files], c("e2", "every"));
+    Rv.print(s, files, c("e2", "names"), 0.1); Rv.lit(s, "#rp-early", [...drift, ...files, ...fail], c("e2", "every"));
     s.in(Rv.label(drift[0], `${files.length} behind`), c("e2", "every") + 0.05, { x: 14, y: 0, dur: 0.3 });
     // e3: stale, and no line says what changed. The code moved; the reviewer reads the handler.
     const H = s.$("#rp-hand"); s.to(E, { opacity: 0.45, duration: 0.3 }, c("e3"));

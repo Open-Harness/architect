@@ -81,7 +81,7 @@ Film.scene("account", {
     });
     // a5: the honest note. a6: the path, not yet an address. Next: watch it.
     const t5 = c("a5");
-    s.out(".g2", t5 - 0.3, { dur: 0.35 }); s.to(".triocap", { autoAlpha: 0, duration: 0.2 }, t5 - 0.3);
+    s.out(".g2", t5 - 0.3, { dur: 0.35 });
     s.in(".hnote", c("a5", "no real"), { y: 14 });
     s.in(".stands", c("a5", "waits") - 0.3, { y: 0, dur: 0.01 });
     s.fromTo(".stands > div", { autoAlpha: 0, x: -14 }, { autoAlpha: 1, x: 0, duration: 0.35, stagger: 0.25 }, c("a5", "waits") - 0.3);
