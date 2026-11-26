@@ -149,8 +149,8 @@ said no Claude-led goal is running now.
   `examples/capxul` for pull requests into `goal/capxul` and `main`; it is not required, and it skips on push (noted
   for Goal 18 on #718), on docs-only pull requests and on those that can't change what `prove` does. A 🔍 failed #919
   while it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut
-  before #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
-  `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
+  before #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks)
+  turned `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
   way: #939 (`check` refuses a role path that walks to nothing, and a `Blueprint.todo` in `allowed` is a blank), #943
   (exact decimals and two-way links, the build) and #928 (CX-takeover). #928's board rows turned the `goals` sync red
   on `main` at `2cdfa9b3`: `webhook-doors` and Goal 16's rows overlapped in
