@@ -68,6 +68,17 @@ export default Blueprint.journey("add customers and suppliers", {
         spans({ absent: ["customer.create.insert"] }),
       ),
       s.step(
+        "Ada adds a customer group that is a group, under the root",
+        s.ada.run(createCustomerGroup, { company: s.world.company, customerGroupName: "Retail", parentCustomerGroup: s.world.allCustomerGroups, isGroup: true }),
+        expect((a) => a.customerGroup).toMatch(/^cgr_/),
+      ),
+      s.step(
+        "a customer put in it is refused too: it is a group, though not the root",
+        customer({ customerName: "Duka Mart", customerType: "Company", customerGroup: s.last.customerGroup }),
+        refuses(CustomerGroupIsGroup),
+        noEvents(),
+      ),
+      s.step(
         "Ada adds Acme Logistics' root customer group",
         s.ada.run(createCustomerGroup, { company: s.world.otherCompany, customerGroupName: "All Customer Groups", isGroup: true }),
         expect((a) => a.customerGroup).toMatch(/^cgr_/),
@@ -104,9 +115,14 @@ export default Blueprint.journey("add customers and suppliers", {
         customers.isIn(s.last.customer, "active"),
       ),
       s.step(
-        "it reads back as a partnership",
+        "Ada disables the second",
+        s.ada.run(disableCustomer, { customer: s.last.customer }),
+        customers.isIn(s.last.customer, "disabled"),
+      ),
+      s.step(
+        "it reads back a disabled partnership",
         s.ada.run(getCustomer, { id: s.last.customer }),
-        expect(readC).toEqual([s.world.company, "Kibo Stores", "Partnership", s.world.customerGroup, "active"]),
+        expect(readC).toEqual([s.world.company, "Kibo Stores", "Partnership", s.world.customerGroup, "disabled"]),
       ),
       s.step(
         "and the first is still a company",
@@ -192,6 +208,17 @@ export default Blueprint.journey("add customers and suppliers", {
         noEvents(),
       ),
       s.step(
+        "Ada adds a supplier group that is a group, under the root",
+        s.ada.run(createSupplierGroup, { company: s.world.company, supplierGroupName: "Utilities", parentSupplierGroup: s.world.allSupplierGroups, isGroup: true }),
+        expect((a) => a.supplierGroup).toMatch(/^sgr_/),
+      ),
+      s.step(
+        "a supplier put in it is refused too",
+        supplier({ supplierName: "Rift Paper", supplierType: "Company", supplierGroup: s.last.supplierGroup }),
+        refuses(SupplierGroupIsGroup),
+        noEvents(),
+      ),
+      s.step(
         "Ada adds Acme Logistics' root supplier group",
         s.ada.run(createSupplierGroup, { company: s.world.otherCompany, supplierGroupName: "All Supplier Groups", isGroup: true }),
         expect((a) => a.supplierGroup).toMatch(/^sgr_/),
@@ -227,9 +254,14 @@ export default Blueprint.journey("add customers and suppliers", {
         expect((a) => a.supplier).toMatch(/^sup_[0-9a-z]+$/),
       ),
       s.step(
-        "it reads back as an individual",
+        "Ada disables the second",
+        s.ada.run(disableSupplier, { supplier: s.last.supplier }),
+        suppliers.isIn(s.last.supplier, "disabled"),
+      ),
+      s.step(
+        "it reads back a disabled individual",
         s.ada.run(getSupplier, { id: s.last.supplier }),
-        expect(readS).toEqual([s.world.company, "Mara Office Rentals", "Individual", s.world.supplierGroup, "active"]),
+        expect(readS).toEqual([s.world.company, "Mara Office Rentals", "Individual", s.world.supplierGroup, "disabled"]),
       ),
       s.step(
         "and the first is still a company",

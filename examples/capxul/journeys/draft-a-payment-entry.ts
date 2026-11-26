@@ -22,6 +22,7 @@ import { machine as payments } from "../blueprint/things/payment-entry/machine.t
 import draft from "../blueprint/things/payment-entry/verbs/create.ts";
 import get from "../blueprint/things/payment-entry/verbs/get.ts";
 import disableCustomer from "../blueprint/things/customer/verbs/disable.ts";
+import createCostCenter from "../blueprint/things/cost-center/verbs/create.ts";
 import ledger from "../blueprint/things/gl-entry/verbs/list.ts";
 import customerBalance from "../blueprint/things/customer/verbs/balance.ts";
 
@@ -117,6 +118,18 @@ export default Blueprint.journey("draft a payment entry", {
       // The cost center, its company before its being a group, after both accounts.
       s.step("a cost center in another company is refused", tryIt(receive, { costCenter: s.world.haulage }), refuses(PaymentCostCenterNotInCompany), noEvents()),
       s.step("a group cost center is refused", tryIt(receive, { costCenter: s.world.mainCostCenter }), refuses(PaymentCostCenterIsGroup), noEvents()),
+      s.step(
+        "a group account below the root is refused too",
+        tryIt(receive, { paidTo: s.world.operating }),
+        refuses(PaymentAccountIsGroup, { side: "Paid To" }),
+        noEvents(),
+      ),
+      s.step(
+        "Ada adds a group cost center under the root",
+        s.ada.run(createCostCenter, { company: s.world.company, costCenterName: "Sales", parentCostCenter: s.world.mainCostCenter, isGroup: true }),
+        expect((a) => a.costCenter).toMatch(/^cct_/),
+      ),
+      s.step("a group cost center below the root is refused", tryIt(receive, { costCenter: s.last.costCenter }), refuses(PaymentCostCenterIsGroup), noEvents()),
       s.step(
         "another company's group cost center is refused for its company first",
         tryIt(receive, { costCenter: s.world.otherCostCenterGroup }),
@@ -274,6 +287,11 @@ export default Blueprint.journey("draft a payment entry", {
         expect(read).toEqual([
           s.world.company, "Pay", "2026-02-10", "Customer", s.world.customer, s.world.bank, s.world.debtors, 1n, s.world.costCenter, "draft",
         ]),
+      ),
+      s.step(
+        "the side the money reaches isn't judged for its type: a ledger with none may take it",
+        tryIt(receive, { paidTo: s.world.rent }),
+        payments.isIn(s.last.paymentEntry, "draft"),
       ),
       s.step(
         "a date outside every fiscal year may be drafted: it is judged on submit",

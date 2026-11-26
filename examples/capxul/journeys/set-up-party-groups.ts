@@ -223,6 +223,26 @@ export default Blueprint.journey("set up party groups", {
         supplierGroups.isIn(s.last.supplierGroup, "ledger"),
       ),
       s.step(
+        "Ada adds a supplier group that is a group, under the root",
+        sg({ supplierGroupName: "Utilities", parentSupplierGroup: s.world.allSupplierGroups, isGroup: true }),
+        supplierGroups.isIn(s.last.supplierGroup, "group"),
+      ),
+      s.step(
+        "and a ledger under it, two levels below the root",
+        sg({ supplierGroupName: "Water", parentSupplierGroup: s.last.supplierGroup, isGroup: false }),
+        supplierGroups.isIn(s.last.supplierGroup, "ledger"),
+      ),
+      s.step(
+        "the ledger reads back in Acme Trading",
+        s.ada.run(getSupplierGroup, { id: s.last.supplierGroup }),
+        expect((a) => [a.company, a.supplierGroupName, a.state]).toEqual([s.world.company, "Water", "ledger"]),
+      ),
+      s.step(
+        "its parent reads back as the group made before it, under the root",
+        s.ada.run(getSupplierGroup, { id: s.last.parentSupplierGroup }),
+        expect(readS).toEqual([s.world.company, "Utilities", s.world.allSupplierGroups, "group"]),
+      ),
+      s.step(
         "Acme Logistics may have its own root",
         sg({ supplierGroupName: "All Supplier Groups", isGroup: true }, s.world.otherCompany),
         supplierGroups.isIn(s.last.supplierGroup, "group"),
@@ -237,6 +257,23 @@ export default Blueprint.journey("set up party groups", {
         "and so is a second root for Acme Logistics, carrying its own root",
         sg({ supplierGroupName: "Vendors", isGroup: true }, s.world.otherCompany),
         refuses(SupplierGroupRootExists, { root: s.last.supplierGroup }),
+        noEvents(),
+      ),
+      s.step(
+        "Acme Logistics adds a ledger under its root",
+        sg({ supplierGroupName: "Fuel", parentSupplierGroup: s.last.supplierGroup, isGroup: false }, s.world.otherCompany),
+        supplierGroups.isIn(s.last.supplierGroup, "ledger"),
+      ),
+      s.step(
+        "an Acme Trading group under that ledger is refused for its company first",
+        sg({ supplierGroupName: "Diesel", parentSupplierGroup: s.last.supplierGroup, isGroup: false }),
+        refuses(ParentSupplierGroupNotInCompany),
+        noEvents(),
+      ),
+      s.step(
+        "while Acme Logistics' own is refused for the ledger",
+        sg({ supplierGroupName: "Diesel", parentSupplierGroup: s.last.supplierGroup, isGroup: false }, s.world.otherCompany),
+        refuses(ParentSupplierGroupIsLedger),
         noEvents(),
       ),
     ];

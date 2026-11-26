@@ -18,6 +18,7 @@ import ledger from "../blueprint/things/gl-entry/verbs/list.ts";
 import balance from "../blueprint/things/account/verbs/balance.ts";
 import customerBalance from "../blueprint/things/customer/verbs/balance.ts";
 import supplierBalance from "../blueprint/things/supplier/verbs/balance.ts";
+import createSupplier from "../blueprint/things/supplier/verbs/create.ts";
 import createCustomer from "../blueprint/things/customer/verbs/create.ts";
 import disableCustomer from "../blueprint/things/customer/verbs/disable.ts";
 import disableSupplier from "../blueprint/things/supplier/verbs/disable.ts";
@@ -325,6 +326,11 @@ export default Blueprint.journey("post a payment entry", {
 
       // A disabled party.
       s.step("Ada disables Mara Office Rentals", s.ada.run(disableSupplier, { supplier: s.world.supplier }), expect((a) => a.supplier).toBe(s.world.supplier)),
+      s.step(
+        "a disabled supplier's balance still reads from the ledger",
+        s.ada.run(supplierBalance, { supplier: s.world.supplier, onDay: "2026-12-31" }),
+        expect(sums).toEqual([200n * USDC, 50n * USDC, 150n * USDC]),
+      ),
       s.step("a payment to it in 2027 may be drafted", toMara("2027-01-04", 30n * USDC), payments.isIn(s.last.paymentEntry, "draft")),
       s.step(
         "but not submitted: the fiscal year is judged before the party",
@@ -350,9 +356,38 @@ export default Blueprint.journey("post a payment entry", {
         s.ada.run(supplierBalance, { supplier: s.world.supplier, onDay: "2026-12-31" }),
         expect(sums).toEqual([230n * USDC, 50n * USDC, 180n * USDC]),
       ),
+      // A supplier's balance is its own: another supplier of the same name doesn't count.
+      s.step(
+        "Ada adds a second supplier of the same name",
+        s.ada.run(createSupplier, { company: s.world.company, supplierName: "Mara Office Rentals", supplierType: "Company" }),
+        expect((a) => a.supplier).toMatch(/^sup_[0-9a-z]+$/),
+      ),
+      s.step(
+        "and pays it 40 USDC on 6 March, to Creditors",
+        payment({ paymentType: "Pay", postingDate: "2026-03-06", partyType: "Supplier", party: s.last.supplier, paidFrom: s.world.bank, paidTo: s.world.creditors, paidAmount: 40n * USDC }),
+        payments.isIn(s.last.paymentEntry, "draft"),
+      ),
+      s.step("submitted", s.ada.run(submit, { paymentEntry: s.last.paymentEntry }), expect((a) => a.posted).toBe(2n)),
+      s.step(
+        "the first supplier's balance doesn't move",
+        s.ada.run(supplierBalance, { supplier: s.world.supplier, onDay: "2026-12-31" }),
+        expect(sums).toEqual([230n * USDC, 50n * USDC, 180n * USDC]),
+      ),
+      s.step(
+        "while Creditors holds both",
+        s.ada.run(balance, { account: s.world.creditors, onDay: "2026-12-31" }),
+        expect(sums).toEqual([270n * USDC, 50n * USDC, 220n * USDC]),
+      ),
       s.step("Ada disables Kibo Stores", s.ada.run(disableCustomer, { customer: s.world.customer }), expect((a) => a.customer).toBe(s.world.customer)),
+      s.step(
+        "a disabled customer's balance still reads from the ledger",
+        s.ada.run(customerBalance, { customer: s.world.customer, onDay: "2027-12-31" }),
+        expect(sums).toEqual([100n * USDC, 2n, 100n * USDC - 2n]),
+      ),
       s.step("a payment from it may be drafted", fromKibo("2026-06-01", 5n * USDC), payments.isIn(s.last.paymentEntry, "draft")),
       s.step("but not submitted: money in from a disabled customer is refused too", s.ada.run(submit, { paymentEntry: s.last.paymentEntry }), refuses(PartyDisabled), noEvents()),
+      s.step("no line was ever posted to a group: Assets' ledger is empty", s.ada.run(ledger, { account: s.world.assets }), expect((p) => p.items.length).toBe(0)),
+      s.step("and Liabilities'", s.ada.run(ledger, { account: s.world.liabilities }), expect((p) => p.items.length).toBe(0)),
     ];
   },
 });
