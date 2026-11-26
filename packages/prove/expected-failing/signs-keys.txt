@@ -1,0 +1,6 @@
+# J1 (#1190, CX-journey-signs): a journey's cast member signs. Red until J1's build (goal-16/journey-signs-build) lands; its builder takes each line off as it passes.
+src/modules/journeys/signs-keys.test.ts > no key is ever shown (CX-journey-signs, call 5) > no key is in a run, prove's printed lines, its structured details, or any request the world got
+src/modules/journeys/signs-keys.test.ts > no key is ever shown (CX-journey-signs, call 5) > no key is in the process's environment, where a child process would inherit it
+src/modules/journeys/signs-keys.test.ts > no key is ever shown (CX-journey-signs, call 5) > no key was printed or logged, at any log level
+src/modules/journeys/signs-keys.test.ts > no key is ever shown (CX-journey-signs, call 5) > no key was written to a file, in the repository, the home folder or the system's temporary folder
+src/modules/journeys/signs-keys.test.ts > no key is ever shown (CX-journey-signs, call 5) > prove made a key for each person who signed

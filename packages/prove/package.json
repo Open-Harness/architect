@@ -23,11 +23,12 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
+    "@noble/curves": "1.9.1",
+    "@noble/hashes": "1.8.0",
     "@orthograph/generators": "workspace:*",
     "@orthograph/logbook": "workspace:*",
     "@orthograph/services": "workspace:*",
-    "nx": "24.0.3",
-    "viem": "2.57.20"
+    "nx": "24.0.3"
   },
   "files": [
     "dist"

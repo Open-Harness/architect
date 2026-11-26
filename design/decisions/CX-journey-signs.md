@@ -42,7 +42,9 @@ s.step("the claim names ada",
    moves to its answer, so the next call of `makes` reads `s.last.signature`, as in a journey. A world's sign that
    fails stops the journey, as a world's failed call does (`starting world <name>: message: nothing at …`).
 2. **It answers `{ message, signature, signer }`,** which a later step reads as `s.last`: `message` is the exact text
-   signed; `signature` is EIP-191 `personal_sign`, `0x` and 130 lower-case hex digits; `signer` is the address that
+   signed, exactly, each part as its text (spaces and newlines as written); `signature` is EIP-191 `personal_sign`, `0x` and
+   130 lower-case hex digits, its last byte the `v` of 27 or 28 (`1b`, `1c`) that `ecrecover` and a Safe read as a key's
+   signature; `signer` is the address that
    signed, EIP-55 checksummed (`Held.address`, as `packages/wallets` answers it). Signing is deterministic (RFC 6979,
    as `wallets`' signer already is): one key and one text give one signature, so a replayed claim under its request key
    carries the same proof and is no `IdempotencyConflict`. The step's checks (`expect`) read that
@@ -58,7 +60,8 @@ s.step("the claim names ada",
    makes the EIP-191 signature, so the secret only ever leaves as signatures. A signing step needs no chain: a world
    without one still signs (`chain` is `{ chainId: 31337, rpcUrl: undefined, depth: undefined }`).
 5. **No key is ever shown.** Not in the journey's run (its calls, steps and findings), prove's printed lines and its
-   structured report (which is what reaches the logbook), any log line, nor any file. A signing step asks the world
+   structured report (which is what reaches the logbook), any log line at any level, the process's environment, nor any
+   file. A signing step asks the world
    nothing over HTTP. It is recorded in the run's `calls` as one `CallRecord` with the step's title as `step`, the
    signer as `actor`, `status` 200 and the answer as `body`, marked `signs: true`; like a clock step it has no trace to
    wait for, so it needs no span and is never failed for telemetry.
