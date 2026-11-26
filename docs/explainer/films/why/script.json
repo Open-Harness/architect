@@ -1,0 +1,142 @@
+{
+ "title": "The hard part is the next morning",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Problem",
+  "Answer",
+  "Who",
+  "How"
+ ],
+ "about": "This film is the manual's opening. It makes an argument and records nothing; the code it shows is read from examples/plugged-in.",
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "scenes": [
+  {
+   "id": "afternoon",
+   "title": "Written in an afternoon",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "An agent can write a working system in an afternoon."
+    },
+    {
+     "id": "a2",
+     "text": "The server. The database. The command line. The tools for other agents. The page of docs."
+    },
+    {
+     "id": "a3",
+     "text": "Writing it was never the hard part.",
+     "gap": 0.8
+    }
+   ]
+  },
+  {
+   "id": "morning",
+   "title": "The next morning",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "m1",
+     "text": "The hard part is the next morning."
+    },
+    {
+     "id": "m2",
+     "text": "Is it right? Is it fast enough? What happens when something fails?"
+    },
+    {
+     "id": "m3",
+     "text": "And when one rule changes, what else has to change?"
+    },
+    {
+     "id": "m4",
+     "text": "To answer any of that, someone has to read all of it. Usually, that someone is you.",
+     "gap": 0.8
+    }
+   ]
+  },
+  {
+   "id": "answer",
+   "title": "What Orthograph does about it",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "o1",
+     "text": "Orthograph moves the part you read."
+    },
+    {
+     "id": "o2",
+     "text": "You work on the system itself: the things in it, who may do what to them, and what must always be true."
+    },
+    {
+     "id": "o3",
+     "text": "That description is the blueprint. It is small enough to read whole."
+    },
+    {
+     "id": "o4",
+     "text": "Everything below it is made by the framework, or written by an agent inside a frame the blueprint sets."
+    },
+    {
+     "id": "o5",
+     "text": "And nobody takes anyone's word that it works. The running system is proved, against stories you agreed to before it was built."
+    }
+   ]
+  },
+  {
+   "id": "who",
+   "title": "Three parties, three jobs",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "w1",
+     "text": "So three parties do three different jobs."
+    },
+    {
+     "id": "w2",
+     "text": "You decide the system, and you read the blueprint and the stories."
+    },
+    {
+     "id": "w3",
+     "text": "Your agents plan with you, write the stories, build the behaviour, and review each other."
+    },
+    {
+     "id": "w4",
+     "text": "The framework makes the server, the A P I, the S D K and the command line, and proves them.",
+     "say": "The framework makes the server, the A P I, the S D K and the command line, and proves them."
+    }
+   ]
+  },
+  {
+   "id": "how",
+   "title": "One app, start to finish",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "h1",
+     "text": "This manual follows one small app, Plugged In. A person claims a name, and gets a public page of links."
+    },
+    {
+     "id": "h2",
+     "text": "Eleven chapters, in the order things happen. Before any code. Build it. Run it. Live with it."
+    },
+    {
+     "id": "h3",
+     "text": "Everything a chapter prints was recorded from a real run. And where something doesn't exist yet, the chapter says so."
+    },
+    {
+     "id": "h4",
+     "text": "Four chapters are written so far. We start where every system should start: with a plan."
+    }
+   ]
+  }
+ ]
+}

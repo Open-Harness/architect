@@ -1,6 +1,6 @@
 # Plan it
 
-Film: none yet
+Film: `docs/explainer/films/plan-it/`
 
 Before anything is described to the framework, you talk the system through with an agent until it fits on one page.
 The page is what you argue with. Code comes later, and so does the blueprint.
@@ -103,5 +103,4 @@ mark becomes a decision nobody made.
 This is how we plan in this repository, and it is practice: no command runs a planning session, and nothing in
 Orthograph draws the page. The page above is real. An agent drew it on 26 November 2026 from the one sentence and the
 app as it stands, and it is printed as it was written. It is the first half of a session only: the owner has not yet
-answered its first question, so nothing on it is decided, and this chapter has no film until that conversation has
-happened.
+answered its first question, so nothing on it is decided, and the film shows that first half and stops there.

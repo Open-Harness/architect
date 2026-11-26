@@ -34,7 +34,8 @@ this order came from and the specimen Aaron agreed the voice and look on (26 Nov
 |---|---|
 | `chapters/` | one page per chapter, numbered as `spine.json` numbers them |
 | `spine.json` | the order, the parts, and the question each chapter answers |
-| `capture.sh` | records every command the chapters and their films show, on `examples/plugged-in`, into `captures/`. It changes the example to record, and restores it on the way out |
+| `WRITING.md` | how a chapter and its film are written: the one guide every writer and every film follows |
+| `capture.sh`, `record/` | records every command the chapters and their films show, on `examples/plugged-in`, into `captures/`. One section file per chapter. It changes the example to record, and restores it on the way out |
 | `captures/` | the recordings, committed. Each opens with the command that was run; `plan-page.txt` is a page an agent drew, and opens with a line saying so |
 | `check.mjs` | fails when a role's words differ, a written command is not in the command line's recorded tree (`captures/cli.json`), a chapter quotes a line that was not recorded, or a chapter is not in the spine or does not end with its two closing sections. CI runs it in the `e2e-m0` job |
 | `cli-tree.mjs` | records that tree from the command line's own `--help` |
@@ -43,7 +44,7 @@ this order came from and the specimen Aaron agreed the voice and look on (26 Nov
 
 ```sh
 docs/manual/capture.sh          # when ortho's output or the example changed: needs Node 24 and an installed workspace
-docs/manual/capture.sh cli      # one section only (cli, journeys, stub, climb, trace): the other recordings are kept
+docs/manual/capture.sh climb    # one section only (a file in record/): the other recordings are kept
 node docs/manual/check.mjs
 node docs/manual/build.mjs
 ```
