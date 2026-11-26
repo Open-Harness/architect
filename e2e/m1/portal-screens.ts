@@ -4,16 +4,22 @@
 // (the model), never from the answer judged.
 //
 // THE SURFACE this judge requires, where K44 says "plainly" and does not fix the markup (the author's calls, each one line to move):
-//   a request for the screens: any GET under `/portal` (the root, a page, a verb like `.map`, a client file under `assets/`, a trace)
-//   answers 501 (Not Implemented: the server knows the route and says the feature is not in this build; never 404, which says
-//   "no such page", and never 5xx for a crash), with a body that says "not in this release" and names the release as "Preview"
-//   (the alpha's name on npm under `next`, `docs/canon/status.md`), and is not the old "client is not installed" 404 text. Who asks
+//   a request for the screens: any GET or HEAD under `/portal/` and `/portal` itself (the root, every thing's and operation's page
+//   in the model, a verb like `.map`, a client file under `assets/`, a trace, a page with a query, a path no list holds) answers
+//   501 (Not Implemented: the server knows the route and says the feature is not in this build; never 404, which says "no such
+//   page", and never 5xx for a crash). Its words say "not in this release" and name the release as "Preview" (the alpha's name
+//   on npm under `next`, `docs/canon/status.md`; not a "Preview 2"), and never the old "client is not installed" text. Who asks
 //   picks the form, by `accept`, as the data's errors already do:
-//     a browser (`accept: text/html,...`, what a browser sends for a page) gets `text/html`;
-//     an API client (`accept: application/json`) gets `application/json`, `{ "_tag": "NotInThisRelease", "message": "..." }`, the
-//     message saying "not in this release" and naming Preview (the `_tag` shape of the data's own `{ _tag: "NotFound" }`).
-//   The data is as today: `/_portal/v1/blueprint` (200, ETag the digest, the blueprint), `/_portal/v1/snapshot?digest=` (200), an
-//   unknown `/_portal/v1/*` is a 404 JSON `{ _tag: "NotFound" }`; a method other than GET and HEAD is 405 with `allow`.
+//     a browser (Chrome's and Firefox's or Safari's `accept` for a navigation) gets a page: `text/html`, starting `<!doctype html>`,
+//     whose visible text (not a comment, the title, a script or a style) says it, and says no "404" or "not found";
+//     an API client (`accept: application/json`, or axios's `application/json, text/plain, */*`) gets `application/json`,
+//     `{ "_tag": "NotInThisRelease", "message": "..." }`, the message saying it (the shape of the data's own `{ _tag: "NotFound" }`);
+//     a request with no `accept` (curl) gets either form, and still says it; a HEAD gets the 501 (its body is not judged).
+//   The data is as today: `/_portal/v1/blueprint` (GET and HEAD 200 `application/json`, ETag the digest, and the blueprint file's
+//   digest, project, and things and operations each with the file's `hash`; the server re-encodes the rest, so the rest is not compared), `/_portal/v1/snapshot?digest=<the digest>` (200, a JSON object for that digest), a snapshot for another digest (409
+//   `BlueprintChanged` naming the current one), an unknown data path (404 `application/json` `{ _tag: "NotFound" }`); POST, PUT,
+//   PATCH and DELETE on the screens and on the data are 405, `allow` GET and HEAD.
+//   Not judged: what a path beside the portal (`/portalfoo`, `/_portal`) answers; the host routes those, and this slice changes neither.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { acme } from "./support.ts";
@@ -22,103 +28,172 @@ export interface Seen { readonly status: number; readonly type: string; readonly
 /** One request: a path, a method (GET when left out) and an `accept` header (none when left out). */
 export type Ask = (path: string, method?: string, accept?: string) => Promise<Seen>;
 
-/** What a browser sends for a page (Chrome's and Firefox's `accept` for a navigation), and what an API client sends. */
-export const BROWSER = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
-export const API = "application/json";
-
-export const SCREENS = [
-  "/portal", "/portal/", "/portal/things/allowance", "/portal/operations/allowance.spend", "/portal/operations/document.map",
-  "/portal/assets/index-4f2a9c.js", "/portal/traces/0af7651916cd43dd8448eb211c80319c",
-] as const;
-
-/** acme's blueprint file as its Worker holds it: the model's own list of things, and the digest. */
-export const blueprint = JSON.parse(readFileSync(join(acme, "generated/portal/blueprint.json"), "utf8")) as { digest: string; model: { things: Record<string, unknown> } };
+/** acme's blueprint file as its Worker holds it: the model's own things and operations, and the digest. */
+export const blueprint = JSON.parse(readFileSync(join(acme, "generated/portal/blueprint.json"), "utf8")) as { digest: string; project: string; model: { things: Record<string, unknown>; operations: Record<string, unknown> } };
 export const things = Object.keys(blueprint.model.things).sort();
+
+/** The screens asked for: fixed shapes, every thing's and operation's page in the model, and a path made from the digest that no list holds. */
+export const SCREENS: ReadonlyArray<string> = [
+  "/portal", "/portal/", "/portal/things/allowance?tab=metrics", "/portal/operations/document.map",
+  "/portal/assets/index-4f2a9c.js", "/portal/traces/0af7651916cd43dd8448eb211c80319c", `/portal/x-${blueprint.digest.slice(0, 12)}/deeper`,
+  ...things.map((t) => `/portal/things/${t}`), ...Object.keys(blueprint.model.operations).sort().map((o) => `/portal/operations/${o}`),
+];
+
+/** What a browser sends for a page (Chrome's and Firefox's, then Safari's `accept` for a navigation), and what API clients send. */
+export const BROWSER = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
+export const BROWSERS = [BROWSER, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"] as const;
+export const API = "application/json";
+export const APIS = [API, "application/json, text/plain, */*"] as const;
+
+/** Sorted-key JSON, so two answers with the same content compare equal whatever order their keys came in. */
+export const canonical = (value: unknown): string => JSON.stringify(value, (_k, v: unknown) =>
+  typeof v === "object" && v !== null && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([x], [y]) => x.localeCompare(y))) : v);
 
 const tried = async (ask: Ask, path: string, method?: string, accept?: string): Promise<Seen | string> => {
   try { return await ask(path, method, accept); } catch (error) { return `${method ?? "GET"} ${path}: the request threw: ${String(error).slice(0, 120)}`; }
 };
 
-const common = (at: string, seen: Seen, text: string, problems: string[]) => {
+const SAYS = /not in this release/i;
+const NAMES = /\bpreview\b(?!\s*\d)/i;
+const says = (at: string, text: string, raw: string, problems: string[]) => {
+  if (!SAYS.test(text)) problems.push(`${at}: it does not say "not in this release": ${raw.slice(0, 80)}`);
+  if (!NAMES.test(text)) problems.push(`${at}: it does not name the release (Preview): ${raw.slice(0, 80)}`);
+  if (/not installed/i.test(raw)) problems.push(`${at}: the body is the old "client is not installed" text`);
+};
+const is501 = (at: string, seen: Seen, problems: string[]) => {
   if (seen.status !== 501) problems.push(`${at}: status ${seen.status}, not 501${seen.status === 404 ? " (a 404 says there is no such page)" : ""}: ${seen.body.slice(0, 80)}`);
-  if (!/not in this release/i.test(text)) problems.push(`${at}: it does not say "not in this release": ${seen.body.slice(0, 80)}`);
-  if (!/\bpreview\b/i.test(text)) problems.push(`${at}: it does not name the release (Preview): ${seen.body.slice(0, 80)}`);
-  if (/not installed/i.test(seen.body)) problems.push(`${at}: the body is the old "client is not installed" text`);
+};
+const isType = (type: string, want: string) => new RegExp(`^${want.replace("/", "\\/")}\\s*(;|$)`, "i").test(type);
+
+/** The text a person sees on a page: no comment, no head's title, no script and no style, and no tag. */
+export const visible = (html: string): string => html.replace(/<!--[\s\S]*?-->/g, " ").replace(/<(title|script|style)\b[\s\S]*?<\/\1\s*>/gi, " ").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+const page = (at: string, seen: Seen, problems: string[]) => {
+  is501(at, seen, problems);
+  if (!isType(seen.type, "text/html")) problems.push(`${at}: content-type "${seen.type}", not text/html`);
+  if (!/^\s*<!doctype html>/i.test(seen.body)) problems.push(`${at}: the body is not a page (no <!doctype html>): ${seen.body.slice(0, 80)}`);
+  const text = visible(seen.body);
+  says(at, text, seen.body, problems);
+  if (/\b404\b|not found/i.test(text)) problems.push(`${at}: the page says 404 or not found: ${text.slice(0, 80)}`);
 };
 
-/** A browser asking for the screens: each path of SCREENS says, plainly and as a page, that they are not in this release. Empty when it does. */
+const answer = (at: string, seen: Seen, problems: string[]) => {
+  is501(at, seen, problems);
+  if (!isType(seen.type, "application/json")) problems.push(`${at}: content-type "${seen.type}", not application/json`);
+  const parsed = jsonOf(seen.body);
+  if (parsed === undefined) { problems.push(`${at}: the body is not a JSON object: ${seen.body.slice(0, 80)}`); says(at, "", seen.body, problems); return; }
+  if (parsed._tag !== "NotInThisRelease") problems.push(`${at}: _tag ${JSON.stringify(parsed._tag)}, not "NotInThisRelease"`);
+  if (typeof parsed.message !== "string") problems.push(`${at}: no message string`);
+  says(at, typeof parsed.message === "string" ? parsed.message : "", seen.body, problems);
+};
+
+/** A browser asking for the screens: each path of SCREENS, with each browser's `accept`, is the page saying so. Empty when it is. */
 export const screens = async (ask: Ask): Promise<ReadonlyArray<string>> => {
   const problems: string[] = [];
-  for (const path of SCREENS) {
-    const seen = await tried(ask, path, "GET", BROWSER);
-    if (typeof seen === "string") { problems.push(seen); continue; }
-    const at = `a browser's GET ${path}`;
-    common(at, seen, seen.body, problems);
-    if (!/^text\/html\b/i.test(seen.type)) problems.push(`${at}: content-type "${seen.type}", not text/html`);
+  for (const [n, accept] of BROWSERS.entries()) for (const path of SCREENS) {
+    const seen = await tried(ask, path, "GET", accept);
+    if (typeof seen === "string") problems.push(seen); else page(`a browser's GET ${path}${n === 0 ? "" : ` (browser ${n + 1})`}`, seen, problems);
   }
   return problems;
 };
 
-/** An API client asking for the screens: each path of SCREENS is a 501 JSON `{ _tag: "NotInThisRelease", message }` saying so. Empty when it is. */
+/** An API client asking for the screens: each path of SCREENS, with each API `accept`, is a 501 JSON NotInThisRelease saying so. */
 export const screensForApi = async (ask: Ask): Promise<ReadonlyArray<string>> => {
   const problems: string[] = [];
-  for (const path of SCREENS) {
-    const seen = await tried(ask, path, "GET", API);
-    if (typeof seen === "string") { problems.push(seen); continue; }
-    const at = `an API client's GET ${path}`;
-    const parsed = jsonOf(seen.body);
-    const message = typeof parsed?.message === "string" ? parsed.message : "";
-    common(at, seen, message, problems);
-    if (!/^application\/json\b/i.test(seen.type)) problems.push(`${at}: content-type "${seen.type}", not application/json`);
-    if (parsed === undefined) problems.push(`${at}: the body is not a JSON object: ${seen.body.slice(0, 80)}`);
-    else if (parsed._tag !== "NotInThisRelease") problems.push(`${at}: _tag ${JSON.stringify(parsed._tag)}, not "NotInThisRelease"`);
-    if (parsed !== undefined && typeof parsed.message !== "string") problems.push(`${at}: no message string`);
+  for (const [n, accept] of APIS.entries()) for (const path of SCREENS) {
+    const seen = await tried(ask, path, "GET", accept);
+    if (typeof seen === "string") problems.push(seen); else answer(`an API client's GET ${path}${n === 0 ? "" : ` (client ${n + 1})`}`, seen, problems);
   }
   return problems;
 };
 
-const jsonOf = (body: string): { _tag?: unknown; message?: unknown } | undefined => {
+/** Anyone else: a GET with no `accept` is the 501 in either form, saying so; a HEAD is the 501. */
+export const screensForAnyone = async (ask: Ask): Promise<ReadonlyArray<string>> => {
+  const problems: string[] = [];
+  for (const path of SCREENS) {
+    const bare = await tried(ask, path, "GET");
+    if (typeof bare === "string") problems.push(bare);
+    else {
+      const at = `a GET ${path} with no accept`;
+      is501(at, bare, problems);
+      const parsed = jsonOf(bare.body);
+      says(at, isType(bare.type, "application/json") && typeof parsed?.message === "string" ? parsed.message : visible(bare.body), bare.body, problems);
+    }
+    const head = await tried(ask, path, "HEAD", BROWSER);
+    if (typeof head === "string") problems.push(head); else is501(`a HEAD ${path}`, head, problems);
+  }
+  return problems;
+};
+
+const jsonOf = (body: string): { _tag?: unknown; message?: unknown; [k: string]: unknown } | undefined => {
   try { const v: unknown = JSON.parse(body); return typeof v === "object" && v !== null && !Array.isArray(v) ? v as { _tag?: unknown; message?: unknown } : undefined; } catch { return undefined; }
 };
 
 const tagOf = (body: string): string | undefined => { try { return (JSON.parse(body) as { _tag?: string })._tag; } catch { return undefined; } };
 const thingsOf = (body: string): ReadonlyArray<string> | null => { try { return Object.keys((JSON.parse(body) as { model: { things: object } }).model.things).sort(); } catch { return null; } };
 
-/** The data, as it answers today: the blueprint, the snapshot, an unknown path, and the screens' notice never leaking into any of them. */
+export const UNKNOWN = ["/_portal/v1/no-such-thing", "/_portal/v1/blueprint/x", "/_portal/v2/x", "/_portal/"] as const;
+
+/** The data, as it answers today: the blueprint (GET and HEAD), the snapshot for its digest and for another, unknown paths, and no notice in any. */
 export const feed = async (ask: Ask): Promise<ReadonlyArray<string>> => {
   const problems: string[] = [];
-  const data = await tried(ask, "/_portal/v1/blueprint");
-  if (typeof data === "string") problems.push(data);
-  else {
-    if (data.status !== 200) problems.push(`blueprint: status ${data.status}, not 200`);
-    if (data.etag !== `"${blueprint.digest}"`) problems.push(`blueprint: etag ${String(data.etag)}, not the digest ${blueprint.digest}`);
-    if (JSON.stringify(thingsOf(data.body)) !== JSON.stringify(things)) problems.push(`blueprint: its things are ${JSON.stringify(thingsOf(data.body))}, not the model's ${JSON.stringify(things)}`);
-    if (/not in this release/i.test(data.body)) problems.push("blueprint: carries the screens' notice");
+  for (const method of ["GET", "HEAD"] as const) {
+    const at = `blueprint (${method})`;
+    const data = await tried(ask, "/_portal/v1/blueprint", method, API);
+    if (typeof data === "string") { problems.push(data); continue; }
+    if (data.status !== 200) problems.push(`${at}: status ${data.status}, not 200`);
+    if (data.etag !== `"${blueprint.digest}"`) problems.push(`${at}: etag ${String(data.etag)}, not the digest ${blueprint.digest}`);
+    if (!isType(data.type, "application/json")) problems.push(`${at}: content-type "${data.type}", not application/json`);
+    if (method === "HEAD") continue;
+    if (JSON.stringify(thingsOf(data.body)) !== JSON.stringify(things)) problems.push(`${at}: its things are ${JSON.stringify(thingsOf(data.body))}, not the model's ${JSON.stringify(things)}`);
+    else {
+      const served = parsedOf(data.body) as { digest?: unknown; project?: unknown; model?: { things?: unknown; operations?: unknown } } | undefined;
+      const hashes = (of: unknown) => typeof of === "object" && of !== null ? Object.fromEntries(Object.entries(of).map(([k, v]) => [k, (v as { hash?: unknown } | null)?.hash])) : of;
+      for (const [part, got, want] of [["digest", served?.digest, blueprint.digest], ["project", served?.project, blueprint.project], ["model.things", hashes(served?.model?.things), hashes(blueprint.model.things)], ["model.operations", hashes(served?.model?.operations), hashes(blueprint.model.operations)]] as const) {
+        if (canonical(got) !== canonical(want)) problems.push(`${at}: its ${part} is not the blueprint file's`);
+      }
+    }
+    if (SAYS.test(data.body)) problems.push(`${at}: carries the screens' notice`);
   }
-  const snapshot = await tried(ask, `/_portal/v1/snapshot?digest=${blueprint.digest}`);
+  const snapshot = await tried(ask, `/_portal/v1/snapshot?digest=${blueprint.digest}`, "GET", API);
   if (typeof snapshot === "string") problems.push(snapshot);
   else {
     if (snapshot.status !== 200) problems.push(`snapshot: status ${snapshot.status}, not 200`);
-    if (!/^application\/json\b/i.test(snapshot.type)) problems.push(`snapshot: content-type "${snapshot.type}", not application/json`);
-    if (/not in this release/i.test(snapshot.body)) problems.push("snapshot: carries the screens' notice");
+    if (!isType(snapshot.type, "application/json")) problems.push(`snapshot: content-type "${snapshot.type}", not application/json`);
+    const body = jsonOf(snapshot.body);
+    if (body === undefined) problems.push(`snapshot: the body is not a JSON object: ${snapshot.body.slice(0, 80)}`);
+    else if (body["blueprintDigest"] !== blueprint.digest) problems.push(`snapshot: blueprintDigest ${JSON.stringify(body["blueprintDigest"])}, not the digest asked for`);
+    if (SAYS.test(snapshot.body)) problems.push("snapshot: carries the screens' notice");
   }
-  const unknown = await tried(ask, "/_portal/v1/no-such-thing");
-  if (typeof unknown === "string") problems.push(unknown);
+  const stale = await tried(ask, "/_portal/v1/snapshot?digest=0000", "GET", API);
+  if (typeof stale === "string") problems.push(stale);
   else {
-    if (unknown.status !== 404) problems.push(`an unknown data path: status ${unknown.status}, not 404`);
-    if (tagOf(unknown.body) !== "NotFound") problems.push(`an unknown data path: body is not { _tag: "NotFound" }: ${unknown.body.slice(0, 80)}`);
+    const body = jsonOf(stale.body);
+    if (stale.status !== 409) problems.push(`a snapshot for another digest: status ${stale.status}, not 409`);
+    if (body?._tag !== "BlueprintChanged" || body["digest"] !== blueprint.digest) problems.push(`a snapshot for another digest: not { _tag: "BlueprintChanged", digest: <the current one> }: ${stale.body.slice(0, 80)}`);
+  }
+  for (const path of UNKNOWN) {
+    const unknown = await tried(ask, path, "GET", API);
+    if (typeof unknown === "string") { problems.push(unknown); continue; }
+    const at = `an unknown data path ${path}`;
+    if (unknown.status !== 404) problems.push(`${at}: status ${unknown.status}, not 404`);
+    if (!isType(unknown.type, "application/json")) problems.push(`${at}: content-type "${unknown.type}", not application/json`);
+    if (tagOf(unknown.body) !== "NotFound") problems.push(`${at}: body is not { _tag: "NotFound" }: ${unknown.body.slice(0, 80)}`);
   }
   return problems;
 };
 
-/** Reading only: a POST to the screens or to the data is 405, `allow: GET, HEAD`, as today. */
+const parsedOf = (body: string): unknown => { try { return JSON.parse(body) as unknown; } catch { return undefined; } };
+const allowed = (allow: string | null) => allow === null ? null : allow.split(",").map((m) => m.trim().toUpperCase()).filter(Boolean).sort().join(", ");
+
+/** Reading only: POST, PUT, PATCH and DELETE to the screens or to the data are 405, `allow` GET and HEAD, as today. */
 export const methods = async (ask: Ask): Promise<ReadonlyArray<string>> => {
   const problems: string[] = [];
-  for (const path of ["/portal", "/_portal/v1/blueprint"]) {
-    const seen = await tried(ask, path, "POST");
+  for (const path of ["/portal", "/portal/things/allowance", "/_portal/v1/blueprint"]) for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
+    const seen = await tried(ask, path, method);
     if (typeof seen === "string") { problems.push(seen); continue; }
-    if (seen.status !== 405) problems.push(`POST ${path}: status ${seen.status}, not 405`);
-    if (seen.allow !== "GET, HEAD") problems.push(`POST ${path}: allow ${String(seen.allow)}, not "GET, HEAD"`);
+    if (seen.status !== 405) problems.push(`${method} ${path}: status ${seen.status}, not 405`);
+    if (allowed(seen.allow) !== "GET, HEAD") problems.push(`${method} ${path}: allow ${String(seen.allow)}, not GET and HEAD`);
   }
   return problems;
 };
