@@ -542,9 +542,15 @@ CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten o
   Blueprint.time.after(field, span)` or `.every(span)`, once per due instant, as counted work. Goal 16 claims it (the
   conductor, 26 November 2026; `docs/canon/status.md:182` had `world-clock-keeper` spiked and claimed by none). Every
   time-fired move here runs on that keeper, over M8.07's durable timers, and needs no workflow (the conductor's call).
-  Each one names a field re-armed on each self-move, for example `nextCheckAt`, so that an `after` move fires again when
-  its field is written anew; the exact rule is K1's decision's, and these words follow it once it lands. S3a and S3b need
-  it.
+  The rule they rely on is K1's (`design/decisions/CX-keeper.md`, calls 3 to 5, on `goal-16/keeper-check`): after every
+  committed move the keeper's row for each timed move is worked out again from the record; an `after(field, span)` row
+  is due at the field plus the span, re-armed when a self-move writes the field forward, never armed twice for one due,
+  and dropped when the thing leaves the move's `from` states or the field is empty; `"0 seconds"` is allowed for
+  `after` (the compiler's change is K1's builder's); an `every` row is due at the first period strictly after the last
+  one fired. A firing the machine or a rule refuses writes nothing and is not retried. So every time-fired move here
+  writes `nextCheckAt` forward in its own commit whenever it stays in a `from` state, and parking and the halt clear it.
+  None of them has a data refusal of its own, so a refused firing could only be a defect, which leaves the row waiting
+  for the thing's next committed move. S3a and S3b need it.
 - **E2 · events in, wired** (#1201): the durable D1 store for the inbox, `FOLLOWER_SINK` bound to `Inboxes.sink` in the
   generated world, and an Anvil run end to end with a reorg. It needs E1. S2 needs E1 and E2. E1's own paths gain
   `packages/host-cloudflare/src/modules/events/` (CX-events-in, #1178), under Supersedes.
