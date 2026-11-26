@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/salary-component/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { SalaryComponent } from "../../blueprint/things/salary-component/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/salary-component/create.handler.ts";
 
@@ -47,25 +48,29 @@ const { ComponentAccountNotInCompany, ComponentAccountIsGroup } = Errors.declare
  *   once it answers, it writes SalaryComponentCreated: salaryComponent from the answer, company and type from the payload;
  *   the call is the span salary-component.create, and its commit salary-component.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, salaryComponent, type, amount, account }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span salary-component.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
+    // Step load: database, span salary-component.create.load. The runtime read the account and hands it in.
+    const ledger = yield* steps.load(Effect.succeed(refs.account));
+    if (!ledger) return yield* Effect.die(new Error(`account ${account} was read and then not found`));
+
+    // Refusal order (errors.ts): the account's company, then its kind; the runtime judges the name after these.
     // ComponentAccountNotInCompany: exit 41, SC-001.
-    if (yield* Handlers.blank<boolean>("refuse ComponentAccountNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ComponentAccountNotInCompany was refused"));
+    if (ledger["company"] !== company) {
+      yield* Effect.logInfo("the component's account belongs to another company");
       return yield* new ComponentAccountNotInCompany({});
     }
 
     // ComponentAccountIsGroup: exit 42, SC-002.
-    if (yield* Handlers.blank<boolean>("refuse ComponentAccountIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ComponentAccountIsGroup was refused"));
+    if (ledger.state !== "ledger") {
+      yield* Effect.logInfo("the component's account is a group");
       return yield* new ComponentAccountIsGroup({});
     }
 
     // Step insert: database, span salary-component.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    yield* steps.insert(records.insert(SalaryComponent, { id, company, salaryComponent, type, amount, account }));
 
     // The move create, to active.
     yield* move();
