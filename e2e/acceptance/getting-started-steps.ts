@@ -1,5 +1,17 @@
 // The page's steps, as check 09 of #1111 read them (commit 754aa114), for check 09 of slice 11 (`09-g18-11-acceptance.test.ts`), which
 // runs them. Written by the author before the build; a builder never edits it (AGENTS.md, "Journeys and checks come first").
+//
+// THE PAGE'S CONTRACT (what a writer of docs/canon/getting-started.mdx may put in a step):
+//  - A step is a line in a fence whose info string starts `sh`, `bash` or `shell` (or a `$ ` line in a `console` fence). A line ending
+//    in `\` goes on to the next; `#` lines are comments; `a && b` is two steps. Other fences are not run.
+//  - A step is a plain command, one word per argument: NO QUOTES, no backslashes, no `$`, no braces, and no `;`, `|`, `&`, redirects,
+//    backticks or parentheses. Write `--name Ada`, never `--name "Ada Lovelace"`: a value with a space can't be given.
+//  - It is `cd <folder inside the start>`, `export <APP>_URL=…` or `export <APP>_TOKEN=…`, or a command: npm, npx, pnpm, yarn or bun
+//    (installing or creating only Orthograph's packages, or running ortho, create-orthograph or the app), `ortho`, the app's own command,
+//    or `node generated/cli/src/main.ts`. Before a command, only `<APP>_URL=…` and `<APP>_TOKEN=…` may be set.
+//  - On npm, npx, pnpm, yarn, bun and ortho the only flags are -g, --global, -y, --yes, --json, --env, --port, --name and --.
+//  - `ortho` runs as installed (or `pnpm exec ortho`), never fetched by npx, npm exec or dlx.
+// Anything else is refused by name, before any step runs (`refusal`).
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repo } from "../local-registry.ts";

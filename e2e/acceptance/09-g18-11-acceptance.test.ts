@@ -31,7 +31,8 @@
 // THE REFUSALS, each named: the CLI without `--name` exits non-zero and names `name`; the SDK given `{}` fails `InvalidPayload` naming
 // `name`; MCP with no credential is 401 `unauthorized`, with a wrong one 401 `invalid_token`, and `tools/call` without `name` is an
 // error result; the CLI and the SDK pointed at a closed port fail. The page's steps are refused by name before anything runs when one
-// is not a plain command, and when one exports `npm_config_*`, `pnpm_config_*`, PATH or HOME.
+// is not a plain command (the contract is at the top of getting-started-steps.ts: one word per argument, no quotes, only <APP>_URL and
+// <APP>_TOKEN set, a short list of flags).
 // EXPECTED VALUES come from examples/starter (its blueprint, journeys and journey names), the repository's package versions, the
 // generated CLI's rule for its variables (`name.toUpperCase().replace(/-/g, "_")`, packages/projections/src/modules/cli/internal/cli.ts)
 // and the handler this check writes (`Hello, ${name}.`), never from what a step printed.
@@ -42,7 +43,7 @@ import { randomBytes } from "node:crypto";
 import { join, relative, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { freePorts } from "../ports.ts";
-import { GUARD, LOCAL_ONLY, bare, publicPackages, publishAll, repo, runGroup, startRegistry, stopGroup, versionsOn, type Ran, type Registry } from "../local-registry.ts";
+import { GUARD, bare, publicPackages, publishAll, repo, runGroup, startRegistry, stopGroup, versionsOn, type Ran, type Registry } from "../local-registry.ts";
 import { NAME, PREFIX, STEPS, createAt, devAt, orthoRun, page, proveAt, refusal, refused, toolAt, urlSetAt } from "./getting-started-steps.ts";
 
 const MIN = 60_000;
@@ -192,7 +193,8 @@ describe("09 controls: the registry is local and the guard holds", () => {
     expect(registry, `the registry was started: ${setup}`).toBeDefined();
     const config = registry?.config ?? "";
     expect(config).toMatch(/^listen: 127\.0\.0\.1:\d+$/m);
-    for (const name of ["orthograph", "@orthograph/*", ...LOCAL_ONLY, ...publicPackages().map((p) => p.name).filter((n) => !n.startsWith("@orthograph/"))]) {
+    // The two extra names are written here, not read from the helper under test.
+    for (const name of ["orthograph", "@orthograph/*", "ortho", "create-orthograph", ...publicPackages().map((p) => p.name).filter((n) => !n.startsWith("@orthograph/"))]) {
       const block = new RegExp(`^  '${name.replace(/[*/]/g, "\\$&")}':\\n((?:    .*\\n)+)`, "m").exec(config)?.[1];
       expect(block, `a packages entry for ${name}`).toBeDefined();
       expect(block, `${name} is never read from npmjs`).not.toMatch(/proxy:/);
