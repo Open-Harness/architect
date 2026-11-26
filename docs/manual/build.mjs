@@ -3,7 +3,7 @@
 // not written is shown in its place), then the reference. A chapter's `Film:` line becomes a player under its first paragraph. It looks for <film>-720.mp4 and <film>.captions.txt beside the page (a 720p encode of the
 // render, and its captions as WebVTT text); they are published with the page and are not in the repository.
 // Run check.mjs first: this trusts every quote the chapters make.
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const here = import.meta.dirname, read = (p) => readFileSync(join(here, p), "utf8");
@@ -67,7 +67,7 @@ function page(text, { level = 2, id, film } = {}) {
   return { title, html: out.join("\n") };
 }
 
-const film = (name) => `<figure class="film"><video controls preload="metadata" playsinline src="${name}-720.mp4" data-captions="${name}.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>`;
+const film = (name) => !existsSync(join(here, "out", `${name}-720.mp4`)) ? `<p class="lede" style="font-size:16px">The film of this chapter is still being made.</p>` : `<figure class="film"><video controls preload="metadata" playsinline src="${name}-720.mp4" data-captions="${name}.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>`;
 const spine = JSON.parse(read("spine.json")), all = spine.parts.flatMap((p) => p.chapters), last = all[all.length - 1].n;
 const chapter = (c, part) => {
   const id = "chapter-" + c.n, head = `<div class="block"><span>Chapter</span><b>${c.n} of ${last} · ${esc(part)}</b><span>Asks</span><b>${esc(c.question)}</b>${c.file ? "" : "<span>Stands</span><b>not written yet</b>"}</div>`;
