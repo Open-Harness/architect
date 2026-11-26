@@ -94,7 +94,7 @@ export const Prove: ProveApi = {
   test: (options) =>
     load(options.root).pipe(Effect.flatMap(({ model, project }) => proveInTest(model, project, options))),
   staged: ({ root, url, label, only, d1 }) =>
-    load(root).pipe(Effect.flatMap(({ model, project }) => provedAt(model, project, url, label, only, d1 === undefined ? undefined : Journeys.d1Facts(d1)))),
+    load(root).pipe(Effect.flatMap(({ model, project }) => provedAt(model, project, url, label, only ?? [], d1 === undefined ? undefined : Journeys.d1Facts(d1)))),
   against: ({ root, url, telemetry, state, say }) =>
     Effect.gen(function* () {
       const { model, project } = yield* load(root);
