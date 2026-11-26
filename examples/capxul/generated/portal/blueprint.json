@@ -23320,6 +23320,64 @@
         },
         "hash": "2231825001f4dfe7"
       },
+      "personal-safe.list": {
+        "kind": "read",
+        "name": "personal-safe.list",
+        "thing": "personal-safe",
+        "verb": "list",
+        "identifier": "list",
+        "file": "blueprint/things/personal-safe/verbs/list.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "List personal-safes, oldest first, 50 to a page.",
+        "payload": {
+          "cursor": {
+            "value": {
+              "type": "text",
+              "max": 64
+            },
+            "optional": true
+          }
+        },
+        "answer": {
+          "items": {
+            "value": {
+              "type": "schema"
+            }
+          },
+          "next": {
+            "value": {
+              "type": "schema"
+            }
+          }
+        },
+        "move": null,
+        "errors": [],
+        "breaks": [],
+        "refusals": [
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "system"
+          }
+        ],
+        "agentTool": false,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 80
+        },
+        "list": {
+          "where": [],
+          "order": "oldest",
+          "page": 50
+        },
+        "hash": "100626a0d9b1ff6f"
+      },
       "personal-safe.open": {
         "kind": "operation",
         "name": "personal-safe.open",
@@ -81446,6 +81504,9 @@
           "bo": {
             "kind": "signed-in"
           },
+          "cy": {
+            "kind": "signed-in"
+          },
           "nobody": {
             "kind": "system"
           }
@@ -81791,11 +81852,179 @@
             ]
           },
           {
+            "title": "Cy opens her own Safe in her own session",
+            "call": {
+              "actor": "cy",
+              "operation": "personal-safe.open",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "expect",
+                "match": "^saf_[0-9a-z]+$",
+                "flags": ""
+              },
+              {
+                "kind": "emits",
+                "event": "PersonalSafeOpened",
+                "fields": {
+                  "safe": {
+                    "ref": [
+                      "last",
+                      "safe"
+                    ]
+                  },
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "cy",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "is-in",
+                "thing": "personal-safe",
+                "id": {
+                  "ref": [
+                    "last",
+                    "safe"
+                  ]
+                },
+                "state": "unclaimed"
+              },
+              {
+                "kind": "spans",
+                "present": [
+                  "personal-safe.open",
+                  "personal-safe.open.insert"
+                ],
+                "absent": []
+              }
+            ]
+          },
+          {
+            "title": "Cy reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet",
+            "call": {
+              "actor": "cy",
+              "operation": "personal-safe.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "last",
+                    "safe"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "cast",
+                      "cy",
+                      "person"
+                    ]
+                  },
+                  "none",
+                  "none",
+                  "none",
+                  "unclaimed"
+                ]
+              },
+              {
+                "kind": "expect-equal",
+                "value": ""
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Cy can't list the Safes: only the system can",
+            "call": {
+              "actor": "cy",
+              "operation": "personal-safe.list",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "NotAllowed",
+                "fields": {}
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "three opens wrote three Safes, one each for Ada, Bo and Cy, and no other",
+            "call": {
+              "actor": "nobody",
+              "operation": "personal-safe.list",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  [
+                    {
+                      "ref": [
+                        "cast",
+                        "ada",
+                        "person"
+                      ]
+                    },
+                    "none",
+                    "none",
+                    "unclaimed",
+                    ""
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "cast",
+                        "bo",
+                        "person"
+                      ]
+                    },
+                    "none",
+                    "none",
+                    "unclaimed",
+                    ""
+                  ],
+                  [
+                    {
+                      "ref": [
+                        "cast",
+                        "cy",
+                        "person"
+                      ]
+                    },
+                    "none",
+                    "none",
+                    "unclaimed",
+                    ""
+                  ]
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
             "title": "an agent's MCP tools hold opening and reading a Safe",
             "skipped": "the tools list is not an operation"
           }
         ],
-        "sourceHash": "46830642c245d6c07e4ae98164c30c25a2699dc3aa288569e8bb7f6dc922e4a3"
+        "sourceHash": "c39831e2c8467fc1d312ac1c62a632fbb5af995e92f15428996e0f8bc9d48767"
       },
       "journeys/safe-opening-again-is-the-same-safe.ts": {
         "name": "safe: opening again is the same safe",
@@ -81803,6 +82032,9 @@
         "cast": {
           "ada": {
             "kind": "signed-in"
+          },
+          "nobody": {
+            "kind": "system"
           }
         },
         "starts": "ada has opened her safe",
@@ -81959,9 +82191,42 @@
                 "kind": "no-events"
               }
             ]
+          },
+          {
+            "title": "the world holds that one Safe and no other",
+            "call": {
+              "actor": "nobody",
+              "operation": "personal-safe.list",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  [
+                    {
+                      "ref": [
+                        "world",
+                        "adaSafe"
+                      ]
+                    },
+                    {
+                      "ref": [
+                        "cast",
+                        "ada",
+                        "person"
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
           }
         ],
-        "sourceHash": "76f090c85f5460bcf02294fa921049ced6b77d93216580152b00d57a354e633c"
+        "sourceHash": "a688ca8ac8299358242a0dea6543853384a794bba586117564c64d78956636a9"
       },
       "journeys/schedule-an-interview.ts": {
         "name": "schedule an interview",
@@ -120538,6 +120803,48 @@
         ]
       },
       {
+        "id": "defect:personal-safe.list",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "personal-safe.list",
+          "severity": "page",
+          "owner": "blueprint/things/personal-safe/verbs/list.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "defect:personal-safe.open",
         "kind": "defect",
         "labels": {
@@ -127615,6 +127922,49 @@
         ]
       },
       {
+        "id": "latency:personal-safe.list",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "personal-safe.list",
+          "severity": "page",
+          "owner": "blueprint/things/personal-safe/verbs/list.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 80,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
         "id": "latency:personal-safe.open",
         "kind": "latency",
         "labels": {
@@ -130932,6 +131282,10 @@
       "operation:personal-safe.get": "2231825001f4dfe7",
       "thing:personal-safe": "0f01982cca0839d5"
     },
+    "personal-safe.list": {
+      "operation:personal-safe.list": "100626a0d9b1ff6f",
+      "thing:personal-safe": "0f01982cca0839d5"
+    },
     "personal-safe.open": {
       "operation:personal-safe.open": "824883db79fd01ba",
       "thing:personal-safe": "0f01982cca0839d5"
@@ -131240,9 +131594,10 @@
     "payroll-period/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# payroll-period.create\n\nSet up a company's payroll period.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | payroll-period.company |\n| payrollPeriodName | payroll-period.payrollPeriodName |\n| startDate | payroll-period.startDate |\n| endDate | payroll-period.endDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| payrollPeriod | payroll-period.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting PayrollPeriodCreated.\n\n## Steps\n\n- `payroll-period.create.load` (database)\n- `payroll-period.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| PayrollPeriodEndsBeforeStart | 41 | PP-001 | declared in errors.ts, carrying startDate |\n| PayrollPeriodOverlaps | 42 | PP-002 | declared in errors.ts, carrying payrollPeriod |\n| PayrollPeriodNameTaken | 43 | PP-003 | another payroll period holds this company and payroll period name; by the rule payroll-period.oneNamePerCompany |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### pay a month\n\nStarts from the world `a pension component`.\n\n- **Ada sets up the payroll period 2026.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-01-01`, endDate `2026-12-31`, and is answered.\n\n### set up payroll periods\n\nStarts from the world `two companies`.\n\n- **Bo can't set up a period for Acme Trading.** `bo` (signed in) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-01-01`, endDate `2026-12-31`, and is refused with NotAllowed, AR-001.\n- **a period ending before it starts is refused, naming its first day.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Backwards`, startDate `2026-12-31`, endDate `2026-12-30`, and is refused with PayrollPeriodEndsBeforeStart, PP-001, carrying startDate `2026-12-31`.\n- **Ada sets up 2026, from April 2026 to March 2027.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-04-01`, endDate `2027-03-31`, and is answered.\n- **a one-day period is allowed.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Audit day`, startDate `2027-04-01`, endDate `2027-04-01`, and is answered.\n- **a period sharing only 2026's last day is refused.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Overlap end`, startDate `2027-03-31`, endDate `2027-03-31`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **one ending on 2026's first day too.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Overlap start`, startDate `2026-03-01`, endDate `2026-04-01`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **one inside it too.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Inside`, startDate `2026-06-01`, endDate `2026-06-30`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **but one ending the day before it is allowed.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2025`, startDate `2025-04-01`, endDate `2026-03-31`, and is answered.\n- **one holding 2025, 2026 and the audit day names 2025, which starts first.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Everything`, startDate `2025-01-01`, endDate `2027-12-31`, and is refused with PayrollPeriodOverlaps, PP-002, carrying payrollPeriod the last call's payrollPeriod.\n- **a period ending before it starts is judged before an overlap.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Backwards`, startDate `2026-06-30`, endDate `2026-06-01`, and is refused with PayrollPeriodEndsBeforeStart, PP-001, carrying startDate `2026-06-30`.\n- **a name already used is refused.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2030-01-01`, endDate `2030-12-31`, and is refused with PayrollPeriodNameTaken, PP-003.\n- **an overlap is judged before a name.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-05-01`, endDate `2026-05-31`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **Acme Logistics may have its own 2026 over the same days: each company's periods are its own.** `ada` (role company.owner) calls and sends company the world's otherCompany, payrollPeriodName `2026`, startDate `2026-04-01`, endDate `2027-03-31`, and is answered.\n\n## How to call\n\n```sh\ncapxul payroll-period create --company <company> --payrollPeriodName <payrollPeriodName> --startDate <startDate> --endDate <endDate>\n```\n\nHTTP: `POST /payroll-period/create` with the payload as JSON. SDK: `Sdk.payroll-period.create(payload)`.\n",
     "payroll-period/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# payroll-period.get\n\nRead one payroll-period by its id: company, payrollPeriodName, startDate, endDate, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | payroll-period.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | payroll-period.company |\n| payrollPeriodName | payroll-period.payrollPeriodName |\n| startDate | payroll-period.startDate |\n| endDate | payroll-period.endDate |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up payroll periods\n\nStarts from the world `two companies`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's payrollPeriod, and is refused with NotAllowed, AR-001.\n- **it reads back as set up.** `ada` (role company.owner) calls and sends id the last call's payrollPeriod, and gets back [the world's company, `2026`, `2026-04-01`, `2027-03-31`, `active`].\n- **it reads back Acme Logistics'.** `ada` (role company.owner) calls and sends id the last call's payrollPeriod, and gets back [the world's otherCompany, `2026`].\n\n## How to call\n\n```sh\ncapxul payroll-period get --id <id>\n```\n\nHTTP: `POST /payroll-period/get` with the payload as JSON. SDK: `Sdk.payroll-period.get(payload)`.\n",
     "payroll-period/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# payroll-period\n\nA company's payroll year, the span its tax is worked out over.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| payrollPeriodName | PeriodName |\n| startDate | Day |\n| endDate | Day |\n\n## Machine\n\nStates: active. A move from the wrong state is refused PayrollPeriodNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | PayrollPeriodCreated |\n\n## Invariants\n\n- `payroll-period.oneNamePerCompany`: another payroll period holds this company and payroll period name. Unique on company, payrollPeriodName, in every state; refused PayrollPeriodNameTaken.\n\n## Events\n\n- `PayrollPeriodCreated`: carries payrollPeriod (payroll-period.id), company (payroll-period.company), startDate (payroll-period.startDate), endDate (payroll-period.endDate); emitted by the move create\n\n## Operations\n\n- [payroll-period.create](create.md): Set up a company's payroll period.\n- [payroll-period.get](get.md): Read one payroll-period by its id: company, payrollPeriodName, startDate, endDate, state.\n",
-    "personal-safe/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.get\n\nRead one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.\n\n**Who may call:** the holder of the personal-safe.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | personal-safe.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| person | personal-safe.person | Whose Safe it is. |\n| saltNonce | personal-safe.saltNonce | The salt nonce its address is worked out from, kept at open so the address can be checked again. |\n| signer (optional) | personal-safe.signer | The key the person proved they hold, set at claim (S1b). |\n| firstOwner (optional) | personal-safe.firstOwner | The one owner it is set up with, set at claim: the signer, on the environment's chain. |\n| account (optional) | personal-safe.account | Its address once claimed, worked out before it is deployed, checksummed (EIP-55). |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the holder of the personal-safe; the handler never runs |\n\n## Worked examples\n\n### safe: a person opens their safe\n\nStarts from an empty world.\n\n- **Bo can't read Ada's Safe.** `bo` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Ada reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet.** `ada` (signed in) calls and sends id the last call's safe, and gets back [the cast's ada person, `none`, `none`, `none`, `unclaimed`] and gets back ``.\n- **Ada can't read Bo's.** `ada` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Bo's agent reads it back: Bo's, unclaimed, with his own salt nonce.** `bo` (signed in) calls and sends id the last call's safe, and gets back [the cast's bo person, `none`, `none`, `none`, `unclaimed`] and gets back ``.\n\n### safe: opening again is the same safe\n\nStarts from the world `ada has opened her safe`.\n\n- **that Safe is hers, unclaimed, with her salt nonce.** `ada` (signed in) calls and sends id the world's adaSafe, and gets back [the cast's ada person, `none`, `unclaimed`] and gets back ``.\n\n## How to call\n\n```sh\ncapxul personal-safe get --id <id>\n```\n\nHTTP: `POST /personal-safe/get` with the payload as JSON. SDK: `Sdk.personal-safe.get(payload)`.\n",
-    "personal-safe/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe\n\nA person's own Safe: opened first, then claimed with the key they sign with, which gives its address.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| person | id | Whose Safe it is. |\n| saltNonce | SaltNonce | The salt nonce its address is worked out from, kept at open so the address can be checked again. |\n| signer (optional) | schema | The key the person proved they hold, set at claim (S1b). |\n| firstOwner (optional) | account | The one owner it is set up with, set at claim: the signer, on the environment's chain. |\n| account (optional) | account | Its address once claimed, worked out before it is deployed, checksummed (EIP-55). |\n\n## Machine\n\nStates: unclaimed. A move from the wrong state is refused PersonalSafeNotUnclaimed (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | unclaimed | PersonalSafeOpened |\n\n## Invariants\n\n- `personal-safe.oneSafePerPerson`: another personal safe holds this person. Unique on person, in every state; refused SafeAlreadyOpen.\n\n## Events\n\n- `PersonalSafeOpened`: carries safe (personal-safe.id), person (personal-safe.person: Whose Safe it is.); emitted by the move open\n\n## Roles\n\n- holder\n\n## Operations\n\n- [personal-safe.get](get.md): Read one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.\n- [personal-safe.open](open.md): Open your own Safe. It has no address until you claim it with the key you sign with.\n",
-    "personal-safe/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.open\n\nOpen your own Safe. It has no address until you claim it with the key you sign with.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| safe | personal-safe.id |\n\n## Move\n\n`open`: from nothing (it creates) to unclaimed, emitting PersonalSafeOpened.\n\n## Steps\n\n- `personal-safe.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SafeAlreadyOpen | 41 | SF-001 | another personal safe holds this person; by the rule personal-safe.oneSafePerPerson, carrying person |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### safe: a person opens their safe\n\nStarts from an empty world.\n\n- **the system can't open a Safe: it is nobody.** `nobody` (system) calls and sends nothing, and is refused with NotAllowed, AR-001.\n- **Ada opens her own Safe from the command line.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back an answer matching `^saf_[0-9a-z]+$`.\n- **a second open, a new request, is refused: a person has one Safe.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **nor through her agent.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **Bo's agent opens Bo's own Safe through MCP: his, not Ada's.** `bo` (signed in) calls and sends nothing, and gets back an answer matching `^saf_[0-9a-z]+$`.\n- **a second open from Bo, in his own session, is refused too.** `bo` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's bo person.\n\n### safe: opening again is the same safe\n\nStarts from the world `ada has opened her safe`.\n\n- **her first request again, by her key, is the same call: the Safe she was answered, and nothing new.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back the world's adaSafe.\n- **a new request by her key is refused.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **and in her own session.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **and through her agent.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n\n## How to call\n\n```sh\ncapxul personal-safe open\n```\n\nHTTP: `POST /personal-safe/open` with the payload as JSON. SDK: `Sdk.personal-safe.open(payload)`.\n",
+    "personal-safe/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.get\n\nRead one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.\n\n**Who may call:** the holder of the personal-safe.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | personal-safe.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| person | personal-safe.person | Whose Safe it is. |\n| saltNonce | personal-safe.saltNonce | The salt nonce its address is worked out from, kept at open so the address can be checked again. |\n| signer (optional) | personal-safe.signer | The key the person proved they hold, set at claim (S1b). |\n| firstOwner (optional) | personal-safe.firstOwner | The one owner it is set up with, set at claim: the signer, on the environment's chain. |\n| account (optional) | personal-safe.account | Its address once claimed, worked out before it is deployed, checksummed (EIP-55). |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the holder of the personal-safe; the handler never runs |\n\n## Worked examples\n\n### safe: a person opens their safe\n\nStarts from an empty world.\n\n- **Bo can't read Ada's Safe.** `bo` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Ada reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet.** `ada` (signed in) calls and sends id the last call's safe, and gets back [the cast's ada person, `none`, `none`, `none`, `unclaimed`] and gets back ``.\n- **Ada can't read Bo's.** `ada` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Bo's agent reads it back: Bo's, unclaimed, with his own salt nonce.** `bo` (signed in) calls and sends id the last call's safe, and gets back [the cast's bo person, `none`, `none`, `none`, `unclaimed`] and gets back ``.\n- **Cy reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet.** `cy` (signed in) calls and sends id the last call's safe, and gets back [the cast's cy person, `none`, `none`, `none`, `unclaimed`] and gets back ``.\n\n### safe: opening again is the same safe\n\nStarts from the world `ada has opened her safe`.\n\n- **that Safe is hers, unclaimed, with her salt nonce.** `ada` (signed in) calls and sends id the world's adaSafe, and gets back [the cast's ada person, `none`, `unclaimed`] and gets back ``.\n\n## How to call\n\n```sh\ncapxul personal-safe get --id <id>\n```\n\nHTTP: `POST /personal-safe/get` with the payload as JSON. SDK: `Sdk.personal-safe.get(payload)`.\n",
+    "personal-safe/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe\n\nA person's own Safe: opened first, then claimed with the key they sign with, which gives its address.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| person | id | Whose Safe it is. |\n| saltNonce | SaltNonce | The salt nonce its address is worked out from, kept at open so the address can be checked again. |\n| signer (optional) | schema | The key the person proved they hold, set at claim (S1b). |\n| firstOwner (optional) | account | The one owner it is set up with, set at claim: the signer, on the environment's chain. |\n| account (optional) | account | Its address once claimed, worked out before it is deployed, checksummed (EIP-55). |\n\n## Machine\n\nStates: unclaimed. A move from the wrong state is refused PersonalSafeNotUnclaimed (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | unclaimed | PersonalSafeOpened |\n\n## Invariants\n\n- `personal-safe.oneSafePerPerson`: another personal safe holds this person. Unique on person, in every state; refused SafeAlreadyOpen.\n\n## Events\n\n- `PersonalSafeOpened`: carries safe (personal-safe.id), person (personal-safe.person: Whose Safe it is.); emitted by the move open\n\n## Roles\n\n- holder\n\n## Operations\n\n- [personal-safe.get](get.md): Read one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.\n- [personal-safe.list](list.md): List personal-safes, oldest first, 50 to a page.\n- [personal-safe.open](open.md): Open your own Safe. It has no address until you claim it with the key you sign with.\n",
+    "personal-safe/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.list\n\nList personal-safes, oldest first, 50 to a page.\n\n**Who may call:** the system.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by nothing; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| cursor (optional) | text |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |\n\n## Worked examples\n\n### safe: a person opens their safe\n\nStarts from an empty world.\n\n- **Cy can't list the Safes: only the system can.** `cy` (signed in) calls and sends nothing, and is refused with NotAllowed, AR-001.\n- **three opens wrote three Safes, one each for Ada, Bo and Cy, and no other.** `nobody` (system) calls and sends nothing, and gets back [[the cast's ada person, `none`, `none`, `unclaimed`, ``], [the cast's bo person, `none`, `none`, `unclaimed`, ``], [the cast's cy person, `none`, `none`, `unclaimed`, ``]].\n\n### safe: opening again is the same safe\n\nStarts from the world `ada has opened her safe`.\n\n- **the world holds that one Safe and no other.** `nobody` (system) calls and sends nothing, and gets back [[the world's adaSafe, the cast's ada person]].\n\n## How to call\n\n```sh\ncapxul personal-safe list [--cursor <cursor>]\n```\n\nHTTP: `POST /personal-safe/list` with the payload as JSON. SDK: `Sdk.personal-safe.list(payload)`.\n",
+    "personal-safe/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.open\n\nOpen your own Safe. It has no address until you claim it with the key you sign with.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| safe | personal-safe.id |\n\n## Move\n\n`open`: from nothing (it creates) to unclaimed, emitting PersonalSafeOpened.\n\n## Steps\n\n- `personal-safe.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SafeAlreadyOpen | 41 | SF-001 | another personal safe holds this person; by the rule personal-safe.oneSafePerPerson, carrying person |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### safe: a person opens their safe\n\nStarts from an empty world.\n\n- **the system can't open a Safe: it is nobody.** `nobody` (system) calls and sends nothing, and is refused with NotAllowed, AR-001.\n- **Ada opens her own Safe from the command line.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back an answer matching `^saf_[0-9a-z]+$`.\n- **a second open, a new request, is refused: a person has one Safe.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **nor through her agent.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **Bo's agent opens Bo's own Safe through MCP: his, not Ada's.** `bo` (signed in) calls and sends nothing, and gets back an answer matching `^saf_[0-9a-z]+$`.\n- **a second open from Bo, in his own session, is refused too.** `bo` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's bo person.\n- **Cy opens her own Safe in her own session.** `cy` (signed in) calls and sends nothing, and gets back an answer matching `^saf_[0-9a-z]+$`.\n\n### safe: opening again is the same safe\n\nStarts from the world `ada has opened her safe`.\n\n- **her first request again, by her key, is the same call: the Safe she was answered, and nothing new.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back the world's adaSafe.\n- **a new request by her key is refused.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **and in her own session.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **and through her agent.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n\n## How to call\n\n```sh\ncapxul personal-safe open\n```\n\nHTTP: `POST /personal-safe/open` with the payload as JSON. SDK: `Sdk.personal-safe.open(payload)`.\n",
     "salary-component/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# salary-component.create\n\nAdd a part of pay, an earning or a deduction, with its default amount and the ledger it is booked to.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | salary-component.company |  |\n| salaryComponent | salary-component.salaryComponent |  |\n| type | salary-component.type |  |\n| amount | salary-component.amount | What a structure line pays when it names no amount of its own, in USDC base units. 0 for none. |\n| account | salary-component.account | The company's ledger its pay is booked to: debited for an earning, credited for a deduction. |\n\n## Answer\n\n| field | value |\n|---|---|\n| salaryComponent | salary-component.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting SalaryComponentCreated.\n\n## Steps\n\n- `salary-component.create.load` (database)\n- `salary-component.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ComponentAccountNotInCompany | 41 | SC-001 | declared in errors.ts |\n| ComponentAccountIsGroup | 42 | SC-002 | declared in errors.ts |\n| SalaryComponentTaken | 43 | SC-003 | another salary component holds this company and salary component; by the rule salary-component.oneNamePerCompany |\n| AccountNotFound | 4 | AC-901 | nothing has the id in account; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### assign salary structures\n\nStarts from the world `a payroll outsider`.\n\n- **and Basic for Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Basic`, type `Earning`, amount `1000000000`, account the last call's account, and is answered.\n\n### run a payroll\n\nStarts from the world `an outside cost center`.\n\n- **Ada adds a deduction for meals of 50 USDC, booked to Salaries.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Cafeteria`, type `Deduction`, amount `50000000`, account the world's salaries, and is answered.\n- **Ada adds an earning of 100 USDC booked to Rent.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Night shift`, type `Earning`, amount `100000000`, account the world's rent, and is answered.\n\n### set up salary components\n\nStarts from the world `a salaries ledger`.\n\n- **Bo can't add a component to Acme Trading.** `bo` (signed in) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `3000000000`, account the world's salaries, and is refused with NotAllowed, AR-001.\n- **Ada adds Basic, an earning of 3,000 USDC by default, booked to Salaries.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `3000000000`, account the world's salaries, and is answered.\n- **Pension, a deduction of 150 USDC, is booked to Pension Payable.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Pension`, type `Deduction`, amount `150000000`, account the world's pension, and is answered.\n- **Housing may have no default amount.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Housing`, type `Earning`, amount `0`, account the world's salaries, and is answered.\n- **a component booked to a group is refused.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Bonus`, type `Earning`, amount `0`, account the world's operating, and is refused with ComponentAccountIsGroup, SC-002.\n- **so is one booked to Liabilities, the group above Payroll Payable.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Tax`, type `Deduction`, amount `10000000`, account the world's liabilities, and is refused with ComponentAccountIsGroup, SC-002.\n- **a name already used in the company is refused, whatever its type.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Deduction`, amount `5000000`, account the world's pension, and is refused with SalaryComponentTaken, SC-003.\n- **Acme Trading's component booked to that group is refused for the company, before the group.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Overtime`, type `Earning`, amount `0`, account the last call's account, and is refused with ComponentAccountNotInCompany, SC-001.\n- **Acme Trading's component can't be booked to Acme Logistics' ledger.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Overtime`, type `Earning`, amount `0`, account the last call's account, and is refused with ComponentAccountNotInCompany, SC-001.\n- **another company's account is refused before a name already taken.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `0`, account the last call's account, and is refused with ComponentAccountNotInCompany, SC-001.\n- **and a group before a name already taken.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `0`, account the world's operating, and is refused with ComponentAccountIsGroup, SC-002.\n- **Acme Logistics may have its own Basic, booked to its own ledger.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Basic`, type `Earning`, amount `1000000000`, account the last call's account, and is answered.\n- **but not booked to Acme Trading's Salaries.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Housing`, type `Earning`, amount `0`, account the world's salaries, and is refused with ComponentAccountNotInCompany, SC-001.\n\n### set up salary structures\n\nStarts from the world `a pension component`.\n\n- **and gives Acme Logistics its own Basic.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Basic`, type `Earning`, amount `1000000000`, account the last call's account, and is answered.\n- **Ada adds an earning with no default.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Overtime`, type `Earning`, amount `0`, account the world's salaries, and is answered.\n\n## How to call\n\n```sh\ncapxul salary-component create --company <company> --salaryComponent <salaryComponent> --type <type> --amount <amount> --account <account>\n```\n\nHTTP: `POST /salary-component/create` with the payload as JSON. SDK: `Sdk.salary-component.create(payload)`.\n",
     "salary-component/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# salary-component.get\n\nRead one salary-component by its id: company, salaryComponent, type, amount, account, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | salary-component.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | salary-component.company |  |\n| salaryComponent | salary-component.salaryComponent |  |\n| type | salary-component.type |  |\n| amount | salary-component.amount | What a structure line pays when it names no amount of its own, in USDC base units. 0 for none. |\n| account | salary-component.account | The company's ledger its pay is booked to: debited for an earning, credited for a deduction. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up salary components\n\nStarts from the world `a salaries ledger`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's salaryComponent, and is refused with NotAllowed, AR-001.\n- **it reads back as added.** `ada` (role company.owner) calls and sends id the last call's salaryComponent, and gets back [the world's company, `Basic`, `Earning`, `3000000000`, the world's salaries, `active`].\n- **and reads back a deduction.** `ada` (role company.owner) calls and sends id the last call's salaryComponent, and gets back [`Pension`, `Deduction`, `150000000`, the world's pension].\n- **and reads back 0.** `ada` (role company.owner) calls and sends id the last call's salaryComponent, and gets back [`Housing`, `0`].\n\n## How to call\n\n```sh\ncapxul salary-component get --id <id>\n```\n\nHTTP: `POST /salary-component/get` with the payload as JSON. SDK: `Sdk.salary-component.get(payload)`.\n",
     "salary-component/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# salary-component\n\nA part of an employee's pay: an earning, such as basic pay, or a deduction, such as a pension contribution.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| salaryComponent | ComponentName |  |\n| type | ComponentType |  |\n| amount | Amount | What a structure line pays when it names no amount of its own, in USDC base units. 0 for none. |\n| account | account.id | The company's ledger its pay is booked to: debited for an earning, credited for a deduction. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused SalaryComponentNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | SalaryComponentCreated |\n\n## Invariants\n\n- `salary-component.oneNamePerCompany`: another salary component holds this company and salary component. Unique on company, salaryComponent, in every state; refused SalaryComponentTaken.\n\n## Events\n\n- `SalaryComponentCreated`: carries salaryComponent (salary-component.id), company (salary-component.company), type (salary-component.type); emitted by the move create\n\n## Operations\n\n- [salary-component.create](create.md): Add a part of pay, an earning or a deduction, with its default amount and the ledger it is booked to.\n- [salary-component.get](get.md): Read one salary-component by its id: company, salaryComponent, type, amount, account, state.\n",
@@ -131282,5 +131637,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "e11cf1765021e706eb2fd2278ce47416c3d1ea86dbdad9ac6518232a7f1f0b92"
+  "digest": "f39f25c671ea4adac246d80d182c5207ac213e7e355f5143c1bd3f2e2b05ebc9"
 }

@@ -23316,6 +23316,64 @@
       },
       "hash": "2231825001f4dfe7"
     },
+    "personal-safe.list": {
+      "kind": "read",
+      "name": "personal-safe.list",
+      "thing": "personal-safe",
+      "verb": "list",
+      "identifier": "list",
+      "file": "blueprint/things/personal-safe/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "List personal-safes, oldest first, 50 to a page.",
+      "payload": {
+        "cursor": {
+          "value": {
+            "type": "text",
+            "max": 64
+          },
+          "optional": true
+        }
+      },
+      "answer": {
+        "items": {
+          "value": {
+            "type": "schema"
+          }
+        },
+        "next": {
+          "value": {
+            "type": "schema"
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "system"
+        }
+      ],
+      "agentTool": false,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 80
+      },
+      "list": {
+        "where": [],
+        "order": "oldest",
+        "page": 50
+      },
+      "hash": "100626a0d9b1ff6f"
+    },
     "personal-safe.open": {
       "kind": "operation",
       "name": "personal-safe.open",
@@ -81442,6 +81500,9 @@
         "bo": {
           "kind": "signed-in"
         },
+        "cy": {
+          "kind": "signed-in"
+        },
         "nobody": {
           "kind": "system"
         }
@@ -81787,11 +81848,179 @@
           ]
         },
         {
+          "title": "Cy opens her own Safe in her own session",
+          "call": {
+            "actor": "cy",
+            "operation": "personal-safe.open",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^saf_[0-9a-z]+$",
+              "flags": ""
+            },
+            {
+              "kind": "emits",
+              "event": "PersonalSafeOpened",
+              "fields": {
+                "safe": {
+                  "ref": [
+                    "last",
+                    "safe"
+                  ]
+                },
+                "person": {
+                  "ref": [
+                    "cast",
+                    "cy",
+                    "person"
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "is-in",
+              "thing": "personal-safe",
+              "id": {
+                "ref": [
+                  "last",
+                  "safe"
+                ]
+              },
+              "state": "unclaimed"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "personal-safe.open",
+                "personal-safe.open.insert"
+              ],
+              "absent": []
+            }
+          ]
+        },
+        {
+          "title": "Cy reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet",
+          "call": {
+            "actor": "cy",
+            "operation": "personal-safe.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "safe"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "cast",
+                    "cy",
+                    "person"
+                  ]
+                },
+                "none",
+                "none",
+                "none",
+                "unclaimed"
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": ""
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy can't list the Safes: only the system can",
+          "call": {
+            "actor": "cy",
+            "operation": "personal-safe.list",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "three opens wrote three Safes, one each for Ada, Bo and Cy, and no other",
+          "call": {
+            "actor": "nobody",
+            "operation": "personal-safe.list",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "none",
+                  "none",
+                  "unclaimed",
+                  ""
+                ],
+                [
+                  {
+                    "ref": [
+                      "cast",
+                      "bo",
+                      "person"
+                    ]
+                  },
+                  "none",
+                  "none",
+                  "unclaimed",
+                  ""
+                ],
+                [
+                  {
+                    "ref": [
+                      "cast",
+                      "cy",
+                      "person"
+                    ]
+                  },
+                  "none",
+                  "none",
+                  "unclaimed",
+                  ""
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "an agent's MCP tools hold opening and reading a Safe",
           "skipped": "the tools list is not an operation"
         }
       ],
-      "sourceHash": "46830642c245d6c07e4ae98164c30c25a2699dc3aa288569e8bb7f6dc922e4a3"
+      "sourceHash": "c39831e2c8467fc1d312ac1c62a632fbb5af995e92f15428996e0f8bc9d48767"
     },
     "journeys/safe-opening-again-is-the-same-safe.ts": {
       "name": "safe: opening again is the same safe",
@@ -81799,6 +82028,9 @@
       "cast": {
         "ada": {
           "kind": "signed-in"
+        },
+        "nobody": {
+          "kind": "system"
         }
       },
       "starts": "ada has opened her safe",
@@ -81955,9 +82187,42 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "the world holds that one Safe and no other",
+          "call": {
+            "actor": "nobody",
+            "operation": "personal-safe.list",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "adaSafe"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  }
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "76f090c85f5460bcf02294fa921049ced6b77d93216580152b00d57a354e633c"
+      "sourceHash": "a688ca8ac8299358242a0dea6543853384a794bba586117564c64d78956636a9"
     },
     "journeys/schedule-an-interview.ts": {
       "name": "schedule an interview",
@@ -120534,6 +120799,48 @@
       ]
     },
     {
+      "id": "defect:personal-safe.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "personal-safe.list",
+        "severity": "page",
+        "owner": "blueprint/things/personal-safe/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "defect:personal-safe.open",
       "kind": "defect",
       "labels": {
@@ -127579,6 +127886,49 @@
       "target": 0.95,
       "windowDays": 28,
       "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:personal-safe.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "personal-safe.list",
+        "severity": "page",
+        "owner": "blueprint/things/personal-safe/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
       "minCalls": 20,
       "alerts": [
         {

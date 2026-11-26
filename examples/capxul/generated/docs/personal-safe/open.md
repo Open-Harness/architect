@@ -47,6 +47,7 @@ Starts from an empty world.
 - **nor through her agent.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.
 - **Bo's agent opens Bo's own Safe through MCP: his, not Ada's.** `bo` (signed in) calls and sends nothing, and gets back an answer matching `^saf_[0-9a-z]+$`.
 - **a second open from Bo, in his own session, is refused too.** `bo` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's bo person.
+- **Cy opens her own Safe in her own session.** `cy` (signed in) calls and sends nothing, and gets back an answer matching `^saf_[0-9a-z]+$`.
 
 ### safe: opening again is the same safe
 

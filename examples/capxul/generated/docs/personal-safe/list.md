@@ -1,0 +1,52 @@
+<!-- Generated from the blueprint. Do not edit. -->
+# personal-safe.list
+
+List personal-safes, oldest first, 50 to a page.
+
+**Who may call:** the system.
+
+**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by nothing; pass the answer's `next` as `cursor` for the page after it.
+
+**Budget:** p95 80ms.
+
+## Payload
+
+| field | value |
+|---|---|
+| cursor (optional) | text |
+
+## Answer
+
+| field | value |
+|---|---|
+| items | schema |
+| next | schema |
+
+## Refusals
+
+| refusal | exit | code | when |
+|---|---|---|---|
+| NotAllowed | 3 | AR-001 | the caller isn't the system; the handler never runs |
+
+## Worked examples
+
+### safe: a person opens their safe
+
+Starts from an empty world.
+
+- **Cy can't list the Safes: only the system can.** `cy` (signed in) calls and sends nothing, and is refused with NotAllowed, AR-001.
+- **three opens wrote three Safes, one each for Ada, Bo and Cy, and no other.** `nobody` (system) calls and sends nothing, and gets back [[the cast's ada person, `none`, `none`, `unclaimed`, ``], [the cast's bo person, `none`, `none`, `unclaimed`, ``], [the cast's cy person, `none`, `none`, `unclaimed`, ``]].
+
+### safe: opening again is the same safe
+
+Starts from the world `ada has opened her safe`.
+
+- **the world holds that one Safe and no other.** `nobody` (system) calls and sends nothing, and gets back [[the world's adaSafe, the cast's ada person]].
+
+## How to call
+
+```sh
+capxul personal-safe list [--cursor <cursor>]
+```
+
+HTTP: `POST /personal-safe/list` with the payload as JSON. SDK: `Sdk.personal-safe.list(payload)`.

@@ -2545,6 +2545,11 @@
     "kind": "allowed-by"
   },
   {
+    "from": "personal-safe.list",
+    "to": "personal-safe",
+    "kind": "reads"
+  },
+  {
     "from": "personal-safe.open",
     "to": "personal-safe",
     "kind": "acts-on"

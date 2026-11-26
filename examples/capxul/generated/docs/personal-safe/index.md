@@ -39,4 +39,5 @@ States: unclaimed. A move from the wrong state is refused PersonalSafeNotUnclaim
 ## Operations
 
 - [personal-safe.get](get.md): Read one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.
+- [personal-safe.list](list.md): List personal-safes, oldest first, 50 to a page.
 - [personal-safe.open](open.md): Open your own Safe. It has no address until you claim it with the key you sign with.

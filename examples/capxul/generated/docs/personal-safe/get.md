@@ -42,6 +42,7 @@ Starts from an empty world.
 - **Ada reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet.** `ada` (signed in) calls and sends id the last call's safe, and gets back [the cast's ada person, `none`, `none`, `none`, `unclaimed`] and gets back ``.
 - **Ada can't read Bo's.** `ada` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.
 - **Bo's agent reads it back: Bo's, unclaimed, with his own salt nonce.** `bo` (signed in) calls and sends id the last call's safe, and gets back [the cast's bo person, `none`, `none`, `none`, `unclaimed`] and gets back ``.
+- **Cy reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet.** `cy` (signed in) calls and sends id the last call's safe, and gets back [the cast's cy person, `none`, `none`, `none`, `unclaimed`] and gets back ``.
 
 ### safe: opening again is the same safe
 

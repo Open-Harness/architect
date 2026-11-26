@@ -7,10 +7,11 @@ import { SafeAlreadyOpen } from "../blueprint/things/personal-safe/errors.ts";
 import { machine } from "../blueprint/things/personal-safe/machine.ts";
 import open from "../blueprint/things/personal-safe/verbs/open.ts";
 import get from "../blueprint/things/personal-safe/verbs/get.ts";
+import list from "../blueprint/things/personal-safe/verbs/list.ts";
 import { saltProblem } from "./support/safe-address.ts";
 
 export default Blueprint.journey("safe: opening again is the same safe", {
-  cast: { ada: Blueprint.signedIn },
+  cast: { ada: Blueprint.signedIn, nobody: Blueprint.system },
   starts: "ada has opened her safe",
   steps: (s) => [
     s.step(
@@ -43,6 +44,12 @@ export default Blueprint.journey("safe: opening again is the same safe", {
       "and through her agent",
       s.ada.via(Via.agent).run(open, {}),
       refuses(SafeAlreadyOpen, { person: s.ada.person }),
+      noEvents(),
+    ),
+    s.step(
+      "the world holds that one Safe and no other",
+      s.nobody.run(list, {}),
+      expect((p) => p.items.map((i: { readonly id: string; readonly person: string }) => [i.id, i.person])).toEqual([[s.world.adaSafe, s.ada.person]]),
       noEvents(),
     ),
   ],

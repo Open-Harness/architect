@@ -2,17 +2,20 @@
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone.
 // S1 of design/decisions/CX-safe.md (#1168), the person's Safe's machine: a person opens their own Safe, from the
 // command line (`Via.key`, the CLI's way in) and through MCP (`Via.agent`, an agent's), and it has no owner and no
-// address until it is claimed. The salt nonce is judged by support/safe-address.ts, never by the answer.
+// address until it is claimed. Cy opens hers in her own session, so every way in opens one. The salt nonce is judged by support/safe-address.ts, never by the answer.
 import { Blueprint, Via, emits, expect, has, noEvents, refuses, spans } from "orthograph";
 import { PersonalSafeOpened } from "../blueprint/things/personal-safe/events.ts";
 import { SafeAlreadyOpen } from "../blueprint/things/personal-safe/errors.ts";
 import { machine } from "../blueprint/things/personal-safe/machine.ts";
 import open from "../blueprint/things/personal-safe/verbs/open.ts";
 import get from "../blueprint/things/personal-safe/verbs/get.ts";
+import list from "../blueprint/things/personal-safe/verbs/list.ts";
 import { saltProblem } from "./support/safe-address.ts";
 
+type Item = { readonly person: string; readonly saltNonce: bigint; readonly signer?: string; readonly account?: string; readonly state: string };
+
 export default Blueprint.journey("safe: a person opens their safe", {
-  cast: { ada: Blueprint.signedIn, bo: Blueprint.signedIn, nobody: Blueprint.system },
+  cast: { ada: Blueprint.signedIn, bo: Blueprint.signedIn, cy: Blueprint.signedIn, nobody: Blueprint.system },
   steps: (s) => [
     s.step(
       "the system can't open a Safe: it is nobody",
@@ -82,6 +85,39 @@ export default Blueprint.journey("safe: a person opens their safe", {
       "a second open from Bo, in his own session, is refused too",
       s.bo.run(open, {}),
       refuses(SafeAlreadyOpen, { person: s.bo.person }),
+      noEvents(),
+    ),
+    s.step(
+      "Cy opens her own Safe in her own session",
+      s.cy.run(open, {}),
+      expect((a) => a.safe).toMatch(/^saf_[0-9a-z]+$/),
+      emits(PersonalSafeOpened, { safe: s.last.safe, person: s.cy.person }),
+      machine.isIn(s.last.safe, "unclaimed"),
+      spans({ present: ["personal-safe.open", "personal-safe.open.insert"] }),
+    ),
+    s.step(
+      "Cy reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet",
+      s.cy.run(get, { id: s.last.safe }),
+      expect((a) => [a.person, a.signer ?? "none", a.firstOwner ?? "none", a.account ?? "none", a.state]).toEqual([
+        s.cy.person, "none", "none", "none", "unclaimed",
+      ]),
+      expect((a) => saltProblem(a)).toBe(""),
+      noEvents(),
+    ),
+    s.step(
+      "Cy can't list the Safes: only the system can",
+      s.cy.run(list, {}),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+    ),
+    s.step(
+      "three opens wrote three Safes, one each for Ada, Bo and Cy, and no other",
+      s.nobody.run(list, {}),
+      expect((p) => p.items.map((i: Item) => [i.person, i.signer ?? "none", i.account ?? "none", i.state, saltProblem(i)])).toEqual([
+        [s.ada.person, "none", "none", "unclaimed", ""],
+        [s.bo.person, "none", "none", "unclaimed", ""],
+        [s.cy.person, "none", "none", "unclaimed", ""],
+      ]),
       noEvents(),
     ),
     s.step(
