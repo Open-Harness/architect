@@ -2,12 +2,16 @@
 // M1.51, the npm preview's dry run (K28). Repo tooling, plain Node ESM: packages never import it.
 //   node tools/release/preview.mjs --dry-run [--root <dir>] [--registry <url>] [--tag <tag>]
 // Lists every public package under <root>/packages/* (no `"private": true`) with its version, tag, licence and the files
-// `npm pack --dry-run` would send, then judges the licence (Aaron, 23 November 2026: "Make it all Apache 2.0") and, against
-// npmjs, the tag (`next` only). It reads the disk and runs `npm pack --dry-run`; it never publishes, never reads a token and
+// `pnpm pack` would send (the tarball a `pnpm publish` makes: `workspace:` links and `bin` rewritten, the preset's `prepack` run),
+// then judges the licence (Aaron, 23 November 2026: "Make it all Apache 2.0"), what pnpm cannot or did not put right
+// (a `workspace:` link that survives, a `bin` outside the tarball, a preset with no starter; slice 5, #1063) and, against npmjs,
+// the tag (`next` only). In a workspace with an `nx.json` it first BUILDS the public packages (the lead's call, slice 5), so the
+// tarballs hold `dist`. It reads the disk, builds and packs into a scratch folder; it never publishes, never reads a token and
 // never opens a connection: the registry is only an address it compares the tag against. A real publish is Aaron's.
 import { execFile } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
@@ -48,11 +52,36 @@ const manifests = (root) => {
     .sort((a, b) => a.name.localeCompare(b.name));
 };
 
-/** What npm itself would put in the tarball. */
-const packed = async (dir) => {
-  const { stdout } = await run("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: dir, maxBuffer: 64 * 1024 * 1024 });
-  const [info] = JSON.parse(stdout);
-  return { files: info.files.map((f) => f.path).sort(), size: info.size };
+const FIELDS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
+const STARTER = ["files/blueprint/", "files/src/", "files/journeys/", "files/generated/model/model.json"];
+
+const failure = (e) => String(e.stderr || e.stdout || e.message).split("\n").find((l) => l.trim() !== "") ?? "failed";
+
+/** Build the public packages of a workspace that has an `nx.json`, so the tarballs hold `dist`. Returns a refusal line, or nothing. */
+const built = async (root, list) => {
+  if (!existsSync(join(root, "nx.json"))) return [];
+  const projects = list.filter((m) => existsSync(join(m.dir, "project.json"))).map((m) => basename(m.dir));
+  try {
+    await run("pnpm", ["nx", "run-many", "-t", "build", "-p", projects.join(","), "--outputStyle=static"], { cwd: root, env: { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true" }, maxBuffer: 256 * 1024 * 1024 });
+    return [];
+  } catch (e) { return [`refused: the build of the public packages failed: ${failure(e)}`]; }
+};
+
+/** What `pnpm pack` makes of a package: the files and size of its tarball and the manifest inside it. When pnpm refuses, the files are what npm would list and `error` says why. */
+const packed = async (m, scratch) => {
+  const out = mkdtempSync(join(scratch, "pack-"));
+  try {
+    await run("pnpm", ["pack", "--pack-destination", out], { cwd: m.dir, maxBuffer: 64 * 1024 * 1024 });
+    const tgz = join(out, readdirSync(out).find((f) => f.endsWith(".tgz")));
+    const [listed, manifest] = await Promise.all([run("tar", ["-tzf", tgz], { maxBuffer: 64 * 1024 * 1024 }), run("tar", ["-xOzf", tgz, "package/package.json"])]);
+    const files = listed.stdout.split("\n").filter((f) => f !== "" && !f.endsWith("/")).map((f) => f.replace(/^package\//, "")).sort();
+    return { files, size: statSync(tgz).size, manifest: JSON.parse(manifest.stdout) };
+  } catch (e) {
+    const { stdout } = await run("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: m.dir, maxBuffer: 64 * 1024 * 1024 });
+    const [info] = JSON.parse(stdout);
+    const { dir: _dir, ...disk } = m;
+    return { files: info.files.map((f) => f.path).sort(), size: info.size, manifest: { ...disk, ...(m.publishConfig?.bin === undefined ? {} : { bin: m.publishConfig.bin }) }, error: failure(e) };
+  }
 };
 
 const bytes = (n) => (n < 1000 ? `${n} B` : n < 1e6 ? `${(n / 1e3).toFixed(1)} kB` : `${(n / 1e6).toFixed(1)} MB`);
@@ -70,6 +99,27 @@ const licenceRefusals = (list) => list.flatMap((m) => {
   return [`refused: ${m.name} license is ${JSON.stringify(m.license)}, not ${LICENSE}`];
 });
 
+/** A `workspace:` link pnpm did not rewrite: one line per link, naming the package and the dependency. When pnpm could not pack at all and no link explains it, its own words. */
+const linkRefusals = (m, p) => {
+  const links = FIELDS.flatMap((field) => Object.entries(p.manifest[field] ?? {}).filter(([, spec]) => String(spec).startsWith("workspace:")).map(([dep, spec]) => ({ field, dep, spec })));
+  if (links.length > 0) return links.map(({ field, dep, spec }) => `refused: ${m.name} keeps the link ${dep}@${spec} in ${field}: pnpm cannot resolve it to a version`);
+  return p.error === undefined ? [] : [`refused: ${m.name} could not be packed by pnpm: ${p.error}`];
+};
+
+/** One line per `bin` of the manifest as published whose file is not in the tarball. */
+const binRefusals = (m, p) => {
+  const bin = p.manifest.bin;
+  const entries = typeof bin === "string" ? [[m.name, bin]] : Object.entries(bin ?? {});
+  return entries.filter(([, file]) => !p.files.includes(posix.normalize(file))).map(([name, file]) => `refused: ${m.name} bin ${name} names ${file}, which is not in the tarball`);
+};
+
+/** The preset carries the starter: its blueprint, handlers, journeys and compiled model, in the tarball and not only on the disk. */
+const starterRefusals = (m, p) => {
+  if (m.name !== "@orthograph/preset") return [];
+  const missing = STARTER.filter((part) => !p.files.some((f) => f === part || (part.endsWith("/") && f.startsWith(part))));
+  return missing.length === 0 ? [] : [`refused: ${m.name} has no starter in its tarball: ${missing.join(", ")} missing`];
+};
+
 const rootLicenceRefusal = () => {
   const file = join(repoRoot, "LICENSE");
   const text = existsSync(file) ? readFileSync(file, "utf8") : "";
@@ -85,13 +135,19 @@ const main = async () => {
     console.error(`refused: tag "${tag}" is not allowed on ${args.registry}: the preview goes out under "next" only`);
     return 1;
   }
-  const list = manifests(resolve(args.root));
-  const sent = await Promise.all(list.map((m) => packed(m.dir)));
-  list.forEach((m, i) => console.log(block(m, tag, sent[i])));
-  const refusals = [...licenceRefusals(list), ...rootLicenceRefusal()];
-  refusals.forEach((line) => console.error(line));
-  console.log(`${list.length} packages, tag ${tag}, registry ${args.registry}: dry run, nothing sent`);
-  return refusals.length === 0 ? 0 : 1;
+  const root = resolve(args.root);
+  const list = manifests(root);
+  const buildRefusal = await built(root, list);
+  if (buildRefusal.length > 0) { buildRefusal.forEach((line) => console.error(line)); return 1; }
+  const scratch = mkdtempSync(join(tmpdir(), "ortho-preview-"));
+  try {
+    const sent = await Promise.all(list.map((m) => packed(m, scratch)));
+    list.forEach((m, i) => console.log(block(m, tag, sent[i])));
+    const refusals = [...licenceRefusals(list), ...list.flatMap((m, i) => [...linkRefusals(m, sent[i]), ...binRefusals(m, sent[i]), ...starterRefusals(m, sent[i])]), ...rootLicenceRefusal()];
+    refusals.forEach((line) => console.error(line));
+    console.log(`${list.length} packages, tag ${tag}, registry ${args.registry}: dry run, nothing sent`);
+    return refusals.length === 0 ? 0 : 1;
+  } finally { rmSync(scratch, { recursive: true, force: true }); }
 };
 
 process.exitCode = await main();
