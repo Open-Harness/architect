@@ -114,11 +114,11 @@
         }
       },
       {
-        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'",
         "uses": "pnpm/action-setup@v6.1.0"
       },
       {
-        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'",
         "uses": "actions/setup-node@v7.1.0",
         "with": {
           "node-version": 24,
@@ -126,17 +126,20 @@
         }
       },
       {
-        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'",
         "run": "pnpm install --frozen-lockfile"
       },
       {
         "id": "aff",
-        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'",
         "run": "tools/ci/affected.sh \"origin/$BASE_REF\" HEAD e2e prove | tee -a \"$GITHUB_OUTPUT\"\n",
         "env": {
           "BASE_REF": "${{ github.base_ref }}"
         }
       }
     ]
+  },
+  "workflowEnv": {
+    "M1_SHARDS": "6"
   }
 }

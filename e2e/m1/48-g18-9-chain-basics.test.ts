@@ -261,12 +261,12 @@ const project = (): Json => JSON.parse(read("e2e/project.json")) as Json;
 
 // The evaluator above judges what the job's own conditions mean. Two hostile passes showed it can't judge what the job trusts (the jobs that feed it, the
 // nx target it names, the triggers, every other step's script), so the job and those parts are also held to approved shapes, word for word:
-// e2e/m1/48-g18-9-chain-basics.approved.json, which holds today's job without its env, the `ready` step's script, the whole `changes` job (its outputs and the steps that compute them), the
+// e2e/m1/48-g18-9-chain-basics.approved.json, which holds today's job without its env, the `ready` step's script, the workflow's env, the whole `changes` job (its outputs and the steps that compute them), the
 // pull request trigger's types and the nx target. SKIP is one of two approved expressions; the evaluator, on planted copies below, shows each means
 // what the rule says. Sharding is not offered here: a matrix on this required job would rename its check, and the target cannot pass vitest a shard
 // (nx adds the flag to every command, so `rm` gets it). The e2e-m1 shape (a shard job, a gate, the reports merged) is its own slice, and that slice's author
 // owns approved.json and rewrites it. The scripts the `changes` steps call (tools/ci/docs-only.sh, scope.sh, affected.sh) are judged by tools/ci/ci.test.sh, not here.
-const APPROVED = JSON.parse(read("e2e/m1/48-g18-9-chain-basics.approved.json")) as { job: Json; readyRun: string; changesJob: Json; prTypes: ReadonlyArray<string>; target: Json };
+const APPROVED = JSON.parse(read("e2e/m1/48-g18-9-chain-basics.approved.json")) as { job: Json; readyRun: string; changesJob: Json; workflowEnv: Json; prTypes: ReadonlyArray<string>; target: Json };
 export const SKIP_RUN =
   "!((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/on-chain')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')";
 export const SKIP_GATED = `${SKIP_RUN} || (github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_e2e == 'false')`;
@@ -284,7 +284,8 @@ export const exactProblems = (workflow: Json, proj: Json): ReadonlyArray<string>
   if (off.length > 0) out.push(`the job e2e-on-chain is not the approved job: its ${off.join(", ")} differ (e2e/m1/48-g18-9-chain-basics.approved.json)`);
   if (canon(keysOf(env)) !== canon(["SKIP"]) || !SKIPS.includes(String(env?.SKIP))) out.push("the job's env is not exactly SKIP, set to one of the two approved expressions (SKIPS in this check)");
   for (const [k, v] of Object.entries((workflow.jobs ?? {}) as Json)) if (k !== JOB && (k.includes("on-chain") || String((v as Json)?.name ?? "").includes("on-chain"))) out.push(`another job, ${k}, is named for the on-chain suite`);
-  for (const k of extra(workflow, ["name", "on", "permissions", "concurrency", "jobs"])) out.push(`the workflow has \`${k}\` at its top`);
+  for (const k of extra(workflow, ["name", "on", "permissions", "env", "concurrency", "jobs"])) out.push(`the workflow has \`${k}\` at its top`);
+  if (workflow.env !== undefined && canon(workflow.env) !== canon(APPROVED.workflowEnv)) out.push(`the workflow's env is ${JSON.stringify(workflow.env)}, not the approved ${JSON.stringify(APPROVED.workflowEnv)} (every job sees it)`);
   for (const k of extra(workflow.on, ["push", "pull_request"])) out.push(`the workflow runs on \`${k}\` too`);
   const branches: ReadonlyArray<unknown> = Array.isArray(workflow.on?.push?.branches) ? workflow.on.push.branches : [];
   if (!branches.includes("main") || branches.some((b) => String(b).startsWith("!"))) out.push(`the push trigger's branches are ${JSON.stringify(branches)}: main, and no pattern that takes a branch out`);
