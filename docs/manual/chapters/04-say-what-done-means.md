@@ -4,8 +4,9 @@ Film: `docs/explainer/films/say-done/` · App: `examples/plugged-in`
 
 **How it stands.** Every command here runs today, and every line of output was recorded by `docs/manual/capture.sh`.
 That a *different* agent writes the journeys is this repository's practice: no command starts an agent in a role, and
-nothing in a new app stops a builder editing a journey. The journey commands are rough in four places, listed under
-"What goes wrong", and are being fixed (26 November 2026): this page shows what ran on the day it was recorded.
+nothing in a new app stops a builder editing a journey. The journey commands are rough in four places, the last four
+items under "What goes wrong", and are being fixed (26 November 2026): this page shows what ran on the day it was
+recorded.
 
 ## What you do
 
@@ -86,7 +87,7 @@ journey claim a handle ✘ 0/8 steps
 - **The six that pass.** They are marked `proved by the description`: the blueprint already says who may call, so the
   runtime refuses a stranger before any handler runs. Nobody has to build those.
 
-```sh capture=prove-empty.txt
+```sh part capture=prove-empty.txt
   ✔ "bob cannot move aaron's link, and the handler never runs": proved by the description
 ```
 
@@ -102,7 +103,14 @@ journey claim a handle ✘ 0/8 steps
   writes that journey unprompted, and you check it is there.
 - **A blank is not listed.** `ortho check` lists blanks only under `blueprint/`. The stubs are written there; Plugged
   In keeps its finished journeys in `journeys/` at the root, and both places are read.
+- **Adding stubs turns the check red.** That is right while they are blanks, and the same run also reports drift in
+  `generated/` until `ortho generate` is run again. Nobody builds until the author has filled them.
 - **A single new journey breaks the check.** `ortho add journey <name>` writes a stub with a blank cast, and the
-  commands that read the model then stop with an error until the cast is filled in.
+  commands that read the model then stop with an error, not a question, until the cast is filled in:
+
+```sh capture=stub-one-check.txt
+$ ortho check
+exit 1
+```
 - **The stories only cover the happy path.** Count the refusals: every declared refusal needs a step that causes it.
   The full run's coverage line counts them for you (chapter 5).

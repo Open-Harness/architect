@@ -80,7 +80,7 @@
     },
     {
      "id": "t3",
-     "text": "The trace is everything that one call did. Read the first line. The operation. How long it took. And the word refused, with the refusal's name."
+     "text": "The trace is everything that one call did. Start at the top span. The operation. How long it took. And the word refused, with the refusal's name."
     },
     {
      "id": "t4",

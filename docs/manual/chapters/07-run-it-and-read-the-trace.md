@@ -27,13 +27,15 @@ $ plugged-in handle claim --name secondpage
 exit 12
 ```
 
+The tool printed the first line. `exit 12` is the status it ended with, written down by the recording.
+
 "I asked for a second name and it said no" is enough to hand over.
 
 ## What your agent does
 
 It makes the same call again and keeps the trace's id from the answer.
 
-```sh capture=refusal-http.txt
+```sh part capture=refusal-http.txt
 HTTP/1.1 422 Unprocessable Entity
 x-trace-id: 6586442f3b59173fa3fa4d9a1e3b62cf
 {"_tag":"HandleAlreadyOwned","code":"HN-002"}
@@ -62,13 +64,14 @@ export const oneNamePerPerson = Blueprint.invariant.unique(Handle.fields.owner, 
 
 ## What you read
 
-- **The first line of the trace**: the operation, how long it took, and `refused` with the refusal's name. A refusal
-  is the system working. A fault is marked `✘ defect` instead, and that is a bug.
+- **The operation's line, under the trace's id**: the operation, how long it took, and `refused` with the refusal's name. A refusal
+  is the system working. A fault is marked as a defect instead, with a ✘, and that is a bug. This chapter did not record one: the mark is
+  from the telemetry command's own page, `packages/cli/src/modules/telemetry/README.md`.
 - **The line under it**: which rule refused, by its name in the blueprint.
 - **What is missing.** The step `handle.claim.record` ran and there is no `handle.claim.commit`: the rule was
   checked after the work and before the commit, so nothing was saved. Compare a call that was answered:
 
-```sh capture=trace-answered.txt
+```sh part capture=trace-answered.txt
 profile.get  22 ms
   profile.get.commit  0.0 ms  step commit
 ```
@@ -84,5 +87,5 @@ profile.get  22 ms
 - **The app was stopped.** `ortho telemetry trace` reads files, so a trace recorded before the stop still prints.
 - **The agent explains the refusal from the handler.** The handler never refuses `HandleAlreadyOwned`: the runtime
   does, from the rule. If an explanation does not name a line of the blueprint, ask for the trace.
-- **You are reading a defect as a refusal.** `refused` is a declared answer with a code. `✘ defect` is the server
+- **You are reading a defect as a refusal.** `refused` is a declared answer with a code. A defect is the server
   failing, and it goes to a builder with the trace attached.

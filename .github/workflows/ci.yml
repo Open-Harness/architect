@@ -499,6 +499,10 @@ jobs:
         run: pnpm nx run e2e:m0-names --outputStyle=static
       - if: env.SKIP != 'true'
         run: pnpm nx run canon:check --outputStyle=static
+      # The manual's check (docs/manual/README.md): a role's words agree everywhere, every written command is in the command
+      # line's recorded tree, and a chapter quotes only what was recorded or what a file says.
+      - if: env.SKIP != 'true'
+        run: node docs/manual/check.mjs
       # A decision's `## Supersedes` phrases are gone from everything but the records (proposal 8; AGENTS.md, "Who decides").
       - if: env.SKIP != 'true'
         run: tools/ci/supersedes.sh

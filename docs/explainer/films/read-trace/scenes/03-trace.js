@@ -43,7 +43,7 @@ Film.scene("trace", {
     s.run(B, c("t2", "ortho"), { type: c("t2", "$") - c("t2", "ortho") - 0.2, at: c("t3") + 0.1, each: 0.13 });
     s.out(A, up - 0.15, { dur: 0.3 }); s.to(B, { y: -264, height: 520, duration: 0.55, ease: "power2.inOut" }, up);
     s.in(".all", c("t3", "everything"), { x: 16, y: 0 });
-    Loc.light(s, first, c("t3", "first line"));
+    Loc.light(s, first, c("t3", "top span"));
     [[op, n1, "operation"], [ms, n2, "how long"], [ref, n3, "refused"]].forEach(([m, n, word]) => { s.to(m, { color: "#62c6ff", duration: 0.3 }, c("t3", word)); s.in(n, c("t3", word), { y: 6, dur: 0.35 }); });
     Loc.light(s, cause, c("t4", "cause")); s.in(n4, c("t4", "rule"), { y: 6, dur: 0.35 }); s.to(rule, { color: "#62c6ff", duration: 0.3 }, c("t4", "one name"));
     s.out(".all", c("t5") - 0.3, { dur: 0.3 });

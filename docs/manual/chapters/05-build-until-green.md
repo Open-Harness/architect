@@ -17,19 +17,26 @@ brief handle.claim
 Write   src/handle/claim.ts, and nothing else.
 Don't touch
   blueprint/**
+  blueprint/journeys/**
+  blueprint/starting-worlds/**
   journeys/**
   generated/**
+  test/**
 Done when
+  ortho prove --env local passes, with handle.claim's 9 evals: answer shape, declared errors, machine path, events, who may call, steps, performance, coverage, explainability
+  and the journeys that call it: journeys/a-name-is-claimed-once.ts, journeys/a-stranger-cannot-edit-a-page.ts, journeys/claim-a-handle.ts, journeys/release-a-handle.ts, journeys/the-story.ts
   ortho check passes
 ```
 
+The brief also has a Read part and a Do part, left out here.
+
 ## What your agent does
 
-The builder writes the one [handler](../../canon/handlers.mdx) the brief names, runs the journey, reads the first
-failure, fixes it, and runs it again. On Plugged In's `handle.claim` the climb has three rungs.
+The builder writes the one [handler](../../canon/handlers.mdx) the brief names, runs the journey, reads what
+failed, fixes it, and runs it again. On Plugged In's `handle.claim` the climb has three rungs.
 
 **Rung 0: the scaffold.** Four of eight steps pass before a line is written: they are the steps that never needed
-this handler. The first failure names the blank the handler reached, and the file it is in.
+this handler. One failure line names the blank the handler reached, and the next names the file it is in.
 
 ```sh capture=climb-0-prove.txt
 $ ortho prove --only "claim a handle"

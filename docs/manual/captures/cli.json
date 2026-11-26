@@ -1,0 +1,335 @@
+{
+ "arguments": [],
+ "flags": {},
+ "subcommands": {
+  "model": {
+   "arguments": [],
+   "flags": {
+    "json": "switch",
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "describe": {
+   "arguments": [],
+   "flags": {
+    "json": "switch",
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "dev": {
+   "arguments": [],
+   "flags": {
+    "root": "value",
+    "port": "value"
+   },
+   "subcommands": {}
+  },
+  "prove": {
+   "arguments": [],
+   "flags": {
+    "env": [
+     "local",
+     "test",
+     "staging"
+    ],
+    "root": "value",
+    "port": "value",
+    "empty": "switch",
+    "only": "value",
+    "changed": "switch",
+    "json": "switch",
+    "report": "value",
+    "run": "value"
+   },
+   "subcommands": {}
+  },
+  "promote": {
+   "arguments": [],
+   "flags": {
+    "to": [
+     "staging",
+     "production"
+    ],
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "secrets": {
+   "arguments": [],
+   "flags": {
+    "env": "value",
+    "root": "value"
+   },
+   "subcommands": {
+    "set": {
+     "arguments": [
+      "name"
+     ],
+     "flags": {
+      "env": "value",
+      "root": "value"
+     },
+     "subcommands": {}
+    }
+   }
+  },
+  "add": {
+   "arguments": [],
+   "flags": {},
+   "subcommands": {
+    "thing": {
+     "arguments": [
+      "name"
+     ],
+     "flags": {
+      "dry-run": "switch",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "operation": {
+     "arguments": [
+      "name"
+     ],
+     "flags": {
+      "dry-run": "switch",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "read": {
+     "arguments": [
+      "name"
+     ],
+     "flags": {
+      "dry-run": "switch",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "journey": {
+     "arguments": [
+      "name"
+     ],
+     "flags": {
+      "dry-run": "switch",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "journeys": {
+     "arguments": [
+      "thing"
+     ],
+     "flags": {
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "feature": {
+     "arguments": [
+      "package"
+     ],
+     "flags": {
+      "as": "value",
+      "dry-run": "switch",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "adapter": {
+     "arguments": [
+      "package"
+     ],
+     "flags": {
+      "as": "value",
+      "dry-run": "switch",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "projection": {
+     "arguments": [
+      "package"
+     ],
+     "flags": {
+      "as": "value",
+      "dry-run": "switch",
+      "root": "value"
+     },
+     "subcommands": {}
+    }
+   }
+  },
+  "new": {
+   "arguments": [],
+   "flags": {},
+   "subcommands": {
+    "adapter": {
+     "arguments": [
+      "name"
+     ],
+     "flags": {
+      "from-openapi": "value",
+      "root": "value"
+     },
+     "subcommands": {}
+    }
+   }
+  },
+  "check": {
+   "arguments": [],
+   "flags": {
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "generate": {
+   "arguments": [],
+   "flags": {
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "brief": {
+   "arguments": [
+    "operation"
+   ],
+   "flags": {
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "impact": {
+   "arguments": [],
+   "flags": {
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "version": {
+   "arguments": [],
+   "flags": {
+    "next": "switch",
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "publish": {
+   "arguments": [],
+   "flags": {
+    "dry-run": "switch",
+    "local": "switch",
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "build": {
+   "arguments": [],
+   "flags": {
+    "root": "value"
+   },
+   "subcommands": {}
+  },
+  "env": {
+   "arguments": [],
+   "flags": {},
+   "subcommands": {
+    "up": {
+     "arguments": [
+      "env"
+     ],
+     "flags": {
+      "port": "value",
+      "revision": "value",
+      "plan": "switch",
+      "run": "value",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "down": {
+     "arguments": [
+      "env"
+     ],
+     "flags": {
+      "port": "value",
+      "revision": "value",
+      "plan": "switch",
+      "run": "value",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "status": {
+     "arguments": [
+      "env"
+     ],
+     "flags": {
+      "port": "value",
+      "revision": "value",
+      "plan": "switch",
+      "run": "value",
+      "root": "value"
+     },
+     "subcommands": {}
+    },
+    "destroy": {
+     "arguments": [
+      "env"
+     ],
+     "flags": {
+      "plan": "switch",
+      "run": "value",
+      "root": "value"
+     },
+     "subcommands": {}
+    }
+   }
+  },
+  "worlds": {
+   "arguments": [],
+   "flags": {},
+   "subcommands": {
+    "reap": {
+     "arguments": [],
+     "flags": {
+      "root": "value"
+     },
+     "subcommands": {}
+    }
+   }
+  },
+  "telemetry": {
+   "arguments": [],
+   "flags": {},
+   "subcommands": {
+    "trace": {
+     "arguments": [
+      "id"
+     ],
+     "flags": {
+      "env": "value",
+      "root": "value"
+     },
+     "subcommands": {}
+    }
+   }
+  },
+  "watch": {
+   "arguments": [],
+   "flags": {
+    "env": "value",
+    "source": [
+     "file",
+     "axiom"
+    ],
+    "since": "value",
+    "root": "value"
+   },
+   "subcommands": {}
+  }
+ }
+}
