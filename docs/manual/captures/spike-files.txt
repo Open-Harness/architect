@@ -1,0 +1,3 @@
+$ ls spikes/pay-by-name-reversal
+README.md
+spike.mjs

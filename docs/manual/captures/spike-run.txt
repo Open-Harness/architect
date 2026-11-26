@@ -1,0 +1,31 @@
+$ node spikes/pay-by-name-reversal/spike.mjs
+question: can a late reversal be mirrored without a balance going below zero?
+played: 8 events on one wallet, in every order they can happen: 2520 orders
+  pay A 50 · A clears · pay B 30 · B clears · withdraw 40 · withdraw 30 · the provider reverses A · the notice comes again
+in 1680 orders the reversal comes before A clears: every rule is kept, whatever the app does
+in 840 orders the reversal is late: A had already cleared
+in 225 of those the holder had already withdrawn, and what is left cannot cover it
+in 171 of those 225 the provider's own figure for the whole wallet goes below zero too
+
+mirror it at once
+  broken in 225 of 840: a balance never goes below zero
+    for example: pay A 50 → 0, A clears → 50, withdraw 30 → 20, the provider reverses A → -30
+  kept in all 840: a balance is exactly the settled payments in, minus the withdrawals and returns out
+  kept in all 840: the app's balance and the money the provider really holds agree
+
+refuse to mirror it
+  kept in all 840: a balance never goes below zero
+  kept in all 840: a balance is exactly the settled payments in, minus the withdrawals and returns out
+  broken in 840 of 840: the app's balance and the money the provider really holds agree
+    for example: pay A 50 → 0, A clears → 50, the provider reverses A → 50
+
+take what is there, and write the rest down as a shortfall
+  kept in all 840: a balance never goes below zero
+  broken in 225 of 840: a balance is exactly the settled payments in, minus the withdrawals and returns out
+    for example: pay A 50 → 0, A clears → 50, withdraw 30 → 20, the provider reverses A → 0
+  broken in 225 of 840: the app's balance and the money the provider really holds agree
+    for example: pay A 50 → 0, A clears → 50, withdraw 30 → 20, the provider reverses A → 0
+  kept in all 840: the same two rules, with the shortfall counted
+  the shortfall: in 225 orders, 40 at most, and still owed at the end in 150
+
+the notice coming twice: changed nothing in any order, once the payment is marked returned

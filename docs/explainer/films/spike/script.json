@@ -1,0 +1,171 @@
+{
+ "title": "Spike what you doubt",
+ "source": "the manual · spikes/pay-by-name-reversal",
+ "steps": [
+  "Doubt",
+  "Orders",
+  "Rules",
+  "Page",
+  "Stands"
+ ],
+ "about": "The question in this film is a line of the plan page in docs/manual/captures, every line of terminal output is replayed from a recording of the spike's real run, and the page is read from spikes/pay-by-name-reversal. An agent ran the spike for this chapter, on a design nobody has agreed yet.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "pictures": {
+  "carries": "The ledger strip: one wallet's events in a row with the balance written under each, ending below zero. It is drawn from the example line in captures/spike-run.txt, first appears in the orders scene, and returns in the rules, page and stands scenes.",
+  "doubt": "The plan page from captures/plan-page.txt with its seven doubts, five marked blank and two marked spike, and the late reversal line lifted out and handed to the spike, shown with Kit.who.",
+  "orders": "A terminal replaying the opening lines of captures/spike-run.txt, the eight events laid out as the ledger strip, and the three counts (safe, late, cannot cover) computed from that recording.",
+  "rules": "The ledger strip played three times, once for each way, replaying the three blocks of captures/spike-run.txt: the balance ending below zero, the app and the provider disagreeing, and the shortfall written beside a balance of zero. Below zero is drawn as a number, not in red: it is a finding, not a verdict.",
+  "page": "An editor quoting the question and answer lines of spikes/pay-by-name-reversal/README.md (also captures/spike-readme.txt), then its decision and open risks headings, beside a terminal replaying captures/spike-files.txt.",
+  "stands": "The ledger strip small, the page beside it, and Kit.stand marking the spike as practice, with no command, and the provider spike as not run; it ends on the next chapter's title."
+ },
+ "scenes": [
+  {
+   "id": "doubt",
+   "title": "One question",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "The plan for pay by name fits on one page. And the page lists seven doubts."
+    },
+    {
+     "id": "a2",
+     "text": "Five are decisions only you can make. Two are questions nobody can answer by thinking harder."
+    },
+    {
+     "id": "a3",
+     "text": "Describe the system now, and you build it on a guess."
+    },
+    {
+     "id": "a4",
+     "text": "So one agent takes the spike role, and is given one line of the page. Can a late reversal be mirrored, without a balance going below zero?"
+    },
+    {
+     "id": "a5",
+     "text": "It may write throwaway code in a folder of its own. It touches nothing in the app."
+    }
+   ]
+  },
+  {
+   "id": "orders",
+   "title": "Every order",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "A late reversal is a question about order. Money came in. Some of it left. Then the provider took the payment back."
+    },
+    {
+     "id": "b2",
+     "text": "So the spike builds no wallet, and calls no provider. It keeps a small ledger, and plays eight events in every order they can happen."
+    },
+    {
+     "id": "b3",
+     "text": "Two thousand five hundred and twenty orders.",
+     "gap": 0.6
+    },
+    {
+     "id": "b4",
+     "text": "In two thirds of them the reversal comes before the payment clears. Every rule is kept."
+    },
+    {
+     "id": "b5",
+     "text": "In eight hundred and forty, the reversal is late. And in two hundred and twenty-five of those, the holder has already withdrawn, and what is left cannot cover it."
+    }
+   ]
+  },
+  {
+   "id": "rules",
+   "title": "Three ways, three breaks",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "c1",
+     "text": "The spike tries three things the app could do, and holds each to rules copied from the plan page."
+    },
+    {
+     "id": "c2",
+     "text": "Mirror it at once. A payment of fifty clears. The holder withdraws thirty. The provider reverses the payment. The balance is minus thirty.",
+     "gap": 0.6
+    },
+    {
+     "id": "c3",
+     "text": "Refuse to mirror it. The balance stays above zero, and stops being true. The app and the provider disagree in every late order."
+    },
+    {
+     "id": "c4",
+     "text": "Or take what is there, and write the rest down as a shortfall. The balance holds in every order."
+    },
+    {
+     "id": "c5",
+     "text": "But two rules break as they are written, until the shortfall is counted in them. And in one hundred and fifty orders, somebody is still owed money at the end."
+    }
+   ]
+  },
+  {
+   "id": "page",
+   "title": "One page is kept",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "d1",
+     "text": "The spike ends by writing one page. It opens with the question, and the answer."
+    },
+    {
+     "id": "d2",
+     "text": "Not with the rules as the plan page has them. A late reversal breaks one of three rules, and the app only chooses which."
+    },
+    {
+     "id": "d3",
+     "text": "Then what was tried, what was found, and what was not tried."
+    },
+    {
+     "id": "d4",
+     "text": "It decides nothing. It says what you now have to decide. Either a settled payment is final, or the plan gains a new thing."
+    },
+    {
+     "id": "d5",
+     "text": "The code is thrown away. Two files stay in the folder, as evidence, and the app never imports them."
+    }
+   ]
+  },
+  {
+   "id": "stands",
+   "title": "What you read",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "e1",
+     "text": "You read the page, and nothing else. The answer, then the open risks."
+    },
+    {
+     "id": "e2",
+     "text": "A spike goes wrong when it answers a different question. Or when it only shows the idea working. Ask what it did to break it."
+    },
+    {
+     "id": "e3",
+     "text": "And it goes wrong when the code gets kept, or when the answer is read as a decision."
+    },
+    {
+     "id": "e4",
+     "text": "One honest note. Spiking is how we work in this repository. No command runs one. An agent ran this spike for this chapter. It is small, it called no provider, and nobody has agreed the design it tests.",
+     "gap": 0.6
+    },
+    {
+     "id": "e5",
+     "text": "The page's other spike was not run. Next: describe it."
+    }
+   ]
+  }
+ ]
+}
