@@ -1,4 +1,4 @@
-# CX-composable-pieces: Capxul as pieces a business picks when its app is built (Superseded by CX-features, 26 November 2026: "Capxul as features a business picks when its app is built")
+# CX-composable-pieces: Capxul as pieces a business picks when its app is built (Superseded by CX-features, 26 November 2026: "Capxul as features a business picks when its app is built"; every "piece" and "pieces" in this record's composability sense reads "feature" and "features")
 
 **Drafted 26 November 2026** by Goal 16's 📐 composable-pieces designer (session `session_01S8RF7CccTeLkaVUQpKSExm`),
 started by Goal 16's lead, with Aaron in the loop. Grounded at `goal/capxul` `66b3c131`. The architecture calls are the
@@ -22,7 +22,7 @@ Example", and ERPNext `a6f54f9c` and Frappe HRMS `46b38904` (outside data, read,
 A Capxul piece is an ordinary **feature plugin** (`M1-plugins.md`, `docs/canon/plugins.mdx`): a package in
 `examples/capxul/plugins/<piece>/`, tagged `scope:plugin`, mounted by one file, `examples/capxul/blueprint/features/<piece>.ts`.
 A business's Capxul is the set of mount files it has; `ortho check` refuses a set with an unmet need; `ortho generate`
-makes the app. No new framework word is needed: "piece" in this record is plain English for "a Capxul feature plugin". (Superseded by CX-features, 26 November 2026: "feature", the code's own word for a feature plugin; every "piece" and "pieces" in this record's composability sense reads "feature" and "features".)
+makes the app. No new framework word is needed: "piece" in this record is plain English for "a Capxul feature plugin". (Superseded by CX-features, 26 November 2026: "feature" is the code's own word for a feature plugin.)
 The superagent already works this way on `goal/superagent` (five plugins, a dependency order, cross-plugin links by
 import, cross-plugin events wired in the app's mount files with `on`), so Capxul follows a proved path. Every piece's
 things live in the app's one default database, because the books need a document and its ledger lines in one commit and
@@ -399,6 +399,7 @@ The brief counted 44; there are 53 thing folders today, and #1116 lands five mor
 | `payroll` | salary-component, salary-structure, salary-structure-assignment, salary-detail, payroll-period, payroll-entry, payroll-employee-detail, salary-slip, salary-slip-detail |
 | `parties` (from #1116) | customer, customer-group, supplier, supplier-group |
 | `payments` (from #1116) | payment-entry |
+| `onchain-pay` (added by CX-features, 26 November 2026) | the Safe's things, built by the money lead in `blueprint/things/` until `company` and `people` move |
 
 **Value files.** `blueprint/values/*.ts` split with them:
 
@@ -428,6 +429,9 @@ writes the mount file, and ends with `prove` passing everything that passed befo
 1. **`company`** first, alone: everything links to it. This move also adds `examples/capxul/plugins/*` to the workspace
    and proves the mechanics (names kept, the generated wire byte-identical).
 2. **`ledger`** and **`people`**, in parallel.
+2a. **`onchain-pay`** (added by CX-features, 26 November 2026), after `company` and `people`: the Safe's things, which
+   the money lead builds in `blueprint/things/` until then, move into their own feature. It is born early, not later
+   with the chain as section 1 had it, because Aaron has said the Safe comes first (CX-bridge-rails, call 12).
 3. **`time`**, **`performance`** and **`recruitment`** (after `people`), in parallel, each keeping today's names and
    wire.
 4. **The bank-account flip, inside the app,** its own G12 pair, because it changes the wire, done before either thing

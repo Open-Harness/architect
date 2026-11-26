@@ -55,10 +55,16 @@ they are dated words too, and they stand.
 - `docs/canon/status.md`'s heading "Capxul's own pieces", which describes the earlier plan K43 replaced, in K30's
   words.
 
-## Not changed yet
+## CX-bridge-rails, and the `onchain-pay` row
 
-`design/decisions/CX-bridge-rails.md` is in an open pull request (#1149) and not on `goal/capxul`. Once it lands, it
-gains its own "Superseded by CX-features" notes beside each "piece" in this sense.
+`design/decisions/CX-bridge-rails.md` landed on `goal/capxul` (#1149) after this record was first written. It is a
+dated record too, so it keeps its words and gains a "(Superseded by CX-features, 26 November 2026: …)" note beside each
+"piece" in this sense: "the piece that prepares a payout", "no `budgets` piece", "the Safe's piece" (twice) and "the
+pieces designer". Its other uses stay.
+
+CX-composable-pieces' move (section 6) gains an `onchain-pay` row, after `company` and `people`: the money lead builds
+the Safe's things in `blueprint/things/` until those two move, then they move into their own feature. The row is marked
+as added by this record.
 
 ## Supersedes
 
@@ -105,3 +111,6 @@ their other senses stay.
 - `design/decisions/CX-tax-us-rows.md`: "point 3 to the `payroll-tax-us` piece" → "point 3 to the `payroll-tax-us` feature"
 - `design/decisions/CX-crypto-accounting.md`: "It's all core, no optional piece." → "It's all core, no optional feature."
 - `design/decisions/CX-onchain-safe.md`: "The planned `onchain-pay` piece" → "The planned `onchain-pay` feature"
+- `design/decisions/CX-bridge-rails.md`: "the Safe's piece" → "the Safe's feature"
+- `design/decisions/CX-bridge-rails.md`: "no `budgets` piece" → "no `budgets` feature"
+- `design/decisions/CX-bridge-rails.md`: "the pieces designer" → "the features designer"

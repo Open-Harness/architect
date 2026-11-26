@@ -175,8 +175,8 @@ citing its page. When gap 3 lands, slice 8 fills payroll's contract, "the tax on
 the interim operation's journeys keep passing.
 
 **Mounted early, filling nothing.** The feature is mounted from slice 0, because `ortho prove` runs only what the app
-mounts. A mounted `payroll-tax-us` that fills no contract leaves payroll exactly as it is, so this is still "no tax feature
-filling payroll's contract", the interim CX-composable-pieces and CX-money-global-payroll describe. Until `payroll` is a
+mounts. A mounted `payroll-tax-us` that fills no contract leaves payroll exactly as it is, so this is still no tax feature
+filling payroll's contract, the interim CX-composable-pieces and CX-money-global-payroll describe. Until `payroll` is a
 plugin and gap 3 lands, the feature imports nothing of payroll's (Salary Slip, Employee, components) and nothing of the
 app's.
 

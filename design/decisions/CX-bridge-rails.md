@@ -175,7 +175,7 @@ Aaron, 26 November 2026: "everything is on a budget. safe can do anything but ty
 - **The Safe's owners can do anything directly.** That is the exception path, signed by the owners' own keys (a
   person's Safe: the key that claiming installs as its only owner, approved on Capxul's page).
 - **Over budget is refused, not queued.** Capxul declares its own refusal, `PayoutOverBudget { remaining }`, in the
-  piece that prepares a payout (`bridge-accounts`), with `remaining` in USDC base units. It is not held for an owner.
+  piece that prepares a payout (`bridge-accounts`) (Superseded by CX-features, 26 November 2026: "the piece that prepares a payout" → "the feature that prepares a payout"), with `remaining` in USDC base units. It is not held for an owner.
 
 **What limits the role.** The Org Budget scopes V3 `send`'s tuple, not a bare ERC-20 transfer. For a finite budget with
 an allowance key, the amount is `and(lteUint256(limit), withinAllowance(allowanceKey))`: `withinAllowance` caps the
@@ -216,7 +216,7 @@ anywhere. So:
 
 **Separately, the accounting budget.** Slice 12's budgets are ERPNext's Budget against accounts and cost centres, kept in
 the database (CX-composable-pieces, item 22). That is a different check, made when the payout's Payment Entry posts
-(the ledger's check before a posting, which `budgets` fills). It is optional: with no `budgets` piece there is no check.
+(the ledger's check before a posting, which `budgets` fills). It is optional: with no `budgets` piece there is no check (Superseded by CX-features, 26 November 2026: "no `budgets` piece" → "no `budgets` feature").
 
 **Lifted and new.** Lifted: the Org Budget's role shape and its conditions, Zodiac Roles 2.1.1 as the delegation, leg 1
 as a CapxulPayments `send`, and the flag's intent (payouts off until this works). New: charging it in USDC at funding,
@@ -328,7 +328,7 @@ prove, in Orthograph's terms, before the lift counts.
     opened without the Safe's address, and a payout can't be funded without the Safe and Capxul's Payment. Aaron,
     26 November 2026, on the Safe before Bridge: "yes". Bridge's slices come after the Safe's.
 12. **Bridge and the Safe as two rails.** CX-composable-pieces calls them alternative rails. Every Bridge payout is
-    funded by the Safe, so `bridge-accounts` depends on the Safe's piece (`onchain-pay`). Applied in section 4.
+    funded by the Safe, so `bridge-accounts` depends on the Safe's piece (`onchain-pay`) (Superseded by CX-features, 26 November 2026: "the Safe's piece" → "the Safe's feature"). Applied in section 4.
 
 ### Right, and kept
 
@@ -388,9 +388,9 @@ Proposed, for the slices below and their authors and builders:
   rejection reasons kept.
 - The stand-in: `source_deposit_instructions` on a crypto-source transfer; fixed outputs; `return_instructions`; the
   sandbox's quirks; chain moves, after the devnet's Bridge.
-- CX-composable-pieces: `bridge-accounts` depends on the Safe's piece (`onchain-pay`) and on Capxul's Payments. Its two
+- CX-composable-pieces: `bridge-accounts` depends on the Safe's piece (`onchain-pay`) (Superseded by CX-features, 26 November 2026: "the Safe's piece" → "the Safe's feature") and on Capxul's Payments. Its two
   rails lines, a dated record's, keep their words and gain a note in this pull request (Supersedes, below) now that
-  Aaron has said the Safe comes first; its dependency table and the goal brief's slice order are the pieces designer's
+  Aaron has said the Safe comes first; its dependency table and the goal brief's slice order are the pieces designer's (Superseded by CX-features, 26 November 2026: "the pieces designer" → "the features designer")
   and the lead's to change.
 
 ## 5. The lift plan
