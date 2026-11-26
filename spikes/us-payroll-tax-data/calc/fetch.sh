@@ -5,6 +5,7 @@
 set -euo pipefail
 out="${1:?scratch dir}"
 mkdir -p "$out/src" "$out/pubs"
+out=$(cd "$out" && pwd) # absolute, so the cd below and the converter later resolve the same folder
 cd "$out/src"
 [ -d ow ] || git clone -q https://github.com/open-withholding/open-withholding ow
 [ -d nk ] || git clone -q https://github.com/Nyaksik/us-payroll-tax-tables nk
