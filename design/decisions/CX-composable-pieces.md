@@ -448,7 +448,8 @@ its piece's folder and, at most, one mount file.
 | Books core | `ledger` and `rates`, then `parties`, `payments`, `contractors`, `tax`, `items`, `invoicing` | the move's step 2; gaps 1 and 2 |
 | Banking | `banking`, `bridge-accounts` | `ledger` moved |
 | HR | `people`, `time`, `expenses` | the move's step 2 |
-| Payroll | `payroll`, `payroll-tax-us` | `time` moved; gap 3 for the tax split |
+| Payroll | `payroll` | `time` moved |
+| United States payroll tax | `payroll-tax-us`, built now in a lane of its own (Aaron, 26 November 2026) | nothing; it plugs into payroll's contract when gap 3 lands |
 | Optional books | `selling`, `buying`, `pos`, `subscriptions`, `assets`, `equity`, `projects`, `budgets` | `invoicing` built |
 | Optional HR | `performance`, `recruitment`, `workplace` | `people` moved |
 | CRM | `crm` | `parties` built |
