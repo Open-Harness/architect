@@ -1,6 +1,6 @@
 {
   "name": "@orthograph/shell",
-  "version": "0.0.0",
+  "version": "0.1.0-next.1",
   "description": "The app's shell: a router over the generated route table, the layouts and their slots, the navigation, the breadcrumb and the palette, on UI SDK.",
   "type": "module",
   "license": "Apache-2.0",
