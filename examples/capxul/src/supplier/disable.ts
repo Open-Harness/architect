@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/supplier/verbs/disable.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/supplier/disable.handler.ts";
 
 /**
@@ -38,17 +37,13 @@ import type { Handler } from "../../generated/api/src/supplier/disable.handler.t
  *   once it answers, it writes SupplierDisabled: supplier from the answer;
  *   the call is the span supplier.disable, and its commit supplier.disable.commit.
  */
-const disable: Handler = (_payload, { steps, move }) =>
+const disable: Handler = ({ supplier }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span supplier.disable.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span supplier.disable.update. The state is the whole change; the runtime refused a supplier
+    // already disabled, and sets the new state once this answers.
+    yield* steps.update(move());
 
-    // The move disable, from active, to disabled.
-    yield* move();
-
-    return {
-      supplier: yield* Handlers.blank("supplier, a supplier.id"),
-    };
+    return { supplier };
   });
 
 export default disable;

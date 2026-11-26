@@ -1,8 +1,12 @@
 // Scaffolded from blueprint/things/payment-entry/verbs/submit.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Ids, Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/payment-entry/submit.handler.ts";
+import { Customer } from "../../blueprint/things/customer/thing.ts";
+import { FiscalYear } from "../../blueprint/things/fiscal-year/thing.ts";
+import { GLEntry } from "../../blueprint/things/gl-entry/thing.ts";
+import { Supplier } from "../../blueprint/things/supplier/thing.ts";
 
 const { PaymentPostingDateOutsideFiscalYear, PartyDisabled } = Errors.declared;
 
@@ -44,35 +48,94 @@ const { PaymentPostingDateOutsideFiscalYear, PartyDisabled } = Errors.declared;
  *   once it answers, it writes PaymentEntrySubmitted: paymentEntry and posted from the answer;
  *   the call is the span payment-entry.submit, and its commit payment-entry.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ paymentEntry }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span payment-entry.submit.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // PaymentPostingDateOutsideFiscalYear: exit 49, PY-009.
-    if (yield* Handlers.blank<boolean>("refuse PaymentPostingDateOutsideFiscalYear when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PaymentPostingDateOutsideFiscalYear was refused"));
-      return yield* new PaymentPostingDateOutsideFiscalYear({
-        postingDate: yield* Handlers.blank("PaymentPostingDateOutsideFiscalYear.postingDate, a Day"),
-      });
+    // Step load: database, span payment-entry.submit.load. The runtime read the payment for its role and state checks
+    // and hands it in; this step reads its company's fiscal years and its party. Every matching row counts as read at
+    // commit; the limit is set so the page holds them all.
+    const { payment, years, party } = yield* steps.load(
+      Effect.gen(function* () {
+        if (!subject) return yield* Effect.die(new Error(`payment entry ${paymentEntry} was checked and then not found`));
+        const years = yield* records.list({
+          thing: FiscalYear,
+          where: { company: subject["company"] },
+          state: undefined,
+          order: "oldest",
+          limit: Number.MAX_SAFE_INTEGER,
+          after: undefined,
+        });
+        // The party is listed, not found, so its row is guarded at commit: a disable that lands meanwhile makes this
+        // call conflict and run again, and the retry refuses PartyDisabled.
+        const parties = yield* records.list({
+          thing: subject["partyType"] === "Customer" ? Customer : Supplier,
+          where: { id: subject["party"] },
+          state: undefined,
+          order: "oldest",
+          limit: 1,
+          after: undefined,
+        });
+        const party = parties.items[0];
+        return { payment: subject, years: years.items, party };
+      }),
+    );
+    const postingDate = payment["postingDate"] as string;
+
+    // Refusal order (errors.ts), the GL Entry's validate order: the fiscal year, then the party.
+    // PaymentPostingDateOutsideFiscalYear: exit 49. One of the company's own years, matched by its span, both ends counted.
+    if (!years.some((y) => (y["yearStartDate"] as string) <= postingDate && postingDate <= (y["yearEndDate"] as string))) {
+      yield* Effect.logInfo(`${postingDate} falls in none of the company's fiscal years`);
+      return yield* new PaymentPostingDateOutsideFiscalYear({ postingDate: postingDate as never });
     }
 
-    // PartyDisabled: exit 50, PY-010.
-    if (yield* Handlers.blank<boolean>("refuse PartyDisabled when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PartyDisabled was refused"));
+    // PartyDisabled: exit 50. The GL Entry's validate_party.
+    if (party?.state === "disabled") {
+      yield* Effect.logInfo(`the ${payment["partyType"] as string} is disabled`);
       return yield* new PartyDisabled({});
     }
 
-    // Step post: database, in the store payment-entry, gl-entry, span payment-entry.submit.post.
-    yield* steps.post(Handlers.blank("post: the work this step does"));
+    // Step post: database, in the store payment-entry, gl-entry, span payment-entry.submit.post. ERPNext's build_gl_map
+    // for an unallocated payment: the party's line first, on its account with its party type and party, credited on
+    // Receive and debited on Pay; then the bank's, with no party, debited on Receive and credited on Pay.
+    const receive = payment["paymentType"] === "Receive";
+    const amount = payment["paidAmount"] as bigint;
+    const common = {
+      company: payment["company"] as never,
+      costCenter: payment["costCenter"] as never,
+      postingDate: postingDate as never,
+      voucherType: "Payment Entry",
+      voucherId: paymentEntry,
+      isCancelled: false,
+    } as const;
+    yield* steps.post(
+      Effect.gen(function* () {
+        yield* records.insert(GLEntry, {
+          id: yield* Ids.of(GLEntry.fields.id),
+          ...common,
+          account: (receive ? payment["paidFrom"] : payment["paidTo"]) as never,
+          debit: receive ? 0n : amount,
+          credit: receive ? amount : 0n,
+          partyType: payment["partyType"] as never,
+          party: payment["party"] as never,
+        });
+        yield* records.insert(GLEntry, {
+          id: yield* Ids.of(GLEntry.fields.id),
+          ...common,
+          account: (receive ? payment["paidTo"] : payment["paidFrom"]) as never,
+          debit: receive ? amount : 0n,
+          credit: receive ? 0n : amount,
+        });
+      }),
+    );
 
     // The move submit, from draft, to submitted.
     yield* move();
 
     return {
-      paymentEntry: yield* Handlers.blank("paymentEntry, a payment-entry.id"),
+      paymentEntry,
       // PaymentEntrySubmitted needs posted, and only the answer can give it.
-      posted: yield* Handlers.blank("posted, a LineCount"),
+      posted: 2n,
     };
   });
 

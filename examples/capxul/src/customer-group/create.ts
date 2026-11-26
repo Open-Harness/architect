@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/customer-group/verbs/create.ts. Yours from now on.
 import { Effect, Match } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler, Outcome } from "../../generated/api/src/customer-group/create.handler.ts";
+import { CustomerGroup } from "../../blueprint/things/customer-group/thing.ts";
 
 const { ParentCustomerGroupNotInCompany, ParentCustomerGroupIsLedger, CustomerGroupRootExists } = Errors.declared;
 
@@ -47,36 +48,64 @@ const { ParentCustomerGroupNotInCompany, ParentCustomerGroupIsLedger, CustomerGr
  *   once it answers, it writes CustomerGroupCreated: customerGroup from the answer, company from the payload;
  *   the call is the span customer-group.create, and its commit customer-group.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, customerGroupName, parentCustomerGroup, isGroup }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span customer-group.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // ParentCustomerGroupNotInCompany: exit 41, CG-001.
-    if (yield* Handlers.blank<boolean>("refuse ParentCustomerGroupNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentCustomerGroupNotInCompany was refused"));
-      return yield* new ParentCustomerGroupNotInCompany({});
+    // Step load: database, span customer-group.create.load. The runtime read the parent, when one is named, and hands it
+    // in; a root is judged on the company's groups with no parent (Frappe's validate_one_root). The company's groups
+    // count as read at commit, so two roots made at once can't both land (decisions/CX-parties-payments.md).
+    const { parent, roots } = yield* steps.load(
+      Effect.gen(function* () {
+        if (parentCustomerGroup !== undefined) return { parent: refs.parentCustomerGroup, roots: [] };
+        const page = yield* records.list({
+          thing: CustomerGroup,
+          where: { company },
+          state: undefined,
+          order: "oldest",
+          limit: Number.MAX_SAFE_INTEGER,
+          after: undefined,
+        });
+        return { parent: undefined, roots: page.items.filter((g) => !g["parentCustomerGroup"]) };
+      }),
+    );
+
+    // Refusal order (errors.ts): ParentCustomerGroupNotInCompany, ParentCustomerGroupIsLedger, CustomerGroupRootExists; the
+    // name taken twice is the runtime's, after them.
+    if (parentCustomerGroup !== undefined) {
+      // ParentCustomerGroupNotInCompany: exit 41. Judged first, so nothing is said about another company's group.
+      if (!parent || parent["company"] !== company) {
+        yield* Effect.logInfo("the parent group belongs to another company");
+        return yield* new ParentCustomerGroupNotInCompany({});
+      }
+
+      // ParentCustomerGroupIsLedger: exit 42.
+      if (parent.state !== "group") {
+        yield* Effect.logInfo("the parent group is a ledger, not a group");
+        return yield* new ParentCustomerGroupIsLedger({});
+      }
+    } else {
+      // CustomerGroupRootExists: exit 43, carrying the root the company has.
+      const root = roots[0];
+      if (root) {
+        yield* Effect.logInfo("the company already has its root group");
+        return yield* new CustomerGroupRootExists({ root: root["id"] as never });
+      }
     }
 
-    // ParentCustomerGroupIsLedger: exit 42, CG-002.
-    if (yield* Handlers.blank<boolean>("refuse ParentCustomerGroupIsLedger when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentCustomerGroupIsLedger was refused"));
-      return yield* new ParentCustomerGroupIsLedger({});
-    }
-
-    // CustomerGroupRootExists: exit 43, CG-003.
-    if (yield* Handlers.blank<boolean>("refuse CustomerGroupRootExists when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why CustomerGroupRootExists was refused"));
-      return yield* new CustomerGroupRootExists({
-        root: yield* Handlers.blank("CustomerGroupRootExists.root, a customer-group.id"),
-      });
-    }
-
-    // Step insert: database, span customer-group.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span customer-group.create.insert. A name already used is the runtime's refusal
+    // (oneNamePerCompany). A root's parent is left out and stored empty.
+    yield* steps.insert(
+      records.insert(CustomerGroup, {
+        id,
+        company,
+        customerGroupName,
+        ...(parentCustomerGroup !== undefined ? { parentCustomerGroup } : {}),
+      }),
+    );
 
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where create ends: group or ledger");
+    const outcome: Outcome = isGroup ? "group" : "ledger";
     yield* Match.value(outcome).pipe(
       // To group. From there the customer-group can: nothing more.
       Match.when("group", () => move("group")),

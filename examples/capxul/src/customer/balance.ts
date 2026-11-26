@@ -1,7 +1,8 @@
 // Scaffolded from blueprint/things/customer/verbs/balance.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/customer/balance.handler.ts";
+import { GLEntry } from "../../blueprint/things/gl-entry/thing.ts";
 
 /**
  * customer.balance: A customer's balance on a day, from the ledger lines posted with it as their party.
@@ -36,17 +37,35 @@ import type { Handler } from "../../generated/api/src/customer/balance.handler.t
  *   each step is its own span: customer.balance.sum;
  *   the call is the span customer.balance, and its commit customer.balance.commit.
  */
-const balance: Handler = (_payload, { steps }) =>
+const balance: Handler = ({ customer, onDay }, { steps }) =>
   Effect.gen(function* () {
-    // Step sum: database, span customer.balance.sum.
-    yield* steps.sum(Handlers.blank("sum: the work this step does"));
+    const records = yield* Records;
 
-    return {
-      customer: yield* Handlers.blank("customer, a customer.id"),
-      debit: yield* Handlers.blank("debit, an Amount"),
-      credit: yield* Handlers.blank("credit, an Amount"),
-      balance: yield* Handlers.blank("balance, a Balance"),
-    };
+    // Step sum: database, span customer.balance.sum. Every ledger line not cancelled with this customer as its party, posted
+    // on or before the day: debit less credit (ERPNext's get_balance_on with a party type and party). Every matching
+    // row counts as read at commit; the limit is set so the page holds them all.
+    const { debit, credit } = yield* steps.sum(
+      Effect.gen(function* () {
+        const lines = yield* records.list({
+          thing: GLEntry,
+          where: { partyType: "Customer", party: customer, isCancelled: false },
+          state: undefined,
+          order: "oldest",
+          limit: Number.MAX_SAFE_INTEGER,
+          after: undefined,
+        });
+        let debit = 0n;
+        let credit = 0n;
+        for (const line of lines.items) {
+          if ((line["postingDate"] as string) > onDay) continue;
+          debit += line["debit"] as bigint;
+          credit += line["credit"] as bigint;
+        }
+        return { debit, credit };
+      }),
+    );
+
+    return { customer, debit, credit, balance: debit - credit };
   });
 
 export default balance;

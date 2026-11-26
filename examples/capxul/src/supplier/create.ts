@@ -1,8 +1,9 @@
 // Scaffolded from blueprint/things/supplier/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/supplier/create.handler.ts";
+import { Supplier } from "../../blueprint/things/supplier/thing.ts";
 
 const { SupplierGroupNotInCompany, SupplierGroupIsGroup } = Errors.declared;
 
@@ -47,25 +48,40 @@ const { SupplierGroupNotInCompany, SupplierGroupIsGroup } = Errors.declared;
  *   once it answers, it writes SupplierCreated: supplier from the answer, company from the payload;
  *   the call is the span supplier.create, and its commit supplier.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, supplierName, supplierType, supplierGroup }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span supplier.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // SupplierGroupNotInCompany: exit 41, SU-001.
-    if (yield* Handlers.blank<boolean>("refuse SupplierGroupNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SupplierGroupNotInCompany was refused"));
-      return yield* new SupplierGroupNotInCompany({});
+    // Step load: database, span supplier.create.load. The runtime read the group, when one is named, and hands it in.
+    const group = yield* steps.load(Effect.succeed(refs.supplierGroup));
+
+    // Refusal order (errors.ts): SupplierGroupNotInCompany, then SupplierGroupIsGroup. A group is optional; given, it is
+    // the company's and a ledger, whether a root or a group below it (ERPNext's validate on the party's group).
+    if (supplierGroup !== undefined) {
+      // SupplierGroupNotInCompany: exit 41. Judged first, so nothing is said about another company's group.
+      if (!group || group["company"] !== company) {
+        yield* Effect.logInfo("the group belongs to another company");
+        return yield* new SupplierGroupNotInCompany({});
+      }
+
+      // SupplierGroupIsGroup: exit 42. A party goes in a ledger group, not one that holds other groups.
+      if (group.state === "group") {
+        yield* Effect.logInfo("the group holds other groups, not parties");
+        return yield* new SupplierGroupIsGroup({});
+      }
     }
 
-    // SupplierGroupIsGroup: exit 42, SU-002.
-    if (yield* Handlers.blank<boolean>("refuse SupplierGroupIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SupplierGroupIsGroup was refused"));
-      return yield* new SupplierGroupIsGroup({});
-    }
-
-    // Step insert: database, span supplier.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span supplier.create.insert. Two parties may share a name (ERPNext names them by a naming
+    // series). A group not given is left out and stored empty.
+    yield* steps.insert(
+      records.insert(Supplier, {
+        id,
+        company,
+        supplierName,
+        supplierType,
+        ...(supplierGroup !== undefined ? { supplierGroup } : {}),
+      }),
+    );
 
     // The move create, to active.
     yield* move();

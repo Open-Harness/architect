@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/customer/verbs/disable.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/customer/disable.handler.ts";
 
 /**
@@ -38,17 +37,13 @@ import type { Handler } from "../../generated/api/src/customer/disable.handler.t
  *   once it answers, it writes CustomerDisabled: customer from the answer;
  *   the call is the span customer.disable, and its commit customer.disable.commit.
  */
-const disable: Handler = (_payload, { steps, move }) =>
+const disable: Handler = ({ customer }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span customer.disable.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span customer.disable.update. The state is the whole change; the runtime refused a customer
+    // already disabled, and sets the new state once this answers.
+    yield* steps.update(move());
 
-    // The move disable, from active, to disabled.
-    yield* move();
-
-    return {
-      customer: yield* Handlers.blank("customer, a customer.id"),
-    };
+    return { customer };
   });
 
 export default disable;
