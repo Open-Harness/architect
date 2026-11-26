@@ -92,7 +92,11 @@ describe("45 (e) the files are npm's", () => {
     for (const m of publicOf(repo)) {
       const b = got.find((x) => x.name === m.name);
       expect(b, `${m.name} is not listed: ${lines(ran)}`).toBeDefined();
-      expect([...b!.files].sort(), m.name).toEqual(packed(m.dir));
+      // Goal 18 slice 5 (check 47): the files are the ones pnpm would publish. Two things differ from npm's list: the preset carries the starter (files/), and a package whose
+      // `publishConfig.bin` rewrites its `bin` (the cli, the compiler) no longer ships the source file npm adds for the old one.
+      const wasBin = (): ReadonlyArray<string> => { const x = m as unknown as { bin?: string | Record<string, string>; publishConfig?: { bin?: unknown } }; return x.publishConfig?.bin === undefined || x.bin === undefined ? [] : (typeof x.bin === "string" ? [x.bin] : Object.values(x.bin)).map((f) => f.replace(/^\.\//, "")); };
+      const kept = (f: string) => !(m.name === "@orthograph/preset" && f.startsWith("files/")) && !wasBin().includes(f);
+      expect([...b!.files].filter(kept).sort(), m.name).toEqual(packed(m.dir).filter(kept));
       expect(b!.count, m.name).toBe(b!.files.length);
       expect(b!.files.filter((f) => /(^|\/)src\/.*\.test\.ts$|(^|\/)expected-failing\/|(^|\/)\.env/.test(f)), m.name).toEqual([]);
     }
