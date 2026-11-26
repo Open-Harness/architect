@@ -1,0 +1,16 @@
+# #1034 (list-and-struct-flags.test.ts): the generated CLI takes a list or struct flag as JSON, decodes it, refuses malformed JSON saying so, and says JSON in --help. Red until a -build pull request closes them. A builder only deletes lines (G11).
+src/modules/cli/list-and-struct-flags.test.ts > 1. A list or struct flag is taken as JSON and decodes > JSON with spaces and new lines, as a person types it, decodes
+src/modules/cli/list-and-struct-flags.test.ts > 1. A list or struct flag is taken as JSON and decodes > one line, and an empty list of tags, decode
+src/modules/cli/list-and-struct-flags.test.ts > 1. A list or struct flag is taken as JSON and decodes > two lines decode to two rows, in order, their amounts whole numbers; the tags and the struct decode too
+src/modules/cli/list-and-struct-flags.test.ts > 1. The edges: an optional list given, and a struct that may be null > a struct that may be null takes its JSON object, and null
+src/modules/cli/list-and-struct-flags.test.ts > 1. The edges: an optional list given, and a struct that may be null > an optional list, when given, is taken as JSON
+src/modules/cli/list-and-struct-flags.test.ts > 2. Malformed or misshapen JSON is refused with a message, before the SDK > a list of numbers where --tags wants text: refused, naming tags, nothing sent
+src/modules/cli/list-and-struct-flags.test.ts > 2. Malformed or misshapen JSON is refused with a message, before the SDK > malformed JSON in --lines: refused, naming lines, nothing sent
+src/modules/cli/list-and-struct-flags.test.ts > 2. Malformed or misshapen JSON is refused with a message, before the SDK > malformed JSON in --where: refused, naming where, nothing sent
+src/modules/cli/list-and-struct-flags.test.ts > 2. Malformed or misshapen JSON is refused with a message, before the SDK > text after the JSON in --where: refused, naming where, nothing sent
+src/modules/cli/list-and-struct-flags.test.ts > 2. Malformed or misshapen JSON is refused with a message, before the SDK > text that is not JSON in --lines: refused, naming lines, nothing sent
+src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --lines keeps its own description, and says it no longer takes text
+src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --lines says JSON in both
+src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --lines says it takes a list (or array), and --where an object (or record, or struct)
+src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --tags says JSON in both
+src/modules/cli/list-and-struct-flags.test.ts > 3. --help says a list or struct flag takes JSON, in its metavar and its description > --where says JSON in both
