@@ -3,8 +3,8 @@
 **Status: decided, 26 November 2026, by Aaron** (section 8), in answers to two drafts the same day. Proposed by Goal
 16's 📐 designer thread, started by Goal 16's lead (session_01S8RF7ASqmdxbN37WdpZMcB), for Aaron's questions of 26
 November 2026 (kept as heard: "the value can change ... How is that supposed to be accounted for?" and "crypto assets
-... as a treasury asset. So how does that work?"). It builds on CX-money-global-payroll (#1121, on `goal/capxul` once
-it lands; until then on `origin/goal-16/money-global-payroll-design`), CX-onchain-safe and CX-composable-pieces.
+... as a treasury asset. So how does that work?"). It builds on CX-money-global-payroll (#1121), CX-onchain-safe and
+CX-composable-pieces.
 
 This is research and a design, not accounting advice. A qualified accountant reviews it before Capxul onboards real
 money; building goes ahead now (Aaron, section 8). Capxul prepares books; it doesn't file them.
@@ -27,13 +27,14 @@ It's all core, no optional piece. Nothing is left for Aaron to decide.
 
 ### (a) Prices: Chainlink
 
-1. **The source.** Every price comes from a Chainlink price feed (USDC/USD, ETH/USD, BTC/USD), read on chain through
+1. **The source.** Every price comes from a Chainlink price feed (USDC/USD, ETH/USD, cbBTC/USD), read on chain through
    `chain-evm` (Aaron: "chainlink decided"). There is no principal-market setting: the feed is the price. The feeds are a
    build-time list of proxy addresses, read on Ethereum mainnet by default (section 6 lists them).
 2. **Which round.** At the month-end cut-off, midnight at the end of the month's last day in the company's zone, the
    books take the last round whose `updatedAt` is at or before the cut-off. They read `latestRoundData` and, if a round
    landed after the cut-off, walk back with `getRoundData`. The price row records the feed address, the round id, the
-   answer with its decimals, and `updatedAt`.
+   answer with its decimals, and `updatedAt`. The read runs after the cut-off, early on the next month's first day, so
+   every round up to the cut-off exists.
 3. **Stale or missing.** If the round is older than the feed's heartbeat, or the read fails, the mark stops for that
    asset. A person types a price, and the row is recorded as *typed*, with who typed it.
 4. **Movements.** A movement with a dollar side, such as a customer paying a $100,000 invoice in USDC, books at its own
@@ -46,12 +47,15 @@ It's all core, no optional piece. Nothing is left for Aaron to decide.
 ### (b) What is held, and how it is measured
 
 - **USDC** in the company's Safe. With no direct redemption right (Circle's terms: a holder with no Circle Mint account
-  "may not redeem USDC with Circle"; Aaron: "it cant", "cant be done"), it is not a financial asset (KPMG Q8.4.10;
-  PwC 2.1.2), so not cash. USDC is held in the company's self-custodial Safe, never at Bridge; CX-bridge-rails corrects
-  the Bridge design (Aaron: "its never in bridge its in the safe which is self custodial").
+  "may not redeem USDC with Circle"; Aaron: "it cant", "cant be done"), it is not a financial asset (KPMG Q8.4.10; PwC
+  2.1.2), so not cash. USDC is held in the company's self-custodial Safe, never at Bridge; CX-bridge-rails, in
+  progress on `goal-16/bridge-rails-design`, corrects the Bridge design (Aaron: "its never in bridge its in the safe
+  which is self custodial").
 - **Ether**, native, in the Safe.
-- **Bitcoin**, as a wrapped token in the Safe (cbBTC or WBTC), priced at BTC/USD. Native bitcoin needs a bitcoin wallet
-  outside the Safe, which is "super complicated" in Aaron's words, so it is out.
+- **Bitcoin**, as cbBTC, Coinbase's wrapped token, in the Safe, priced directly at Chainlink's cbBTC/USD (on Ethereum
+  its heartbeat is 24 hours and its deviation 2%, so the price can lag by up to 2%; WBTC would need WBTC/BTC times
+  BTC/USD, two reads). The wrapper is a claim on Coinbase's bitcoin, which the accountant's review classifies. Native
+  bitcoin needs a bitcoin wallet outside the Safe, which is "super complicated" in Aaron's words, so it is out.
 - **Measurement:** each is a crypto asset at fair value, with the change in net income (ASC 350-60, from ASU 2023-08,
   for fiscal years beginning after 15 December 2024). The accountant's review confirms the classification of USDC and
   of a wrapped token (FASB's transfers project, expected as a proposal in early 2027, would revise the scope test for
@@ -94,18 +98,22 @@ It's all core, no optional piece. Nothing is left for Aaron to decide.
 |---|---|---|---|
 | 3 Nov | Buy 1 ETH for 3,005 USDC (price 3,000 plus a 5 USDC fee) | Debit *ETH (Safe)* 1 ETH, $3,005; credit *USDC (Safe)* 3,005 USDC, $3,005 (USDC lots at $1.00, realised nil) | Lot E1: 1 ETH at $3,005 |
 | 30 Nov | Round: 3,400 | Target 3,400 − 3,005 = $395. Debit *ETH adjustment* $395; credit *Remeasurement* $395 | Balance sheet $3,400 |
-| 15 Dec | Sell 0.4 ETH for 1,397 USDC (after a 3 USDC fee) | Debit *USDC (Safe)* 1,397 USDC, $1,397; credit *ETH (Safe)* 0.4 ETH, $1,202 (E1); credit *Realised gain* $195 | E1: 0.6 ETH, cost $1,803; new USDC lot at $1.00 |
+| 15 Dec | Sell 0.4 ETH for 1,397 USDC (after a 3 USDC fee); the USDC/USD round reads 1.0000 | Debit *USDC (Safe)* 1,397 USDC, $1,397; credit *ETH (Safe)* 0.4 ETH, $1,202 (E1); credit *Realised gain* $195 | E1: 0.6 ETH, cost $1,803; new USDC lot at $1.00 |
 | 31 Dec | Round: 3,300 | Target 1,980 − 1,803 = $177; change −$218. Debit *Remeasurement* $218; credit *ETH adjustment* $218 | Balance sheet $1,980 |
 
 For the year, the book gain is $395 + $195 − $218 = **$372**. The realised gain against cost is **$195**, which is the
 FIFO tax gain. The adjustment of **$177** is book value less tax cost: about $37 of deferred tax at 21%, for the
 accountant to book. The roll-forward: additions $3,005, dispositions $1,397, gains $590, losses $218, closing $1,980.
 
+A sold unit's mark stays in the adjustment account until the next month end. Between 15 and 31 December the
+adjustment still holds $395, of which 0.4 × $395 = $158 belongs to the units sold, so a balance sheet drawn mid-month
+overstates ether by $158. The month-end mark puts it right; an interim report should be drawn after a mark.
+
 ### (d) Where it sits
 
 All in core, as on-chain and off-chain money (Aaron: "its part of the thing, this is onchain offchain solution"):
 
-- **`company`** owns the asset files: USDC, ETH, and wrapped BTC.
+- **`company`** owns the asset files: USDC, ETH and cbBTC.
 - **`rates`** gains a source on every row: *realised*, *chainlink* (with feed, round id and `updatedAt`), or *typed*
   (with who typed it). It also gains the read of the Chainlink feeds.
 - **`ledger`** gains a measurement on each account whose asset is not the company's. *Exchange* is ERPNext's
@@ -125,8 +133,9 @@ There is no `treasury` piece. Both measurements live in `ledger`, so the open va
    first, provisional); a read-only call from an operation, outside a transaction, needs confirming in it. A stand-in
    feed, whose rounds a journey sets, is needed for the checks.
 3. **Exact conversion across decimals.** CX-money-global-payroll's helper (gap 6, #882) must convert 18-place ether and
-   an 8-place feed answer to cents exactly. Nothing else is new. The month-end trigger already exists:
-   `Blueprint.time.every("1 month", { on: { day: "last" }, zone })`.
+   an 8-place feed answer to cents exactly. Nothing else is new. The month-end trigger already exists,
+   anchored to the first day so it runs after the cut-off it reads:
+   `Blueprint.time.every("1 month", { on: { day: 1 }, zone })`.
 
 ### (f) Slices
 
@@ -168,7 +177,7 @@ the issuer would likely adversely impact the ability to classify the holding as 
 financial-asset stablecoin to ASC 320, 321 or 310, with fair value permitted (2.1.3). EY's Technical Line (updated
 March 2025) says it "may meet the definition of a financial asset that is subject to ASC 310 or ASC 320 ... or meet the
 definition of an intangible asset". Where a token without the right falls (ASC 350-60 at fair value, or ASC 350-30 at
-cost less impairment) depends on whether it then passes all six criteria; that is question 2's judgment.
+cost less impairment) depends on whether it then passes all six criteria; that is a judgment for the accountant's review (section 1(g)).
 
 **Circle's terms** (updated 15 October 2026): a holder without a Circle Mint account is "User Type B", not a customer;
 "You may not redeem USDC with Circle unless and until you open a Circle Mint account"; Circle "commits to redeem 1 USDC
@@ -262,13 +271,14 @@ a non-US company's would go.
 ## 6. Chainlink's feeds: the research
 
 Taken from Chainlink's published feed directory (`reference-data-directory.vercel.app/feeds-<network>.json`, the data
-behind docs.chain.link's address pages) on 26 November 2026. The standard feeds (path `usdc-usd`, `eth-usd`, `btc-usd`):
+behind docs.chain.link's address pages) on 26 November 2026. The standard feeds (paths `usdc-usd`, `eth-usd`, `btc-usd`, `cbbtc-usd`):
 
 | Network | Feed | Proxy | Heartbeat | Deviation | Decimals |
 |---|---|---|---|---|---|
 | Ethereum | USDC / USD | `0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6` | 82,800 s (23 h) | 0.25% | 8 |
 | Ethereum | ETH / USD | `0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419` | 3,600 s | 0.5% | 8 |
 | Ethereum | BTC / USD | `0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c` | 3,600 s | 0.5% | 8 |
+| Ethereum | cbBTC / USD | `0x2665701293fCbEB223D11A08D826563EDcCE423A` | 86,400 s | 2% | 8 |
 | Base | USDC / USD | `0x7e860098F58bBFC8648a4311b374B1D669a2bc6B` | 86,400 s | 0.3% | 8 |
 | Base | cbBTC / USD | `0x07DA0E54543a844a80ABE69c8A12F22B3aA59f9D` | 1,200 s | 0.3% | 8 |
 | Arbitrum | USDC / USD | `0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3` | 255 s | 0.1% | 8 |
@@ -290,7 +300,7 @@ several proxies per pair (SVR, shared and backup variants); the books take the s
   phase increments "each time the underlying aggregator implementation is updated". So the walk back from the latest
   round stays within a phase, and crosses into the previous phase if it must.
 - **Reading.** `getRoundData(_roundId)` returns `roundId, answer, startedAt, updatedAt, answeredInRound`; `updatedAt`
-  is "the timestamp when the answer was computed" (API reference).
+  is the "Timestamp of when the round was updated" (API reference).
 - **Responsibility.** Chainlink leaves "data quality checks, circuit breakers, and appropriate contingency logic" to the
   user (developer responsibilities), which is what the stale-price stop is. On a rollup, Chainlink also publishes a
   sequencer-uptime feed; reading on Ethereum mainnet avoids needing it.
@@ -337,7 +347,7 @@ On the first draft:
   value.
 - On guiding customers to a direct redemption right: "cant be done". So there is no Circle Mint path and no depeg stop.
 - On USDC at Bridge: "its never in bridge its in the safe which is self custodial". So the Safe holds the USDC;
-  CX-bridge-rails owns how Bridge works.
+  CX-bridge-rails, in progress on `goal-16/bridge-rails-design`, owns how Bridge works, and #1121's item 9 with it.
 - On `treasury` as an optional piece: "its part of the thing, this is onchain offchain solution". So it is core, with
   no separate piece.
 - On the defaults (FIFO, principal market, cut-off, depeg threshold, typed prices): "too complicated should jusolding
@@ -355,12 +365,13 @@ On the second draft:
 
 ## 9. What it changes
 
-USDC is held in the company's self-custodial Safe, never at Bridge; CX-bridge-rails corrects the Bridge design. This
-record changes no Bridge words.
+USDC is held in the company's self-custodial Safe, never at Bridge; CX-bridge-rails, in progress on
+`goal-16/bridge-rails-design`, corrects the Bridge design. This record changes no Bridge words, and leaves
+CX-money-global-payroll's item 9 to it.
 
-Not applied here, because the file isn't on `goal/capxul` yet: **CX-money-global-payroll** (#1121) gains the
-superseded note beside item 5, "USDC to US dollars is a standing row of one (ERPNext's Pegged Currencies) until a rate
-says otherwise", once it lands. Its own open question on how to classify USDC is answered here.
+Applied here: **CX-money-global-payroll** (#1121) keeps its words and gains a superseded note beside item 5, "USDC to
+US dollars is a standing row of one (ERPNext's Pegged Currencies) until a rate says otherwise". Its open question on
+how to classify USDC is answered here.
 
 Also unchanged:
 - **`examples/capxul/blueprint/assets/usdc.ts`**: #1121 already rewrites its comment. The ETH and wrapped-BTC asset files
