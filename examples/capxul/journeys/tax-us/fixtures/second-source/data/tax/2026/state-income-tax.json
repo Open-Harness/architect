@@ -1,0 +1,36 @@
+{
+  "year": 2026,
+  "note": "Synthetic. Not us-payroll-tax-tables' data: its file shape only. Figures that agree are taken from the open-withholding fixture beside it; the one that disagrees (Georgia's head of household standard deduction from 11 May, 15750) is invented, and fixtures/settled.ts settles it.",
+  "states": {
+    "IL": [
+      {
+        "effectiveFrom": "2026-01-01",
+        "taxType": "graduated",
+        "verified": true,
+        "sourceUrl": "https://example.test/synthetic/il",
+        "exemptionPerAllowance": 2925,
+        "brackets": { "single": [[0, 0, 0.0495]], "married_jointly": [[0, 0, 0.0495]], "head_of_household": [[0, 0, 0.0495]] }
+      }
+    ],
+    "GA": [
+      {
+        "effectiveFrom": "2026-01-01",
+        "taxType": "graduated",
+        "verified": true,
+        "sourceUrl": "https://example.test/synthetic/ga-january",
+        "annualStandardDeduction": { "single": 12000, "married_jointly": 24000, "head_of_household": 12000 },
+        "exemptionPerAllowance": 4000,
+        "brackets": { "single": [[0, 0, 0.0519]], "married_jointly": [[0, 0, 0.0519]], "head_of_household": [[0, 0, 0.0519]] }
+      },
+      {
+        "effectiveFrom": "2026-05-11",
+        "taxType": "graduated",
+        "verified": true,
+        "sourceUrl": "https://example.test/synthetic/ga-june",
+        "annualStandardDeduction": { "single": 15000, "married_jointly": 30000, "head_of_household": 15750 },
+        "exemptionPerAllowance": 5000,
+        "brackets": { "single": [[0, 0, 0.0499]], "married_jointly": [[0, 0, 0.0499]], "head_of_household": [[0, 0, 0.0499]] }
+      }
+    ]
+  }
+}
