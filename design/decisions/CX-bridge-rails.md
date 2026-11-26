@@ -193,10 +193,19 @@ waits under M2 and goes to a person, since the transfer exists).
 
 **Lifted and new.** Lifted: the Org Budget's shape and Zodiac Roles 2.1.1 as the delegation (`execTransactionWithRole`
 from the member's Safe), leg 1 as a Capxul Payment, and the flag's intent (payouts off until this works). New: charging
-the budget in USDC at funding time, the prepare-time refusal, and crediting the buffer's refund back to the budget. Two
-things R3 must prove against the implementation's contracts before it builds this: that the role's allowance can scope
-the amount of the CapxulPayments call (its parameter, not a bare ERC-20 `transfer`), and that nothing else in ADR-0017
-M00 rests on the fiat side.
+the budget in USDC at funding time, the prepare-time refusal, and crediting the buffer's refund back to the budget. 
+
+**The USDC leg can carry the budget** (checked by Goal 16's lead in the implementation). The Org Budget scopes
+CapxulPayments V3's `send` tuple, not a bare ERC-20 transfer: its amount is `and(lteUint256(limit),
+withinAllowance(allowanceKey))`, its token `equalAddress(policy.tokenAddress)`, its recipient
+`recipientCondition(policy.recipients)`; the token's approval goes only to the V3 router
+(`resolvedBudgetApprovalPermission`) (`infrastructure:packages/protocol/src/evm/budget-permissions.ts:131-155`; payroll
+the same in `payroll-payout-role.ts:96-108`; the conditions in `zodiac-conditions.ts:86-136`). So `withinAllowance`
+caps the budget's total and `lteUint256` caps each single send. `recipientCondition` passes anything when the
+recipients are "anyone" or empty, and is otherwise an OR of fixed addresses. Bridge's deposit address can differ from
+one transfer to the next, so **a budget that funds bank payouts has recipients "anyone"**; the payee's own
+external account is checked by Capxul's payout (V7, M1), not by the role. One thing R3 still proves: that nothing else
+in ADR-0017 M00 rests on the fiat side.
 
 ### KYC and KYB
 
