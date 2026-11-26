@@ -1,9 +1,12 @@
 # #1163 (A4): red until the zodiac-roles build lands.
+src/modules/roles/budget.test.ts > V3 send's shape: a payment to the third recipient passes, the wrong token, recipient or amount is refused
 src/modules/roles/budget.test.ts > a budget with no limit is bounded by its allowance alone
 src/modules/roles/budget.test.ts > a call the role allows but the token refuses is ModuleTransactionFailed, and spends nothing
+src/modules/roles/budget.test.ts > a limit of 0 lets nothing through
 src/modules/roles/budget.test.ts > a recipient not on the budget is refused OrViolation; with recipients anyone, any recipient passes
 src/modules/roles/budget.test.ts > a send over what is left is refused AllowanceExceeded, typed, before anything is sent; the rest can still be spent, then nothing
 src/modules/roles/budget.test.ts > a send within the budget passes, pays exactly that, and the allowance reads back reduced by exactly the amount
+src/modules/roles/budget.test.ts > amounts over 2^53 are judged exactly: the limit itself passes the role, one more does not
 src/modules/roles/budget.test.ts > an allowance with a refill period: what accrued is what can be spent, and not a unit more
 src/modules/roles/budget.test.ts > each send is capped at the budget's limit: the limit passes, one more is ParameterGreaterThanAllowed
 src/modules/roles/budget.test.ts > only the Safe, the modifier's owner, can change the budget

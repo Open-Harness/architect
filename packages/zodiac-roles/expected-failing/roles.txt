@@ -1,4 +1,6 @@
 # #1163 (A4): red until the zodiac-roles build lands.
+src/modules/roles/roles.test.ts > Roles.accrued > a timestamp an owner set in the future: the balance until a period after it
+src/modules/roles/roles.test.ts > Roles.accrued > amounts over 2^53, exact
 src/modules/roles/roles.test.ts > Roles.accrued > at maxRefill already
 src/modules/roles/roles.test.ts > Roles.accrued > inside the first period
 src/modules/roles/roles.test.ts > Roles.accrued > no period: the balance, however long
@@ -8,11 +10,8 @@ src/modules/roles/roles.test.ts > Roles.accrued > over maxRefill (an owner set i
 src/modules/roles/roles.test.ts > Roles.accrued > spent to 0, one period
 src/modules/roles/roles.test.ts > Roles.accrued > spent to 0, three periods
 src/modules/roles/roles.test.ts > Roles.accrued > two whole periods, capped at maxRefill
-src/modules/roles/roles.test.ts > Roles.budgetCalls > a parameter that is not one of the function's is refused, and so is one that is not static
-src/modules/roles/roles.test.ts > Roles.budgetCalls > an allowance with no refill sets maxRefill, refill and period to 0
-src/modules/roles/roles.test.ts > Roles.budgetCalls > every call is the Safe's to its modifier, with no value
-src/modules/roles/roles.test.ts > Roles.budgetCalls > the role assigned to each member once, the target scoped, the one function scoped with no value or delegate call, the allowance set
 src/modules/roles/roles.test.ts > Roles.deploy > a Safe's modifier: owner, avatar and target all the Safe, its address worked out before it is deployed
+src/modules/roles/roles.test.ts > Roles.deploy > every bit of the salt nonce counts: 0, 256, 2^64 + 1 and 2^256 - 1
 src/modules/roles/roles.test.ts > Roles.deploy > the address changes with the Safe and with the salt nonce, and with nothing else
 src/modules/roles/roles.test.ts > Roles.execTransactionWithRole > a member's call through its role, a Call (operation 0) on the modifier, with value 0 and shouldRevert true by default
 src/modules/roles/roles.test.ts > Roles.execTransactionWithRole > the value and shouldRevert given are the ones sent, and the call itself sends no wei to the modifier
