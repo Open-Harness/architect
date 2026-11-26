@@ -4,7 +4,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { helpOf } from "./help-tree.ts";
+import { walk } from "./help-tree.ts";
 
 const repo = resolve(import.meta.dirname, "../../..");
 /** A missing README is not a stale one: it reads as "" (the packages with none are not this slice's). */
@@ -23,13 +23,28 @@ const sourceFiles = (dir: string): number =>
   }, 0);
 
 describe("the CLI's README says what the CLI does", () => {
-  it("names every top-level command `ortho --help` lists, as `ortho <command>`", async () => {
+  it("names every top-level command `ortho --help` lists, as `ortho <command>`, and every `ortho …` it shows is a real command with its real flags", async () => {
     const readme = read("packages/cli/README.md");
-    const root = await helpOf([]);
-    expect(root.subcommands.length, "ortho --help lists commands").toBeGreaterThan(10);
-    const missing = root.subcommands.map((s) => s.names[0] ?? "").filter((c) => !new RegExp(`ortho ${c}\\b`).test(readme));
-    expect(missing).toEqual([]);
-  }, 60_000);
+    const tree = await walk();
+    const top = tree.get("")?.subcommands.map((s) => s.names[0] ?? "") ?? [];
+    expect(top.length, "ortho --help lists commands").toBeGreaterThan(10);
+    expect(top.filter((c) => !new RegExp(`ortho ${c}\\b`).test(readme))).toEqual([]);
+    // Each mention: `ortho` and the words after it up to the end of the code span or line. The longest known path wins.
+    const wrong: string[] = [];
+    for (const m of readme.matchAll(/(?:^|[`\s])ortho((?: [^`\n]*)?)/gm)) {
+      const words = (m[1] ?? "").trim().split(/\s+/).filter((w) => w !== "" && !/^[<[(]/.test(w));
+      const plainWords = words.filter((w) => !w.startsWith("-"));
+      let path = "";
+      for (let n = Math.min(plainWords.length, 3); n >= 1; n--) if (tree.has(plainWords.slice(0, n).join(" "))) { path = plainWords.slice(0, n).join(" "); break; }
+      if (plainWords.length > 0 && path === "" && !(plainWords[0] === "new" && plainWords[1] === "app")) { wrong.push(`ortho ${words.join(" ")} (no such command)`); continue; }
+      const flags = tree.get(path)?.flags.flatMap((f) => f.names) ?? [];
+      for (const w of words.filter((x) => x.startsWith("--"))) {
+        const f = (w.split("=")[0] ?? w).replace(/[\]),.;:]+$/, "");
+        if (!["--help", "--version", "--log-level", "--completions", "--wizard"].includes(f) && path !== "" && !flags.includes(f)) wrong.push(`ortho ${words.join(" ")} (${f})`);
+      }
+    }
+    expect(wrong).toEqual([]);
+  }, 300_000);
 
   it("does not say it has only `model`, or that the list is \"so far\"", () => {
     const readme = read("packages/cli/README.md");

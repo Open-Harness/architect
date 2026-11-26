@@ -1,5 +1,7 @@
 // Slice 7 of Goal 18 (#1065): the getting-started page, `docs/canon/getting-started.mdx`: one page from install to a proved,
 // running app and its generated tools (the `<APP>_URL` and `<APP>_TOKEN` they read).
+// The page's steps are RUN by e2e/m2/09-g18-7-getting-started.test.ts, in an empty folder against a local registry: that is
+// where "it works" is judged. This file is the fast half: it holds the page to the code, without installing anything.
 //
 // What the page must say is checked against the code, not against itself: the commands and flags it shows are looked up in
 // `ortho --help` (test/help-tree.ts), the variable names are derived the way the generated CLI derives them
@@ -14,7 +16,6 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { walk, type Page } from "./help-tree.ts";
 
 const repo = resolve(import.meta.dirname, "../../..");
-const PAGE = resolve(repo, "docs/canon/getting-started.mdx");
 const read = (path: string): string => {
   try {
     return readFileSync(resolve(repo, path), "utf8");
@@ -24,25 +25,31 @@ const read = (path: string): string => {
 };
 const page = read("docs/canon/getting-started.mdx");
 
-/** The lines of every fenced block, in order, with a leading `$ ` taken off. */
+/** The lines of every fenced block, in order, with a leading `$ `, any `NAME=value ` and a runner (`pnpm`, `npx`, `npm exec`) before `ortho` taken off. */
 const fenceLines = (text: string): ReadonlyArray<string> => {
   const out: string[] = [];
   let inside = false;
   for (const line of text.split("\n")) {
     if (/^\s*```/.test(line)) inside = !inside;
-    else if (inside) out.push(line.trim().replace(/^\$\s+/, ""));
+    else if (inside)
+      out.push(
+        line
+          .trim()
+          .replace(/^\$\s+/, "")
+          .replace(/^(?:[A-Z][A-Z0-9_]*=\S+\s+)+/, "")
+          .replace(/^(?:(?:pnpm|yarn|bun)(?:\s+exec)?\s+|npx\s+(?:--yes\s+)?|npm\s+exec\s+(?:--\s+)?)(?=ortho\s)/, ""),
+      );
   }
   return out;
 };
 const lines = fenceLines(page);
 /** The prose: the page without its fences and without its frontmatter. */
 const prose = page.replace(/^---\n[\s\S]*?\n---\n/, "").replace(/```[\s\S]*?```/g, "");
-const first = (re: RegExp): number => lines.findIndex((l) => re.test(l));
 
 /** How the generated CLI turns an app's name into its variable prefix (`cli.ts`: `name.toUpperCase().replace(/-/g, "_")`). */
 const prefixOf = (name: string) => name.toUpperCase().replace(/-/g, "_");
 
-const CREATE = /^(?:ortho new app|(?:npm|pnpm|yarn|bun) (?:create|init) orthograph(?:@\S+)?)\s+([a-z][a-z0-9-]*)\b/;
+const CREATE = /^(?:ortho new app|(?:npm|pnpm|yarn|bun) (?:create|init) orthograph(?:@\S+)?|npx (?:--yes )?create-orthograph(?:@\S+)?)\s+([a-z][a-z0-9-]*)\b/;
 
 describe("the getting-started page exists and is a canon page", () => {
   it("is docs/canon/getting-started.mdx, titled Getting started", () => {
@@ -67,31 +74,13 @@ describe("the getting-started page exists and is a canon page", () => {
   });
 });
 
-describe("it takes a reader from install to a proved, running app, in that order", () => {
+describe("it says what a reader needs first", () => {
   it("names the Node version the repository requires", () => {
     const engines = (JSON.parse(read("package.json")) as { readonly engines: { readonly node: string } }).engines.node;
     const major = /\d+/.exec(engines)?.[0] ?? "?";
     expect(prose, "a Node requirement, with the major version from package.json engines").toMatch(new RegExp(`Node(?:\\.js)?[^.\\n]{0,40}\\b${major}\\b`));
   });
 
-  it("shows the install, the creating of an app, `ortho prove` and `ortho dev`, each as a command in a fence", () => {
-    expect(first(/^(?:npm|pnpm|yarn|bun)\b.*orthograph/), "an install or create command for orthograph").toBeGreaterThanOrEqual(0);
-    expect(first(CREATE), "a command that creates an app: `ortho new app <name>` or `npm create orthograph <name>`").toBeGreaterThanOrEqual(0);
-    expect(first(/^ortho prove\b/), "`ortho prove`").toBeGreaterThanOrEqual(0);
-    expect(first(/^ortho dev\b/), "`ortho dev`").toBeGreaterThanOrEqual(0);
-  });
-
-  it("puts them in order: install, create, prove, dev, then the generated tools", () => {
-    const at = [first(/^(?:npm|pnpm|yarn|bun)\b.*orthograph/), first(CREATE), first(/^ortho prove\b/), first(/^ortho dev\b/), first(/_URL\b/)];
-    expect(at.every((i) => i >= 0), `each step is shown (positions ${at.join(", ")})`).toBe(true);
-    expect([...at].sort((a, b) => a - b), `the steps' order in the fences (${at.join(", ")})`).toEqual(at);
-  });
-
-  it("proves before it runs: `ortho check` or `ortho generate` come before `ortho prove`", () => {
-    const made = Math.max(first(/^ortho generate\b/), first(/^ortho check\b/));
-    expect(made, "`ortho generate` or `ortho check`").toBeGreaterThanOrEqual(0);
-    expect(Math.min(...[first(/^ortho generate\b/), first(/^ortho check\b/)].filter((i) => i >= 0))).toBeLessThan(first(/^ortho prove\b/));
-  });
 });
 
 describe("it names the generated tools and what they read", () => {
@@ -120,13 +109,9 @@ describe("it names the generated tools and what they read", () => {
     const cli = read("examples/plugged-in/generated/cli/src/main.ts");
     const fallback = /_URL"\] \?\? "([^"]+)"/.exec(cli)?.[1];
     expect(fallback, "the generated CLI's fallback address").toBeDefined();
-    expect(page).toContain(fallback ?? "");
+    expect(prose, "the prose says where the generated tools talk to when `<APP>_URL` is not set").toContain(fallback ?? "\u0000");
   });
 
-  it("shows a generated tool being used with those variables set, after `ortho dev`", () => {
-    const variableUse = lines.findIndex((l) => /\b[A-Z][A-Z0-9_]*_URL=/.test(l) || /^export [A-Z][A-Z0-9_]*_URL=/.test(l));
-    expect(variableUse, "a fence that sets `<NAME>_URL=…`").toBeGreaterThan(first(/^ortho dev\b/));
-  });
 });
 
 describe("every command and flag it shows exists", () => {
