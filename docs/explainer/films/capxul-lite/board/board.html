@@ -314,7 +314,7 @@ a { color: var(--blue); }
       <div class="tablewrap"><table>
         <tr><th>Durable means</th><th>On an operation</th><th>On a thing</th></tr>
         <tr><td class="q">Once accepted, it finishes</td><td class="a"><b>Yes, it should.</b> Today the caller has to retry with its request key. If the caller has gone, nobody does.</td><td class="a">it follows</td></tr>
-        <tr><td class="q">It can wait for days</td><td class="a"><b>No.</b> The place it has got to would live in running code, where you can't read it.</td><td class="a"><b>Yes.</b> The place it has got to is its state, which you can read, draw and check.</td></tr>
+        <tr><td class="q">It can wait for days</td><td class="a"><b>No.</b> The place it has got to would live in running code, where the framework can't see it.</td><td class="a"><b>Yes.</b> The place it has got to is its state, which you can read, draw and check.</td></tr>
       </table></div>
       <p>So I was wrong to hang "ask for a yes" on an operation. Hung on the thing, my main objection goes away. Operations stay one call and one commit. The answer to an ask is just another ordinary operation, checked like any other at the moment it arrives.</p>
       <p>That also means solutions two and three were the same idea seen from two sides. A thing that is waiting on a person is both.</p>
@@ -364,7 +364,7 @@ proposal.needs   // one more owner, within 6 days // new</pre></figure>
     <tr><td class="q">If the world changes during the wait</td><td class="a">there is no wait on a person</td><td class="a">unclear. The role was checked before the wait</td><td class="a">checked again, because the answer is its own operation</td></tr>
     <tr><td class="q">If our server is down</td><td class="a">money still moves. The reason comes later</td><td class="a">nothing moves</td><td class="a">chain things still move. Our things wait</td></tr>
     <tr><td class="q">What you write</td><td class="a">one word on a field</td><td class="a">one line on an operation</td><td class="a">a thing for whatever waits, and one word on a move</td></tr>
-    <tr><td class="q">What it can't do</td><td class="a">anything where someone else must decide</td><td class="a">be read. The order is in code</td><td class="a">make two acts into one</td></tr>
+    <tr><td class="q">What it can't do</td><td class="a">anything where someone else must decide</td><td class="a">be checked. The order is in code the framework can't see into</td><td class="a">make two acts into one</td></tr>
     <tr><td class="q">What else falls out</td><td class="a">private fields on chain, Aztec, books you can audit</td><td class="a">approvals as one idea</td><td class="a">approvals as one idea, a "needs you" list for people and agents, owners together as an ordinary thing</td></tr>
   </table></div>
 
@@ -377,7 +377,7 @@ proposal.needs   // one more owner, within 6 days // new</pre></figure>
         <li><b>A "needs you" list falls out</b> of the machines, for each person and each agent. The portal's is made from it.</li>
         <li><b>Clients follow things, not calls.</b> The SDK hands back the thing. The hook has its state, what you can do, and what it needs.</li>
         <li><b>Speed is judged per operation</b>, as now. Waits are judged by their deadlines.</li>
-        <li><b>The next step goes.</b> So does asking on an operation. A workflow is kept for work that belongs to no single thing.</li>
+        <li><b>The next step goes.</b> So does asking on an operation. Work that belongs to no single thing still has its order declared.</li>
       </ul>
     </div>
     <div>
@@ -408,14 +408,16 @@ proposal.needs   // one more owner, within 6 days // new</pre></figure>
   </div>
   <div class="cols">
     <div>
-      <h3>Why not write it as a workflow anyway</h3>
+      <h3>Where the order belongs</h3>
+      <p><b>You corrected me here, and you are right.</b> I said a workflow's order lives in its handler, "the layer you should not have to read". That mixed up two questions: whether a person reads something, and whether it is declared.</p>
       <ul>
-        <li><b>The order would move into code.</b> A workflow declares its activities, but the order and the branches live in its handler. That is the layer you should not have to read.</li>
-        <li><b>A machine is data.</b> So it can be checked for a state with no way out, drawn as a sequence, and turned into the strip under a button.</li>
-        <li><b>It needs no new engine.</b> Events arrive through the outbox and the indexer. Time arrives through the keeper.</li>
+        <li><b>The test for the blueprint is not "does a person read it".</b> It is "does the framework need to know it", so it can check it, draw it, prove it, and say what a change touches. The order of anything that spans a wait passes that test. So it is declared, at a level you may never open. The agent writing the blueprint writes it.</li>
+        <li><b>The fault is in the shape, not the idea.</b> As M3.01 decided it, a workflow declares its activities, and the order and the branches sit in a handler the framework can't see into. That is the part I would change. The engine can stay underneath.</li>
+        <li><b>Handlers keep what happens inside one commit.</b> Order, branches, repeats and deadlines across a wait are data.</li>
       </ul>
-      <h3>When a workflow is the right word</h3>
-      <p>When the progress belongs to no single thing. Paying forty people in one payroll run. A loop, or a fan-out, with something to undo if it fails halfway.</p>
+      <h3>Work that belongs to no single thing</h3>
+      <p>Paying forty people in one run. M3.01 chose code because a fixed list can't loop. A declared order can, if a thing can need <b>all, any, or at least so many</b> of a set of other things. A payroll run needs all of its payments. A grant needs at least two of its owners. It is the same "needs" as above, with a count.</p>
+      <p>That would change a decided record, so it is a proposal for the framework goal. I have changed nothing.</p>
     </div>
     <div>
       <h3>Every move says what makes it</h3>
