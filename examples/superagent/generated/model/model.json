@@ -5663,6 +5663,7 @@
             "type": "schema",
             "format": "list"
           },
+          "json": "list",
           "ref": "eval.triggers"
         },
         "timeoutMs": {
@@ -5716,7 +5717,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "45d2d74e2f077f7b"
+      "hash": "546a8ba2e7a5b4b2"
     },
     "input.delivered": {
       "kind": "operation",
@@ -6864,6 +6865,7 @@
             "type": "schema",
             "format": "list"
           },
+          "json": "list",
           "ref": "policy.allowed"
         },
         "bots": {
@@ -6871,6 +6873,7 @@
             "type": "schema",
             "format": "list"
           },
+          "json": "list",
           "ref": "policy.bots"
         },
         "admission": {
@@ -6932,7 +6935,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "a66072b4b1b92710"
+      "hash": "61cde18dbb2e68c3"
     },
     "policy.sync": {
       "kind": "operation",
@@ -8068,12 +8071,14 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "ref": "superagent.connections"
         },
         "playbook": {
           "value": {
             "type": "schema"
           },
+          "json": "object",
           "ref": "superagent.playbook"
         },
         "slots": {
@@ -8135,7 +8140,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "5efe7d8005653498"
+      "hash": "7ffcd5c6e77a9b85"
     },
     "superagent.fill": {
       "kind": "operation",
@@ -8715,12 +8720,14 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "ref": "superagent.connections"
         },
         "playbook": {
           "value": {
             "type": "schema"
           },
+          "json": "object",
           "ref": "superagent.playbook"
         },
         "slots": {
@@ -8773,7 +8780,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "94f49eef64aa1927"
+      "hash": "eed019d6ead8f73c"
     },
     "thread.bind": {
       "kind": "operation",
@@ -10445,7 +10452,8 @@
           "value": {
             "type": "schema"
           },
-          "optional": true
+          "optional": true,
+          "json": "object"
         },
         "channel": {
           "value": {
@@ -10507,7 +10515,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "dcd8f9335d7ad5d7"
+      "hash": "d85e3c07648ed53a"
     },
     "trigger.reevaluate": {
       "kind": "operation",
@@ -14981,7 +14989,7 @@
       "file": "blueprint/adapters/github.ts",
       "package": "@orthograph/github",
       "version": "0.0.0",
-      "integrity": "sha256-zcA+cNm9pb0nZfp3Y8dCDWXe60EFIuiI3Frf0mifS90=",
+      "integrity": "sha256-GYCz6vusTzARWlXnrhCg2RYQPaeiJDk5V7Z/npuuCps=",
       "chosen": {},
       "calls": [
         "issues.createComment",
@@ -15009,7 +15017,7 @@
       "door": {
         "secret": "GITHUB_WEBHOOK_SIGNING"
       },
-      "hash": "c917b0962e8c972e"
+      "hash": "47d06ceb34516b6a"
     },
     "intake": {
       "kind": "feature",
@@ -15025,7 +15033,7 @@
       "file": "blueprint/adapters/posthog.ts",
       "package": "@orthograph/posthog",
       "version": "0.0.0",
-      "integrity": "sha256-pYEvDW+FoGcRS/K/YqvAIk1a4VZhuLg33LEodx//JkI=",
+      "integrity": "sha256-GP11BXdP4lv6FshdNIrojNLlUH3MVcg25xa18GItIGU=",
       "chosen": {},
       "calls": [
         "errorTrackingIssuesList",
@@ -15040,7 +15048,7 @@
         "how": "process",
         "what": "a small server over project 1 and three error tracking issues that answers PostHog's REST API as PostHog does"
       },
-      "hash": "51cd82f85481058d"
+      "hash": "14e72d2da7843c62"
     },
     "prompts": {
       "kind": "feature",
@@ -15056,7 +15064,7 @@
       "file": "blueprint/adapters/slack.ts",
       "package": "@orthograph/slack",
       "version": "0.0.0",
-      "integrity": "sha256-kXm5btB7zqazNZ2c8aD48tmO/CzJ26VLXo8fRZSEzlY=",
+      "integrity": "sha256-Aeyj/5nugwe8Dq67HEYafjp97P5Sil36OpCbfdSFENM=",
       "chosen": {},
       "calls": [
         "chatPostMessage",
@@ -15074,7 +15082,7 @@
       "door": {
         "secret": "SLACK_WEBHOOK_SIGNING"
       },
-      "hash": "1eaad71437d5bdfd"
+      "hash": "2b3cc9b0c2fa645d"
     },
     "superagent": {
       "kind": "feature",

@@ -79,5 +79,11 @@ export interface WorldsApi {
      * Worker stops, so the chain is gone when the world ends.
      */
     readonly chain?: Effect.Effect<ChainStand, WorldFailed, Scope.Scope>;
+    /**
+     * The mounts' stand-ins (G16-adapter-mounts call 3), given the world's state folder once it is wiped: the caller starts
+     * them under `<state>/stands/<mount>` and answers what the Worker is told of them (`ORTHO_STAND_<MOUNT>`,
+     * `<MOUNT>_API_KEY`), which joins `secretEnv`. Acquired before the Worker and released after it, as the chain is.
+     */
+    readonly stands?: (state: string) => Effect.Effect<Readonly<Record<string, string>>, WorldFailed, Scope.Scope>;
   }) => Effect.Effect<Running, WorldFailed, Scope.Scope>;
 }

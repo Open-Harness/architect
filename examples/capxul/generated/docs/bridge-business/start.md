@@ -43,6 +43,12 @@ Start a company's KYB with Bridge: answers the form the business fills in, and B
 
 ## Worked examples
 
+### bridge: a bank account, end to end
+
+Starts from an empty world.
+
+- **she starts its KYB.** `ada` (signed in) calls and sends company the last call's company, legalName `Acme Trading Limited`, email `finance@acme-trading.test`, with the request key `acme-kyb`, and gets back an answer matching `^kyb_[0-9a-z]+$`.
+
 ### bridge: start a kyb
 
 Starts from the world `a company`.

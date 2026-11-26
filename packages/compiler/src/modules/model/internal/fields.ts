@@ -2,7 +2,7 @@
 import type { Field, FieldsInput, Role, Thing, Value, Visibility } from "orthograph";
 import type { FieldModel, FieldsModel, VisibilityModel } from "../types.ts";
 import { chainField } from "./chain.ts";
-import { isNullable } from "./nullable.ts";
+import { isNullable, jsonShape } from "./nullable.ts";
 import { metaOf, type Names, type Owner } from "./money.ts";
 
 /** Where a field is declared: `Blueprint.issued` is allowed in one of these. */
@@ -62,8 +62,9 @@ export const fieldsOf = ({ valueNames, schemaNames, thingNames, roleNames, names
     if (meta.type === "decimal" && !(Number.isInteger(meta.places) && meta.places >= 0)) {
       problems.push(`${where}: a decimal of ${String(meta.places)} places is no decimal: places is a whole number of at least 0`);
     }
+    const json = ctx.place === "a payload" ? jsonShape(value) : undefined;
     const solidity = ctx.chain ? chainField(value, meta, input.visibility, where, problems) : undefined;
-    return { value: meta, ...(value.optional === true ? { optional: true as const } : {}), ...(ctx.place === "a thing's field" && isNullable(value) ? { nullable: true as const } : {}), ...(solidity === undefined ? {} : { solidity }), ...(named ? { named } : {}), ...(ref ? { ref } : {}), ...(input.description === undefined ? {} : { description: input.description }), ...(visibility ? { visibility } : {}), ...(issued ? { issued: true as const } : {}) };
+    return { value: meta, ...(value.optional === true ? { optional: true as const } : {}), ...(ctx.place === "a thing's field" && isNullable(value) ? { nullable: true as const } : {}), ...(json === undefined ? {} : { json }), ...(solidity === undefined ? {} : { solidity }), ...(named ? { named } : {}), ...(ref ? { ref } : {}), ...(input.description === undefined ? {} : { description: input.description }), ...(visibility ? { visibility } : {}), ...(issued ? { issued: true as const } : {}) };
   };
   const fieldsModel = (fields: FieldsInput, where: string, ctx: FieldContext): FieldsModel =>
     Object.fromEntries(Object.entries(fields).map(([k, f]) => [k, fieldModel(f, `${where} field ${k}`, ctx)]));
