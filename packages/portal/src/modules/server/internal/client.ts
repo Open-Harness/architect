@@ -23,12 +23,11 @@ const MESSAGE = "The portal's screens are not in this release (Preview). Its dat
 const wantsJson = (accept: string | null): boolean => accept !== null && accept.includes("application/json") && !accept.includes("text/html");
 
 const notInThisRelease = (request: Request): Response => {
-  const json = wantsJson(request.headers.get("accept"));
-  const body = json ? JSON.stringify({ _tag: "NotInThisRelease", message: MESSAGE }) : `<!doctype html><title>Portal</title><p>${MESSAGE}</p>`;
-  return new Response(request.method === "HEAD" ? null : body, {
-    status: 501,
-    headers: { "content-type": json ? "application/json" : "text/html; charset=utf-8", "cache-control": "no-store" },
-  });
+  const init = { status: 501, headers: { "cache-control": "no-store" } };
+  const answer = wantsJson(request.headers.get("accept"))
+    ? Response.json({ _tag: "NotInThisRelease", message: MESSAGE }, init)
+    : new Response(`<!doctype html><title>Portal</title><p>${MESSAGE}</p>`, { ...init, headers: { ...init.headers, "content-type": "text/html; charset=utf-8" } });
+  return request.method === "HEAD" ? new Response(null, { status: 501, headers: answer.headers }) : answer;
 };
 
 export const client = (assets: PortalAssets | undefined, request: Request): Effect.Effect<Response> => {

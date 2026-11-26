@@ -8,7 +8,9 @@ The portal's server half (K19), imported by a project's Worker as `@orthograph/p
 - `PortalServer.serve(blueprintJson, request, env)`: `handle` for a Worker. The generated JSON is decoded once (a schema or digest it
   rejects is a 500 with the reason), the logbook's address comes from the Worker's variables and is never sent to a browser, and
   `/portal` and under it are the prebuilt client's files from the Worker's static assets (`env.PORTAL_ASSETS`): a file is that file, a
-  path with no file type is the client's shell (`index.html`), and a file that is not there is a 404.
+  path with no file type is the client's shell (`index.html`), and a file that is not there is a 404. Without them (a published
+  `@orthograph/portal` ships no client, K44 call 2) every GET or HEAD under `/portal` is a 501 with `cache-control: no-store` saying
+  the screens are not in this release (Preview): a page, or `{ _tag: "NotInThisRelease", message }` to `accept: application/json`.
 - `PortalServer.owns(path)`: the Worker's test for a path.
 
 Nothing reachable from here imports React, `@orthograph/portal-ui` or HeroUI (the lint rule `ortho/no-ui-in-worker`, check 26).
