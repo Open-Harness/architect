@@ -5,6 +5,9 @@ import { join, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { Add } from "./service.ts";
 import { AddRefused } from "./types.ts";
+import { camelField, codeFor, kebabOf, pascalOf, prefixFor } from "./internal/doctype-names.ts";
+import { mapFields } from "./internal/doctype-fields.ts";
+import type { DocField, Doctype } from "./internal/doctype-read.ts";
 
 const repo = resolve(import.meta.dirname, "../../../../..");
 const main = resolve(import.meta.dirname, "../../main.ts");
@@ -65,5 +68,52 @@ describe("ortho add, then check, in a fresh project", () => {
     const model = ortho("model");
     expect(model.status).toBe(0);
     expect(model.stdout).toContain("unfinished allowance  3 blanks");
+  });
+});
+
+describe("names from a doctype (CX-from-doctype)", () => {
+  it("names the folder, the export and a field from ERPNext's names", () => {
+    expect([kebabOf("Tea Blend"), pascalOf("Tea Blend"), pascalOf("GL Entry"), camelField("address_line_1")]).toEqual(["tea-blend", "TeaBlend", "GlEntry", "addressLine1"]);
+  });
+
+  it("takes initials for a prefix, filled to three from the last word, with an x while one is held", () => {
+    const none = new Set<string>();
+    expect(["Tea Blend", "Company", "Sales Invoice Item", "Infusion Step"].map((n) => prefixFor(n, none))).toEqual(["tbl", "com", "sii", "ist"]);
+    expect(prefixFor("Tea Blend Lot", new Set(["tbl"]))).toBe("tblx");
+    expect(prefixFor("Tea Menu Entry", new Set(["tme", "tmex"]))).toBe("tmexx");
+  });
+
+  it("takes capital initials for a code, the last word's next letter while one is held, and none past four", () => {
+    expect([codeFor("Tea Blend", new Set()), codeFor("Infusion", new Set(["IN"])), codeFor("Tea Teapot", new Set(["TT"]))]).toEqual([{ code: "TB" }, { code: "INF" }, { code: "TTE" }]);
+    expect(codeFor("Area", new Set())).toEqual({ code: "ARE" });
+    expect(codeFor("Tea Teapot", new Set(["TT", "TTE", "TTEA"]))).toEqual({ none: "TTEA" });
+  });
+});
+
+describe("a doctype's fields (CX-from-doctype)", () => {
+  const field = (f: Partial<DocField> & Pick<DocField, "fieldname" | "fieldtype">): DocField => ({ label: undefined, options: "", reqd: false, readOnly: false, virtual: false, default: undefined, precision: undefined, ...f });
+  const doctype = (fields: ReadonlyArray<DocField>): Doctype => ({ name: "Tea Cup", description: undefined, table: false, submittable: true, fields, permissions: [], path: "/x/tea_cup.json", file: "tea_cup.json" });
+  const map = (fields: ReadonlyArray<DocField>) => mapFields({ doctype: doctype(fields), prefix: "tcu", known: (d) => (d === "Tea Pot" ? { folder: "tea-pot", identifier: "TeaPot" } : undefined), asset: "usdc" });
+
+  it("drops layout, virtual, naming, a submittable's status and amended_from, and a Dynamic Link's doctype field", () => {
+    const m = map([
+      field({ fieldname: "col", fieldtype: "Column Break" }), field({ fieldname: "v", fieldtype: "Signature", virtual: true }), field({ fieldname: "naming_series", fieldtype: "Select" }),
+      field({ fieldname: "status", fieldtype: "Select" }), field({ fieldname: "amended_from", fieldtype: "Link", options: "Tea Cup" }),
+      field({ fieldname: "party_type", fieldtype: "Link", options: "DocType" }), field({ fieldname: "party", fieldtype: "Dynamic Link", options: "party_type", reqd: true }),
+    ]);
+    expect([m.kept.map((k) => k.key), m.unknown, m.links]).toEqual([["party"], [], []]);
+  });
+
+  it("makes a link an edge, its own id or the target's name, and refuses a type it doesn't know", () => {
+    const m = map([
+      field({ fieldname: "pot", fieldtype: "Link", options: "Tea Pot", reqd: true }), field({ fieldname: "again", fieldtype: "Link", options: "Tea Cup" }),
+      field({ fieldname: "shop", fieldtype: "Link", options: "Tea Shop", label: "Shop" }), field({ fieldname: "where", fieldtype: "Geolocation" }),
+    ]);
+    expect(m.kept.map((k) => k.declaration)).toEqual([
+      'Blueprint.described(TeaPot.fields.id, "pot")',
+      'Blueprint.described(Blueprint.optional(Blueprint.id("tcu")), "again")',
+      'Blueprint.described(Blueprint.optional(TeaShopLink), "Shop (a Tea Shop\'s name)")',
+    ]);
+    expect([m.unknown, [...m.imports.things], [...m.imports.links]]).toEqual([["Tea Cup.where (Geolocation)"], [["tea-pot", "TeaPot"]], [["tea-shop-link", "TeaShopLink"]]]);
   });
 });
