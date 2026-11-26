@@ -62,9 +62,9 @@ a { color: var(--blue); }
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Orthograph · before the film is recut · second pass</div>
+  <div class="eyebrow">Orthograph · before the film is recut · third pass</div>
   <h1>Capxul Lite, the design board</h1>
-  <p class="lede">Your nine notes on the film, answered against the repo. Three ways to make one button out of two places, graded. What you decided on 26 November. Every problem either of us has found, with what we proposed for it. One decision is left.</p>
+  <p class="lede">Your nine notes on the film, answered against the repo. Three ways to make one button out of two places, graded. Whether the thing should be the durable part. What you decided on 26 November. Every problem either of us has found, with what we proposed for it. One decision is left.</p>
   <div class="legend">
     <span><i class="st run">runs today</i> in the repo and proved</span>
     <span><i class="st dec">decided</i> in a decision record, not all built</span>
@@ -294,6 +294,111 @@ a { color: var(--blue); }
     <path class="ar" d="M1150 568H692" marker-end="url(#ah)"/><text class="lab" x="920" y="560" text-anchor="middle">BudgetSpent, confirmed, with the seal</text>
     <text class="lab" x="702" y="598">the seal matches: the spend is recorded with its reason,</text><text class="lab" x="702" y="616">and the entry is written, in one commit</text><text class="lab sub" x="702" y="642">no contents for that seal: the spend is unexplained</text>
   </svg></div>
+
+  <h2>Should the thing be the durable part?</h2>
+  <div class="cols">
+    <div>
+      <h3>What I think you mean, made as strong as I can</h3>
+      <ul>
+        <li><b>The unit is the thing, not the operation.</b> A thing has an identity, its own state, and it handles one message at a time. That is an actor, in the Effect sense, wherever it happens to be stored.</li>
+        <li><b>An operation is a message to a thing.</b> It should be short. If something has to wait, the thing waits, because the thing is what lasts.</li>
+        <li><b>A thing knows what it needs.</b> In a waiting state it can say: I need a signature from my holder, or two more owners, or an event from the budget, or a date. It also knows what it doesn't need, so nothing else can move it.</li>
+        <li><b>The framework meets the need.</b> It asks the right person, listens for the right event, sets the right timer. Nobody writes that by hand.</li>
+        <li><b>Things compose through needs.</b> One thing's need is met by another thing's move. That is the whole of composition. No recipe between operations.</li>
+        <li><b>A contract is already this.</b> It has an address, state, and takes one call at a time. So the chain and the server would be one model, and where a thing lives is a detail.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Is that right?</h3>
+      <p><b>Yes, with one line drawn through the word durable.</b> It means two things, and they belong in different places.</p>
+      <div class="tablewrap"><table>
+        <tr><th>Durable means</th><th>On an operation</th><th>On a thing</th></tr>
+        <tr><td class="q">Once accepted, it finishes</td><td class="a"><b>Yes, it should.</b> Today the caller has to retry with its request key. If the caller has gone, nobody does.</td><td class="a">it follows</td></tr>
+        <tr><td class="q">It can wait for days</td><td class="a"><b>No.</b> The place it has got to would live in running code, where you can't read it.</td><td class="a"><b>Yes.</b> The place it has got to is its state, which you can read, draw and check.</td></tr>
+      </table></div>
+      <p>So I was wrong to hang "ask for a yes" on an operation. Hung on the thing, my main objection goes away. Operations stay one call and one commit. The answer to an ask is just another ordinary operation, checked like any other at the moment it arrives.</p>
+      <p>That also means solutions two and three were the same idea seen from two sides. A thing that is waiting on a person is both.</p>
+    </div>
+  </div>
+
+  <h3>What a thing needs is already in its machine</h3>
+  <div class="cols">
+    <div>
+      <p>You agreed every move should say what makes it. Turn that round and you have what the thing needs. From any waiting state, the moves out of it are the needs: who, what, and by when.</p>
+      <div class="tablewrap"><table>
+        <tr><th>A move made by</th><th>Read as a need</th><th>The framework does</th></tr>
+        <tr><td>a caller in a role</td><td>it needs that person</td><td>shows it to them, and can tell them</td></tr>
+        <tr><td>an event</td><td>it needs another thing to move</td><td>listens</td></tr>
+        <tr><td>a clock</td><td>it needs nothing, by a date</td><td>sets the timer</td></tr>
+        <tr><td>a chain call's outcome</td><td>it needs the chain's answer</td><td>the relayer reports it</td></tr>
+      </table></div>
+      <p>Only one word is new: a way to say a move is <b>asked for</b>, not merely open. Everything else is worked out.</p>
+    </div>
+    <div>
+      <figure class="file"><figcaption><span>a grant, as a thing that needs its owners</span><span>one line is new</span></figcaption>
+<pre class="code">export const machine = Blueprint.machine(Proposal, {
+  states: ["open", "passed", "expired"],
+  moves: {
+    propose: { from: [], to: "open", emits: Events.Proposed },
+    approve: { from: ["open"], to: ["open", "passed"],
+               emits: Events.Approved,
+               asks: owner }, // new
+    expire:  { from: ["open"], to: "expired", emits: Events.Expired,
+               by: Blueprint.time.after("openedAt", "7 days") },
+  },
+});</pre></figure>
+      <figure class="file"><figcaption><span>what falls out, for Bob's screen</span><span>one field is new</span></figcaption>
+<pre class="code">const proposal = useProposal(id);
+proposal.state   // "open"
+proposal.can     // ["approve"]
+proposal.needs   // one more owner, within 6 days // new</pre></figure>
+    </div>
+  </div>
+
+  <h3>Sealing against asking, side by side</h3>
+  <div class="tablewrap"><table>
+    <tr><th></th><th>Seal it</th><th>Ask, on the operation</th><th>Ask, on the thing</th></tr>
+    <tr><td class="q">What stays open while we wait</td><td class="a">nothing of yours. Only the chain call, which the framework already tracks</td><td class="a">a running operation</td><td class="a">a thing, in a state</td></tr>
+    <tr><td class="q">What the caller gets back</td><td class="a">the chain call's progress</td><td class="a">"pending", from something that used to answer</td><td class="a">the thing, to follow</td></tr>
+    <tr><td class="q">What has to be built underneath</td><td class="a">a seal in the contract and the signature, and a place for contents</td><td class="a">the workflow engine under every such operation</td><td class="a">nothing new. Events, the keeper, and a list of needs</td></tr>
+    <tr><td class="q">If the world changes during the wait</td><td class="a">there is no wait on a person</td><td class="a">unclear. The role was checked before the wait</td><td class="a">checked again, because the answer is its own operation</td></tr>
+    <tr><td class="q">If our server is down</td><td class="a">money still moves. The reason comes later</td><td class="a">nothing moves</td><td class="a">chain things still move. Our things wait</td></tr>
+    <tr><td class="q">What you write</td><td class="a">one word on a field</td><td class="a">one line on an operation</td><td class="a">a thing for whatever waits, and one word on a move</td></tr>
+    <tr><td class="q">What it can't do</td><td class="a">anything where someone else must decide</td><td class="a">be read. The order is in code</td><td class="a">make two acts into one</td></tr>
+    <tr><td class="q">What else falls out</td><td class="a">private fields on chain, Aztec, books you can audit</td><td class="a">approvals as one idea</td><td class="a">approvals as one idea, a "needs you" list for people and agents, owners together as an ordinary thing</td></tr>
+  </table></div>
+
+  <div class="cols">
+    <div>
+      <h3>What it means for the framework</h3>
+      <ul>
+        <li><b>One rule the compiler can hold you to:</b> if something has to wait, it is a thing.</li>
+        <li><b>One shape for every call:</b> accepted, then done or refused. A chain call already works like that, and the relayer is the chain thing's inbox. Server things get the same promise.</li>
+        <li><b>A "needs you" list falls out</b> of the machines, for each person and each agent. The portal's is made from it.</li>
+        <li><b>Clients follow things, not calls.</b> The SDK hands back the thing. The hook has its state, what you can do, and what it needs.</li>
+        <li><b>Speed is judged per operation</b>, as now. Waits are judged by their deadlines.</li>
+        <li><b>The next step goes.</b> So does asking on an operation. A workflow is kept for work that belongs to no single thing.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Where I would not go</h3>
+      <p><b>Not every thing should be stored as an actor.</b> Behave like one, yes. Be stored as one, only when it suits. A thing stored as an actor has no list and no rule across records, so the books would turn into views rebuilt from events. A thing that mostly waits, like a proposal, is a good actor. The books belong in a database.</p>
+      <h3>What I am not sure of</h3>
+      <ul>
+        <li>A role written as code can't be listed, so its holders can be offered a move but not asked.</li>
+        <li>Telling people is a new part: an inbox, and how it reaches them.</li>
+        <li>"Once accepted, it finishes" for a database thing. I know what it should promise, not yet how it is built.</li>
+        <li>You model more things. Every intent that waits becomes one.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <p class="big">So it is not seal or ask. It is both, in two layers.</p>
+    <p><b>The model:</b> things last, operations are short, and a waiting thing says what it needs. That is your idea, and it replaces solutions two and three.</p>
+    <p><b>The shortcut:</b> when the other half is only data, seal it, and there is nothing to wait for.</p>
+    <p>In Capxul Lite that gives one of each. A spend is sealed: one act, one signature. A grant is a proposal that needs its owners.</p>
+  </div>
 
   <h2>Is a spend a workflow?</h2>
   <div class="verdict">
@@ -561,7 +666,7 @@ export const holder = Blueprint.role(Budget, { who: Budget.fields.holder });</pr
     <tr class="grp"><td colspan="4">How things join</td></tr>
     <tr><td class="q">An operation can't just become a component. Things compose.</td><td class="by">you</td><td class="a">A reference per thing: its state, the fields this caller may see, the moves open now. That is the hook and the headless parts.</td><td><i class="st new">proposed</i></td></tr>
     <tr><td class="q">The blueprint is written per thing. Everything made is per operation.</td><td class="by">me</td><td class="a">The reference per thing, and one of the three joins.</td><td><i class="st new">proposed</i></td></tr>
-    <tr><td class="q">One button is two operations in two places.</td><td class="by">me</td><td class="a">Three solutions, graded: seal it, offer the move, or ask for a yes. The next step is dropped.</td><td><i class="st open">your pick</i></td></tr>
+    <tr><td class="q">One button is two operations in two places.</td><td class="by">me</td><td class="a">Two layers. A waiting thing says what it needs, and the framework asks. When the other half is only data, seal it. The next step is dropped.</td><td><i class="st open">your call</i></td></tr>
     <tr><td class="q">Is a spend just a workflow?</td><td class="by">you</td><td class="a">No. A machine, with every move saying what makes it.</td><td><i class="st run">agreed</i></td></tr>
     <tr><td class="q">A spend can wait for ever.</td><td class="by">me</td><td class="a">A check: every waiting state needs a way out for yes, no and silence. Silence is a move made by time.</td><td><i class="st new">check proposed</i></td></tr>
     <tr><td class="q">A refusal on chain leaves no event.</td><td class="by">me</td><td class="a">The outcome of a chain call can make a move: submitted, reverted, dropped.</td><td><i class="st new">proposed</i></td></tr>
@@ -583,7 +688,7 @@ export const holder = Blueprint.role(Budget, { who: Budget.fields.holder });</pr
 
   <h2>One decision left</h2>
   <ol class="ask">
-    <li><b>Which join: seal it, offer the move, or ask for a yes?</b><span>I recommend sealing. It decides how the middle of the film is drawn, and it shrinks the example by a thing's worth of states and three operations.</span></li>
+    <li><b>Both layers?</b><span>Things last and say what they need. That is the model. A spend is sealed, because its other half is only data. A grant is a proposal that needs its owners. If you agree, the films are drawn that way.</span></li>
   </ol>
 
   <h2>How I'll do the films</h2>
