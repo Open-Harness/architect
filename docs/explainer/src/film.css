@@ -1,0 +1,101 @@
+/* A drafting sheet: every scene is one sheet of the same drawing. White ink is what you declare, cyan is what Orthograph
+   projects from it, amber is the one freehand part (a handler), green and red are verdicts. */
+:root {
+  --bg: #08111f; --bg2: #0b1727; --panel: #0e1c30; --panel2: #13253e; --rule: rgba(132, 170, 222, 0.17); --rule2: rgba(132, 170, 222, 0.36);
+  --paper: #e9f0fa; --text2: #a9bcd6; --muted: #7389a6; --dim: #4d6382;
+  --cyan: #62c6ff; --amber: #ffb55c; --green: #54d898; --red: #ff7373; --violet: #c2b2ff;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --label: "Barlow Condensed", "Arial Narrow", "IBM Plex Sans", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--paper); font-family: var(--sans); }
+.player { max-width: 1280px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.viewport { position: relative; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; overflow: hidden; background: var(--bg); border: 1px solid var(--rule); border-radius: 6px; }
+.stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; background: var(--bg); font-size: 26px; line-height: 1.35; }
+
+/* The sheet: grid, frame, corner ticks. */
+.sheet { position: absolute; inset: 0; background:
+  radial-gradient(1300px 760px at 50% 44%, rgba(40, 84, 150, 0.2), transparent 72%),
+  linear-gradient(rgba(132, 170, 222, 0.07) 1px, transparent 1px) 0 -1px / 200px 200px,
+  linear-gradient(90deg, rgba(132, 170, 222, 0.07) 1px, transparent 1px) -1px 0 / 200px 200px,
+  linear-gradient(rgba(132, 170, 222, 0.033) 1px, transparent 1px) 0 -1px / 40px 40px,
+  linear-gradient(90deg, rgba(132, 170, 222, 0.033) 1px, transparent 1px) -1px 0 / 40px 40px,
+  var(--bg); }
+.frame { position: absolute; inset: 36px; border: 1px solid var(--rule2); }
+.frame i { position: absolute; width: 18px; height: 18px; border: 0 solid var(--paper); opacity: 0.7; }
+.frame i:nth-child(1) { left: -1px; top: -1px; border-width: 2px 0 0 2px; } .frame i:nth-child(2) { right: -1px; top: -1px; border-width: 2px 2px 0 0; }
+.frame i:nth-child(3) { left: -1px; bottom: -1px; border-width: 0 0 2px 2px; } .frame i:nth-child(4) { right: -1px; bottom: -1px; border-width: 0 2px 2px 0; }
+.rail { position: absolute; left: 72px; right: 72px; top: 58px; height: 44px; display: flex; align-items: center; justify-content: space-between; font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em; font-size: 21px; color: var(--muted); }
+.rail .mark { color: var(--paper); font-weight: 600; letter-spacing: 0.22em; }
+.steps { display: flex; gap: 10px; align-items: center; }
+.steps b { font-weight: 500; padding: 3px 12px; border: 1px solid transparent; color: var(--dim); }
+.steps b.on { color: var(--bg); background: var(--cyan); border-color: var(--cyan); font-weight: 600; }
+.steps b.done { color: var(--text2); }
+.steps u { width: 22px; height: 1px; background: var(--rule2); text-decoration: none; }
+.block { position: absolute; right: 37px; bottom: 37px; display: flex; font-family: var(--label); text-transform: uppercase; letter-spacing: 0.12em; font-size: 19px; color: var(--muted); border: 1px solid var(--rule2); border-right: 0; border-bottom: 0; background: rgba(8, 17, 31, 0.86); }
+.block span { padding: 9px 18px; border-right: 1px solid var(--rule2); white-space: nowrap; } .block span:last-child { border-right: 0; }
+.block .sheetno { color: var(--paper); } .block .name { color: var(--cyan); min-width: 250px; }
+.stage *, .stage *::before { box-sizing: border-box; }
+.prog { position: absolute; left: 36px; right: 36px; bottom: 35px; height: 3px; } .prog i { display: block; height: 100%; width: 0; background: var(--cyan); }
+.scene { position: absolute; inset: 0; visibility: hidden; opacity: 0; }
+.abs { position: absolute; }
+.hidden0 { visibility: hidden; opacity: 0; }
+
+/* Type. */
+.eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-size: 24px; font-weight: 600; color: var(--cyan); }
+.hl { font-size: 50px; line-height: 1.12; font-weight: 500; letter-spacing: -0.015em; margin: 6px 0 0; }
+.head { position: absolute; left: 96px; top: 128px; right: 96px; }
+.note { color: var(--text2); font-size: 25px; } .mono { font-family: var(--mono); }
+.cy { color: var(--cyan); } .am { color: var(--amber); } .gr { color: var(--green); } .rd { color: var(--red); } .mu { color: var(--muted); }
+.lbl { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.13em; font-size: 21px; font-weight: 600; color: var(--muted); }
+
+/* Panels: an editor, a terminal, a card. */
+.panel { position: absolute; background: linear-gradient(180deg, rgba(19, 37, 62, 0.92), rgba(12, 24, 42, 0.94)); border: 1px solid var(--rule2); box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.8); }
+.bar { height: 46px; display: flex; align-items: center; gap: 14px; padding: 0 18px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 18px; color: var(--muted); white-space: nowrap; }
+.bar .dots { width: 44px; height: 10px; background: radial-gradient(circle 5px at 5px 5px, var(--dim) 98%, transparent) 0 0 / 17px 10px repeat-x; flex: none; }
+.bar b { color: var(--paper); font-weight: 500; } .bar .tag { margin-left: auto; }
+.tag { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.13em; font-size: 18px; font-weight: 600; padding: 2px 10px; border: 1px solid currentColor; white-space: nowrap; }
+.code { position: relative; padding: 16px 0; font-family: var(--mono); font-size: 23px; line-height: 37px; font-variant-ligatures: none; }
+.code .ln { position: relative; display: flex; padding-right: 22px; }
+.code .ln > i { flex: none; width: 62px; padding-right: 20px; text-align: right; color: var(--dim); font-style: normal; font-size: 0.78em; user-select: none; }
+.code .ln > code { flex: 1; min-width: 0; font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; padding-left: 4ch; text-indent: -4ch; }
+.code .focusbar { position: absolute; left: 0; right: 0; top: 0; height: 0; background: rgba(98, 198, 255, 0.1); border-left: 3px solid var(--cyan); visibility: hidden; opacity: 0; }
+.code.small { font-size: 19px; line-height: 30px; } .code.nog .ln > i { display: none; } .code.nog .ln { padding-left: 24px; } .code.tiny { font-size: 16.5px; line-height: 26px; }
+.k { color: #8db4ff; } .s { color: #9adbb3; } .c { color: #62799a; font-style: italic; } .n { color: #ffb98a; } .t { color: #7adce0; } .f { color: #c7b5ff; } .p { color: #dce7f5; } .x { color: #7f95b3; } .r { color: #f0a8c0; }
+.term .screen { position: relative; padding: 18px 22px; font-family: var(--mono); font-size: 21px; line-height: 33px; font-variant-ligatures: none; }
+.term .cmd { color: var(--paper); white-space: nowrap; } .term .ps { color: var(--cyan); margin-right: 12px; }
+.term .typed { display: inline-block; overflow: hidden; white-space: pre; vertical-align: bottom; width: 0; }
+.term .cur { display: inline-block; width: 0.6ch; height: 1.05em; margin-left: 2px; background: var(--paper); vertical-align: text-bottom; }
+.term .o { color: var(--text2); white-space: pre-wrap; overflow-wrap: anywhere; padding-left: 4ch; text-indent: -4ch; visibility: hidden; opacity: 0; }
+.term .o .ok { color: var(--green); } .term .o .no { color: var(--red); } .term .o .path { color: var(--cyan); } .term .o .q { color: var(--paper); } .term .o .em { color: var(--paper); font-weight: 500; }
+.chip { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border: 1px solid var(--rule2); background: rgba(14, 28, 48, 0.9); font-family: var(--mono); font-size: 21px; white-space: nowrap; }
+.card { position: absolute; border: 1px solid var(--rule2); background: linear-gradient(180deg, rgba(19, 37, 62, 0.9), rgba(12, 24, 42, 0.92)); padding: 18px 22px; }
+.card .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.card .lbl em { font-family: var(--mono); font-style: normal; text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 400; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+svg.ink { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: visible; pointer-events: none; }
+svg.ink path, svg.ink line, svg.ink circle, svg.ink rect, svg.ink polyline { fill: none; stroke: var(--paper); stroke-width: 2; vector-effect: non-scaling-stroke; }
+svg.ink .cy { stroke: var(--cyan); } svg.ink .am { stroke: var(--amber); } svg.ink .gr { stroke: var(--green); } svg.ink .rd { stroke: var(--red); } svg.ink .mu { stroke: var(--rule2); }
+svg.ink .dash { stroke-dasharray: 7 7; } svg.ink .fillcy { fill: var(--cyan); stroke: none; } svg.ink .fillam { fill: var(--amber); stroke: none; } svg.ink .fillpaper { fill: var(--paper); stroke: none; } svg.ink .fillgr { fill: var(--green); stroke: none; } svg.ink .fillrd { fill: var(--red); stroke: none; }
+svg.ink text { fill: var(--muted); stroke: none; font-family: var(--label); font-size: 20px; letter-spacing: 0.13em; text-transform: uppercase; }
+
+/* The player around the stage. Hidden when frames are rendered. */
+.bigplay { position: absolute; inset: 0; margin: auto; width: min(96px, 20vw); height: min(96px, 20vw); border-radius: 50%; border: 2px solid var(--paper); background: rgba(8, 17, 31, 0.72); color: var(--paper); cursor: pointer; display: grid; place-items: center; }
+.bigplay svg { width: 38%; height: 38%; margin-left: 6%; fill: currentColor; } .bigplay:hover { background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.controls button { font: 600 15px var(--sans); color: var(--paper); background: var(--panel2); border: 1px solid var(--rule2); padding: 8px 14px; min-width: 76px; cursor: pointer; border-radius: 4px; }
+.controls button:hover { border-color: var(--cyan); } .controls button[aria-pressed="true"] { background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
+.controls button:focus-visible, .chapters button:focus-visible, .bigplay:focus-visible, .scrub:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.time { font: 500 15px var(--mono); color: var(--text2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.scrubwrap { position: relative; flex: 1 1 260px; min-width: 0; height: 28px; display: flex; align-items: center; }
+.scrub { width: 100%; margin: 0; accent-color: var(--cyan); cursor: pointer; }
+.caption { min-height: 3.1em; font-size: 17px; line-height: 1.5; color: var(--paper); text-wrap: balance; max-width: 70ch; }
+.caption[hidden] + .chapters { margin-top: 0; }
+.chapters { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.chapters button { width: 100%; text-align: left; font: 500 14px var(--sans); color: var(--text2); background: transparent; border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; }
+.chapters button span { font-family: var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; } .chapters button.on { border-color: var(--cyan); color: var(--paper); }
+.about { color: var(--muted); font-size: 14px; line-height: 1.55; max-width: 75ch; margin: 0; } .about code { font-family: var(--mono); color: var(--text2); }
+@media (max-width: 560px) { .scrubwrap { order: 5; flex-basis: 100%; } .time { margin-right: auto; } .controls button { min-width: 0; } }
+body.render { overflow: hidden; } body.render .player { max-width: none; padding: 0; margin: 0; display: block; }
+body.render .viewport { width: 1920px; height: 1080px; border: 0; border-radius: 0; aspect-ratio: auto; } body.render .controls, body.render .caption, body.render .chapters, body.render .about, body.render .bigplay { display: none; }
