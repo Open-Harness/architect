@@ -108,7 +108,7 @@ templates; cost center numbers, allocations and conversions; journal entry vouch
 references, cheques, opening entries, inter-company entries, multi-currency, amending and deleting a draft; GL Entry's
 party, against, remarks, fiscal year and currency columns; closing a year; accounting periods and freezing dates.
 
-A balance on a day in no fiscal year is left out on purpose. ERPNext's `get_balance_on` answers 0 for such a day up to
+ERPNext's special case for a day in no fiscal year is left out on purpose. ERPNext's `get_balance_on` answers 0 for such a day up to
 today, and for a later day refuses or counts every line depending on whether today is in a year: its answer reads
 today's date. Capxul's balance reads no clock ("Time", below), and following ERPNext would bring one in, with snag
 #1001's limits on stepping it in journeys. So it counts the same lines on any day, in a fiscal year or not. Every

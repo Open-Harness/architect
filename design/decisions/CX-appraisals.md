@@ -173,4 +173,4 @@ follow HRMS (Scores, above).
 
 Rescoring a submitted appraisal (Scores, above) is recorded but no journey tests it: none moves a goal or submits
 feedback between an appraisal's submit and its cycle's completion, so a build that froze a submitted appraisal's
-scores would pass.
+scores would pass. Its journey is Snag #1089.
