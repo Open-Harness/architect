@@ -125,6 +125,13 @@ The answer is checked field by field (`infrastructure:Br/internal/answer-checks.
   that it delivered is held until leg 1 is proved on chain, because Bridge's sandbox completes an unfunded
   crypto-source transfer by itself after about 30 seconds (recording va12).
 
+**M5, delivered as locked:** the bank amount delivered equals the amount Bridge locked, in the same currency and
+quantity; a deal that only estimated its output accepts whatever Bridge delivered in the same currency; anything else
+goes to a person (`infrastructure:B/banking/payouts/rules/delivery.ts`).
+**M6, one live timer:** no payout waits without exactly one live timer. The door refuses to save a waiting row with no
+timer, and a lost timer hands the payout to a person with `timer_lost` and one alert (`rules/transition.ts`,
+`payoutInvariantBroken`; `operations/watchdog.ts`).
+
 **The payout machine** has twelve states (`infrastructure:B/banking/payouts/rules/vocabulary.ts:8-21`): one door, one
 pure transition, one live timer per waiting state, a watchdog, and each Bridge call saved before it is sent, with a
 dispatch token and a lease, retried with the same key and body.
