@@ -5,6 +5,33 @@ import { camel, opVar, pascal } from "#modules/names/service.js";
 
 export const emptyPath = (o: OperationModel) => `empty/${o.thing}/${o.verb}.ts`;
 
+/** Each operation step's inner operation, served, by the step's key (#1079): `operations: { draft: entryDraftServed }`. */
+export const innerOf = (model: Model, o: OperationModel, suffix: "Served" | "Scaffolded") => {
+  const inner = Object.entries(o.steps).flatMap(([key, s]) => {
+    const op = s.type === "operation" && s.operation !== undefined ? model.operations[s.operation] : undefined;
+    return op === undefined ? [] : [`${/^[A-Za-z_$][\w$]*$/.test(key) ? key : JSON.stringify(key)}: ${opVar(op)}${suffix}`];
+  });
+  return inner.length > 0 ? `, operations: { ${inner.join(", ")} }` : "";
+};
+
+/** The operations in the order their served constants are declared: each inner operation before the operations that run it, else as given. */
+export const innerFirst = (model: Model, ops: ReadonlyArray<OperationModel>): ReadonlyArray<OperationModel> => {
+  const out: Array<OperationModel> = [];
+  const placed = new Set<string>();
+  const place = (o: OperationModel) => {
+    if (placed.has(o.name)) return;
+    // The compiler refuses a cycle, so marking first only keeps a refused blueprint from looping.
+    placed.add(o.name);
+    for (const s of Object.values(o.steps)) {
+      const inner = s.type === "operation" && s.operation !== undefined ? model.operations[s.operation] : undefined;
+      if (inner !== undefined && ops.includes(inner)) place(inner);
+    }
+    out.push(o);
+  };
+  for (const o of ops) place(o);
+  return out;
+};
+
 /** The runtime's refusals the generated code names: the machine's, when the move starts from a state (D2 #37), and each not-found. */
 export const notFromOf = (model: Model, o: OperationModel) => {
   const machine = model.things[o.thing]?.machine;

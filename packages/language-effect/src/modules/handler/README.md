@@ -16,6 +16,13 @@ minted, as `id`. A field in `notFound` (generated from the model) that names not
 `<Thing>NotFound { id }` before the handler runs; a role-gated miss is already `NotAllowed`. A creating move whose handler
 stored nothing gets its instance stored from the id, the payload and the answer. Test: `prehandle.test.ts`.
 
+Inner operations (#1079, `design/decisions/CX-inner-operations.md`; `internal/inner.ts`, `internal/steps.ts`, `internal/attempt.ts`): an
+operation step's runner, `steps.<key>(payload)`, runs the operation the server wired under that key (`operations: { <key>: <inner>Served }`)
+inside the outer's attempt, for the same caller: its access rule, prehandle, from-check, handler, answer check, move and G5 rules, its writes
+held in the outer's unit and its entries in the outer's journal, so the one commit carries both and a lost race reruns both. It runs in its
+own span, named after it, inside the step's span (`step.kind: operation`), and its refusals count as the outer's. Tests:
+`inner-operation.test.ts`, `inner-operation-rules.test.ts`.
+
 `Reads.serve` serves two kinds of read: by id (one instance, a missing one refused `NotAllowed`) and a list (`where`, `order`,
 `page`; L2.04). A list reads a page from `Store.list`: instances matching every filter the caller gave, in the order the rows were
 made (never a clock), `page` of them, answered `{ items, next }`; `next` is a cursor to send back as `cursor`, and null on the

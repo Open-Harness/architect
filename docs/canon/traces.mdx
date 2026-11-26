@@ -76,23 +76,25 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    stranger never looks like work (`service.ts:52`).
 3. **The operation's span opens**, named after the operation, with the caller on it and the call's name, `call.id`, which every attempt of one call shares (O3):
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=163
+   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=149
    spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
    ```
 
 4. **Traceable payload fields are written on it** (`service.ts:56`).
 5. **Each step is its own span**, marked with its kind:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=67-75
-   const steps = Object.fromEntries(
-     // Each step is its own span, marked with its kind: a `database` step's work is the store's, a `wait` step's a timer's.
-     Object.entries(op.steps).map(([key, step]) => [
-       key,
-       step.type === "call"
-         ? callStep(`${name}.${key}`, Calls.runner({ label: `${name}.${key}`, step: step as CallStep, wiring: calls?.[key] }))
-         : <A, E, R>(work: Effect.Effect<A, E, R>) => spanned(`${name}.${key}`, { "step.kind": step.type })(signalled(`${name}.${key}`)(work)),
-     ]),
-   );
+   ```ts file=packages/language-effect/src/modules/handler/internal/steps.ts name=stepsOf lines=34-44
+   const made = Object.entries(op.steps).map(([key, step]) => {
+     const span = `${name}.${key}`;
+     // An operation step's runner runs in the attempt it is bound to; a call step's and a plain step's are the same in every attempt.
+     if (step.type === "operation") return [key, operationStep(span, step as OperationStep, wiring.operations?.[key])] as const;
+     if (step.type === "call") {
+       const call = callStep(span, Calls.runner({ label: span, step: step as CallStep, wiring: wiring.calls?.[key] }));
+       return [key, () => call] as const;
+     }
+     const plain = <A, E, R>(work: Effect.Effect<A, E, R>) => spanned(span, { "step.kind": step.type })(signalled(span)(work));
+     return [key, () => plain] as const;
+   });
    ```
 
 6. **Traceable answer fields are written on it** before the answer is checked, so an answer outside its declaration
@@ -102,16 +104,16 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    `refusal.code` (`AL-001`, or the machine's `AL-900`), and, when the handler logged something just before refusing,
    `refusal.log`:
 
-   ```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=154-162
-   Effect.tapCause((cause) => {
+   ```ts file=packages/language-effect/src/modules/handler/internal/inner.ts name=ending lines=28-36
+   export const ending = (codes: Readonly<Record<string, string>> | undefined, last: Effect.Effect<string | undefined>) => (cause: Cause.Cause<unknown>) => {
      if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
      const refusal = Cause.squash(cause);
      if (refusal instanceof Conflict) return Effect.void;
      const tag = tagOf(refusal);
      const code = codes?.[tag];
-     return logs.last.pipe(Effect.flatMap((log) =>
+     return last.pipe(Effect.flatMap((log) =>
        Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }), ...(log === undefined ? {} : { "refusal.log": log }) })));
-   }),
+   };
    ```
 
 ### Refusal and defect
@@ -199,13 +201,13 @@ O2 records the three changes and their proof.
 
 `store.commit(…)` runs inside the `<operation>.commit` span.
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=138-147
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=132-141
 const lists = yield* unit.lists;
 const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
     "commit.outcome": outcome,
     // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
-    ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
+    ...(outcome === "committed" && own !== undefined ? { "event.name": own.event } : {}),
   })),
   spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
   // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).

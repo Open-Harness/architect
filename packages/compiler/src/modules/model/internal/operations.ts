@@ -27,8 +27,8 @@ export interface ChainOperation {
 /** The role an entry names, person's or service's. */
 const roleOf = (a: Allowed): Role | ServiceRole | undefined => (a.kind === "role" ? a : a.kind === "role-of" ? a.role : undefined);
 
-/** A step the generated contract can't take: it reaches only its own store and the account adapter (item 8). */
-const FOREIGN_STEPS = ["database", "actor"];
+/** A step the generated contract can't take: it reaches only its own store and the account adapter (item 8), so it runs no other operation either (#1079). */
+const FOREIGN_STEPS = ["database", "actor", "operation"];
 
 export const chainOperationProblems = ({ file, name, thing, op, roleNames, payload, answer, event, emits, mints }: ChainOperation): ReadonlyArray<string> => {
   const problems: Array<string> = [];

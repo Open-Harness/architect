@@ -10,6 +10,13 @@ const blank = (what: string, type = "") => `Handlers.blank${type ? `<${type}>` :
 
 const stepBlock = (model: Model, op: OperationModel, key: string): ReadonlyArray<string> => {
   const step = op.steps[key]!;
+  // An operation step runs its inner operation, in this call's commit, with the payload the handler gives it (#1079).
+  if (step.type === "operation") {
+    return [
+      `    // Step ${key}: runs ${step.operation} inside this call's commit, span ${step.name}; its refusals are this operation's too.`,
+      `    yield* ${runner(key)}(yield* ${blank(`${key}: the payload ${step.operation} is run with`)});`,
+    ];
+  }
   const store = step.type === "database" ? (step.writes?.length ? step.writes.join(", ") : model.things[op.thing]?.store) : undefined;
   return [
     `    // Step ${key}: ${step.type}${store ? `, in the store ${store}` : ""}, span ${step.name}.`,

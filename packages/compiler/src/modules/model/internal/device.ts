@@ -14,4 +14,6 @@ export const deviceProblems = (file: string, op: Operation): ReadonlyArray<strin
   ...(op.move ? [`${file}: a client operation has no store, so it can't move a machine`] : []),
   ...(Object.values(op.steps).some((s) => s.type === "call") ? [`${file}: a client operation can't have a call step yet (the wallet reaches the chain through the chain port as a library, M1-plugins section 8.2; a call step on the device waits for an adapter that needs one)`] : []),
   ...(op.idempotent ? [`${file}: a client operation has no server to keep an idempotency key`] : []),
+  // An inner operation's writes and events join its outer's commit (#1079): on the device there is no commit to join.
+  ...(Object.values(op.steps).some((s) => s.type === "operation") ? [`${file}: a client operation has no store or journal, so it can't run another operation`] : []),
 ];

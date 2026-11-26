@@ -5,7 +5,7 @@ import type { Model, OperationModel } from "@orthograph/compiler";
 import type { RenderedFile } from "#modules/names/types.js";
 import { callImports, renderHandlerScaffold, wired } from "#modules/handlers/service.js";
 import { GENERATED, bindingOf, camel, databaseStores, handlerAt, lines, opVar, pascal, storeFileAt, thingFileAt, toRoot } from "#modules/names/service.js";
-import { emptyPath, groupOf, notFromOf, peopleOf, worldExports } from "./helpers.ts";
+import { emptyPath, groupOf, innerFirst, innerOf, notFromOf, peopleOf, worldExports } from "./helpers.ts";
 import { clocksOf, renderMigration, renderStoreMigrations, renderWrangler } from "./worker-config.ts";
 import { doorsOf } from "./doors.ts";
 import { actorOptionOf } from "./actors.ts";
@@ -80,11 +80,12 @@ const main = (model: Model, name: string, empty: boolean): RenderedFile => {
       worldExports(timed, actors),
       "",
       serviced.length > 0 ? ["/** Each adapter's mount by the name it is mounted under: what a `service` role in `allowed` is read against. */", `const mounts = new Map<unknown, string>([${serviced.map((m) => `[${mountVar(m)}, "${m}"]`).join(", ")}]);`, ""] : [],
-      ops.map((o) =>
+      // Each inner operation is served before the operations that run it, and handed to them by their step's key (#1079).
+      innerFirst(model, ops).map((o) =>
         o.kind === "read"
           ? `const ${opVar(o)}Served = Reads.serve({ name: "${o.name}", read: ${opVar(o)}.declaration${mountsOption} });`
-          : `const ${opVar(o)}Served = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${served(o)}${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)}${mountsOption} });`),
-      empty ? handled.map((o) => `const ${opVar(o)}Scaffolded = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${opVar(o)}Blank${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)}${mountsOption} });`) : [],
+          : `const ${opVar(o)}Served = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${served(o)}${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)}${innerOf(model, o, "Served")}${mountsOption} });`),
+      empty ? innerFirst(model, handled).map((o) => `const ${opVar(o)}Scaffolded = Handlers.serve({ name: "${o.name}", operation: ${opVar(o)}.declaration, handler: ${opVar(o)}Blank${notFromOf(model, o)}, codes: Errors.codes${wired(model, o)}${innerOf(model, o, "Scaffolded")}${mountsOption} });`) : [],
       "",
       "/** Each thing and its table: a D1 table, or the name its actors go by. */",
       `const tables = [${things.map((t) => `[thingIn(${camel(t.name)}Thing), "${t.name}"]`).join(", ")}] as const;`,

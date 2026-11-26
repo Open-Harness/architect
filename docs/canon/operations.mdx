@@ -208,7 +208,7 @@ Three rules decide what a step is (K5, seam 3):
   and all, up to a fixed number of times. The call is named once, before its first attempt, and each attempt's span carries that name
   as `call.id`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=175-183
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=161-169
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
   attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
@@ -221,13 +221,28 @@ return Effect.flatMap(newCallId, (callId) => loop(1, callId));
 ```
 
 An operation may declare no steps at all (`packages/orthograph/src/modules/operations/types.ts:46`). A step's kind says
-what does the work. `database` is the store's, `wait` is a timer's. The kinds are an open list: `sync`, `check` and
+what does the work. `database` is the store's, `wait` is a timer's, `call` is a mounted adapter's, and `operation` is
+another operation of the app's (below). The kinds are an open list: `sync`, `check` and
 `prove` are named for languages that run on a chain or a client (N1), and nothing matches on all of them
 (`packages/orthograph/src/modules/operations/types.ts:19`). K7 added no step kind for a chain. A call into a contract we didn't write is a declared step with one declared refusal (K7 Q2), and on Aztec the "sync first" step is the SDK's job, never a handler's ([chains-and-wallets](chains-and-wallets.mdx)).
 
+**One operation runs another inside its own commit** (#1079, `design/decisions/CX-inner-operations.md`). An operation
+step names the inner operation, imported from its verb file, `draft: Blueprint.step.operation(entryDraft)`, and the
+handler runs it as `steps.draft(payload)`. The inner operation's whole pipeline runs for the same caller: its access rule (never as system, and never widened by
+an outer the caller may run), what its payload names, its from-check, its handler, its answer's declaration, its move
+and event, and its rules. It never commits on its own. Its writes and events join the outer's one commit, so both land
+or neither does, a refusal anywhere writes nothing, and a lost race runs the whole call again. What it wrote is visible
+to the outer handler afterwards and to the next inner step. Every refusal it can make is the outer's too: the compiler
+adds them to the outer's `errors`, `refusals` and `invariants`, at any depth, except an idempotent inner's
+`IdempotencyConflict`, since run inside another it keeps no request key. The compiler refuses an inner operation in
+another store, one that is no verb of the app, a cycle through the steps, an outer and an inner that declare one
+refusal's name with two shapes, and an operation step on a chain-stored or on-device operation. The model records the
+step as `{ name: "run.pay.draft", type: "operation", operation: "entry.draft" }`, and the generated server wires it by
+its key, `operations: { draft: entryDraftServed }`, each inner operation served before its outer.
+
 **Every required step must run, in order.** Eval 6 checks it on every answered call; an `optional` step may be absent:
 
-```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=139-152
+```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=141-154
 /** 6. Every required step of an answered call ran in its own span; all observed steps ran in declared order. */
 export const steps: PerOperation = (op, evidence) =>
   verdict("steps", op.name, evidence.flatMap((e) => {
@@ -305,7 +320,7 @@ A client that retries after a timeout doesn't know if the first call landed. `id
 answers what it answered the first time and changes nothing. No step runs, no event is written, and the span says
 `request.replayed`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=106-114
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=98-106
         // The same request key from the same caller is one call: answer what was answered, and change nothing.
         const kept = key === undefined ? undefined : yield* store.answered(key);
         if (kept !== undefined) {
@@ -319,7 +334,7 @@ answers what it answered the first time and changes nothing. No step runs, no ev
 
 The key is the operation, the caller and the request together, so one caller's key never answers another's call:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=169-172
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=155-158
 // Keyed by operation and caller as well, so one caller's key never answers another's call.
 // Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
 const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;
@@ -338,7 +353,7 @@ Without a key, or without `idempotent`, every call is its own call.
 
 A budget is how fast the operation should answer, as a p95. It is a target for review, never a failure:
 
-```ts file=packages/orthograph/src/modules/operations/types.ts name=Budget lines=39-42
+```ts file=packages/orthograph/src/modules/operations/types.ts name=Budget lines=46-49
 export interface Budget {
   /** A target for review, never a failure. */
   readonly p95: Duration.Input;
@@ -466,6 +481,10 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
 | The request key and the replay | `packages/language-effect/src/modules/handler/service.ts:90` | built |
 | A rerun after a conflict | `packages/language-effect/src/modules/handler/service.ts:91` | built |
 | The nine evals | `packages/prove/src/modules/evals/service.ts:7` | built |
+| An operation step, `Blueprint.step.operation` | `packages/orthograph/src/modules/operations/types.ts:28` | built |
+| An inner operation's refusals merged into its outer's, and what the compiler refuses of one | `packages/compiler/src/modules/model/internal/inner.ts:19` | built |
+| An inner operation run inside its outer's commit | `packages/language-effect/src/modules/handler/internal/inner.ts:52` | built |
+| Each inner operation wired into its outer by its step's key | `packages/projections/src/modules/server/internal/helpers.ts:18` | built |
 | Each refusal's code and exit code in every door | `packages/projections/src/modules/api/internal/api.ts:56` | built |
 | Optional steps, eval 6 and the unused-step warning | `packages/prove/src/modules/evals/internal/calls.ts:114` and `ortho check` | planned, M1.26 |
 | An operation's own event | `packages/language-effect/src/modules/handler/service.ts:69` | planned, M3.16 |

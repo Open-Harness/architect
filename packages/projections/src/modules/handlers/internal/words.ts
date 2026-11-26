@@ -70,8 +70,8 @@ export interface Refusal {
   readonly name: string;
   readonly exit: number | "?";
   readonly code: string;
-  /** `yours` when the handler refuses it, `runtime` when the runtime does before the handler runs. */
-  readonly giver: "yours" | "runtime";
+  /** `yours` when the handler refuses it, `runtime` when the runtime does before the handler runs, `inner` when an operation a step runs does (#1079). */
+  readonly giver: "yours" | "runtime" | "inner";
   readonly said: string;
   readonly file: string;
   readonly fields: ReadonlyArray<string>;
@@ -83,10 +83,27 @@ export interface Refusal {
 const ownerOf = (model: Model, op: OperationModel, error: string) =>
   model.things[op.thing]?.errors[error] ? op.thing : Object.values(model.things).find((t) => t.errors[error])?.name;
 
+/**
+ * A refusal an operation step's inner operation makes (#1079), said as that operation says it: the outer handler's step gives it, never a blank of
+ * its own. `among` picks which of the inner's lists it is looked for in.
+ */
+const fromInner = (model: Model, op: OperationModel, r: string, among: (inner: OperationModel) => ReadonlyArray<string>): Refusal | undefined => {
+  for (const [key, step] of Object.entries(op.steps)) {
+    const inner = step.type === "operation" && step.operation !== undefined ? model.operations[step.operation] : undefined;
+    if (inner === undefined || !among(inner).includes(r)) continue;
+    const theirs = refusalsOf(model, inner).find((x) => x.name === r);
+    if (theirs !== undefined) return { ...theirs, giver: "inner", said: `${inner.name}'s, which step ${key} runs: ${theirs.said}` };
+  }
+  return undefined;
+};
+
 export const refusalsOf = (model: Model, op: OperationModel): ReadonlyArray<Refusal> => {
   const thing = model.things[op.thing];
   const code = (r: string) => model.refusals[r] ?? "?";
   return op.refusals.map((r): Refusal => {
+    // A declared error of an inner operation that this operation's own thing doesn't declare is the inner operation's to give.
+    const inner = op.errors.includes(r) && !thing?.errors[r] ? fromInner(model, op, r, (i) => i.errors) : undefined;
+    if (inner) return inner;
     const owner = op.errors.includes(r) ? ownerOf(model, op, r) : undefined;
     const declared = owner ? model.things[owner]?.errors[r] : thing?.errors[r];
     if (owner && declared) {
@@ -116,6 +133,7 @@ export const refusalsOf = (model: Model, op: OperationModel): ReadonlyArray<Refu
       const own = missing.errors[r];
       return { name: r, exit: own?.exit ?? NOT_FOUND_EXIT, code: code(r), giver: "runtime", fields: ["id"], fieldModels: {}, file: thingFile(model, missing.name, own ? "errors" : "thing"), said: `the runtime's, when no ${missing.name} has that id, carrying id` };
     }
-    return { name: r, exit: declared?.exit ?? "?", code: code(r), giver: "runtime", fields: Object.keys(declared?.fields ?? {}), fieldModels: declared?.fields ?? {}, file: thingFile(model, op.thing, "errors"), said: "the runtime's" };
+    return fromInner(model, op, r, (i) => i.refusals)
+      ?? { name: r, exit: declared?.exit ?? "?", code: code(r), giver: "runtime", fields: Object.keys(declared?.fields ?? {}), fieldModels: declared?.fields ?? {}, file: thingFile(model, op.thing, "errors"), said: "the runtime's" };
   });
 };

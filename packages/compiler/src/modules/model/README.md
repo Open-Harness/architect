@@ -29,3 +29,8 @@ Builds the model, the one description every generator reads, from a loaded bluep
   naming both places: two exports on one name (`internal/secrets.ts`), an export with digits or a run of capitals
   (`key2`, `apiURL`) because its words could split two ways, and an environment that also names a declared secret by hand.
   Tests: `e2e/m2/02` and `04`.
+- Inner operations (#1079): an operation step, `Blueprint.step.operation(op)`, is modelled as `{ name, type: "operation", operation }`.
+  Once every operation is modelled, `internal/inner.ts` merges each inner operation's `errors`, `refusals` (never its `IdempotencyConflict`),
+  `invariants` and `breaks` into its outer, at any depth, and hashes the outer again. Refused: an inner operation in another store or on
+  the device, one that is no verb, a cycle through the steps (once per cycle), and an outer and an inner that declare one refusal's name
+  with two shapes. Tests: `inner-operations.test.ts`, `inner-operations-refused.test.ts`.

@@ -71,7 +71,7 @@ Three kinds of line carry the declaration: the declared steps (`steps.load`, `st
 
 The frame is one type, made from the operation:
 
-```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=67-68
+```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=71-72
 /** What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out. */
 export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
 ```
@@ -80,7 +80,7 @@ export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: Han
 - **The context**: the caller as a `principal`, one runner per declared step, `move`, and what the runtime read or
   made before the handler ran (K16): the `subject`, each thing the payload names in `refs`, and a creating move's `id`:
 
-  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=27-47
+  ```ts file=packages/language-effect/src/modules/handler/types.ts name=HandlerContext lines=31-51
   export interface HandlerContext<O, C = {}> {
     readonly principal: Principal;
     readonly steps: StepRunners<StepsOf<O>, C>;
@@ -104,6 +104,13 @@ export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: Han
   }
   ```
 
+  Each step's runner is typed by its kind (`StepRunners`). A `database` or `wait` step's runner takes the work and runs
+  it in the step's span, `steps.load(records.find(…))`. A `call` step's runs the adapter's callable,
+  `steps.price([payload.origin], failure)`. An `operation` step's runs the operation it declares, inside this call's
+  commit, for the same caller (#1079): `steps.draft({ book, amount, ref })` takes the inner operation's payload and gives
+  its answer as code has it (a `bigint` stays a `bigint`), or fails with any refusal it can make, which reaches the
+  caller as it is unless the handler maps it. Its writes are visible to the handler afterwards. A step can run as often
+  as the handler calls it, and a handler can run only the operations its steps declare.
 - **Services**, from the frame's `R`: `Records` to find and change the thing's records, and `Auth`.
 
 It returns an Effect of the declared answer, failing only with a declared error. Both are checked twice. The compiler
@@ -111,7 +118,7 @@ refuses a handler that fails with an error its operation doesn't list
 (`packages/generators/src/modules/render/handler-type.test.ts:40`). At run time, an answer outside its declaration
 is never sent. It dies as the handler's bug:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=123-127
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=115-119
 // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
 const wire = yield* check(answer).pipe(
   Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)),
@@ -190,7 +197,7 @@ rows marked. The body is sections in order: each declared step, with the declare
 that writes; the move, one `Match.when` per outcome when there is more than one; and the answer. Every hole is a
 `Handlers.blank`, so the file compiles. This is the part of the generator that orders the body:
 
-```ts file=packages/projections/src/modules/handlers/internal/body.ts name=body lines=78-86
+```ts file=packages/projections/src/modules/handlers/internal/body.ts name=body lines=85-93
 /** The body's sections in order, each a list of lines; the scaffold puts an empty line between them. */
 export const body = (model: Model, op: OperationModel, minted: string | undefined): ReadonlyArray<ReadonlyArray<string>> => {
   const keys = Object.keys(op.steps);
@@ -251,7 +258,7 @@ roles a `roles.ts` exports (F5). Signup has no blank left, so this example is wo
 **A blank in a handler** is `Handlers.blank("…")`, what every fresh scaffold holds. It type-checks as anything, and
 reaching it at run time is a defect that names what is missing:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=199-202
+```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=188-191
 export const Handlers: HandlerApi = {
   serve: serve as unknown as HandlerApi["serve"],
   blank: ((what: string, kind?: "failure") => (kind === "failure" ? () => new BlankReached({ what }) : Effect.die(new BlankReached({ what })))) as unknown as HandlerApi["blank"],

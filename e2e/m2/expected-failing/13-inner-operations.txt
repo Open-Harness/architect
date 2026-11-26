@@ -1,3 +1,0 @@
-# #1079 (CX-inner-operations): `ortho generate` can't load a verb that declares `Blueprint.step.operation`, and the generated server wires no inner
-# operation. Clears with #1079's build.
-m2/13-inner-operations.test.ts > 13 a handler runs another operation of the app inside its commit, on D1 > commits together or not at all, judges the inner operations' rules for the caller, and refuses as the inner operation declared

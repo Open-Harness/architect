@@ -1,6 +1,6 @@
 // Turns the layout into the model: every declaration named, every reference resolved, every entry hashed.
 import { Duration } from "effect";
-import type { AnyErrorClass, CallStep, On, Operation, Read, Step, Thing, Value } from "orthograph";
+import type { AnyErrorClass, CallStep, On, Operation, OperationStep, Read, Step, Thing, Value } from "orthograph";
 import type { AllowedModel, BlankOperationModel, Model, MountModel, OperationModel, StepModel, ThingModel } from "../types.ts";
 import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
@@ -31,6 +31,7 @@ import { fieldsOf } from "./fields.ts";
 import { chainOperationProblems, chainReadProblems, collisionProblems } from "./operations.ts";
 import { metaOf, type Names } from "./money.ts";
 import { thingsOf } from "./things.ts";
+import { mergeInnerOperations } from "./inner.ts";
 
 export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Readonly<Record<string, MountModel>> = {}): { model: Model; problems: Array<string>; lock: Lock } => {
   const problems = [...layout.problems];
@@ -117,6 +118,8 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
   }
   // One contract per chain store: its verbs share the generated entries' names.
   for (const verbsOf of entries.values()) problems.push(...collisionProblems(verbsOf));
+  // Every inner operation's refusals are its outer's, through any depth (#1079).
+  mergeInnerOperations({ layout, operations, things, errorNames, problems });
 
   function operationModel(thing: string, verb: string, file: string, from: OperationModel["from"], declared: Operation | Read): OperationModel {
     if (declared.thing !== layout.things.get(thing)?.thing) problems.push(`${file}: declares an operation of another thing`);
@@ -193,10 +196,15 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
       name: `${thing}.${verb}.${key}`, type: step.type, ...writesOf((step as { readonly writes?: ReadonlyArray<Thing> }).writes, file),
       ...(step.optional ? { optional: true } : {}),
     };
+    const where = `${file}: step ${key}`;
+    // An operation step names the inner operation it runs (#1079); its refusals are merged into this one's once every operation is modelled.
+    if (step.type === "operation") {
+      const inner = opName((step as OperationStep).operation);
+      return { name: plain.name, type: "operation", operation: inner ?? problem(problems, `${where} runs an operation that is no verb of the app: run one declared in a verb file, blueprint/things/<thing>/verbs/<verb>.ts, imported from there`) };
+    }
     if (step.type !== "call") return plain;
     const { call } = step as CallStep;
     const reach = layout.calls.get(call);
-    const where = `${file}: step ${key}`;
     if (!reach) {
       const missing = (call as { readonly kind?: string } | undefined)?.kind === "missing-call";
       problems.push(missing

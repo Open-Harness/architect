@@ -21,13 +21,20 @@ export interface Step<K extends StepKind = StepKind> {
 export interface CallStep extends Step<"call"> {
   readonly call: Call;
 }
+/**
+ * A step that runs another operation of the same app inside this one's commit, for the same caller (#1079, CX-inner-operations): the handler
+ * runs it as `steps.<key>(payload)`, and every refusal the inner operation can make is the outer's too.
+ */
+export interface OperationStep<O = Operation<any, any, any, any, any, any>> extends Step<"operation"> {
+  readonly operation: O;
+}
 
 /**
- * What a step is. `database`, `wait` and `call` are what the Effect target runs. `sync`, `check` and `prove` are reserved for
+ * What a step is. `database`, `wait`, `call` and `operation` are what the Effect target runs. `sync`, `check` and `prove` are reserved for
  * targets that run on a chain or a client (N1): each is a span with its own budget. The union is open, so a target can
  * add kinds, and nothing here matches on all of them.
  */
-export type StepKind = "database" | "wait" | "call" | "sync" | "check" | "prove" | (string & {});
+export type StepKind = "database" | "wait" | "call" | "operation" | "sync" | "check" | "prove" | (string & {});
 
 /** Where an operation runs: `server` (every target today), on the caller's `client`, or on a `chain`. */
 export type Runs = "client" | "server" | "chain";
@@ -197,5 +204,7 @@ export interface OperationsApi {
     readonly wait: (spec?: { readonly optional?: boolean }) => Step<"wait">;
     /** A call out through an adapter the app mounted and `include`d the call of (M1-plugins section 9). */
     readonly call: (call: Call) => CallStep;
+    /** Another operation of the app, imported from its verb file, run inside this one's commit as `steps.<key>(payload)` (#1079). */
+    readonly operation: <const O extends Operation<any, any, any, any, any, any>>(operation: O) => OperationStep<O>;
   };
 }

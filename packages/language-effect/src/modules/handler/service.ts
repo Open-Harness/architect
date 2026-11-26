@@ -1,9 +1,9 @@
-import { Cause, Data, Duration, Effect, Ref, Schema } from "effect";
-import type { CallStep, Operation, Principal } from "orthograph";
+import { Duration, Effect, Ref, Schema } from "effect";
+import type { Operation, Principal } from "orthograph";
 import { ErrorNames } from "orthograph/server";
 import { Access } from "#modules/access/service.js";
-import { Calls } from "#modules/calls/service.js";
-import type { CallRunner, CallWiring } from "#modules/calls/types.js";
+import type { CallWiring } from "#modules/calls/types.js";
+import type { Entry } from "#modules/journal/types.js";
 import { Unit } from "#modules/records/service.js";
 import { Records, Store } from "#modules/records/types.js";
 import { Busy } from "#modules/work/types.js";
@@ -14,29 +14,20 @@ import { answerAttributes, payloadAttributes, principalAttributes, requestAttrib
 import { measureCall } from "./internal/call-metrics.ts";
 import { Environment } from "./internal/environment.ts";
 import { applyMove, checkFrom, chooseOutcome } from "./internal/move.ts";
-import { prehandle, type Prehandled } from "./internal/prehandle.ts";
+import { prehandle } from "./internal/prehandle.ts";
 import { recordingLogs } from "./internal/decided.ts";
 import { settleViolation } from "./internal/invariants.ts";
-import { signalled, spanned } from "./internal/span.ts";
-import { defectAttributes } from "./internal/defect.ts";
+import { spanned } from "./internal/span.ts";
+import { Conflict, INNER, type Attempt, type Inner } from "./internal/attempt.ts";
+import { ending, innerRun, tagOf, type AnyHandler } from "./internal/inner.ts";
+import { stepsOf } from "./internal/steps.ts";
 export { Reads } from "./internal/read.ts";
 export { Environment } from "./internal/environment.ts";
 
 type AnyCodec = Schema.Codec<object, unknown>;
-type AnyHandler = (payload: object, context: { principal: Principal; steps: object; move: (to?: string) => Effect.Effect<void> } & Prehandled) => Effect.Effect<object, unknown, unknown>;
-
-/** An update's version had moved on, so this attempt committed nothing. Never leaves the wrapper. */
-class Conflict extends Data.TaggedError("Conflict")<{}> {}
 
 /** Every round of contenders has at least one winner, so this many attempts outlasts any fair race (D2 #36). */
 const ATTEMPTS = 64;
-
-/** A call step: the adapter's call in a span named after the step, marked `call`. */
-const callStep = (span: string, run: CallRunner) => (args: ReadonlyArray<unknown>, failure: (failure: never) => never) =>
-  spanned(span, { "step.kind": "call" })(signalled(span)(run(args as never, failure as never)));
-
-const tagOf = (e: unknown): string =>
-  typeof e === "object" && e !== null && typeof (e as { _tag?: unknown })._tag === "string" ? (e as { _tag: string })._tag : String(e);
 
 interface Spec {
   readonly name: string;
@@ -50,9 +41,11 @@ interface Spec {
   readonly invariants?: Readonly<Record<string, string>>;
   /** Each adapter's mount by the name it is mounted under: what a `service` role in `allowed` is read against. */
   readonly mounts?: ReadonlyMap<unknown, string>;
+  /** Each operation step's inner operation, served, by the step's key (#1079): what `steps.<key>(payload)` runs. */
+  readonly operations?: Readonly<Record<string, unknown>>;
 }
 
-const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes, invariants = {}, mounts }: Spec) => {
+const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes, invariants = {}, mounts, operations }: Spec) => {
   const op = operation as Operation;
   const budgetMs = op.budget === undefined ? undefined : Duration.toMillis(op.budget.p95);
   const decode = Schema.decodeUnknownEffect(op.payloadSchema as unknown as AnyCodec);
@@ -62,17 +55,13 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
   for (const tag of Object.values(notFound)) refusals.add(tag);
   for (const tag of Object.keys(invariants)) refusals.add(tag);
   if (op.allowed.some((role) => role.kind !== "anyone")) refusals.add("NotAllowed");
+  const steps = stepsOf(name, op, { calls, operations });
+  // Every refusal an inner operation can make is this one's too (#1079): counted as this call's refusal, never a defect.
+  for (const tag of steps.innerRefusals) refusals.add(tag);
+  // Run inside another operation, it keeps no request key: its own IdempotencyConflict is never the outer's.
+  const innerRefusals: ReadonlySet<string> = new Set(refusals);
   if (op.idempotent === "request") refusals.add("IdempotencyConflict");
   const callRefusals = new Set([...refusals, "InvalidPayload"]);
-  const steps = Object.fromEntries(
-    // Each step is its own span, marked with its kind: a `database` step's work is the store's, a `wait` step's a timer's.
-    Object.entries(op.steps).map(([key, step]) => [
-      key,
-      step.type === "call"
-        ? callStep(`${name}.${key}`, Calls.runner({ label: `${name}.${key}`, step: step as CallStep, wiring: calls?.[key] }))
-        : <A, E, R>(work: Effect.Effect<A, E, R>) => spanned(`${name}.${key}`, { "step.kind": step.type })(signalled(`${name}.${key}`)(work)),
-    ]),
-  );
 
   // One attempt: who may call, then the operation's own span (opened only once the caller may call, so a refused caller
   // leaves no handler span, only `<operation>.refused`, which carries the refusal), the machine's check, the handler,
@@ -89,6 +78,9 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
     Effect.gen(function* () {
       const store = yield* Store;
       const unit = yield* Unit.make(store);
+      // What this attempt's operations share: an inner operation's writes are held in this unit and its entries join this journal.
+      const journal: Array<Entry> = [];
+      const shared: Attempt = { unit, principal, journal };
       const withRecords = Effect.provideService(Records, unit.records);
       // The check's own reads are not traced: a refusal is, in its own span.
       yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
@@ -117,7 +109,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         const from = yield* checkFrom(op, notFrom, handed.subject);
         const chosen = yield* Ref.make<string | undefined>(undefined);
         const move = (to?: string) => chooseOutcome(name, op, to, operationSpan).pipe(Effect.flatMap((o) => Ref.set(chosen, o)));
-        const answer = yield* handler(payload, { principal, steps, move, ...handed }).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
+        const answer = yield* handler(payload, { principal, steps: steps.bind(shared), move, ...handed }).pipe(Effect.provideService(Records, logs.watching(unit.records)), logs.around);
         // Recorded before the check, so an answer outside its declaration is evidence `prove` can name.
         yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
         // An answer that breaks its declaration is the handler's bug, never the caller's: it dies, loudly.
@@ -126,7 +118,9 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
           Effect.orDie,
         );
         const outcome = yield* Ref.get(chosen);
-        const entries = outcome === undefined ? [] : [yield* applyMove(name, op, payload, answer, outcome, unit, handed.id)];
+        // Its own move comes after every inner operation's, as the moves were made.
+        const own = outcome === undefined ? undefined : yield* applyMove(name, op, payload, answer, outcome, unit, handed.id);
+        const entries = [...journal, ...(own === undefined ? [] : [own])];
         // The state the subject was in, written once the move is made: a refused call made no move.
         if (from !== undefined && outcome !== undefined) yield* Effect.annotateCurrentSpan({ "move.from": from });
         const request = key === undefined ? {} : { request: { key, answer: JSON.stringify({ payload: sha256(canonical(payload)), answer: wire }) } };
@@ -140,7 +134,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
           Effect.tap((outcome) => Effect.annotateCurrentSpan({
             "commit.outcome": outcome,
             // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
-            ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
+            ...(outcome === "committed" && own !== undefined ? { "event.name": own.event } : {}),
           })),
           spanned(`${name}.commit`, { "step.kind": "commit", "commit.writes": writes.length, "commit.entries": entries.length }),
           // A write section: the commit happens only while the world still holds this request's token, and a reset waits for it (M8.07).
@@ -151,15 +145,7 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
       }).pipe(
         // Every refusal and every defect is written on the operation's span: what `prove` reads.
         // A refusal also carries the log that decided it, when the handler logged one before refusing.
-        Effect.tapCause((cause) => {
-          if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
-          const refusal = Cause.squash(cause);
-          if (refusal instanceof Conflict) return Effect.void;
-          const tag = tagOf(refusal);
-          const code = codes?.[tag];
-          return logs.last.pipe(Effect.flatMap((log) =>
-            Effect.annotateCurrentSpan({ refusal: tag, ...(code === undefined ? {} : { "refusal.code": code }), ...(log === undefined ? {} : { "refusal.log": log }) })));
-        }),
+        Effect.tapCause(ending(codes, logs.last)),
         spanned(name, { operation: name, attempt: number, [CALL_ID]: callId, ...principalAttributes(principal), ...requestAttributes(request) }),
         busy.counted,
       );
@@ -182,9 +168,12 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
       );
     return Effect.flatMap(newCallId, (callId) => loop(1, callId));
   };
+  // What an outer operation runs when its handler runs this one as `steps.<key>(payload)` (#1079).
+  const inner: Inner = { name, operation, refusals: innerRefusals, run: innerRun({ name, op, handler, notFrom, notFound, invariants, codes, mounts, steps }) };
   return {
     name,
     operation,
+    [INNER]: inner,
     call: (raw: unknown, principal: Principal) =>
       decode(raw).pipe(
         Effect.mapError((e) => new InvalidPayload({ issues: e.message })),

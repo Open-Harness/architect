@@ -123,6 +123,8 @@ export interface StepModel {
   /** Present only when the step may be skipped (K5): eval 6 lets an answered call run without it. */
   readonly optional?: boolean;
   readonly call?: { readonly mount: string; readonly call: string; readonly mode: "promise" | "effect" };
+  /** An operation step's inner operation, by name (#1079): run inside this one's commit, and every refusal it can make is this one's too. */
+  readonly operation?: string;
 }
 
 export interface OperationModel {

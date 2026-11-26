@@ -5,7 +5,7 @@ import { Values } from "#modules/values/service.js";
 import { Visibilities } from "#modules/visibility/service.js";
 import type { AnyDerive } from "#modules/derive/types.js";
 import type { FieldsInput, Thing } from "#modules/things/types.js";
-import type { Budget, CallStep, Operation, OperationsApi, Order, Step } from "./types.ts";
+import type { Budget, CallStep, Operation, OperationStep, OperationsApi, Order, Step } from "./types.ts";
 import { Blanks } from "#modules/blanks/service.js";
 
 /** Fields not written yet (`Blueprint.todo`) have no schema yet: until they're filled, nothing decodes to them. */
@@ -96,5 +96,6 @@ export const Operations: OperationsApi = {
     }) as Step<"database">,
     wait: (spec) => Object.freeze({ kind: "step", type: "wait", ...(spec?.optional ? { optional: true } : {}) }) as Step<"wait">,
     call: (call) => Object.freeze({ kind: "step", type: "call", call }) as CallStep,
+    operation: (operation) => Object.freeze({ kind: "step", type: "operation", operation }) as OperationStep<typeof operation>,
   },
 };

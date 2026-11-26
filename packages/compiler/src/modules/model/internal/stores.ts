@@ -22,7 +22,7 @@ export const storesOf = (layout: Layout, problems: Array<string>): Readonly<Reco
   }));
 
 /** Where a thing lives, as a message names it. */
-const placeOf = (t: ThingModel): string => (t.store ? `store ${t.store}` : t.lives === "actor" ? "the actor store" : "the default store");
+export const placeOf = (t: ThingModel): string => (t.store ? `store ${t.store}` : t.lives === "actor" ? "the actor store" : "the default store");
 
 /** One step of an operation, as the model has it. */
 interface StepModel {

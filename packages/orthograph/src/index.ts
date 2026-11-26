@@ -79,7 +79,7 @@ export type { Machine, Move, NotFrom, State } from "#modules/machines/types.js";
 export { acting } from "#modules/roles/types.js";
 export { admitsAgent } from "#modules/roles/service.js";
 export type { Role, RoleOf, ServiceRole, SignedIn, System, Narrowed, Allowed, Principal, Acting, Way, InstanceOf } from "#modules/roles/types.js";
-export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, Steps, OperationSpec, Step, CallStep, StepKind, Runs, TestKind, Budget, PayloadOf, AnswerOf, ErrorOf, StepsOf } from "#modules/operations/types.js";
+export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, Steps, OperationSpec, Step, CallStep, OperationStep, StepKind, Runs, TestKind, Budget, PayloadOf, AnswerOf, ErrorOf, StepsOf } from "#modules/operations/types.js";
 export type { App, AppPage, AppComponent, AppLayout, NavGroup, NavGroupSpec, AppSpec, PageSpec, ComponentSpec, Route, RouteParam, LayoutName } from "#modules/app/types.js";
 export type { Blank } from "#modules/blanks/types.js";
 export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, ToolsCall, AnyCall, Ref, Refusal, ClockCall } from "#modules/journeys/types.js";

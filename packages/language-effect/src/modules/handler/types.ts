@@ -16,12 +16,16 @@ export class InvalidPayload extends Data.TaggedError("InvalidPayload")<{ readonl
 
 /**
  * Each declared step, as a function that runs its work in a span named `<thing>.<verb>.<key>`. A call step runs the
- * adapter's callable instead (`steps.price([payload.origin], failure)`), typed by `C[key]`, the callable's own type.
+ * adapter's callable instead (`steps.price([payload.origin], failure)`), typed by `C[key]`, the callable's own type. An
+ * operation step runs the operation it declares inside this call's commit (`steps.draft(payload)`, #1079): its answer as
+ * code has it, or any refusal it can make.
  */
 export type StepRunners<St, C = {}> = {
   readonly [K in keyof St]: St[K] extends { readonly type: "call" }
     ? CallRunner<K extends keyof C ? (C[K] extends Callable ? C[K] : Callable) : Callable>
-    : <A, E, R>(work: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>;
+    : St[K] extends { readonly type: "operation"; readonly operation: infer I }
+      ? (payload: PayloadOf<I>) => Effect.Effect<AnswerOf<I>, ErrorOf<I> | NotAllowed | NotFrom | NotFound>
+      : <A, E, R>(work: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>;
 };
 
 export interface HandlerContext<O, C = {}> {
@@ -149,6 +153,8 @@ export interface HandlerApi {
     readonly invariants?: Readonly<Record<string, string>>;
     /** Each adapter's mount by the name it is mounted under, when some `allowed` entry is a `service` role: what that role is read against. */
     readonly mounts?: ReadonlyMap<unknown, string>;
+    /** Each operation step's inner operation, served, by the step's key (#1079): what `steps.<key>(payload)` runs. Wired by the generated server. */
+    readonly operations?: Readonly<Record<string, Served<any, any>>>;
   }) => Served<O, R>;
   readonly blank: {
     /** What a scaffold returns until it is written: dies with `BlankReached`, typed as anything. */
