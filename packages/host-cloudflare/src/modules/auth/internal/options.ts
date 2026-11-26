@@ -18,6 +18,15 @@ const suffix = (): string => {
 /** API keys start `ak_`, so a bearer credential says which kind it is. */
 export const KEY_PREFIX = "ak_";
 
+/**
+ * The plugin's per-key limit is off, on purpose (#449). Left unset, `@better-auth/api-key` 1.7.15 refuses a key after 10
+ * calls in 24 hours (`dist/index.mjs:2338-2339`), and `rateLimit: { enabled: false }` below does not reach it, so an
+ * agent holding a key went anonymous on its 11th call. Nothing in design/ or docs/canon asks for a per-key limit, and a
+ * counter kept in the key's row would write to D1 on every call. A limit on keys is the host's to set, as it is for every
+ * other caller; a blueprint-declared one can come with that work, never as this silent default.
+ */
+export const NO_KEY_LIMIT = { enabled: false } as const;
+
 /** The mark on a key made for an agent (`metadata.acts`): a call made with it is an agent's, acting for the key's person (M2-auth, fork 2). */
 export const ACTS_FOR_AN_AGENT = "agent";
 
@@ -75,5 +84,5 @@ export const optionsFor = (cli: string, origin?: string) => ({
   rateLimit: { enabled: false },
   // The jwt plugin's own /token would mint tokens that are not OAuth's; the provider's /oauth2/token is the one.
   disabledPaths: ["/token"],
-  plugins: [bearer(), apiKey({ enableSessionForAPIKeys: true, enableMetadata: true, defaultPrefix: KEY_PREFIX, schema: { apikey: { modelName: "auth_apikey" } } }), deviceClient(cli), ...oauth(origin)],
+  plugins: [bearer(), apiKey({ enableSessionForAPIKeys: true, enableMetadata: true, defaultPrefix: KEY_PREFIX, rateLimit: NO_KEY_LIMIT, schema: { apikey: { modelName: "auth_apikey" } } }), deviceClient(cli), ...oauth(origin)],
 }) satisfies Omit<BetterAuthOptions, "database" | "secret">;

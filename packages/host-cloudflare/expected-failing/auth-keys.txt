@@ -1,3 +1,0 @@
-src/modules/auth/auth-keys.test.ts > a key is not refused after ten calls a day (#449) > a burst of 40 at once is every one an agent
-src/modules/auth/auth-keys.test.ts > a key is not refused after ten calls a day (#449) > a person's key is a person by key on every one of 40 calls at the API door, and an agent at the MCP door
-src/modules/auth/auth-keys.test.ts > a key is not refused after ten calls a day (#449) > an agent's key is an agent on every one of 40 calls, through the API door and the MCP door, one at a time
