@@ -1,0 +1,163 @@
+{
+ "title": "Stage it",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Read",
+  "Plan",
+  "Build",
+  "Local",
+  "Account"
+ ],
+ "about": "Every line of code in this film is read from examples/plugged-in, and every line of terminal output is replayed from docs/manual/captures, recorded by running the commands for real on a machine with no cloud account.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "pictures": {
+  "carries": "The plan's three names under one prefix, from captures/stage-plan.txt: drawn as outlines in scene plan, kept small in a corner through build and local, and still outlines, never filled, in scene account, because nothing was made.",
+  "where": "You are acting: an editor quotes examples/plugged-in/blueprint/environments/staging.ts lines 4 to 9, then a terminal replays captures/stage-secrets.txt.",
+  "plan": "Your agent is acting: a terminal replays captures/stage-plan.txt, and its three resources lift out as three outlined boxes with the prefix marked on each name; captures/stage-destroy-plan.txt replays beside it and lands on the same three.",
+  "build": "Your agent is acting: a terminal replays captures/stage-build.txt, and the commit and the fingerprint become two tags; then captures/stage-build-dirty.txt replays as a refusal, not in red.",
+  "local": "Your agent is acting: a terminal replays captures/stage-local-up.txt, then the last line of captures/stage-bundle-http.txt sits beside the two tags from the build so the eye can match them, then captures/stage-local-down.txt.",
+  "account": "You are acting: a terminal replays captures/stage-up-no-account.txt with the three boxes still outlines; then captures/stage-bad-run.txt, captures/stage-prove-no-address.txt and captures/stage-promote.txt in turn; Kit.stand marks the plan, the build and local staging as running today, who holds the two values as practice, and the real deployment as not recorded."
+ },
+ "scenes": [
+  {
+   "id": "where",
+   "title": "Where it will run",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "w1",
+     "text": "Plugged In is green on your machine. Nobody else can reach it."
+    },
+    {
+     "id": "w2",
+     "text": "To give it a real address, something has to be made in a cloud account you pay for. You want to see what, before it is made."
+    },
+    {
+     "id": "w3",
+     "text": "Staging is one short file in the blueprint. One server, one database, and real sign-in."
+    },
+    {
+     "id": "w4",
+     "text": "It also needs a value for every secret the app declares. So we ask. Plugged In declares none."
+    }
+   ]
+  },
+  {
+   "id": "plan",
+   "title": "The plan, before anything is made",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "p1",
+     "text": "A staging in the cloud is made for one run, and you name the run. Here it is demo1.",
+     "say": "A staging in the cloud is made for one run, and you name the run. Here it is demo one."
+    },
+    {
+     "id": "p2",
+     "text": "We run ortho env up staging, with the word plan. It prints what would be made, and touches nothing."
+    },
+    {
+     "id": "p3",
+     "text": "Three things. The server. Its database. And a namespace that belongs to the server."
+    },
+    {
+     "id": "p4",
+     "text": "Every name starts with one prefix: the app, the environment, and the run."
+    },
+    {
+     "id": "p5",
+     "text": "The prefix is also how a run is cleaned up. Destroy, with the word plan, prints the same three."
+    }
+   ]
+  },
+  {
+   "id": "build",
+   "title": "Built once",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "What runs in staging must be the file that was proved. So it is built once, from a commit."
+    },
+    {
+     "id": "b2",
+     "text": "Ortho build prints two things: the commit, cut short, and a fingerprint of the file."
+    },
+    {
+     "id": "b3",
+     "text": "Those two are what you will ask any address for."
+    },
+    {
+     "id": "b4",
+     "text": "And it will not build from work that is not committed. It refuses, and says to commit first."
+    }
+   ]
+  },
+  {
+   "id": "local",
+   "title": "The same file, here first",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "l1",
+     "text": "Before the account comes into it, the same file runs as staging on your machine."
+    },
+    {
+     "id": "l2",
+     "text": "Ortho env up staging, with a port and no run. It starts, and it stays up."
+    },
+    {
+     "id": "l3",
+     "text": "Then we ask it what it is running.",
+     "gap": 0.6
+    },
+    {
+     "id": "l4",
+     "text": "The same commit. The same fingerprint. Then env down stops it."
+    }
+   ]
+  },
+  {
+   "id": "account",
+   "title": "The step that needs your account",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "Now the real one. The same command, without the word plan."
+    },
+    {
+     "id": "a2",
+     "text": "It stops. It names two values from your cloud account that are not set, and it says no connection was made."
+    },
+    {
+     "id": "a3",
+     "text": "Those values are yours. You set them where the command runs. No agent is handed them."
+    },
+    {
+     "id": "a4",
+     "text": "Other things stop early too. A run name with a capital letter is refused. Proving a staging asks where your account puts its servers. And promote asks for a logbook, which Plugged In does not have."
+    },
+    {
+     "id": "a5",
+     "text": "One honest note. There is no real deployment in this film. It waits on the owner's credential, and it will be recorded then. Everything you saw ran with no cloud account.",
+     "gap": 0.6
+    },
+    {
+     "id": "a6",
+     "text": "So this is the path to a real address, and not yet an address. Next: watch it."
+    }
+   ]
+  }
+ ]
+}

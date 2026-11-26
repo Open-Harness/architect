@@ -75,7 +75,7 @@
           "n": 8,
           "title": "Stage it",
           "question": "How does it get from my machine to a real address?",
-          "planned": "chapters/08-stage-it.md",
+          "file": "chapters/08-stage-it.md",
           "film": "stage",
           "section": "stage"
         },

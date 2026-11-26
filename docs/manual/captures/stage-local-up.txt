@@ -1,0 +1,2 @@
+$ ortho env up staging --port 4628
+staging up http://127.0.0.1:4628

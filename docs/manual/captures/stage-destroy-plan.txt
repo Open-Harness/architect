@@ -1,0 +1,23 @@
+$ ortho env destroy staging --plan --run demo1
+{
+  "app": "plugged-in",
+  "environment": "staging",
+  "run": "demo1",
+  "prefix": "ortho-pluggedin-stg-demo1",
+  "resources": [
+    {
+      "kind": "worker",
+      "name": "ortho-pluggedin-stg-demo1-worker"
+    },
+    {
+      "kind": "d1",
+      "name": "ortho-pluggedin-stg-demo1-db",
+      "binding": "DB"
+    },
+    {
+      "kind": "durable-object-namespace",
+      "script": "ortho-pluggedin-stg-demo1-worker",
+      "class": "World"
+    }
+  ]
+}
