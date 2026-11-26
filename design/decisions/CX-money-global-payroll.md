@@ -1,8 +1,8 @@
 # CX-money-global-payroll: who Capxul's customers pay, and money in several currencies
 
 **Proposed 26 November 2026** by Goal 16's 📐 designer thread (session_01S8RF7CZNk1PRTUe3WhRq8s), started by Goal 16's
-lead (session_01S8RF7ASqmdxbN37WdpZMcB). **A draft until Aaron answers section 7.** Nothing here is applied to other
-documents until he does; section 8 lists what changes then.
+lead (session_01S8RF7ASqmdxbN37WdpZMcB). **Aaron answered the same day** (section 7, "Aaron's answers"), all but
+decision 3, the default reporting currency, which is still open. Section 8 is applied once he answers it.
 
 ## In short
 
@@ -11,8 +11,8 @@ paying contractors abroad: one form on file (the W-8BEN), nothing withheld, noth
 contractors need a W-9 and a yearly 1099. Only American employees need a US payroll tax engine. Employees abroad go
 through an employer of record, which employs them locally for the customer.
 
-Aaron decides seven things (section 7): start payroll with contractors and move the US tax engine later, reversing
-this morning's call; let the books hold several currencies, reopening "assume dollars"; pick the default reporting
+Aaron decides seven things (section 7): start payroll with contractors on the main path, with the US tax engine
+built alongside in its own lane; let the books hold several currencies, reopening "assume dollars"; pick the default reporting
 currency, dollars or USDC; take exchange rates from each payment for now; record employers of record by hand for now;
 decide whether Capxul pays contractors itself before Bridge's slice; and have a professional answer section 6 before
 real money moves.
@@ -29,10 +29,10 @@ done (*unsure* that nothing else applies, question 1). Payroll duties follow whe
 
 | Case | What the company must do | What Capxul does |
 |---|---|---|
-| (a) Employees in the US | Collect a W-4 and I-9; withhold federal and state income tax, Social Security and Medicare; pay federal and state unemployment tax; file quarterly and yearly returns; deposit electronically; give W-2s | Calculates (a US tax piece, later), records, collects the W-4; filing and deposits go to an outside service |
+| (a) Employees in the US | Collect a W-4 and I-9; withhold federal and state income tax, Social Security and Medicare; pay federal and state unemployment tax; file quarterly and yearly returns; deposit electronically; give W-2s | Calculates (the US tax piece, in its own lane), records, collects the W-4; filing and deposits go to an outside service |
 | (b) Contractors in the US | Collect a W-9; withhold 24% if no taxpayer number is given; file a 1099-NEC by 31 January for each contractor paid at least the year's threshold ($2,000 for 2026), or from whom anything was withheld | Collects the W-9, pays, totals the year, produces the 1099 figures and the upload file; the company files |
 | (c) Contractors abroad | Collect a W-8BEN (a person) or W-8BEN-E (a business); pay for work done abroad is not wages and is not withheld; no 1099. Whether they are truly contractors is the local country's law (*unsure*, question 4) | Collects the form, pays in the contractor's choice; nothing withheld or filed |
-| (d) US citizens abroad | Social Security and Medicare still apply when the employer is American, which a Delaware company is; income tax withholding often doesn't, on the employee's Form 673 | The US tax piece with two switches, later (question 3) |
+| (d) US citizens abroad | Social Security and Medicare still apply when the employer is American, which a Delaware company is; income tax withholding often doesn't, on the employee's Form 673 | The US tax piece with two switches, in its own lane (question 3) |
 | (e) Employees abroad | The local country's rules: a local company, the employer's own registration there, or an employer of record. A local employee can also create a taxable presence for the company (question 5) | Records the employer of record's invoice as a bill from a supplier |
 
 ## 2. What Capxul builds, in order
@@ -56,9 +56,9 @@ Each step is small and composes with what's built. Payroll's core (9a, built) st
 5. **Paying through the rails.** When Bridge (slice 10) and the Safe (slice 2) are built, they become rails: pieces
    that move the money and then record it, and Bridge's receipt books the payment at its realised rate. Whether this moves earlier is
    decision 6.
-6. **Later, each a piece of its own, when a customer needs it:** the US tax piece (case a, with case d's switches), on
-   the open-withholding dataset imported at a pinned commit, with filing and deposits through an outside service; an
-   employer-of-record integration; 1099 filing by API; other countries' tax pieces, CX-payroll-tax's shape.
+6. **In parallel, its own lane:** the US tax piece (case a, with case d's switches), on the open-withholding dataset
+   imported at a pinned commit, with filing and deposits through an outside service (`design/goals/16-lane-payroll-tax.md`,
+   being scoped). **Later, each a piece of its own, when a customer needs it:** an employer-of-record integration; 1099 filing by API; other countries' tax pieces, CX-payroll-tax's shape.
 
 ## 3. Money in several currencies
 
@@ -133,9 +133,10 @@ Each is a new outside dependency, so each is Aaron's call. None is needed for st
 
 ## 5. What it changes in the plan
 
-1. **Pause the US tax module.** CX-payroll-tax's shape stands (a piece per jurisdiction, rates as dated data); the US
-   piece moves from next to later. The spike (#1119) lands as a record, and its import plan is how the piece starts.
-   Payroll's 9b and 9c go on: they are jurisdiction-free. A Capxul with payroll and no tax piece is valid; slips then
+1. **The US tax module becomes its own lane, in parallel.** CX-payroll-tax's shape stands (a piece per jurisdiction,
+   rates as dated data). The US piece is no longer next on the main path; it runs alongside it, in Amp, with its brief
+   in `design/goals/16-lane-payroll-tax.md` (scoped by session_01S8RF7DUPsuCAygXRCpaop8), and keeps up with the main
+   path's work. The spike (#1119) is its starting point. Payroll's 9b and 9c go on: they are jurisdiction-free. A Capxul with payroll and no tax piece is valid; slips then
    carry no tax lines (agreed with CX-composable-pieces).
 2. **Add, in slice 7: money in several currencies.** The currency slice comes after the `company` and `ledger` pieces
    have moved (CX-composable-pieces, moves 1 and 2), works inside `company`, `rates`, `ledger` and `payments`, and comes
@@ -172,14 +173,14 @@ Each is a new outside dependency, so each is Aaron's call. None is needed for st
   (and through `bridge-accounts` for a payout to an external account), and the 1099 year-end. The forms can't live in `payroll-tax-us`, because every US payer needs them. Payroll stays for
   employees.
 - `bridge-accounts` (renamed from `bridge`, so as not to clash with the adapter `@orthograph/bridge`) holds external
-  accounts and transfers out; `payroll-tax-us` is optional and later; `eor` is optional and
+  accounts and transfers out; `payroll-tax-us` is optional and built in its own lane; `eor` is optional and
   later, and until then an employer of record is a supplier.
 
-**Order:** the currency slice as in point 2, then `contractors`. Both records mark three things as resting on decision
-1: `contractors` as core, no tax piece mounted for now, and this order. If Aaron says no, `payroll-tax-us` is mounted
-from the start and `contractors` comes later as an optional piece. Choosing between two countries' tax pieces per
-employee waits on a decision of its own (one filler per contract, CX-composable-pieces); this record needs none,
-since no tax piece is mounted for now.
+**Order on the main path:** the currency slice as in point 2, then `contractors`. Decision 1's yes settles the three
+things both records rested on it: `contractors` is core, a Capxul may mount no tax piece, and this order.
+`payroll-tax-us` is built in its own lane and mounted by a Capxul that pays US employees. Choosing between two
+countries' tax pieces per employee waits on a decision of its own (one filler per contract, CX-composable-pieces);
+with one tax piece at most, this record needs none.
 
 ## 6. Questions for a professional
 
@@ -210,7 +211,7 @@ Each with the recommendation first.
 1. **Payroll starts with contractors worldwide.** Recommended: yes. Contractors abroad have a W-8BEN on file; US
    contractors a W-9 and their 1099 figures. The US tax engine becomes a later piece. This reverses your call of this
    morning, 26 November, which picked US payroll tax next ("keep usa and usd"). The other choice: keep US payroll tax
-   next.
+   next. *(Answered: yes, with the US tax engine in its own parallel lane, not later; see below.)*
 2. **Several currencies in the books.** Recommended: yes, ERPNext's shape (section 3), next in the books. This
    reopens your call of 24 November: "for now, can't we just assume dollars? It's always going to be tied to some sort
    of crypto asset, because that's what the thing's in." The other choice: one asset until a customer needs more.
@@ -227,18 +228,34 @@ Each with the recommendation first.
 7. **Who answers section 6, and when.** Recommended: before the first real contractor is paid through Capxul. It is
    production and likely money.
 
+### Aaron's answers, 26 November 2026
+
+**Aaron's call,** by voice to Goal 16's lead, kept as heard: "I'm giving yes to anything that you just said so far. I
+haven't really looked at everything yet". And: "I don't want to park the tax lane. I want to do that in a separate, what
+I want to do is I want to like scope it out. And then ... we're going to fire it off in AMP. So it's going to be a
+separate thing and just like stay up to date with what we're doing."
+
+**The goal's reading** (the lead's, applied here):
+
+- Decision 1: yes, contractors first on the main path. The US tax module is not paused: it runs now as its own
+  parallel lane in Amp, its brief scoped into `design/goals/16-lane-payroll-tax.md` by session_01S8RF7DUPsuCAygXRCpaop8,
+  keeping up with the main path. The order on the main path is unchanged.
+- Decisions 2, 4, 5, 6 and 7: yes, as recommended.
+- Decision 3, the default reporting currency: not decided. The lead is asking him, since his words of 24 November point
+  to USDC. It stays open here.
+
 ## 8. Supersedes
 
-**Applied only once Aaron agrees to decisions 1 and 2, on that day.** Then one change rewrites each live doc and marks
+**Applied once Aaron answers decision 3, in one change dated that day.** Then one change rewrites each live doc and marks
 each dated record, and `git grep` finds each old phrase only in dated records and `design/process/`. Lines below are
 `<file>: "<old words>" → "<new words>"`; written as if decision 3 is US dollars.
 
 Live docs:
 
-- `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)" → "tax from a piece per jurisdiction, later; contractors are their own piece (CX-money-global-payroll)"
+- `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)" → "tax from a piece per jurisdiction, the United States in its own lane (`16-lane-payroll-tax.md`); contractors are their own piece (CX-money-global-payroll)"
 - `design/goals/16-capxul.md`: "in USDC, the one dollar asset every Capxul company uses for now" → "in USDC, the reporting currency of today's companies (CX-money-global-payroll)"
 - `design/goals/16-capxul.md`: "parked by Aaron's one-dollar-asset call and unclaimed while parked" → "unparked by CX-money-global-payroll and claimed by Goal 16"
-- `design/goals/16-capxul.md`: "payslips, the pay run and taxes, each run posting" → "payslips, the pay run and later taxes, contractors beside it, each run posting"
+- `design/goals/16-capxul.md`: "payslips, the pay run and taxes, each run posting" → "payslips and the pay run, with taxes from their own lane and contractors beside it, each run posting"
 - `examples/capxul/doctypes.md`: "These are deferred by Aaron's call of 24 November 2026" → "Each is taken with its rate and base fields as its slice builds it (CX-money-global-payroll)"
 - `examples/capxul/doctypes.md`: "amount is in USDC, the one dollar asset, so an `FX` row is taken without its exchange-rate and `base_*` fields" → "company keeps its books in its own currency"
 - `examples/capxul/doctypes.md`: "35 carry exchange rates (`FX`, deferred: amounts are USDC alone)" → "35 carry exchange rates (`FX`, CX-money-global-payroll)"
@@ -256,7 +273,7 @@ Dated records, each gaining "(Superseded by CX-money-global-payroll, <date>)" be
 - `design/decisions/CX-grill.md`: "Company currency (#882) is parked and unclaimed" → "Company currency (#882) is claimed by Goal 16"
 - `design/decisions/CX-grill.md`: "The one asset is USDC" → "Today's companies report in USDC"
 - `design/decisions/CX-grill.md`: "each is taken in USDC alone, and its exchange-rate and `base_*` fields are left out until a new call from Aaron" → "each is taken with its exchange-rate and `base_*` fields as its slice builds it"
-- `design/decisions/CX-payroll-tax.md`: "Capxul's payroll is built for the United States alone, in USDC" → "Capxul's payroll pays contractors worldwide first; the United States tax piece comes later"
+- `design/decisions/CX-payroll-tax.md`: "Capxul's payroll is built for the United States alone, in USDC" → "Capxul's payroll pays contractors worldwide first on the main path; the United States tax piece is built in its own lane alongside"
 - `design/decisions/CX-payroll-tax.md`: "These are not in dollars, so their modules" → "Their pieces follow the US piece, in each country's currency, and"
 - `design/decisions/CX-payroll-tax.md`: "a company's own currency stays deferred" → "a company's own currency is built in slice 7"
 - `design/decisions/CX-bridge.md`: "every company uses one dollar asset, USDC" → "a company keeps its books in its own currency"
