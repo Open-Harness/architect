@@ -72,3 +72,8 @@ than a few seconds.
 
 **What to tell the owner.** Nobody has listened to a film: say so. Say what was replayed or staged, and name the word
 most likely to be said wrong.
+
+**A film's files.** `films/<film>/data.mjs` is one line unless the film quotes more than the shared loader reads:
+`export { default } from "../manual/data.mjs";`, or, to quote more,
+`import load from "../manual/data.mjs"; export default (ctx) => load(ctx, { app: ["blueprint/…"], repo: ["design/…"] });`.
+Scenes are `films/<film>/scenes/NN-<scene id>.js`, and a film's own helpers go in `scenes/00-local.js`.

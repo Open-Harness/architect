@@ -8,7 +8,9 @@ const quoted = [
   "blueprint/things/handle/roles.ts", "blueprint/things/handle/verbs/claim.ts", "src/handle/claim.ts", "journeys/claim-a-handle.ts", "generated/docs/handle/claim.md",
 ];
 
-export default ({ repo, read }) => {
+// A film's own data.mjs may ask for more: `more.app` lists further files of examples/plugged-in (they join D.src), and
+// `more.repo` lists files anywhere in the repository, by their path from its root (they are D.repo[path]).
+export default ({ repo, read }, more = {}) => {
   const app = join(repo, "examples/plugged-in"), captures = join(repo, "docs/manual/captures");
   // A recording opens with the command that was run, as `$ …`. A `.ts.txt` recording is a file as it stood at that moment, under `# <path>`.
   const cap = Object.fromEntries(readdirSync(captures).map((f) => {
@@ -20,7 +22,8 @@ export default ({ repo, read }) => {
   const count = (text, re) => text.split("\n").filter((l) => re.test(l)).length;
   const journeys = (out) => out.split("\n").filter((l) => l.startsWith("journey ")).map((l) => { const m = /^journey (.+) ([✔✘]) (\d+)\/(\d+) steps$/.exec(l); return { name: m[1], ok: m[2] === "✔", green: +m[3], steps: +m[4] }; });
   return {
-    src: Object.fromEntries(quoted.map((f) => [f, read(join(app, f))])),
+    src: Object.fromEntries([...quoted, ...(more.app ?? [])].map((f) => [f, read(join(app, f))])),
+    repo: Object.fromEntries((more.repo ?? []).map((f) => [f, read(join(repo, f))])),
     cap,
     facts: {
       operations: Object.keys(model.operations), things: Object.keys(model.things),
