@@ -11,7 +11,7 @@ call returns, except span checks, which wait for telemetry. Test: `journeys.test
 In a world whose clock is stepped or scaled, each journey's clock starts on the environment's declared start: before its cast
 is made, `Journeys.run` posts the world's warm reset (`/_world/reset`, named by the nonce the world's health answer says), so
 its starting worlds' steps move it from there, whatever the journey before did or wherever it stopped. A real clock is never
-reset. After every clock step, in a starting world or a journey and whatever the step answered, the cast is cast again: the same
+reset. A world with leases (`--env test`) has no reset (404), so there its journeys still share one clock. After every clock step, in a starting world or a journey and whatever the step answered, the cast is cast again: the same
 people signed in anew at the world's new time, and each `via` credential minted again on its next use. Nothing is retried on a
 refusal. Decision: `design/decisions/G16-journey-clocks.md`; check: `e2e/m2/12-journey-clocks.test.ts`.
 
