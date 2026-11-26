@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/customer-group/verbs/create.ts. Yours from now on.
 import { Effect, Match } from "effect";
-import type { InstanceOf } from "orthograph";
 import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler, Outcome } from "../../generated/api/src/customer-group/create.handler.ts";
@@ -95,15 +94,14 @@ const create: Handler = ({ company, customerGroupName, parentCustomerGroup, isGr
     }
 
     // Step insert: database, span customer-group.create.insert. A name already used is the runtime's refusal
-    // (oneNamePerCompany). A root's parent is left out and stored empty; the cast is only because `InstanceOf` types
-    // every field as required.
+    // (oneNamePerCompany). A root's parent is left out and stored empty.
     yield* steps.insert(
       records.insert(CustomerGroup, {
         id,
         company,
         customerGroupName,
         ...(parentCustomerGroup !== undefined ? { parentCustomerGroup } : {}),
-      } as Omit<InstanceOf<typeof CustomerGroup>, "state">),
+      }),
     );
 
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.

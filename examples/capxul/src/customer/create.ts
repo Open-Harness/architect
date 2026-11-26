@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/customer/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import type { InstanceOf } from "orthograph";
 import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/customer/create.handler.ts";
@@ -73,8 +72,7 @@ const create: Handler = ({ company, customerName, customerType, customerGroup },
     }
 
     // Step insert: database, span customer.create.insert. Two parties may share a name (ERPNext names them by a naming
-    // series). A group not given is left out and stored empty; the cast is only because `InstanceOf` types every field
-    // as required.
+    // series). A group not given is left out and stored empty.
     yield* steps.insert(
       records.insert(Customer, {
         id,
@@ -82,7 +80,7 @@ const create: Handler = ({ company, customerName, customerType, customerGroup },
         customerName,
         customerType,
         ...(customerGroup !== undefined ? { customerGroup } : {}),
-      } as Omit<InstanceOf<typeof Customer>, "state">),
+      }),
     );
 
     // The move create, to active.

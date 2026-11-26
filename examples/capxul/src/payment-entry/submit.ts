@@ -66,7 +66,17 @@ const submit: Handler = ({ paymentEntry }, { steps, move, subject }) =>
           limit: Number.MAX_SAFE_INTEGER,
           after: undefined,
         });
-        const party = yield* records.find(subject["partyType"] === "Customer" ? Customer : Supplier, subject["party"] as string);
+        // The party is listed, not found, so its row is guarded at commit: a disable that lands meanwhile makes this
+        // call conflict and run again, and the retry refuses PartyDisabled.
+        const parties = yield* records.list({
+          thing: subject["partyType"] === "Customer" ? Customer : Supplier,
+          where: { id: subject["party"] },
+          state: undefined,
+          order: "oldest",
+          limit: 1,
+          after: undefined,
+        });
+        const party = parties.items[0];
         return { payment: subject, years: years.items, party };
       }),
     );

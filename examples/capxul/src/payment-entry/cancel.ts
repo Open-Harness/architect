@@ -55,7 +55,17 @@ const cancel: Handler = ({ paymentEntry }, { steps, move, subject }) =>
     const { payment, party, posted } = yield* steps.load(
       Effect.gen(function* () {
         if (!subject) return yield* Effect.die(new Error(`payment entry ${paymentEntry} was checked and then not found`));
-        const party = yield* records.find(subject["partyType"] === "Customer" ? Customer : Supplier, subject["party"] as string);
+        // The party is listed, not found, so its row is guarded at commit: a disable that lands meanwhile makes this
+        // call conflict and run again, and the retry refuses PartyDisabled.
+        const parties = yield* records.list({
+          thing: subject["partyType"] === "Customer" ? Customer : Supplier,
+          where: { id: subject["party"] },
+          state: undefined,
+          order: "oldest",
+          limit: 1,
+          after: undefined,
+        });
+        const party = parties.items[0];
         const posted = yield* records.list({
           thing: GLEntry,
           where: { voucherType: "Payment Entry", voucherId: paymentEntry, isCancelled: false },
