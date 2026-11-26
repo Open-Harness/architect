@@ -13,6 +13,9 @@ export interface Db {
   readonly d1: D1Client.D1Client;
 }
 
+/** #1045: how many read rows one guard statement holds, two bound values each, under D1's 100. */
+const READS_PER_STATEMENT = 40;
+
 export const commitD1 = ({ sql, d1 }: Db, tableOf: (thing: Write["thing"]) => string, { writes, entries, request, lists = [], reads = [] }: Commit, rules: ReadonlyArray<NamedRule> = []) => {
   /**
    * #764: a list's rows count as read. Before the call's own writes, the rows matching the list's `where` and `state` must still be the ones it read, at
@@ -30,12 +33,15 @@ export const commitD1 = ({ sql, d1 }: Db, tableOf: (thing: Write["thing"]) => st
     });
   /**
    * #1045: so does each row the call found. Per table, a few rows a statement (D1 binds at most 100 values): a row whose version moved on gets a NULL
-   * version, and the batch fails as a `conflict` before any write. The store hands in only rows of this database's tables.
+   * version, and the batch fails as a `conflict` before any write. The store hands in only rows of this database's tables. A read row that is gone matches
+   * nothing here, where the in-memory store calls it a `conflict`: the two agree only because no write deletes a row.
    */
-  const READS_PER_STATEMENT = 40;
   const readGuards = (reads: ReadonlyArray<RowRead>) => {
     const byTable = new Map<string, Array<RowRead>>();
-    for (const r of reads) (byTable.get(tableOf(r.thing)) ?? byTable.set(tableOf(r.thing), []).get(tableOf(r.thing))!).push(r);
+    for (const r of reads) {
+      const table = tableOf(r.thing);
+      (byTable.get(table) ?? byTable.set(table, []).get(table)!).push(r);
+    }
     return [...byTable].flatMap(([name, rows]) =>
       Array.from({ length: Math.ceil(rows.length / READS_PER_STATEMENT) }, (_, i) => rows.slice(i * READS_PER_STATEMENT, (i + 1) * READS_PER_STATEMENT)).map((chunk) =>
         sql`UPDATE ${sql(name)} SET "version" = NULL WHERE ${sql.or(chunk.map(({ id, version }) => sql`("id" = ${id} AND "version" <> ${version})`))}`));
