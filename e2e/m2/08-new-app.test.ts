@@ -43,7 +43,8 @@ const walk = (dir: string): ReadonlyArray<string> =>
 const treeOf = (dir: string): ReadonlyMap<string, string> => new Map(walk(dir).map((f) => [relative(dir, f), readFileSync(f, "utf8")]));
 
 const spawn = (command: ReadonlyArray<string>, cwd: string) => {
-  const r = spawnSync(process.execPath, [...command], { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 120_000 });
+  // Without colour: CI sets FORCE_COLOR, which puts an ANSI code straight before each word (m7/07 does the same).
+  const r = spawnSync(process.execPath, [...command], { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 120_000, env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
   return { status: r.status, stdout: r.stdout, stderr: r.stderr, out: `${r.stdout}${r.stderr}` };
 };
 const newApp = (cwd: string, ...args: ReadonlyArray<string>) => spawn([cli, "new", "app", ...args], cwd);
@@ -157,14 +158,22 @@ describe("08 ortho new app: what it makes", () => {
     mkdirSync(join(cwd, "bakery"));
     const r = newApp(cwd, "bakery");
     expect(r.status, r.out).toBe(0);
-    expect([...treeOf(join(cwd, "bakery")).keys()].some((p) => p.startsWith("blueprint/"))).toBe(true);
+    const fresh = sandbox();
+    expect(newApp(fresh.cwd, "bakery").status).toBe(0);
+    const expected = treeOf(join(fresh.cwd, "bakery"));
+    const got = treeOf(join(cwd, "bakery"));
+    expect(expected.size).toBeGreaterThan(0);
+    expect([...got.keys()].sort(), "the same files as a fresh run").toEqual([...expected.keys()].sort());
+    for (const [p, c] of expected) expect(got.get(p), p).toBe(c);
   });
 
   it("`ortho new --help` lists `app` beside `adapter`", () => {
     const { cwd } = sandbox();
     const r = spawn([cli, "new", "--help"], cwd);
-    expect(r.out).toMatch(/\bapp\b/);
-    expect(r.out).toMatch(/\badapter\b/);
+    expect(r.status, r.out).toBe(0);
+    // Each is a line of the subcommand list, its name first: not a word anywhere in some other help text.
+    expect(r.stdout).toMatch(/^\s+adapter\s/m);
+    expect(r.stdout).toMatch(/^\s+app\s/m);
   });
 });
 
