@@ -24,7 +24,8 @@ released after it, and `Running.chain` carries its `rpcUrl` and `chainId`, so th
 <state>/stands/<mount>` in the package's folder for each mount whose model says `standIn.how === "process"`, never for
 `none` or `vendor`, in a process group of its own. It reads the whole `stand-in listening on <url>` line and keeps draining
 both pipes after it. An exit before the line, or 60 s without one, fails the world naming the mount. What it answers,
-`ORTHO_STAND_<MOUNT>` and `<MOUNT>_API_KEY` = `world-<mount>`, joins `secretEnv`. Like the chain, the stand-ins are
+`env` (`ORTHO_STAND_<MOUNT>` and `<MOUNT>_API_KEY` = `world-<mount>`), joins `secretEnv`, and its `addresses` by mount
+are the running world's `stands`, where a journey's `Stand.command` goes (call 4). Like the chain, the stand-ins are
 acquired before the Worker and released after it: SIGTERM to each group, then SIGKILL to the group once the stand-in has
 gone or 5 s have passed, all of them together, so whatever a stand-in started goes with it. A model with a process
 stand-in never reuses `ortho dev`'s warm world, which has none (`design/later.md`).
