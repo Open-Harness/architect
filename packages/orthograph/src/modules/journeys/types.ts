@@ -51,8 +51,19 @@ export interface ToolsCall {
   readonly request?: undefined;
 }
 
-/** A call a step makes: an operation or read, or the tools list. */
-export type AnyCall = Call | ToolsCall | ClockCall;
+/**
+ * A cast member signs a message (`s.ada.signs\`Claim ${s.world.safe}\``, CX-journey-signs): `message` is its parts in
+ * order, each literal text, a ref, or a value read as its text (`String(part)`). `prove` resolves and joins them, signs the
+ * text with the member's own key for that run (EIP-191), asks the world nothing, and answers `{ message, signature, signer }`.
+ */
+export interface SignCall {
+  readonly kind: "sign-call";
+  readonly actor: string;
+  readonly message: ReadonlyArray<unknown>;
+}
+
+/** A call a step makes: an operation or read, the tools list, a move of the world's clock, or a signature. */
+export type AnyCall = Call | ToolsCall | ClockCall | SignCall;
 
 /**
  * What a refusal check names: a declared error class, a machine's own refusal (`machine.notFrom`), a thing's missing
@@ -102,6 +113,17 @@ export interface Actor {
   readonly via: (way: Via) => Actor;
   /** The MCP door's tool list, asked with this cast member's credential: answers `{ tools }`. Check it with `lacks` and `has`. */
   readonly tools: () => ToolsCall;
+  /**
+   * A step that signs a message with this cast member's key for the run (CX-journey-signs): a tagged template of literal
+   * text and refs, a parts array, or one plain string. It answers `{ message, signature, signer }`. A way in changes
+   * nothing: a signature reaches no server. The system, a service and the keeper hold no key, and their step fails.
+   */
+  readonly signs: {
+    (strings: TemplateStringsArray, ...values: ReadonlyArray<unknown>): SignCall;
+    (message: string | ReadonlyArray<unknown>): SignCall;
+  };
+  /** The address of this cast member's key for the run, EIP-55 checksummed: known from the journey's start, before they sign. */
+  readonly signer: any;
 }
 
 export type Cast = { readonly [name: string]: Allowed };
@@ -135,7 +157,7 @@ export interface StartingWorld<C extends Cast = Cast> {
   /** Another starting world this one begins from: its cast and what it gave are this one's too. */
   readonly from: string | undefined;
   readonly cast: C;
-  readonly makes: (s: Script<C>) => ReadonlyArray<Call | ClockCall>;
+  readonly makes: (s: Script<C>) => ReadonlyArray<Call | ClockCall | SignCall>;
   readonly gives: (s: Script<C>) => { readonly [key: string]: unknown };
 }
 
@@ -148,7 +170,7 @@ export interface JourneysApi {
   readonly startingWorld: <const C extends Cast>(name: string, spec: {
     readonly from?: string;
     readonly cast: C;
-    readonly makes: (s: Script<C>) => ReadonlyArray<Call | ClockCall>;
+    readonly makes: (s: Script<C>) => ReadonlyArray<Call | ClockCall | SignCall>;
     readonly gives: (s: Script<C>) => { readonly [key: string]: unknown };
   }) => StartingWorld<C>;
 }

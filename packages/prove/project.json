@@ -11,7 +11,16 @@
   "targets": {
     "lint": {},
     "typecheck": {},
-    "test": {},
+    "test": {
+      "dependsOn": [
+        {
+          "projects": [
+            "wallets"
+          ],
+          "target": "build"
+        }
+      ]
+    },
     "build": {
       "executor": "nx:run-commands",
       "options": {

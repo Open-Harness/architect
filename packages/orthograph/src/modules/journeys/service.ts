@@ -1,6 +1,18 @@
 import type { Via } from "#modules/plugins/types.js";
-import type { Actor, AnyCall, Assertion, Call, ChecksApi, ClockCall, JourneysApi, Script, Scripts, ToolsCall } from "./types.ts";
+import type { Actor, AnyCall, Assertion, Call, ChecksApi, ClockCall, JourneysApi, Script, Scripts, SignCall, ToolsCall } from "./types.ts";
 import { isRef, pathOf, refTo, resolve } from "./internal/refs.ts";
+
+const isTemplate = (x: unknown): x is TemplateStringsArray => Array.isArray(x) && Object.hasOwn(x, "raw");
+
+/** A message's parts in order: a template's literal text (empty pieces left out) between its values, a parts array as given, or one string. */
+const partsOf = (first: unknown, values: ReadonlyArray<unknown>): ReadonlyArray<unknown> => {
+  if (isTemplate(first)) return first.flatMap((text, i) => [...(text === "" ? [] : [text]), ...(i < values.length ? [values[i]] : [])]);
+  if (Array.isArray(first)) return [...(first as ReadonlyArray<unknown>)];
+  return [first];
+};
+
+const signsAs = (name: string) => (first: unknown, ...values: ReadonlyArray<unknown>): SignCall =>
+  Object.freeze({ kind: "sign-call", actor: name, message: Object.freeze(partsOf(first, values)) });
 
 const actorOf = (name: string, via?: Via): Actor =>
   Object.freeze({
@@ -12,6 +24,9 @@ const actorOf = (name: string, via?: Via): Actor =>
       Object.freeze({ kind: "call", actor: name, operation, payload, request: options?.request, ...(via === undefined ? {} : { via }), ...(options?.due === undefined ? {} : { due: options.due }) }),
     via: (way: Via) => actorOf(name, way),
     tools: (): ToolsCall => Object.freeze({ kind: "call", actor: name, tools: true as const, ...(via === undefined ? {} : { via }) }),
+    // A way in is how a call reaches the server, and a signature reaches none: it is the member signing, with their own key.
+    signs: signsAs(name),
+    signer: refTo(["cast", name, "signer"]),
   }) as Actor;
 
 // The script's own words `world`, `last` and `step` win over a cast member of the same name: the compiler refuses such a cast

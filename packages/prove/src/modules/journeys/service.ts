@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { Effect, Schema } from "effect";
-import type { AnyCall, Operation, Principal, Read, StartingWorld, Thing, Via } from "orthograph";
+import type { AnyCall, Operation, Principal, Read, SignCall, StartingWorld, Thing, Via } from "orthograph";
 import { Blueprint } from "orthograph";
 import { Scripting } from "orthograph/server";
 import type { CallRecord, JourneyRun, JourneysApi, Project, StepResult } from "./types.ts";
@@ -12,10 +12,11 @@ import { databaseFacts } from "./internal/database-facts.ts";
 import { d1Facts } from "./internal/d1-facts.ts";
 import { subjectId } from "./internal/subject.ts";
 import { runChecks, show } from "./internal/checks.ts";
+import { checkValues, signersFor, signersIn } from "./internal/signing.ts";
 import { WorldClock } from "#modules/world-clock/service.js";
 
-/** A call made to a served operation or the tools list; a step that moves the world's clock goes to the world's clock door instead (M8.07). */
-type Doable = Exclude<AnyCall, { readonly kind: "clock-call" }>;
+/** A call made to a served operation or the tools list; a step that moves the world's clock goes to the world's clock door instead (M8.07), and a signature to the signer's key. */
+type Doable = Exclude<AnyCall, { readonly kind: "clock-call" } | SignCall>;
 
 type Codec = Schema.Codec<Record<string, unknown>, Record<string, unknown>>;
 
@@ -53,7 +54,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     const signedUp = casting.cast;
     const people = Object.fromEntries(names.filter((n) => !outsiders.includes(n)).map((n) => [n, signedUp[`j${index}.${n}`]!]));
     // A world with a chain gives the journeys its keys and a payee as `s.world.chain` (K7 Q7); a starting world adds to it.
-    const env: Record<string, unknown> = { cast: people, ...(device === undefined ? {} : { world: device.given }) };
+    const env: Record<string, unknown> = { cast: { ...people }, ...(device === undefined ? {} : { world: device.given }) };
     const facts = { facts: given ?? doorFacts(url), tableOf: tableOf(project), nameOf: (op: unknown) => nameOfOperation(project, op as Operation | Read) };
     // `s.clock.now` is what the world's clock reads, from the start and after each step that moves it. A world with no clock door has none.
     const reading = yield* WorldClock.read(url);
@@ -82,6 +83,31 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       const said = record.body as { readonly _tag?: string; readonly message?: string } | null;
       return `the world refused the clock step: ${said?._tag ?? record.status}${said?.message === undefined ? "" : ` (${said.message})`}`;
     };
+    // Each person's key for this run (CX-journey-signs), made when they first sign or a step names their `signer`.
+    const keys = signersFor(new Set(Object.keys(people)), (name, address) => {
+      (env["cast"] as Record<string, unknown>)[name] = { ...people[name], signer: address };
+    });
+    const who = (actor: string) =>
+      keepers.has(actor) ? "the keeper" : cast[actor]?.kind === "system" ? "the system" : "a service";
+    /** A step that signs: recorded as a call that asked the world nothing, its answer `s.last`; what went wrong is its failure. */
+    const sign = (step: string, call: SignCall) =>
+      Effect.gen(function* () {
+        const resolved = Scripting.resolve(call.message, env);
+        // Each part as its text (`String`), joined with nothing between: signed exactly as it is, never trimmed or normalised.
+        const text = (resolved.value as ReadonlyArray<unknown>).map((part) => String(part)).join("");
+        const signed = yield* (resolved.missing.length > 0 && people[call.actor] !== undefined
+          ? Effect.fail(`message: nothing at ${resolved.missing.join(", ")}`)
+          : keys.sign(call.actor, who(call.actor), text)).pipe(Effect.result);
+        const ok = signed._tag === "Success";
+        const record: CallRecord = {
+          journey: journey.name, step, actor: call.actor, person: people[call.actor]?.person ?? "", operation: "sign",
+          payload: ok ? { message: signed.success.message } : {}, status: ok ? 200 : 422, body: ok ? signed.success : { _tag: "NotSigned", message: signed.failure },
+          trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], signs: true,
+        };
+        calls.push(record);
+        if (ok) env["last"] = signed.success;
+        return { record, failure: ok ? undefined : signed.failure };
+      });
     // Each credential the world minted for a cast member's way in, once per journey.
     const minted = new Map<string, string | undefined>();
     const tokenFor = (actor: string, via: Via | undefined) =>
@@ -151,6 +177,13 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       const keptHere = keepersIn(names, lineage.slice(0, at + 1).map((x) => x.cast));
       const script = Scripting.script(Object.fromEntries(names.map((n) => [n, Blueprint.signedIn])));
       for (const call of w.makes(script)) {
+        const keyed = yield* keys.ensure(signersIn(call.kind === "sign-call" ? call.message : call.kind === "clock-call" ? undefined : call.payload)).pipe(Effect.result);
+        if (keyed._tag === "Failure") return done(`starting world ${w.name}: ${keyed.failure}`);
+        if (call.kind === "sign-call") {
+          const { failure } = yield* sign(`starting world ${w.name}`, call);
+          if (failure !== undefined) return done(`starting world ${w.name}: ${failure}`);
+          continue;
+        }
         if (call.kind === "clock-call") {
           const moved = yield* moveClock(`starting world ${w.name}`, call);
           if (moved.status !== 200) return done(`starting world ${w.name}: ${refusal(moved)}`);
@@ -161,12 +194,29 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         const { record } = yield* make(`starting world ${w.name}`, call as Doable, true);
         if (record.status !== 200) return done(`starting world ${w.name}: ${record.operation} ${record.status === 500 ? "died" : `answered ${record.status}`}: ${show(record.body)}`);
       }
-      const gives = Scripting.resolve(w.gives(script), env);
+      const giving = w.gives(script);
+      const keyedGives = yield* keys.ensure(signersIn(giving)).pipe(Effect.result);
+      if (keyedGives._tag === "Failure") return done(`starting world ${w.name}: ${keyedGives.failure}`);
+      const gives = Scripting.resolve(giving, env);
       if (gives.missing.length > 0) return done(`starting world ${w.name} gives nothing at ${gives.missing.join(", ")}`);
       env["world"] = { ...(env["world"] as object | undefined), ...(gives.value as object) };
     }
 
     for (const step of journey.steps(Scripting.script(journey.cast))) {
+      const named = signersIn([step.call.kind === "sign-call" ? step.call.message : step.call.kind === "clock-call" ? undefined : step.call.payload, checkValues(step.checks)]);
+      const keyed = yield* keys.ensure(named).pipe(Effect.result);
+      if (step.call.kind === "sign-call" || keyed._tag === "Failure") {
+        const { record, failure } = keyed._tag === "Failure"
+          ? { record: undefined, failure: keyed.failure }
+          : yield* sign(step.title, step.call as SignCall);
+        const checked = record === undefined || failure !== undefined ? { failures: [], findings: [], spans: { present: [], absent: [] } } : yield* runChecks(step.checks, record, env, facts);
+        const failed = failure === undefined ? [] : [failure];
+        steps.push({
+          journey: journey.name, title: step.title, trace: record?.trace ?? "", spans: checked.spans,
+          failures: [...failed, ...checked.failures], findings: [...failed.map((message) => ({ message })), ...checked.findings],
+        });
+        continue;
+      }
       if (step.call.kind === "clock-call") {
         const record = yield* moveClock(step.title, step.call);
         const checked = yield* runChecks(step.checks, record, env, facts);

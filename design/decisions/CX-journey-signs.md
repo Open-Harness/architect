@@ -95,3 +95,17 @@ signature reaches none.
 - **EIP-712 typed data** (`s.<name>.signsTyped({ domain, types, primaryType, message })`) is left until S3 needs it
   (#1166): `wallets`' public `Signer` signs EIP-191 only, so typed data needs a change inside `packages/wallets`, which
   is Goal 18's and goes to it as a Snag when S3 asks. Not checked.
+
+## How it is built (J1's builder, 26 November 2026)
+
+- `@orthograph/wallets` exports only its `dist` (it ships built JavaScript, M1-plugins section 1, and its source imports
+  its blueprint by `.js` paths that only a bundler or `tsc` follows). So `prove` loads `@orthograph/wallets/server` when a
+  journey first signs, by a specifier `tsc` does not follow, with `Server.keystore`'s shape written out in
+  `packages/prove/src/modules/journeys/internal/signing.ts`. A project that never signs, and `ortho` run from source in
+  a workspace where `wallets` is not built, need nothing of it; a sign step there fails, saying to run `nx build wallets`.
+  prove's `test` target builds `wallets` first (`packages/prove/project.json`), so CI's `prove-tests` have it.
+- A key is made lazily, the first time its person signs or a step's call or checks name their `s.<name>.signer`, so
+  journeys that never sign make no key and load no `wallets`.
+- A sign step that fails (no key, a ref the world never gave) is recorded too, status 422 and
+  `{ _tag: "NotSigned", message }`, marked `signs: true`, so the printed lines wait for no span for it; its checks are not
+  run, and the step's one failure is what stopped it.
