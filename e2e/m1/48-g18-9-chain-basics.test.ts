@@ -4,17 +4,18 @@
 //      through money, the relayer and the follower), with Anvil and full history, on every ready pull request into `main` and on every push to `main`, as it does for `goal/on-chain`; a docs-only
 //      run passes without its steps. The job's own `if` and its `env.SKIP` decide that, so they are read here and evaluated, for each event, with the small part of GitHub's expression language
 //      the workflow uses (the evaluator is at the top of this file, and is tested against planted expressions). A step that must run and doesn't, or runs without Anvil, is as red as a job that skips.
-//  (b) THE RELAYER IS MARKED EXPERIMENTAL, where a person meets it. The slice says "fixed or marked experimental" (#784); the author's call, on the evidence (the three bugs are in main today: a first
+//  (b) THE RELAYER IS MARKED EXPERIMENTAL, where a person meets it. The slice says "fixed or marked experimental" (#784); the author's call, on the evidence (the four bugs are in main today: a first
 //      receipt is final in relayer/internal/check.ts, a fill is broadcast before it is stored, a resumed EIP-1559 transaction drops its access list in chain-evm's tx/internal/sign.ts; each needs
 //      a reorg world, a restart between two writes, or a signed access list that no journey in the alpha has; no app pulls the relayer, K44 call 5) is: MARK IT, and keep #784 open for the app
-//      that first pulls it. So: the relayer module's README opens with the word and the three limits, the class's own doc comment (what an editor shows on hover) carries `@experimental` and #784,
+//      that first pulls it. So: the relayer module's README opens with the word and #784's four limits (the fourth is in #784's first comment: a failed first arm leaves the row in flight), the class's own doc comment (what an editor shows on hover) carries `@experimental` and #784,
 //      the canon's chains-and-wallets page says it where it lists what is built (and stops saying the relayer is "not written"), and the status page's row names it in its item. The marking is
 //      judged by what a reader of each place sees, not by one string anywhere in the file (the judges are tested against planted wrong files below).
 //  (c) NO LIVE PAGE STILL SAYS THE SUITE IS NOT RUN ON `main`: the climb's `NOT_RUN_ON_MAIN` is empty, its dashboard README says nothing of it, and e2e/on-chain's README says its job runs on `main`.
-// Run on main for the first time (26 November 2026, Anvil 1.9, four cores, 11m 31s), the on-chain ratchet had four reds no list held: two stale checks, not chain bugs (02's baseline is the
-// retired goal/stage-1; 04-m6-10-values-refused's fixture names an id prefix no thing owns). Their lines are in e2e/on-chain/expected-failing/, each with its reason, so the job is green on main
-// once this check is; two lines of 05's list pass now and are the builder's to remove.
-// The marking is the slice's only claim about #784. A builder who instead fixes the three bugs has to change this check's author first (they are the same slice: the author then pins each bug with
+// Run on main for the first time (26 November 2026, Anvil 1.9, four cores, 11m 31s), the on-chain ratchet had four reds no list held, from two stale checks, not chain bugs. 02's baseline is the
+// retired goal/stage-1: listed in e2e/on-chain/expected-failing/ under Snag #1096. 04-m6-10-values-refused's fixture named an id prefix no thing owns: the author fixed the fixture, and it is green.
+// Two lines of 05's list pass now and are the builder's to remove. The job may shard the ratchet (a matrix whose shards cover 1 to N) and may skip a pull request that affected.sh says leaves the
+// e2e project alone, so it need not be a bottleneck (Aaron, 26 November); every push to main runs it whole. Each red line here names a file a -build branch may edit.
+// The marking is the slice's only claim about #784. A builder who instead fixes the four bugs has to change this check's author first (they are the same slice: the author then pins each bug with
 // a failing check, as #784's Fix says, and drops (b)); nothing here stops a fix.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -113,12 +114,16 @@ export const condition = (field: unknown, ctx: Context): boolean => {
 // ---- (a) the job, read from the workflow, for each event ----
 
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any -- a parsed workflow
-export interface Scenario { readonly name: string; readonly event: "pull_request" | "push"; readonly base?: string; readonly ref?: string; readonly docsOnly: boolean }
+/** Every output of the `changes` job (ci.yml), each read by name. */
+export const OUTPUTS = ["docs_only", "fast", "affected_e2e", "affected_prove"] as const;
+export type Outputs = Readonly<Record<(typeof OUTPUTS)[number], "true" | "false">>;
+export interface Event { readonly name: string; readonly event: "pull_request" | "push"; readonly base?: string; readonly ref?: string }
+export interface Scenario extends Event { readonly result: "success" | "failure"; readonly outputs: Outputs; readonly shard?: number }
 
 const JOB = "e2e-on-chain";
 const RATCHET = "e2e:on-chain-ratchet";
 
-/** The steps of the on-chain job that run for one event, in order, each with the env it would see; `undefined` when the job itself does not run. */
+/** The steps of the on-chain job that run for one event, in order, each with the env it would see; `undefined` when the job itself does not run. `matrix` is in the context only when the job has a strategy. */
 export const stepsThatRun = (workflow: Json, s: Scenario): ReadonlyArray<Json> | undefined => {
   const job: Json | undefined = workflow.jobs?.[JOB];
   if (job === undefined) return undefined;
@@ -126,9 +131,10 @@ export const stepsThatRun = (workflow: Json, s: Scenario): ReadonlyArray<Json> |
     github: { event_name: s.event, base_ref: s.base ?? "", ref: s.ref ?? "", head_ref: s.event === "pull_request" ? "some/branch" : "" },
     needs: {
       ready: { result: "success", outputs: { draft: "false" } },
-      changes: { result: "success", outputs: { docs_only: String(s.docsOnly), affected_prove: String(!s.docsOnly) } },
+      changes: { result: s.result, outputs: { ...s.outputs } },
     },
     env: {},
+    ...(job.strategy === undefined ? {} : { matrix: { shard: s.shard ?? null } }),
   };
   const withEnv = (...envs: ReadonlyArray<Json | undefined>): Context => {
     const env: Record<string, string> = {};
@@ -159,15 +165,38 @@ export const problemsOf = (steps: ReadonlyArray<Json> | undefined): ReadonlyArra
   return problems;
 };
 
-const CASES = {
-  prMain: { name: "a pull request into main", event: "pull_request", base: "main", docsOnly: false },
-  pushMain: { name: "a push to main", event: "push", ref: "refs/heads/main", docsOnly: false },
-  prGoal: { name: "a pull request into goal/on-chain", event: "pull_request", base: "goal/on-chain", docsOnly: false },
-  pushGoal: { name: "a push to goal/on-chain", event: "push", ref: "refs/heads/goal/on-chain", docsOnly: false },
-  docsMain: { name: "a docs-only pull request into main", event: "pull_request", base: "main", docsOnly: true },
-  docsPushMain: { name: "a docs-only push to main", event: "push", ref: "refs/heads/main", docsOnly: true },
-  docsGoal: { name: "a docs-only pull request into goal/on-chain", event: "pull_request", base: "goal/on-chain", docsOnly: true },
-} as const satisfies Record<string, Scenario>;
+const EVENTS = {
+  prMain: { name: "a pull request into main", event: "pull_request", base: "main" },
+  pushMain: { name: "a push to main", event: "push", ref: "refs/heads/main" },
+  prGoal: { name: "a pull request into goal/on-chain", event: "pull_request", base: "goal/on-chain" },
+  pushGoal: { name: "a push to goal/on-chain", event: "push", ref: "refs/heads/goal/on-chain" },
+} as const satisfies Record<string, Event>;
+
+/** What `changes` can answer. On a push its steps set docs_only false and leave affected_e2e and affected_prove at their 'true' default, and fast is scope.sh's; on a pull request, every output either way. Either event, the job may also have failed. */
+export const answers = (event: Event["event"]): ReadonlyArray<Pick<Scenario, "result" | "outputs">> => {
+  const out: Array<Pick<Scenario, "result" | "outputs">> = [];
+  for (const result of ["success", "failure"] as const)
+    for (let bits = 0; bits < 2 ** OUTPUTS.length; bits++) {
+      const outputs = Object.fromEntries(OUTPUTS.map((k, i) => [k, (bits >> i) & 1 ? "true" : "false"])) as Outputs;
+      if (event === "push" && (outputs.docs_only !== "false" || outputs.affected_e2e !== "true" || outputs.affected_prove !== "true")) continue;
+      out.push({ result, outputs });
+    }
+  return out;
+};
+/** Must the ratchet run? On every push, yes. On a pull request: not when `changes` succeeded and said docs-only (it passes without its steps); either way when it succeeded and said the e2e project, which holds the on-chain suite, is not affected (affected.sh's `affected_e2e`); otherwise yes, a failed `changes` included. */
+export const rule = (event: Event["event"], a: Pick<Scenario, "result" | "outputs">): "run" | "not" | "either" => {
+  if (event === "push" || a.result !== "success") return "run";
+  if (a.outputs.docs_only === "true") return "not";
+  if (a.outputs.affected_e2e === "false") return "either";
+  return "run";
+};
+const said = (a: Pick<Scenario, "result" | "outputs">) => `changes ${a.result}, ${OUTPUTS.map((k) => `${k}=${a.outputs[k]}`).join(" ")}`;
+/** The shards the job's matrix runs, or undefined when it has none. */
+const shardsOf = (workflow: Json): ReadonlyArray<unknown> | undefined => {
+  const strategy = workflow.jobs?.[JOB]?.strategy;
+  if (strategy === undefined) return undefined;
+  return Array.isArray(strategy?.matrix?.shard) ? strategy.matrix.shard : [];
+};
 
 const RATCHET_RUN = "pnpm nx run e2e:on-chain-ratchet --outputStyle=static";
 const keysOf = (o: unknown) => (typeof o === "object" && o !== null ? Object.keys(o) : []);
@@ -183,7 +212,15 @@ export const shapeProblems = (workflow: Json): ReadonlyArray<string> => {
   for (const k of extra(workflow.on?.pull_request, ["types"])) out.push(`the pull_request trigger has \`${k}\`, which can keep a pull request into main from running it`);
   const job: Json | undefined = workflow.jobs?.[JOB];
   if (job === undefined) return out;
-  for (const k of extra(job, ["name", "needs", "if", "runs-on", "timeout-minutes", "env", "steps"])) out.push(`the job has \`${k}\`, which this check does not allow`);
+  for (const k of extra(job, ["name", "needs", "if", "runs-on", "timeout-minutes", "env", "steps", "strategy"])) out.push(`the job has \`${k}\`, which this check does not allow`);
+  const shards = shardsOf(workflow);
+  if (job.strategy !== undefined) {
+    for (const k of extra(job.strategy, ["matrix", "fail-fast"])) out.push(`the job's strategy has \`${k}\`, which this check does not allow`);
+    for (const k of extra(job.strategy?.matrix, ["shard"])) out.push(`the job's matrix has \`${k}\`, not only shard`);
+    const n = shards?.length ?? 0;
+    const want = Array.from({ length: n }, (_, i) => i + 1);
+    if (n === 0 || !sameJson([...(shards ?? [])].sort((a, b) => Number(a) - Number(b)), want)) out.push(`the matrix's shards are ${JSON.stringify(shards)}, not 1 to N, each once`);
+  }
   if (job["runs-on"] !== "ubuntu-latest") out.push(`the job runs on ${JSON.stringify(job["runs-on"])}, not ubuntu-latest`);
   for (const k of extra(job.env, ["SKIP"])) out.push(`the job's env sets ${k}`);
   const steps: ReadonlyArray<Json> = Array.isArray(job.steps) ? job.steps : [];
@@ -200,21 +237,32 @@ export const shapeProblems = (workflow: Json): ReadonlyArray<string> => {
   const ratchets = steps.filter((step) => typeof step.run === "string" && step.run.includes("on-chain-ratchet"));
   if (ratchets.length !== 1) out.push(`${ratchets.length} steps name the ratchet, not one`);
   for (const r of ratchets) {
-    if (String(r.run).trim() !== RATCHET_RUN) out.push(`the ratchet step runs \`${String(r.run).trim()}\`, not exactly \`${RATCHET_RUN}\``);
+    const want = shards === undefined ? RATCHET_RUN : `${RATCHET_RUN} -- --shard=\${{ matrix.shard }}/${shards.length}`;
+    if (String(r.run).trim() !== want) out.push(`the ratchet step runs \`${String(r.run).trim()}\`, not exactly \`${want}\`${shards === undefined ? "" : " (one shard of the matrix's N each)"}`);
     if (!sameJson(r.env, { ORTHO_CHAIN_EVM_ANVIL: "1" })) out.push(`the ratchet step's env is ${JSON.stringify(r.env)}, not exactly {"ORTHO_CHAIN_EVM_ANVIL":"1"}`);
   }
   return out;
 };
 
-/** The verdict on a workflow: for each event, what must happen. One line per way it is wrong; an expression the evaluator cannot read is one too. */
+/** The verdict on a workflow: for each event, each answer `changes` can give and each shard, what must happen. One line per way it is wrong (with the first case it is wrong in); an expression the evaluator cannot read is one too. */
 export const workflowProblems = (workflow: Json): ReadonlyArray<string> => {
+  const found = new Map<string, string[]>();
+  const add = (key: string, when: string) => found.set(key, [...(found.get(key) ?? []), when]);
+  for (const ev of Object.values(EVENTS) as ReadonlyArray<Event>)
+    for (const a of answers(ev.event)) {
+      const must = rule(ev.event, a);
+      if (must === "either") continue;
+      for (const shard of shardsOf(workflow) ?? [undefined]) {
+        const when = `${said(a)}${shard === undefined ? "" : `, shard ${String(shard)}`}`;
+        try {
+          const steps = stepsThatRun(workflow, { ...ev, ...a, shard: shard === undefined ? undefined : Number(shard) });
+          if (must === "run") for (const p of problemsOf(steps)) add(`${ev.name}: ${p}`, when);
+          else if (steps?.some((step) => typeof step.run === "string" && step.run.includes(RATCHET))) add(`${ev.name}: the ratchet runs on a docs-only run, which passes without its steps`, when);
+        } catch (e) { add(`${ev.name}: ${(e as Error).message}`, when); }
+      }
+    }
   const out: string[] = [...shapeProblems(workflow)];
-  const tryEach = (c: Scenario, f: () => ReadonlyArray<string>) => { try { out.push(...f()); } catch (e) { out.push(`${c.name}: ${(e as Error).message}`); } };
-  for (const c of [CASES.prMain, CASES.pushMain, CASES.prGoal, CASES.pushGoal]) tryEach(c, () => problemsOf(stepsThatRun(workflow, c)).map((p) => `${c.name}: ${p}`));
-  for (const c of [CASES.docsMain, CASES.docsPushMain, CASES.docsGoal]) tryEach(c, () => {
-    const steps = stepsThatRun(workflow, c);
-    return steps !== undefined && steps.some((step) => typeof step.run === "string" && step.run.includes(RATCHET)) ? [`${c.name}: the ratchet runs, and a docs-only run passes without its steps`] : [];
-  });
+  for (const [key, whens] of found) out.push(`${key} (${whens.length === 1 ? `when ${whens[0]}` : `in ${whens.length} cases, first when ${whens[0]}`})`);
   const branches: unknown = workflow.on?.push?.branches;
   if (!Array.isArray(branches) || !branches.includes("main")) out.push("the workflow does not run on a push to main");
   if (workflow.on?.pull_request === undefined) out.push("the workflow does not run on pull requests");
@@ -277,29 +325,27 @@ describe("the evaluator reads what the workflow means (its own controls)", () =>
 });
 
 describe("(a) the on-chain suite runs on main: the job `e2e-on-chain` in .github/workflows/ci.yml", () => {
-  const workflow = ci();
-  const decide = (c: Scenario) => [...shapeProblems(workflow), ...problemsOf(stepsThatRun(workflow, c))];
+  const all = workflowProblems(ci());
+  const shape = shapeProblems(ci());
+  const about = (prefix: string) => [...shape, ...all.filter((p) => p.startsWith(prefix))];
   it("runs the ratchet, with Anvil and the whole history, on a pull request into main", () => {
-    expect(decide(CASES.prMain), "the job's steps for a pull request into main").toEqual([]);
+    expect(about(`${EVENTS.prMain.name}:`), "the job's steps for a pull request into main").toEqual([]);
   });
   it("runs it on a push to main", () => {
-    expect(decide(CASES.pushMain), "the job's steps for a push to main").toEqual([]);
+    expect(about(`${EVENTS.pushMain.name}:`), "the job's steps for a push to main").toEqual([]);
   });
   it("still runs it for the goal's own branch (a pull request into goal/on-chain, a push to it)", () => {
-    expect(decide(CASES.prGoal), "pull request into goal/on-chain").toEqual([]);
-    expect(decide(CASES.pushGoal), "push to goal/on-chain").toEqual([]);
+    expect(about(`${EVENTS.prGoal.name}:`), "pull request into goal/on-chain").toEqual([]);
+    expect(about(`${EVENTS.pushGoal.name}:`), "push to goal/on-chain").toEqual([]);
   });
   it("passes without its steps on a docs-only run, for main and for goal/on-chain", () => {
-    for (const c of [CASES.docsMain, CASES.docsPushMain, CASES.docsGoal]) {
-      const steps = stepsThatRun(workflow, c);
-      expect(steps?.filter((step) => typeof step.run === "string" && step.run.includes(RATCHET)) ?? [], c.name).toEqual([]);
-    }
+    expect(all.filter((p) => p.includes("on a docs-only run"))).toEqual([]);
   });
   it("is run by a workflow that runs on a push to main and on pull requests", () => {
-    expect(workflowProblems(workflow).filter((p) => p.startsWith("the workflow"))).toEqual([]);
+    expect(all.filter((p) => p.startsWith("the workflow"))).toEqual([]);
   });
   it("has the whole verdict empty: no event, no step, no condition is wrong", () => {
-    expect(workflowProblems(workflow)).toEqual([]);
+    expect(all).toEqual([]);
   });
 });
 
@@ -316,9 +362,9 @@ describe("(a) the judge is fair: what it passes and what it catches (planted wor
   caught("a job that runs on a pull request into main but not on a push to it", small("!((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/on-chain')) || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')"), /a push to main: /);
   caught("a job that runs on a push to main but not on a pull request into it", small("!(github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'goal/on-chain') || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')"), /a pull request into main: /);
   caught("a job that gave up goal/on-chain for main", small("!(github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'main')) || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')"), /goal\/on-chain: /);
-  caught("a job that never skips (a docs-only run runs the ratchet)", small("false"), /docs-only .*: the ratchet runs/);
+  caught("a job that never skips (a docs-only run runs the ratchet)", small("false"), /the ratchet runs on a docs-only run/);
   caught("a job that always skips", small("true"), /a pull request into main: the job does not|a pull request into main: no step/);
-  caught("a job that skips docs-only on main but runs the ratchet on a docs-only pull request into goal/on-chain", small("!(github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/on-chain')) || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true' && github.base_ref == 'main')"), /docs-only pull request into goal\/on-chain: the ratchet runs/);
+  caught("a job that skips docs-only on main but runs the ratchet on a docs-only pull request into goal/on-chain", small("!(github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/on-chain')) || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true' && github.base_ref == 'main')"), /a pull request into goal\/on-chain: the ratchet runs on a docs-only run/);
   caught("a job whose own `if` is for goal/on-chain only", small(GOOD_SKIP, (s) => s, "${{ needs.ready.outputs.draft == 'false' && !cancelled() && github.base_ref == 'goal/on-chain' }}"), /pull request into main: the job does not run/);
   caught("a ratchet step that Anvil is not switched on for", small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { env: {} })), /ORTHO_CHAIN_EVM_ANVIL=1/);
   caught("a ratchet step that sets Anvil to 0", small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { env: { ORTHO_CHAIN_EVM_ANVIL: "0" } })), /ORTHO_CHAIN_EVM_ANVIL=1/);
@@ -358,8 +404,29 @@ describe("(a) the judge is fair: what it passes and what it catches (planted wor
   caught("a step with a working-directory", small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { "working-directory": "/tmp" })), /`working-directory`/);
   caught("two ratchet steps", small(GOOD_SKIP, (x) => [...x, { if: "env.SKIP != 'true'", run: "pnpm nx run e2e:on-chain-ratchet --outputStyle=static || true" }]), /2 steps name the ratchet/);
   caught("the job's env setting Anvil off", { ...small(GOOD_SKIP), jobs: { [JOB]: { ...small(GOOD_SKIP).jobs[JOB], env: { SKIP: guard(GOOD_SKIP), ORTHO_CHAIN_EVM_ANVIL: "0" } } } }, /job's env sets ORTHO_CHAIN_EVM_ANVIL/);
+  // Sharding and path gating are allowed (Aaron, 26 November: CI must not become a bottleneck), within the rule: every push to main runs it, whole.
+  const SHARDED = (n: number, shards: ReadonlyArray<number>, run = `pnpm nx run e2e:on-chain-ratchet --outputStyle=static -- --shard=\${{ matrix.shard }}/${n}`): Json => {
+    const wf = small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { run }));
+    return { ...wf, jobs: { [JOB]: { ...wf.jobs[JOB], strategy: { "fail-fast": false, matrix: { shard: shards } } } } };
+  };
+  const GATED = (extraSkip: string) => small(`${GOOD_SKIP} || (${extraSkip})`);
+  it("passes the ratchet in three shards that cover 1 to 3", () => expect(workflowProblems(SHARDED(3, [1, 2, 3]))).toEqual([]));
+  it("passes a pull request skipped when affected.sh says the e2e project is not affected", () =>
+    expect(workflowProblems(GATED("github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_e2e == 'false'"))).toEqual([]));
+  caught("shards that leave one out (1 and 2 of 3)", SHARDED(3, [1, 2]), /not exactly .*--shard=\$\{\{ matrix\.shard \}\}\/2|not 1 to N/);
+  caught("a shard run twice", SHARDED(2, [1, 1, 2], "pnpm nx run e2e:on-chain-ratchet --outputStyle=static -- --shard=${{ matrix.shard }}/2"), /not 1 to N/);
+  caught("a shard 0", SHARDED(3, [0, 1, 2]), /not 1 to N/);
+  caught("a matrix whose ratchet does not shard (the whole suite N times)", SHARDED(2, [1, 2], "pnpm nx run e2e:on-chain-ratchet --outputStyle=static"), /one shard of the matrix's N each/);
+  caught("a shard flag with no matrix", small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { run: "pnpm nx run e2e:on-chain-ratchet --outputStyle=static -- --shard=${{ matrix.shard }}/3" })), /not exactly/);
+  caught("a matrix on another key", { ...small(GOOD_SKIP), jobs: { [JOB]: { ...small(GOOD_SKIP).jobs[JOB], strategy: { matrix: { os: ["a"] } } } } }, /not only shard|not 1 to N/);
+  caught("a skip on affected_prove, the wrong project's output", GATED("github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_prove == 'false'"), /a pull request into main: no step .*affected_e2e=true affected_prove=false/);
+  caught("a skip on affected_e2e that also skips a push to main", GATED("needs.changes.outputs.affected_e2e == 'false' || needs.changes.outputs.fast == 'true'"), /a push to main: no step/);
+  caught("a skip on fast", GATED("needs.changes.outputs.fast == 'true'"), /a pull request into main: no step .*fast=true/);
+  caught("a skip when changes failed", GATED("needs.changes.result != 'success'"), /changes failure/);
+  caught("a skip on affected_e2e that also skips when changes failed", GATED("needs.changes.outputs.affected_e2e == 'false'"), /a pull request into main: no step .*changes failure/);
+  caught("a skip on an output changes does not have", GATED("needs.changes.outputs.affected_on_chain == 'false'"), /does not model the context needs\.changes\.outputs\.affected_on_chain/);
   it("does not mind a different way of saying the same (a `contains`, a `startsWith`, the 'main' kept in a list)", () => {
-    const other = "!(contains('main,goal/on-chain', github.base_ref) && github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/on-chain')) || needs.changes.outputs.docs_only == 'true'";
+    const other = "!(contains('main,goal/on-chain', github.base_ref) && github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/on-chain')) || needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true'";
     expect(workflowProblems(small(other))).toEqual([]);
   });
 });
@@ -372,6 +439,17 @@ export const says = (s: string) => SAYS.test(s);
 /** What a reader sees: HTML and MDX comments and fenced code blocks taken out. */
 export const visible = (s: string) => s.replace(/<!--[\s\S]*?-->/g, "").replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, "").replace(/^([ \t]*(?:\*[ \t]*)?)(```|~~~)[\s\S]*?^\1\2[^\n]*$/gm, "");
 /** Words that take the marking back: it was, it is no longer, it is fixed, it is ready. */
+const CONDITION = /\b(?:until|once|when|if|after)\s+(?:#784|the (?:bugs?|limits?|fixes?)|they|it)\b[^.;!?]{0,30}?\b(?:is|are|have been|has been)\s+(?:fixed|solved|resolved|closed|removed)\b/gi;
+/** Text with its conditions taken out ("until #784 is fixed" says nothing about now). */
+export const unconditioned = (t: string) => t.replace(CONDITION, "");
+/** A sentence that says #784's limits are gone: it names the relayer, #784, its bugs or limits, and calls them removed, solved, fixed, resolved, gone or closed, or the relayer ready or safe for production. A condition ("until #784 is fixed", "once the bugs are solved") is not a claim, and is taken out first. */
+export const saysGone = (text: string): string | undefined => {
+  const SUBJECT = /\brelayer\b|#784\b|\bbugs?\b|\blimits?\b|\bfindings?\b|\bsnag\b/i;
+  const CLAIM = /\b(?:removed|solved|fixed|resolved|gone|closed|lifted)\b|\bready for (?:production|use)\b|\bproduction[- ]ready\b|\bsafe (?:for production|to use)\b|\buse it freely\b|\bnothing blocks it\b/i;
+  return visible(text).split(/[.;!?]\s|\n\s*\n|\|/).map((x) => x.replace(CONDITION, "")).find((x) => SUBJECT.test(x) && CLAIM.test(x))?.trim();
+};
+/** A count of the bugs, which goes stale when #784 grows (it did: a fourth came in its first comment). */
+export const COUNTS = /\b(?:one|two|three|four|five|six|\d+)\s+(?:open\s+)?(?:bugs|limits|findings)\b/i;
 export const DENIES = /\bno longer\b|\b(?:never|isn['’]t|is not|not)\b[^.;]{0,20}\bexperimental\b|\b(?:was|were|formerly)\b[^.;]{0,30}\bexperimental\b|\bproduction[- ]ready\b|\bsafe for production\b|#784\W{0,3}(?:is |was |has been )?(?:now )?(?:fixed|closed|resolved)\b|\b(?:fixed|closed|resolved) (?:in|by) #784/i;
 
 /** A README's opening: its title is skipped, and it runs to the first table or the second heading. */
@@ -391,11 +469,12 @@ const sectionsNamingIt = (readme: string): string => {
   const parts = readme.split(/^(?=#{2,6} )/m);
   return parts.filter((p) => /^#{2,6} .*experimental/i.test(p)).join("\n");
 };
-/** The three limits #784 names, each by what a reader would look for. */
+/** The four limits #784 names (three in its body, one in its first comment), each by what a reader would look for. */
 export const LIMITS: ReadonlyArray<readonly [string, RegExp]> = [
   ["a first receipt is final, so a reorg is missed", /\ba reorg is missed\b/i],
   ["a fill is sent before it is stored, so a restart may sign a second transaction at one nonce", /\bfill\b[^.;]{0,80}\bbefore it is stored\b[^.;]{0,40}\ba restart may sign a second transaction at one nonce\b/i],
   ["a resumed transaction drops its access list", /\ba resumed transaction drops its access list\b/i],
+  ["a failed first arm leaves the transaction in flight, so its nonce can block later ones", /\bfirst arm\b[^.;]{0,80}\bin flight\b[^.;]{0,80}\bblock later\b/i],
 ];
 export const readmeProblems = (raw: string): ReadonlyArray<string> => {
   const readme = visible(raw);
@@ -403,7 +482,10 @@ export const readmeProblems = (raw: string): ReadonlyArray<string> => {
   const out: string[] = [];
   const first = opening(readme).trim().split(/\n\s*\n/)[0] ?? "";
   if (!says(opening(readme)) || !/^\*\*Experimental\*\* in the alpha\b/.test(first)) out.push("the README's opening does not say the relayer is experimental: its first paragraph does not begin `**Experimental** in the alpha`");
-  if (DENIES.test(block)) out.push(`the opening takes the marking back: ${DENIES.exec(block)?.[0]}`);
+  if (DENIES.test(unconditioned(block))) out.push(`the opening takes the marking back: ${DENIES.exec(unconditioned(block))?.[0]}`);
+  const gone = saysGone(readme);
+  if (gone !== undefined) out.push(`the README says #784's limits are gone: ${gone.slice(0, 100)}`);
+  if (COUNTS.test(block)) out.push(`the opening counts the bugs (${COUNTS.exec(block)?.[0]}); name #784's list instead`);
   if (!/#784\b/.test(block)) out.push("the opening (or its experimental section) does not name #784");
   for (const [what, pattern] of LIMITS) if (!pattern.test(block)) out.push(`the opening (or its experimental section) does not say: ${what}`);
   return out;
@@ -428,7 +510,10 @@ export const docProblems = (source: string): ReadonlyArray<string> => {
   const tag = /^\s*\*\s*@experimental\b(.*)$/m.exec(doc);
   if (tag === null) out.push("the Relayer's doc comment has no `@experimental` tag");
   if (!/#784\b/.test(tag?.[1] ?? "")) out.push("the Relayer's doc comment does not name #784 on its `@experimental` line");
-  if (DENIES.test(doc)) out.push(`the Relayer's doc comment takes the marking back: ${DENIES.exec(doc)?.[0]}`);
+  if (DENIES.test(unconditioned(doc))) out.push(`the Relayer's doc comment takes the marking back: ${DENIES.exec(unconditioned(doc))?.[0]}`);
+  const gone = saysGone(doc.replace(/^\s*\/?\*+\/?/gm, ""));
+  if (gone !== undefined) out.push(`the Relayer's doc comment says #784's limits are gone: ${gone.slice(0, 100)}`);
+  if (COUNTS.test(doc)) out.push(`the Relayer's doc comment counts the bugs (${COUNTS.exec(doc)?.[0]}); name #784 instead`);
   return out;
 };
 
@@ -451,7 +536,8 @@ export const pageProblems = (raw: string): ReadonlyArray<string> => {
   const cellsOf = (l: string) => l.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim());
   if (!lines.some((l) => /^\|/.test(l) && /\brelayer\b/i.test(cellsOf(l)[0] ?? "") && /^experimental\b/i.test(cellsOf(l)[1] ?? ""))) out.push("no table row about the relayer says it is experimental: no row names the relayer in its first cell with a status that begins `experimental`");
   for (const l of lines) if (/not written|not yet|to be (?:done|written|built)|comes? later|\blater\b|\bplanned\b|not built|^\W*Not the relayer/i.test(l)) out.push(`a line about the relayer still says it is not built: ${l.trim().slice(0, 90)}`);
-  for (const l of lines) if (DENIES.test(l)) out.push(`a line about the relayer takes the marking back: ${l.trim().slice(0, 90)}`);
+  for (const l of lines) if (DENIES.test(unconditioned(l))) out.push(`a line about the relayer takes the marking back: ${l.trim().slice(0, 90)}`);
+  for (const l of units.filter((u) => /\brelayer\b|#784\b/i.test(u))) { const gone = saysGone(l); if (gone !== undefined) out.push(`a line about the relayer says #784's limits are gone: ${gone.slice(0, 90)}`); }
   return out;
 };
 
@@ -464,10 +550,13 @@ export const rowProblems = (status: string): ReadonlyArray<string> => {
   const cells = row.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim());
   const out: string[] = [];
   if (cells.length !== 10) out.push(`the row has ${cells.length} cells, not 10`);
-  const [, item = "", , , release = "", milestone = ""] = cells;
+  const [, item = "", stage = "", , release = "", milestone = ""] = cells;
+  if (stage !== "building") out.push(`the row's status is "${stage}", not "building": #784 keeps it at building until the fixes and an app's journeys prove it`);
   const notes = cells.at(-1) ?? "";
   if (!says(item) || !/\bRelayer \(experimental\)/.test(item)) out.push("the row's item does not say experimental: it does not name `Relayer (experimental)`");
-  if (DENIES.test(item) || DENIES.test(notes)) out.push(`the row takes the marking back: ${DENIES.exec(item)?.[0] ?? DENIES.exec(notes)?.[0]}`);
+  const goneRow = saysGone(item) ?? saysGone(notes);
+  if (goneRow !== undefined) out.push(`the row says #784's limits are gone: ${goneRow.slice(0, 90)}`);
+  if (DENIES.test(unconditioned(item)) || DENIES.test(unconditioned(notes))) out.push(`the row takes the marking back: ${DENIES.exec(unconditioned(item))?.[0] ?? DENIES.exec(unconditioned(notes))?.[0]}`);
   if (!/#784 blocks it\b/.test(notes)) out.push("the row's notes do not say #784 blocks it");
   if (!/\brelayer\b/i.test(item)) out.push("the row's item does not name the relayer");
   if (!/#784\b/.test(notes)) out.push("the row's notes do not name #784");
@@ -481,7 +570,7 @@ const PAGE = "docs/canon/chains-and-wallets.mdx";
 const STATUS = "docs/canon/status.md";
 
 describe("(b) the relayer is marked experimental, where a person meets it", () => {
-  it("opens its module README with the word, #784 and the three limits", () => {
+  it("opens its module README with the word, #784 and its four limits", () => {
     expect(readmeProblems(read(READMES))).toEqual([]);
   });
   it("carries `@experimental` and #784 in the doc comment of `export class Relayer` (an editor's hover)", () => {
@@ -499,11 +588,11 @@ describe("(b) the relayer is marked experimental, where a person meets it", () =
 });
 
 describe("(b) the judges are fair: what they pass and what they catch (planted files)", () => {
-  const readme = (extra: string, limits = "A first receipt is final, so a reorg is missed (#784); a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list.") =>
+  const readme = (extra: string, limits = "A first receipt is final, so a reorg is missed (#784); a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list; a failed first arm leaves the transaction in flight, so its nonce can block later ones.") =>
     `# relayer\n\n**Experimental** in the alpha. ${limits}${extra}\n\n| Method | What it does |\n|---|---|\n| \`relay\` | sends |\n\nLater paragraphs.\n`;
   it("passes a README that does it right", () => expect(readmeProblems(readme(""))).toEqual([]));
   it("passes the limits in a section headed with the word, when the opening says it", () => {
-    const text = `# relayer\n\n**Experimental** in the alpha, see #784.\n\n## Experimental: what is wrong\n\nA reorg is missed; a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list.\n\n| a |\n`;
+    const text = `# relayer\n\n**Experimental** in the alpha, see #784.\n\n## Experimental: what is wrong\n\nA reorg is missed; a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list; a failed first arm leaves the transaction in flight, so its nonce can block later ones.\n\n| a |\n`;
     expect(readmeProblems(text)).toEqual([]);
   });
   const caughtReadme = (name: string, text: string, expected: RegExp) => it(`catches ${name}`, () => {
@@ -527,10 +616,17 @@ describe("(b) the judges are fair: what they pass and what they catch (planted f
   caughtReadme("B03 'isn't experimental and is never experimental'", readme("").replace("**Experimental** in the alpha.", "The relayer isn't experimental and is never experimental (#784 closed)."), /does not say the relayer is experimental|takes the marking back/);
   caughtReadme("B04 the follower marked, the relayer called ready", readme("").replace("**Experimental** in the alpha.", "The follower is **experimental** in the alpha; the relayer is production-ready."), /does not say the relayer is experimental|takes the marking back/);
   caughtReadme("a good opening that then says it is fixed", readme(" #784 is fixed now."), /takes the marking back/);
+  // The lead's review of #1095 (26 November 2026): P1 to P4 passed the second judge; each is planted with its siblings.
+  caughtReadme("P1 a later sentence that says the limits were removed", readme("\n\nThese limits were all removed in 0.1.0-next.3, so it is ready for production use."), /limits are gone/);
+  caughtReadme("P1' the bugs solved, in the opening", readme(" All of #784's bugs are solved now."), /limits are gone/);
+  caughtReadme("P1'' far below the table", `${readme("")}\n## Notes\n\nThe relayer is safe to use: #784 was resolved.\n`, /limits are gone/);
+  caughtReadme("the fourth limit left out", readme("", "A first receipt is final, so a reorg is missed (#784); a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list."), /in flight/);
+  caughtReadme("a count of the bugs", readme(" Three bugs are open."), /counts the bugs/);
+  it("passes a condition, which is not a claim (\"until #784 is fixed\")", () => expect(readmeProblems(readme(" It stays so until #784 is fixed."))).toEqual([]));
   caughtReadme("the limits only far below the opening", `# relayer\n\nExperimental, #784.\n\n| a |\n|---|\n\nA reorg is missed; a fill before a restart; an access list is dropped.\n`, /does not say: a first receipt/);
 
   const service = (doc: string, name = "Relayer") => `import x from "y";\n\n${doc}\nexport class ${name} extends DurableObject {}\n`;
-  const GOOD_DOC = "/**\n * The relayer's Durable Object.\n *\n * @experimental Three bugs are open (#784).\n */";
+  const GOOD_DOC = "/**\n * The relayer's Durable Object.\n *\n * @experimental The bugs in #784 are open.\n */";
   it("passes a doc comment that does it right", () => expect(docProblems(service(GOOD_DOC))).toEqual([]));
   const caughtDoc = (name: string, text: string, expected: RegExp) => it(`catches ${name}`, () => expect(docProblems(text).join("\n")).toMatch(expected));
   caughtDoc("no doc comment", service(""), /has no doc comment/);
@@ -542,6 +638,9 @@ describe("(b) the judges are fair: what they pass and what they catch (planted f
   caughtDoc("C01 the tag that says it no longer applies", service("/**\n * @experimental No longer: fixed in #784, safe for production.\n */"), /takes the marking back/);
   caughtDoc("C02 the tag inside a code fence", service("/**\n * ```\n * @experimental (#784)\n * ```\n */"), /no `@experimental` tag/);
   caughtDoc("C03 a good class in a block comment above the real one", `/*\n${GOOD_DOC}\nexport class Relayer {}\n*/\n${service("/** The relayer. */")}`, /2 lines `export class Relayer`/);
+  caughtDoc("P2 the tag that says the bugs are solved", service("/**\n * @experimental #784: all three bugs are now solved, use it freely.\n */"), /limits are gone/);
+  caughtDoc("P2' the tag, then a line that says it is fixed", service("/**\n * @experimental (#784)\n * The relayer is fixed and ready for production.\n */"), /limits are gone/);
+  caughtDoc("a count of the bugs on the tag", service("/**\n * @experimental Three bugs are open (#784).\n */"), /counts the bugs/);
   caughtDoc("#784 named elsewhere in the comment, not on the tag", service("/**\n * The relayer (#784).\n * @experimental\n */"), /on its `@experimental` line/);
   caughtDoc("a comment with another statement between it and the class", `${GOOD_DOC}\nconst x = 1;\nexport class Relayer {}\n`, /has no doc comment/);
 
@@ -559,6 +658,9 @@ describe("(b) the judges are fair: what they pass and what they catch (planted f
   caughtRow("E01 'no longer experimental'", row("Relayer (no longer experimental) and follower", "snag #784 blocks it"), /item does not say experimental|takes the marking back/);
   caughtRow("E02 a good row in a comment, the real row unmarked", `<!--\n${row("Relayer (experimental) and follower", "snag #784 blocks it")}-->\n${row("Relayer and follower", "snag #784 blocks it")}`, /2 rows|item does not say/);
   caughtRow("E03 notes that say #784 is fixed", row("Relayer (experimental) and follower", "snag #784 is fixed and closed, so nothing blocks it"), /takes the marking back|do not say #784 blocks it/);
+  caughtRow("P3 the status moved from building to proved", `| id | Item |\n|---|---|\n| relayer-follower | Relayer (experimental) and follower | proved | framework | preview | alpha | none | \`a\` | wallets-keys | snag #784 blocks it |\n`, /not "building"/);
+  caughtRow("P3' the status moved to done", `| id | Item |\n|---|---|\n| relayer-follower | Relayer (experimental) and follower | done | framework | preview | alpha | none | \`a\` | wallets-keys | snag #784 blocks it |\n`, /not "building"/);
+  caughtRow("notes that say the bugs were solved", row("Relayer (experimental) and follower", "snag #784 blocks it; its bugs were all solved"), /limits are gone/);
   caughtRow("two rows", `${row("Relayer (experimental) and follower", "snag #784 blocks it")}${row("Relayer and follower", "x")}`, /2 rows/);
   caughtRow("a row with a cell too few", `| relayer-follower | Relayer (experimental) | building | #784 |\n`, /cells, not 10/);
 
@@ -575,6 +677,8 @@ describe("(b) the judges are fair: what they pass and what they catch (planted f
   caughtPage("D02 'no longer experimental (#784 fixed)'", page("| the relayer | no longer experimental (#784 fixed) |"), /no table row about the relayer says|takes the marking back/);
   caughtPage("D03 the good row in an MDX comment", page("{/*\n| the relayer | experimental (#784) |\n*/}\n| the relayer | built, production-ready |"), /no table row about the relayer says/);
   caughtPage("D04 the good row in a code fence", `${page("| the relayer | built |")}\n\n\`\`\`\n| the relayer | experimental |\n\`\`\`\n`, /no table row about the relayer says/);
+  caughtPage("P4 a sentence that the relayer is ready, its bugs solved", `${page("| the relayer | experimental (#784) |")}\nThe relayer is ready for production use; its bugs were all solved.\n`, /limits are gone/);
+  caughtPage("P4' a row note that #784 is resolved", page("| the relayer | experimental (#784 resolved) |"), /limits are gone|takes the marking back/);
   caughtPage("a stale sentence 'come later'", `${page("| the relayer | experimental |")}\n- **Not the relayer.** One relayer actor comes later.\n`, /still says it is not built/);
 });
 
