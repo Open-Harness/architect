@@ -84,7 +84,8 @@ message needs work. If no, the rule changes, and that is a later chapter.
 
 A refusal and a defect are different things, and a trace marks them differently. Refused means a declared answer,
 with a code. A defect is the server failing, and it goes to a builder with the trace attached. We did not record a
-defect for this chapter: its mark is described in the telemetry command's own notes.
+defect for this chapter: it is marked with a ✘, as the telemetry command's own notes say
+(`packages/cli/src/modules/telemetry/README.md`).
 
 An agent will sometimes explain a refusal from the handler. Here the handler never refuses a second name: the runtime
 does, from the rule. If an explanation does not name a line of the blueprint, ask for the trace.

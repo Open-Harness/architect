@@ -35,8 +35,8 @@ this order came from and the specimen Aaron agreed the voice and look on (26 Nov
 | `chapters/` | one page per chapter, numbered as `spine.json` numbers them |
 | `spine.json` | the order, the parts, and the question each chapter answers |
 | `capture.sh` | records every command the chapters and their films show, on `examples/plugged-in`, into `captures/`. It changes the example to record, and restores it on the way out |
-| `captures/` | the recordings, committed. Each opens with the command that was run |
-| `check.mjs` | fails when a role's words differ, a written command is not in the command line's recorded tree (`captures/cli.json`), or a chapter quotes a line that was not recorded. CI runs it in the `e2e-m0` job |
+| `captures/` | the recordings, committed. Each opens with the command that was run; `plan-page.txt` is a page an agent drew, and opens with a line saying so |
+| `check.mjs` | fails when a role's words differ, a written command is not in the command line's recorded tree (`captures/cli.json`), a chapter quotes a line that was not recorded, or a chapter is not in the spine or does not end with its two closing sections. CI runs it in the `e2e-m0` job |
 | `cli-tree.mjs` | records that tree from the command line's own `--help` |
 | `build.mjs`, `page/` | the manual as one page, `out/manual.html`, with each film at the head of its chapter |
 | `kit/` | the agent kit, and `roles.json`, the one place a role's limits are written |

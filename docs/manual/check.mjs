@@ -74,10 +74,10 @@ for (const file of pages) {
   for (const m of text.matchAll(/^\$ (ortho [^\n]*)$/gm)) { const got = command(file, m[1]); if (got && got.given < got.at.arguments.length) problems.push(`${short(file)}: \`${m[1]}\` is run without the argument ${got.name} needs`); }
 }
 
-// The chapters: every block is a quote of a recording or of a file, and each has the four parts.
+// The chapters: every block is a quote of a recording or of a file, and each has the spine's title and the two closing sections.
 const ends = ["When it goes wrong", "How this stands"];
-const spine = JSON.parse(read(join(here, "spine.json"))), placed = new Map([[spine.opening.file, undefined], ...spine.parts.flatMap((p) => p.chapters).filter((c) => c.file).map((c) => [c.file, c.title])]);
-for (const file of placed.keys()) if (!existsSync(join(here, file))) problems.push(`spine.json: ${file} is not there`);
+const spine = JSON.parse(read(join(here, "spine.json"))), placed = new Map([[spine.opening.file, spine.opening.title], ...spine.parts.flatMap((p) => p.chapters).filter((c) => c.file).map((c) => [c.file, c.title])]);
+for (const file of [...placed.keys(), ...spine.reference.map((r) => r.file)]) if (!existsSync(join(here, file))) problems.push(`spine.json: ${file} is not there`);
 const chapters = existsSync(join(here, "chapters")) ? readdirSync(join(here, "chapters")).filter((f) => f.endsWith(".md")).sort() : [];
 const recordings = readdirSync(join(here, "captures")).filter((f) => f.endsWith(".txt")).map((f) => read(join(here, "captures", f)));
 const slug = (heading) => heading.toLowerCase().replace(/[^a-z0-9 -]/g, "").trim().replace(/ /g, "-");
@@ -113,6 +113,8 @@ for (const name of chapters) {
     if (open ? row === "```" : /^```[^`\s][^`]*[^`\s]$|^```[^`\s]?$/.test(row) && row !== "```") { open = !open; return; }
     if (row.includes("```") || /^\s*~~~/.test(row)) say(`line ${k + 1}: a fence is \`\`\` and its info at the start of a line, and \`\`\` alone to close, so the check can read it`);
     if (open) return;
+    // The voice: a chapter is prose. No table, no list, and no paragraph that opens with a bold label.
+    if (/^\|/.test(row) || /^\s*([-*+]|\d+\.) /.test(row) || /^\*\*[^*]+\*\*/.test(row)) say(`line ${k + 1}: a chapter is written as prose: no table, list or bold label`);
     if (/\t/.test(row) || /<\/?(pre|code)\b/i.test(row)) say(`line ${k + 1}: a tab or a <pre> or <code> tag is code the check cannot read: quote it in a fence`);
     if (/^ {4,}\S/.test(row) && !/^\s*([-*]|\d+\.) /.test(rows[k - 1] ?? "") && (rows[k - 1] ?? "").trim() === "") say(`line ${k + 1}: an indented block is code the check cannot read: quote it in a fence`);
     // Output written in a sentence is held to the recordings too: anything in backticks with a verdict mark is a line of one.

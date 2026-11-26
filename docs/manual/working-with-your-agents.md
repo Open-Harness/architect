@@ -35,7 +35,8 @@ matters is that the builder of a handler never wrote, and cannot edit, the journ
 
 | When | You | You read |
 |---|---|---|
-| Something new is wanted | say the problem to a **designer** | the blueprint it changed, the journey stubs it added, and the blanks `ortho check` lists as questions |
+| Something new is wanted | say the idea to a **designer**, in one sentence | one page: the things, who may do what, what must stay true, what waits, and its doubts |
+| The page is agreed | ask the **designer** to describe it | the blueprint it changed, the journey stubs it added, and the blanks `ortho check` lists as questions |
 | You are unsure it can work | give a **spike** one question | one page: the answer, and what is still at risk |
 | The description is agreed | ask an **author** to fill the journey stubs the designer left | the journeys, as stories, and a first run that is red on purpose |
 | The journeys are agreed | hand a **builder** one brief at a time | which journeys are green, and what is still red |

@@ -15,7 +15,7 @@ cp -r docs/manual/kit/skills <your app>/.agents/skills
 | File | For |
 |---|---|
 | `AGENTS.md` | every agent: what the project is, the roles, the rules, the commands |
-| `skills/designer` | turning what the owner wants into a blueprint, with blanks for what is undecided |
+| `skills/designer` | turning what the owner wants into one page to argue with, then a blueprint, with blanks for what is undecided |
 | `skills/author` | writing journeys first, and showing they fail on empty handlers |
 | `skills/builder` | one handler from one brief, climbed until its journeys pass |
 | `skills/reviewer` | one change against its brief, by an agent that wrote none of it |

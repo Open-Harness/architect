@@ -30,7 +30,7 @@ against this. You read the sentence, and decide whether it is what you meant.
 ## Stubs are made while planning
 
 We want a story to exist for every path before anyone thinks about building, so adding them belongs to planning. The
-designer does it, with one command for each thing in the blueprint.
+designer does it, with one command for each thing in the blueprint. The command keeps any journey already written.
 
 ```sh capture=stubs.txt
 $ ortho add journeys handle
@@ -45,7 +45,7 @@ wrote blueprint/journeys/handle-resolve-refused-handle-not-found.ts
 
 Seven files: one for each path through the handle's states, one for each role, and one for each error an operation
 declares. A stub already knows who may call and who must be turned away. What it cannot know, it leaves blank, and
-the check lists every blank as a question, with its file and its line.
+the check lists every blank as a question, with its file and its line. A blank is a question for you, never a default.
 
 ```sh capture=stubs-check.txt
 $ ortho check
@@ -108,15 +108,18 @@ system to change your mind.
 A journey that is green on the empty run, and is not marked as proved by the description, cannot fail. It proves
 nothing, and it goes back to the author.
 
+A stub is sometimes left as it was written. The check keeps listing its blanks, and `ortho model` shows the file as
+unfinished, until someone answers them.
+
 Stories tend to cover the path where everything works. Count the refusals: every one the blueprint declares needs a
-step that causes it. The full run counts them for you, in the next chapter.
+step that causes it. The full run counts them for you, on its coverage line, in the next chapter.
 
 The journey commands are rough in four places today, and they are being fixed. A refusal that a rule gives, such as a
 name already taken, gets no stub, so the author writes that story unprompted. The check lists blanks only inside the
 blueprint's folder; Plugged In keeps its finished journeys in a folder of their own beside it, and both are read.
 Adding stubs turns the check red, which is right while they are blanks, and it also reports drift in what was
-generated until that is made again. And adding one journey by name writes a stub that stops the check with an error
-where it should ask a question.
+generated until that is made again. And adding one journey by name writes a stub with a blank cast, and every command that reads the
+model then stops with an error, where it should ask a question, until the cast is filled in.
 
 ```sh capture=stub-one-check.txt
 $ ortho check

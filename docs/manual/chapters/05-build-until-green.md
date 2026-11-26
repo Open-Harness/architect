@@ -27,7 +27,8 @@ Done when
   ortho check passes
 ```
 
-The brief also says what to read and what the [handler](../../canon/handlers.mdx) must do, left out here. Hand it
+The brief also says what to read and what the [handler](../../canon/handlers.mdx) must do, left out here. One line
+of it tells the builder never to refuse a taken name itself, because the runtime does that from a rule. Hand it
 over as it is printed. Anything you add in your own words is something the builder can misread.
 
 ## Start from the scaffold
@@ -72,15 +73,19 @@ journey claim a handle ✔ 8/8 steps
 prove ✘ 5 failing
 ```
 
-The last line is still red, and it is right to be. One journey does not reach every operation, so the proof as a whole
-has gaps. The builder finishes by running all of it, and then the check.
+The last line is still red, and it is right to be. One journey does not reach every operation, so the proof's
+coverage fails. The builder finishes by running all of it, and then the check.
 
 ```sh capture=prove.txt
 $ ortho prove
 journey claim a handle ✔ 8/8 steps
 handle.claim 9 evals ✔ …
+coverage ✔ moves 4/4 · outcomes 4/4 · refusals 6/6 …
 prove ✔
 ```
+
+The full run judges nine evals for each operation, and a journey can pass while one of them fails. The coverage line
+counts the moves, the outcomes and the refusals that some journey reached.
 
 ```sh capture=check.txt
 $ ortho check

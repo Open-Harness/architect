@@ -1,6 +1,6 @@
 {
   "note": "The manual's order: an opening, eleven chapters in four parts, and the reference at the back. build.mjs draws the page from this, and check.mjs holds each written chapter to it. A chapter with no file is shown in its place as not written yet.",
-  "opening": { "file": "chapters/00-why-this-exists.md" },
+  "opening": { "title": "The hard part is the next morning", "file": "chapters/00-why-this-exists.md" },
   "parts": [
     { "title": "Before any code", "chapters": [
       { "n": 1, "title": "Plan it", "question": "What is the system, and what don't we know yet?", "file": "chapters/01-plan-it.md" },
