@@ -34,9 +34,11 @@ spend (#1133).
    that changed under its filler stops the build instead of failing in a running app. A fill has no `allowed`, no move,
    no event and no request key: it is never at a door (no route, no MCP tool, no CLI command), and only an operation
    that runs its contract reaches it. A fill may write its own feature's things through its `database` steps.
-3. **Only the owner and the features that depend on it touch a contract.** A feature may fill a contract, or run one
-   from its operations, only when it is the owner (to run it) or depends on the owner: it lists the owner in `needs`, or
-   needs a feature that does, through any depth (CX-open-sets call 2's rule). The app depends on every feature it mounts,
+3. **Only the owner and the features that depend on it touch a contract.** A feature may run a contract from its
+   operations when it is the owner or depends on the owner, and may fill one only when it depends on the owner: it lists
+   the owner in `needs`, or needs a feature that does, through any depth (CX-open-sets call 2's rule). Depending runs one
+   way: a feature the owner needs does not depend on the owner. The owner never fills its own contract, since it can run
+   its own code. A required contract is filled whether or not any operation runs it. The app depends on every feature it mounts,
    so its own operations may run a mounted feature's contract. The app does not fill one: a business with its own tax
    rule writes it as a small feature of its own. A feature that is installed but not mounted is never read, so what it
    would fill fills nothing and refuses nothing.
@@ -65,11 +67,17 @@ spend (#1133).
      mounted;
    - two fills of one contract, naming the contract and both fill files;
    - a fill whose shape isn't the contract's, naming the fill's file, the contract's file and the field: an input or
-     output field the contract has and the fill lacks, one the fill has and the contract lacks, or one whose value
-     differs; and an error the fill declares that the contract doesn't;
-   - a fill by a feature that doesn't depend on the contract's owner, naming the fill's file and the owner's package;
+     output field the contract has and the fill lacks, one the fill has and the contract lacks, or one whose model
+     differs. A field is compared whole, as the model holds it: its value, whether it may be left out, and the field or
+     named value it is declared from. So the fill declares each field from what the contract declares it from (the
+     slip's `country`, not a bare text of the same length). An error the fill declares that its contract doesn't is
+     refused too, even when another contract of the same owner declares it;
+   - a fill by a feature that doesn't depend on the contract's owner, or by the owner itself, naming the fill's file and
+     the owner's package;
    - a contract step in an operation of a feature that is neither the owner nor depends on it, naming the operation's
-     file and the owner's package.
+     file and the owner's package;
+   - a `contracts/` or `fills/` folder in the app's own blueprint, naming the file (today's "not a place the blueprint
+     reads" refusal stands).
 
 ## Why these and not others
 
@@ -92,9 +100,9 @@ Capxul's payroll slice declares `contracts/slip-tax.ts` (optional), `payroll-tax
 
 ## Checks
 
-- `packages/compiler/src/modules/mounts/contracts.test.ts` (6) and `contracts-refused.test.ts` (7), with the scratch
+- `packages/compiler/src/modules/mounts/contracts.test.ts` (6) and `contracts-refused.test.ts` (8), with the scratch
   features in `mounts/fixtures/contracts/testing.ts`: the model (calls 1, 3, 4, 6, 7) and the refusals (calls 3 and 8), over an
-  in-memory source with nine installed feature packages. It is not `mounts/testing.ts`, which #1175 adds.
+  in-memory source with ten installed feature packages. It is not `mounts/testing.ts`, which #1175 adds.
 - `e2e/m2/15-feature-contracts.test.ts` (m2 check 15): the runtime and the doors (calls 2, 4 and 5), in copies of acme
   with two installed feature packages, made with the real `ortho generate` and run in a world over local D1. One copy
   mounts the filler, one leaves it installed and unmounted, and one makes the contract required with no filler.
@@ -109,6 +117,8 @@ acme's own files don't move (the checks build their own copies), so G12's paired
 - A fill whose writes live in another store than the operation that runs it can't commit with it (K3 item 5). The
   compiler should refuse it; no check plants one, since the scratch features have one store.
 - A need on the owner that is conditional (`Blueprint.need(owner, { when })`) and not picked isn't planted.
+- A filler that refuses at run time with an error its contract doesn't declare isn't planted: its declared errors are
+  refused at build, and its handler's type should not let it fail with another.
 - A defect from a wrong input or output (call 5) isn't planted at the door: a handler that sends a wrong shape is the
   same defect an operation's wrong answer is, judged for operations in `language-effect`.
 

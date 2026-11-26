@@ -25,12 +25,16 @@ const without = (...names: ReadonlyArray<string>): AppSpec["mounts"] => Object.f
 
 describe("#1133: what the compiler refuses about contracts", () => {
   it("refuses a required contract no mounted feature fills, naming the contract and its file; an optional one unfilled is not refused", async () => {
-    // chart-us is installed, not mounted: the ledger's required account code has no filler.
+    // chart-us is installed, not mounted: the ledger's two required contracts have no filler, the one an operation runs and the one none does.
     const said = await refused({}, { mounts: without("chart-us") }, ["ledger.account-code", at("ledger", "contracts/account-code.js")]);
-    expect(said, "it says how to meet it").toMatch(/fill/i);
-    // The same app with both optional contracts unfilled too is refused for the required one only.
+    expect(said, "it says to mount a feature that fills it").toMatch(/mount/i);
+    await refused({}, { mounts: without("chart-us") }, ["ledger.close-period", at("ledger", "contracts/close-period.js")]);
+    // The same app with both optional contracts unfilled too is refused for the required ones only, each once.
     const problems = problemsOf(await modelExit(features(), { mounts: without("chart-us", "budgets", "payroll-tax-us") }));
-    expect(problems.filter((p) => p.includes("contracts/")), problems.join("\n")).toEqual([expect.stringContaining("ledger.account-code")]);
+    const named = problems.filter((p) => p.includes("contracts/"));
+    expect(named, problems.join("\n")).toHaveLength(2);
+    expect(named.filter((p) => p.includes("ledger.account-code")), problems.join("\n")).toHaveLength(1);
+    expect(named.filter((p) => p.includes("ledger.close-period")), problems.join("\n")).toHaveLength(1);
   });
 
   it("refuses two features filling one contract, and one feature filling it twice, naming the contract and both fill files", async () => {
@@ -46,6 +50,10 @@ describe("#1133: what the compiler refuses about contracts", () => {
     await refused(input((o) => ({ slip: o.Slip.fields.id, gross: Blueprint.value(Blueprint.text({ max: 20 })), country: o.Slip.fields.country })), { mounts: MOUNTED }, [TAX_FILL, TAX_CONTRACT, "gross"]);
     // A number of another width is another value too.
     await refused(input((o) => ({ slip: o.Slip.fields.id, gross: Blueprint.value(Blueprint.uint(32)), country: o.Slip.fields.country })), { mounts: MOUNTED }, [TAX_FILL, TAX_CONTRACT, "gross"]);
+    // A field is compared whole (CX-feature-contracts call 8): one the fill makes optional differs, and so does the same value declared from
+    // no field, where the contract's is the slip's country.
+    await refused(input((o) => ({ slip: o.Slip.fields.id, gross: o.Slip.fields.gross, country: Blueprint.optional(o.Country) })), { mounts: MOUNTED }, [TAX_FILL, TAX_CONTRACT, "country"]);
+    await refused(input((o) => ({ slip: o.Slip.fields.id, gross: o.Slip.fields.gross, country: o.Country })), { mounts: MOUNTED }, [TAX_FILL, TAX_CONTRACT, "country"]);
   });
 
   it("refuses a fill whose output isn't the contract's, or one that declares an error the contract doesn't; naming the fill, the contract and what differs", async () => {
@@ -57,21 +65,49 @@ describe("#1133: what the compiler refuses about contracts", () => {
     await refused({ fills: { budgets: (s, o) => ({ ...RIGHT.budgets(s, o), output: { ok: Blueprint.value(Blueprint.bool()) } }) } }, { mounts: MOUNTED }, [at("budgets", "fills/posting-check.js"), at("ledger", "contracts/posting-check.js"), "ok"]);
     // payroll-tax-us's own error, which the contract doesn't declare.
     await refused({ fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), errors: [o.TaxTableMissing, o.RateMissing] }) } }, { mounts: MOUNTED }, [TAX_FILL, TAX_CONTRACT, "RateMissing"]);
+    // Another contract's error, of the ledger: a fill refuses with its own contract's errors only.
+    await refused({ fills: { "payroll-tax-us": (s, o) => ({ ...RIGHT["payroll-tax-us"](s, o), errors: [o.TaxTableMissing, o.CodeTaken] }) } }, { mounts: MOUNTED }, [TAX_FILL, TAX_CONTRACT, "CodeTaken"]);
   });
 
-  it("refuses a fill by a feature that doesn't depend on the contract's owner, naming the fill and the owner's package", async () => {
-    // The US filler is left out, so the rogue one is the contract's only filler: refused for whom it depends on, not for being a second.
-    await refused({}, { mounts: { ...without("payroll-tax-us"), rogue: "rogue" } }, [at("rogue", "fills/slip-tax.js"), pkg("@fixture/payroll")]);
+  it("refuses a fill by a feature that doesn't depend on the contract's owner, or by the owner itself, naming the fill and the owner's package", async () => {
+    // The US filler is left out, so the rogue one is the contract's only filler: refused for whom it depends on, not for being a second. It has a
+    // need, the calendar, that doesn't reach payroll.
+    await refused({}, { mounts: { ...without("payroll-tax-us"), calendar: "calendar", rogue: "rogue" } }, [at("rogue", "fills/slip-tax.js"), pkg("@fixture/payroll")]);
+    // The same for a required contract: rogue fills the ledger's account code, chart-us left out.
+    const code: Change = { extra: { rogue: (s, o) => [{ path: "fills/codes.js", exports: { default: s.fill(o.accountCode, { description: "Codes from nowhere.", ...RIGHT["chart-us"](s, o) }) } }] } };
+    await refused(code, { mounts: { ...without("chart-us", "payroll-tax-us"), calendar: "calendar", rogue: "rogue" } }, [at("rogue", "fills/codes.js"), pkg("@fixture/ledger")]);
+    // Payments is needed by payroll; payroll is not needed by payments. Depending runs one way only.
+    const reverse: Change = { extra: { payments: (s, o) => [{ path: "fills/slip-tax.js", exports: { default: s.fill(o.slipTax, { description: "Tax from below.", ...RIGHT["payroll-tax-us"](s, o) }) } }] } };
+    await refused(reverse, { mounts: without("payroll-tax-us") }, [at("payments", "fills/slip-tax.js"), pkg("@fixture/payroll")]);
+    // The owner doesn't fill its own contract: it runs its own code (CX-feature-contracts call 3).
+    const own: Change = { extra: { payroll: (s, o) => [{ path: "fills/own-tax.js", exports: { default: s.fill(o.slipTax, { description: "Payroll's own tax.", ...RIGHT["payroll-tax-us"](s, o) }) } }] } };
+    await refused(own, { mounts: without("payroll-tax-us") }, [at("payroll", "fills/own-tax.js"), pkg("@fixture/payroll")]);
   });
 
   it("refuses an operation running a contract of a feature its own feature doesn't depend on, naming the operation's file and the owner's package", async () => {
-    await refused({}, { mounts: { ...MOUNTED, reports: "reports" } }, [at("reports", "things/report/verbs/run.js"), pkg("@fixture/ledger")]);
+    // Reports needs the calendar, which reaches no owner: both its operations are refused, the optional check and the required code, each once.
+    await refused({}, { mounts: { ...MOUNTED, calendar: "calendar", reports: "reports" } }, [at("reports", "things/report/verbs/run.js"), pkg("@fixture/ledger")]);
+    await refused({}, { mounts: { ...MOUNTED, calendar: "calendar", reports: "reports" } }, [at("reports", "things/report/verbs/code.js"), pkg("@fixture/ledger")]);
+    // Payments runs payroll's tax: payroll needs payments, not the other way.
+    const reverse: Change = { extra: { payments: (s, o) => [{ path: "things/payment/verbs/tax.js", exports: { default: Blueprint.operation(o.Slip, { description: "Tax a slip from below.", payload: { slip: o.Slip.fields.id }, answer: { slip: o.Slip.fields.id }, allowed: [Blueprint.signedIn], steps: { tax: s.step(o.slipTax) } }) } }] } };
+    const problems = problemsOf(await modelExit(features(reverse), { mounts: MOUNTED }));
+    expect(problems.filter((p) => p.includes(at("payments", "things/payment/verbs/tax.js")) && pkg("@fixture/payroll").test(p) && p.includes("payroll.slip-tax")), problems.join("\n")).toHaveLength(1);
+  });
+
+  it("refuses a contract or a fill in the app's own blueprint: only a feature declares or fills one", async () => {
+    const f = features();
+    const fill = { path: "fills/slip-tax.ts", exports: { default: f.o.s.fill(f.o.slipTax, { description: "The app's own tax.", ...RIGHT["payroll-tax-us"](f.o.s, f.o) }) } };
+    const contract = { path: "contracts/bonus.ts", exports: { default: f.o.s.contract({ description: "A bonus.", input: {}, output: {} }) } };
+    for (const own of [fill, contract]) {
+      const problems = problemsOf(await modelExit(f, { mounts: without("payroll-tax-us"), files: [own] }));
+      expect(problems.filter((p) => p.includes(`blueprint/${own.path}`)), problems.join("\n")).toHaveLength(1);
+    }
   });
 
   it("never reads a feature that is installed but not mounted: its wrong fills refuse nothing, and the same ones mounted are refused", async () => {
     const wrong: Change = { extra: { "payroll-tax-gb": (s, o) => [{ path: "fills/posting-check.js", exports: { default: s.fill(o.postingCheck, { description: "Wrong.", input: {}, output: { no: o.Amount } }) } }] } };
     expect(problemsOf(await modelExit(features(wrong), { mounts: MOUNTED })), "nothing unmounted is refused").toEqual([]);
     // The control: mounted, the same packages are refused, so the plants are wrong.
-    expect(problemsOf(await modelExit(features(wrong), { mounts: { ...MOUNTED, "payroll-tax-gb": "payroll-tax-gb", rogue: "rogue", reports: "reports" } })).length).toBeGreaterThan(2);
+    expect(problemsOf(await modelExit(features(wrong), { mounts: { ...MOUNTED, "payroll-tax-gb": "payroll-tax-gb", calendar: "calendar", rogue: "rogue", reports: "reports" } })).length).toBeGreaterThan(2);
   });
 });

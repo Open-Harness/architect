@@ -31,7 +31,7 @@ export const surface = (): Contracts => {
 };
 
 /** Every feature package the checks install, by its own name (`@fixture/<name>`). */
-export type Name = "ledger" | "payments" | "budgets" | "chart-us" | "payroll" | "payroll-tax-us" | "payroll-tax-gb" | "rogue" | "reports";
+export type Name = "ledger" | "payments" | "budgets" | "chart-us" | "payroll" | "payroll-tax-us" | "payroll-tax-gb" | "calendar" | "rogue" | "reports";
 
 /** What one installed package is: its descriptor, and its blueprint files by path under its blueprint folder. */
 interface Pkg {
@@ -69,6 +69,8 @@ export const owners = () => {
     optional: true,
   });
   const accountCode = s.contract({ description: "A rule of the ledger.", input: { name: Account.fields.name }, output: { code: Account.fields.code }, errors: [CodeTaken] });
+  // A required contract no operation runs: it must be filled all the same.
+  const closePeriod = s.contract({ description: "What closing a period does to an account.", input: { account: Account.fields.id }, output: {} });
   const accountOpen = Blueprint.operation(Account, {
     description: "Open an account, its code from the chart.",
     payload: { name: Account.fields.name },
@@ -97,7 +99,7 @@ export const owners = () => {
     allowed: [Blueprint.signedIn],
     steps: { save: Blueprint.step.database(), tax: s.step(slipTax) },
   });
-  return { s, Amount, Country, Code, Account, BudgetExceeded, CodeTaken, postingCheck, accountCode, accountOpen, Slip, TaxTableMissing, slipTax, slipSubmit, RateMissing };
+  return { s, Amount, Country, Code, Account, BudgetExceeded, CodeTaken, postingCheck, accountCode, closePeriod, accountOpen, Slip, TaxTableMissing, slipTax, slipSubmit, RateMissing };
 };
 export type Owners = ReturnType<typeof owners>;
 
@@ -122,7 +124,17 @@ export const features = (change: Change = {}) => {
 
   // payroll-tax-us's own thing, the tax line its fill writes in the caller's commit.
   const TaxLine = Blueprint.thing({ description: "A tax line on a slip.", fields: { id: Blueprint.id("txl"), slip: o.Slip.fields.id, amount: o.Amount }, code: "TL" });
-  // A report needs nothing, yet runs the ledger's check from its own operation.
+  // Its check runs the ledger's check three needs away (payroll-tax-us, payroll, payments, the ledger), and doesn't declare the check's error.
+  const taxLineCheck = Blueprint.operation(TaxLine, {
+    description: "Check a tax line's posting.",
+    payload: { account: o.Account.fields.id, amount: o.Amount },
+    answer: { line: TaxLine.fields.id },
+    allowed: [Blueprint.signedIn],
+    steps: { check: s.step(o.postingCheck) },
+  });
+  // A calendar needs nothing. The rogue filler and the reports need it, and nothing else: they have needs, and none reaches the owners.
+  const calendar = feature("A calendar.");
+  // A report runs the ledger's optional check and its required account code, though it depends on neither owner.
   const Report = Blueprint.thing({ description: "A report.", fields: { id: Blueprint.id("rpt"), account: o.Account.fields.id }, code: "RP" });
   const reportRun = Blueprint.operation(Report, {
     description: "Run a report, checking a posting on the way.",
@@ -131,6 +143,14 @@ export const features = (change: Change = {}) => {
     allowed: [Blueprint.signedIn],
     steps: { check: s.step(o.postingCheck) },
   });
+  const reportCode = Blueprint.operation(Report, {
+    description: "Code a report's account.",
+    payload: { name: o.Account.fields.name },
+    answer: { report: Report.fields.id },
+    allowed: [Blueprint.signedIn],
+    steps: { code: s.step(o.accountCode) },
+  });
+
   // A payment runs the ledger's check: payments depends on the ledger, so it may. It declares the check's error itself too (it maps it to its own
   // refusal), so the operation lists it once whether it declares it or the contract brings it.
   const Payment = Blueprint.thing({ description: "A payment.", fields: { id: Blueprint.id("pay"), account: o.Account.fields.id, amount: o.Amount }, code: "PY" });
@@ -152,6 +172,7 @@ export const features = (change: Change = {}) => {
         file("things/account/verbs/open.js", { default: o.accountOpen }),
         file("contracts/posting-check.js", { default: o.postingCheck }),
         file("contracts/account-code.js", { default: o.accountCode }),
+        file("contracts/close-period.js", { default: o.closePeriod }),
         ...extra("ledger"),
       ],
     },
@@ -159,7 +180,12 @@ export const features = (change: Change = {}) => {
     // Budgets needs payments, not the ledger: it depends on the ledger through payments.
     budgets: { descriptor: feature("Budgets.", [payments]), files: [file("fills/posting-check.js", { default: fillOf("budgets", "Refuse a posting over budget.") }), ...extra("budgets")] },
     // Its fill's file isn't named after the contract: a fill is matched to its contract by the contract it imports, never by a name.
-    "chart-us": { descriptor: feature("The US chart of accounts.", [ledger]), files: [file("fills/us-codes.js", { default: fillOf("chart-us", "A US account code.") }), ...extra("chart-us")] },
+    "chart-us": { descriptor: feature("The US chart of accounts.", [ledger]), files: [
+      file("fills/us-codes.js", { default: fillOf("chart-us", "A US account code.") }),
+      // A feature may fill several contracts.
+      file("fills/close.js", { default: s.fill(o.closePeriod, { description: "Close a US period.", input: { account: o.Account.fields.id }, output: {} }) }),
+      ...extra("chart-us"),
+    ] },
     payroll: {
       descriptor: payroll,
       files: [
@@ -175,6 +201,8 @@ export const features = (change: Change = {}) => {
       files: [
         file("things/tax-line/thing.js", { TaxLine }),
         file("things/tax-line/errors.js", { RateMissing: o.RateMissing }),
+        // Depends on the ledger three needs away: payroll-tax-us, payroll, payments, the ledger.
+        file("things/tax-line/verbs/check.js", { default: taxLineCheck }),
         file("fills/slip-tax.js", { default: fillOf("payroll-tax-us", "US tax on a slip.", { steps: { save: Blueprint.step.database({ writes: [TaxLine] }) } }) }),
         ...extra("payroll-tax-us"),
       ],
@@ -184,9 +212,10 @@ export const features = (change: Change = {}) => {
       descriptor: feature("United Kingdom payroll tax.", [payroll]),
       files: [file("fills/slip-tax.js", { default: s.fill(o.slipTax, { description: "UK tax on a slip.", ...RIGHT["payroll-tax-us"](s, o) }) }), ...extra("payroll-tax-gb")],
     },
-    // Fills payroll's contract, right in shape, though it needs nothing: it doesn't depend on the contract's owner.
-    rogue: { descriptor: feature("Needs nothing."), files: [file("fills/slip-tax.js", { default: s.fill(o.slipTax, { description: "Tax from nowhere.", ...RIGHT["payroll-tax-us"](s, o) }) }), ...extra("rogue")] },
-    reports: { descriptor: feature("Reports."), files: [file("things/report/thing.js", { Report }), file("things/report/verbs/run.js", { default: reportRun }), ...extra("reports")] },
+    calendar: { descriptor: calendar, files: [...extra("calendar")] },
+    // Fills payroll's contract, right in shape, though it needs only the calendar: it doesn't depend on the contract's owner.
+    rogue: { descriptor: feature("Needs the calendar only.", [calendar]), files: [file("fills/slip-tax.js", { default: s.fill(o.slipTax, { description: "Tax from nowhere.", ...RIGHT["payroll-tax-us"](s, o) }) }), ...extra("rogue")] },
+    reports: { descriptor: feature("Reports.", [calendar]), files: [file("things/report/thing.js", { Report }), file("things/report/verbs/run.js", { default: reportRun }), file("things/report/verbs/code.js", { default: reportCode }), ...extra("reports")] },
   };
   return { o, pkgs, TaxLine };
 };

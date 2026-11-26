@@ -12,7 +12,7 @@ describe("#1133: a contract one feature declares and another fills", () => {
   it("holds each mounted feature's contracts, by owner mount and file name, with the shape of the fields they are declared from", async () => {
     const m = await modelOf(features(), { mounts: MOUNTED });
     const contracts = contractsOf(m);
-    expect(Object.keys(contracts ?? {}).sort(), "every mounted feature's contract, and no other").toEqual(["ledger.account-code", "ledger.posting-check", "payroll.slip-tax"]);
+    expect(Object.keys(contracts ?? {}).sort(), "every mounted feature's contract, and no other").toEqual(["ledger.account-code", "ledger.close-period", "ledger.posting-check", "payroll.slip-tax"]);
     const submit = m.operations["slip.submit"];
     // The contract's input is declared from the same fields as slip.submit's payload, and its output from the same field as its answer's tax.
     expect(contracts?.["payroll.slip-tax"]).toEqual({
@@ -35,6 +35,16 @@ describe("#1133: a contract one feature declares and another fills", () => {
       errors: ["CodeTaken"],
       filler: { mount: "chart-us", file: at("chart-us", "fills/us-codes.js"), writes: [] },
     });
+    // A required contract no operation runs is held, and filled, all the same; one feature may fill two contracts.
+    expect(contracts?.["ledger.close-period"]).toEqual({
+      owner: "ledger",
+      file: at("ledger", "contracts/close-period.js"),
+      optional: false,
+      input: { account: m.operations["payment.post"]?.payload["account"] },
+      output: {},
+      errors: [],
+      filler: { mount: "chart-us", file: at("chart-us", "fills/close.js"), writes: [] },
+    });
     const post = m.operations["payment.post"];
     expect(contracts?.["ledger.posting-check"]).toEqual({
       owner: "ledger",
@@ -55,13 +65,15 @@ describe("#1133: a contract one feature declares and another fills", () => {
     expect(m.operations["account.open"]?.steps["code"]).toEqual({ name: "account.open.code", type: "contract", contract: "ledger.account-code" });
     // payments isn't the ledger: it runs the ledger's check because it depends on the ledger.
     expect(m.operations["payment.post"]?.steps["check"]).toEqual({ name: "payment.post.check", type: "contract", contract: "ledger.posting-check" });
-    for (const [op, error] of [["slip.submit", "TaxTableMissing"], ["account.open", "CodeTaken"], ["payment.post", "BudgetExceeded"]] as const) {
+    // Three needs away: payroll-tax-us needs payroll, which needs payments, which needs the ledger. It doesn't declare the check's error itself.
+    expect(m.operations["tax-line.check"]?.steps["check"]).toEqual({ name: "tax-line.check.check", type: "contract", contract: "ledger.posting-check" });
+    for (const [op, error] of [["slip.submit", "TaxTableMissing"], ["account.open", "CodeTaken"], ["payment.post", "BudgetExceeded"], ["tax-line.check", "BudgetExceeded"]] as const) {
       const errors = m.operations[op]?.errors ?? [];
       expect(errors, `${op} lists ${error}`).toContain(error);
       expect(errors.filter((e) => e === error), `${op} lists ${error} once`).toHaveLength(1);
     }
     // A contract's errors are its runners' only: an operation lists no error of a contract it doesn't run.
-    for (const [op, others] of [["slip.submit", ["CodeTaken", "BudgetExceeded"]], ["account.open", ["TaxTableMissing", "BudgetExceeded"]], ["payment.post", ["TaxTableMissing", "CodeTaken"]]] as const) {
+    for (const [op, others] of [["slip.submit", ["CodeTaken", "BudgetExceeded"]], ["account.open", ["TaxTableMissing", "BudgetExceeded"]], ["payment.post", ["TaxTableMissing", "CodeTaken"]], ["tax-line.check", ["TaxTableMissing", "CodeTaken"]]] as const) {
       for (const error of others) expect(m.operations[op]?.errors ?? [], `${op} doesn't list ${error}`).not.toContain(error);
     }
   });
@@ -86,7 +98,7 @@ describe("#1133: a contract one feature declares and another fills", () => {
   it("names a contract by its owner's mount and its filler by the filler's: a feature mounted under another name renames both, and what the fill writes", async () => {
     const m = await modelOf(features(), { mounts: { ledger: "ledger", payments: "payments", budgets: "budgets", "chart-us": "chart-us", pay: "payroll", tax: "payroll-tax-us" } });
     const contracts = contractsOf(m);
-    expect(Object.keys(contracts ?? {}).sort()).toEqual(["ledger.account-code", "ledger.posting-check", "pay.slip-tax"]);
+    expect(Object.keys(contracts ?? {}).sort()).toEqual(["ledger.account-code", "ledger.close-period", "ledger.posting-check", "pay.slip-tax"]);
     expect(contracts?.["pay.slip-tax"]).toMatchObject({ owner: "pay", file: at("payroll", "contracts/slip-tax.js"), filler: { mount: "tax", file: at("payroll-tax-us", "fills/slip-tax.js"), writes: ["tax-tax-line"] } });
     expect(m.operations["pay-slip.submit"]?.steps["tax"]).toEqual({ name: "pay-slip.submit.tax", type: "contract", contract: "pay.slip-tax" });
   });
@@ -113,6 +125,6 @@ describe("#1133: a contract one feature declares and another fills", () => {
     const m = await modelOf(features(), { mounts: MOUNTED });
     expect(contractsOf(m)?.["payroll.slip-tax"]?.filler?.mount).toBe("payroll-tax-us");
     const text = JSON.stringify(m);
-    for (const word of ["payroll-tax-gb", "@fixture/rogue", "@fixture/reports"]) expect(text, word).not.toContain(word);
+    for (const word of ["payroll-tax-gb", "@fixture/rogue", "@fixture/reports", "@fixture/calendar"]) expect(text, word).not.toContain(word);
   });
 });
