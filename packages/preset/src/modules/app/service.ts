@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { Effect } from "effect";
+// Nx has no public export of FsTree or flushChanges; this deep import is why nx is a run-time dependency of the preset, and so of every app's cli.
 import { FsTree, flushChanges } from "nx/src/generators/tree";
 import { Starter } from "#modules/starter/service.js";
 import { AppRefused, type AppApi } from "./types.ts";
@@ -12,7 +13,10 @@ const create: AppApi["create"] = ({ parent, name }) =>
     const wrong = problem(name);
     if (wrong !== undefined) return yield* new AppRefused({ message: wrong });
     const dir = join(parent, name);
-    const taken = occupied(dir, name);
+    const taken = yield* Effect.try({
+      try: () => occupied(dir, name),
+      catch: (e) => new AppRefused({ message: `could not read ${name}/: ${String(e)}` }),
+    });
     if (taken !== undefined) return yield* new AppRefused({ message: taken });
     yield* Effect.try({
       try: () => {

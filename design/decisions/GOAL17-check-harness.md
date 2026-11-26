@@ -90,7 +90,8 @@ Probe.send<Args extends Json, A>(route: string): (args: Args) => WorldCall<A>;  
 - **What `prove` does with each.** `RunnerCall` goes to the `Runner` of the world it started (call 2); a journey run against a
   world prove did not start (`ortho dev`'s warm world, staging) refuses the step, naming it: "this world has no runner to kill",
   as the clock step refuses today, and never pretends. `StandCall` is `POST <the mount's stand-in url>/_stand/<command>`; a
-  non-200 fails the step, naming the mount, the command and the answer. `WorldCall` is the same against the world with its token
+  non-200 fails the step, naming the mount, the command and the answer. (Superseded by G16-adapter-mounts call 4, 25 November
+  2026: a non-2xx fails it, naming the mount, the command and the status.) `WorldCall` is the same against the world with its token
   (the facts door's way, `packages/host-cloudflare/src/modules/world/internal/facts.ts:17`).
 - **`Worlds.start` learns the stand-ins** by generalising its `chain` option (`world/types.ts:81`):
 

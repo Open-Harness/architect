@@ -1,5 +1,5 @@
 // The app made as a folder: the names it takes, the folders it refuses, and that a refusal writes nothing.
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect } from "effect";
@@ -56,6 +56,15 @@ describe("App.create", () => {
     writeFileSync(join(d, "bakery"), "a file\n");
     expect(refusal({ parent: d, name: "bakery" })).toMatch(/bakery already exists/);
     expect(readFileSync(join(d, "bakery"), "utf8")).toBe("a file\n");
+  });
+
+  it("judges a link by what it points to: a link to a folder with something in it is not empty, not a file", () => {
+    const d = parent();
+    mkdirSync(join(d, "elsewhere"));
+    writeFileSync(join(d, "elsewhere", "kept.txt"), "kept\n");
+    symlinkSync(join(d, "elsewhere"), join(d, "bakery"));
+    expect(refusal({ parent: d, name: "bakery" })).toMatch(/bakery\/ is not empty/);
+    expect(readdirSync(join(d, "elsewhere"))).toEqual(["kept.txt"]);
   });
 
   it("refuses a bad name before writing anything, even the parent folder", () => {

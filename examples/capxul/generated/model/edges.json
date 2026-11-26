@@ -410,6 +410,111 @@
     "kind": "refers"
   },
   {
+    "from": "payroll-employee-detail.payrollEntry",
+    "to": "payroll-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-employee-detail.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-entry.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-entry.costCenter",
+    "to": "cost-center.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-entry.payrollPayableAccount",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-period.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-component.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-component.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-detail.salaryStructure",
+    "to": "salary-structure.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-detail.salaryComponent",
+    "to": "salary-component.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.payrollEntry",
+    "to": "payroll-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.salaryStructure",
+    "to": "salary-structure.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.journalEntry",
+    "to": "journal-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip-detail.salarySlip",
+    "to": "salary-slip.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip-detail.salaryComponent",
+    "to": "salary-component.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure-assignment.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure-assignment.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure-assignment.salaryStructure",
+    "to": "salary-structure.id",
+    "kind": "refers"
+  },
+  {
     "from": "shift-type.company",
     "to": "company.id",
     "kind": "refers"
@@ -2326,6 +2431,306 @@
   },
   {
     "from": "leave-type.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-employee-detail.list",
+    "to": "payroll-employee-detail",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-employee-detail.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.create",
+    "to": "payroll-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-entry.create",
+    "to": "payroll-entry.PayrollEntryDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-entry.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.get",
+    "to": "payroll-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-entry.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.list",
+    "to": "payroll-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-entry.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.submit",
+    "to": "payroll-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-entry.submit",
+    "to": "payroll-entry.PayrollEntrySubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-entry.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.submit-slips",
+    "to": "payroll-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-entry.submit-slips",
+    "to": "payroll-entry.SalarySlipsSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-entry.submit-slips",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-period.create",
+    "to": "payroll-period",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-period.create",
+    "to": "payroll-period.PayrollPeriodCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-period.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-period.get",
+    "to": "payroll-period",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-period.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-component.create",
+    "to": "salary-component",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-component.create",
+    "to": "salary-component.SalaryComponentCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-component.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-component.get",
+    "to": "salary-component",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-component.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-detail.list",
+    "to": "salary-detail",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-detail.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.get",
+    "to": "salary-slip",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-slip.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.list",
+    "to": "salary-slip",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-slip.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip-detail.list",
+    "to": "salary-slip-detail",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-slip-detail.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip-detail.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.cancel",
+    "to": "salary-structure",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure.cancel",
+    "to": "salary-structure.SalaryStructureCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.create",
+    "to": "salary-structure",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure.create",
+    "to": "salary-structure.SalaryStructureDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.get",
+    "to": "salary-structure",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-structure.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.submit",
+    "to": "salary-structure",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure.submit",
+    "to": "salary-structure.SalaryStructureSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.cancel",
+    "to": "salary-structure-assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure-assignment.cancel",
+    "to": "salary-structure-assignment.SalaryStructureAssignmentCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure-assignment.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.create",
+    "to": "salary-structure-assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure-assignment.create",
+    "to": "salary-structure-assignment.SalaryStructureAssigned",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure-assignment.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.get",
+    "to": "salary-structure-assignment",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-structure-assignment.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.list",
+    "to": "salary-structure-assignment",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-structure-assignment.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.submit",
+    "to": "salary-structure-assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure-assignment.submit",
+    "to": "salary-structure-assignment.SalaryStructureAssignmentSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure-assignment.submit",
     "to": "company.owner",
     "kind": "allowed-by"
   },
