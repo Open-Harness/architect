@@ -70,7 +70,6 @@ const GRACE = "5 seconds";
 
 /** `node <entry> --port 0 --dir <dir>` in the package's folder, in a process group of its own so all it starts is stopped with it. */
 const spawnStandIn = (mount: string, cwd: string, entry: string, dir: string): Running => {
-  mkdirSync(dir, { recursive: true });
   const child = spawn(process.execPath, [join(cwd, entry), "--port", "0", "--dir", dir], { cwd, stdio: ["ignore", "pipe", "pipe"], detached: true });
   let tail = "";
   let pending = "";
@@ -147,8 +146,13 @@ export const standIns = (root: string, model: Model) => (state: string): Effect.
         : unfit(`mount ${mount}: ${m.package}'s package.json names no orthograph.standIn, and its adapter stands in as a process`)));
     });
     if (wanted.length === 0) return {};
+    // Every folder is made before any stand-in starts: a failure here leaves nothing running, and the spawns that follow don't throw.
+    const dirs = yield* Effect.try({
+      try: () => wanted.map(({ mount }) => { const dir = join(state, "stands", mount); mkdirSync(dir, { recursive: true }); return dir; }),
+      catch: (e) => new WorldFailed({ message: `the stand-ins couldn't start: their folders under ${join(state, "stands")} couldn't be made (${String(e)})` }),
+    });
     const running = yield* Effect.acquireRelease(
-      Effect.try({ try: () => wanted.map(({ mount, dir, entry }) => spawnStandIn(mount, dir, entry, join(state, "stands", mount))), catch: (e) => new WorldFailed({ message: `the stand-ins couldn't start: ${String(e)}` }) }),
+      Effect.sync(() => wanted.map(({ mount, dir, entry }, i) => spawnStandIn(mount, dir, entry, dirs[i]!))),
       (all) => Effect.forEach(all, (r) => stopStandIn(r.child), { concurrency: "unbounded", discard: true }).pipe(Effect.provide(TimersLive)),
     );
     const urls = yield* Effect.forEach(running, (r) =>
