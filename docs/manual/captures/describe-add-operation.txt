@@ -1,0 +1,2 @@
+$ ortho add operation wallet.open
+wrote blueprint/things/wallet/verbs/open.ts

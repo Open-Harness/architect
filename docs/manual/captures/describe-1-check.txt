@@ -1,0 +1,21 @@
+$ ortho check
+wallet has 5 blanks
+  blueprint/things/wallet/roles.ts:5  when a person holds this role on a wallet
+  blueprint/things/wallet/verbs/open.ts:5  what open does to a wallet, in one sentence
+  blueprint/things/wallet/verbs/open.ts:6  what a caller sends
+  blueprint/things/wallet/verbs/open.ts:7  what open answers
+  blueprint/things/wallet/verbs/open.ts:8  who may open
+types ✔
+rules ✔
+drift ✘ 8
+  generated/api/src/errors.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/model/model.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/sdk/src/index.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/sdk/src/wallet/types.ts  no-edited-output: is missing: run ortho generate
+  generated/server/main.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/server/migrations/0001_things.sql  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/wallet/index.md  no-edited-output: is missing: run ortho generate
+  generated/portal/blueprint.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+ratchets 0
+check ✘
+exit 1

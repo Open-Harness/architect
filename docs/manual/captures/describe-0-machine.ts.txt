@@ -1,0 +1,10 @@
+# blueprint/things/wallet/machine.ts
+import { Blueprint } from "orthograph";
+import { Wallet } from "./thing.ts";
+
+// The states a wallet can be in, and the moves between them. Each move names the event it emits (events.ts).
+export const machine = Blueprint.machine(Wallet, {
+  states: Blueprint.todo("the states a wallet can be in, the first one where it starts"),
+  moves: {},
+  notFrom: { exit: 40 }, // the exit code when a move can't start from the state it's in
+});
