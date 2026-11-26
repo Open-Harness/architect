@@ -18,10 +18,12 @@ So: not India; the United States first and mainly; then Europe, the UK and the U
 
 1. **Payroll's core holds no tax rule.** Salary components and structures, their assignment, payroll periods, pay runs,
    payslips and the journal each run posts are jurisdiction-free. A payslip's tax lines come from the jurisdiction
-   module for the employee's place of work.
+   module for the employee's place of work. (Superseded by CX-composable-pieces, 26 November 2026: one tax piece per
+   app for now; choosing one per employee waits on a decision of its own.)
 2. **Each jurisdiction is its own module**, a plugin under `examples/capxul/plugins/`, so a new country is a new
    plugin, not a change to core. Slice 9 mounts the United States module when the app is made; mounting a module into
-   a Capxul that already holds data waits on slice 11, which proves it (K43, section 2).
+   a Capxul that already holds data waits on slice 11, which proves it (K43, section 2). (Superseded by CX-composable-pieces, 26 November 2026:
+   adding a module to a deployed Capxul is a rebuild with a forward migration, gap 5.)
 3. **Rates are dated data, never code.** Brackets, rates, wage bases, thresholds and allowances are rows with the
    period they apply to and the official publication they are read from. ERPNext's Income Tax Slab is the shape they
    generalise. A new tax year is new rows.
@@ -34,7 +36,7 @@ So: not India; the United States first and mainly; then Europe, the UK and the U
       paid family leave). The states without a state income tax come first, then California and New York, then the
       rest.
    3. Then the United Kingdom (PAYE and National Insurance), the United Arab Emirates (no personal income tax; the
-      pension contribution for nationals) and Europe, one country at a time. These are not in dollars, so their modules
+      pension contribution for nationals) and Europe, one country at a time. These are not in dollars, so their modules (Superseded by CX-money-global-payroll, 26 November 2026: "Their pieces follow the US piece, in each country's currency, and")
       wait on Aaron's call on a company's own currency, which CX-grill section 3 deferred on 24 November 2026. (Superseded by CX-payroll-tax, "Narrowed the same day", 26 November 2026: the United States only, in dollars.)
 5. **Journeys come from the publications' own worked examples.** Each jurisdiction's checks are written first by an
    author, from the official tables and examples, and a builder makes them green, as every Capxul slice does.
@@ -53,8 +55,8 @@ So: not India; the United States first and mainly; then Europe, the UK and the U
 dirhams and euros, so your dollars-only call would need reopening. Not needed until US payroll is done.": "keep usa and
 usd".
 
-**The goal's reading:** Capxul's payroll is built for the United States alone, in USDC, the one dollar asset of CX-grill
-section 3. The UK, UAE and European modules in point 4.3 are not scheduled, and a company's own currency stays deferred.
+**The goal's reading:** Capxul's payroll is built for the United States alone, in USDC (Superseded by CX-money-global-payroll, 26 November 2026: "Capxul's payroll pays contractors worldwide first on the main path; the United States tax piece is built in its own lane alongside"), the one dollar asset of CX-grill
+section 3. The UK, UAE and European modules in point 4.3 are not scheduled, and a company's own currency stays deferred (Superseded by CX-money-global-payroll, 26 November 2026: "a company's own currency is built in slice 7").
 The shape is unchanged (point 2: a module per jurisdiction), so another country can be added later as a plugin without
 touching core, once Aaron reopens it.
 

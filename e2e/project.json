@@ -220,6 +220,28 @@
       "options": { "command": "nx run e2e:ui-layer-ratchet" },
       "cache": false
     },
+    "from-doctype-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.from-doctype.config.ts from-doctype" },
+      "cache": false
+    },
+    "from-doctype-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/from-doctype-report.json tmp/from-doctype-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/from-doctype-errors.json vitest run --root e2e --config vitest.from-doctype-ratchet.config.ts from-doctype --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/from-doctype-report.json; node e2e/ratchet/check.ts tmp/from-doctype-report.json e2e/from-doctype/expected-failing tmp/from-doctype-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "from-doctype": {
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:from-doctype-checks" },
+      "cache": false
+    },
     "m8-checks": {
       "executor": "nx:run-commands",
       "options": { "command": "vitest run --root {projectRoot} --config vitest.m8.config.ts m8" },

@@ -16,9 +16,8 @@ HRMS) and AGPL v3 (CRM): read, never run, and not copied here. Each row names it
   `idx`, as the spike scaffolds it. `settings`: a single, which becomes a company's settings thing. `job`: a tool or a
   background process in Frappe, which becomes an operation or a workflow rather than a thing.
 - **Flags.** `SUB`: submittable, so it gets ERPNext's draft, submitted and cancelled machine. `FX`: it holds an
-  exchange rate or a `base_` amount beside a foreign one. These are deferred by Aaron's call of 24 November 2026: every
-  amount is in USDC, the one dollar asset, so an `FX` row is taken without its exchange-rate and `base_*` fields
-  (`CX-grill.md`, section 3). `WIDE`: more than 97 stored columns, so it hits D1's 100-column limit once id,
+  exchange rate or a `base_` amount beside a foreign one. Each is taken with its rate and base fields as its slice builds it, since a
+  company keeps its books in its own currency (CX-money-global-payroll). `WIDE`: more than 97 stored columns, so it hits D1's 100-column limit once id,
   state and version are added (the spike's gap 4, in #742).
 - **Columns.** The doctype's stored fields: not its layout fields, and not its tables, which become lines. Sales
   Invoice has 133. The spike counted 142 with its 9 tables, kept 130 and dropped 12 that point at record types not
@@ -35,7 +34,7 @@ HRMS) and AGPL v3 (CRM): read, never run, and not copied here. Each row names it
 | The CRM | 40 | 10 | 11 |
 | **All** | **485** | **197** | |
 
-35 carry exchange rates (`FX`, deferred: amounts are USDC alone), and 5 are wider than D1 allows (`WIDE`: POS Invoice, Purchase Invoice, Purchase Order,
+35 carry exchange rates (`FX`, CX-money-global-payroll), and 5 are wider than D1 allows (`WIDE`: POS Invoice, Purchase Invoice, Purchase Order,
 Sales Invoice, Sales Order).
 
 ## The books
@@ -89,14 +88,14 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Cost Center | thing |  | 9 | `erpnext/erpnext/accounts/doctype/cost_center/cost_center.json` | a tree like Account: company, name, an optional parent group; group or ledger is its state (CX-ledger) |
 | Cost Center Allocation | thing | SUB | 4 | `erpnext/erpnext/accounts/doctype/cost_center_allocation/cost_center_allocation.json` |  |
 | Coupon Code | thing |  | 11 | `erpnext/erpnext/accounts/doctype/coupon_code/coupon_code.json` |  |
-| Currency Exchange | thing | FX | 6 | `erpnext/erpnext/setup/doctype/currency_exchange/currency_exchange.json` | a rate between two currencies: money-units question (CX-grill §3) |
+| Currency Exchange | thing | FX | 6 | `erpnext/erpnext/setup/doctype/currency_exchange/currency_exchange.json` | a rate between two currencies, in `rates` (CX-money-global-payroll) |
 | Currency Exchange Settings | settings |  | 6 | `erpnext/erpnext/accounts/doctype/currency_exchange_settings/currency_exchange_settings.json` | where rates come from; a rate source is an adapter |
 | Customer | thing |  | 42 | `erpnext/erpnext/selling/doctype/customer/customer.json` |  |
 | Customer Group | thing |  | 8 | `erpnext/erpnext/setup/doctype/customer_group/customer_group.json` |  |
 | Dunning | thing | SUB FX | 34 | `erpnext/erpnext/accounts/doctype/dunning/dunning.json` |  |
 | Dunning Type | thing |  | 7 | `erpnext/erpnext/accounts/doctype/dunning_type/dunning_type.json` |  |
 | Email Digest | job |  | 29 | `erpnext/erpnext/setup/doctype/email_digest/email_digest.json` |  |
-| Exchange Rate Revaluation | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/exchange_rate_revaluation/exchange_rate_revaluation.json` | money-units question (CX-grill §3) |
+| Exchange Rate Revaluation | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/exchange_rate_revaluation/exchange_rate_revaluation.json` | in `ledger` (CX-money-global-payroll) |
 | Finance Book | thing |  | 1 | `erpnext/erpnext/accounts/doctype/finance_book/finance_book.json` |  |
 | Fiscal Year | thing |  | 6 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` | per company, not site-wide with a Fiscal Year Company table: name, first and last day, short year. A year not marked short is exactly a year less a day; a short one no longer; no overlap with the company's other years (CX-ledger) |
 | GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit, and by its cancel as a reversal with debit and credit swapped, both lines marked `isCancelled`. No machine and no operation of its own; read by account (CX-ledger) |
@@ -137,7 +136,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Payment Request | thing | SUB | 39 | `erpnext/erpnext/accounts/doctype/payment_request/payment_request.json` |  |
 | Payment Term | thing |  | 11 | `erpnext/erpnext/accounts/doctype/payment_term/payment_term.json` |  |
 | Payment Terms Template | thing |  | 2 | `erpnext/erpnext/accounts/doctype/payment_terms_template/payment_terms_template.json` |  |
-| Pegged Currencies | settings |  | 0 | `erpnext/erpnext/accounts/doctype/pegged_currencies/pegged_currencies.json` | money-units question (CX-grill §3) |
+| Pegged Currencies | settings |  | 0 | `erpnext/erpnext/accounts/doctype/pegged_currencies/pegged_currencies.json` | in `rates` (CX-money-global-payroll) |
 | Period Closing Voucher | thing | SUB | 10 | `erpnext/erpnext/accounts/doctype/period_closing_voucher/period_closing_voucher.json` |  |
 | Price List | thing |  | 6 | `erpnext/erpnext/stock/doctype/price_list/price_list.json` |  |
 | Pricing Rule | thing |  | 59 | `erpnext/erpnext/accounts/doctype/pricing_rule/pricing_rule.json` |  |
@@ -506,7 +505,7 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 
 ## The CRM
 
-Frappe CRM, the module switched on later. Slice 11.
+Frappe CRM, an optional piece picked when a Capxul is built (CX-composable-pieces). Slice 11.
 
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
@@ -602,19 +601,19 @@ reverse it. Item, its prices and its units are taken, so an invoice can carry go
 | Project Template | Projects | Project | not needed beyond project, task and timesheet |
 | Project Type | Projects | Project | not needed beyond project, task and timesheet |
 | Task Type | Projects | Task | not needed beyond project, task and timesheet |
-| Batch | Stock | Asset Capitalization, Asset Capitalization Stock Item, Item Price and 5 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Customs Tariff Number | Stock | Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Delivery Note | Stock | POS Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Delivery Trip | Stock | Expense Claim | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Item Attribute | Stock | Item Variant Attribute | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Manufacturer | Stock | Item, Purchase Invoice Item, Purchase Order Item and 1 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Material Request | Stock | Purchase Invoice Item, Purchase Order Item, Request for Quotation Item and 2 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Purchase Receipt | Stock | Asset, Purchase Invoice Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Quality Inspection | Stock | POS Invoice Item, Purchase Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Quality Inspection Template | Stock | Item | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Serial and Batch Bundle | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Installation Note Item and 4 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Stock Entry | Stock | Journal Entry | stock, left out by the goal's reading (above); a stock module can be switched on later |
-| Warehouse | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Company and 21 more | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Batch | Stock | Asset Capitalization, Asset Capitalization Stock Item, Item Price and 5 more | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Customs Tariff Number | Stock | Item | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Delivery Note | Stock | POS Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Delivery Trip | Stock | Expense Claim | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Item Attribute | Stock | Item Variant Attribute | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Manufacturer | Stock | Item, Purchase Invoice Item, Purchase Order Item and 1 more | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Material Request | Stock | Purchase Invoice Item, Purchase Order Item, Request for Quotation Item and 2 more | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Purchase Receipt | Stock | Asset, Purchase Invoice Item | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Quality Inspection | Stock | POS Invoice Item, Purchase Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Quality Inspection Template | Stock | Item | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Serial and Batch Bundle | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Installation Note Item and 4 more | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Stock Entry | Stock | Journal Entry | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Warehouse | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Company and 21 more | stock, left out by the goal's reading (above); a stock piece can be added later |
 | Issue | Support | Task | not part of Capxul core |
 
 ### The rest of ERPNext, by module
@@ -632,7 +631,7 @@ reverse it. Item, its prices and its units are taken, so an invoice can carry go
 | Projects | 4 | not needed beyond project, task and timesheet |
 | Quality Management | 16 | not part of Capxul core |
 | Regional | 5 | country-specific records; a country's rules come with the company that needs them |
-| Stock | 45 | stock, left out by the goal's reading (above); a stock module can be switched on later |
+| Stock | 45 | stock, left out by the goal's reading (above); a stock piece can be added later |
 | Subcontracting | 8 | manufacturing is not part of Capxul core |
 | Support | 10 | not part of Capxul core |
 | Telephony | 5 | not part of Capxul core |

@@ -315,6 +315,8 @@ jobs:
       affected_prove: ${{ steps.aff.outputs.affected_prove || 'true' }}
       # Can the change alter what `ortho prove --root examples/capxul` does (tools/ci/capxul-paths.sh)? True unless the step said false.
       capxul: ${{ steps.diff.outputs.capxul || 'true' }}
+      # Can the change alter what the from-doctype checks judge (tools/ci/from-doctype-paths.sh)? True unless the step said false.
+      from_doctype: ${{ steps.diff.outputs.from_doctype || 'true' }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -324,6 +326,7 @@ jobs:
           if [[ "$EVENT" == pull_request ]]; then
             tools/ci/docs-only.sh "origin/$BASE_REF" HEAD >> "$GITHUB_OUTPUT"
             tools/ci/capxul-paths.sh "origin/$BASE_REF" HEAD >> "$GITHUB_OUTPUT"
+            tools/ci/from-doctype-paths.sh "origin/$BASE_REF" HEAD >> "$GITHUB_OUTPUT"
           else
             echo docs_only=false >> "$GITHUB_OUTPUT"
           fi
@@ -467,6 +470,41 @@ jobs:
           "$brew_bin/brew" --version
       - if: env.SKIP != 'true'
         run: NX_DAEMON=false pnpm nx run e2e:layer2 --outputStyle=static
+
+  # The from-doctype checks (e2e/from-doctype/README.md, CX-from-doctype), written before `ortho add thing --from-doctype`
+  # is built: the ratchet passes while every failure is listed in e2e/from-doctype/expected-failing/, and fails on any other.
+  # For pull requests into goal/capxul, where Goal 16's builder makes them green, and into main. On any other pull request or
+  # push, and on a docs-only pull request, the job runs and passes without its steps, so it keeps the shape of a required job
+  # (CI-drafts-race.md, CI-docs-fast-path.md) though it is not one. It is goal/capxul's own suite, so the fast gate runs it
+  # (CI-integration.md, B1). It does not ask `affected`, since the checks reach `ortho` through the command line: it asks
+  # `from_doctype` (tools/ci/from-doctype-paths.sh), by paths, and passes without its steps when the diff touches none of
+  # packages, examples/starter, the suite and what it shares, the install's root files or this workflow. Green (against a
+  # throwaway build), `e2e:from-doctype-ratchet` took 175 s on 4 cores: 52 checks, about 30 project copies with generate,
+  # model and check. With the install, the job is about 4 minutes; the timeout is twice that.
+  e2e-from-doctype:
+    name: ${{ needs.ready.outputs.draft != 'false' && 'e2e-from-doctype (draft)' || 'e2e-from-doctype' }}
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      SKIP: ${{ !(github.event_name == 'pull_request' && (github.base_ref == 'goal/capxul' || github.base_ref == 'main')) || (needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.from_doctype == 'false')) }}
+    steps:
+      - if: env.SKIP == 'true'
+        run: echo "A docs-only pull request, one that cannot change what the from-doctype checks judge (tools/ci/from-doctype-paths.sh), or one that is not for this gate, where this job passes without its steps (design/decisions/CI-drafts-race.md, CI-docs-fast-path.md)."
+      - if: env.SKIP != 'true'
+        uses: actions/checkout@v7.0.1
+      - if: env.SKIP != 'true'
+        uses: pnpm/action-setup@v6.1.0
+      - if: env.SKIP != 'true'
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: env.SKIP != 'true'
+        run: pnpm install --frozen-lockfile
+      - if: env.SKIP != 'true'
+        run: NX_DAEMON=false pnpm nx run e2e:from-doctype-ratchet --outputStyle=static
 
   # Gate M0 (M0.06): no old name outside the records. The canon's check (docs/canon/README.md) runs beside it: every quote,
   # reference and component in the MDX pages, and every link in its READMEs and status page. It replaced the old docs page's

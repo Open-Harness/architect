@@ -1,0 +1,30 @@
+{
+ "doctype": "DocType",
+ "name": "Tea Rack",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 0,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "rack_name",
+   "fieldtype": "Data",
+   "label": "Rack Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "slots",
+   "fieldtype": "Table",
+   "label": "Slots",
+   "options": "Tea Rack Slot"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Tea Master",
+   "permlevel": 0,
+   "read": 1,
+   "create": 1
+  }
+ ]
+}

@@ -9,7 +9,7 @@ source won. Each difference is listed below.
 
 ## What 7a holds
 
-The company's owner runs everything, and employees have no access. Every amount is USDC in base units (`Amount`, and
+The company's owner runs everything, and employees have no access. Every amount is USDC in base units (Superseded by CX-money-global-payroll, 26 November 2026: "Every amount names its asset, in base units") (`Amount`, and
 `Balance` for a signed balance). No field holds a currency or a rate (CX-grill, section 3).
 
 - **Fiscal Year** (`active`): company, `year` (its name, unique in the company), `yearStartDate`, `yearEndDate`,

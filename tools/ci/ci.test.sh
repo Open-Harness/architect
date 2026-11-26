@@ -203,6 +203,37 @@ expect "capxul-paths: an empty diff runs it" 0 cx "$r" true
 expect "capxul-paths: a base that does not exist fails, never skips" 128 \
   bash -c "cd '$r' && '$here/capxul-paths.sh' no-such-base x-build"
 
+# from-doctype-paths: the flag that lets e2e-from-doctype pass without its steps when the diff can't change what its checks judge
+fd() { # <repo> <wanted flag>
+  local got; got=$(cd "$1" && "$here/from-doctype-paths.sh" base x-build)
+  [ "$got" = "from_doctype=$2" ] || { echo "got $got"; return 1; }
+}
+r=$(repo); mkdir -p "$r/packages/cli/src"; echo t > "$r/packages/cli/src/main.ts"; commit "$r"
+expect "from-doctype-paths: the CLI runs it" 0 fd "$r" true
+r=$(repo); mkdir -p "$r/examples/starter/blueprint"; echo t > "$r/examples/starter/blueprint/a.ts"; commit "$r"
+expect "from-doctype-paths: the starter each check copies runs it" 0 fd "$r" true
+r=$(repo); mkdir -p "$r/e2e/from-doctype" "$r/e2e/fixtures/from-doctype/doctypes"; echo t > "$r/e2e/from-doctype/01.test.ts"; commit "$r"
+expect "from-doctype-paths: the suite runs it" 0 fd "$r" true
+r=$(repo); mkdir -p "$r/e2e/fixtures/from-doctype/doctypes"; echo '{}' > "$r/e2e/fixtures/from-doctype/doctypes/a.json"; commit "$r"
+expect "from-doctype-paths: a fixture runs it" 0 fd "$r" true
+r=$(repo); mkdir -p "$r/e2e/layer1" "$r/e2e/ratchet"; echo t > "$r/e2e/layer1/support.ts"; commit "$r"
+expect "from-doctype-paths: the shared support runs it" 0 fd "$r" true
+r=$(repo); mkdir -p "$r/e2e/ratchet"; echo t > "$r/e2e/ratchet/check.ts"; commit "$r"
+expect "from-doctype-paths: the ratchet runs it" 0 fd "$r" true
+r=$(repo); echo l > "$r/pnpm-lock.yaml"; echo t > "$r/tsconfig.base.json"; commit "$r"
+expect "from-doctype-paths: the lockfile or a root tsconfig runs it" 0 fd "$r" true
+r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/ci.yml"; commit "$r"
+expect "from-doctype-paths: the workflow that holds the job runs it" 0 fd "$r" true
+r=$(repo); echo j >> "$r/examples/acme/journeys/a.ts"; echo t > "$r/e2e/m1/a.test.ts"; mkdir -p "$r/design" "$r/examples/capxul/journeys" "$r/e2e/layer1" "$r/tools/climb"
+echo d > "$r/design/x.md"; echo c > "$r/examples/capxul/journeys/a.ts"; echo s > "$r/e2e/layer1/other.ts"; echo s > "$r/tools/climb/a.mjs"; commit "$r"
+expect "from-doctype-paths: another example, another suite, layer1's other files, design and other tools skip it" 0 fd "$r" false
+r=$(repo); mkdir -p "$r/e2e/from-doctype-notes" "$r/examples/starter-two"; echo d > "$r/e2e/from-doctype-notes/a.ts"; echo d > "$r/examples/starter-two/a.ts"; commit "$r"
+expect "from-doctype-paths: a folder whose name only starts the same is not the suite or the starter" 0 fd "$r" false
+r=$(repo)
+expect "from-doctype-paths: an empty diff runs it" 0 fd "$r" true
+expect "from-doctype-paths: a base that does not exist fails, never skips" 128 \
+  bash -c "cd '$r' && '$here/from-doctype-paths.sh' no-such-base x-build"
+
 # docs-only: the flag that lets a docs-only pull request skip the layer gates
 docs() { # <repo> <wanted flag>
   local got; got=$(cd "$1" && "$here/docs-only.sh" base x-build)

@@ -6,7 +6,7 @@ import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
 import { ModelCommand } from "#modules/model/service.js";
@@ -167,13 +167,56 @@ const secrets = Command.make(
   ({ env, root }) => SecretsCommand.list({ root, env }).pipe(Effect.flatMap(print)),
 ).pipe(Command.withDescription("List the app's declared secrets and whether each has a value, never the values"), Command.withSubcommands([secretsSet]));
 
-// `ortho add <what> <name>`: writes the planned files, or with --dry-run prints them and writes nothing.
+/** Writes the planned files, or with --dry-run prints them and writes nothing. */
+const writeOut = (root: string, planned: ReadonlyArray<{ readonly path: string; readonly content: string }>, dryRun: boolean) =>
+  Effect.sync(() => {
+    for (const f of planned) {
+      if (dryRun) process.stdout.write(`--- ${f.path}\n${f.content}`);
+      else {
+        mkdirSync(dirname(join(root, f.path)), { recursive: true });
+        writeFileSync(join(root, f.path), f.content);
+        process.stdout.write(`wrote ${f.path}\n`);
+      }
+    }
+    if (dryRun) process.stdout.write(`(dry run: ${planned.length} files, nothing written)\n`);
+  });
+
 const ADD_ONE: Readonly<Record<What, string>> = {
   thing: "Declare a new thing, a kind of record the app keeps, in its own file",
   operation: "Declare a new operation, something a caller asks the app to do, with its empty handler",
   read: "Declare a new read, a question a caller asks of the app's records",
   journey: "Write a new journey file, the story a proof runs step by step",
 };
+// `ortho add thing <name>`, or `ortho add thing --from-doctype <file> [--asset <name>]` (CX-from-doctype), whose name is the doctype's.
+const addThing = Command.make(
+  "thing",
+  {
+    name: Argument.String("name").pipe(Argument.optional, Argument.withDescription("The new thing's name, in kebab case (not given with --from-doctype)")),
+    fromDoctype: Flag.String("from-doctype").pipe(Flag.optional, Flag.withDescription("An ERPNext doctype's JSON file to make the thing from, named after the doctype")),
+    asset: Flag.String("asset").pipe(Flag.optional, Flag.withDescription("The asset its Currency fields count, a file in blueprint/assets/ (needed only when it has some)")),
+    dryRun: Flag.Boolean("dry-run").pipe(Flag.withDefault(false), Flag.withDescription("Print the files it would write, and write nothing")),
+    root: rootFlag("to write into"),
+  },
+  ({ name, fromDoctype, asset, dryRun, root }) => {
+    if (Option.isNone(fromDoctype)) {
+      if (Option.isNone(name)) return fail("ortho add thing needs a name, or --from-doctype <file>", 2);
+      const planned = Add.plan("thing", name.value, (path) => existsSync(join(root, path)));
+      return planned instanceof AddRefused ? fail(planned.message, 2) : writeOut(root, planned, dryRun);
+    }
+    if (Option.isSome(name)) return fail(`a name isn't given with --from-doctype: the thing is named from the doctype (drop "${name.value}")`, 2);
+    return Add.fromDoctype({ root, file: resolve(fromDoctype.value), asset: Option.getOrUndefined(asset) }).pipe(
+      Effect.flatMap((planned) =>
+        Effect.sync(() => {
+          for (const note of planned.notes) process.stdout.write(`${note}\n`);
+          for (const path of planned.kept) process.stdout.write(`kept ${path} (already there, shared)\n`);
+        }).pipe(Effect.andThen(writeOut(root, planned.write, dryRun))),
+      ),
+      Effect.catchTag("AddRefused", (e) => fail(e.message, 2)),
+    );
+  },
+).pipe(Command.withDescription(ADD_ONE.thing));
+
+// `ortho add <what> <name>`: writes the planned files, or with --dry-run prints them and writes nothing.
 const addOne = (what: What) =>
   Command.make(
     what,
@@ -184,18 +227,7 @@ const addOne = (what: What) =>
     },
     ({ name, dryRun, root }) => {
       const planned = Add.plan(what, name, (path) => existsSync(join(root, path)));
-      if (planned instanceof AddRefused) return fail(planned.message, 2);
-      return Effect.sync(() => {
-        for (const f of planned) {
-          if (dryRun) process.stdout.write(`--- ${f.path}\n${f.content}`);
-          else {
-            mkdirSync(dirname(join(root, f.path)), { recursive: true });
-            writeFileSync(join(root, f.path), f.content);
-            process.stdout.write(`wrote ${f.path}\n`);
-          }
-        }
-        if (dryRun) process.stdout.write(`(dry run: ${planned.length} files, nothing written)\n`);
-      });
+      return planned instanceof AddRefused ? fail(planned.message, 2) : writeOut(root, planned, dryRun);
     },
   ).pipe(Command.withDescription(ADD_ONE[what]));
 // `ortho add feature|adapter|projection <package>`: one mount file, the version pinned exactly, and what it needs.
@@ -243,7 +275,7 @@ const addJourneys = Command.make(
 ).pipe(Command.withDescription("Stub a journey for each path, role and declared error of a thing, keeping those already written"));
 const add = Command.make("add").pipe(
   Command.withDescription("Add a declaration, a journey or a plugin to the app"),
-  Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
+  Command.withSubcommands([addThing, addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
 );
 
 // `ortho new adapter <name> --from-openapi <file or URL>`: an adapter generated from a service's own API description (M5.07).
