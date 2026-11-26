@@ -20,8 +20,9 @@ Inner operations (#1079, `design/decisions/CX-inner-operations.md`; `internal/in
 operation step's runner, `steps.<key>(payload)`, runs the operation the server wired under that key (`operations: { <key>: <inner>Served }`)
 inside the outer's attempt, for the same caller: its access rule, prehandle, from-check, handler, answer check, move and G5 rules, its writes
 held in the outer's unit and its entries in the outer's journal, so the one commit carries both and a lost race reruns both. It runs in its
-own span, named after it, inside the step's span (`step.kind: operation`), and its refusals count as the outer's. Tests:
-`inner-operation.test.ts`, `inner-operation-rules.test.ts`.
+own span, named after it, inside the step's span (`step.kind: operation`), and its refusals count as the outer's. Its spans name it with
+`inner.operation`, never `operation`, so the portal counts the outer's one call and no call of the inner. Tests: `inner-operation.test.ts`,
+`inner-operation-rules.test.ts`, `inner-span.test.ts`.
 
 `Reads.serve` serves two kinds of read: by id (one instance, a missing one refused `NotAllowed`) and a list (`where`, `order`,
 `page`; L2.04). A list reads a page from `Store.list`: instances matching every filter the caller gave, in the order the rows were

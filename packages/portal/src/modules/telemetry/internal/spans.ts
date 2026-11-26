@@ -3,7 +3,8 @@
 //   read, device   `<operation>`, with `operation` and no `attempt` (`handler/internal/read.ts` and `device.ts`: one span, one attempt)
 //   door refusal   `<operation>.refused`, with `operation`, `attempt` and `refusal` (`handler/service.ts`): who may call said no, so it is a count of
 //                  `ortho.calls` and never a call
-//   other          the journey's span, a step, a commit: none has `operation` on a span named for it
+//   other          the journey's span, a step, a commit, an inner operation (`inner.operation`, `handler/internal/inner.ts`, #1079): none has
+//                  `operation` on a span named for it, so an outer call that runs another operation is still one call
 // A read is told from a device operation by the model (`kind: "read"`, `runs: "device"`), never by guessing from the span.
 import type { BlueprintWire } from "#modules/wire/types.js";
 import type { WindowSpan } from "../types.ts";

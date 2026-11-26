@@ -18,6 +18,12 @@ import { spanned } from "./span.ts";
 type AnyCodec = Schema.Codec<object, unknown>;
 export type AnyHandler = (payload: object, context: { principal: Principal; steps: object; move: (to?: string) => Effect.Effect<void> } & Prehandled) => Effect.Effect<object, unknown, unknown>;
 
+/**
+ * The attribute that names an inner operation on its spans. It is never `operation`: the portal counts a span named for its `operation` as a call,
+ * and an inner operation is a step of the outer's one call, never a call of its own.
+ */
+export const INNER = "inner.operation";
+
 export const tagOf = (e: unknown): string =>
   typeof e === "object" && e !== null && typeof (e as { _tag?: unknown })._tag === "string" ? (e as { _tag: string })._tag : String(e);
 
@@ -63,7 +69,7 @@ export const innerRun = (pipeline: Pipeline) => {
       // Its access rule, for the caller, reading through the outer's writes. A refused caller leaves no span of the inner operation, only `<op>.refused`.
       yield* Access.check({ allowed: op.allowed, payloadFields: op.payload, payload, principal, thing: op.thing, ...(mounts === undefined ? {} : { mounts }) }).pipe(
         Effect.provideService(Records, unit.records), Effect.withTracerEnabled(false),
-        Effect.tapError((e) => Effect.annotateCurrentSpan({ refusal: tagOf(e) }).pipe(spanned(`${name}.refused`, { operation: name, ...principalAttributes(principal, true) }))),
+        Effect.tapError((e) => Effect.annotateCurrentSpan({ refusal: tagOf(e) }).pipe(spanned(`${name}.refused`, { [INNER]: name, ...principalAttributes(principal, true) }))),
       );
       const logs = yield* recordingLogs(payload, op.payload);
       return yield* Effect.gen(function* () {
@@ -87,6 +93,6 @@ export const innerRun = (pipeline: Pipeline) => {
         // Its entry joins the attempt's journal only once it has answered, in the order the moves were made.
         if (entry !== undefined) attempt.journal.push(entry);
         return answer;
-      }).pipe(Effect.tapCause(ending(codes, logs.last)), spanned(name, { operation: name, ...principalAttributes(principal) }));
+      }).pipe(Effect.tapCause(ending(codes, logs.last)), spanned(name, { [INNER]: name, ...principalAttributes(principal) }));
     });
 };

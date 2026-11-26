@@ -104,7 +104,7 @@ Journeys assert on spans by name, so a trace is checked, not just looked at. Whe
    `refusal.code` (`AL-001`, or the machine's `AL-900`), and, when the handler logged something just before refusing,
    `refusal.log`:
 
-   ```ts file=packages/language-effect/src/modules/handler/internal/inner.ts name=ending lines=28-36
+   ```ts file=packages/language-effect/src/modules/handler/internal/inner.ts name=ending lines=34-42
    export const ending = (codes: Readonly<Record<string, string>> | undefined, last: Effect.Effect<string | undefined>) => (cause: Cause.Cause<unknown>) => {
      if (Cause.hasDies(cause)) return Effect.annotateCurrentSpan(defectAttributes(cause));
      const refusal = Cause.squash(cause);
@@ -246,6 +246,10 @@ Beside `move.name` and `move.to`, the operation's span carries what the model kn
 state the subject was in when the move ran (not the declared list, and absent from a call that made no move);
 `environment`, the world's (`local` unless told otherwise); and `store`, the kind of store the thing lives in. The
 commit span carries `event.name`, the event the move emitted, only when that attempt committed. The portal reads these.
+
+An inner operation (#1079), run by an outer handler as `steps.<key>(payload)`, writes its own span, named after it, inside the
+outer's step span. That span, and the `<inner>.refused` span its access rule leaves, carry `inner.operation`, never `operation`:
+the portal counts a span named for its `operation` as a call, and the outer and its inner operations are one call.
 
 ### Call metrics (M1.20)
 
