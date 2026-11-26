@@ -27,3 +27,9 @@ relieving day (#742, item 5).
 `employee-promotion.create` refuses `PromotedEmployeeHasLeft` and `employee-transfer.create` refuses
 `TransferredEmployeeHasLeft`, judged on create only, and one drafted before the employee left can still be submitted and
 cancelled. A separation is not refused for a leaver, as HRMS's Employee Separation doesn't judge the employee's status.
+
+**Extended 25 November 2026** (slice 9a, CX-payroll): salary structure assignments and payroll follow the same rule.
+`salary-structure-assignment.create` refuses `AssignedEmployeeHasLeft`, judged on create only. `payroll-entry.create`
+skips a leaver when it fills in its employees, where HRMS fills in one who left on or after the first day and prorates
+their pay; one who leaves after the draft is still paid in full when it is submitted. Full and final settlement and
+payment days come later (9c).
