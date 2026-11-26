@@ -24,9 +24,10 @@ export const Worlds: WorldsApi = {
       if (client !== undefined) writeFileSync(config, ServerConfig.derive(root, readFileSync(generated, "utf8"), client));
       yield* applyMigrations(config, state);
       // The chain is acquired first, so it is released last: the Worker never outlives the chain it talks to.
-      const stood = chain === undefined ? undefined : yield* chain;
+      const chained = chain === undefined ? undefined : yield* chain;
       // So are the stand-ins, after the wipe so their folders under the state survive, and their addresses are the Worker's secrets.
-      const standEnv = stands === undefined ? {} : yield* stands(state);
+      const stood = stands === undefined ? undefined : yield* stands(state);
+      const standEnv = stood?.env ?? {};
       const secretEnv = given === undefined && Object.keys(standEnv).length === 0 ? undefined : { ...given, ...standEnv };
       const log = join(state, "wrangler.log");
       const secret = randomBytes(32).toString("hex");
@@ -35,7 +36,7 @@ export const Worlds: WorldsApi = {
       const url = `http://127.0.0.1:${port}`;
       const vars = { AUTH_SECRET: secret, [Names.variable("ENVIRONMENT")]: environment ?? "local", ...(otlp ? { OTLP_URL: otlp } : {}), ...(portalFeed ? { ORTHO_PORTAL_FEED: portalFeed } : {}), ...(nonce ? { ORTHO_WORLD_NONCE: nonce } : {}) };
       yield* Effect.acquireRelease(bringUp({ config, state, port, log, vars, ...(secretEnv ? { secretEnv } : {}) }, "/_world/health"), stop);
-      return { url, log, ...(stood ? { chain: stood } : {}) };
+      return { url, log, ...(chained ? { chain: chained } : {}), ...(stood ? { stands: stood.addresses } : {}) };
     }),
   launch: ({ config, state, port, log, pidFile, envFile, secretEnv, ready }) =>
     Effect.gen(function* () {

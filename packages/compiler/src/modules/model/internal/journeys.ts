@@ -26,7 +26,7 @@ const blanksIn = (value: unknown): ReadonlyArray<string> => {
 
 /** A step's blanks: in its call's payload and due instant (the keeper's) and in each check (the check itself, its fields, its id or its value). */
 export const stepBlanks = (step: { readonly call: AnyCall; readonly checks: ReadonlyArray<Assertion> }) => [
-  ...(step.call.kind === "clock-call" ? [] : [...blanksIn(step.call.payload), ..."due" in step.call ? blanksIn(step.call.due) : []]),
+  ...(step.call.kind === "clock-call" || step.call.kind === "stand-call" ? [] : [...blanksIn(step.call.payload), ..."due" in step.call ? blanksIn(step.call.due) : []]),
   ...step.checks.flatMap((c) => (Blanks.isBlank(c) ? [(c as { readonly what: string }).what]
     : c.kind === "emits" || c.kind === "refuses" ? blanksIn(c.fields) : c.kind === "is-in" ? blanksIn(c.id) : c.kind === "expect-equal" ? blanksIn(c.value) : [])),
 ];
@@ -54,6 +54,8 @@ export const storiesOf = (
   const callOf = (call: AnyCall) => {
     // A step that moves the world's clock has no operation: the model tells it as a step that is not in the model's operations, and prove runs it against the world's clock door (M8.07).
     if (call.kind === "clock-call") return undefined;
+    // A stand-in's command runs no operation either: prove sends it to the mount's stand-in (G16-adapter-mounts call 4).
+    if (call.kind === "stand-call") return undefined;
     // The tools list runs no operation: it is told as a step that is not in the model's operations.
     if (call.operation === undefined) return undefined;
     const operation = names.get(call.operation);
@@ -112,7 +114,7 @@ export const storiesOf = (
     const steps = declared.map((step) => {
       const call = callOf(step.call);
       return call === undefined
-        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "a step that moves the world's clock is not an operation" : step.call.operation === undefined ? "the tools list is not an operation" : "operation is outside the model" }
+        ? { title: step.title, skipped: step.call.kind === "clock-call" ? "a step that moves the world's clock is not an operation" : step.call.kind === "stand-call" ? "a command to a stand-in is not an operation" : step.call.operation === undefined ? "the tools list is not an operation" : "operation is outside the model" }
         : { title: step.title, call, checks: step.checks.filter((c) => !Blanks.isBlank(c)).map(checkOf) };
     });
     const starts = Blanks.isBlank(j.starts) ? null : j.starts ?? null;

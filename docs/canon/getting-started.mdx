@@ -32,6 +32,9 @@ Install the command. Orthograph's alpha will be published to npm under the `next
 npm install --global @orthograph/cli@next
 ```
 
+Inside an app that has its own copy of the command installed, as every new app does, the global `ortho` hands each
+command to that copy, so the app is always checked and run by the version it depends on.
+
 Create an app called `my-links`, and install what it depends on. The app starts as the starter project: a blueprint,
 its handlers, and the journeys that prove them.
 
@@ -57,11 +60,14 @@ ortho dev --port 8787
 ```
 
 In a second terminal, from the app's folder, call it through its generated CLI. The CLI is named after the app, so here
-it is `my-links`, and Node runs it from its generated source.
+it is `my-links`, and Node runs it from its generated source. `system health` asks the running app whether it is up: it
+prints `ok` and exits 0, and when nothing is listening at that address it fails and exits 1.
 
 ```sh planned=M2.09
-MY_LINKS_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts --help
+MY_LINKS_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health
 ```
+
+`node generated/cli/src/main.ts --help` lists the things it can call, and `<thing> --help` each one's operations.
 
 An operation that needs a signed-in caller also needs a session token: set `MY_LINKS_TOKEN` to the token a sign-in gave
 you, beside `MY_LINKS_URL`.
