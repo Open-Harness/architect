@@ -1,0 +1,3 @@
+$ ortho version --next
+no logbook: start one with `ortho env up logbook`, or set ORTHO_LOGBOOK_URL
+exit 2

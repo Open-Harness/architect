@@ -96,7 +96,7 @@
           "n": 10,
           "title": "Change it, months later",
           "question": "I need one rule different. What else has to change?",
-          "planned": "chapters/10-change-it-months-later.md",
+          "file": "chapters/10-change-it-months-later.md",
           "film": "change",
           "section": "change"
         },

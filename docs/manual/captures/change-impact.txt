@@ -1,0 +1,5 @@
+$ ortho impact
+changed thing handle: invariants
+changed operation handle.claim: breaks, invariants, refusals
+stale handle.claim, handle.release, handle.resolve, link.add, link.order, link.remove, profile.get
+proven none
