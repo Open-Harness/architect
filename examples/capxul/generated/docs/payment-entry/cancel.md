@@ -35,6 +35,7 @@ Cancel a submitted payment, posting a reversing ledger line for each it posted.
 
 | refusal | exit | code | when |
 |---|---|---|---|
+| PartyDisabled | 50 | PY-010 | declared in errors.ts |
 | PaymentEntryNotDraft | 40 | PY-900 | the payment-entry is in a state cancel can't start from; carries `state` |
 | NotAllowed | 3 | AR-001 | the caller isn't the owner of its paymentEntry.company; the handler never runs |
 | IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |
@@ -50,6 +51,7 @@ Starts from the world `a received advance`.
 - **Ada cancels it: two reversing lines.** `ada` (role company.owner) calls and sends paymentEntry the world's paymentEntry, and gets back [the world's paymentEntry, `2`].
 - **it can't be cancelled twice.** `ada` (role company.owner) calls and sends paymentEntry the world's paymentEntry, and is refused with PaymentEntryNotDraft, PY-900, carrying state `cancelled`.
 - **and cancels it.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
+- **that payment can't be cancelled while its supplier is disabled.** `ada` (role company.owner) calls and sends paymentEntry the last call's items 0 voucherId, and is refused with PartyDisabled, PY-010.
 
 ## How to call
 

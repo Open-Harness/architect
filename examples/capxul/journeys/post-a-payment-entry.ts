@@ -323,6 +323,33 @@ export default Blueprint.journey("post a payment entry", {
         s.ada.run(customerBalance, { customer: s.world.customer, onDay: "2027-12-31" }),
         expect(sums).toEqual([100n * USDC, 2n, 100n * USDC - 2n]),
       ),
+      // A fiscal year that isn't a calendar year: FY28 runs from 1 April 2028 to 28 February 2029.
+      s.step(
+        "Acme Trading sets up FY28, from 1 April 2028 to 28 February 2029",
+        s.ada.run(createYear, { company: s.world.company, year: "FY28", yearStartDate: "2028-04-01", yearEndDate: "2029-02-28", isShortYear: true }),
+        expect((a) => a.fiscalYear).toMatch(/^fyr_/),
+      ),
+      s.step("a payment on 15 January 2029, inside it", fromKibo("2029-01-15", 3n), payments.isIn(s.last.paymentEntry, "draft")),
+      s.step("posts, though its calendar year is 2029", s.ada.run(submit, { paymentEntry: s.last.paymentEntry }), expect((a) => a.posted).toBe(2n), payments.isIn(s.last.paymentEntry, "submitted")),
+      s.step("a payment on 15 March 2028, before it begins", fromKibo("2028-03-15", 3n), payments.isIn(s.last.paymentEntry, "draft")),
+      s.step(
+        "is refused, though its calendar year is 2028",
+        s.ada.run(submit, { paymentEntry: s.last.paymentEntry }),
+        refuses(PaymentPostingDateOutsideFiscalYear, { postingDate: "2028-03-15" }),
+        noEvents(),
+      ),
+      s.step("and one on 15 March 2029, after it ends", fromKibo("2029-03-15", 3n), payments.isIn(s.last.paymentEntry, "draft")),
+      s.step(
+        "is refused too",
+        s.ada.run(submit, { paymentEntry: s.last.paymentEntry }),
+        refuses(PaymentPostingDateOutsideFiscalYear, { postingDate: "2029-03-15" }),
+        noEvents(),
+      ),
+      s.step(
+        "Kibo Stores' balance in 2029 counts the one that posted",
+        s.ada.run(customerBalance, { customer: s.world.customer, onDay: "2029-12-31" }),
+        expect(sums).toEqual([100n * USDC, 5n, 100n * USDC - 5n]),
+      ),
 
       // A disabled party.
       s.step("Ada disables Mara Office Rentals", s.ada.run(disableSupplier, { supplier: s.world.supplier }), expect((a) => a.supplier).toBe(s.world.supplier)),
@@ -330,6 +357,23 @@ export default Blueprint.journey("post a payment entry", {
         "a disabled supplier's balance still reads from the ledger",
         s.ada.run(supplierBalance, { supplier: s.world.supplier, onDay: "2026-12-31" }),
         expect(sums).toEqual([200n * USDC, 50n * USDC, 150n * USDC]),
+      ),
+      s.step(
+        "Creditors' first line is the advance paid to it, still submitted",
+        s.ada.run(ledger, { account: s.world.creditors }),
+        expect((p) => [p.items[0].party, p.items[0].debit, p.items[0].isCancelled]).toEqual([s.world.supplier, 200n * USDC, false]),
+      ),
+      s.step(
+        "that payment can't be cancelled while its supplier is disabled",
+        s.ada.run(cancel, { paymentEntry: s.last.items[0].voucherId }),
+        refuses(PartyDisabled),
+        noEvents(),
+        spans({ absent: ["payment-entry.cancel.reverse"] }),
+      ),
+      s.step(
+        "nothing was reversed: Creditors' advance is still not cancelled",
+        s.ada.run(ledger, { account: s.world.creditors }),
+        expect((p) => [p.items.length, p.items[0].isCancelled]).toEqual([4, false]),
       ),
       s.step("a payment to it in 2027 may be drafted", toMara("2027-01-04", 30n * USDC), payments.isIn(s.last.paymentEntry, "draft")),
       s.step(

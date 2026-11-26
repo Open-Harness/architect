@@ -22,7 +22,7 @@ The company's owner runs everything, and employees have no access. Every amount 
   `totalCredit`.
 - **Journal Entry Account**: `journalEntry`, `line` (from 1), account, cost center, debit, credit. It has no machine and
   no operation of its own. Only the entry's create writes it.
-- **GL Entry**: company, account, cost center, `postingDate`, debit, credit, `voucherType` (Journal Entry for now),
+- **GL Entry**: company, account, cost center, `postingDate`, debit, credit, `voucherType` (Journal Entry for now; superseded by CX-parties-payments, 26 November 2026),
   `voucherId`, `isCancelled`. It has no machine and no operation of its own. Only a voucher's submit and cancel write it
   (`writes: [JournalEntry, GLEntry]`, CX-takeover).
 - **Reads:** each thing by id; `journal-entry-account.list` by entry (the entry's lines); `gl-entry.list` by account,
@@ -106,7 +106,7 @@ left out.
 Account numbers, currency, freezing, `balance_must_be`, `disabled`, `tax_rate` and the other 27 account types; chart
 templates; cost center numbers, allocations and conversions; journal entry voucher types, naming series, parties,
 references, cheques, opening entries, inter-company entries, multi-currency, amending and deleting a draft; GL Entry's
-party, against, remarks, fiscal year and currency columns; closing a year; accounting periods and freezing dates.
+party (superseded by CX-parties-payments, 26 November 2026), against, remarks, fiscal year and currency columns; closing a year; accounting periods and freezing dates.
 
 ERPNext's special case for a day in no fiscal year is left out on purpose. ERPNext's `get_balance_on` answers 0 for such a day up to
 today, and for a later day refuses or counts every line depending on whether today is in a year: its answer reads

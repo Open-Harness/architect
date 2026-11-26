@@ -2,7 +2,7 @@
 import { HttpApiEndpoint } from "effect/http-api";
 import { wireStruct } from "orthograph/server";
 import declaration from "../../../../blueprint/things/payment-entry/verbs/cancel.ts";
-import { PaymentEntryNotDraft, NotAllowed, IdempotencyConflict } from "../errors.ts";
+import { PartyDisabled, PaymentEntryNotDraft, NotAllowed, IdempotencyConflict } from "../errors.ts";
 
 export { declaration };
 export const endpoint = HttpApiEndpoint.post("cancel", "/payment-entry/cancel", {
@@ -10,5 +10,5 @@ export const endpoint = HttpApiEndpoint.post("cancel", "/payment-entry/cancel", 
   // What the wire carries: the declared answer, the fields not every caller is shown optional. The server cuts each answer by who is asking.
   // Typed as the declaration types it: the schema is built from fields known only at run time, which TypeScript cannot follow.
   success: wireStruct(declaration.answer, { issuing: true }) as unknown as typeof declaration.answerSchema,
-  error: [PaymentEntryNotDraft, NotAllowed, IdempotencyConflict],
+  error: [PartyDisabled, PaymentEntryNotDraft, NotAllowed, IdempotencyConflict],
 });

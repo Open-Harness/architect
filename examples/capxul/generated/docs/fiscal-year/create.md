@@ -66,6 +66,7 @@ Starts from the world `a capital entry`.
 Starts from the world `a received advance`.
 
 - **Acme Logistics sets up 2027.** `ada` (role company.owner) calls and sends company the world's otherCompany, year `2027`, yearStartDate `2027-01-01`, yearEndDate `2027-12-31`, isShortYear false, and gets back an answer matching `^fyr_`.
+- **Acme Trading sets up FY28, from 1 April 2028 to 28 February 2029.** `ada` (role company.owner) calls and sends company the world's company, year `FY28`, yearStartDate `2028-04-01`, yearEndDate `2029-02-28`, isShortYear true, and gets back an answer matching `^fyr_`.
 
 ### run a payroll
 

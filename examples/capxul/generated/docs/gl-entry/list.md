@@ -88,6 +88,8 @@ Starts from the world `a received advance`.
 - **the advance and the first refund are untouched: Creditors holds four lines, two of them cancelled.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back [false, false, true, true].
 - **Debtors' ledger, read by it, holds the party's debit.** `ada` (role company.owner) calls and sends account the world's debtors, voucherId the last call's paymentEntry, and gets back [[the world's company, the world's debtors, the world's costCenter, `2026-04-01`, `100000000`, `0`, `Customer`, the world's customer, `Payment Entry`, false]].
 - **Debtors now holds three lines.** `ada` (role company.owner) calls and sends account the world's debtors, and gets back 3.
+- **Creditors' first line is the advance paid to it, still submitted.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back [the world's supplier, `200000000`, false].
+- **nothing was reversed: Creditors' advance is still not cancelled.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back [4, false].
 - **nothing was posted to Creditors.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back 4.
 - **no line was ever posted to a group: Assets' ledger is empty.** `ada` (role company.owner) calls and sends account the world's assets, and gets back 0.
 - **and Liabilities'.** `ada` (role company.owner) calls and sends account the world's liabilities, and gets back 0.

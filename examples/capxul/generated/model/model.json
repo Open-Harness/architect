@@ -23932,9 +23932,12 @@
         ],
         "emits": "PaymentEntryCancelled"
       },
-      "errors": [],
+      "errors": [
+        "PartyDisabled"
+      ],
       "breaks": [],
       "refusals": [
+        "PartyDisabled",
         "PaymentEntryNotDraft",
         "NotAllowed",
         "IdempotencyConflict"
@@ -23971,7 +23974,7 @@
       "budget": {
         "p95Ms": 300
       },
-      "hash": "baa2584b4a2cd712"
+      "hash": "bdae1719ab35ff2c"
     },
     "payment-entry.create": {
       "kind": "operation",
@@ -75088,6 +75091,312 @@
           ]
         },
         {
+          "title": "Acme Trading sets up FY28, from 1 April 2028 to 28 February 2029",
+          "call": {
+            "actor": "ada",
+            "operation": "fiscal-year.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "year": "FY28",
+              "yearStartDate": "2028-04-01",
+              "yearEndDate": "2029-02-28",
+              "isShortYear": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^fyr_",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "a payment on 15 January 2029, inside it",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              },
+              "paymentType": "Receive",
+              "postingDate": "2029-01-15",
+              "partyType": "Customer",
+              "party": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "debtors"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              },
+              "paidAmount": "3"
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "posts, though its calendar year is 2029",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.submit",
+            "payload": {
+              "paymentEntry": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2"
+            },
+            {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              },
+              "state": "submitted"
+            }
+          ]
+        },
+        {
+          "title": "a payment on 15 March 2028, before it begins",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              },
+              "paymentType": "Receive",
+              "postingDate": "2028-03-15",
+              "partyType": "Customer",
+              "party": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "debtors"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              },
+              "paidAmount": "3"
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "is refused, though its calendar year is 2028",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.submit",
+            "payload": {
+              "paymentEntry": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PaymentPostingDateOutsideFiscalYear",
+              "fields": {
+                "postingDate": "2028-03-15"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "and one on 15 March 2029, after it ends",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              },
+              "paymentType": "Receive",
+              "postingDate": "2029-03-15",
+              "partyType": "Customer",
+              "party": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "debtors"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              },
+              "paidAmount": "3"
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "is refused too",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.submit",
+            "payload": {
+              "paymentEntry": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PaymentPostingDateOutsideFiscalYear",
+              "fields": {
+                "postingDate": "2029-03-15"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Kibo Stores' balance in 2029 counts the one that posted",
+          "call": {
+            "actor": "ada",
+            "operation": "customer.balance",
+            "payload": {
+              "customer": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "onDay": "2029-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "100000000",
+                "5",
+                "99999995"
+              ]
+            }
+          ]
+        },
+        {
           "title": "Ada disables Mara Office Rentals",
           "call": {
             "actor": "ada",
@@ -75135,6 +75444,94 @@
                 "200000000",
                 "50000000",
                 "150000000"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Creditors' first line is the advance paid to it, still submitted",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "creditors"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "supplier"
+                  ]
+                },
+                "200000000",
+                false
+              ]
+            }
+          ]
+        },
+        {
+          "title": "that payment can't be cancelled while its supplier is disabled",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.cancel",
+            "payload": {
+              "paymentEntry": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "voucherId"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PartyDisabled",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            },
+            {
+              "kind": "spans",
+              "present": [],
+              "absent": [
+                "payment-entry.cancel.reverse"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nothing was reversed: Creditors' advance is still not cancelled",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "creditors"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                4,
+                false
               ]
             }
           ]
@@ -75811,7 +76208,7 @@
           ]
         }
       ],
-      "sourceHash": "fcc112c70227bbbdc66f51c8ea3f4f37110b3ae9ab50e17e10d194aba864d64b"
+      "sourceHash": "f0072d460b3491e61ec2c4698b3a2a8d1745589f0d5de30e574716ac798edce6"
     },
     "journeys/promote-an-employee.ts": {
       "name": "promote an employee",

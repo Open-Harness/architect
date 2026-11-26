@@ -61,6 +61,9 @@ Starts from the world `a received advance`.
 - **another company's year doesn't count.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PaymentPostingDateOutsideFiscalYear, PY-009, carrying postingDate `2027-03-01`.
 - **submitted.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
 - **submitted.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
+- **posts, though its calendar year is 2029.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
+- **is refused, though its calendar year is 2028.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PaymentPostingDateOutsideFiscalYear, PY-009, carrying postingDate `2028-03-15`.
+- **is refused too.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PaymentPostingDateOutsideFiscalYear, PY-009, carrying postingDate `2029-03-15`.
 - **but not submitted: the fiscal year is judged before the party.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PaymentPostingDateOutsideFiscalYear, PY-009, carrying postingDate `2027-01-04`.
 - **but not submitted: Mara Office Rentals is disabled.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PartyDisabled, PY-010.
 - **now it submits.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.

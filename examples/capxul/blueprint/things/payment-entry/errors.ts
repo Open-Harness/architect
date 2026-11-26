@@ -11,6 +11,7 @@ import { PaymentSide } from "../../values/parties.ts";
 // `validate_mandatory`, which runs after `validate_party_details`).
 // `payment-entry.submit` refuses PaymentPostingDateOutsideFiscalYear (the GL Entry's `validate_and_set_fiscal_year`)
 // before PartyDisabled (the GL Entry's `validate_party`), the order the GL Entry's `validate` runs them in.
+// `payment-entry.cancel` refuses PartyDisabled too: each reversing GL Entry is saved through the same `validate`.
 /** The GL Entry's `validate_account_details`: "Account does not belong to Company", here judged on create. It carries the side. */
 export class PaymentAccountNotInCompany extends Blueprint.error({ side: PaymentSide }, { exit: 41 }) {}
 /** The GL Entry's `validate_account_details`: "is a Group Account and group accounts cannot be used in transactions". */
