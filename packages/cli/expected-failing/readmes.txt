@@ -7,6 +7,7 @@ test/readmes.test.ts > a package whose code is built does not say it is still to
 test/readmes.test.ts > a package whose code is built does not say it is still to arrive > packages/preset/README.md has no "Arrives in layer" placeholder
 test/readmes.test.ts > a package whose code is built does not say it is still to arrive > packages/prove/README.md has no "Arrives in layer" placeholder
 test/readmes.test.ts > the CLI's README says what the CLI does > does not say it has only `model`, or that the list is "so far"
+test/readmes.test.ts > the CLI's README says what the CLI does > links the getting-started page by a link that resolves from the README's own folder
 test/readmes.test.ts > the CLI's README says what the CLI does > names every top-level command `ortho --help` lists, as `ortho <command>`, and every `ortho …` it shows is a real command with its real flags
 test/readmes.test.ts > the CLI's README says what the CLI does > points to --help for each command's flags
 test/readmes.test.ts > the example's README matches its state > plugged-in's README does not say it has empty handlers only
