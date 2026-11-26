@@ -1,0 +1,85 @@
+<title>Manual Chapter Specimen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Barlow+Condensed:wght@500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* One quiet reading column on drafting paper. Prose in a serif; what was recorded sits between two hairlines, unboxed; the film is the only dark thing. */
+:root {
+  --paper: #f5f7fa; --ink: #0c1a2c; --soft: #40516a; --faint: #71829a; --line: #cfd8e5; --mark: #0b63b8; --ok: #0c7a4c; --no: #b3261e;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif; --mono: "JetBrains Mono", Menlo, Consolas, monospace; --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #08111f; --ink: #e9f0fa; --soft: #a9bcd6; --faint: #7d92ae; --line: #25395a; --mark: #62c6ff; --ok: #54d898; --no: #ff8080; color-scheme: dark; } }
+:root[data-theme="dark"] { --paper: #08111f; --ink: #e9f0fa; --soft: #a9bcd6; --faint: #7d92ae; --line: #25395a; --mark: #62c6ff; --ok: #54d898; --no: #ff8080; color-scheme: dark; }
+body { background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 19px; line-height: 1.6; }
+main { max-width: 720px; margin: 0 auto; padding-block: 56px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 22px; }
+main > * { min-width: 0; margin: 0; }
+.block { font-family: var(--mono); font-size: 13px; line-height: 1.9; color: var(--faint); display: grid; grid-template-columns: auto 1fr; gap: 0 18px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.block b { font-weight: 400; color: var(--ink); }
+h1 { font-size: clamp(34px, 6vw, 46px); line-height: 1.1; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; margin-top: 18px; }
+h2 { font-size: 27px; line-height: 1.25; font-weight: 600; text-wrap: balance; margin-top: 30px; }
+.lede { font-size: 22px; line-height: 1.5; color: var(--soft); }
+code { font-family: var(--mono); font-size: 0.8em; }
+figure { margin: 6px 0; } figcaption { font-family: var(--mono); font-size: 12.5px; color: var(--faint); margin-top: 8px; }
+pre { margin: 0; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.85; color: var(--soft); }
+pre b { color: var(--ink); } pre .ok { color: var(--ok); } pre .no { color: var(--no); } pre i { font-style: normal; color: var(--faint); }
+.film { aspect-ratio: 16 / 9; width: 100%; background: #08111f; display: block; }
+.note { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em; font-size: 15px; font-weight: 600; color: var(--mark); margin-top: 40px; padding-top: 16px; border-top: 2px solid var(--ink); }
+a { color: var(--mark); text-underline-offset: 3px; }
+</style>
+<main>
+<p class="note" style="margin-top:0;border:0;padding:0">A specimen, to react to · chapter five, rewritten in the manner of the three posts</p>
+<div class="block"><span>Chapter</span><b>5 of 11 · Build it</b><span>App</span><b>Plugged In</b><span>Recorded</span><b>26 November 2026, on examples/plugged-in</b><span>Film</span><b>2 minutes 25</b></div>
+<h1>Build until green</h1>
+<p class="lede">The journeys are agreed, and every one of them is red. Now an agent has to write the code that turns them green, and you have to believe the result without reading that code.</p>
+<video class="film" controls preload="metadata" playsinline src="build-green-720.mp4"></video>
+
+<h2>Hand over one brief</h2>
+<p>We want the builder to know exactly two things: what it may write, and when it is done. You don't write that task yourself. You ask for it, by the name of one operation.</p>
+<figure><pre><b>$ ortho brief handle.claim</b>
+Write   src/handle/claim.ts, and nothing else.
+<i>…</i>
+Don't touch
+  blueprint/**
+  journeys/**
+  generated/**
+<i>…</i>
+Done when
+  ortho prove --env local passes, with handle.claim's 9 evals <i>…</i>
+  ortho check passes</pre><figcaption>captures/brief.txt · cut where marked</figcaption></figure>
+<p>Hand it over as it is printed. Anything you add in your own words is something the builder can misread.</p>
+
+<h2>Start from the scaffold</h2>
+<p>The builder never starts from an empty file. The framework has already written the frame of the handler, with a blank where the behaviour goes. So the first thing the builder does is run the one journey, and read what fails.</p>
+<figure><pre><b>$ ortho prove --only "claim a handle"</b>
+journey claim a handle <span class="no">✘</span> 4/8 steps
+  <span class="no">✘</span> "aaron claims the free name": the server died: BlankReached: record: the work this step does
+  <span class="no">✘</span> "aaron claims the free name": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)</pre><figcaption>captures/climb-0-prove.txt · 3 of its 92 lines</figcaption></figure>
+<p>Four of eight steps pass before a line is written. Those are the steps that never needed this handler. One failure names the blank the handler reached, and the next names the file it is in. That is where the builder goes.</p>
+
+<h2>Same count, a different failure</h2>
+<p>The builder writes the work: two records, saved together, the handle and its public page. Then it runs the journey again.</p>
+<figure><pre><b>$ ortho prove --only "claim a handle"</b>
+journey claim a handle <span class="no">✘</span> 4/8 steps
+  <span class="no">✘</span> "aaron claims the free name": expected HandleClaimed, journal has nothing
+handle.claim machine path <span class="no">✘</span> claim-a-handle "aaron claims the free name": answered without making its move claim</pre><figcaption>captures/climb-1-prove.txt · 3 of its 91 lines</figcaption></figure>
+<p>The number has not moved, and the builder has. Before, the server died. Now it answered without making its move: the records were saved and the state never changed. Not every rung turns a light green. Every rung changes what fails first.</p>
+
+<h2>Green on one journey is not done</h2>
+<p>One line makes the move, and the journey passes, eight of eight. The last line of that run is still red, and it is right to be. One journey does not reach every operation, so the proof as a whole has gaps. The builder finishes by running all of it.</p>
+<figure><pre><b>$ ortho prove</b>
+journey claim a handle <span class="ok">✔</span> 8/8 steps
+handle.claim 9 evals <span class="ok">✔</span> p50 16ms p95 34ms budget p95 150ms
+prove <span class="ok">✔</span></pre><figcaption>captures/prove.txt · 3 of its 80 lines</figcaption></figure>
+
+<h2>What you read</h2>
+<p>You read none of the handler. You read one line for each journey, and the last line of the full run. When the count is stuck, you read the reasons, because that is where the movement shows. And you ask for the whole run before you believe a report: a builder that says "it passes" from one journey has told you less than it thinks.</p>
+
+<h2>When it goes wrong</h2>
+<p>A builder will sometimes say a journey is wrong. Then it stops, and tells the author. It does not edit the story and it does not work round it. You decide who is right by reading the story, which is the one thing here written for you.</p>
+<p>A handler will sometimes grow a rule: it starts checking something the blueprint never said. That is a finding for review, and the fix is to move the rule into the blueprint, where you can read it.</p>
+
+<h2>How this stands</h2>
+<p>Everything printed above was recorded on Plugged In. The climb is a replay: we put one handler at three points and recorded the real run at each, and no agent was filmed writing it. That a builder may touch one handler and nothing else is how we work in this repository. Nothing in Orthograph enforces it for you yet.</p>
+
+<p class="note">What changed from the pilot's chapter</p>
+<p>The four fixed headings are gone. Their content is all still here, in the order it happens, under headings that say what the section does. Each section opens with what we want, then how, then what was recorded. "How this stands" is a plain paragraph at the end, not a coloured box at the top. Recordings sit between two hairlines with one small caption, and there are no badges, tables or lists. The film is the only dark thing on the page.</p>
+</main>
