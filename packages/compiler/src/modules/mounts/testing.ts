@@ -29,7 +29,7 @@ export const surface = (): OpenSets => {
 };
 
 /** Every feature package the checks install, by its own name (`@fixture/<name>`). */
-export type Name = "ledger" | "payments" | "expenses" | "parties" | "payroll" | "invoicing" | "rogue" | "crm" | "leads" | "projects" | "bookkeeping";
+export type Name = "ledger" | "payments" | "expenses" | "parties" | "payroll" | "invoicing" | "rogue" | "crm" | "leads" | "projects" | "bookkeeping" | "reports" | "audit";
 
 /** What one installed package is: its descriptor, and its blueprint files by path under its blueprint folder. */
 interface Pkg {
@@ -65,13 +65,15 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
   // The crm owns an open set of its own, also exported as `PartyType` and from a file of the same path as the ledger's (`values/ledger.js`):
   // a set is its owner's and its export's, so the two are two sets, and what is added to one is never in the other.
   const CrmPartyType = Blueprint.value(s.open(OWN_CONTACTS));
+  // The crm's set with no member of its own.
+  const Segment = Blueprint.value(s.open([]));
   // The app's own open set: its owner is the app.
   const Channel = Blueprint.value(s.open(OWN_CHANNELS));
   // Payments owns a set of its own: payroll needs payments and may add to it; expenses, its sibling (both need the ledger), may not.
   const PaymentMethod = Blueprint.value(s.open(["Bank Transfer"]));
   // Projects needs the crm and owns a set: the crm is what its owner needs, not something that depends on it, so the crm may not add.
   const ProjectKind = Blueprint.value(s.open(["Internal"]));
-  const ledger: Ledger = { VoucherType, PartyType, AccountType, Voucher, Party, CrmPartyType, Channel, PaymentMethod, ProjectKind };
+  const ledger: Ledger = { VoucherType, PartyType, AccountType, Voucher, Party, CrmPartyType, Segment, Channel, PaymentMethod, ProjectKind };
 
   const GlEntry = Blueprint.thing({
     description: "One line of the general ledger, posted by a voucher.",
@@ -89,6 +91,7 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
   const ledgerFeature = Blueprint.feature({ description: "The books." });
   const feature = (description: string, needs: ReadonlyArray<Feature<any>>) => Blueprint.feature({ description, needs });
   const payments = feature("Payments.", [ledgerFeature]);
+  const payroll = feature("Payroll.", [payments]);
   const crmFeature = Blueprint.feature({ description: "Contacts. Needs nothing, and is not the ledger." });
   const Contact = Blueprint.thing({ description: "Someone the crm keeps.", fields: { id: Blueprint.id("con"), partyType: CrmPartyType }, code: "CO" });
   const projectsFeature = feature("Projects.", [crmFeature]);
@@ -114,7 +117,7 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
     parties: { descriptor: feature("Customers and suppliers.", [ledgerFeature]), files: [file("values/parties.js", adds("parties", (x, l) => ({ parties: x.add(l.PartyType, ["Supplier", "Customer"]) })))] },
     // Payroll needs payments, not the ledger itself: it depends on the ledger through payments.
     payroll: {
-      descriptor: feature("Payroll.", [payments]),
+      descriptor: payroll,
       files: [file("values/payroll.js", adds("payroll", (x, l) => ({ salarySlip: x.add(l.VoucherType, ["Salary Slip"]), employee: x.add(l.PartyType, ["Employee"]) })))],
     },
     invoicing: { descriptor: feature("Invoices.", [ledgerFeature]), files: [file("values/vouchers.js", adds("invoicing", (x, l) => ({ salesInvoice: x.add(l.VoucherType, ["Sales Invoice"]) })))] },
@@ -122,11 +125,15 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
     rogue: { descriptor: Blueprint.feature({ description: "Needs nothing." }), files: [file("values/rogue.js", adds("rogue", (x, l) => ({ rogue: x.add(l.VoucherType, ["Rogue Entry"]) })))] },
     crm: {
       descriptor: crmFeature,
-      files: [file("values/ledger.js", { PartyType: CrmPartyType }), file("things/contact/thing.js", { Contact })],
+      files: [file("values/ledger.js", { PartyType: CrmPartyType, Segment }), file("things/contact/thing.js", { Contact })],
     },
     // Leads needs the crm, not the ledger: it may add to the crm's set, and a refusal check plants it adding to the ledger's.
     leads: { descriptor: feature("Leads.", [crmFeature]), files: [file("values/leads.js", adds("leads", (x, l) => ({ prospect: x.add(l.CrmPartyType, ["Prospect"]) })))] },
     projects: { descriptor: projectsFeature, files: [file("values/projects.js", { ProjectKind, ...adds("projects", () => ({})) }), file("things/project/thing.js", { Project })] },
+    // Reports needs payroll: three hops to the ledger (reports, payroll, payments, ledger).
+    reports: { descriptor: feature("Reports.", [payroll]), files: [file("values/reports.js", adds("reports", () => ({})))] },
+    // Audit needs bookkeeping, whose need on the ledger has a `when`: unpicked, audit doesn't reach the ledger either.
+    audit: { descriptor: feature("Audit.", [bookkeeping]), files: [file("values/audit.js", adds("audit", () => ({})))] },
     bookkeeping: { descriptor: bookkeeping, files: [file("values/bookkeeping.js", adds("bookkeeping", (x, l) => ({ opening: x.add(l.VoucherType, ["Opening Balance"]) })))] },
   };
   // Payments' own set sits beside its additions, in a file of its own.
@@ -153,6 +160,8 @@ export interface Ledger {
   readonly Party: Value;
   /** The crm's own `PartyType`: another owner's set with the same export name. */
   readonly CrmPartyType: Value;
+  /** The crm's set with no member of its own. */
+  readonly Segment: Value;
   /** The app's own open set, declared in the app's `blueprint/values/channels.ts`. */
   readonly Channel: Value;
   /** Payments' own set, in `@fixture/payments/blueprint/values/methods.js`. */
@@ -213,4 +222,4 @@ export const problemsOf = (exit: Exit.Exit<unknown, unknown>): ReadonlyArray<str
 /** The books every positive check mounts: the ledger and four features that add, payroll through payments. */
 export const MOUNTED: AppSpec["mounts"] = { ledger: "ledger", payments: "payments", expenses: "expenses", parties: "parties", payroll: "payroll" };
 /** Every feature package but invoicing, mounted under its own name: what the whole dependency relation is judged on. */
-export const ALL: AppSpec["mounts"] = { ...MOUNTED, rogue: "rogue", crm: "crm", leads: "leads", projects: "projects", bookkeeping: "bookkeeping" };
+export const ALL: AppSpec["mounts"] = { ...MOUNTED, rogue: "rogue", crm: "crm", leads: "leads", projects: "projects", bookkeeping: "bookkeeping", reports: "reports", audit: "audit" };

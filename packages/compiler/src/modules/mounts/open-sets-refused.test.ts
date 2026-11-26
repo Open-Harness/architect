@@ -135,10 +135,15 @@ describe("#1132: what the compiler refuses about open sets", () => {
     const said = await refusedAt(modelExit(b, { mounts: MOUNTED, files: [mine] }), "blueprint/values/contacts.ts");
     expect(said).toContain("@fixture/crm");
     expect(said).toContain("Partner");
+    // And to one with no member of its own.
+    const c = books();
+    const empty = { path: "values/segments.ts", exports: { mine: c.s.add(c.ledger.Segment, ["Retail"]) } };
+    const also = await refusedAt(modelExit(c, { mounts: MOUNTED, files: [empty] }), "blueprint/values/segments.ts");
+    expect(also).toContain("@fixture/crm");
   });
 
   it("refuses an owner's own set with an empty member or a member twice, by a feature or by the app, naming the declaring file", async () => {
-    for (const members of [["Cheque", ""], ["Cheque", "Cheque"]]) {
+    for (const members of [["Cheque", ""], ["", "Cheque"], ["Cheque", "Cheque"], ["Cheque", "Bank", "Cheque"]]) {
       const b = books({}, { payments: (s) => ({ Bad: Blueprint.value(s.open(members)) }) });
       const said = await refusedAt(modelExit(b, { mounts: MOUNTED }), "@fixture/payments/blueprint/values/planted.js");
       expect(said, JSON.stringify(members)).toContain("Bad");
@@ -156,28 +161,33 @@ describe("#1132: what the compiler refuses about open sets", () => {
     const reaches = (from: string, to: string, seen = new Set<string>()): boolean =>
       (needs.get(from) ?? []).some((n) => n === to || (!seen.has(n) && (seen.add(n), reaches(n, to, seen))));
     // The graph has every shape the rule must tell apart: through another feature, an owner that needs a feature, siblings, a `when` not picked.
-    expect([reaches("payroll", "ledger"), reaches("projects", "crm"), reaches("crm", "projects"), reaches("expenses", "payments"), reaches("payments", "expenses"), reaches("bookkeeping", "ledger"), reaches("ledger", "payroll")])
-      .toEqual([true, true, false, false, false, false, false]);
+    expect([
+      reaches("payroll", "ledger"), reaches("reports", "ledger"), reaches("projects", "crm"), reaches("crm", "projects"), reaches("expenses", "payments"),
+      reaches("payments", "expenses"), reaches("bookkeeping", "ledger"), reaches("audit", "bookkeeping"), reaches("audit", "ledger"), reaches("ledger", "payroll"),
+    ]).toEqual([true, true, true, false, false, false, false, true, false, false]);
+    // Each set, its owner (a mount, or the app), and a field that holds it. The app depends on every feature it mounts; no feature depends on the app.
     const sets: ReadonlyArray<readonly [keyof Ledger, string, string, string]> = [
       ["VoucherType", "ledger", "gl-entry", "voucherType"], ["CrmPartyType", "crm", "contact", "partyType"],
-      ["PaymentMethod", "payments", "payment", "method"], ["ProjectKind", "projects", "project", "kind"],
+      ["PaymentMethod", "payments", "payment", "method"], ["ProjectKind", "projects", "project", "kind"], ["Channel", "app", "posting", "channel"],
     ];
+    const ownerNamed = (owner: string) => (p: string) => (owner === "app" ? /(^|[\s"'`(])blueprint\/values\/channels\.ts/.test(p) : p.includes(`@fixture/${owner}`));
     const wrong: Array<string> = [];
-    for (const adder of Object.keys(ALL) as ReadonlyArray<Name>) {
+    for (const adder of [...Object.keys(ALL), "app"] as ReadonlyArray<Name | "app">) {
       for (const [set, owner, thing, field] of sets) {
         const member = `Planted by ${adder}`;
         const plant: Plant = (s, l) => ({ planted: s.add(l[set], [member]) });
-        const b = books(quiet, { [adder]: plant } as Partial<Record<Name, Plant>>);
-        const exit = await modelExit(b, { mounts: ALL });
+        const b = books(quiet, adder === "app" ? {} : ({ [adder]: plant } as Partial<Record<Name, Plant>>));
+        const adderFile = adder === "app" ? "blueprint/values/planted.ts" : `@fixture/${adder}/blueprint/values/planted.js`;
+        const exit = await modelExit(b, { mounts: ALL, files: adder === "app" ? [{ path: "values/planted.ts", exports: plant(b.s, b.ledger) }] : [] });
         const problems = problemsOf(exit);
-        const may = adder === owner || reaches(adder, owner);
+        const may = adder === owner || adder === "app" || (owner !== "app" && reaches(adder, owner));
         const pair = `${adder} adding to ${owner}'s ${set}`;
         if (may) {
           const options = Exit.isSuccess(exit) ? optionsOf(exit.value.things[thing]?.fields[field]) : undefined;
           if (!options?.includes(member)) wrong.push(`${pair} should stand: ${problems.join(" | ") || JSON.stringify(options)}`);
         } else {
-          const named = problems.filter((p) => p.includes(`@fixture/${adder}/blueprint/values/planted.js`) && p.includes(member) && p.includes(`@fixture/${owner}`));
-          if (named.length !== 1 || problems.length !== 1) wrong.push(`${pair} should be refused, once, naming the adder's file, the member and @fixture/${owner}: ${problems.join(" | ") || "nothing refused"}`);
+          const named = problems.filter((p) => p.includes(adderFile) && p.includes(member) && ownerNamed(owner)(p));
+          if (named.length !== 1 || problems.length !== 1) wrong.push(`${pair} should be refused, once, naming the adder's file, the member and the owner: ${problems.join(" | ") || "nothing refused"}`);
         }
       }
     }

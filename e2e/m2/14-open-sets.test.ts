@@ -16,13 +16,13 @@
 //  - the API takes a member of the set, from the owner or a mounted feature, as a value, as a reference's kind and in a list, and refuses
 //    with 400 InvalidPayload: a member of an unmounted feature (plain, as a kind, in a list), a name in no set, a member of another set
 //    (the ledger's other set, or the crm's set of the same name, either way round), a reference of refAny()'s shape, a reference whose id
-//    is empty or a number, a member in another case or padded, and any value of a set with no member;
+//    is empty or a number, a member in another case or padded, a bare member where a list is taken, and any value of a set with no member;
 //  - MCP lists, as each field's own enum (a reference's at its kind, a list's at its items), exactly the union in the model's order, with
-//    nothing beside it that lets other text through; it refuses a call with the unmounted member and one with the crm's member given the
+//    nothing beside it that lets other text through (a list is `type: "array"` with nothing but `items`); it refuses a call with the unmounted member and one with the crm's member given the
 //    ledger's party type;
 //  - the CLI's help names, for each flag, its own set's members in order and no other set's, and the CLI's call is refused with the
 //    unmounted member and takes a mounted feature's;
-//  - the SDK refuses the unmounted member and the other same-name set's member with InvalidPayload before it sends anything, and sends a
+//  - the SDK refuses the unmounted member (plain, as a kind, in a list) and the other same-name set's member with InvalidPayload before it sends anything, and sends a
 //    mounted feature's;
 //  - only the accepted calls wrote a row.
 // Written by the checks author for Goal 16; a builder never edits this file and only removes lines from `expected-failing/14-open-sets.txt`.
@@ -174,6 +174,8 @@ const resolved = (s: unknown, root: unknown): Record<string, unknown> | undefine
  */
 const membersAt = (property: unknown, root: unknown, shape: boolean | "list"): unknown => {
   const outer = resolved(property, root);
+  // A list is an array and nothing else, its every item judged by `items`.
+  if (shape === "list" && (outer?.["type"] !== "array" || ["prefixItems", "additionalItems", "contains", "anyOf", "oneOf", "allOf", "not"].some((k) => outer !== undefined && k in outer))) return `the list is loosened: ${JSON.stringify(outer)}`;
   const at = resolved(shape === "list" ? outer?.["items"] : shape ? (outer?.["properties"] as Record<string, unknown> | undefined)?.["kind"] : property, root);
   const loose = ["anyOf", "oneOf", "allOf", "not", "const"].filter((k) => at !== undefined && k in at);
   return loose.length > 0 ? `loosened by ${loose.join(", ")}: ${JSON.stringify(at)}` : at?.["enum"];
@@ -279,6 +281,7 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           paddedKind: await record(" Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
           // A set with no member takes nothing.
           emptySet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { tag: "Anything" }),
+          listBare: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: "Payment Entry" as never }),
           listUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Sales Invoice"] }),
           noSuchChannel: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { channel: "Fax" }),
         };
@@ -310,19 +313,22 @@ import * as Sdk from "./generated/sdk/src/index.ts";
 const base = { posting: "pst_99", voucher: { kind: "Payment Entry", id: "v_1" }, party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"] };
 const tag = (over: object) => Effect.runPromiseExit(Sdk.posting.record({ ...base, voucherType: "Payment Entry", ...over } as never).pipe(Effect.provide(Sdk.layer("http://127.0.0.1:9", "t"))))
   .then((exit) => Exit.isSuccess(exit) ? "sent and answered" : String((Cause.squash(exit.cause) as { _tag?: unknown })?._tag ?? Cause.pretty(exit.cause)));
-Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" })]).then(([accepted, unmounted, otherSameName]) => console.log(JSON.stringify({ accepted, unmounted, otherSameName })));
+Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" }), tag({ voucher: { kind: "Sales Invoice", id: "v_1" } }), tag({ kinds: ["Sales Invoice"] })])
+  .then(([accepted, unmounted, otherSameName, unmountedKind, unmountedInList]) => console.log(JSON.stringify({ accepted, unmounted, otherSameName, unmountedKind, unmountedInList })));
 `);
     const probe = spawnSync(process.execPath, [join(root, "sdk-probe.ts")], { cwd: root, encoding: "utf8", timeout: 120_000 });
     const sdk = JSON.parse(probe.stdout.trim().split("\n").pop() || "{}") as Record<string, string>;
     expect(sdk["unmounted"], `the SDK refuses Sales Invoice before sending: ${probe.stdout}${probe.stderr}`).toBe("InvalidPayload");
     expect(sdk["otherSameName"], "the SDK refuses the ledger's Customer as the crm's party type").toBe("InvalidPayload");
+    expect(sdk["unmountedKind"], "the SDK refuses Sales Invoice as a reference's kind").toBe("InvalidPayload");
+    expect(sdk["unmountedInList"], "the SDK refuses Sales Invoice in a list").toBe("InvalidPayload");
     expect(sdk["accepted"], "the SDK sends Payment Entry (and finds no server)").not.toBe("InvalidPayload");
     expect(sdk["accepted"]).not.toBe(undefined);
 
     // The API: a member of the set, the owner's or a mounted feature's, is taken; anything else is refused before the handler runs.
     expect(got.api.payment.status, JSON.stringify(got.api.payment.body)).toBe(200);
     expect(got.api.journal.status, JSON.stringify(got.api.journal.body)).toBe(200);
-    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "listUnmounted", "noSuchChannel"] as const) {
+    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "listBare", "listUnmounted", "noSuchChannel"] as const) {
       expect(got.api[key], `${key}: ${JSON.stringify(got.api[key].body)}`).toMatchObject({ status: 400, body: { _tag: "InvalidPayload" } });
     }
 

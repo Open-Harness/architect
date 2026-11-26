@@ -44,7 +44,8 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
    owner's order, then each member a **mounted** feature (or the app) adds, sorted by plain string order (JavaScript's
    default sort, by UTF-16 code unit, never by locale). So renaming a mount moves nothing. A field that holds the set
    inside a list (`Blueprint.list(VoucherType)`, or a list of a reference to one) has the list's model
-   `{ type: "schema", format: "list", item: <the set's or reference's model> }`; a list of anything else keeps the model
+   `{ type: "schema", format: "list", item: <the set's or reference's model> }`, and takes only a list (MCP: `type: "array"`
+   with the members as `items.enum`, and nothing else beside them); a list of anything else keeps the model
    it has (no `item`), so nothing generated today changes. Orthograph has no struct value, so nothing else nests a set. An installed feature that
    isn't mounted is never read: what it would add is absent from the model and from everything generated from it, and a
    wrong addition in it refuses nothing. Because the members are in every field's model, an operation's and a thing's
@@ -87,12 +88,13 @@ that declared it, and a re-export adds nothing; no fixture re-exports a set yet.
 ## Checks
 
 - `packages/compiler/src/modules/mounts/open-sets.test.ts` (11) and `open-sets-refused.test.ts` (16), with the scratch
-  books in `mounts/testing.ts`: the model (calls 1 to 4) and the refusals (call 6), over an in-memory source with eleven
-  installed feature packages and an app that owns a `Channel` set. Among them: a crm with its own `PartyType`, leads
-  (needs only the crm), payments owning `PaymentMethod`, projects (owns `ProjectKind`, needs the crm) and bookkeeping
-  (needs the ledger only when picked to post). One case judges the whole rule of call 2: every mounted feature adds to
-  every feature-owned set, one pair at a time, and each addition stands or is refused as the needs graph that the
-  compiled model reports says.
+  books in `mounts/testing.ts`: the model (calls 1 to 4) and the refusals (call 6), over an in-memory source with
+  thirteen installed feature packages and an app that owns a `Channel` set. Among them: a crm with its own `PartyType`
+  and an empty `Segment`, leads (needs only the crm), payments owning `PaymentMethod`, projects (owns `ProjectKind`,
+  needs the crm), reports (three hops from the ledger), bookkeeping (needs the ledger only when picked to post) and
+  audit (needs bookkeeping). One case judges the whole rule of call 2: every mounted feature, and the app, adds to every
+  set (the app's own `Channel` included), one pair at a time, and each addition stands or is refused, once, as the needs
+  graph that the compiled model reports says.
 - `e2e/m2/14-open-sets.test.ts`: the doors (call 5), in a copy of acme with five installed feature packages, four of
   them mounted (the crm's `PartyType` beside the ledger's), and the app's own `Channel` and `Tag` sets, made with the
   real `ortho generate` and run in a world over local D1, plus the generated SDK on its own. It also sends a list of a
