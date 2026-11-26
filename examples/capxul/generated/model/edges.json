@@ -1,5 +1,60 @@
 [
   {
+    "from": "account.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal.appraisalCycle",
+    "to": "appraisal-cycle.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal.appraisalTemplate",
+    "to": "appraisal-template.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal-cycle.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "appraisal-template.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance-request.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "attendance-request.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
     "from": "bank-account.company",
     "to": "company.id",
     "kind": "refers"
@@ -10,7 +65,27 @@
     "kind": "refers"
   },
   {
+    "from": "bank-transaction.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "bank-transaction.account",
+    "to": "bank-account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "branch.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "bridge-business.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "cost-center.company",
     "to": "company.id",
     "kind": "refers"
   },
@@ -38,6 +113,756 @@
     "from": "employee.designation",
     "to": "designation.id",
     "kind": "refers"
+  },
+  {
+    "from": "employee-feedback-criteria.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-grade.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.appraisal",
+    "to": "appraisal.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.appraisalCycle",
+    "to": "appraisal-cycle.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-performance-feedback.reviewer",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-promotion.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-promotion.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-promotion.currentDesignation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-promotion.newDesignation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-separation.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-separation.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.currentDepartment",
+    "to": "department.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employee-transfer.newDepartment",
+    "to": "department.id",
+    "kind": "refers"
+  },
+  {
+    "from": "employment-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense.expenseClaim",
+    "to": "expense-claim.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense.expenseType",
+    "to": "expense-claim-type.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense-claim.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense-claim.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "expense-claim-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "fiscal-year.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "gl-entry.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "gl-entry.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "gl-entry.costCenter",
+    "to": "cost-center.id",
+    "kind": "refers"
+  },
+  {
+    "from": "goal.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "goal.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "goal.appraisalCycle",
+    "to": "appraisal-cycle.id",
+    "kind": "refers"
+  },
+  {
+    "from": "goal.kra",
+    "to": "kra.id",
+    "kind": "refers"
+  },
+  {
+    "from": "holiday.holidayList",
+    "to": "holiday-list.id",
+    "kind": "refers"
+  },
+  {
+    "from": "holiday-list.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview.jobApplicant",
+    "to": "job-applicant.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview.interviewRound",
+    "to": "interview-round.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-feedback.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-feedback.interview",
+    "to": "interview.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-feedback.interviewer",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "interview-round.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-applicant.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-applicant.jobOpening",
+    "to": "job-opening.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-offer.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-offer.jobApplicant",
+    "to": "job-applicant.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-offer.designation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-opening.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "job-opening.designation",
+    "to": "designation.id",
+    "kind": "refers"
+  },
+  {
+    "from": "journal-entry.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "journal-entry-account.journalEntry",
+    "to": "journal-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "journal-entry-account.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "journal-entry-account.costCenter",
+    "to": "cost-center.id",
+    "kind": "refers"
+  },
+  {
+    "from": "kra.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-allocation.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-allocation.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-allocation.leaveType",
+    "to": "leave-type.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-application.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-application.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-application.leaveType",
+    "to": "leave-type.id",
+    "kind": "refers"
+  },
+  {
+    "from": "leave-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-employee-detail.payrollEntry",
+    "to": "payroll-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-employee-detail.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-entry.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-entry.costCenter",
+    "to": "cost-center.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-entry.payrollPayableAccount",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payroll-period.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-component.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-component.account",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-detail.salaryStructure",
+    "to": "salary-structure.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-detail.salaryComponent",
+    "to": "salary-component.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.payrollEntry",
+    "to": "payroll-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.salaryStructure",
+    "to": "salary-structure.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip.journalEntry",
+    "to": "journal-entry.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip-detail.salarySlip",
+    "to": "salary-slip.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-slip-detail.salaryComponent",
+    "to": "salary-component.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure-assignment.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure-assignment.employee",
+    "to": "employee.id",
+    "kind": "refers"
+  },
+  {
+    "from": "salary-structure-assignment.salaryStructure",
+    "to": "salary-structure.id",
+    "kind": "refers"
+  },
+  {
+    "from": "shift-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "account.balance",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.balance",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "account.create",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.create",
+    "to": "account.AccountCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "account.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "account.get",
+    "to": "account",
+    "kind": "reads"
+  },
+  {
+    "from": "account.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "account.make-ledger",
+    "to": "account",
+    "kind": "acts-on"
+  },
+  {
+    "from": "account.make-ledger",
+    "to": "account.AccountMadeLedger",
+    "kind": "emits"
+  },
+  {
+    "from": "account.make-ledger",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.create",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.create",
+    "to": "appraisal.AppraisalCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.get",
+    "to": "appraisal",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.list",
+    "to": "appraisal",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.rate",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.rate",
+    "to": "appraisal.AppraisalRated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.rate",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.self-rate",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.self-rate",
+    "to": "appraisal.AppraisalSelfRated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.self-rate",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal.submit",
+    "to": "appraisal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal.submit",
+    "to": "appraisal.AppraisalSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.complete",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.complete",
+    "to": "appraisal-cycle.AppraisalCycleCompleted",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.complete",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.create",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.create",
+    "to": "appraisal-cycle.AppraisalCycleCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.get",
+    "to": "appraisal-cycle",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal-cycle.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.reopen",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.reopen",
+    "to": "appraisal-cycle.AppraisalCycleReopened",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.reopen",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-cycle.start",
+    "to": "appraisal-cycle",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-cycle.start",
+    "to": "appraisal-cycle.AppraisalCycleStarted",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-cycle.start",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-template.create",
+    "to": "appraisal-template",
+    "kind": "acts-on"
+  },
+  {
+    "from": "appraisal-template.create",
+    "to": "appraisal-template.AppraisalTemplateCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "appraisal-template.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "appraisal-template.get",
+    "to": "appraisal-template",
+    "kind": "reads"
+  },
+  {
+    "from": "appraisal-template.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.get",
+    "to": "attendance",
+    "kind": "reads"
+  },
+  {
+    "from": "attendance.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.list",
+    "to": "attendance",
+    "kind": "reads"
+  },
+  {
+    "from": "attendance.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance.mark",
+    "to": "attendance",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance.mark",
+    "to": "attendance.AttendanceMarked",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance.mark",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.approve",
+    "to": "attendance-request",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance-request.approve",
+    "to": "attendance-request.AttendanceRequestApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance-request.approve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "attendance-request",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "attendance-request.AttendanceRequested",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.get",
+    "to": "attendance-request",
+    "kind": "reads"
+  },
+  {
+    "from": "attendance-request.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "attendance-request.reject",
+    "to": "attendance-request",
+    "kind": "acts-on"
+  },
+  {
+    "from": "attendance-request.reject",
+    "to": "attendance-request.AttendanceRequestRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "attendance-request.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
   },
   {
     "from": "bank-account.close",
@@ -76,6 +901,96 @@
   },
   {
     "from": "bank-account.open",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.fail",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.fail",
+    "to": "bank-transaction.TransferFailed",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.get",
+    "to": "bank-transaction",
+    "kind": "reads"
+  },
+  {
+    "from": "bank-transaction.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.land",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.land",
+    "to": "bank-transaction.DepositLanded",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.list",
+    "to": "bank-transaction",
+    "kind": "reads"
+  },
+  {
+    "from": "bank-transaction.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "bank-transaction.TransferSent",
+    "kind": "emits"
+  },
+  {
+    "from": "bank-transaction.send",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "bank-transaction.settle",
+    "to": "bank-transaction",
+    "kind": "acts-on"
+  },
+  {
+    "from": "bank-transaction.settle",
+    "to": "bank-transaction.TransferSettled",
+    "kind": "emits"
+  },
+  {
+    "from": "branch.create",
+    "to": "branch",
+    "kind": "acts-on"
+  },
+  {
+    "from": "branch.create",
+    "to": "branch.BranchCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "branch.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "branch.get",
+    "to": "branch",
+    "kind": "reads"
+  },
+  {
+    "from": "branch.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
@@ -185,6 +1100,31 @@
     "kind": "allowed-by"
   },
   {
+    "from": "cost-center.create",
+    "to": "cost-center",
+    "kind": "acts-on"
+  },
+  {
+    "from": "cost-center.create",
+    "to": "cost-center.CostCenterCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "cost-center.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "cost-center.get",
+    "to": "cost-center",
+    "kind": "reads"
+  },
+  {
+    "from": "cost-center.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "department.create",
     "to": "department",
     "kind": "acts-on"
@@ -276,6 +1216,1546 @@
   },
   {
     "from": "employee.relieve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-feedback-criteria.create",
+    "to": "employee-feedback-criteria",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-feedback-criteria.create",
+    "to": "employee-feedback-criteria.FeedbackCriteriaCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-feedback-criteria.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-feedback-criteria.get",
+    "to": "employee-feedback-criteria",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-feedback-criteria.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-grade.create",
+    "to": "employee-grade",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-grade.create",
+    "to": "employee-grade.EmployeeGradeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-grade.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-grade.get",
+    "to": "employee-grade",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-grade.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.create",
+    "to": "employee-performance-feedback",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-performance-feedback.create",
+    "to": "employee-performance-feedback.PerformanceFeedbackDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-performance-feedback.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.get",
+    "to": "employee-performance-feedback",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-performance-feedback.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-performance-feedback.submit",
+    "to": "employee-performance-feedback",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-performance-feedback.submit",
+    "to": "employee-performance-feedback.PerformanceFeedbackSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-performance-feedback.submit",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.cancel",
+    "to": "employee-promotion",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-promotion.cancel",
+    "to": "employee-promotion.EmployeePromotionCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-promotion.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.create",
+    "to": "employee-promotion",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-promotion.create",
+    "to": "employee-promotion.EmployeePromotionDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-promotion.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.get",
+    "to": "employee-promotion",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-promotion.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-promotion.submit",
+    "to": "employee-promotion",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-promotion.submit",
+    "to": "employee-promotion.EmployeePromoted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-promotion.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.begin",
+    "to": "employee-separation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-separation.begin",
+    "to": "employee-separation.EmployeeSeparationBegun",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-separation.begin",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.complete",
+    "to": "employee-separation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-separation.complete",
+    "to": "employee-separation.EmployeeSeparationCompleted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-separation.complete",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.create",
+    "to": "employee-separation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-separation.create",
+    "to": "employee-separation.EmployeeSeparationStarted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-separation.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-separation.get",
+    "to": "employee-separation",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-separation.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.cancel",
+    "to": "employee-transfer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-transfer.cancel",
+    "to": "employee-transfer.EmployeeTransferCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-transfer.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.create",
+    "to": "employee-transfer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-transfer.create",
+    "to": "employee-transfer.EmployeeTransferDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-transfer.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.get",
+    "to": "employee-transfer",
+    "kind": "reads"
+  },
+  {
+    "from": "employee-transfer.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employee-transfer.submit",
+    "to": "employee-transfer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employee-transfer.submit",
+    "to": "employee-transfer.EmployeeTransferred",
+    "kind": "emits"
+  },
+  {
+    "from": "employee-transfer.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employment-type.create",
+    "to": "employment-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "employment-type.create",
+    "to": "employment-type.EmploymentTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "employment-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "employment-type.get",
+    "to": "employment-type",
+    "kind": "reads"
+  },
+  {
+    "from": "employment-type.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense.add",
+    "to": "expense",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense.add",
+    "to": "expense.ExpenseAdded",
+    "kind": "emits"
+  },
+  {
+    "from": "expense.add",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense.get",
+    "to": "expense",
+    "kind": "reads"
+  },
+  {
+    "from": "expense.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.approve",
+    "to": "expense-claim",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim.approve",
+    "to": "expense-claim.ExpenseClaimApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim.approve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "expense-claim",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "expense-claim.ExpenseClaimCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.get",
+    "to": "expense-claim",
+    "kind": "reads"
+  },
+  {
+    "from": "expense-claim.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim.reject",
+    "to": "expense-claim",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim.reject",
+    "to": "expense-claim.ExpenseClaimRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim-type.create",
+    "to": "expense-claim-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "expense-claim-type.create",
+    "to": "expense-claim-type.ExpenseClaimTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "expense-claim-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "expense-claim-type.get",
+    "to": "expense-claim-type",
+    "kind": "reads"
+  },
+  {
+    "from": "expense-claim-type.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "fiscal-year.create",
+    "to": "fiscal-year",
+    "kind": "acts-on"
+  },
+  {
+    "from": "fiscal-year.create",
+    "to": "fiscal-year.FiscalYearCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "fiscal-year.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "fiscal-year.get",
+    "to": "fiscal-year",
+    "kind": "reads"
+  },
+  {
+    "from": "fiscal-year.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "gl-entry.list",
+    "to": "gl-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "gl-entry.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.archive",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.archive",
+    "to": "goal.GoalArchived",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.archive",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.archive",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.close",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.close",
+    "to": "goal.GoalClosed",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.close",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.close",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.complete",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.complete",
+    "to": "goal.GoalCompleted",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.complete",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.complete",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.create",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.create",
+    "to": "goal.GoalCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.get",
+    "to": "goal",
+    "kind": "reads"
+  },
+  {
+    "from": "goal.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.list",
+    "to": "goal",
+    "kind": "reads"
+  },
+  {
+    "from": "goal.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "goal.GoalReopened",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.reopen",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "goal.GoalRolledUp",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.roll-up",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "goal.GoalUnarchived",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.unarchive",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.update-progress",
+    "to": "goal",
+    "kind": "acts-on"
+  },
+  {
+    "from": "goal.update-progress",
+    "to": "goal.GoalProgressUpdated",
+    "kind": "emits"
+  },
+  {
+    "from": "goal.update-progress",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "goal.update-progress",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday.add",
+    "to": "holiday",
+    "kind": "acts-on"
+  },
+  {
+    "from": "holiday.add",
+    "to": "holiday.HolidayAdded",
+    "kind": "emits"
+  },
+  {
+    "from": "holiday.add",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday.get",
+    "to": "holiday",
+    "kind": "reads"
+  },
+  {
+    "from": "holiday.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday-list.add-weekly-off",
+    "to": "holiday-list",
+    "kind": "acts-on"
+  },
+  {
+    "from": "holiday-list.add-weekly-off",
+    "to": "holiday-list.WeeklyOffAdded",
+    "kind": "emits"
+  },
+  {
+    "from": "holiday-list.add-weekly-off",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday-list.create",
+    "to": "holiday-list",
+    "kind": "acts-on"
+  },
+  {
+    "from": "holiday-list.create",
+    "to": "holiday-list.HolidayListCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "holiday-list.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "holiday-list.get",
+    "to": "holiday-list",
+    "kind": "reads"
+  },
+  {
+    "from": "holiday-list.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.clear",
+    "to": "interview",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview.clear",
+    "to": "interview.InterviewCleared",
+    "kind": "emits"
+  },
+  {
+    "from": "interview.clear",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.create",
+    "to": "interview",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview.create",
+    "to": "interview.InterviewScheduled",
+    "kind": "emits"
+  },
+  {
+    "from": "interview.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.get",
+    "to": "interview",
+    "kind": "reads"
+  },
+  {
+    "from": "interview.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview.reject",
+    "to": "interview",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview.reject",
+    "to": "interview.InterviewRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "interview.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-feedback.get",
+    "to": "interview-feedback",
+    "kind": "reads"
+  },
+  {
+    "from": "interview-feedback.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-feedback.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-feedback.give",
+    "to": "interview-feedback",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview-feedback.give",
+    "to": "interview-feedback.InterviewFeedbackGiven",
+    "kind": "emits"
+  },
+  {
+    "from": "interview-feedback.give",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-round.create",
+    "to": "interview-round",
+    "kind": "acts-on"
+  },
+  {
+    "from": "interview-round.create",
+    "to": "interview-round.InterviewRoundCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "interview-round.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "interview-round.get",
+    "to": "interview-round",
+    "kind": "reads"
+  },
+  {
+    "from": "interview-round.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.accept",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.accept",
+    "to": "job-applicant.JobApplicantAccepted",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.accept",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.create",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.create",
+    "to": "job-applicant.JobApplicantCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.get",
+    "to": "job-applicant",
+    "kind": "reads"
+  },
+  {
+    "from": "job-applicant.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.hold",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.hold",
+    "to": "job-applicant.JobApplicantHeld",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.hold",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-applicant.reject",
+    "to": "job-applicant",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-applicant.reject",
+    "to": "job-applicant.JobApplicantRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "job-applicant.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.accept",
+    "to": "job-offer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-offer.accept",
+    "to": "job-offer.JobOfferAccepted",
+    "kind": "emits"
+  },
+  {
+    "from": "job-offer.accept",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.create",
+    "to": "job-offer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-offer.create",
+    "to": "job-offer.JobOfferMade",
+    "kind": "emits"
+  },
+  {
+    "from": "job-offer.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.get",
+    "to": "job-offer",
+    "kind": "reads"
+  },
+  {
+    "from": "job-offer.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-offer.reject",
+    "to": "job-offer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-offer.reject",
+    "to": "job-offer.JobOfferRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "job-offer.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-opening.close",
+    "to": "job-opening",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-opening.close",
+    "to": "job-opening.JobOpeningClosed",
+    "kind": "emits"
+  },
+  {
+    "from": "job-opening.close",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-opening.create",
+    "to": "job-opening",
+    "kind": "acts-on"
+  },
+  {
+    "from": "job-opening.create",
+    "to": "job-opening.JobOpeningCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "job-opening.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "job-opening.get",
+    "to": "job-opening",
+    "kind": "reads"
+  },
+  {
+    "from": "job-opening.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.cancel",
+    "to": "journal-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "journal-entry.cancel",
+    "to": "journal-entry.JournalEntryCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "journal-entry.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.create",
+    "to": "journal-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "journal-entry.create",
+    "to": "journal-entry.JournalEntryDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "journal-entry.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.get",
+    "to": "journal-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "journal-entry.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry.submit",
+    "to": "journal-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "journal-entry.submit",
+    "to": "journal-entry.JournalEntrySubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "journal-entry.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "journal-entry-account.list",
+    "to": "journal-entry-account",
+    "kind": "reads"
+  },
+  {
+    "from": "journal-entry-account.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "kra.create",
+    "to": "kra",
+    "kind": "acts-on"
+  },
+  {
+    "from": "kra.create",
+    "to": "kra.KraCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "kra.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "kra.get",
+    "to": "kra",
+    "kind": "reads"
+  },
+  {
+    "from": "kra.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.create",
+    "to": "leave-allocation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-allocation.create",
+    "to": "leave-allocation.LeaveAllocationCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-allocation.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.get",
+    "to": "leave-allocation",
+    "kind": "reads"
+  },
+  {
+    "from": "leave-allocation.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-allocation.submit",
+    "to": "leave-allocation",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-allocation.submit",
+    "to": "leave-allocation.LeaveAllocationSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-allocation.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.approve",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.approve",
+    "to": "leave-application.LeaveApplicationApproved",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.approve",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.cancel",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.cancel",
+    "to": "leave-application.LeaveApplicationCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "leave-application.LeaveApplied",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.get",
+    "to": "leave-application",
+    "kind": "reads"
+  },
+  {
+    "from": "leave-application.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-application.reject",
+    "to": "leave-application",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-application.reject",
+    "to": "leave-application.LeaveApplicationRejected",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-application.reject",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-type.create",
+    "to": "leave-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "leave-type.create",
+    "to": "leave-type.LeaveTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "leave-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "leave-type.get",
+    "to": "leave-type",
+    "kind": "reads"
+  },
+  {
+    "from": "leave-type.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-employee-detail.list",
+    "to": "payroll-employee-detail",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-employee-detail.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.create",
+    "to": "payroll-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-entry.create",
+    "to": "payroll-entry.PayrollEntryDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-entry.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.get",
+    "to": "payroll-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-entry.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.list",
+    "to": "payroll-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-entry.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.submit",
+    "to": "payroll-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-entry.submit",
+    "to": "payroll-entry.PayrollEntrySubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-entry.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-entry.submit-slips",
+    "to": "payroll-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-entry.submit-slips",
+    "to": "payroll-entry.SalarySlipsSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-entry.submit-slips",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-period.create",
+    "to": "payroll-period",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payroll-period.create",
+    "to": "payroll-period.PayrollPeriodCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "payroll-period.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payroll-period.get",
+    "to": "payroll-period",
+    "kind": "reads"
+  },
+  {
+    "from": "payroll-period.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-component.create",
+    "to": "salary-component",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-component.create",
+    "to": "salary-component.SalaryComponentCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-component.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-component.get",
+    "to": "salary-component",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-component.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-detail.list",
+    "to": "salary-detail",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-detail.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.get",
+    "to": "salary-slip",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-slip.get",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.list",
+    "to": "salary-slip",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-slip.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip-detail.list",
+    "to": "salary-slip-detail",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-slip-detail.list",
+    "to": "employee.self",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-slip-detail.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.cancel",
+    "to": "salary-structure",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure.cancel",
+    "to": "salary-structure.SalaryStructureCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.create",
+    "to": "salary-structure",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure.create",
+    "to": "salary-structure.SalaryStructureDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.get",
+    "to": "salary-structure",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-structure.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure.submit",
+    "to": "salary-structure",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure.submit",
+    "to": "salary-structure.SalaryStructureSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.cancel",
+    "to": "salary-structure-assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure-assignment.cancel",
+    "to": "salary-structure-assignment.SalaryStructureAssignmentCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure-assignment.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.create",
+    "to": "salary-structure-assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure-assignment.create",
+    "to": "salary-structure-assignment.SalaryStructureAssigned",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure-assignment.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.get",
+    "to": "salary-structure-assignment",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-structure-assignment.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.list",
+    "to": "salary-structure-assignment",
+    "kind": "reads"
+  },
+  {
+    "from": "salary-structure-assignment.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "salary-structure-assignment.submit",
+    "to": "salary-structure-assignment",
+    "kind": "acts-on"
+  },
+  {
+    "from": "salary-structure-assignment.submit",
+    "to": "salary-structure-assignment.SalaryStructureAssignmentSubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "salary-structure-assignment.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "shift-type.create",
+    "to": "shift-type",
+    "kind": "acts-on"
+  },
+  {
+    "from": "shift-type.create",
+    "to": "shift-type.ShiftTypeCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "shift-type.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "shift-type.get",
+    "to": "shift-type",
+    "kind": "reads"
+  },
+  {
+    "from": "shift-type.get",
     "to": "company.owner",
     "kind": "allowed-by"
   }

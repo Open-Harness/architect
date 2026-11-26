@@ -1,7 +1,8 @@
 // A secret's value on the command line is seen by `ps` and kept in shell history, so `secrets set` takes none: the arguments
 // of `ortho secrets set` are the name, `--env` and `--root`, and anything else is refused here, before the parser can
-// quote it back in an error message.
+// quote it back in an error message. `--help` and `-h` take no value and print the usage, so they pass.
 const OWN = new Set(["--env", "--root"]);
+const HELP = new Set(["--help", "-h"]);
 
 /** Whether `args` (everything after `ortho`) is a `secrets set` with something on its command line besides NAME, --env and --root. */
 export const carriesValue = (args: ReadonlyArray<string>): boolean => {
@@ -12,7 +13,7 @@ export const carriesValue = (args: ReadonlyArray<string>): boolean => {
   for (let i = 0; i < rest.length; i++) {
     const arg = rest[i]!;
     if (OWN.has(arg)) { i++; continue; }
-    if (arg.startsWith("--env=") || arg.startsWith("--root=")) continue;
+    if (HELP.has(arg) || arg.startsWith("--env=") || arg.startsWith("--root=")) continue;
     if (arg.startsWith("-")) return true;
     positionals++;
   }

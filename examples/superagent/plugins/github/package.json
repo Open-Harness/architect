@@ -1,0 +1,27 @@
+{
+  "name": "@orthograph/github",
+  "version": "0.0.0",
+  "private": true,
+  "description": "GitHub v3 REST API 1.1.4, as an Orthograph adapter, generated from its published description.",
+  "type": "module",
+  "orthograph": {
+    "kind": "adapter",
+    "blueprint": "blueprint",
+    "standIn": "src/stand-in/main.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./blueprint/*.js": "./blueprint/*.ts"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "orthograph": "workspace:*"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin",
+      "env:runtime"
+    ]
+  }
+}

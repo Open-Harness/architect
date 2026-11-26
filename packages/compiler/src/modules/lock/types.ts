@@ -3,12 +3,19 @@
 import { Data, type Effect } from "effect";
 
 /** A field of a refusal, as the lock writes a value: the kind and what the kind needs, nothing else. */
-export type LockValue =
+export type LockValue = LockKind & {
+  /** A field that may be left out; absent for a required one. */
+  readonly optional?: true;
+};
+
+type LockKind =
   | { readonly value: "uint"; readonly bits: number }
   | { readonly value: "id"; readonly prefix: string }
   | { readonly value: "text"; readonly max: number }
   | { readonly value: "account" }
   | { readonly value: "instant" }
+  | { readonly value: "day" }
+  | { readonly value: "decimal"; readonly places: number }
   | { readonly value: "schema" }
   | { readonly value: "money"; readonly bits: number; readonly signed: boolean; readonly asset: { readonly token: string } | { readonly currency: string } | { readonly field: string } };
 

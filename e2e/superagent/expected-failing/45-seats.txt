@@ -1,0 +1,7 @@
+# Slice 8's check (GOAL17-check-harness), red until slice 9 builds the agents, the sandbox, slots, pause and the harness's instruments; the surface (a builder's first pull request) comes before it.
+superagent/45-seats.test.ts > the seats > the journey "a full pool keeps its slot for a person" passes whole
+superagent/45-seats.test.ts > the seats > the journey "a handed-off ticket does not get a seat back" passes whole
+superagent/45-seats.test.ts > the seats > the journey "a message routed as a turn ends gets a new seat" passes whole
+superagent/45-seats.test.ts > the seats > the journey "a person's message after a CI result promotes the pending Assignment" passes whole
+superagent/45-seats.test.ts > the seats > the journey "a stopped ticket does not get a seat back" passes whole
+superagent/45-seats.test.ts > the seats > the journey "promoted is skipped when the reason is already a person" passes whole

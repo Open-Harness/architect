@@ -24,7 +24,7 @@ HAN-10-baselines and golden pull requests each at least once, almost always in t
    `e2e/ratchet/check.ts` reads every `*.txt` in the folder, errors on a key filed under another check's name, and still fails on any failure
    not listed and prints the newly passing ones.
 2. **No committed totals.** The totals block leaves `e2e/m1/README.md`. `nx run e2e:totals` prints the table to stdout, and CI appends it to
-   the `e2e-m1` job's step summary. `e2e:lint` no longer runs `totals.mjs --check`, since there is no block to compare.
+   the `e2e-m1` job's step summary (_Superseded by CI-m1-balance, 26 November 2026: the `e2e-totals` job's_). `e2e:lint` no longer runs `totals.mjs --check`, since there is no block to compare.
 3. **The builder's rule, kept.** A `-build` branch may only shrink the list: `tools/ci/builder-paths.sh` lets it delete a line from a file under
    `e2e/m1/expected-failing/` or delete a file, and refuses an added line or an added file. Its README exception for totals blocks is gone,
    with its cases in `tools/ci/ci.test.sh`.

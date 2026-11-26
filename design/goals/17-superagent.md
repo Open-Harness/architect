@@ -2,14 +2,14 @@
 goal: 17
 title: the superagent, an always-on agent for any job, built on Orthograph
 milestone: "Goal 17: the superagent"
-release: beta           # K42: the beta is every framework piece the superagent proves
+release: null           # parked by K44
 branch: goal/superagent
-base: goal/stage-1
-status: ready          # ready | running | landing | done | parked
+base: main
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | amp | codex | opencode, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
+  model: claude-opus-5-5  # the model id it runs on
+  since: 2026-11-22     # the date it started
 done_check: nx run e2e:superagent
 owns:
   - examples/superagent/
@@ -32,8 +32,13 @@ slices:
   - "12 · The pages, and the coding agent end to end (after 9, 11)"
   - "13 · The triage agent, made from data (after 12)"
   - "14 · Extract the plugins, and hand the branch over (after 13)"
+  - "15 · The launch: real sign-in, teams, a live deploy, a sandbox and a model off the Mac (after 14)"
 ---
 # Goal 17: the superagent
+
+> **Parked by K44** (25 November 2026, `design/decisions/K44-two-builds.md`). Two things are built now, the Orthograph alpha
+> (by Goal 18) and Capxul. This goal stops where it stands: its open pull requests stay open as they are, nobody merges
+> them, and its claims on the board are released. The notes below are K42's and stand for when it resumes.
 
 > **An app goal under K42, and the first** (23 November 2026, `design/decisions/K42-goals-are-agents.md`). It goes
 > before Capxul, because once it works its coding agent helps build Capxul. It takes most framework pieces the two
@@ -44,7 +49,7 @@ slices:
 > with a public address for webhooks, and a sandbox and a model endpoint off Aaron's Mac. Where this brief and K42
 > disagree, K42 wins.
 
-Branch `goal/superagent`, cut from `goal/stage-1`: an integration branch, where the app and the framework fixes it
+Branch `goal/superagent`, cut from `goal/stage-1` (retired by #707; its base is now `main`): an integration branch, where the app and the framework fixes it
 needs are built together and handed back whole. Written 22 November 2026 by a 📐 designer thread with Aaron, from
 DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`), Pi Durable 1.5.0, the calls in
 [`K39-superagent.md`](../decisions/K39-superagent.md) and the framework fixes in
@@ -72,13 +77,13 @@ DeepSeek's `dsh-superagent-prototype` (its `README.md` and `docs/000` to `008`),
 - **How it is built:** first the framework pieces it needs, then its blueprint (the things, events and operations, as
   any app's first stage is), then the agents, then the connections, then the pages. Each piece is written in the app
   as a plugin, and moved into Orthograph's packages once it works.
-- **It isn't:** a hosted service, or anything in the cloud yet: it runs on your own machine first. And it isn't a
-  first cut of the prototype: the whole spec is translated.
-- **Done when:** its tests pass on stand-ins, with no keys: the coding agent from a GitHub or Slack mention to a merged
+- **It isn't:** a first cut of the prototype: the whole spec is translated. Through slice 14 it runs on your own
+  machine, on stand-ins; slice 15, the launch (K42, section 6), takes it live as a hosted service.
+- **Done when** (slices 1 to 14; slice 15 has its own, in its row of the slice table): its tests pass on stand-ins, with no keys: the coding agent from a GitHub or Slack mention to a merged
   pull request, and the triage agent, proposed by the coding agent's main agent and approved by a person, with no new
   code, from a PostHog error to a pull request and a Slack summary.
 - **Waits on:** nothing. K40, the framework fixes' design, is decided (#529). Where it needs a piece another goal
-  hasn't landed yet, it builds that piece here, to that goal's design, and the conductor merges it back.
+  hasn't landed in `main` yet, it builds that piece here, to that goal's design, and the lander (Goal 19) brings it into `main` with the green slice.
 - **Words used:**
   - a superagent: one always-on agent, stored as data;
   - a connection: one outside service it is plugged into, which brings events in and gives it tools;
@@ -115,7 +120,7 @@ lanes run side by side and each moves out whole in slice 14.
 | Piece | Becomes | Kind | What it brings |
 |---|---|---|---|
 | Superagent | `@orthograph/superagent` | feature | the Superagent thing and its machine, making one, Proposal, the health read, and the two kinds of agent (main, executor) |
-| Intake | `@orthograph/intake` | feature | Source, Account, Trigger, Thread, Correlation, Eval, Decision, Policy, the gate, and `Source.from`, the mapping a connection adds to its adapter |
+| Intake | `@orthograph/intake` | feature | Source, Account, Trigger, Thread, Correlation, Eval, Decision, Policy, the gate, and `Source.from`, the mapping a connection adds to its adapter, with `Source.timer` (GOAL17-source-from) |
 | Tickets | `@orthograph/tickets` | feature | Mandate, Ticket, Subscription, Assignment, Input, Report, Attention, Outgoing message, and the ticket stage read |
 | Prompts | `@orthograph/prompts` | feature | PromptSet: the team's prompt sections, skills and overrides, with versions |
 | Sandbox | `@orthograph/sandbox` | adapter | Pi's `ExecutionEnv` over a socket, a bridge on the Mac as its stand-in (K40 fix 4); E2B later |
@@ -123,7 +128,7 @@ lanes run side by side and each moves out whole in slice 14.
 | Slack | `@orthograph/slack` | adapter, generated | from Slack's Web API description, the few calls used checked by hand |
 | PostHog | `@orthograph/posthog` | adapter, generated | from PostHog's OpenAPI schema, its alert webhook's payload schema written once |
 | Webhook | `@orthograph/webhook` | adapter | a signed endpoint and a payload schema, for a service with no spec |
-| The app | `examples/superagent` | example | mounts them all, plus `@orthograph/agents` and `@orthograph/openai` (for DeepSeek); Settings, the pages, the coding agent |
+| The app | `examples/superagent` | example | mounts them all, plus `@orthograph/agents` and `@orthograph/openai` (mounted as `models`, pointed at VibeProxy, GOAL17-model-endpoint); Settings, the pages, the coding agent |
 
 Each plugin knows nothing of the others' users: intake serves any source, the sandbox serves any agent and is what
 M4.18's workspace opens, GitHub serves M5.14 and the factory. That is how the work flows back into Orthograph.
@@ -131,31 +136,33 @@ M4.18's workspace opens, GitHub serves M5.14 and the factory. That is how the wo
 ## The folder structure
 
 `new` is created by this goal; `fix` is a framework change made on this branch to K40's or this goal's design and
-merged back by the conductor; nothing else is touched.
+brought into `main` by the lander (Goal 19), as K42 says; nothing else is touched.
 
 ```text
 examples/superagent/                          new · the app
   blueprint/
-    adapters/{github,slack,posthog,webhook,deepseek,sandbox}.ts   mounts: what this app includes of each
-    features/{superagent,intake,tickets,prompts,agents}.ts
+    adapters/{github,slack,posthog,webhook,models,sandbox}.ts   mounts: what this app includes of each
+    features/{superagent,intake,tickets,prompts,agents,seats}.ts   seats: `fill`, `reap` and the seat sweep, where superagent and tickets meet
     agents/coding.ts                          the coding agent, declared (Superagent.declare)
-    things/settings/{thing,machine}.ts        verbs/{save,pause}.ts
+    things/settings/{thing,machine}.ts        verbs/save.ts
     app/pages/{agents,overview,source,trigger,eval,execution,settings}.ts
     environments/{local,test}.ts
     starting-worlds/{an-issue-mentions-the-agent,a-ticket-waits-for-review,a-posthog-error-arrives}.ts
   plugins/
     superagent/                               becomes @orthograph/superagent
-      blueprint/things/superagent/{thing,machine,events}.ts   verbs/{create,update,go-live,pause,resume,retire}.ts
+      blueprint/things/superagent/{thing,machine,events,holds}.ts   verbs/{create,update,go-live,pause,resume,retire}.ts
+      src/modules/pause/{README.md,types.ts,service.ts,internal/,*.test.ts}
       blueprint/things/proposal/{thing,machine}.ts   verbs/{approve,reject}.ts
       blueprint/agents/{main,executor}.ts  agents/{main,executor}.md
     intake/                                   becomes @orthograph/intake
       blueprint/things/{source,account,trigger,thread,correlation,eval,decision,policy}/…
-      sources/{github,slack,posthog,webhook,timer}.ts         each a Source.from mapping
-      src/modules/{gate,source}/{README.md,types.ts,service.ts,internal/,*.test.ts}
+      blueprint/sources/{github,slack,posthog,webhook,timer}.ts   each a Source.from mapping (GOAL17-source-from)
+      src/modules/{gate,source,evals}/{README.md,types.ts,service.ts,internal/,*.test.ts}
       journeys/
     tickets/                                  becomes @orthograph/tickets
       blueprint/things/{mandate,ticket,subscription,assignment,input,report,attention,outgoing-message}/…
-      blueprint/things/ticket/verbs/stage.ts  the stage table, a derived read
+      blueprint/things/ticket/derive.ts       the stage table, once; verbs/{stage,waiting}.ts its two reads (GOAL17-derived-reads)
+      src/modules/{stage,slots}/{README.md,types.ts,service.ts,internal/,*.test.ts}
       journeys/
     prompts/                                  becomes @orthograph/prompts
       blueprint/things/prompt-set/{thing,machine}.ts  verbs/{save,preview,history,compose}.ts
@@ -164,6 +171,8 @@ examples/superagent/                          new · the app
     webhook/                                  becomes @orthograph/webhook
   src/…                                       handlers the plugins leave blank
 packages/sandbox/                             new · @orthograph/sandbox, built here from the start (K40 fix 4)
+  src/adapter.ts  src/index.ts  src/main.ts   its descriptor, its root export and its runtime entry (not a blueprint/adapter.ts: it is a package from the start)
+packages/stand-kit/  packages/stand-in-model/ new · the stand-ins' shared control routes (Goal 17's); the scripted model, built here to Goal 10's design (GOAL17-check-harness)
 e2e/superagent/                               new · the goal check, nx run e2e:superagent
 packages/cli/  packages/generators/           fix · `ortho new adapter --from-openapi` and its conformance harness (M5.07)
 packages/orthograph/  packages/compiler/      fix · the outside account and `actor:`, versions, `agent:` (K40 1–3)
@@ -176,7 +185,7 @@ Root files a new plugin needs (`pnpm-workspace.yaml`, `tsconfig` references, Nx 
 
 ## The blueprint, as a developer writes it
 
-Proposed code. What exists on `goal/stage-1` today: `Blueprint.thing`, `machine`, `operation`, `event`, `error`,
+Proposed code. What exists on `main` today: `Blueprint.thing`, `machine`, `operation`, `event`, `error`,
 `use`, `step.database`, `step.call`, `id`, `described`, a role's `{ rule }`, and an adapter with calls out
 (`Blueprint.adapter({ calls, standIn: Stand.process(…) })`, `packages/compiler/src/modules/mounts/mounts.test.ts:93-95`).
 The rest is designed by its owner; where the owner hasn't built it when a slice needs it, the slice builds it here:
@@ -187,7 +196,7 @@ The rest is designed by its owner; where the owner hasn't built it when a slice 
 | `Blueprint.role(T, { service })`, `Blueprint.system`, `Via.*` | Goal 3 (M2.03, `M2-auth.md`) |
 | `ortho new adapter --from-openapi`, the conformance harness | `design/history/retired-2026-11-23/frame/adapters.md` (M5.07), built here first |
 | the door's account and the `actor:` role form; `versions:`; an `Agent` thing, `agent.tell`, the `agent:` role form; the sandbox adapter; catch-up and object keys; `lend` | K40, fixes 1 to 6 |
-| `Source.from`, executor slots, pause, derived reads | this goal, slice 2 (`GOAL17-<slug>` records) |
+| `Source.from` and `Source.timer`, executor slots, `Blueprint.hold` for pause, `derive:`, `only:` and `Blueprint.problem` for derived reads | this goal, slice 2: `GOAL17-source-from`, `-executor-slots`, `-pause`, `-derived-reads` |
 | `Superagent.declare` (a create at the first deploy), proposals a person approves | this goal, slice 5 |
 | `Blueprint.agent`, `@orthograph/agents` on Pi Durable | Goal 10 (M4-agents), as K40 fix 3 changes it |
 | `Blueprint.page`, `shows`, `offers` | Goal 6, slice 3 (K31, K36) |
@@ -205,9 +214,12 @@ export const Superagent = Blueprint.thing({
     purpose: Blueprint.text(),
     connections: Connections,              // mounted adapters, with their credentials' names
     playbook: Playbook,                    // sandbox, prepare, skills, extraTools, model, endsWhen
-    slots: Blueprint.uint(8),
-    main: Agent.fields.id,                 // its main agent, made by create (K40 fix 3)
+    slots: Blueprint.uint(8),              // 1 to 254: superagent.create and update refuse 0 and 255 (GOAL17-executor-slots)
+    main: Agent.fields.id,                 // its main agent: an existing Agent, opened first by `agent.open` (GOAL17-stage-one)
     pausedFrom: Blueprint.optional(Blueprint.oneOf(["observing", "live"])),   // where resume returns to
+    pausedAt: Blueprint.optional(Blueprint.uint(64)),   // when the pause began, on the world's clock (GOAL17-pause)
+    pausedFor: Blueprint.uint(64),                       // every pause's length, summed: an eval's deadline moves by it
+    passGen: Blueprint.uint(32),                         // which chain of the eval pass is the live one (GOAL17-pause); `eval.due` bumps it
   },
 });
 export const itsMain = Blueprint.role(Superagent, { agent: Superagent.fields.main });
@@ -215,10 +227,10 @@ export const itsMain = Blueprint.role(Superagent, { agent: Superagent.fields.mai
 export const machine = Blueprint.machine(Superagent, {
   states: ["observing", "live", "paused", "retired"],
   moves: {
-    create: { from: [], to: "observing", emits: SuperagentCreated },  // opens its main agent
+    create: { from: [], to: "observing", emits: SuperagentCreated },  // takes the main agent a person opened first
     goLive: { from: ["observing"], to: "live" },                      // a person, after reading the would-accepts
-    pause:  { from: ["observing", "live"], to: "paused" },            // sources keep recording
-    resume: { from: ["paused"], to: ["observing", "live"] },          // back to pausedFrom
+    pause:  { from: ["observing", "live"], to: "paused", emits: SuperagentPaused },   // holds evals, launches, deliveries and replies (GOAL17-pause); sources keep recording
+    resume: { from: ["paused"], to: ["observing", "live"], emits: SuperagentResumed },   // back to pausedFrom; adds the pause to pausedFor
     retire: { from: ["observing", "live", "paused"], to: "retired" }, // closes its connections and agents
   },
 });
@@ -234,8 +246,8 @@ export default Superagent.declare({
   name: "coder",
   purpose: "Takes asks on issues and in Slack; answers with pull requests.",
   connections: [
-    github({ repo: "acme/widgets", events: ["issues", "comments", "reviews", "checks"] }),
-    slack({ channels: ["#eng"], directMessages: true }),
+    githubSource({ repo: "acme/widgets", me: { id: "<bot id>", login: "<bot login>" }, events: ["issues", "comments", "reviews", "checks"] }),
+    slackSource({ channels: ["#eng"], me: { id: "<bot id>", login: "<bot login>" }, directMessages: true }),
   ],
   policy: { mode: "observe", allowed: ["github:583231", "slack:U024BE7LH"], admission: { "#eng": "explicit" } },
   playbook: { sandbox: "local", prepare: "pnpm install", extraTools: [Pi.coding], endsWhen: "threadsClosed" },
@@ -246,10 +258,10 @@ superagent.create({
   name: "triage",
   purpose: "Finds errors worth fixing, and fixes them.",
   connections: [
-    posthog({ project: "web", kinds: ["errorIssue", "alert"] }),
-    github({ repo: "acme/widgets", events: ["issues"] }),
-    slack({ channels: ["#triage"] }),
-    timer({ every: "1 week", says: "sweep the open errors" }),   // a standing goal: its thread never closes
+    posthogSource({ project: "web", kinds: ["errorIssue"] }),
+    githubSource({ repo: "acme/widgets", me: { id: "<bot id>", login: "<bot login>" }, events: ["issues"] }),
+    slackSource({ channels: ["#triage"], me: { id: "<bot id>", login: "<bot login>" } }),
+    Source.timer({ every: "1 week", says: "sweep the open errors" }),   // a standing goal: its thread never closes
   ],
   policy: {
     mode: "observe",
@@ -262,7 +274,8 @@ superagent.create({
 
 The allowed list names accounts by their connection and stable outside id (K40 fix 1), so it is the superagent's
 own: each superagent has its own sources, and an account belongs to one source. Listing one is the `Account` thing's
-`list` move, from the portal or by `policy.sync` from a Slack user group or a repository's collaborators.
+`list` move from the portal; `policy.sync` lists the people of a Slack user group or a repository's collaborators
+through its records (GOAL17-person-sync).
 
 **What a main agent may change, and what it may only propose.** A main agent reads text from outside: an error's body,
 a stranger's issue that a listed bot quoted. So it can route, judge, reply and manage tickets itself, but every change
@@ -287,7 +300,7 @@ GitHub, the secrets and the stand-in.
 ```ts
 // packages/github: by hand, on each event the adapter offers
 issueComment: Blueprint.event(IssueComment, {
-  id: (e) => `comment:${e.comment.id}:${e.action}`,                        // the same from the door and the poll
+  id: (e) => `comment:${e.repository.full_name}:${e.comment.id}:${e.comment.updated_at}`,   // the object and its own last change: the same from the door and the poll
   actor: (e) => ({ id: String(e.sender.id), name: e.sender.login, bot: e.sender.type === "Bot" }),
 }),
 
@@ -301,16 +314,23 @@ export default Blueprint.use(github, (g) => [
   g.include(g.events.pullRequest),
 ]);
 
-// plugins/intake/sources/github.ts: the superagent's mapping, the only part a new service needs here
+// plugins/intake/blueprint/sources/github.ts: the superagent's mapping (GOAL17-source-from has all three), the only part a new service needs here
+import github, { NotFound } from "@orthograph/github";   // error classes are exported beside the adapter, one per spec response
 export const githubSource = Source.from(github, {
-  on: {
-    issueComment: (e) => ({ thread: `issue/${e.issue.number}`, text: e.comment.body, url: e.comment.html_url }),
+  config: Config,                               // { repo, me: { id, login }, events }: what a connection names
+  scope: (c, m) => ({ listened: m.channel.repository === c.repo, observed: true, row: c.repo }),
+  on: {                                         // the author is the event's actor, made an Account by receive
+    issueComment: (e) => ({ kind: "comment", thread: `issue/${e.issue.number}`, text: e.comment.body,
+      url: e.comment.html_url, channel: { repository: e.repository.full_name, number: e.issue.number } }),
   },
-  reply: github.calls.issues.createComment,     // channel.send, idempotent by message id
-  history: github.calls.issues.listComments,    // a page of a thread, for context
-  closed: github.events.pullRequest,            // merged or closed: thread.closed
-  policyPart: GithubPolicy,                     // allowed, bots, admission rows
-  environment: (t) => ({ GITHUB_REPOSITORY: t.repository, GITHUB_NUMBER: t.number }),  // execution variables, no credentials
+  closed: { pullRequest: (e) => (e.action === "closed" ? `issue/${e.pull_request.number}` : undefined) },
+  reply: { call: github.calls.issues.createComment, args, landed, gone: [NotFound] },                          // channel.send; NotFound is imported beside `github` (an error class of that call)
+  history: { call: github.calls.issues.listComments, args, page },                                 // a page of a thread
+  policyPart: { schema, rows, sync: { call: github.calls.repos.listCollaborators, accounts } },    // allowed, bots, admission
+  environment: {                                // execution variables, named and described; never a credential
+    variables: { GITHUB_REPOSITORY: "the repository", GITHUB_NUMBER: "the issue or pull request" },
+    of: (m) => ({ GITHUB_REPOSITORY: m.channel.repository, GITHUB_NUMBER: String(m.channel.number) }),
+  },
 });
 // every call the mount includes is an agent tool, its schema generated (D2.md:59), its errors declared
 ```
@@ -325,31 +345,31 @@ declared event. The operations are named here; their payloads follow the prototy
 
 | Concept | Is | Operations, and who calls them |
 |---|---|---|
-| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off` | `save`, `enable`, `disable` (person); `positionAdvanced` (source); `problem` (source: `error` after three failed polls in a row; an item failing a day is dropped); a configuration its kind rejects disables it |
-| Account | thing, intake (K40 fix 1), keyed by its source and outside id; `seen → listed → unlisted` | `seen` (source); `list`, `unlist`, `sync` (person; main proposes) |
-| Trigger | thing, intake; never changed | `receive` (source; stored, duplicate or filtered, idempotent by source and event); `requeue` (main); `reevaluate` (person) |
-| Thread | thing, intake; `idle → queued → evaluating`, one eval at a time | `bind`, `closed` (source); `unsubscribe` (person, main) |
+| Source | thing, intake; `setup → ready ⇄ paused`, `error`, `off`; `failures` counts polls failed in a row and a success zeroes it, `failAfter` is 3 (GOAL17-derived-reads) | `save`, `enable`, `disable` (person); `positionAdvanced` (source); `problem` (source: `error` after three failed polls in a row; an item failing a day is dropped); a configuration its kind rejects disables it |
+| Account | thing, intake (K40 fix 1), keyed by `(superagent, source, external)`, where `source` is its mount's name and `external` the outside account's id (GOAL17-account-key); `seen → listed → unlisted` | `seen` (source); `list`, `unlist`, `sync` (person; main proposes) |
+| Trigger | thing, intake; never changed | `receive` (source: `{ superagent, source, event, thread, kind, text, url, addressed, actor, channel }`, the actor `{ id, name, bot }` or none; stored, duplicate or filtered, idempotent by source and event); `requeue` (main); `reevaluate` (person) |
+| Thread | thing, intake; `idle`; whether it waits or is being evaluated is read from its triggers and evals, one eval at a time (GOAL17-stage-one) | `bind`, `closed` (source); `unsubscribe` (person, main) |
 | Correlation | thing, intake | made by `receive`: a trigger seen on another thread; adds context, never routes |
-| Eval | thing, intake; `queued → delivered → decided`, `unavailable` | `evals.due` (system, every 2 s unless paused); `delivered` (system); `context`, `read`, `decide` (main) |
+| Eval | thing, intake; `queued → delivered → decided`, `unavailable` | `eval.due` (system, every 2 s; not re-armed while the superagent is paused); `start`, `expire`, `delivered` (system); `context`, `read`, `decide` (main) |
 | Decision | thing, intake | `route` (main: 1 to 20 items, each accept, attach, stop or ignore); `dismiss` (person) |
 | Policy | thing with versions, intake (K40 fix 2), one per superagent | `save`, `get`, `history`, `restore`, `sync` (person; main proposes); a Mandate pins `Policy.revision` |
 | Mandate | thing, tickets; `held → withdrawn`, `revoked` | `revalidate` (system, before a resume) |
-| Ticket | thing, tickets; `open → ended → open`, `stopped` | `accept` (system, on a route's accept: the Mandate, Ticket, Subscription, Assignment, Input and executor in one commit); `attach`, `requestStatus`, `note` (main); `stop`, `retry` (person, main); `end`, `resume`, `policyChanged` (system) |
-| Subscription | thing, tickets; own, attached, context, bound | `thread.follow`, `thread.unrelated` (executor); a source polls a subscribed thread while a live ticket follows it, and for two weeks after the later of its last trigger and the following tickets' end |
-| Assignment | thing, tickets; `pending → running → ended` | `started`, `interrupted`, `turnEnded` (system) |
-| Input | thing, tickets | `delivered`, `read`, `deliveryFailed` (system) |
-| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped | `ticket.report`, `ticket.ack`, `trigger.handback` (executor); `dropped` ends the ticket with no message |
+| Ticket | thing, tickets; `open → ended → open`, `stopped`; `seq`, a count bumped in the commit of each Input and Report, and of each reply's enqueue and completion (GOAL17-derived-reads) | `accept` (system, on a route's accept: the Mandate, Ticket, Subscription, Assignment and Input in one commit, its executor opened first by `agent.open`); `attach`, `note` (main); `requestStatus` (main, or a person, whose request may use the reserve seat: GOAL17-executor-slots); `stop`, `retry` (person, main); `end`, `resume`, `policyChanged` (system) |
+| Subscription | thing, tickets; own, attached, context, bound; one per ticket and thread (GOAL17-executor-slots) | `thread.follow`, `thread.unrelated` (executor); a source polls a subscribed thread while a live ticket follows it, and for two weeks after the later of its last trigger and the following tickets' end |
+| Assignment | thing, tickets; `pending → running → closing → ended`; holds a seat while running or closing (GOAL17-executor-slots) | `queued` (system: an accept, an Input or a resume; it names the Input that woke it), `promoted` (system: a person's Input on a pending one), `started` (system, from `fill`: takes the seat), `cancelled` (a pending one), `interrupted` (a stop, a retire or `reap`: closes it, and keeps the seat), `turnEnded` (system, on `AgentIdled` or `AgentClosed`); `superagent.fill` and `superagent.reap` (system; the app declares them, so tickets imports nothing of superagent) |
+| Input | thing, tickets; `seq`, the ticket's count when it was made (GOAL17-derived-reads); `waiting ⇄ routed → delivered`, `failed → waiting` | `store` (system, person), `route` (system: to a running executor, or it queues an Assignment), `requeue` (system: a tell that finds no seat, or a retry), `delivered`, `read`, `deliveryFailed` (system) |
+| Report | thing, tickets; progress, waiting, ready, blocked, failed, dropped; each with `seq`, the ticket's count when it was made (GOAL17-derived-reads) | `ticket.report`, `ticket.ack`, `trigger.handback` (executor); `dropped` ends the ticket with no message |
 | Attention | thing, tickets | made by a report's question; answered by a person's next trigger |
-| Outgoing message | thing, tickets; `pending → sent`, `dropped` | `reply` (main, executor, by purpose); `withdraw` (system); retried from 5 s doubling to 300 s, in order per ticket and conversation |
+| Outgoing message | thing, tickets; `pending → sent`, `dropped`; `failures` counts sends failed in a row and a sent one zeroes it; `notBefore` is when a failed one may go again (GOAL17-derived-reads) | `reply` (main, by purpose; the executor speaks through `ticket.ack`); `withdraw` (system); `send` (system, a held hop: a failed call is counted and the message queued again after 5 s doubling to 300 s through `Timers`, and the outbox sees a success); the head of a ticket's conversation holds the rest back, so order holds |
 | PromptSet | thing with versions, prompts | `save` (person; main proposes); `preview`, `history` (person); `compose(role)` (system, every model request) |
-| Settings | thing with versions, the app; execution variables, blocked commands | `save` (person; main proposes); `pause` (person: an eval's deadline moves later by the pause's length) |
-| Proposal | thing, superagent; `waiting → approved`, `rejected` | made when a main agent calls a configuration change; `approve`, `reject` (person); `proposals` (person: those waiting) |
-| Health | derived read, superagent | `superagent.health`: each source's, each kind of stored work's and each channel's problems, shown once one has failed three times in a row |
-| Ticket stage | derived read, tickets | `ticket.waiting` lists every ticket whose stage is person |
+| Settings | thing with versions, the app; `variables` (each a name, value and description, never a credential) and `blocked` (command names), GOAL17-check-harness | `save` (person; main proposes); no pause of its own: the Superagent's `pause` and `resume` are the one switch (GOAL17-pause) |
+| Proposal | thing, superagent; `waiting → approved`, `rejected` | made when a main agent calls a configuration change; `approve`, `reject` (person); `proposal.waiting` (a read of those waiting, GOAL17-derived-reads) |
+| Health | derived read, superagent | `superagent.health`: each source's and each channel's problems (each a record's `failures` count), shown once one has failed three times in a row; a paused superagent shows from its own `pausedAt` |
+| Ticket stage | derived read, tickets | `ticket.stage` reads one ticket's row of the stage table; `ticket.waiting` lists every ticket whose stage is person (GOAL17-derived-reads) |
 
-Its events: `superagentCreated`, `triggerReceived`, `triggerRequeued`, `evalStarted`, `decisionRecorded`,
-`ticketCreated`, `ticketResumed`, `ticketEnded`, `assignmentStarted`, `assignmentEnded`, `threadSubscribed`,
-`threadUnsubscribed`, `policyChanged`.
+Its events: `superagentCreated`, `superagentPaused`, `superagentResumed`, `triggerReceived`, `triggerRequeued`, `evalStarted`, `evalDelivered`, `decisionRecorded`,
+`ticketCreated`, `ticketResumed`, `ticketEnded`, `inputStored`, `inputRouted`, `assignmentQueued`, `assignmentStarted`, `assignmentEnded`, `assignmentInterrupted`, `assignmentPromoted`, `agentIdled`, `agentClosed`, `replyQueued`, `threadSubscribed`,
+`threadUnsubscribed`, `policyChanged`. Every one that crosses the outbox is on one of `pausable`'s two lists (GOAL17-pause).
 
 ### The gate, then the main agent
 
@@ -365,18 +385,18 @@ export interface Gate {
 ```
 
 A trigger on a thread a ticket follows goes straight to that ticket's executor as an Input. Every other trigger the
-gate passes waits on its thread; `evals.due` batches each thread's waiting triggers into an Eval and tells the main
+gate passes waits on its thread; `eval.due` batches each thread's waiting triggers into an Eval and tells the main
 agent. The main agent reads the batch and its context, records one judgement per enabled rule (`eval.decide`) and
-routes it (`decision.route`). An accept makes the Ticket, its Mandate, its Subscriptions, its first Assignment, its
-executor and its acknowledgement, in one commit. In `observe` an accept is recorded as "would accept" and starts
-nothing.
+routes it (`decision.route`). An accept makes the Ticket, its Mandate, its Subscriptions, its first Assignment and its
+first Input, in one commit, for an executor opened first; its acknowledgement follows as a reply. An explicit request makes its ticket in every mode;
+in `observe` an inferred accept is recorded as "would accept" and starts nothing.
 
 ### The two agents: K40 Agents, one durable conversation each
 
 ```ts
 // plugins/superagent/blueprint/agents/main.ts: kind main, one per superagent, for good
 export default Blueprint.agent({
-  model: deepseek.model("deepseek-chat"),       // the cheapest that judges well, set per environment
+  model: models.model("deepseek-v4-flash-0731"), // the cheapest that judges well, set per environment
   instructions: prompts.compose("main"),
   env: sandbox,                                 // its own sandbox, for reading code and running short commands
   tools: [
@@ -394,7 +414,7 @@ export default Blueprint.agent({
   model: superagent.playbook.model,
   instructions: prompts.compose("executor"),
   env: sandbox,                                 // K40 fix 4: the ticket's sandbox as Pi's ExecutionEnv
-  slots: superagent.slots,                      // this goal's design: a pool, plus one kept for a person's message
+  slots: { size: superagent.slots, reserve: 1, held: Blueprint.id("asg") },   // GOAL17-slice5-forms call 15: the id the Assignment owns, so no import of tickets; GOAL17-executor-slots: a pool of seats, plus one kept for a person's message
   tools: [
     read, ticket.ack, ticket.report, thread.unrelated, thread.follow, trigger.handback,   // allowed: [itsAgent]
     ...superagent.connections.tools,            // the mounts' calls, typed from each spec
@@ -404,17 +424,17 @@ export default Blueprint.agent({
 });
 ```
 
-`superagent.create` makes the main agent; `ticket.accept` makes the ticket's executor (K40 fix 3: making an agent is an
-ordinary create). Both are fed by `agent.tell` through the outbox, with the event's id as Pi's `requestId`, steering a
+`superagent.create` takes a main agent a person opened first; `ticket.accept` takes the ticket's executor, opened first (K40 fix 3:
+making an agent is an ordinary create, `agent.open`, in its own store). Both are fed by `agent.tell` through the outbox, with the event's id as Pi's `requestId`, steering a
 busy agent. Each acts as itself, `{ kind: "agent", agent }`, and a role admits it only where its id is the field:
 `itsAgent = Blueprint.role(Ticket, { agent: Ticket.fields.agent })`. A ticket that ends leaves its executor idle, so
 a resume weeks later finds it with all its memory. The executor's `git push` and `gh` get a token the GitHub adapter
 lends for an hour (K40 fix 6); the App's key never enters the sandbox.
 
 **Stored work, in Orthograph.** The prototype's effects queue isn't copied: an assessment is `agent.tell` to the main
-agent; a launch is a workflow (prepare the sandbox, open the executor, send its first input); a delivery or relay is
-`agent.tell`; a notice is a written entry that doesn't wake the agent; a reply is the outbox, in order per ticket and
-conversation, retried from 5 s doubling to 300 s; the eval pass and a failed relay or delivery's retries (2 s,
+agent; a launch is an Assignment: its seat comes first, then `agent.tell` sends its first input, and its sandbox opens on the executor's first tool call (GOAL17-executor-slots); a delivery or relay is
+`agent.tell`, which only ever runs as an outbox hop and never inline in a handler (GOAL17-pause); a notice is a written entry that doesn't wake the agent; a reply is the outbox, in order per ticket and
+conversation, its failed sends queued again by the app from 5 s doubling to 300 s (GOAL17-derived-reads); the eval pass and a failed relay or delivery's retries (2 s,
 doubling to a minute) are `Timers` waits. Every outward operation is
 `replay: "safe"` with a natural key (`push` by head, `pulls.create` by branch, `ack` and `reply` by the trigger they
 answer), so a kill leaves one of each.
@@ -424,11 +444,11 @@ answer), so a kill leaves one of each.
 ```ts
 // examples/superagent/blueprint/app/pages/overview.ts: one superagent; answers "does anything need me now?"
 export default Blueprint.page({
-  description: "Tickets waiting for a person, with their action; system problems; 24-hour counts; executor load.",
+  description: "Tickets waiting for a person, with their action; system problems; whether it is paused, from `pausedAt`; 24-hour counts; executor load.",
   route: { path: "/agents/:superagent" },
   allowed: [Blueprint.signedIn.via(Via.session)],
-  shows: [tickets.operations.waiting, superagent.operations.health, superagent.operations.proposals],
-  offers: [tickets.operations.stop, tickets.operations.retry, settings.operations.pause],
+  shows: [ticket.operations.waiting, superagent.operations.health, proposal.operations.waiting],
+  offers: [ticket.operations.stop, ticket.operations.retry, superagent.operations.pause, superagent.operations.resume],
 });
 ```
 
@@ -446,7 +466,7 @@ Ann writes "@agent fix the flaky login test" on issue 12 of the test repository.
 1. GitHub sends the comment. Locally, `gh webhook forward` sends it to the door `ortho dev` prints. The GitHub
    adapter's door checks its signature, keys it by the comment's id, and its caller carries Ann's account.
 2. `trigger.receive` stores it once on thread `issue/12`. No ticket follows that thread, so it waits there.
-3. `evals.due` batches it. The gate: Ann's account is listed and she mentioned the agent, so it is explicit.
+3. `eval.due` batches it. The gate: Ann's account is listed and she mentioned the agent, so it is explicit.
 4. The candidate is told to the main agent, which reads the issue, judges it against the rules and routes it: accept.
 5. The accept makes the ticket, its mandate, its subscription to issue 12, its first assignment and its executor.
 6. The executor's first tool call opens its sandbox, a temporary folder served by the bridge, and runs `pnpm install`.
@@ -490,7 +510,7 @@ every operation is in the generated SDK, CLI and MCP, so another agent can drive
 ## The slices
 
 Each slice ends green with its done check. Checks come first, by an author who isn't the builder (the `author`
-skill). "After" names this goal's own earlier slices. "Uses" names other goals' work: taken from `goal/stage-1` if it
+skill). "After" names this goal's own earlier slices. "Uses" names other goals' work: taken from `main` if it
 has landed there, and built here to its design if not.
 
 | # | Slice | After | Uses | Done when |
@@ -499,20 +519,22 @@ has landed there, and built here to its design if not.
 | 2 | The four seams Goal 17 designs, decided: `Source.from` on a generated adapter (gap G3), executor slots (G6), pause (G9), derived reads (G11), each a `GOAL17-<slug>` record with code and evidence | 1 | K40 | the four records merged on `goal/superagent` |
 | 3 | Checks for adapters from a spec: GitHub's, PostHog's and Slack's specs generate; an include of a call or event the spec doesn't have fails `ortho check`; each included call passes against its stand-in, once slice 4 has built them | 1 | — | they fail with no generator |
 | 4 | Adapters from a spec: `ortho new adapter --from-openapi` and the conformance harness (M5.07), then the GitHub, Slack and PostHog adapters generated and narrowed in `examples/superagent/plugins/`, with their stand-ins (GitHub's over a bare repository). Slack's event schemas are written by hand, since its event payloads aren't in its spec | 3 | `adapters.md`'s design | slice 3 passes |
-| 5 | **Stage one: the blueprint.** Every thing, machine, event, error and operation above, in the plugins and the app, with empty handlers; and the framework declarations it needs: K40 fixes 1 to 3's forms (`actor:`, `versions:`, `Agent`, `agent:`), `Superagent.declare`, and proposals | 2, 4 | K40; Goal 3's callers (M2.03) and secrets (M2.04); Goal 11's events and doors (M5.03) | `ortho check` passes; the generated docs, CLI and MCP list every operation; a blueprint without these plugins generates byte for byte as before |
-| 6 | Checks for stage one: every gate cell of the prototype's `002`; a trigger twice stored once; a stale policy save refused; an accept making all six records in one commit; `observe` recording "would accept" and starting nothing; a follow-up reaching its ticket with no eval; a policy change restarting a live eval; stop withdrawing the mandate; the stage read's every row | 5 | — | they fail on empty handlers |
+| 5 | **Stage one: the blueprint.** Every thing, machine, event, error and operation above, in the plugins and the app, with empty handlers; and the framework declarations it needs: K40 fixes 1 to 3's forms (`actor:`, `versions:`, `Agent`, `agent:`), `Superagent.declare`, proposals, and slice 2's forms (`Source.from`, `Source.timer`, slots, `Blueprint.hold`, `derive:`, `only:`, `Blueprint.problem`) | 2, 4 | K40; Goal 3's callers (M2.03) and secrets (M2.04); Goal 11's events and doors (M5.03) | `ortho check` passes; the generated docs, CLI and MCP list every operation; a blueprint without these plugins generates byte for byte as before |
+| 6 | Checks for stage one: every gate cell of the prototype's `002`; a trigger twice stored once; a stale policy save refused; an accept making its five records in one commit; `observe` recording "would accept" and starting nothing; a follow-up reaching its ticket with no eval; a policy change restarting a live eval; stop withdrawing the mandate; the stage read's every row | 5 | — | they fail on empty handlers |
 | 7 | Stage one's handlers: superagent, intake, tickets, prompts, settings. Its journeys call `trigger.receive` directly, as the source's caller | 6 | — | slice 6 passes |
-| 8 | Checks for the agents and the sandbox: one executor per ticket, found again after a restart; a message while it works steers it; a write outside the sandbox refused; a blocked command fails by name; no credential among the execution variables; a kill mid-turn resumes with no second committed model call; a kill mid-push leaves one branch update and one pull request; the main agent sees no stranger's text; a main agent's configuration change only records a proposal; a full pool keeps its slot for a person; pause holds evals, launches, deliveries and replies while triggers keep arriving, and moves an eval's deadline later by its length | 4, 5 | — | they fail on empty handlers |
-| 9 | The agents and the sandbox: K40 fix 3's runtime (`Agent` in its actor, `agent.tell` through the outbox), the main agent and the executor, `@orthograph/sandbox` with its bridge (fix 4), `lend` (fix 6), slots and pause | 4, 7, 8 | Goal 10's `@orthograph/agents` | slice 8 passes; 0 sandbox folders and 0 processes left |
+| 8 | The harness's surface (a builder's pull request first, GOAL17-check-harness), then checks for the agents and the sandbox: one executor per ticket, found again after a restart; a message while it works steers it; a write outside the sandbox refused; a blocked command fails by name; no credential among the execution variables; a kill mid-turn resumes with no second committed model call; a kill mid-push leaves one branch update and one pull request; the main agent sees no stranger's text; a main agent's configuration change only records a proposal; a full pool keeps its slot for a person; a message routed as a turn ends gets a new seat, and an executor is never steered without one; two replies at once and a head that sends at that moment leave one head and no lost reply; a failed send is retried after a restart; a handed-off or stopped ticket does not get a seat back; reap, restart and redeliver leave a late idle for one Assignment unable to end the next; a stopped ticket's opening tell is refused; a reap before the opening tell arrives never frees a seat the executor then uses; a person's message after a CI result promotes the pending Assignment; a refusal cycle writes at most six rows in 30 seconds; one chatty ticket's writes, which all bump one `seq`, stay within budget; pause holds evals, launches, deliveries and replies while triggers keep arriving, and moves an eval's deadline later by its length | 4, 5 | — | they fail on empty handlers |
+| 9 | The agents and the sandbox: K40 fix 3's runtime (`Agent` in its actor, `agent.tell` through the outbox), the main agent and the executor, `@orthograph/sandbox` with its bridge (fix 4), `lend` (fix 6), slots and pause, and the harness's instruments (GOAL17-check-harness) | 4, 7, 8 | Goal 10's `@orthograph/agents` | slice 8 passes; 0 sandbox folders and 0 processes left |
 | 10 | Checks for the connections: a signed webhook accepted and decoded, a bad signature refused; the door's caller carries the account; a webhook and a catch-up poll of one comment settle once; each mapping makes the right trigger; a reply goes out once, in order | 4, 5 | — | they fail on empty mappings |
 | 11 | The connections: the doors with accounts and object keys (K40 fixes 1, 5), catch-up, the GitHub, Slack, PostHog, webhook and timer sources, their stand-ins | 10 | Goal 11's doors and `on:` (M5.03) | slice 10 passes |
 | 12 | The pages and the coding agent end to end; then, with Aaron's yes, one run on a real test repository and Slack workspace | 9, 11 | Goal 6's page map (slice 3) | the goal check's coding half passes |
 | 13 | The triage agent, made by `superagent.create` from data, with no new code | 12 | — | the goal check passes whole |
-| 14 | Extract the plugins into `packages/` as `@orthograph/superagent`, `intake`, `tickets`, `prompts`, `github`, `slack`, `posthog` and `webhook` (`sandbox` is there already), and hand the branch over | 13 | — | the goal check still passes from `packages/`; the conductor has the branch and its list of framework fixes to merge back |
+| 14 | Extract the plugins into `packages/` as `@orthograph/superagent`, `intake`, `tickets`, `prompts`, `github`, `slack`, `posthog` and `webhook` (`sandbox` is there already), and have the lander bring them into `main` | 13 | — | the goal check still passes from `packages/`; the lander has the green slices in `main`, and the framework goal has the list of framework fixes made here |
+| 15 | **The launch** (K42, section 6). Checks first, by an author who isn't the builder, then the build: real sign-in (a person signs in, and the app knows who); teams, meaning who owns a superagent and who shares it, built in this lane and kept apart from Capxul's companies (K42, call 10); a live deploy with a public address, so GitHub and Slack deliver webhooks to it; and a sandbox and a model endpoint that run off Aaron's Mac. The deploy and the cloud resources on the Cloudflare keys already on hand go ahead under Aaron's standing yes (23 November 2026); each new credential, such as a GitHub App or a Slack app, waits for his written yes; all of it stays within the daily cap and is destroyed after. Pieces pulled only here ship in 1.0, not the beta (K42, section 5) | 14 | sign-in and the live deploy, which K42's split gives this goal | a person signs in, makes a team's superagent, connects a test repository and Slack workspace through the public address, and the coding agent answers a mention end to end in the hosted sandbox on the hosted model; nothing of it runs on Aaron's Mac |
 
 **What runs at once.** Slices 2 and 3 start together, then 4. After slices 2 and 4, slice 5; after it, three lanes of
 checks run side by side, each in its own thread: stage one (6), the agents and the sandbox (8), and the connections
-(10). Then 7, 9 and 11 build side by side, and 12 joins them.
+(10). Then 7, 9 and 11 build side by side, and 12 joins them. Slice 15, the launch, comes after the plugins are extracted; its checks
+are written first; its deploys use the Cloudflare keys already on hand (Aaron's standing yes, 23 November 2026), and a new credential still waits for his yes.
 
 **K40's "Needed by", in this goal's slices.** The GitHub door is slice 11 and the gate slice 7; Policy and Prompts are
 slice 7; the tickets' things are slices 5 and 7, and their agents, the main agent and the executor slice 9.
@@ -551,8 +573,8 @@ Where each part of the prototype's docs lives in this plan, so nothing is droppe
 ## The framework fixes it builds
 
 The superagent finds these; their fixes are designed in K40 and in this goal's slice 2, and built here in the slice
-named, on this branch. Each owner hears through an Ask issue in its milestone (K40 filed #531 to #536 and #538), and
-the conductor merges each fix back.
+named, on this branch. Each fix is claimed on the board first and landed in `main` by the lander once green (K42, sections 3 and 8; K40
+filed #531 to #536 and #538 as Ask issues before K42).
 
 | Gap | The fix | Owner of the seam | Built in |
 |---|---|---|---|
@@ -572,20 +594,22 @@ the conductor merges each fix back.
 
 It owns the paths in the front matter. On its integration branch it also changes the framework where the gaps above
 need it, to K40's design or slice 2's (K39 call 6, now every app goal's rule (K42)): every such change is listed in
-the slice's pull request, the owner hears through an Ask issue, and the conductor merges it back. It reads Goal 9's
+the slice's pull request and claimed on the board first, and the lander lands it in `main` (see Claims below). It reads Goal 9's
 `Timers` for every wait and never changes it.
 
 **Credentials, each only with Aaron's written yes, in the slice that first needs it:** a GitHub App installed on one
-test repository he names, a Slack app in a workspace he names, and a DeepSeek key, all for slice 12's real run, not
-the check. PostHog for real is slice 13's, the same way. Every check runs on stand-ins with no key. No cloud: E2B and
-staging are later, each its own yes.
+test repository he names, a Slack app in a workspace he names, all for slice 12's real run, not
+the check. PostHog for real is slice 13's, the same way. Every check runs on stand-ins with no key.
+Real model runs through VibeProxy, and deploys on the Cloudflare keys already on hand, go ahead whenever a slice needs
+them (Aaron's standing yes, 23 November 2026), within the daily cap and destroyed after; E2B, and any new cloud
+credential, is still its own yes.
 
 ## How it runs
 
 The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins.
 
-- **Branch.** `goal/superagent`, cut from `goal/stage-1`, is the integration branch. Every change reaches it by a pull
-  request. Merge `origin/goal/stage-1` in at the start of every slice, by a merge, never a rebase, so other goals'
+- **Branch.** `goal/superagent`, based on `main` (it was cut from `goal/stage-1`, retired by #707), is the integration branch. Every change reaches it by a pull
+  request. Merge `origin/main` in at the start of every slice, by a merge, never a rebase, so other goals'
   landings arrive here; never push to another goal's branch.
 - **Checks first.** For each slice, an author who is not the builder writes the journeys and checks on a `-check`
   branch, red on empty handlers, and proves them fair. The builder makes them green on a `-build` branch and never
@@ -599,9 +623,44 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
   every comment an agent posts starts `[goal-17 · <role> · <harness> · <model>]` (the `github` skill).
 - **State.** Set `status` and `lead` in the front matter when you start, and rewrite "Where it stands" at every slice
   merge. Decisions this goal makes are named `GOAL17-<slug>`.
-- **Limits.** No cloud and no keys. Stop every process you start, by its id, before you report.
+- **Limits.** No cloud and no keys, except what Aaron's standing yes covers (GOAL17-standing-yes): VibeProxy and the Cloudflare keys already on hand, within the daily cap. A new credential still waits for his written yes. Stop every process you start, by its id, before you report.
 
 ## Where it stands
 
-Slice 1 lands with this brief and K39 (22 November 2026). K40 is decided (#529). The branch is cut from `goal/stage-1`.
-Slices 2 and 3 can start.
+25 November 2026: parked by K44, with Goal 17's work as it stood on `goal/superagent` at midnight
+(446fb6dd). Nothing of it is deleted; its 11 claims on the board are released by K44. The history
+below is from before K44, and the branch's own copy of this brief has the latest of it.
+
+23 November 2026. Slice 1 is on `main` (#515), and K40 is decided (#529). The lead is Claude Code on `claude-opus-5-5`.
+The brief, K39, K40 and GOAL17-model-endpoint reached this branch by #578: real model runs go through VibeProxy, with
+Pi Durable running the agents. Slice 2 is the four seam records (#583), passed by 🔍 after five rounds, with a "Two
+writers, one guard" table in GOAL17-executor-slots. Slice 3's checks (#597) and slice 4's adapters from a spec (#601,
+GOAL17-adapters-from-spec) are merged: `ortho new adapter --from-openapi` generates the GitHub, Slack and PostHog plugins in
+`examples/superagent/plugins/`, each passing against its stand-in. `goal/stage-1` was merged in at slice 5's start (#625).
+GOAL17-names (#651, #654) gave one name each to six operations and calls the records named two ways. Slice 5 is merged:
+its checks (#648, #658, #673: 08 to 17) and its build (#670) give the blueprint's new forms, the superagent app and its
+plugins, the new `@orthograph/agents` package, and `ReadNotServed` (AR-008) for a pinned or derived read until slice 7
+serves it; GOAL17-slice5-forms (calls 1 to 16) and GOAL17-plugin-scope record what the build decided. GOAL17-check-harness
+(#681) says how a check scripts a model, kills a world, steps the clock and the outbox, and probes an agent. Open now:
+slice 6's checks (#686), slice 10's checks (#687, whose branch carries GOAL17-connections) and slice 8's checks. Two snags are open:
+slice 6's journeys need `versions:` served and an `agent.open` handler before they can pass (the snag #685), and the compiler's
+acme tests time out on a slow CI runner, about one run in two.
+Slice 11 (the connections) is built on `goal-17/s11-connections-build` (GOAL17-slice11-build): adapter events carry `id` and `actor`, the GitHub, Slack and PostHog
+mappings and the doors at `/_in/<mount>` (Goal 17's copy of M5.03, to M5's design, K39 call 6 and K42). Check 66 stays red until slice 9's harness surface.
+
+Slice 6's checks are #686 (18 to 23). GOAL17-stage-one made the calls they stopped at: `trigger.receive` carries `actor` and `addressed`; an accept is five
+records in one commit, for an executor opened first; `superagent.create` takes a main agent opened first and no policy; Thread has no `queued` or
+`evaluating`; the gate's views and table; `versions:` is served by the framework in slice 7 (snag #685).
+
+What slice 5's and slice 8's authors take from slice 2's last review, beyond the records:
+
+- `ticket.stop` after a handoff closes the executor's current Assignment on the Agent too, with a journey step.
+- The Input row gains `retryAt` and `refusals`, and `superagent.boot` joins the Superagent's operations.
+- Slice 8 adds a restart check that two sweeps don't double-start an Assignment, the refusal cycle's row bound,
+  reap then restart then redeliver, and a chatty ticket's `Ticket.seq` contention.
+- The Agent's closed-Assignment memory states its window.
+- Slice 8 adds "a stop on a full pool starts nothing until `AgentClosed`, and `fill` does not loop".
+- `ticket.stop` picks `cancelled` or `interrupted` from the state it reads under the row's version. `stageOf` names
+  `closing`, as stopping. `promoted` is skipped when `why` is already `person`, and leaves a launch's `why` alone.
+- `reap`'s grace needs memory: an `idleSeenAt` it writes, cleared when the Agent goes `working`. It resends a close only
+  for a `closing` row older than one sweep.

@@ -1,0 +1,858 @@
+{
+  "generated": "Generated from blueprint/. Append-only. Do not edit.",
+  "lockVersion": 1,
+  "refusals": {
+    "AC-001": {
+      "name": "AccountExists",
+      "owner": "account",
+      "from": "@orthograph/intake/blueprint/things/account/errors.js",
+      "fields": {
+        "superagent": {
+          "value": "id",
+          "prefix": "sag"
+        },
+        "source": {
+          "value": "text",
+          "max": 60
+        },
+        "external": {
+          "value": "text",
+          "max": 120
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountExists"
+        }
+      },
+      "earlier": []
+    },
+    "AC-900": {
+      "name": "AccountNotSeen",
+      "owner": "account",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountNotSeen"
+        }
+      },
+      "earlier": []
+    },
+    "AC-901": {
+      "name": "AccountNotFound",
+      "owner": "account",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "acc"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "AG-001": {
+      "name": "StaleAssignment",
+      "owner": "agent",
+      "from": "@orthograph/agents/blueprint/things/agent/errors.js",
+      "fields": {
+        "assignment": {
+          "value": "text",
+          "max": 120
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StaleAssignment"
+        }
+      },
+      "earlier": []
+    },
+    "AG-900": {
+      "name": "AgentNotIdle",
+      "owner": "agent",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AgentNotIdle"
+        }
+      },
+      "earlier": []
+    },
+    "AG-901": {
+      "name": "AgentNotFound",
+      "owner": "agent",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "agt"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AgentNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "AR-001": {
+      "name": "NotAllowed",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotAllowed"
+        }
+      },
+      "earlier": []
+    },
+    "AR-002": {
+      "name": "IdempotencyConflict",
+      "owner": "runtime",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "IdempotencyConflict"
+        }
+      },
+      "earlier": []
+    },
+    "AS-001": {
+      "name": "NoSeat",
+      "owner": "assignment",
+      "from": "@orthograph/tickets/blueprint/things/assignment/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoSeat"
+        }
+      },
+      "earlier": []
+    },
+    "AS-002": {
+      "name": "SeatTaken",
+      "owner": "assignment",
+      "from": "@orthograph/tickets/blueprint/things/assignment/errors.js",
+      "fields": {
+        "seat": {
+          "value": "uint",
+          "bits": 8
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SeatTaken"
+        }
+      },
+      "earlier": []
+    },
+    "AS-003": {
+      "name": "ExecutorAlreadyQueued",
+      "owner": "assignment",
+      "from": "@orthograph/tickets/blueprint/things/assignment/errors.js",
+      "fields": {
+        "agent": {
+          "value": "id",
+          "prefix": "agt"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExecutorAlreadyQueued"
+        }
+      },
+      "earlier": []
+    },
+    "AS-900": {
+      "name": "AssignmentNotPending",
+      "owner": "assignment",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AssignmentNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "AS-901": {
+      "name": "AssignmentNotFound",
+      "owner": "assignment",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "asg"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AssignmentNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "AT-900": {
+      "name": "AttentionNotOpen",
+      "owner": "attention",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttentionNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "DE-900": {
+      "name": "DecisionNotRecorded",
+      "owner": "decision",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DecisionNotRecorded"
+        }
+      },
+      "earlier": []
+    },
+    "DE-901": {
+      "name": "DecisionNotFound",
+      "owner": "decision",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "dec"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "DecisionNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "EV-900": {
+      "name": "EvalNotQueued",
+      "owner": "eval",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EvalNotQueued"
+        }
+      },
+      "earlier": []
+    },
+    "EV-901": {
+      "name": "EvalNotFound",
+      "owner": "eval",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "evl"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EvalNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "GI-001": {
+      "name": "GithubApiFailure",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {
+        "status": {
+          "value": "uint",
+          "bits": 16
+        },
+        "code": {
+          "value": "text",
+          "max": 200,
+          "optional": true
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "GithubApiFailure"
+        }
+      },
+      "earlier": []
+    },
+    "GI-002": {
+      "name": "GithubInputRefused",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GithubInputRefused"
+        }
+      },
+      "earlier": []
+    },
+    "GI-003": {
+      "name": "GithubAnswerRefused",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GithubAnswerRefused"
+        }
+      },
+      "earlier": []
+    },
+    "GI-004": {
+      "name": "GithubUnreachable",
+      "owner": "github",
+      "from": "@orthograph/github/blueprint/things/github/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GithubUnreachable"
+        }
+      },
+      "earlier": []
+    },
+    "IN-900": {
+      "name": "InputNotWaiting",
+      "owner": "input",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InputNotWaiting"
+        }
+      },
+      "earlier": []
+    },
+    "IN-901": {
+      "name": "InputNotFound",
+      "owner": "input",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "inp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InputNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "MA-900": {
+      "name": "MandateNotHeld",
+      "owner": "mandate",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "MandateNotHeld"
+        }
+      },
+      "earlier": []
+    },
+    "OU-900": {
+      "name": "OutgoingMessageNotPending",
+      "owner": "outgoing-message",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "OutgoingMessageNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "OU-901": {
+      "name": "OutgoingMessageNotFound",
+      "owner": "outgoing-message",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "msg"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "OutgoingMessageNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "PH-001": {
+      "name": "PosthogApiFailure",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {
+        "status": {
+          "value": "uint",
+          "bits": 16
+        },
+        "code": {
+          "value": "text",
+          "max": 200,
+          "optional": true
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PosthogApiFailure"
+        }
+      },
+      "earlier": []
+    },
+    "PH-002": {
+      "name": "PosthogInputRefused",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PosthogInputRefused"
+        }
+      },
+      "earlier": []
+    },
+    "PH-003": {
+      "name": "PosthogAnswerRefused",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PosthogAnswerRefused"
+        }
+      },
+      "earlier": []
+    },
+    "PH-004": {
+      "name": "PosthogUnreachable",
+      "owner": "posthog",
+      "from": "@orthograph/posthog/blueprint/things/posthog/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PosthogUnreachable"
+        }
+      },
+      "earlier": []
+    },
+    "PO-900": {
+      "name": "PolicyNotCurrent",
+      "owner": "policy",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PolicyNotCurrent"
+        }
+      },
+      "earlier": []
+    },
+    "PP-900": {
+      "name": "ProposalNotWaiting",
+      "owner": "proposal",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ProposalNotWaiting"
+        }
+      },
+      "earlier": []
+    },
+    "PP-901": {
+      "name": "ProposalNotFound",
+      "owner": "proposal",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "prp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ProposalNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "RE-900": {
+      "name": "ReportNotProgress",
+      "owner": "report",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ReportNotProgress"
+        }
+      },
+      "earlier": []
+    },
+    "SB-001": {
+      "name": "AlreadyFollowing",
+      "owner": "subscription",
+      "from": "@orthograph/tickets/blueprint/things/subscription/errors.js",
+      "fields": {
+        "ticket": {
+          "value": "id",
+          "prefix": "tkt"
+        },
+        "thread": {
+          "value": "text",
+          "max": 200
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AlreadyFollowing"
+        }
+      },
+      "earlier": []
+    },
+    "SB-900": {
+      "name": "SubscriptionNotLive",
+      "owner": "subscription",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SubscriptionNotLive"
+        }
+      },
+      "earlier": []
+    },
+    "SE-900": {
+      "name": "SettingsNotCurrent",
+      "owner": "settings",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SettingsNotCurrent"
+        }
+      },
+      "earlier": []
+    },
+    "SL-001": {
+      "name": "SlackApiFailure",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {
+        "status": {
+          "value": "uint",
+          "bits": 16
+        },
+        "code": {
+          "value": "text",
+          "max": 200,
+          "optional": true
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SlackApiFailure"
+        }
+      },
+      "earlier": []
+    },
+    "SL-002": {
+      "name": "SlackInputRefused",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SlackInputRefused"
+        }
+      },
+      "earlier": []
+    },
+    "SL-003": {
+      "name": "SlackAnswerRefused",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SlackAnswerRefused"
+        }
+      },
+      "earlier": []
+    },
+    "SL-004": {
+      "name": "SlackUnreachable",
+      "owner": "slack",
+      "from": "@orthograph/slack/blueprint/things/slack/errors.js",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SlackUnreachable"
+        }
+      },
+      "earlier": []
+    },
+    "SO-900": {
+      "name": "SourceNotSetup",
+      "owner": "source",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SourceNotSetup"
+        }
+      },
+      "earlier": []
+    },
+    "SO-901": {
+      "name": "SourceNotFound",
+      "owner": "source",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "src"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SourceNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "SU-001": {
+      "name": "SlotsOutOfRange",
+      "owner": "superagent",
+      "from": "@orthograph/superagent/blueprint/things/superagent/errors.js",
+      "fields": {
+        "slots": {
+          "value": "uint",
+          "bits": 8
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SlotsOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "SU-002": {
+      "name": "StaleRevision",
+      "owner": "superagent",
+      "from": "@orthograph/superagent/blueprint/things/superagent/errors.js",
+      "fields": {
+        "current": {
+          "value": "uint",
+          "bits": 32
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StaleRevision"
+        }
+      },
+      "earlier": []
+    },
+    "SU-900": {
+      "name": "SuperagentNotObserving",
+      "owner": "superagent",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SuperagentNotObserving"
+        }
+      },
+      "earlier": []
+    },
+    "SU-901": {
+      "name": "SuperagentNotFound",
+      "owner": "superagent",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "sag"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SuperagentNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "TH-900": {
+      "name": "ThreadNotIdle",
+      "owner": "thread",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ThreadNotIdle"
+        }
+      },
+      "earlier": []
+    },
+    "TH-901": {
+      "name": "ThreadNotFound",
+      "owner": "thread",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "thr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ThreadNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "TI-900": {
+      "name": "TicketNotOpen",
+      "owner": "ticket",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TicketNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "TI-901": {
+      "name": "TicketNotFound",
+      "owner": "ticket",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "tkt"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TicketNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "TR-900": {
+      "name": "TriggerNotStored",
+      "owner": "trigger",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TriggerNotStored"
+        }
+      },
+      "earlier": []
+    },
+    "TR-901": {
+      "name": "TriggerNotFound",
+      "owner": "trigger",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "trg"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TriggerNotFound"
+        }
+      },
+      "earlier": []
+    }
+  },
+  "retired": {}
+}

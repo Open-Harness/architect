@@ -33,6 +33,10 @@ export interface FieldModel {
   readonly optional?: true;
   /** The Solidity type the value works out to on a chain store (M6-chain item 2); present only on a field of a thing that lives in one. */
   readonly solidity?: string;
+  /** The value may be null (a union with null): its column may be NULL too. Absent for every other field. */
+  readonly nullable?: true;
+  /** A payload field that travels as a list or an object: a command line takes it as JSON. Absent for every other field. */
+  readonly json?: "list" | "object";
   /** What the field is for, as the blueprint says (`Blueprint.described`); every output carries it (M1.42). */
   readonly description?: string;
   /** Absent means public, the default. Only a public field's value may be a span attribute, a log line or a journal field. */
@@ -61,6 +65,8 @@ export interface InvariantModel {
   readonly refuse?: string;
   /** Written words that replace the sentence generated from the rule. */
   readonly description?: string;
+  /** The framework's own, held by every thing with versions and declared in no `invariants.ts`: one row per revision of a key. */
+  readonly framework?: true;
 }
 
 export interface ThingModel {
@@ -70,6 +76,8 @@ export interface ThingModel {
   readonly code: string;
   readonly description: string;
   readonly fields: FieldsModel;
+  /** A thing with versions (K40 fix 2): one current version per `key`. Absent when it has none. */
+  readonly versions?: { readonly key: string };
   /** The kind of place its state is kept: D1 rows, or a Durable Object per instance. */
   readonly lives: "database" | "actor" | (string & {});
   /** The declared store it lives in (a key of `Model.stores`); absent when it lives in the project's default store. */
@@ -142,6 +150,8 @@ export interface OperationModel {
   readonly notFound?: Readonly<Record<string, string>>;
   /** A creating move's field (the answer's, else the payload's) that carries the id the runtime mints and hands in as `id`. */
   readonly mints?: string;
+  /** A save or restore of a thing with versions: the declared error whose only field is `current`, its refusal of a save made from an old version (K40 fix 2). */
+  readonly stale?: string;
   readonly allowed: ReadonlyArray<AllowedModel>;
   /**
    * Whether the MCP door lists it as a tool: some `allowed` entry admits an agent, the mount's narrowing (`via`) keeps `agent`, and it does
@@ -159,6 +169,12 @@ export interface OperationModel {
   readonly budget: { readonly p95Ms: number } | null;
   /** A list read: what it filters by, its order and its page size. Present only for lists. */
   readonly list?: { readonly where: ReadonlyArray<string>; readonly order: string; readonly page: number };
+  /** A list read's fields pinned to one value, taken out of its payload (GOAL17-derived-reads). */
+  readonly only?: Readonly<Record<string, unknown>>;
+  /** A read worked out from other records: what it looks at, what it adds to its answer, and the hash of its function. */
+  readonly derive?: { readonly looks: Readonly<Record<string, unknown>>; readonly adds: FieldsModel; readonly hash: string };
+  /** The events that call it, each as an outbox hop (`Blueprint.on`), with the thing that declares the event. */
+  readonly on?: ReadonlyArray<{ readonly event: string; readonly thing: string }>;
   /** A plugin operation’s `file` is a package specifier. */
   readonly from: FromModel;
   readonly blanks?: ReadonlyArray<string>;
@@ -337,6 +353,16 @@ export interface Model {
   readonly secrets?: Readonly<Record<string, SecretModel>>;
   /** Each mount, by its name: present only when the blueprint has a mount. */
   readonly mounts?: Readonly<Record<string, MountModel>>;
+  /** Each agent kind, by its file's name: present only when the blueprint (or a mount) declares any. */
+  readonly agents?: Readonly<Record<string, { readonly file: string; readonly slots?: { readonly size: string; readonly reserve: number; readonly held: string } }>>;
+  /** Each active source, by its file's name (GOAL17-source-from). */
+  readonly sources?: Readonly<Record<string, unknown>>;
+  /** Each hold, by the name it is exported under, with the app's held and unheld deliveries (GOAL17-pause). */
+  readonly holds?: Readonly<Record<string, unknown>>;
+  /** What can fail beside a thing, and when it shows (GOAL17-derived-reads). */
+  readonly problems?: ReadonlyArray<{ readonly kind: string; readonly thing: string; readonly of: string; readonly name: string; readonly failures: string; readonly after: string | number }>;
+  /** Instances the blueprint declares, by their thing's plural (`superagents`). */
+  readonly declared?: Readonly<Record<string, ReadonlyArray<unknown>>>;
   /** The alert rules the model implies (K18), sorted by id. The portal evaluates them and a sink writes them. */
   readonly alertRules: ReadonlyArray<AlertRuleModel>;
   /** The app's map: its pages, components and navigation (K31, K36). Present only when the blueprint has an `app/` folder. */

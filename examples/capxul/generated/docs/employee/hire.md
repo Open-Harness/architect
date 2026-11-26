@@ -52,6 +52,12 @@ Hire a person into a company, placed in one of its departments under one of its 
 
 ## Worked examples
 
+### allocate leave
+
+Starts from the world `a leave type`.
+
+- **Ada hires Bo too.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
 ### an employee leaves
 
 Starts from the world `an employee`.
@@ -70,6 +76,21 @@ Starts from the world `a team`.
 
 - **Ada can't give Olga Bo's job title.** `ada` (role company.owner) calls and sends company the world's company, person the cast's olga person, firstName `Olga Petrova`, gender `Female`, dateOfBirth `1994-03-17`, dateOfJoining `2026-01-05`, department the world's department, designation the last call's designation, and is refused with DesignationNotInCompany, EM-003.
 
+### approve an attendance request
+
+Starts from the world `an attendance request`.
+
+- **Ada hires Bo too.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
+### attendance requests and leave
+
+Starts from the world `a leave application`.
+
+- **Ada hires Bo.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, to find him.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, to find him once more.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, a third time.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
 ### hire an employee
 
 Starts from the world `a team`.
@@ -79,6 +100,32 @@ Starts from the world `a team`.
 - **Bo can't hire anyone into Ada's company.** `bo` (signed in) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `2026-01-05`, department the world's department, designation the world's designation, and is refused with NotAllowed, AR-001.
 - **Ada can't hire Bo with a joining day before his birthday.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-05-31`, department the world's department, designation the world's designation, and is refused with JoinedBeforeBorn, EM-004, carrying dateOfBirth `1990-06-01`.
 - **Ada may hire Bo on the day he was born, which ERPNext allows.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mensah`, gender `Male`, dateOfBirth `1990-06-01`, dateOfJoining `1990-06-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
+### hire from a job opening
+
+Starts from the world `a technical round`.
+
+- **Ada hires Pat, joining on 4 January 2027.** `ada` (role company.owner) calls and sends company the world's company, person the cast's pat person, firstName `Pat Mwangi`, gender `Non-Conforming`, dateOfBirth `1997-05-21`, dateOfJoining `2027-01-04`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
+### mark attendance
+
+Starts from the world `an employee`.
+
+- **Ada hires Bo, joining on 1 February.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
+### overlapping leave
+
+Starts from the world `a leave application`.
+
+- **Ada hires Bo.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again under its request key, and gets him back.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+- **Ada sends Bo's hiring again, to find him.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
+
+### run a payroll
+
+Starts from the world `an outside cost center`.
+
+- **Ada hires Dee, joining on Wednesday 8 April.** `ada` (role company.owner) calls and sends company the world's company, person the cast's dee person, firstName `Dee Otieno`, gender `Female`, dateOfBirth `1996-05-21`, dateOfJoining `2026-04-08`, department the world's department, designation the world's designation, and is answered.
 
 ## How to call
 

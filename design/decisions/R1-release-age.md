@@ -27,3 +27,10 @@ A younger version is allowed only by name:
 | Package | Version | Published | Why | Remove after |
 |---|---|---|---|---|
 | (none yet) | | | | |
+
+## The framework's own packages (slice 5 of Goal 18, 26 November 2026)
+
+The workspace the preset writes (`Starter.write`) lists `orthograph` and `@orthograph/*` under `minimumReleaseAgeExclude`,
+each once, beside whatever Nx wrote. The framework is published as `0.1.0-next.<n>` as often as it is built, so a three-day
+wait would keep a new app from the version that was just released. The age stays on for every other package, and no
+wildcard wider than the scope is allowed (check 47 (e)). This is the one standing exclusion; it needs no row above.

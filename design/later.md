@@ -212,6 +212,7 @@ Check 39 (`e2e/m1/39-m1-49-monitor-derived.test.ts`) does not judge these three;
 - **A nonce lane shared across processes** (`decisions/W1-wallet-send-lanes.md`, Open). Today one process keeps one lock
   per account and chain, and two processes sending from one key share only the chain's pending count. **Trigger:** a server runs a
   key from more than one process or Worker, or a journey sends from one account in two processes at once.
+- **A door added to an already-deployed app needs a 0002 migration.** The inbox columns (`id`, `actor`, the unique index) are written into `0001_things.sql` by `renderMigration` (`packages/projections/src/modules/server/internal/worker-config.ts`), which is only safe while the app was never deployed (the superagent). **Trigger:** an app that has been deployed gains a door, or Goal 17's doors reach another app.
 
 ## From the Goal 4 relayer review rounds (23 November 2026)
 
@@ -236,3 +237,11 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
 ## From the actions projection (Goal 5 lead, 23 November 2026)
 
 - **A `retrySafe` predicate per operation** (`decisions/WEB-actions-projection.md`, call 5). A generated action never names `retrySafe`. An operation whose payload carries its own idempotency key could emit it as a predicate on the input (`spikes/agent-native-compat` finding 5). **Trigger:** the model can say an operation carries its own key.
+
+## From #995's stand-ins (Goal 16, 25 November 2026)
+
+- **Stand-ins under `ortho dev`.** Today only a world prove starts runs a mount's process stand-in (G16-adapter-mounts
+  call 3), so a generated call in `ortho dev`'s world fails on the missing `<MOUNT>_BASE_URL`. Dev's world would start the
+  stand-ins too, and `Warm.reset` would restart them so a reused world starts with fresh stand-in state; prove could then
+  reuse a warm world for a model with stand-ins. **Trigger:** a developer needs a generated call to answer under `ortho dev`.
+  Check 10's world-of-its-own test counts stand-in starts assuming dev starts none; its author changes that count then.

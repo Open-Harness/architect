@@ -1,8 +1,40 @@
 // Generated from the blueprint. Do not edit.
 import type { McpEntry } from "@orthograph/language-effect";
+import { declaration as accountBalance } from "../../api/src/account/balance.ts";
+import { declaration as accountCreate } from "../../api/src/account/create.ts";
+import { declaration as accountGet } from "../../api/src/account/get.ts";
+import { declaration as accountMakeLedger } from "../../api/src/account/make-ledger.ts";
+import { declaration as appraisalCreate } from "../../api/src/appraisal/create.ts";
+import { declaration as appraisalGet } from "../../api/src/appraisal/get.ts";
+import { declaration as appraisalList } from "../../api/src/appraisal/list.ts";
+import { declaration as appraisalRate } from "../../api/src/appraisal/rate.ts";
+import { declaration as appraisalSelfRate } from "../../api/src/appraisal/self-rate.ts";
+import { declaration as appraisalSubmit } from "../../api/src/appraisal/submit.ts";
+import { declaration as appraisalCycleComplete } from "../../api/src/appraisal-cycle/complete.ts";
+import { declaration as appraisalCycleCreate } from "../../api/src/appraisal-cycle/create.ts";
+import { declaration as appraisalCycleGet } from "../../api/src/appraisal-cycle/get.ts";
+import { declaration as appraisalCycleReopen } from "../../api/src/appraisal-cycle/reopen.ts";
+import { declaration as appraisalCycleStart } from "../../api/src/appraisal-cycle/start.ts";
+import { declaration as appraisalTemplateCreate } from "../../api/src/appraisal-template/create.ts";
+import { declaration as appraisalTemplateGet } from "../../api/src/appraisal-template/get.ts";
+import { declaration as attendanceGet } from "../../api/src/attendance/get.ts";
+import { declaration as attendanceList } from "../../api/src/attendance/list.ts";
+import { declaration as attendanceMark } from "../../api/src/attendance/mark.ts";
+import { declaration as attendanceRequestApprove } from "../../api/src/attendance-request/approve.ts";
+import { declaration as attendanceRequestCreate } from "../../api/src/attendance-request/create.ts";
+import { declaration as attendanceRequestGet } from "../../api/src/attendance-request/get.ts";
+import { declaration as attendanceRequestReject } from "../../api/src/attendance-request/reject.ts";
 import { declaration as bankAccountClose } from "../../api/src/bank-account/close.ts";
 import { declaration as bankAccountGet } from "../../api/src/bank-account/get.ts";
 import { declaration as bankAccountOpen } from "../../api/src/bank-account/open.ts";
+import { declaration as bankTransactionFail } from "../../api/src/bank-transaction/fail.ts";
+import { declaration as bankTransactionGet } from "../../api/src/bank-transaction/get.ts";
+import { declaration as bankTransactionLand } from "../../api/src/bank-transaction/land.ts";
+import { declaration as bankTransactionList } from "../../api/src/bank-transaction/list.ts";
+import { declaration as bankTransactionSend } from "../../api/src/bank-transaction/send.ts";
+import { declaration as bankTransactionSettle } from "../../api/src/bank-transaction/settle.ts";
+import { declaration as branchCreate } from "../../api/src/branch/create.ts";
+import { declaration as branchGet } from "../../api/src/branch/get.ts";
 import { declaration as bridgeBusinessApprove } from "../../api/src/bridge-business/approve.ts";
 import { declaration as bridgeBusinessGet } from "../../api/src/bridge-business/get.ts";
 import { declaration as bridgeBusinessReject } from "../../api/src/bridge-business/reject.ts";
@@ -13,6 +45,8 @@ import { declaration as bridgeIndividualReject } from "../../api/src/bridge-indi
 import { declaration as bridgeIndividualStart } from "../../api/src/bridge-individual/start.ts";
 import { declaration as companyCreate } from "../../api/src/company/create.ts";
 import { declaration as companyGet } from "../../api/src/company/get.ts";
+import { declaration as costCenterCreate } from "../../api/src/cost-center/create.ts";
+import { declaration as costCenterGet } from "../../api/src/cost-center/get.ts";
 import { declaration as departmentCreate } from "../../api/src/department/create.ts";
 import { declaration as departmentGet } from "../../api/src/department/get.ts";
 import { declaration as designationCreate } from "../../api/src/designation/create.ts";
@@ -20,12 +54,153 @@ import { declaration as designationGet } from "../../api/src/designation/get.ts"
 import { declaration as employeeGet } from "../../api/src/employee/get.ts";
 import { declaration as employeeHire } from "../../api/src/employee/hire.ts";
 import { declaration as employeeRelieve } from "../../api/src/employee/relieve.ts";
+import { declaration as employeeFeedbackCriteriaCreate } from "../../api/src/employee-feedback-criteria/create.ts";
+import { declaration as employeeFeedbackCriteriaGet } from "../../api/src/employee-feedback-criteria/get.ts";
+import { declaration as employeeGradeCreate } from "../../api/src/employee-grade/create.ts";
+import { declaration as employeeGradeGet } from "../../api/src/employee-grade/get.ts";
+import { declaration as employeePerformanceFeedbackCreate } from "../../api/src/employee-performance-feedback/create.ts";
+import { declaration as employeePerformanceFeedbackGet } from "../../api/src/employee-performance-feedback/get.ts";
+import { declaration as employeePerformanceFeedbackSubmit } from "../../api/src/employee-performance-feedback/submit.ts";
+import { declaration as employeePromotionCancel } from "../../api/src/employee-promotion/cancel.ts";
+import { declaration as employeePromotionCreate } from "../../api/src/employee-promotion/create.ts";
+import { declaration as employeePromotionGet } from "../../api/src/employee-promotion/get.ts";
+import { declaration as employeePromotionSubmit } from "../../api/src/employee-promotion/submit.ts";
+import { declaration as employeeSeparationBegin } from "../../api/src/employee-separation/begin.ts";
+import { declaration as employeeSeparationComplete } from "../../api/src/employee-separation/complete.ts";
+import { declaration as employeeSeparationCreate } from "../../api/src/employee-separation/create.ts";
+import { declaration as employeeSeparationGet } from "../../api/src/employee-separation/get.ts";
+import { declaration as employeeTransferCancel } from "../../api/src/employee-transfer/cancel.ts";
+import { declaration as employeeTransferCreate } from "../../api/src/employee-transfer/create.ts";
+import { declaration as employeeTransferGet } from "../../api/src/employee-transfer/get.ts";
+import { declaration as employeeTransferSubmit } from "../../api/src/employee-transfer/submit.ts";
+import { declaration as employmentTypeCreate } from "../../api/src/employment-type/create.ts";
+import { declaration as employmentTypeGet } from "../../api/src/employment-type/get.ts";
+import { declaration as expenseAdd } from "../../api/src/expense/add.ts";
+import { declaration as expenseGet } from "../../api/src/expense/get.ts";
+import { declaration as expenseClaimApprove } from "../../api/src/expense-claim/approve.ts";
+import { declaration as expenseClaimCreate } from "../../api/src/expense-claim/create.ts";
+import { declaration as expenseClaimGet } from "../../api/src/expense-claim/get.ts";
+import { declaration as expenseClaimReject } from "../../api/src/expense-claim/reject.ts";
+import { declaration as expenseClaimTypeCreate } from "../../api/src/expense-claim-type/create.ts";
+import { declaration as expenseClaimTypeGet } from "../../api/src/expense-claim-type/get.ts";
+import { declaration as fiscalYearCreate } from "../../api/src/fiscal-year/create.ts";
+import { declaration as fiscalYearGet } from "../../api/src/fiscal-year/get.ts";
+import { declaration as glEntryList } from "../../api/src/gl-entry/list.ts";
+import { declaration as goalArchive } from "../../api/src/goal/archive.ts";
+import { declaration as goalClose } from "../../api/src/goal/close.ts";
+import { declaration as goalComplete } from "../../api/src/goal/complete.ts";
+import { declaration as goalCreate } from "../../api/src/goal/create.ts";
+import { declaration as goalGet } from "../../api/src/goal/get.ts";
+import { declaration as goalList } from "../../api/src/goal/list.ts";
+import { declaration as goalReopen } from "../../api/src/goal/reopen.ts";
+import { declaration as goalRollUp } from "../../api/src/goal/roll-up.ts";
+import { declaration as goalUnarchive } from "../../api/src/goal/unarchive.ts";
+import { declaration as goalUpdateProgress } from "../../api/src/goal/update-progress.ts";
+import { declaration as holidayAdd } from "../../api/src/holiday/add.ts";
+import { declaration as holidayGet } from "../../api/src/holiday/get.ts";
+import { declaration as holidayListAddWeeklyOff } from "../../api/src/holiday-list/add-weekly-off.ts";
+import { declaration as holidayListCreate } from "../../api/src/holiday-list/create.ts";
+import { declaration as holidayListGet } from "../../api/src/holiday-list/get.ts";
+import { declaration as interviewClear } from "../../api/src/interview/clear.ts";
+import { declaration as interviewCreate } from "../../api/src/interview/create.ts";
+import { declaration as interviewGet } from "../../api/src/interview/get.ts";
+import { declaration as interviewReject } from "../../api/src/interview/reject.ts";
+import { declaration as interviewFeedbackGet } from "../../api/src/interview-feedback/get.ts";
+import { declaration as interviewFeedbackGive } from "../../api/src/interview-feedback/give.ts";
+import { declaration as interviewRoundCreate } from "../../api/src/interview-round/create.ts";
+import { declaration as interviewRoundGet } from "../../api/src/interview-round/get.ts";
+import { declaration as jobApplicantAccept } from "../../api/src/job-applicant/accept.ts";
+import { declaration as jobApplicantCreate } from "../../api/src/job-applicant/create.ts";
+import { declaration as jobApplicantGet } from "../../api/src/job-applicant/get.ts";
+import { declaration as jobApplicantHold } from "../../api/src/job-applicant/hold.ts";
+import { declaration as jobApplicantReject } from "../../api/src/job-applicant/reject.ts";
+import { declaration as jobOfferAccept } from "../../api/src/job-offer/accept.ts";
+import { declaration as jobOfferCreate } from "../../api/src/job-offer/create.ts";
+import { declaration as jobOfferGet } from "../../api/src/job-offer/get.ts";
+import { declaration as jobOfferReject } from "../../api/src/job-offer/reject.ts";
+import { declaration as jobOpeningClose } from "../../api/src/job-opening/close.ts";
+import { declaration as jobOpeningCreate } from "../../api/src/job-opening/create.ts";
+import { declaration as jobOpeningGet } from "../../api/src/job-opening/get.ts";
+import { declaration as journalEntryCancel } from "../../api/src/journal-entry/cancel.ts";
+import { declaration as journalEntryCreate } from "../../api/src/journal-entry/create.ts";
+import { declaration as journalEntryGet } from "../../api/src/journal-entry/get.ts";
+import { declaration as journalEntrySubmit } from "../../api/src/journal-entry/submit.ts";
+import { declaration as journalEntryAccountList } from "../../api/src/journal-entry-account/list.ts";
+import { declaration as kraCreate } from "../../api/src/kra/create.ts";
+import { declaration as kraGet } from "../../api/src/kra/get.ts";
+import { declaration as leaveAllocationCreate } from "../../api/src/leave-allocation/create.ts";
+import { declaration as leaveAllocationGet } from "../../api/src/leave-allocation/get.ts";
+import { declaration as leaveAllocationSubmit } from "../../api/src/leave-allocation/submit.ts";
+import { declaration as leaveApplicationApprove } from "../../api/src/leave-application/approve.ts";
+import { declaration as leaveApplicationCancel } from "../../api/src/leave-application/cancel.ts";
+import { declaration as leaveApplicationCreate } from "../../api/src/leave-application/create.ts";
+import { declaration as leaveApplicationGet } from "../../api/src/leave-application/get.ts";
+import { declaration as leaveApplicationReject } from "../../api/src/leave-application/reject.ts";
+import { declaration as leaveTypeCreate } from "../../api/src/leave-type/create.ts";
+import { declaration as leaveTypeGet } from "../../api/src/leave-type/get.ts";
+import { declaration as payrollEmployeeDetailList } from "../../api/src/payroll-employee-detail/list.ts";
+import { declaration as payrollEntryCreate } from "../../api/src/payroll-entry/create.ts";
+import { declaration as payrollEntryGet } from "../../api/src/payroll-entry/get.ts";
+import { declaration as payrollEntryList } from "../../api/src/payroll-entry/list.ts";
+import { declaration as payrollEntrySubmit } from "../../api/src/payroll-entry/submit.ts";
+import { declaration as payrollEntrySubmitSlips } from "../../api/src/payroll-entry/submit-slips.ts";
+import { declaration as payrollPeriodCreate } from "../../api/src/payroll-period/create.ts";
+import { declaration as payrollPeriodGet } from "../../api/src/payroll-period/get.ts";
+import { declaration as salaryComponentCreate } from "../../api/src/salary-component/create.ts";
+import { declaration as salaryComponentGet } from "../../api/src/salary-component/get.ts";
+import { declaration as salaryDetailList } from "../../api/src/salary-detail/list.ts";
+import { declaration as salarySlipGet } from "../../api/src/salary-slip/get.ts";
+import { declaration as salarySlipList } from "../../api/src/salary-slip/list.ts";
+import { declaration as salarySlipDetailList } from "../../api/src/salary-slip-detail/list.ts";
+import { declaration as salaryStructureCancel } from "../../api/src/salary-structure/cancel.ts";
+import { declaration as salaryStructureCreate } from "../../api/src/salary-structure/create.ts";
+import { declaration as salaryStructureGet } from "../../api/src/salary-structure/get.ts";
+import { declaration as salaryStructureSubmit } from "../../api/src/salary-structure/submit.ts";
+import { declaration as salaryStructureAssignmentCancel } from "../../api/src/salary-structure-assignment/cancel.ts";
+import { declaration as salaryStructureAssignmentCreate } from "../../api/src/salary-structure-assignment/create.ts";
+import { declaration as salaryStructureAssignmentGet } from "../../api/src/salary-structure-assignment/get.ts";
+import { declaration as salaryStructureAssignmentList } from "../../api/src/salary-structure-assignment/list.ts";
+import { declaration as salaryStructureAssignmentSubmit } from "../../api/src/salary-structure-assignment/submit.ts";
+import { declaration as shiftTypeCreate } from "../../api/src/shift-type/create.ts";
+import { declaration as shiftTypeGet } from "../../api/src/shift-type/get.ts";
 
 /** One tool per operation and read, named as the operation is. */
 export const catalog = {
+  "account.balance": { description: "An account's balance on a day: its own ledger lines and those of every account under it.", operation: accountBalance, states: ["group","ledger"] },
+  "account.create": { description: "Add an account to a company's chart, under a group or as a root. Refuses AccountNameTaken when another account holds this company and account name.", operation: accountCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"AccountCreated"} },
+  "account.get": { description: "Read one account by its id: company, accountName, parentAccount, rootType, reportType, accountType, state.", operation: accountGet, states: ["group","ledger"] },
+  "account.make-ledger": { description: "Turn a group account with nothing under it into a ledger. Refuses AccountNameTaken when another account holds this company and account name.", operation: accountMakeLedger, states: ["group","ledger"], move: {"key":"makeLedger","from":["group"],"to":["ledger"],"emits":"AccountMadeLedger"} },
+  "appraisal.create": { description: "Make an employee's appraisal in a cycle, by a template. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: appraisalCreate, states: ["draft","submitted"], move: {"key":"create","from":[],"to":["draft"],"emits":"AppraisalCreated"} },
+  "appraisal.get": { description: "Read one appraisal by its id: company, employee, appraisalCycle, appraisalTemplate, kraEvaluationMethod, kras, selfRatings, totalScore, selfScore, avgFeedbackScore, finalScore, state.", operation: appraisalGet, states: ["draft","submitted"] },
+  "appraisal.list": { description: "List appraisals, oldest first, 50 to a page, filtered by appraisalCycle, employee.", operation: appraisalList, states: ["draft","submitted"] },
+  "appraisal.rate": { description: "Score each KRA of an appraisal by hand, from 0 to 5. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: appraisalRate, states: ["draft","submitted"], move: {"key":"rate","from":["draft"],"to":["draft"],"emits":"AppraisalRated"} },
+  "appraisal.self-rate": { description: "Rate yourself against each of your appraisal's criteria, from 0 to 1. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: appraisalSelfRate, states: ["draft","submitted"], move: {"key":"selfRate","from":["draft"],"to":["draft"],"emits":"AppraisalSelfRated"} },
+  "appraisal.submit": { description: "Submit an appraisal. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: appraisalSubmit, states: ["draft","submitted"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"AppraisalSubmitted"} },
+  "appraisal-cycle.complete": { description: "Mark a cycle completed once every appraisal in it is submitted. Refuses CycleNameTaken when another appraisal cycle holds this company and cycle name.", operation: appraisalCycleComplete, states: ["notStarted","inProgress","completed"], move: {"key":"complete","from":["inProgress"],"to":["completed"],"emits":"AppraisalCycleCompleted"} },
+  "appraisal-cycle.create": { description: "Set up an appraisal cycle: its days, how its KRAs are scored, and who is appraised by which template. Refuses CycleNameTaken when another appraisal cycle holds this company and cycle name.", operation: appraisalCycleCreate, states: ["notStarted","inProgress","completed"], move: {"key":"create","from":[],"to":["notStarted"],"emits":"AppraisalCycleCreated"} },
+  "appraisal-cycle.get": { description: "Read one appraisal-cycle by its id: company, cycleName, startDate, endDate, kraEvaluationMethod, appraisees, state.", operation: appraisalCycleGet, states: ["notStarted","inProgress","completed"] },
+  "appraisal-cycle.reopen": { description: "Put a completed cycle back in progress. Refuses CycleNameTaken when another appraisal cycle holds this company and cycle name.", operation: appraisalCycleReopen, states: ["notStarted","inProgress","completed"], move: {"key":"reopen","from":["completed"],"to":["inProgress"],"emits":"AppraisalCycleReopened"} },
+  "appraisal-cycle.start": { description: "Start a cycle, making an appraisal for each appraisee who has none yet. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle. Refuses CycleNameTaken when another appraisal cycle holds this company and cycle name.", operation: appraisalCycleStart, states: ["notStarted","inProgress","completed"], move: {"key":"start","from":["notStarted"],"to":["inProgress"],"emits":"AppraisalCycleStarted"} },
+  "appraisal-template.create": { description: "Make an appraisal template: KRAs and rating criteria, each with its weightage. Refuses TemplateTitleTaken when another appraisal template holds this company and title.", operation: appraisalTemplateCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"AppraisalTemplateCreated"} },
+  "appraisal-template.get": { description: "Read one appraisal-template by its id: company, title, kras, criteria, state.", operation: appraisalTemplateGet, states: ["active"] },
+  "attendance.get": { description: "Read one attendance by its id: company, employee, attendanceDate, status, state.", operation: attendanceGet, states: ["marked"] },
+  "attendance.list": { description: "List attendances, oldest first, 50 to a page, filtered by employee, attendanceDate.", operation: attendanceList, states: ["marked"] },
+  "attendance.mark": { description: "Mark whether an employee was at work on a day. Refuses AttendanceAlreadyMarked when another attendance holds this employee and attendance date.", operation: attendanceMark, states: ["marked"], move: {"key":"mark","from":[],"to":["marked"],"emits":"AttendanceMarked"} },
+  "attendance-request.approve": { description: "Approve a request, marking each of its days. Refuses AttendanceAlreadyMarked when another attendance holds this employee and attendance date.", operation: attendanceRequestApprove, states: ["draft","approved","rejected"], move: {"key":"approve","from":["draft"],"to":["approved"],"emits":"AttendanceRequestApproved"} },
+  "attendance-request.create": { description: "Ask for an employee to be marked at work, from one day to another, and why.", operation: attendanceRequestCreate, states: ["draft","approved","rejected"], move: {"key":"create","from":[],"to":["draft"],"emits":"AttendanceRequested"} },
+  "attendance-request.get": { description: "Read one attendance-request by its id: company, employee, fromDate, toDate, reason, state.", operation: attendanceRequestGet, states: ["draft","approved","rejected"] },
+  "attendance-request.reject": { description: "Reject a request, marking none of its days.", operation: attendanceRequestReject, states: ["draft","approved","rejected"], move: {"key":"reject","from":["draft"],"to":["rejected"],"emits":"AttendanceRequestRejected"} },
   "bank-account.close": { description: "Close a company's bank account; it takes no more deposits.", operation: bankAccountClose, states: ["open","closed"], move: {"key":"close","from":["open"],"to":["closed"],"emits":"BankAccountClosed"} },
   "bank-account.get": { description: "Read one bank-account by its id: company, business, accountName, currency, bankName, accountNumber, routingNumber, state.", operation: bankAccountGet, states: ["open","closed"] },
   "bank-account.open": { description: "Open a bank account for a company whose KYB Bridge approved: answers where to send deposits. Refuses BankAccountNameTaken when another open bank account holds this company and account name.", operation: bankAccountOpen, states: ["open","closed"], move: {"key":"open","from":[],"to":["open"],"emits":"BankAccountOpened"} },
+  "bank-transaction.fail": { description: "Record that Bridge couldn't pay a transfer out, and how it ended. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionFail, states: ["pending","settled","failed"], move: {"key":"fail","from":["pending"],"to":["failed"],"emits":"TransferFailed"} },
+  "bank-transaction.get": { description: "Read one bank-transaction by its id: company, account, date, deposit, withdrawal, currency, reference, party, state.", operation: bankTransactionGet, states: ["pending","settled","failed"] },
+  "bank-transaction.land": { description: "Record a deposit Bridge landed on a company's bank account. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionLand, states: ["pending","settled","failed"], move: {"key":"land","from":[],"to":["settled"],"emits":"DepositLanded"} },
+  "bank-transaction.list": { description: "List bank-transactions, oldest first, 50 to a page, filtered by account.", operation: bankTransactionList, states: ["pending","settled","failed"] },
+  "bank-transaction.send": { description: "Send money out of a company's bank account to a payee, through Bridge. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionSend, states: ["pending","settled","failed"], move: {"key":"send","from":[],"to":["pending"],"emits":"TransferSent"} },
+  "bank-transaction.settle": { description: "Record that Bridge paid a transfer out. Refuses AlreadyRecorded when another bank transaction holds this reference.", operation: bankTransactionSettle, states: ["pending","settled","failed"], move: {"key":"settle","from":["pending"],"to":["settled"],"emits":"TransferSettled"} },
+  "branch.create": { description: "Add a branch to a company. Refuses BranchNameTaken when another branch holds this company and branch name.", operation: branchCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"BranchCreated"} },
+  "branch.get": { description: "Read one branch by its id: company, branchName, state.", operation: branchGet, states: ["active"] },
   "bridge-business.approve": { description: "Record that Bridge approved a company's KYB. Refuses KybAlreadyStarted when another bridge business holds this company.", operation: bridgeBusinessApprove, states: ["started","approved","rejected"], move: {"key":"approve","from":["started"],"to":["approved"],"emits":"KybApproved"} },
   "bridge-business.get": { description: "Read one bridge-business by its id: company, legalName, email, kybLink, tosLink, state.", operation: bridgeBusinessGet, states: ["started","approved","rejected"] },
   "bridge-business.reject": { description: "Record that Bridge turned down a company's KYB, and why. Refuses KybAlreadyStarted when another bridge business holds this company.", operation: bridgeBusinessReject, states: ["started","approved","rejected"], move: {"key":"reject","from":["started"],"to":["rejected"],"emits":"KybRejected"} },
@@ -36,6 +211,8 @@ export const catalog = {
   "bridge-individual.start": { description: "Start your own KYC with Bridge: answers the form you fill in, and Bridge's terms. Refuses KycAlreadyStarted when another bridge individual holds this person.", operation: bridgeIndividualStart, states: ["started","approved","rejected"], move: {"key":"start","from":[],"to":["started"],"emits":"KycStarted"} },
   "company.create": { description: "Set up a company; the person who sets it up runs it. Refuses CompanyAbbrTaken when another company holds this owner and abbr. Refuses CompanyNameTaken when another company holds this owner and company name.", operation: companyCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"CompanyCreated"} },
   "company.get": { description: "Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.", operation: companyGet, states: ["active"] },
+  "cost-center.create": { description: "Add a cost center to a company, under a group or as a root. Refuses CostCenterNameTaken when another cost center holds this company and cost center name.", operation: costCenterCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"CostCenterCreated"} },
+  "cost-center.get": { description: "Read one cost-center by its id: company, costCenterName, parentCostCenter, state.", operation: costCenterGet, states: ["group","ledger"] },
   "department.create": { description: "Add a department to a company. Refuses DepartmentNameTaken when another department holds this company and department name.", operation: departmentCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"DepartmentCreated"} },
   "department.get": { description: "Read one department by its id: company, departmentName, state.", operation: departmentGet, states: ["active"] },
   "designation.create": { description: "Add a job title to a company. Refuses DesignationNameTaken when another designation holds this company and designation name.", operation: designationCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"DesignationCreated"} },
@@ -43,4 +220,113 @@ export const catalog = {
   "employee.get": { description: "Read one employee by its id: company, person, firstName, gender, dateOfBirth, dateOfJoining, department, designation, state.", operation: employeeGet, states: ["active","left"] },
   "employee.hire": { description: "Hire a person into a company, placed in one of its departments under one of its job titles. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeeHire, states: ["active","left"], move: {"key":"hire","from":[],"to":["active"],"emits":"EmployeeHired"} },
   "employee.relieve": { description: "Record that an employee has left the company, on the day they were relieved.", operation: employeeRelieve, states: ["active","left"], move: {"key":"relieve","from":["active"],"to":["left"],"emits":"EmployeeRelieved"} },
+  "employee-feedback-criteria.create": { description: "Add something a company rates its people on. Refuses CriteriaNameTaken when another employee feedback criteria holds this company and criteria.", operation: employeeFeedbackCriteriaCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"FeedbackCriteriaCreated"} },
+  "employee-feedback-criteria.get": { description: "Read one employee-feedback-criteria by its id: company, criteria, state.", operation: employeeFeedbackCriteriaGet, states: ["active"] },
+  "employee-grade.create": { description: "Add a grade to a company. Refuses EmployeeGradeNameTaken when another employee grade holds this company and grade name.", operation: employeeGradeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmployeeGradeCreated"} },
+  "employee-grade.get": { description: "Read one employee-grade by its id: company, gradeName, state.", operation: employeeGradeGet, states: ["active"] },
+  "employee-performance-feedback.create": { description: "Draft your feedback on a colleague's appraisal: what you think, and a rating for each criteria.", operation: employeePerformanceFeedbackCreate, states: ["draft","submitted"], move: {"key":"create","from":[],"to":["draft"],"emits":"PerformanceFeedbackDrafted"} },
+  "employee-performance-feedback.get": { description: "Read one employee-performance-feedback by its id: company, appraisal, appraisalCycle, employee, reviewer, feedback, ratings, totalScore, state.", operation: employeePerformanceFeedbackGet, states: ["draft","submitted"] },
+  "employee-performance-feedback.submit": { description: "Submit your feedback, counting it in the appraisal's average. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: employeePerformanceFeedbackSubmit, states: ["draft","submitted"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"PerformanceFeedbackSubmitted"} },
+  "employee-promotion.cancel": { description: "Cancel a submitted promotion, putting back the job title it replaced. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeePromotionCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"EmployeePromotionCancelled"} },
+  "employee-promotion.create": { description: "Draft a promotion: an employee's new job title, from a day.", operation: employeePromotionCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"EmployeePromotionDrafted"} },
+  "employee-promotion.get": { description: "Read one employee-promotion by its id: company, employee, promotionDate, currentDesignation, newDesignation, state.", operation: employeePromotionGet, states: ["draft","submitted","cancelled"] },
+  "employee-promotion.submit": { description: "Submit a promotion on or after its day, giving the employee the new job title. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeePromotionSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"EmployeePromoted"} },
+  "employee-separation.begin": { description: "Mark a separation in process. Refuses SeparationAlreadyOpen when another pending or inProcess employee separation holds this employee.", operation: employeeSeparationBegin, states: ["pending","inProcess","completed"], move: {"key":"begin","from":["pending"],"to":["inProcess"],"emits":"EmployeeSeparationBegun"} },
+  "employee-separation.complete": { description: "Mark a separation completed. The employee is relieved by its own call.", operation: employeeSeparationComplete, states: ["pending","inProcess","completed"], move: {"key":"complete","from":["pending","inProcess"],"to":["completed"],"emits":"EmployeeSeparationCompleted"} },
+  "employee-separation.create": { description: "Start an employee's separation, from their resignation letter. Refuses SeparationAlreadyOpen when another pending or inProcess employee separation holds this employee.", operation: employeeSeparationCreate, states: ["pending","inProcess","completed"], move: {"key":"create","from":[],"to":["pending"],"emits":"EmployeeSeparationStarted"} },
+  "employee-separation.get": { description: "Read one employee-separation by its id: company, employee, resignationLetterDate, boardingBeginsOn, state.", operation: employeeSeparationGet, states: ["pending","inProcess","completed"] },
+  "employee-transfer.cancel": { description: "Cancel a submitted transfer, putting back the department it replaced. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeeTransferCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"EmployeeTransferCancelled"} },
+  "employee-transfer.create": { description: "Draft a transfer: an employee's new department, from a day.", operation: employeeTransferCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"EmployeeTransferDrafted"} },
+  "employee-transfer.get": { description: "Read one employee-transfer by its id: company, employee, transferDate, currentDepartment, newDepartment, state.", operation: employeeTransferGet, states: ["draft","submitted","cancelled"] },
+  "employee-transfer.submit": { description: "Submit a transfer on or after its day, giving the employee the new department. Refuses EmployeeAlreadyHired when another active employee holds this company and person.", operation: employeeTransferSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"EmployeeTransferred"} },
+  "employment-type.create": { description: "Add a way a company employs people. Refuses EmploymentTypeNameTaken when another employment type holds this company and employment type name.", operation: employmentTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"EmploymentTypeCreated"} },
+  "employment-type.get": { description: "Read one employment-type by its id: company, employmentTypeName, state.", operation: employmentTypeGet, states: ["active"] },
+  "expense.add": { description: "Add one expense to a claim still in draft.", operation: expenseAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"ExpenseAdded"} },
+  "expense.get": { description: "Read one expense by its id: expenseClaim, expenseDate, expenseType, amount, sanctionedAmount, state.", operation: expenseGet, states: ["active"] },
+  "expense-claim.approve": { description: "Approve a claim, owing the employee what was sanctioned.", operation: expenseClaimApprove, states: ["draft","approved","rejected"], move: {"key":"approve","from":["draft"],"to":["approved"],"emits":"ExpenseClaimApproved"} },
+  "expense-claim.create": { description: "Start an employee's claim for expenses the company pays back.", operation: expenseClaimCreate, states: ["draft","approved","rejected"], move: {"key":"create","from":[],"to":["draft"],"emits":"ExpenseClaimCreated"} },
+  "expense-claim.get": { description: "Read one expense-claim by its id: company, employee, postingDate, totalClaimedAmount, totalSanctionedAmount, state.", operation: expenseClaimGet, states: ["draft","approved","rejected"] },
+  "expense-claim.reject": { description: "Reject a claim, so nothing of it is paid back.", operation: expenseClaimReject, states: ["draft","approved","rejected"], move: {"key":"reject","from":["draft"],"to":["rejected"],"emits":"ExpenseClaimRejected"} },
+  "expense-claim-type.create": { description: "Add a kind of expense a company pays back. Refuses ExpenseTypeTaken when another expense claim type holds this company and expense type.", operation: expenseClaimTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ExpenseClaimTypeCreated"} },
+  "expense-claim-type.get": { description: "Read one expense-claim-type by its id: company, expenseType, state.", operation: expenseClaimTypeGet, states: ["active"] },
+  "fiscal-year.create": { description: "Set up a company's fiscal year. Refuses FiscalYearNameTaken when another fiscal year holds this company and year.", operation: fiscalYearCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"FiscalYearCreated"} },
+  "fiscal-year.get": { description: "Read one fiscal-year by its id: company, year, yearStartDate, yearEndDate, isShortYear, state.", operation: fiscalYearGet, states: ["active"] },
+  "gl-entry.list": { description: "List gl-entrys, oldest first, 50 to a page, filtered by account, voucherId.", operation: glEntryList },
+  "goal.archive": { description: "Archive a goal: it no longer counts towards its parent or its appraisal. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalArchive, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"archive","from":["pending","inProgress","closed"],"to":["archived"],"emits":"GoalArchived"} },
+  "goal.close": { description: "Close a goal, keeping its progress. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalClose, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"close","from":["pending","inProgress","archived"],"to":["closed"],"emits":"GoalClosed"} },
+  "goal.complete": { description: "Mark a goal completed, setting its progress to 100. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalComplete, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"complete","from":["pending","inProgress"],"to":["completed"],"emits":"GoalCompleted"} },
+  "goal.create": { description: "Set an employee a goal in a cycle, under a KRA, perhaps under another of their goals. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalCreate, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"create","from":[],"to":["pending","inProgress","completed"],"emits":"GoalCreated"} },
+  "goal.get": { description: "Read one goal by its id: company, employee, appraisalCycle, kra, goalName, progress, isGroup, state.", operation: goalGet, states: ["pending","inProgress","completed","archived","closed"] },
+  "goal.list": { description: "List goals, oldest first, 50 to a page, filtered by appraisalCycle, employee.", operation: goalList, states: ["pending","inProgress","completed","archived","closed"] },
+  "goal.reopen": { description: "Reopen a closed goal: its status follows its progress again. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalReopen, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"reopen","from":["closed"],"to":["pending","inProgress","completed"],"emits":"GoalReopened"} },
+  "goal.roll-up": { description: "Bring a group goal's status up to date with the progress its children have rolled up.", operation: goalRollUp, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"rollUp","from":["pending","inProgress","completed"],"to":["pending","inProgress","completed"],"emits":"GoalRolledUp"} },
+  "goal.unarchive": { description: "Bring an archived goal back: its status follows its progress again. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalUnarchive, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"unarchive","from":["archived"],"to":["pending","inProgress","completed"],"emits":"GoalUnarchived"} },
+  "goal.update-progress": { description: "Set how far along a goal is, from 0 to 100. Refuses AppraisalAlreadyExists when another appraisal holds this employee and appraisal cycle.", operation: goalUpdateProgress, states: ["pending","inProgress","completed","archived","closed"], move: {"key":"updateProgress","from":["pending","inProgress","completed","archived","closed"],"to":["pending","inProgress","completed","archived","closed"],"emits":"GoalProgressUpdated"} },
+  "holiday.add": { description: "Add one day off to a holiday list. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayAdd, states: ["active"], move: {"key":"add","from":[],"to":["active"],"emits":"HolidayAdded"} },
+  "holiday.get": { description: "Read one holiday by its id: holidayList, holidayDate, description, state.", operation: holidayGet, states: ["active"] },
+  "holiday-list.add-weekly-off": { description: "Make every given weekday in a holiday list a day off. Refuses HolidayDateTaken when another holiday holds this holiday list and holiday date. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListAddWeeklyOff, states: ["active"], move: {"key":"addWeeklyOff","from":["active"],"to":["active"],"emits":"WeeklyOffAdded"} },
+  "holiday-list.create": { description: "Start a company's list of days off, between two days. Refuses HolidayListNameTaken when another holiday list holds this company and holiday list name.", operation: holidayListCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"HolidayListCreated"} },
+  "holiday-list.get": { description: "Read one holiday-list by its id: company, holidayListName, fromDate, toDate, totalHolidays, state.", operation: holidayListGet, states: ["active"] },
+  "interview.clear": { description: "Mark an interview cleared. Refuses InterviewAlreadyScheduled when another interview holds this job applicant and interview round.", operation: interviewClear, states: ["pending","cleared","rejected"], move: {"key":"clear","from":["pending"],"to":["cleared"],"emits":"InterviewCleared"} },
+  "interview.create": { description: "Schedule an applicant's interview at a round, on a day, with the employees who interview. Refuses InterviewAlreadyScheduled when another interview holds this job applicant and interview round.", operation: interviewCreate, states: ["pending","cleared","rejected"], move: {"key":"create","from":[],"to":["pending"],"emits":"InterviewScheduled"} },
+  "interview.get": { description: "Read one interview by its id: company, jobApplicant, interviewRound, scheduledOn, fromTime, toTime, interviewers, state.", operation: interviewGet, states: ["pending","cleared","rejected"] },
+  "interview.reject": { description: "Mark an interview rejected. Refuses InterviewAlreadyScheduled when another interview holds this job applicant and interview round.", operation: interviewReject, states: ["pending","cleared","rejected"], move: {"key":"reject","from":["pending"],"to":["rejected"],"emits":"InterviewRejected"} },
+  "interview-feedback.get": { description: "Read one interview-feedback by its id: company, interview, interviewer, result, state.", operation: interviewFeedbackGet, states: ["given"] },
+  "interview-feedback.give": { description: "Give an interviewer's feedback on an interview: cleared or rejected. Refuses FeedbackAlreadyGiven when another interview feedback holds this interview and interviewer.", operation: interviewFeedbackGive, states: ["given"], move: {"key":"give","from":[],"to":["given"],"emits":"InterviewFeedbackGiven"} },
+  "interview-round.create": { description: "Add a stage of hiring to a company, with the employees who interview at it. Refuses RoundNameTaken when another interview round holds this company and round name.", operation: interviewRoundCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"InterviewRoundCreated"} },
+  "interview-round.get": { description: "Read one interview-round by its id: company, roundName, interviewers, state.", operation: interviewRoundGet, states: ["active"] },
+  "job-applicant.accept": { description: "Mark an applicant accepted, once they have accepted their job offer.", operation: jobApplicantAccept, states: ["open","hold","rejected","accepted"], move: {"key":"accept","from":["open","hold"],"to":["accepted"],"emits":"JobApplicantAccepted"} },
+  "job-applicant.create": { description: "Add a person who applied for a job opening.", operation: jobApplicantCreate, states: ["open","hold","rejected","accepted"], move: {"key":"create","from":[],"to":["open"],"emits":"JobApplicantCreated"} },
+  "job-applicant.get": { description: "Read one job-applicant by its id: company, jobOpening, applicantName, email, state.", operation: jobApplicantGet, states: ["open","hold","rejected","accepted"] },
+  "job-applicant.hold": { description: "Put an applicant on hold.", operation: jobApplicantHold, states: ["open","hold","rejected","accepted"], move: {"key":"hold","from":["open"],"to":["hold"],"emits":"JobApplicantHeld"} },
+  "job-applicant.reject": { description: "Turn an applicant down.", operation: jobApplicantReject, states: ["open","hold","rejected","accepted"], move: {"key":"reject","from":["open","hold"],"to":["rejected"],"emits":"JobApplicantRejected"} },
+  "job-offer.accept": { description: "Record that the applicant accepted the offer. Refuses OfferAlreadyMade when another job offer holds this job applicant.", operation: jobOfferAccept, states: ["awaiting","accepted","rejected"], move: {"key":"accept","from":["awaiting"],"to":["accepted"],"emits":"JobOfferAccepted"} },
+  "job-offer.create": { description: "Offer an applicant a job, under one of the company's job titles. Refuses OfferAlreadyMade when another job offer holds this job applicant.", operation: jobOfferCreate, states: ["awaiting","accepted","rejected"], move: {"key":"create","from":[],"to":["awaiting"],"emits":"JobOfferMade"} },
+  "job-offer.get": { description: "Read one job-offer by its id: company, jobApplicant, designation, offerDate, state.", operation: jobOfferGet, states: ["awaiting","accepted","rejected"] },
+  "job-offer.reject": { description: "Record that the applicant rejected the offer. Refuses OfferAlreadyMade when another job offer holds this job applicant.", operation: jobOfferReject, states: ["awaiting","accepted","rejected"], move: {"key":"reject","from":["awaiting"],"to":["rejected"],"emits":"JobOfferRejected"} },
+  "job-opening.close": { description: "Close a job opening to new applicants.", operation: jobOpeningClose, states: ["open","closed"], move: {"key":"close","from":["open"],"to":["closed"],"emits":"JobOpeningClosed"} },
+  "job-opening.create": { description: "Open a job under one of a company's job titles, for some number of people.", operation: jobOpeningCreate, states: ["open","closed"], move: {"key":"create","from":[],"to":["open"],"emits":"JobOpeningCreated"} },
+  "job-opening.get": { description: "Read one job-opening by its id: company, designation, jobTitle, vacancies, state.", operation: jobOpeningGet, states: ["open","closed"] },
+  "journal-entry.cancel": { description: "Cancel a submitted journal entry, posting a reversing ledger line for each it posted.", operation: journalEntryCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"JournalEntryCancelled"} },
+  "journal-entry.create": { description: "Draft a journal entry with its lines.", operation: journalEntryCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"JournalEntryDrafted"} },
+  "journal-entry.get": { description: "Read one journal-entry by its id: company, postingDate, userRemark, totalDebit, totalCredit, state.", operation: journalEntryGet, states: ["draft","submitted","cancelled"] },
+  "journal-entry.submit": { description: "Submit a balanced journal entry, posting one ledger line per line.", operation: journalEntrySubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"JournalEntrySubmitted"} },
+  "journal-entry-account.list": { description: "List journal-entry-accounts, oldest first, 50 to a page, filtered by journalEntry.", operation: journalEntryAccountList },
+  "kra.create": { description: "Add a key result area to a company. Refuses KraTitleTaken when another kra holds this company and title.", operation: kraCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"KraCreated"} },
+  "kra.get": { description: "Read one kra by its id: company, title, state.", operation: kraGet, states: ["active"] },
+  "leave-allocation.create": { description: "Give an employee leave days of one type, between two days, as a draft.", operation: leaveAllocationCreate, states: ["draft","submitted"], move: {"key":"create","from":[],"to":["draft"],"emits":"LeaveAllocationCreated"} },
+  "leave-allocation.get": { description: "Read one leave-allocation by its id: company, employee, leaveType, fromDate, toDate, newLeavesAllocated, state.", operation: leaveAllocationGet, states: ["draft","submitted"] },
+  "leave-allocation.submit": { description: "Submit an allocation, so its leave days can be taken.", operation: leaveAllocationSubmit, states: ["draft","submitted"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"LeaveAllocationSubmitted"} },
+  "leave-application.approve": { description: "Approve a leave, marking each of its days On Leave. Refuses AttendanceAlreadyMarked when another attendance holds this employee and attendance date.", operation: leaveApplicationApprove, states: ["open","approved","rejected","cancelled"], move: {"key":"approve","from":["open"],"to":["approved"],"emits":"LeaveApplicationApproved"} },
+  "leave-application.cancel": { description: "Cancel a leave, open or approved.", operation: leaveApplicationCancel, states: ["open","approved","rejected","cancelled"], move: {"key":"cancel","from":["open","approved"],"to":["cancelled"],"emits":"LeaveApplicationCancelled"} },
+  "leave-application.create": { description: "Ask for leave of one type, from one day to another, and why.", operation: leaveApplicationCreate, states: ["open","approved","rejected","cancelled"], move: {"key":"create","from":[],"to":["open"],"emits":"LeaveApplied"} },
+  "leave-application.get": { description: "Read one leave-application by its id: company, employee, leaveType, fromDate, toDate, reason, totalLeaveDays, state.", operation: leaveApplicationGet, states: ["open","approved","rejected","cancelled"] },
+  "leave-application.reject": { description: "Reject a leave, marking none of its days.", operation: leaveApplicationReject, states: ["open","approved","rejected","cancelled"], move: {"key":"reject","from":["open"],"to":["rejected"],"emits":"LeaveApplicationRejected"} },
+  "leave-type.create": { description: "Add a kind of leave a company gives. Refuses LeaveTypeNameTaken when another leave type holds this company and leave type name.", operation: leaveTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"LeaveTypeCreated"} },
+  "leave-type.get": { description: "Read one leave-type by its id: company, leaveTypeName, maxContinuousDaysAllowed, isLwp, includeHoliday, state.", operation: leaveTypeGet, states: ["active"] },
+  "payroll-employee-detail.list": { description: "List payroll-employee-details, oldest first, 100 to a page, filtered by payrollEntry.", operation: payrollEmployeeDetailList },
+  "payroll-entry.create": { description: "Draft a payroll entry for a span of days, filled with the company's employees to pay.", operation: payrollEntryCreate, states: ["draft","submitted","accrued"], move: {"key":"create","from":[],"to":["draft"],"emits":"PayrollEntryDrafted"} },
+  "payroll-entry.get": { description: "Read one payroll-entry by its id: company, postingDate, startDate, endDate, costCenter, payrollPayableAccount, numberOfEmployees, state.", operation: payrollEntryGet, states: ["draft","submitted","accrued"] },
+  "payroll-entry.list": { description: "List payroll-entrys, oldest first, 50 to a page, filtered by company.", operation: payrollEntryList, states: ["draft","submitted","accrued"] },
+  "payroll-entry.submit": { description: "Submit a payroll entry, making a draft salary slip for each of its employees.", operation: payrollEntrySubmit, states: ["draft","submitted","accrued"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"PayrollEntrySubmitted"} },
+  "payroll-entry.submit-slips": { description: "Submit a payroll entry's salary slips, booking their pay in one accrual journal entry.", operation: payrollEntrySubmitSlips, states: ["draft","submitted","accrued"], move: {"key":"submitSlips","from":["submitted"],"to":["accrued"],"emits":"SalarySlipsSubmitted"} },
+  "payroll-period.create": { description: "Set up a company's payroll period. Refuses PayrollPeriodNameTaken when another payroll period holds this company and payroll period name.", operation: payrollPeriodCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"PayrollPeriodCreated"} },
+  "payroll-period.get": { description: "Read one payroll-period by its id: company, payrollPeriodName, startDate, endDate, state.", operation: payrollPeriodGet, states: ["active"] },
+  "salary-component.create": { description: "Add a part of pay, an earning or a deduction, with its default amount and the ledger it is booked to. Refuses SalaryComponentTaken when another salary component holds this company and salary component.", operation: salaryComponentCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"SalaryComponentCreated"} },
+  "salary-component.get": { description: "Read one salary-component by its id: company, salaryComponent, type, amount, account, state.", operation: salaryComponentGet, states: ["active"] },
+  "salary-detail.list": { description: "List salary-details, oldest first, 100 to a page, filtered by salaryStructure.", operation: salaryDetailList },
+  "salary-slip.get": { description: "Read one salary-slip by its id: company, employee, payrollEntry, salaryStructure, postingDate, startDate, endDate, grossPay, totalDeduction, netPay, status, journalEntry.", operation: salarySlipGet },
+  "salary-slip.list": { description: "List salary-slips, oldest first, 100 to a page, filtered by employee, payrollEntry.", operation: salarySlipList },
+  "salary-slip-detail.list": { description: "List salary-slip-details, oldest first, 100 to a page, filtered by salarySlip.", operation: salarySlipDetailList },
+  "salary-structure.cancel": { description: "Cancel a submitted salary structure no assignment or salary slip uses. Refuses SalaryStructureNameTaken when another salary structure holds this company and salary structure name.", operation: salaryStructureCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"SalaryStructureCancelled"} },
+  "salary-structure.create": { description: "Draft a salary structure with its earnings and deductions. Refuses SalaryStructureNameTaken when another salary structure holds this company and salary structure name.", operation: salaryStructureCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"SalaryStructureDrafted"} },
+  "salary-structure.get": { description: "Read one salary-structure by its id: company, salaryStructureName, totalEarning, totalDeduction, netPay, state.", operation: salaryStructureGet, states: ["draft","submitted","cancelled"] },
+  "salary-structure.submit": { description: "Submit a salary structure, so it can be assigned. Refuses SalaryStructureNameTaken when another salary structure holds this company and salary structure name.", operation: salaryStructureSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"SalaryStructureSubmitted"} },
+  "salary-structure-assignment.cancel": { description: "Cancel a submitted assignment, so payroll no longer counts it.", operation: salaryStructureAssignmentCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"SalaryStructureAssignmentCancelled"} },
+  "salary-structure-assignment.create": { description: "Assign a salary structure to an employee from a day on.", operation: salaryStructureAssignmentCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"SalaryStructureAssigned"} },
+  "salary-structure-assignment.get": { description: "Read one salary-structure-assignment by its id: company, employee, salaryStructure, fromDate, state.", operation: salaryStructureAssignmentGet, states: ["draft","submitted","cancelled"] },
+  "salary-structure-assignment.list": { description: "List salary-structure-assignments, oldest first, 50 to a page, filtered by employee.", operation: salaryStructureAssignmentList, states: ["draft","submitted","cancelled"] },
+  "salary-structure-assignment.submit": { description: "Submit an assignment, so payroll pays the employee by its structure from its day on.", operation: salaryStructureAssignmentSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"SalaryStructureAssignmentSubmitted"} },
+  "shift-type.create": { description: "Add a working shift to a company, from its start time to its end time. Refuses ShiftTypeNameTaken when another shift type holds this company and shift type name.", operation: shiftTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ShiftTypeCreated"} },
+  "shift-type.get": { description: "Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.", operation: shiftTypeGet, states: ["active"] },
 } as const satisfies { readonly [name: string]: McpEntry };

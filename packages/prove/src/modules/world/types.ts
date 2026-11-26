@@ -15,8 +15,16 @@ export interface ChainStand {
   readonly accounts?: ReadonlyArray<{ readonly address: string; readonly privateKey: Redacted.Redacted<string> }>;
 }
 
+/** The stand-ins a world stood up: what its Worker is told of them, and each one's address by mount (G16-adapter-mounts calls 3 and 4). */
+export interface StandIns {
+  readonly env: Readonly<Record<string, string>>;
+  readonly addresses: Readonly<Record<string, string>>;
+}
+
 export interface Running {
   readonly url: string;
+  /** The address of each stand-in the world stood up, by mount: where a journey's command to one goes. */
+  readonly stands?: Readonly<Record<string, string>>;
   /** The world's chain, when it was asked for one. It lives exactly as long as the world. */
   readonly chain?: ChainStand;
   /** Where wrangler's own output goes, for when something looks wrong. */
@@ -79,5 +87,12 @@ export interface WorldsApi {
      * Worker stops, so the chain is gone when the world ends.
      */
     readonly chain?: Effect.Effect<ChainStand, WorldFailed, Scope.Scope>;
+    /**
+     * The mounts' stand-ins (G16-adapter-mounts call 3), given the world's state folder once it is wiped: the caller starts
+     * them under `<state>/stands/<mount>` and answers what the Worker is told of them (`ORTHO_STAND_<MOUNT>`,
+     * `<MOUNT>_API_KEY`), which joins `secretEnv`, and each one's address by mount, which the world's `stands` is.
+     * Acquired before the Worker and released after it, as the chain is.
+     */
+    readonly stands?: (state: string) => Effect.Effect<StandIns, WorldFailed, Scope.Scope>;
   }) => Effect.Effect<Running, WorldFailed, Scope.Scope>;
 }

@@ -10,6 +10,15 @@ Two sides of a thing's stored instances.
 
 Test: `records.test.ts`.
 
+## Lists (#764)
+
+`Records.list(query)` (`internal/list.ts`) pages `Store.list` to the end, so it knows every row matching the query's
+`thing`, `where` and `state`, and lays the call's own writes over them as `find` does: a row moved out drops, a stored row
+moved in keeps its place (`Store.place`), and the call's own inserts come after every stored row, in the order made.
+`order`, `limit` and `after` apply after that. Every matching row counts as read: `unit.lists` goes on the `Commit`, and
+the store answers `conflict` when the rows matching a list, or their versions, are not the ones the call read (whatever
+page it asked for). Tests: `list.test.ts`, `list-race.test.ts`.
+
 ## Rules (G5)
 
 A store and a unit hold the project's rules, each as a `NamedRule` (the invariant as declared, and its full name,

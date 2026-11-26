@@ -1,6 +1,6 @@
 {
   "name": "@orthograph/generators",
-  "version": "0.0.0",
+  "version": "0.1.0-next.1",
   "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
@@ -21,6 +21,7 @@
   "exports": {
     ".": "./src/main.ts",
     "./sync": "./src/modules/sync/service.ts",
+    "./adapter": "./src/modules/adapter/service.ts",
     "./package.json": "./package.json",
     "./render": "./src/modules/render/service.ts"
   },
@@ -29,6 +30,7 @@
   ],
   "publishConfig": {
     "access": "public",
+    "tag": "next",
     "exports": {
       ".": {
         "types": "./dist/main.d.ts",
@@ -37,6 +39,10 @@
       "./sync": {
         "types": "./dist/modules/sync/service.d.ts",
         "default": "./dist/modules/sync/service.js"
+      },
+      "./adapter": {
+        "types": "./dist/modules/adapter/service.d.ts",
+        "default": "./dist/modules/adapter/service.js"
       },
       "./package.json": "./package.json",
       "./render": {

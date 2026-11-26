@@ -1,7 +1,7 @@
 // Values: the named types fields are made of. A value carries its schema; later layers add its Solidity type.
 import type { Schema } from "effect";
 import type { Asset } from "#modules/assets/types.js";
-import type { Field } from "#modules/things/types.js";
+import type { Field, FieldsInput } from "#modules/things/types.js";
 import type { Visibility } from "#modules/visibility/types.js";
 
 export interface Value<S extends Schema.Constraint = Schema.Constraint> {
@@ -19,6 +19,8 @@ export interface Value<S extends Schema.Constraint = Schema.Constraint> {
   readonly traced?: true;
   /** A secret answer value handed to its caller once (`Blueprint.issued`). */
   readonly issued?: true;
+  /** A field that may be left out (`Blueprint.optional`): the model says so as `optional: true`. */
+  readonly optional?: true;
 }
 
 /**
@@ -34,9 +36,11 @@ export type ValueMeta =
   | { readonly type: "uint"; readonly bits: number }
   | { readonly type: "text"; readonly max: number }
   | { readonly type: "instant" }
+  | { readonly type: "day" }
   | { readonly type: "account" }
   | { readonly type: "money"; readonly bits: number; readonly signed: boolean; readonly asset: AssetRef }
-  | { readonly type: "schema"; readonly format?: "ref-any" };
+  | { readonly type: "decimal"; readonly places: number }
+  | { readonly type: "schema"; readonly format?: "ref-any" | "choice" | "list" | "bool"; readonly options?: ReadonlyArray<string>; readonly fields?: ReadonlyArray<string> };
 
 /** The TypeScript type a value holds. */
 export type TypeOf<V extends Value> = V["schema"]["Type"];
@@ -66,6 +70,8 @@ export interface ValuesApi {
   readonly text: (options?: { readonly max?: number }) => Value<Schema.String>;
   /** A moment: stored as a UTC instant, written on the wire, in answers, events and reads as ISO 8601 with milliseconds (`"2027-01-10T09:00:00.000Z"`). A move made by time anchors on a field of this type (M8-checks, call 1). */
   readonly instant: () => Value<Schema.String>;
+  /** A calendar day with no time and no zone: `YYYY-MM-DD` in code and on the wire, a day the calendar has (`"2024-02-29"`). `Days` does its arithmetic. */
+  readonly day: () => Value<Schema.String>;
   /** A reference carrying a thing’s declaration name and the id of one instance. */
   readonly refAny: () => Value<Schema.Struct<{ readonly declaration: Schema.String; readonly id: Schema.String }>>;
   /**
@@ -77,6 +83,45 @@ export interface ValuesApi {
   readonly account: () => Value<Schema.String>;
   /** An amount that names its asset (M6-money). */
   readonly money: MoneyApi;
+  /**
+   * An exact decimal (#742): a `BigDecimal` in code, so a handler adds and multiplies exactly; plain decimal text on the
+   * wire (`"-12.50"`), with no exponent, no `+` and no `-0`. At most `places` digits after the point (default 9), trailing zeros counted.
+   */
+  readonly decimal: (options?: { readonly places?: number }) => Value<Schema.BigDecimalFromString>;
+  /**
+   * Another thing's field, read only when it is first used (#742): `Blueprint.link(() => SalesInvoice.fields.id)`, so two
+   * things may take each other's ids though their files import each other. Once read it is that field, as if written itself.
+   * In a cycle TypeScript can't infer the two things' types (TS7022), so write the function's type: `(): Field => SalesInvoice.fields.id`.
+   * A thing's field made from a link reads it when used, but reusing that field (in another thing, `described`, a payload) reads it then: do that outside the cycle.
+   */
+  readonly link: <F extends Field>(to: () => F) => F;
   /** An email address: text of at most 254 characters, with an `@` and a dot after it. */
   readonly email: () => Value<Schema.String>;
+  /** True or false. */
+  readonly bool: () => Value<Schema.Boolean>;
+  /** One of the words named: `Blueprint.oneOf(["observing", "live"])`. */
+  readonly oneOf: <const O extends ReadonlyArray<string>>(options: O) => Value<Schema.Literals<O>>;
+  /** Many of one value: a list, written as an array. */
+  readonly list: <S extends Schema.Constraint>(item: Value<S>) => Value<Schema.$Array<S>>;
+  /**
+   * A field the record may lack: absent from a payload, an event or a row until it is set. Given another thing's field
+   * (or a link to one), the field it makes keeps its edge to that thing: an optional reference.
+   */
+  readonly optional: {
+    <S extends Schema.Constraint>(value: Value<S>): Value<Schema.optionalKey<S>>;
+    <V extends Value, K extends string, F extends FieldsInput>(field: Field<V, K, F>): Field<Value<Schema.optionalKey<V["schema"]>>, K, F>;
+  };
+}
+
+/** A calendar day as `Blueprint.day()` holds it: `YYYY-MM-DD`. */
+export type Day = string;
+
+/** A day's arithmetic with no clock, the same in every time zone: `import { Days } from "orthograph"`. */
+export interface DaysApi {
+  /** Its weekday as ERPNext names it: `"Monday"` to `"Sunday"`. */
+  readonly weekday: (day: Day) => "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+  /** The day `days` whole days later, or earlier when `days` is negative. */
+  readonly add: (day: Day, days: number) => Day;
+  /** How many days `to` is after `from`: negative when `to` comes first. */
+  readonly between: (from: Day, to: Day) => number;
 }

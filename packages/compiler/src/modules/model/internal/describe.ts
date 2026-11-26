@@ -1,7 +1,7 @@
 // Turns the layout into the model: every declaration named, every reference resolved, every entry hashed.
 import { Duration } from "effect";
-import type { AnyErrorClass, CallStep, Operation, Read, Step, Thing, Value } from "orthograph";
-import type { AllowedModel, BlankOperationModel, Model, OperationModel, StepModel, ThingModel } from "../types.ts";
+import type { AnyErrorClass, CallStep, On, Operation, Read, Step, Thing, Value } from "orthograph";
+import type { AllowedModel, BlankOperationModel, Model, MountModel, OperationModel, StepModel, ThingModel } from "../types.ts";
 import { admitsAgent } from "orthograph";
 import { Blanks } from "orthograph/server";
 import { EMPTY_LOCK } from "#modules/lock/service.js";
@@ -9,31 +9,41 @@ import type { Lock } from "#modules/lock/types.js";
 import { approvalOf } from "./approval.ts";
 import { IDEMPOTENCY_CONFLICT, prefixes, refusalsOf } from "./codes.ts";
 import { foundModel, mintsOf, missedBy } from "./found.ts";
+import { isVersioned } from "./handler-files.ts";
 import { exitClashes, notFoundShapes, operationExitClashes } from "./exits.ts";
 import { unfillable } from "./fillable.ts";
 import { RUNS_NEEDS, deviceProblems } from "./device.ts";
 import { Times } from "#modules/time/service.js";
 import { environmentsOf } from "./environments.ts";
 import { secretsOf } from "./secrets.ts";
-import { allowedOf } from "./allowed.ts";
+import { allowedOf, rolePathProblem } from "./allowed.ts";
 import { storiesOf } from "./journeys.ts";
 import { hashOf } from "./hash.ts";
 import { alertRulesOf } from "./rules.ts";
 import { crossStore, storesOf } from "./stores.ts";
 import { breakersOf, declaredErrors } from "./invariants.ts";
 import { camel, type Layout } from "./layout.ts";
+import { formsOf } from "./forms.ts";
+import { withReadNotServed } from "./bits.ts";
+import { readModelOf, type ReadContext } from "./reads.ts";
 import { assetsOf, tokensUsed } from "./assets.ts";
 import { fieldsOf } from "./fields.ts";
 import { chainOperationProblems, chainReadProblems, collisionProblems } from "./operations.ts";
 import { metaOf, type Names } from "./money.ts";
 import { thingsOf } from "./things.ts";
 
-export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Model; problems: Array<string>; lock: Lock } => {
+export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Readonly<Record<string, MountModel>> = {}): { model: Model; problems: Array<string>; lock: Lock } => {
   const problems = [...layout.problems];
   const valueNames = new Map<Value, string>([...layout.values].map(([n, v]) => [v, n]));
   const schemaNames = new Map([...layout.values].map(([n, v]) => [v.schema, n]));
   const thingNames = new Map([...layout.things].flatMap(([n, t]) => (t.thing ? [[t.thing, n] as const] : [])));
   const eventNames = new Map([...layout.things.values()].flatMap((t) => [...t.events].map(([n, e]) => [e, n] as const)));
+  const eventThing = new Map([...layout.things].flatMap(([n, t]) => [...t.events.values()].map((e) => [e, n] as const)));
+  const opNames = new Map([...layout.things].flatMap(([n, t]) => [...t.verbs].map(([verb, v]) => [v.declaration as unknown, `${n}.${verb}`] as const)));
+  const opName = (declaration: unknown) => opNames.get(declaration);
+  // A feature mount's `on` verb makes an operation of its plugin the hop of an event, as the operation's own `on:` does.
+  const mountHops = new Map<unknown, Array<On>>();
+  for (const m of layout.mounts.values()) for (const v of m.mount.verbs) if (v.verb === "on") mountHops.set(v.operation, [...(mountHops.get(v.operation) ?? []), v.hop]);
   const errorNames = new Map([...layout.things.values()].flatMap((t) => [...t.errors].map(([n, e]) => [e, n] as const)));
   const roleNames = new Map(
     [...layout.things.values()].flatMap((t) => [...t.roles].map(([n, r]) => [r, `${t.name}.${n}`] as const)),
@@ -57,6 +67,9 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const assets = assetsOf(layout, problems);
 
   const prefix = prefixes(layout.things, problems);
+  // The id prefixes some thing owns: its own `id` field's. A field that names another prefix names nothing.
+  // `per` is the identity's own: the people who sign in are a thing of Better Auth's, which a blueprint refers to without declaring.
+  const owned = new Set(["per", ...[...layout.things.values()].flatMap((t) => { const m = t.thing?.fields["id"]?.value.meta; return m?.type === "id" ? [m.prefix] : []; })]);
   // A thing some operation's payload names where no role check reads it gets a `<Thing>NotFound` (K16, M1.46).
   const missable = new Set([...layout.things.values()].flatMap((t) => [...t.verbs.values()].flatMap(({ declaration: d }) => missedBy(d, Blanks.isBlank))));
   const verbs = [...layout.things.values()].flatMap((t) => [...t.verbs.values()].map(({ file, declaration: d }) => ({ file, errors: d.kind === "operation" ? declaredErrors(d.errors) : [] })));
@@ -66,14 +79,26 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const keeperUsed = Times.keeperUsed([...layout.things.values()].flatMap((t) => [...t.verbs.values()].map((v) => v.declaration.allowed)));
   // With a keeper in the blueprint, even an operation open to anyone refuses it NotAllowed (M8-checks call 4).
   const openToAll = (allowed: ReadonlyArray<AllowedModel>) => !keeperUsed && allowed.every((a) => a.kind === "anyone");
+  const hopsOf = (op: Operation): ReadonlyArray<On> => [...op.on, ...(mountHops.get(op) ?? [])];
+  const pathNames = { role: (r: unknown) => roleNames.get(r as never) ?? "?", thing: (t: Thing) => thingNames.get(t) ?? "?" };
+  /** The problems with an operation's or a read's role paths: each must walk to an instance of its role's thing (#767). */
+  const rolePaths = (thing: string, d: Operation | Read, file: string) => {
+    // The thing's own name, before a mount prefixed it: what a plugin's blueprint wrote its paths against.
+    const from = layout.things.get(thing)?.from;
+    const ownName = from === undefined || from.kind === "app" ? thing : from.thing;
+    return d.allowed.flatMap((entry) => rolePathProblem({ entry, payload: d.payload, own: d.thing, ownName, names: pathNames, where: file }) ?? []);
+  };
+  const readCtx: ReadContext = { layout, thingNames, problems, allowedModel, fieldsModel, openToAll, onChain, rolePaths };
   const operations: Record<string, OperationModel> = {};
   const blankOperations: Record<string, BlankOperationModel> = {};
   const entries = new Map<string, Array<{ readonly file: string; readonly name: string; readonly identifier: string }>>();
   for (const [thing, t] of [...layout.things].sort(([a], [b]) => a.localeCompare(b))) {
-    for (const [verb, { file, declaration: op }] of [...t.verbs].sort(([a], [b]) => a.localeCompare(b))) {
+    for (const [verb, { file, declaration: op, from: verbFrom }] of [...t.verbs].sort(([a], [b]) => a.localeCompare(b))) {
+      // A `Blueprint.todo` among `allowed` is a blank too (#742, item 7), named by its place in the list.
+      const allowed = Blanks.isBlank(op.allowed) ? { allowed: op.allowed } : Object.fromEntries(op.allowed.map((a, i) => [`allowed[${i}]`, a]));
       const parts = op.kind === "read"
-        ? { [op.by === "list" ? "where" : "fields"]: op.by === "list" ? op.where : op.fields, allowed: op.allowed }
-        : { description: op.description, payload: op.payload, answer: op.answer, allowed: op.allowed, errors: op.errors, steps: op.steps, move: op.move };
+        ? { [op.by === "list" ? "where" : "fields"]: op.by === "list" ? op.where : op.fields, ...allowed }
+        : { description: op.description, payload: op.payload, answer: op.answer, ...allowed, errors: op.errors, steps: op.steps, move: op.move };
       const name = `${thing}.${verb}`;
       const incomplete = blankIn(name, parts);
       const steps = op.kind === "operation" && !Blanks.isBlank(op.steps) ? Object.entries(op.steps) : [];
@@ -85,7 +110,7 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
         };
         continue;
       }
-      operations[name] = operationModel(thing, verb, file, t.from, op);
+      operations[name] = operationModel(thing, verb, file, verbFrom ?? t.from, op);
       const store = t.thing?.store === undefined ? undefined : storeNames.get(t.thing.store);
       if (store !== undefined && chainStores.has(store)) entries.set(store, [...(entries.get(store) ?? []), { file, name, identifier: camel(verb) }]);
     }
@@ -113,7 +138,14 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
       problems.push(`${file}: ${thing}.${verb}'s errors are a union with two classes tagged ${tag}, so the refusal is ambiguous on the wire: rename one`);
     }
     const allowed = op.allowed.map((a) => allowedModel(a, file));
+    problems.push(...rolePaths(thing, op, file));
     problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "operation", move: op.move, allowed }));
+    for (const a of op.allowed) {
+      const role = (a.kind === "narrowed" ? a.entry : a);
+      const r = role.kind === "role" ? role : role.kind === "role-of" ? role.role : undefined;
+      const within = r?.actor?.within;
+      if (within !== undefined && !(within.key in op.payload)) problems.push(`${file}: ${thing}.${verb} uses a role that compares the call's ${within.key} with the account's, and its payload has no ${within.key} to compare`);
+    }
     const found = foundModel(op, (x) => thingNames.get(x), (x) => things[x]?.notFound?.error);
     const steps = Object.fromEntries(Object.entries(op.steps).map(([k, s]) => [k,
       Blanks.isBlank(s) ? { name: `${thing}.${verb}.${k}`, type: "blank" } : stepModel(thing, verb, k, s, op.errors, file)]));
@@ -133,11 +165,16 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
     const payload = fieldsModel(op.payload, `${file} payload`, { place: "a payload", ...ctx });
     const answer = fieldsModel(op.answer, `${file} answer`, { place: "answer", ...ctx });
     const mints = mintsOf(move?.from.length === 0, thing, answer, payload);
+    // A save or restore of a thing with versions made from an old version is refused with the declared error that carries `current`
+    // alone (K40 fix 2): found by that shape, whatever the app names it, and the server reads it from here.
+    const keeps = ["save", "restore"].includes(verb) && isVersioned({ kind: "operation", verb, payload }, layout.things.get(thing)?.thing?.versions);
+    const stale = keeps ? errors.filter((_, i) => Object.keys(op.errors[i]!.fields).join() === "current") : [];
+    if (keeps && stale.length !== 1) problems.push(`${file}: ${thing}.${verb} ${verb}s a version of ${thing}, so it declares one error whose only field is current, its refusal of a save made from an old version; it declares ${stale.length === 0 ? "none" : stale.join(" and ")}`);
     if (chain) problems.push(...chainOperationProblems({ file, name: `${thing}.${verb}`, thing, op, roleNames, payload, answer, event: move ? things[thing]?.events[move.emits] : undefined, emits: move?.emits ?? "?", mints }));
     const entry = {
       kind: "operation" as const,
       name: `${thing}.${verb}`, thing, verb, identifier: camel(verb), file, from, description: op.description,
-      payload, answer, move, errors, ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, agentTool: !onDevice && admitsAgent(op.allowed), ...found, ...(mints !== undefined ? { mints } : {}),
+      payload, answer, move, errors, ...(hopsOf(op).length > 0 ? { on: hopsOf(op).map((h) => ({ event: eventNames.get(h.event) ?? problem(problems, `${file}: is delivered an event that is not exported from an events.ts`), thing: eventThing.get(h.event) ?? "?" })) } : {}), ...(Object.keys(broken.refusals).length > 0 ? { invariants: broken.refusals } : {}), breaks: broken.breaks, refusals, allowed, agentTool: !onDevice && admitsAgent(op.allowed), ...found, ...(mints !== undefined ? { mints } : {}), ...(keeps && stale.length === 1 ? { stale: stale[0]! } : {}),
       steps,
       ...(blanks[`${thing}.${verb}`] ? { blanks: blanks[`${thing}.${verb}`]! } : {}),
       idempotent: op.idempotent ?? null,
@@ -178,38 +215,13 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
     return writes ? { writes: writes.map((w) => thingNames.get(w) ?? problem(problems, `${where}: a step writes a thing that isn't in the blueprint`)) } : {};
   }
 
-  /** A read: answered from the thing's records with no handler, so no move, no steps, no declared errors. */
   function readModel(thing: string, verb: string, file: string, from: OperationModel["from"], read: Read): OperationModel {
-    const allowed = read.allowed.map((a) => allowedModel(a, file));
-    problems.push(...Times.keeper({ file, name: `${thing}.${verb}`, kind: "read", move: undefined, allowed }));
-    const list = read.by === "list";
-    const t = layout.things.get(thing);
-    const chain = onChain(t?.thing);
-    if (list && t?.thing?.lives === "actor") problems.push(`${file}: a list read needs a thing that lives in the database, and ${thing} lives as actors`);
-    if (chain) problems.push(...chainReadProblems(file, `${thing}.${verb}`, read));
-    if (list && read.where.includes("state") && !t?.machine) problems.push(`${file}: where "state" needs ${thing} to have a machine`);
-    if (list && (!Number.isInteger(read.page) || (read.page ?? 0) < 1 || (read.page ?? 0) > 1000)) problems.push(`${file}: page must be a whole number from 1 to 1000`);
-    const ctx = { owner: { name: thing, thing: read.thing }, chain: chain && !list } as const;
-    const payload = Object.fromEntries(Object.entries(fieldsModel(read.payload, `${file} payload`, { place: "a payload", ...ctx })).map(([k, f]) => [k, read.optional.includes(k) ? { ...f, optional: true as const } : f]));
-    // A read's `state` is the machine's number on chain, a uint8 (M6-chain item 2).
-    const answer = Object.fromEntries(Object.entries(fieldsModel(read.answer, `${file} answer`, { place: "a read answer", ...ctx })).map(([k, f]) => [k, ctx.chain && k === "state" ? { ...f, solidity: "uint8" } : f]));
-    const entry = {
-      kind: "read" as const,
-      name: `${thing}.${verb}`, thing, verb, identifier: camel(verb), file, from,
-      description: list
-        ? `List ${thing}s, ${read.order === "newest" ? "newest first" : "oldest first"}, ${read.page} to a page${read.where.length > 0 ? `, filtered by ${read.where.join(", ")}` : ""}.`
-        : `Read one ${thing} by its id: ${read.fields.map(String).join(", ")}.`,
-      payload, answer,
-      move: null, errors: [], breaks: [], refusals: openToAll(allowed) ? [] : ["NotAllowed"], allowed, agentTool: admitsAgent(read.allowed),
-      steps: {}, idempotent: null, runs: (chain ? "chain" : "server") as OperationModel["runs"], test: "unit" as const,
-      budget: read.budget ? { p95Ms: Duration.toMillis(read.budget.p95) } : null,
-      ...(list ? { list: { where: [...read.where], order: read.order ?? "newest", page: read.page ?? 0 } } : {}),
-    };
-    return { ...entry, hash: hashOf(entry) };
+    return readModelOf(readCtx, thing, verb, file, from, read);
   }
 
-  const refusals = refusalsOf(things, problems, hasChain);
-  problems.push(...exitClashes(things), ...operationExitClashes(things, operations), ...notFoundShapes(things));
+  const refusals = withReadNotServed(refusalsOf(things, problems, hasChain), operations);
+  const written = new Map([...layout.things].flatMap(([n, t]) => (t.written === undefined ? [] : [[n, t.written] as const])));
+  problems.push(...exitClashes(things, written), ...operationExitClashes(things, operations, written), ...notFoundShapes(things));
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, metaOf(v.meta, `${layout.valueFiles.get(n) ?? "blueprint/values"}: value ${n}`, undefined, names, problems)]));
   const secrets = secretsOf(layout, problems);
   const environments = environmentsOf(layout, problems, tokensUsed(things, operations), secrets);
@@ -217,8 +229,9 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK): { model: Mo
   const { journeyBlanks, ...stories } = storiesOf(layout, operations, allowedModel, problems);
   const allBlanks = { ...blanks, ...journeyBlanks };
   const alertRules = alertRulesOf({ operations, refusals, things, journeys: stories.journeys, environments });
+  const forms = formsOf({ layout, mounts, things, thingNames, eventNames, opName, problems });
   return {
-    model: { refusals, values, ...(Object.keys(assets).length > 0 ? { assets } : {}), things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(secrets).length > 0 ? { secrets } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
+    model: { ...forms, refusals, values, ...(Object.keys(assets).length > 0 ? { assets } : {}), things, ...(Object.keys(stores).length > 0 ? { stores } : {}), operations, ...stories, ...(Object.keys(blankOperations).length > 0 ? { blankOperations } : {}), ...(Object.keys(allBlanks).length > 0 ? { blanks: allBlanks } : {}), ...(Object.keys(secrets).length > 0 ? { secrets } : {}), ...(Object.keys(environments).length > 0 ? { environments } : {}), alertRules },
     problems,
     lock,
   };

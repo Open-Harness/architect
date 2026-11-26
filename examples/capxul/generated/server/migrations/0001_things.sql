@@ -1,5 +1,76 @@
 -- Generated from the blueprint. Do not edit.
 -- Stage one rebuilds the local database on every `ortho dev`; migrations between versions arrive in stage three.
+CREATE TABLE "account" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "accountName" TEXT NOT NULL,
+  "parentAccount" TEXT,
+  "rootType" TEXT NOT NULL,
+  "reportType" TEXT NOT NULL,
+  "accountType" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "account_oneNamePerCompany" ON "account" ("company", "accountName");
+CREATE TABLE "appraisal" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "appraisalCycle" TEXT NOT NULL,
+  "appraisalTemplate" TEXT NOT NULL,
+  "kraEvaluationMethod" TEXT NOT NULL,
+  "kras" TEXT NOT NULL,
+  "selfRatings" TEXT NOT NULL,
+  "totalScore" TEXT NOT NULL,
+  "selfScore" TEXT NOT NULL,
+  "avgFeedbackScore" TEXT NOT NULL,
+  "finalScore" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "appraisal_oneAppraisalPerCycle" ON "appraisal" ("employee", "appraisalCycle");
+CREATE TABLE "appraisal-cycle" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "cycleName" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "kraEvaluationMethod" TEXT NOT NULL,
+  "appraisees" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "appraisal-cycle_oneNamePerCompany" ON "appraisal-cycle" ("company", "cycleName");
+CREATE TABLE "appraisal-template" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "kras" TEXT NOT NULL,
+  "criteria" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "appraisal-template_oneTitlePerCompany" ON "appraisal-template" ("company", "title");
+CREATE TABLE "attendance" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "attendanceDate" TEXT NOT NULL,
+  "status" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "attendance_oneAttendancePerDay" ON "attendance" ("employee", "attendanceDate");
+CREATE TABLE "attendance-request" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "bank-account" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -14,6 +85,28 @@ CREATE TABLE "bank-account" (
 );
 CREATE UNIQUE INDEX "bank-account_oneAccountPerNumber" ON "bank-account" ("accountNumber");
 CREATE UNIQUE INDEX "bank-account_oneNamePerCompany" ON "bank-account" ("company", "accountName") WHERE "state" IN ('open');
+CREATE TABLE "bank-transaction" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "date" TEXT NOT NULL,
+  "deposit" TEXT NOT NULL,
+  "withdrawal" TEXT NOT NULL,
+  "currency" TEXT NOT NULL,
+  "reference" TEXT NOT NULL,
+  "party" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "bank-transaction_oneTransactionPerMovement" ON "bank-transaction" ("reference");
+CREATE TABLE "branch" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "branchName" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "branch_oneNamePerCompany" ON "branch" ("company", "branchName");
 CREATE TABLE "bridge-business" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -50,6 +143,15 @@ CREATE TABLE "company" (
 );
 CREATE UNIQUE INDEX "company_oneAbbrPerOwner" ON "company" ("owner", "abbr");
 CREATE UNIQUE INDEX "company_oneNamePerOwner" ON "company" ("owner", "companyName");
+CREATE TABLE "cost-center" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "costCenterName" TEXT NOT NULL,
+  "parentCostCenter" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "cost-center_oneNamePerCompany" ON "cost-center" ("company", "costCenterName");
 CREATE TABLE "department" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -80,6 +182,383 @@ CREATE TABLE "employee" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "employee_onePlacePerPerson" ON "employee" ("company", "person") WHERE "state" IN ('active');
+CREATE TABLE "employee-feedback-criteria" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "criteria" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employee-feedback-criteria_oneNamePerCompany" ON "employee-feedback-criteria" ("company", "criteria");
+CREATE TABLE "employee-grade" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "gradeName" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employee-grade_oneNamePerCompany" ON "employee-grade" ("company", "gradeName");
+CREATE TABLE "employee-performance-feedback" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "appraisal" TEXT NOT NULL,
+  "appraisalCycle" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "reviewer" TEXT NOT NULL,
+  "feedback" TEXT NOT NULL,
+  "ratings" TEXT NOT NULL,
+  "totalScore" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "employee-promotion" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "promotionDate" TEXT NOT NULL,
+  "currentDesignation" TEXT NOT NULL,
+  "newDesignation" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "employee-separation" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "resignationLetterDate" TEXT NOT NULL,
+  "boardingBeginsOn" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employee-separation_oneOpenSeparationPerEmployee" ON "employee-separation" ("employee") WHERE "state" IN ('pending', 'inProcess');
+CREATE TABLE "employee-transfer" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "transferDate" TEXT NOT NULL,
+  "currentDepartment" TEXT NOT NULL,
+  "newDepartment" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "employment-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employmentTypeName" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "employment-type_oneNamePerCompany" ON "employment-type" ("company", "employmentTypeName");
+CREATE TABLE "expense" (
+  "id" TEXT PRIMARY KEY,
+  "expenseClaim" TEXT NOT NULL,
+  "expenseDate" TEXT NOT NULL,
+  "expenseType" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "sanctionedAmount" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "expense-claim" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "totalClaimedAmount" TEXT NOT NULL,
+  "totalSanctionedAmount" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "expense-claim-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "expenseType" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "expense-claim-type_oneNamePerCompany" ON "expense-claim-type" ("company", "expenseType");
+CREATE TABLE "fiscal-year" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "year" TEXT NOT NULL,
+  "yearStartDate" TEXT NOT NULL,
+  "yearEndDate" TEXT NOT NULL,
+  "isShortYear" INTEGER NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "fiscal-year_oneNamePerCompany" ON "fiscal-year" ("company", "year");
+CREATE TABLE "gl-entry" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "costCenter" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "debit" TEXT NOT NULL,
+  "credit" TEXT NOT NULL,
+  "voucherType" TEXT NOT NULL,
+  "voucherId" TEXT NOT NULL,
+  "isCancelled" INTEGER NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "goal" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "appraisalCycle" TEXT NOT NULL,
+  "kra" TEXT NOT NULL,
+  "goalName" TEXT NOT NULL,
+  "progress" TEXT NOT NULL,
+  "isGroup" INTEGER NOT NULL,
+  "parentGoal" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "holiday" (
+  "id" TEXT PRIMARY KEY,
+  "holidayList" TEXT NOT NULL,
+  "holidayDate" TEXT NOT NULL,
+  "description" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "holiday_oneHolidayPerDay" ON "holiday" ("holidayList", "holidayDate");
+CREATE TABLE "holiday-list" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "holidayListName" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "totalHolidays" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "holiday-list_oneNamePerCompany" ON "holiday-list" ("company", "holidayListName");
+CREATE TABLE "interview" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "jobApplicant" TEXT NOT NULL,
+  "interviewRound" TEXT NOT NULL,
+  "scheduledOn" TEXT NOT NULL,
+  "fromTime" TEXT NOT NULL,
+  "toTime" TEXT NOT NULL,
+  "interviewers" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "interview_oneInterviewPerRound" ON "interview" ("jobApplicant", "interviewRound");
+CREATE TABLE "interview-feedback" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "interview" TEXT NOT NULL,
+  "interviewer" TEXT NOT NULL,
+  "result" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "interview-feedback_oneFeedbackPerInterviewer" ON "interview-feedback" ("interview", "interviewer");
+CREATE TABLE "interview-round" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "roundName" TEXT NOT NULL,
+  "interviewers" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "interview-round_oneNamePerCompany" ON "interview-round" ("company", "roundName");
+CREATE TABLE "job-applicant" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "jobOpening" TEXT NOT NULL,
+  "applicantName" TEXT NOT NULL,
+  "email" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "job-offer" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "jobApplicant" TEXT NOT NULL,
+  "designation" TEXT NOT NULL,
+  "offerDate" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "job-offer_oneOfferPerApplicant" ON "job-offer" ("jobApplicant");
+CREATE TABLE "job-opening" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "designation" TEXT NOT NULL,
+  "jobTitle" TEXT NOT NULL,
+  "vacancies" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "journal-entry" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "userRemark" TEXT NOT NULL,
+  "totalDebit" TEXT NOT NULL,
+  "totalCredit" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "journal-entry-account" (
+  "id" TEXT PRIMARY KEY,
+  "journalEntry" TEXT NOT NULL,
+  "line" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "costCenter" TEXT NOT NULL,
+  "debit" TEXT NOT NULL,
+  "credit" TEXT NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "kra" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "kra_oneTitlePerCompany" ON "kra" ("company", "title");
+CREATE TABLE "leave-allocation" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "leaveType" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "newLeavesAllocated" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "leave-application" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "leaveType" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "toDate" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  "totalLeaveDays" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "leave-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "leaveTypeName" TEXT NOT NULL,
+  "maxContinuousDaysAllowed" TEXT NOT NULL,
+  "isLwp" INTEGER NOT NULL,
+  "includeHoliday" INTEGER NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "leave-type_oneNamePerCompany" ON "leave-type" ("company", "leaveTypeName");
+CREATE TABLE "payroll-employee-detail" (
+  "id" TEXT PRIMARY KEY,
+  "payrollEntry" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "payroll-entry" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "costCenter" TEXT NOT NULL,
+  "payrollPayableAccount" TEXT NOT NULL,
+  "numberOfEmployees" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "payroll-period" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "payrollPeriodName" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "payroll-period_oneNamePerCompany" ON "payroll-period" ("company", "payrollPeriodName");
+CREATE TABLE "salary-component" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "salaryComponent" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "salary-component_oneNamePerCompany" ON "salary-component" ("company", "salaryComponent");
+CREATE TABLE "salary-detail" (
+  "id" TEXT PRIMARY KEY,
+  "salaryStructure" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "line" TEXT NOT NULL,
+  "salaryComponent" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "salary-slip" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "payrollEntry" TEXT NOT NULL,
+  "salaryStructure" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "grossPay" TEXT NOT NULL,
+  "totalDeduction" TEXT NOT NULL,
+  "netPay" TEXT NOT NULL,
+  "status" TEXT NOT NULL,
+  "journalEntry" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "salary-slip-detail" (
+  "id" TEXT PRIMARY KEY,
+  "salarySlip" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "line" TEXT NOT NULL,
+  "salaryComponent" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "salary-structure" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "salaryStructureName" TEXT NOT NULL,
+  "totalEarning" TEXT NOT NULL,
+  "totalDeduction" TEXT NOT NULL,
+  "netPay" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "salary-structure_oneNamePerCompany" ON "salary-structure" ("company", "salaryStructureName");
+CREATE TABLE "salary-structure-assignment" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "salaryStructure" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "shift-type" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "shiftTypeName" TEXT NOT NULL,
+  "startTime" TEXT NOT NULL,
+  "endTime" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "shift-type_oneNamePerCompany" ON "shift-type" ("company", "shiftTypeName");
 -- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).
 CREATE TABLE "_journal" (
   "seq" INTEGER PRIMARY KEY AUTOINCREMENT,

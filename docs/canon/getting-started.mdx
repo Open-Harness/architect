@@ -1,0 +1,139 @@
+---
+title: Getting started
+concept: getting started
+owns: [getting started, the generated tools' variables]
+questions:
+  - What do I need before I start?
+  - How do I go from nothing to a proved, running app?
+  - How do I call the app I made, from its generated CLI, SDK and MCP?
+  - Which variables do the generated tools read, and what are they called for my app?
+status: draft
+milestone: M2
+slices: [M1.51, M2.09]
+decisions: [K44, GOAL18-getting-started-acceptance]
+links: [orthograph, blueprint, journeys, proof, doors, environments]
+---
+
+## The idea
+
+This page takes you from an empty folder to an app that is proved and running, and that you can call. You install the
+`ortho` command, create an app, check its blueprint, prove it against its journeys, run it on your machine, and call
+it through the tools Orthograph generated for it. Each step is one command. Every `ortho` command here is one that
+`ortho --help` lists today, except `ortho new app`, which it will list once Goal 18's slice 6 lands.
+
+You need Node 24 or later, and pnpm. The app runs on your machine with no cloud account: `ortho dev` and
+`ortho prove` start everything they need locally.
+
+## The smallest example
+
+Install the command. Orthograph's alpha will be published to npm under the `next` tag (M1.51).
+
+```sh planned=M1.51
+npm install --global @orthograph/cli@next
+```
+
+Inside an app that has its own copy of the command installed, as every new app does, the global `ortho` hands each
+command to that copy, so the app is always checked and run by the version it depends on.
+
+Create an app called `my-links`, and install what it depends on. The app starts as the starter project: a blueprint,
+its handlers, and the journeys that prove them.
+
+```sh planned=M2.09
+ortho new app my-links
+cd my-links
+pnpm install
+```
+
+Check the blueprint, then prove the app. `ortho check` refuses a blueprint that doesn't hold together, naming each
+problem by file and rule. `ortho prove` runs every journey through the real app in a fresh local world and says, step by
+step, which pass.
+
+```sh planned=M2.09
+ortho check
+ortho prove
+```
+
+Run it. `ortho dev` serves the app on port 8787 until you stop it.
+
+```sh planned=M2.09
+ortho dev --port 8787
+```
+
+In a second terminal, from the app's folder, call it through its generated CLI. The CLI is named after the app, so here
+it is `my-links`, and Node runs it from its generated source. `system health` asks the running app whether it is up: it
+prints `ok` and exits 0, and when nothing is listening at that address it fails and exits 1.
+
+```sh planned=M2.09
+MY_LINKS_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health
+```
+
+`node generated/cli/src/main.ts --help` lists the things it can call, and `<thing> --help` each one's operations.
+
+An operation that needs a signed-in caller also needs a session token: set `MY_LINKS_TOKEN` to the token a sign-in gave
+you, beside `MY_LINKS_URL`.
+
+## How it works
+
+`ortho generate` writes the generated code from the blueprint, and `ortho new app` has already run it once, so a new
+app comes with all of it in its `generated/` folder. Three of the generated tools are for calling the app.
+
+- The generated CLI has one command per thing and one subcommand per operation, as `<thing> <operation>` after `node generated/cli/src/main.ts`.
+- The generated SDK is a typed client: you give its `layer` the app's address and, when you have one, a session token.
+- The generated MCP serves one tool per operation an agent may call, at the app's `/mcp` path.
+
+The generated CLI reads two variables, `<APP>_URL` and `<APP>_TOKEN`. `<APP>_URL` is the address of the running app, and
+`<APP>_TOKEN` is the session token it signs in with when it is set. The prefix is the app's name in upper case, with each
+dash turned into an underscore, so `my-links` reads `MY_LINKS_URL` and `MY_LINKS_TOKEN`. When `<APP>_URL` is not set, the
+generated CLI talks to http://127.0.0.1:8787, which is where `ortho dev` serves by default.
+
+Each command says what it does and what each of its flags is for: run `ortho --help`, then `ortho <command> --help`.
+The command tree is declared in `packages/cli/src/main.ts`, and the generated CLI of the canon's example is
+`examples/plugged-in/generated/cli/src/main.ts`.
+
+## Choices
+
+| You want to | Run | Why |
+|---|---|---|
+| Add a thing to the blueprint | `ortho add thing <name>`, then `ortho generate` | the declaration is written for you, in its own file |
+| See a journey fail before you build | `ortho prove --empty` | the journeys run on the scaffolded handlers, and no verdict is recorded |
+| Prove only what a change touched | `ortho prove --changed` | the journeys that change didn't touch are skipped, each named |
+| Read the model the blueprint declares | `ortho model` | the outline of things, operations, reads and journeys |
+
+By default, run `ortho check` and then `ortho prove` after each change, and `ortho dev` when you want to call the app.
+
+## What it is not
+
+- **Not the reference.** Each command's flags are on its own `--help` page, written from the same command tree.
+- **Not a deploy.** Everything on this page runs on your machine. Moving a built bundle to staging or production is
+  `ortho promote`, on [environments](environments.mdx).
+- **Not the whole idea.** Why there is one description, and what is made from it, is [orthograph](orthograph.mdx);
+  what goes in a blueprint is [blueprint](blueprint.mdx).
+
+## Where it lives
+
+| What | Where | Built or planned |
+|---|---|---|
+| The `ortho` command tree, with every description | `packages/cli/src/main.ts` | built |
+| How the generated CLI names its variables | `packages/projections/src/modules/cli/internal/cli.ts` | built |
+| A generated CLI, with its fallback address | `examples/plugged-in/generated/cli/src/main.ts` | built |
+| The checks that hold this page to the code | `packages/cli/test/getting-started.test.ts` | built |
+| `ortho new app` | Goal 18's slice 6, M2.09 | planned |
+| Running this page's steps end to end | Goal 18's slice 11 | planned |
+
+## Status
+
+<Status />
+
+| Part | Status | Slice | Check |
+|---|---|---|---|
+| Every command and flag shown is one `ortho --help` lists | proved | Goal 18's slice 7 | `packages/cli/test/getting-started.test.ts` |
+| The variable names and the fallback address match the generated CLI | proved | Goal 18's slice 7 | `packages/cli/test/getting-started.test.ts` |
+| Installing from npm under `next` | specified | M1.51 | Goal 18's slice 11 |
+| `ortho new app` | specified | M2.09 | Goal 18's slice 6 |
+| The steps, run in an empty folder | specified | Goal 18's slice 11 | `design/decisions/GOAL18-getting-started-acceptance.md` |
+
+## Notes
+
+<Note kind="status" slice="M2.09">`ortho new app` is Goal 18's slice 6. Until it lands, `ortho --help` doesn't list it, and the steps after the install can't be run as written.</Note>
+
+<Note kind="decision" decision="GOAL18-getting-started-acceptance">This page is held to the code by slice 7's checks; running its steps in an empty folder, against a local registry, is slice 11's.</Note>

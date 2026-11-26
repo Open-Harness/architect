@@ -4,8 +4,18 @@ import { Context, type Effect } from "effect";
 import type { AnyErrorClass, InstanceOf, Thing, Unique } from "orthograph";
 import type { Entry } from "#modules/journal/types.js";
 
-/** A thing's fields, decoded: what a handler stores. */
-export type FieldsOf<T extends Thing> = Omit<InstanceOf<T>, "state">;
+/** A thing's `Blueprint.optional` fields: those whose schema's key is optional. */
+type OptionalKeys<T extends Thing> = {
+  [K in keyof T["fields"]]: T["fields"][K]["value"]["schema"]["~type.optionality"] extends "optional" ? K : never;
+}[keyof T["fields"]];
+
+/**
+ * A thing's fields, decoded: what a handler stores. A `Blueprint.optional` field may be left out, never written as `undefined`
+ * (exact optional properties); every other field is required (snag #1044).
+ */
+export type FieldsOf<T extends Thing> = {
+  readonly [K in keyof InstanceOf<T> as K extends "state" | OptionalKeys<T> ? never : K]: InstanceOf<T>[K];
+} & { readonly [K in keyof InstanceOf<T> as K extends Exclude<OptionalKeys<T>, "state"> ? K : never]?: InstanceOf<T>[K] };
 
 /** One stored instance: its fields, decoded, and its machine state when it has one. */
 export type Instance = { readonly [field: string]: unknown; readonly state?: string };
@@ -35,6 +45,16 @@ export interface Commit {
   readonly entries: ReadonlyArray<Entry>;
   /** For an operation declared `idempotent: "request"`: its answer, kept under its request key in the same commit. */
   readonly request?: { readonly key: string; readonly answer: string };
+  /** #764: each list the call read. The store answers `conflict` when the rows matching a list's `thing`, `where` and `state` are not these any more. */
+  readonly lists?: ReadonlyArray<ListRead>;
+}
+
+/** A list one call read (#764): every row then matching its `thing`, `where` and `state`, whatever page the call asked for, at the version the call read it. */
+export interface ListRead {
+  readonly thing: Thing;
+  readonly where: Instance;
+  readonly state: string | undefined;
+  readonly rows: ReadonlyArray<{ readonly id: string; readonly version: number }>;
 }
 
 /** `conflict`: an update's version had moved on, so nothing was written and the call runs again. */
@@ -58,6 +78,11 @@ export interface Listed {
   readonly next: string | null;
 }
 
+/** A store's page: `Listed`, with each item's version and its place, the order rows were made in (`rows[i]` is `items[i]`'s). */
+export interface Page extends Listed {
+  readonly rows: ReadonlyArray<{ readonly version: number; readonly place: number }>;
+}
+
 /** A rule a store enforces and a unit looks through: the invariant as declared, and its full name (`handle.oneHolderPerName`), which a defect and a span quote. */
 export interface NamedRule {
   readonly name: string;
@@ -70,7 +95,9 @@ export class Store extends Context.Service<Store, {
   readonly rules?: ReadonlyArray<NamedRule>;
   readonly find: (thing: Thing, id: string) => Effect.Effect<Stored | undefined>;
   /** One page of a thing's instances, in the order they were made (never a clock). A thing that lives as actors has none to list. */
-  readonly list: (query: ListQuery) => Effect.Effect<Listed>;
+  readonly list: (query: ListQuery) => Effect.Effect<Page>;
+  /** Where a row sits in the order rows were made, as `list` gives it; undefined when there is none. */
+  readonly place: (thing: Thing, id: string) => Effect.Effect<number | undefined>;
   /** `conflict` too when another call committed the same request key first: the retry then finds its answer. */
   readonly commit: (commit: Commit) => Effect.Effect<Committed>;
   /** The answer already committed under a request key, as wire JSON, if there is one. */
@@ -86,10 +113,17 @@ export class Records extends Context.Service<Records, {
     /** G5: the one instance holding `value` under the unique `rule`, within the rule's scope. The value is the key's own type, or an object of the fields for a composite key. */
     <R extends Unique<any, any>>(rule: R, value: NonNullable<R["~key"]>): Effect.Effect<Instance | undefined>;
   };
+  /**
+   * #764: a page of `thing`'s instances matching `where` and `state`, as this call's own writes leave them: a row it moved out drops, a stored row it moved in
+   * keeps its place, and the rows it made come after every stored row, in the order made. Every matching row counts as read: the commit is a `conflict` when
+   * another call changed which rows match, or one of them. A thing that lives as actors has none to list.
+   */
+  readonly list: (query: ListQuery) => Effect.Effect<Listed>;
   /** A new instance, in `state` when the thing has a machine (a move sets it otherwise). */
   readonly insert: <T extends Thing>(thing: T, fields: FieldsOf<T>, state?: string) => Effect.Effect<void>;
   /** Change some fields of an instance. Guarded by the version this call read it at. */
-  readonly update: <T extends Thing>(thing: T, id: string, changes: Partial<FieldsOf<T>>) => Effect.Effect<void>;
+  /** `state` moves the instance with no event of its own: only for work a sweep does on instances other than the one its move is about (it journals nothing). */
+  readonly update: <T extends Thing>(thing: T, id: string, changes: Partial<FieldsOf<T>>, state?: string) => Effect.Effect<void>;
 }>()("@orthograph/language-effect/Records") {}
 
 export interface UnitApi {
@@ -105,6 +139,8 @@ export interface Violation {
   readonly row: Instance;
   /** The other holder is a row this call wrote too: the handler's own bug, never a refusal or a race. */
   readonly own: boolean;
+  /** The rule says breaking it is a lost race: the call runs again and meets what the winner made. */
+  readonly retry?: boolean;
 }
 
 export interface Unit {
@@ -114,6 +150,8 @@ export interface Unit {
   /** Set the state of `id`: on its held-back insert, or as an update guarded by the version read. */
   readonly setState: (thing: Thing, id: string, state: string) => Effect.Effect<void>;
   readonly writes: Effect.Effect<ReadonlyArray<Write>>;
+  /** #764: each list this call read, for the commit to guard. */
+  readonly lists: Effect.Effect<ReadonlyArray<ListRead>>;
   /** G5: the first rule one of this call's rows breaks by taking a key another instance holds, or undefined. Run after the move, before `writes`. */
   readonly check: Effect.Effect<Violation | undefined>;
 }

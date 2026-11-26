@@ -2,6 +2,451 @@
   "generated": "Generated from blueprint/. Append-only. Do not edit.",
   "lockVersion": 1,
   "refusals": {
+    "AC-001": {
+      "name": "ParentAccountNotInCompany",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AC-002": {
+      "name": "ParentAccountIsLedger",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentAccountIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "AC-003": {
+      "name": "RootAccountIsLedger",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RootAccountIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "AC-004": {
+      "name": "RootTypeMissing",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RootTypeMissing"
+        }
+      },
+      "earlier": []
+    },
+    "AC-005": {
+      "name": "RootTypeNotParents",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {
+        "rootType": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RootTypeNotParents"
+        }
+      },
+      "earlier": []
+    },
+    "AC-006": {
+      "name": "AccountHasChildren",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AccountHasChildren"
+        }
+      },
+      "earlier": []
+    },
+    "AC-007": {
+      "name": "AccountNameTaken",
+      "owner": "account",
+      "from": "blueprint/things/account/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AccountNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "AC-900": {
+      "name": "AccountNotGroup",
+      "owner": "account",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "AC-901": {
+      "name": "AccountNotFound",
+      "owner": "account",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "acc"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "AN-001": {
+      "name": "AttendeeNotInCompany",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AttendeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AN-002": {
+      "name": "AttendeeHasLeft",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AttendeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "AN-003": {
+      "name": "AttendanceBeforeJoining",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "AN-004": {
+      "name": "AttendanceAlreadyMarked",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {
+        "attendanceDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceAlreadyMarked"
+        }
+      },
+      "earlier": []
+    },
+    "AN-005": {
+      "name": "AttendanceOnLeave",
+      "owner": "attendance",
+      "from": "blueprint/things/attendance/errors.ts",
+      "fields": {
+        "leaveApplication": {
+          "value": "id",
+          "prefix": "lap"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceOnLeave"
+        }
+      },
+      "earlier": []
+    },
+    "AN-900": {
+      "name": "AttendanceNotMarked",
+      "owner": "attendance",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceNotMarked"
+        }
+      },
+      "earlier": []
+    },
+    "AP-001": {
+      "name": "AppraisedEmployeeNotInCompany",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AP-002": {
+      "name": "AppraisedEmployeeHasLeft",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisedEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "AP-003": {
+      "name": "AppraisalCycleCompleted",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisalCycleCompleted"
+        }
+      },
+      "earlier": []
+    },
+    "AP-004": {
+      "name": "AppraisalTemplateNotInCompany",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisalTemplateNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AP-005": {
+      "name": "AppraisalAlreadyExists",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraisalAlreadyExists"
+        }
+      },
+      "earlier": []
+    },
+    "AP-006": {
+      "name": "NotRatedManually",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NotRatedManually"
+        }
+      },
+      "earlier": []
+    },
+    "AP-007": {
+      "name": "ScoresDontMatchKras",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ScoresDontMatchKras"
+        }
+      },
+      "earlier": []
+    },
+    "AP-008": {
+      "name": "KraScoreOutOfRange",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "KraScoreOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "AP-009": {
+      "name": "SelfRatingsDontMatchCriteria",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SelfRatingsDontMatchCriteria"
+        }
+      },
+      "earlier": []
+    },
+    "AP-010": {
+      "name": "SelfRatingOutOfRange",
+      "owner": "appraisal",
+      "from": "blueprint/things/appraisal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SelfRatingOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "AP-900": {
+      "name": "AppraisalNotDraft",
+      "owner": "appraisal",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "AP-901": {
+      "name": "AppraisalNotFound",
+      "owner": "appraisal",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "apr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-001": {
+      "name": "RequesterNotInCompany",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RequesterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-002": {
+      "name": "RequesterHasLeft",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RequesterHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-003": {
+      "name": "RequestEndsBeforeStart",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RequestEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-004": {
+      "name": "RequestBeforeJoining",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RequestBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-005": {
+      "name": "AttendanceRequestOverlaps",
+      "owner": "attendance-request",
+      "from": "blueprint/things/attendance-request/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AttendanceRequestOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "AQ-900": {
+      "name": "AttendanceRequestNotDraft",
+      "owner": "attendance-request",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AttendanceRequestNotDraft"
+        }
+      },
+      "earlier": []
+    },
     "AR-001": {
       "name": "NotAllowed",
       "owner": "runtime",
@@ -69,6 +514,229 @@
       },
       "earlier": []
     },
+    "BA-901": {
+      "name": "BankAccountNotFound",
+      "owner": "bank-account",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "bac"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BankAccountNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "BR-001": {
+      "name": "BranchNameTaken",
+      "owner": "branch",
+      "from": "blueprint/things/branch/errors.ts",
+      "fields": {
+        "branchName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BranchNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "BR-900": {
+      "name": "BranchNotActive",
+      "owner": "branch",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BranchNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "BT-001": {
+      "name": "AccountClosed",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {
+        "account": {
+          "value": "id",
+          "prefix": "bac"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountClosed"
+        }
+      },
+      "earlier": []
+    },
+    "BT-002": {
+      "name": "CurrencyNotHeld",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {
+        "currency": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CurrencyNotHeld"
+        }
+      },
+      "earlier": []
+    },
+    "BT-003": {
+      "name": "NothingToSend",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NothingToSend"
+        }
+      },
+      "earlier": []
+    },
+    "BT-004": {
+      "name": "AlreadyRecorded",
+      "owner": "bank-transaction",
+      "from": "blueprint/things/bank-transaction/errors.ts",
+      "fields": {
+        "reference": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AlreadyRecorded"
+        }
+      },
+      "earlier": []
+    },
+    "BT-900": {
+      "name": "BankTransactionNotPending",
+      "owner": "bank-transaction",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BankTransactionNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "BT-901": {
+      "name": "BankTransactionNotFound",
+      "owner": "bank-transaction",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "btx"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "BankTransactionNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "CC-001": {
+      "name": "ParentCostCenterNotInCompany",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentCostCenterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CC-002": {
+      "name": "ParentCostCenterIsLedger",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentCostCenterIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "CC-003": {
+      "name": "RootCostCenterIsLedger",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RootCostCenterIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "CC-004": {
+      "name": "CostCenterNameTaken",
+      "owner": "cost-center",
+      "from": "blueprint/things/cost-center/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CostCenterNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CC-900": {
+      "name": "CostCenterNotGroup",
+      "owner": "cost-center",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CostCenterNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "CC-901": {
+      "name": "CostCenterNotFound",
+      "owner": "cost-center",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "cct"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CostCenterNotFound"
+        }
+      },
+      "earlier": []
+    },
     "CO-001": {
       "name": "CompanyNameTaken",
       "owner": "company",
@@ -115,6 +783,164 @@
       "wire": {
         "effect": {
           "tag": "CompanyNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "CO-901": {
+      "name": "CompanyNotFound",
+      "owner": "company",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "com"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CompanyNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "CY-001": {
+      "name": "CycleEndsBeforeStart",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {
+        "startDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CycleEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "CY-002": {
+      "name": "AppraiseeNotInCompany",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CY-003": {
+      "name": "AppraiseeHasLeft",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "CY-004": {
+      "name": "AppraiseeTemplateNotInCompany",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeTemplateNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CY-005": {
+      "name": "AppraiseeListedTwice",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AppraiseeListedTwice"
+        }
+      },
+      "earlier": []
+    },
+    "CY-006": {
+      "name": "CycleWithoutAppraisees",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CycleWithoutAppraisees"
+        }
+      },
+      "earlier": []
+    },
+    "CY-007": {
+      "name": "AppraisalsNotSubmitted",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {
+        "drafts": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalsNotSubmitted"
+        }
+      },
+      "earlier": []
+    },
+    "CY-008": {
+      "name": "CycleNameTaken",
+      "owner": "appraisal-cycle",
+      "from": "blueprint/things/appraisal-cycle/errors.ts",
+      "fields": {
+        "cycleName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CycleNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CY-900": {
+      "name": "AppraisalCycleNotNotStarted",
+      "owner": "appraisal-cycle",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalCycleNotNotStarted"
+        }
+      },
+      "earlier": []
+    },
+    "CY-901": {
+      "name": "AppraisalCycleNotFound",
+      "owner": "appraisal-cycle",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "apc"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalCycleNotFound"
         }
       },
       "earlier": []
@@ -217,6 +1043,91 @@
       },
       "earlier": []
     },
+    "EC-001": {
+      "name": "ClaimantNotActive",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimantNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "EC-002": {
+      "name": "EmployeeNotInCompany",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "EmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EC-003": {
+      "name": "ClaimHasNoExpenses",
+      "owner": "expense-claim",
+      "from": "blueprint/things/expense-claim/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimHasNoExpenses"
+        }
+      },
+      "earlier": []
+    },
+    "EC-900": {
+      "name": "ExpenseClaimNotDraft",
+      "owner": "expense-claim",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "EG-001": {
+      "name": "EmployeeGradeNameTaken",
+      "owner": "employee-grade",
+      "from": "blueprint/things/employee-grade/errors.ts",
+      "fields": {
+        "gradeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeGradeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "EG-900": {
+      "name": "EmployeeGradeNotActive",
+      "owner": "employee-grade",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeGradeNotActive"
+        }
+      },
+      "earlier": []
+    },
     "EM-001": {
       "name": "EmployeeAlreadyHired",
       "owner": "employee",
@@ -264,7 +1175,7 @@
       "from": "blueprint/things/employee/errors.ts",
       "fields": {
         "dateOfBirth": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -280,7 +1191,7 @@
       "from": "blueprint/things/employee/errors.ts",
       "fields": {
         "dateOfJoining": {
-          "value": "schema"
+          "value": "day"
         }
       },
       "wire": {
@@ -302,6 +1213,974 @@
       "wire": {
         "effect": {
           "tag": "EmployeeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "EM-901": {
+      "name": "EmployeeNotFound",
+      "owner": "employee",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "emp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "ET-001": {
+      "name": "ExpenseTypeTaken",
+      "owner": "expense-claim-type",
+      "from": "blueprint/things/expense-claim-type/errors.ts",
+      "fields": {
+        "expenseType": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseTypeTaken"
+        }
+      },
+      "earlier": []
+    },
+    "ET-900": {
+      "name": "ExpenseClaimTypeNotActive",
+      "owner": "expense-claim-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "ET-901": {
+      "name": "ExpenseClaimTypeNotFound",
+      "owner": "expense-claim-type",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "ect"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseClaimTypeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "EX-001": {
+      "name": "SanctionedOverClaimed",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {
+        "amount": {
+          "value": "money",
+          "bits": 128,
+          "signed": false,
+          "asset": {
+            "token": "usdc"
+          }
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SanctionedOverClaimed"
+        }
+      },
+      "earlier": []
+    },
+    "EX-002": {
+      "name": "ExpenseTypeNotInCompany",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ExpenseTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "EX-003": {
+      "name": "ClaimNotDraft",
+      "owner": "expense",
+      "from": "blueprint/things/expense/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ClaimNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "EX-900": {
+      "name": "ExpenseNotActive",
+      "owner": "expense",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ExpenseNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "FC-001": {
+      "name": "CriteriaNameTaken",
+      "owner": "employee-feedback-criteria",
+      "from": "blueprint/things/employee-feedback-criteria/errors.ts",
+      "fields": {
+        "criteria": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CriteriaNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "FC-900": {
+      "name": "EmployeeFeedbackCriteriaNotActive",
+      "owner": "employee-feedback-criteria",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeFeedbackCriteriaNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "FY-001": {
+      "name": "FiscalYearEndsBeforeStart",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {
+        "yearStartDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "FY-002": {
+      "name": "FiscalYearWrongLength",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {
+        "yearEndDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearWrongLength"
+        }
+      },
+      "earlier": []
+    },
+    "FY-003": {
+      "name": "FiscalYearOverlaps",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {
+        "fiscalYear": {
+          "value": "id",
+          "prefix": "fyr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "FY-004": {
+      "name": "FiscalYearNameTaken",
+      "owner": "fiscal-year",
+      "from": "blueprint/things/fiscal-year/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "FY-900": {
+      "name": "FiscalYearNotActive",
+      "owner": "fiscal-year",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FiscalYearNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "GO-001": {
+      "name": "GoalCycleCompleted",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalCycleCompleted"
+        }
+      },
+      "earlier": []
+    },
+    "GO-002": {
+      "name": "GoalEmployeeNotInCompany",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "GO-003": {
+      "name": "GoalOwnerHasLeft",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalOwnerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "GO-004": {
+      "name": "GoalKraNotInAppraisal",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalKraNotInAppraisal"
+        }
+      },
+      "earlier": []
+    },
+    "GO-005": {
+      "name": "ParentGoalMismatch",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentGoalMismatch"
+        }
+      },
+      "earlier": []
+    },
+    "GO-006": {
+      "name": "ProgressOutOfRange",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ProgressOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "GO-007": {
+      "name": "GoalIsGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "GO-008": {
+      "name": "GoalNotGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "GoalNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "GO-009": {
+      "name": "ParentGoalNotGroup",
+      "owner": "goal",
+      "from": "blueprint/things/goal/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentGoalNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "GO-900": {
+      "name": "GoalNotPending",
+      "owner": "goal",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "GoalNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "HD-001": {
+      "name": "HolidayDateTaken",
+      "owner": "holiday",
+      "from": "blueprint/things/holiday/errors.ts",
+      "fields": {
+        "holidayDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayDateTaken"
+        }
+      },
+      "earlier": []
+    },
+    "HD-002": {
+      "name": "HolidayOutsideList",
+      "owner": "holiday",
+      "from": "blueprint/things/holiday/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        },
+        "toDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayOutsideList"
+        }
+      },
+      "earlier": []
+    },
+    "HD-900": {
+      "name": "HolidayNotActive",
+      "owner": "holiday",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "HL-001": {
+      "name": "HolidayListNameTaken",
+      "owner": "holiday-list",
+      "from": "blueprint/things/holiday-list/errors.ts",
+      "fields": {
+        "holidayListName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayListNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "HL-002": {
+      "name": "HolidayListEndsBeforeStart",
+      "owner": "holiday-list",
+      "from": "blueprint/things/holiday-list/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayListEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "HL-900": {
+      "name": "HolidayListNotActive",
+      "owner": "holiday-list",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "HolidayListNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "IF-001": {
+      "name": "FeedbackGiverNotInterviewer",
+      "owner": "interview-feedback",
+      "from": "blueprint/things/interview-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackGiverNotInterviewer"
+        }
+      },
+      "earlier": []
+    },
+    "IF-002": {
+      "name": "FeedbackBeforeInterview",
+      "owner": "interview-feedback",
+      "from": "blueprint/things/interview-feedback/errors.ts",
+      "fields": {
+        "scheduledOn": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FeedbackBeforeInterview"
+        }
+      },
+      "earlier": []
+    },
+    "IF-003": {
+      "name": "FeedbackAlreadyGiven",
+      "owner": "interview-feedback",
+      "from": "blueprint/things/interview-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackAlreadyGiven"
+        }
+      },
+      "earlier": []
+    },
+    "IF-900": {
+      "name": "InterviewFeedbackNotGiven",
+      "owner": "interview-feedback",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewFeedbackNotGiven"
+        }
+      },
+      "earlier": []
+    },
+    "IR-001": {
+      "name": "RoundNameTaken",
+      "owner": "interview-round",
+      "from": "blueprint/things/interview-round/errors.ts",
+      "fields": {
+        "roundName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "RoundNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "IR-002": {
+      "name": "RoundInterviewerNotInCompany",
+      "owner": "interview-round",
+      "from": "blueprint/things/interview-round/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RoundInterviewerNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "IR-003": {
+      "name": "RoundInterviewerHasLeft",
+      "owner": "interview-round",
+      "from": "blueprint/things/interview-round/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RoundInterviewerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "IR-900": {
+      "name": "InterviewRoundNotActive",
+      "owner": "interview-round",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewRoundNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "IR-901": {
+      "name": "InterviewRoundNotFound",
+      "owner": "interview-round",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "irn"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewRoundNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "IV-001": {
+      "name": "ApplicantRejected",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantRejected"
+        }
+      },
+      "earlier": []
+    },
+    "IV-002": {
+      "name": "RoundNotInCompany",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "RoundNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "IV-003": {
+      "name": "InterviewEndsBeforeStart",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "IV-004": {
+      "name": "InterviewerNotInCompany",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewerNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "IV-005": {
+      "name": "InterviewerHasLeft",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "IV-006": {
+      "name": "InterviewAlreadyScheduled",
+      "owner": "interview",
+      "from": "blueprint/things/interview/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InterviewAlreadyScheduled"
+        }
+      },
+      "earlier": []
+    },
+    "IV-900": {
+      "name": "InterviewNotPending",
+      "owner": "interview",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "IV-901": {
+      "name": "InterviewNotFound",
+      "owner": "interview",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "ivw"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "InterviewNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "JA-001": {
+      "name": "OpeningClosed",
+      "owner": "job-applicant",
+      "from": "blueprint/things/job-applicant/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OpeningClosed"
+        }
+      },
+      "earlier": []
+    },
+    "JA-002": {
+      "name": "OfferNotAccepted",
+      "owner": "job-applicant",
+      "from": "blueprint/things/job-applicant/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OfferNotAccepted"
+        }
+      },
+      "earlier": []
+    },
+    "JA-900": {
+      "name": "JobApplicantNotOpen",
+      "owner": "job-applicant",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JobApplicantNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "JE-001": {
+      "name": "JournalEntryTooFewLines",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "JournalEntryTooFewLines"
+        }
+      },
+      "earlier": []
+    },
+    "JE-002": {
+      "name": "LineAccountNotInCompany",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "JE-003": {
+      "name": "LineAccountIsGroup",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineAccountIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "JE-004": {
+      "name": "LineCostCenterNotInCompany",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineCostCenterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "JE-005": {
+      "name": "LineCostCenterIsGroup",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineCostCenterIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "JE-006": {
+      "name": "LineWithoutAmount",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineWithoutAmount"
+        }
+      },
+      "earlier": []
+    },
+    "JE-007": {
+      "name": "LineDebitAndCredit",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "line": {
+          "value": "uint",
+          "bits": 16
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LineDebitAndCredit"
+        }
+      },
+      "earlier": []
+    },
+    "JE-008": {
+      "name": "JournalEntryUnbalanced",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "difference": {
+          "value": "money",
+          "bits": 128,
+          "signed": true,
+          "asset": {
+            "token": "usdc"
+          }
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JournalEntryUnbalanced"
+        }
+      },
+      "earlier": []
+    },
+    "JE-009": {
+      "name": "PostingDateOutsideFiscalYear",
+      "owner": "journal-entry",
+      "from": "blueprint/things/journal-entry/errors.ts",
+      "fields": {
+        "postingDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PostingDateOutsideFiscalYear"
+        }
+      },
+      "earlier": []
+    },
+    "JE-900": {
+      "name": "JournalEntryNotDraft",
+      "owner": "journal-entry",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JournalEntryNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "JF-001": {
+      "name": "OfferDesignationNotInCompany",
+      "owner": "job-offer",
+      "from": "blueprint/things/job-offer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OfferDesignationNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "JF-002": {
+      "name": "OfferAlreadyMade",
+      "owner": "job-offer",
+      "from": "blueprint/things/job-offer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OfferAlreadyMade"
+        }
+      },
+      "earlier": []
+    },
+    "JF-900": {
+      "name": "JobOfferNotAwaiting",
+      "owner": "job-offer",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JobOfferNotAwaiting"
+        }
+      },
+      "earlier": []
+    },
+    "JO-001": {
+      "name": "OpeningWithoutVacancies",
+      "owner": "job-opening",
+      "from": "blueprint/things/job-opening/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "OpeningWithoutVacancies"
+        }
+      },
+      "earlier": []
+    },
+    "JO-900": {
+      "name": "JobOpeningNotOpen",
+      "owner": "job-opening",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "JobOpeningNotOpen"
         }
       },
       "earlier": []
@@ -400,6 +2279,1404 @@
       "wire": {
         "effect": {
           "tag": "BridgeIndividualNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "KR-001": {
+      "name": "KraTitleTaken",
+      "owner": "kra",
+      "from": "blueprint/things/kra/errors.ts",
+      "fields": {
+        "title": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "KraTitleTaken"
+        }
+      },
+      "earlier": []
+    },
+    "KR-900": {
+      "name": "KraNotActive",
+      "owner": "kra",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "KraNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "KR-901": {
+      "name": "KraNotFound",
+      "owner": "kra",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "kra"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "KraNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "LL-001": {
+      "name": "AllocateeNotInCompany",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocateeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LL-002": {
+      "name": "AllocateeHasLeft",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocateeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "LL-003": {
+      "name": "AllocationTypeNotInCompany",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LL-004": {
+      "name": "AllocationEndsBeforeStart",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AllocationEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "LL-005": {
+      "name": "AllocationOverlaps",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "LL-006": {
+      "name": "LeaveWithoutPayNotAllocated",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveWithoutPayNotAllocated"
+        }
+      },
+      "earlier": []
+    },
+    "LL-007": {
+      "name": "NoLeavesAllocated",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoLeavesAllocated"
+        }
+      },
+      "earlier": []
+    },
+    "LL-008": {
+      "name": "AllocationExceedsPeriod",
+      "owner": "leave-allocation",
+      "from": "blueprint/things/leave-allocation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AllocationExceedsPeriod"
+        }
+      },
+      "earlier": []
+    },
+    "LL-900": {
+      "name": "LeaveAllocationNotDraft",
+      "owner": "leave-allocation",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveAllocationNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "LP-001": {
+      "name": "ApplicantNotInCompany",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LP-002": {
+      "name": "ApplicantHasLeft",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicantHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "LP-003": {
+      "name": "ApplicationTypeNotInCompany",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ApplicationTypeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "LP-004": {
+      "name": "LeaveEndsBeforeStart",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "LP-005": {
+      "name": "LeaveBeforeJoining",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "LP-006": {
+      "name": "NoAllocationCovers",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoAllocationCovers"
+        }
+      },
+      "earlier": []
+    },
+    "LP-007": {
+      "name": "LeaveAllHolidays",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveAllHolidays"
+        }
+      },
+      "earlier": []
+    },
+    "LP-008": {
+      "name": "InsufficientLeaveBalance",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "InsufficientLeaveBalance"
+        }
+      },
+      "earlier": []
+    },
+    "LP-009": {
+      "name": "LeaveOverlaps",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "LeaveOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "LP-010": {
+      "name": "LeaveTooLong",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "maxContinuousDaysAllowed": {
+          "value": "uint",
+          "bits": 32
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTooLong"
+        }
+      },
+      "earlier": []
+    },
+    "LP-011": {
+      "name": "LeaveDayAttended",
+      "owner": "leave-application",
+      "from": "blueprint/things/leave-application/errors.ts",
+      "fields": {
+        "attendanceDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveDayAttended"
+        }
+      },
+      "earlier": []
+    },
+    "LP-900": {
+      "name": "LeaveApplicationNotOpen",
+      "owner": "leave-application",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveApplicationNotOpen"
+        }
+      },
+      "earlier": []
+    },
+    "LT-001": {
+      "name": "LeaveTypeNameTaken",
+      "owner": "leave-type",
+      "from": "blueprint/things/leave-type/errors.ts",
+      "fields": {
+        "leaveTypeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "LT-900": {
+      "name": "LeaveTypeNotActive",
+      "owner": "leave-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "LT-901": {
+      "name": "LeaveTypeNotFound",
+      "owner": "leave-type",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "lty"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "LeaveTypeNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "PE-001": {
+      "name": "PayrollEndsBeforeStart",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "startDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "PE-002": {
+      "name": "PayableAccountNotInCompany",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayableAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PE-003": {
+      "name": "PayableAccountIsGroup",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayableAccountIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "PE-004": {
+      "name": "PayableAccountHasType",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayableAccountHasType"
+        }
+      },
+      "earlier": []
+    },
+    "PE-005": {
+      "name": "PayrollCostCenterNotInCompany",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayrollCostCenterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PE-006": {
+      "name": "PayrollCostCenterIsGroup",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayrollCostCenterIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "PE-007": {
+      "name": "NoEmployeesFound",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoEmployeesFound"
+        }
+      },
+      "earlier": []
+    },
+    "PE-008": {
+      "name": "SalarySlipExists",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "employee": {
+          "value": "id",
+          "prefix": "emp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalarySlipExists"
+        }
+      },
+      "earlier": []
+    },
+    "PE-009": {
+      "name": "NoAssignmentAtStart",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "employee": {
+          "value": "id",
+          "prefix": "emp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "NoAssignmentAtStart"
+        }
+      },
+      "earlier": []
+    },
+    "PE-010": {
+      "name": "AccrualOutsideFiscalYear",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "postingDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccrualOutsideFiscalYear"
+        }
+      },
+      "earlier": []
+    },
+    "PE-900": {
+      "name": "PayrollEntryNotDraft",
+      "owner": "payroll-entry",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollEntryNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "PF-002": {
+      "name": "FeedbackForOneself",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackForOneself"
+        }
+      },
+      "earlier": []
+    },
+    "PF-003": {
+      "name": "ReviewerNotInCompany",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ReviewerNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PF-004": {
+      "name": "ReviewerHasLeft",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ReviewerHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "PF-005": {
+      "name": "FeedbackRatingsDontMatchCriteria",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackRatingsDontMatchCriteria"
+        }
+      },
+      "earlier": []
+    },
+    "PF-006": {
+      "name": "FeedbackRatingOutOfRange",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackRatingOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "PF-007": {
+      "name": "FeedbackCycleCompleted",
+      "owner": "employee-performance-feedback",
+      "from": "blueprint/things/employee-performance-feedback/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "FeedbackCycleCompleted"
+        }
+      },
+      "earlier": []
+    },
+    "PF-900": {
+      "name": "EmployeePerformanceFeedbackNotDraft",
+      "owner": "employee-performance-feedback",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeePerformanceFeedbackNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "PM-001": {
+      "name": "PromotedEmployeeNotInCompany",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PromotedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PM-002": {
+      "name": "PromotedEmployeeHasLeft",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PromotedEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "PM-003": {
+      "name": "NewDesignationNotInCompany",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NewDesignationNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PM-004": {
+      "name": "DesignationUnchanged",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "DesignationUnchanged"
+        }
+      },
+      "earlier": []
+    },
+    "PM-005": {
+      "name": "PromotionNotYetDue",
+      "owner": "employee-promotion",
+      "from": "blueprint/things/employee-promotion/errors.ts",
+      "fields": {
+        "promotionDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PromotionNotYetDue"
+        }
+      },
+      "earlier": []
+    },
+    "PM-900": {
+      "name": "EmployeePromotionNotDraft",
+      "owner": "employee-promotion",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeePromotionNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "PP-001": {
+      "name": "PayrollPeriodEndsBeforeStart",
+      "owner": "payroll-period",
+      "from": "blueprint/things/payroll-period/errors.ts",
+      "fields": {
+        "startDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "PP-002": {
+      "name": "PayrollPeriodOverlaps",
+      "owner": "payroll-period",
+      "from": "blueprint/things/payroll-period/errors.ts",
+      "fields": {
+        "payrollPeriod": {
+          "value": "id",
+          "prefix": "ppr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "PP-003": {
+      "name": "PayrollPeriodNameTaken",
+      "owner": "payroll-period",
+      "from": "blueprint/things/payroll-period/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "PP-900": {
+      "name": "PayrollPeriodNotActive",
+      "owner": "payroll-period",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "SA-001": {
+      "name": "AssignedEmployeeNotInCompany",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SA-002": {
+      "name": "AssignedEmployeeHasLeft",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "SA-003": {
+      "name": "AssignmentExists",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AssignmentExists"
+        }
+      },
+      "earlier": []
+    },
+    "SA-004": {
+      "name": "AssignmentBeforeJoining",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AssignmentBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "SA-005": {
+      "name": "AssignedStructureNotInCompany",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedStructureNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SA-006": {
+      "name": "AssignedStructureNotSubmitted",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedStructureNotSubmitted"
+        }
+      },
+      "earlier": []
+    },
+    "SA-900": {
+      "name": "SalaryStructureAssignmentNotDraft",
+      "owner": "salary-structure-assignment",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureAssignmentNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "SC-001": {
+      "name": "ComponentAccountNotInCompany",
+      "owner": "salary-component",
+      "from": "blueprint/things/salary-component/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ComponentAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SC-002": {
+      "name": "ComponentAccountIsGroup",
+      "owner": "salary-component",
+      "from": "blueprint/things/salary-component/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ComponentAccountIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "SC-003": {
+      "name": "SalaryComponentTaken",
+      "owner": "salary-component",
+      "from": "blueprint/things/salary-component/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SalaryComponentTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SC-900": {
+      "name": "SalaryComponentNotActive",
+      "owner": "salary-component",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryComponentNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "SH-001": {
+      "name": "ShiftTypeNameTaken",
+      "owner": "shift-type",
+      "from": "blueprint/things/shift-type/errors.ts",
+      "fields": {
+        "shiftTypeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ShiftTypeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SH-002": {
+      "name": "ShiftStartsWhenItEnds",
+      "owner": "shift-type",
+      "from": "blueprint/things/shift-type/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ShiftStartsWhenItEnds"
+        }
+      },
+      "earlier": []
+    },
+    "SH-900": {
+      "name": "ShiftTypeNotActive",
+      "owner": "shift-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "ShiftTypeNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "SP-001": {
+      "name": "SeparatedEmployeeNotInCompany",
+      "owner": "employee-separation",
+      "from": "blueprint/things/employee-separation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SeparatedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SP-002": {
+      "name": "SeparationAlreadyOpen",
+      "owner": "employee-separation",
+      "from": "blueprint/things/employee-separation/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SeparationAlreadyOpen"
+        }
+      },
+      "earlier": []
+    },
+    "SP-900": {
+      "name": "EmployeeSeparationNotPending",
+      "owner": "employee-separation",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeSeparationNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "SS-001": {
+      "name": "StructureWithoutEarnings",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "StructureWithoutEarnings"
+        }
+      },
+      "earlier": []
+    },
+    "SS-002": {
+      "name": "StructureComponentNotInCompany",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureComponentNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SS-003": {
+      "name": "StructureComponentWrongType",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureComponentWrongType"
+        }
+      },
+      "earlier": []
+    },
+    "SS-004": {
+      "name": "StructureLineWithoutAmount",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureLineWithoutAmount"
+        }
+      },
+      "earlier": []
+    },
+    "SS-005": {
+      "name": "StructureComponentRepeated",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureComponentRepeated"
+        }
+      },
+      "earlier": []
+    },
+    "SS-006": {
+      "name": "StructureNetPayNegative",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "netPay": {
+          "value": "money",
+          "bits": 128,
+          "signed": true,
+          "asset": {
+            "token": "usdc"
+          }
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureNetPayNegative"
+        }
+      },
+      "earlier": []
+    },
+    "SS-007": {
+      "name": "StructureInUse",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "StructureInUse"
+        }
+      },
+      "earlier": []
+    },
+    "SS-008": {
+      "name": "SalaryStructureNameTaken",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SS-900": {
+      "name": "SalaryStructureNotDraft",
+      "owner": "salary-structure",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "SS-901": {
+      "name": "SalaryStructureNotFound",
+      "owner": "salary-structure",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "sst"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "TP-001": {
+      "name": "TemplateWithoutKras",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateWithoutKras"
+        }
+      },
+      "earlier": []
+    },
+    "TP-002": {
+      "name": "TemplateKraNotInCompany",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateKraNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TP-003": {
+      "name": "TemplateCriteriaNotInCompany",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateCriteriaNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TP-004": {
+      "name": "TemplateLineRepeated",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateLineRepeated"
+        }
+      },
+      "earlier": []
+    },
+    "TP-005": {
+      "name": "TemplateWeightageOutOfRange",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TemplateWeightageOutOfRange"
+        }
+      },
+      "earlier": []
+    },
+    "TP-006": {
+      "name": "KraWeightageNotHundred",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "KraWeightageNotHundred"
+        }
+      },
+      "earlier": []
+    },
+    "TP-007": {
+      "name": "CriteriaWeightageNotHundred",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CriteriaWeightageNotHundred"
+        }
+      },
+      "earlier": []
+    },
+    "TP-008": {
+      "name": "TemplateTitleTaken",
+      "owner": "appraisal-template",
+      "from": "blueprint/things/appraisal-template/errors.ts",
+      "fields": {
+        "title": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TemplateTitleTaken"
+        }
+      },
+      "earlier": []
+    },
+    "TP-900": {
+      "name": "AppraisalTemplateNotActive",
+      "owner": "appraisal-template",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalTemplateNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "TP-901": {
+      "name": "AppraisalTemplateNotFound",
+      "owner": "appraisal-template",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "apt"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AppraisalTemplateNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "TR-001": {
+      "name": "TransferredEmployeeNotInCompany",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TransferredEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TR-002": {
+      "name": "TransferredEmployeeHasLeft",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "TransferredEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "TR-003": {
+      "name": "NewDepartmentNotInCompany",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NewDepartmentNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "TR-004": {
+      "name": "DepartmentUnchanged",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "DepartmentUnchanged"
+        }
+      },
+      "earlier": []
+    },
+    "TR-005": {
+      "name": "TransferNotYetDue",
+      "owner": "employee-transfer",
+      "from": "blueprint/things/employee-transfer/errors.ts",
+      "fields": {
+        "transferDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "TransferNotYetDue"
+        }
+      },
+      "earlier": []
+    },
+    "TR-900": {
+      "name": "EmployeeTransferNotDraft",
+      "owner": "employee-transfer",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmployeeTransferNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "TY-001": {
+      "name": "EmploymentTypeNameTaken",
+      "owner": "employment-type",
+      "from": "blueprint/things/employment-type/errors.ts",
+      "fields": {
+        "employmentTypeName": {
+          "value": "text",
+          "max": 140
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmploymentTypeNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "TY-900": {
+      "name": "EmploymentTypeNotActive",
+      "owner": "employment-type",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "EmploymentTypeNotActive"
         }
       },
       "earlier": []

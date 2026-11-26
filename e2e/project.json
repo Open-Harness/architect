@@ -27,7 +27,7 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs {projectRoot}/staging/leftovers.test.mjs {projectRoot}/staging/workflow.test.mjs {projectRoot}/staging/subdomain.test.mjs" },
+      "options": { "command": "node --test {projectRoot}/totals/test-totals.mjs {projectRoot}/staging/leftovers.test.mjs {projectRoot}/staging/workflow.test.mjs {projectRoot}/staging/runs.test.mjs {projectRoot}/staging/subdomain.test.mjs" },
       "cache": false
     },
     "m0-names": {
@@ -240,6 +240,31 @@
     "m8": {
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m8-checks" },
+      "cache": false
+    },
+    "superagent-checks": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.superagent.config.ts superagent" },
+      "cache": false
+    },
+    "superagent-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "nx run e2e:ratchet-test",
+          "mkdir -p tmp && rm -f tmp/superagent-report.json tmp/superagent-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/superagent-errors.json vitest run --root e2e --config vitest.superagent-ratchet.config.ts superagent --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/superagent-report.json; node e2e/ratchet/check.ts tmp/superagent-report.json e2e/superagent/expected-failing tmp/superagent-errors.json"
+        ]
+      },
+      "cache": false
+    },
+    "superagent": {
+      "metadata": {
+        "description": "Goal 17's done check. So far slice 3's checks, adapters from a spec, and slice 5's, stage one's blueprint: ortho check passes on examples/superagent, its generated docs, CLI and MCP list every operation, and the other examples generate byte for byte as before (e2e/superagent/README.md); the coding and triage halves are added by slices 6, 8, 10 and 12."
+      },
+      "executor": "nx:run-commands",
+      "options": { "command": "nx run e2e:superagent-checks" },
       "cache": false
     },
     "m7-checks": {

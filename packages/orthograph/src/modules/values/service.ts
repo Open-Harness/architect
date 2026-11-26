@@ -1,7 +1,9 @@
 import { DateTime, Option, Schema } from "effect";
 import type { Field } from "#modules/things/types.js";
 import type { MoneyApi, MoneyOptions, Value, ValueMeta, ValuesApi } from "./types.ts";
-import { whole } from "./internal/wire.ts";
+import { decimal, decimalText, whole } from "./internal/wire.ts";
+import { lazy, link, linkTo } from "./internal/link.ts";
+import { Days, isRealDay } from "./internal/days.ts";
 
 const isValue = (x: unknown): x is Value =>
   typeof x === "object" && x !== null && (x as { kind?: unknown }).kind === "value";
@@ -40,10 +42,31 @@ const money: MoneyApi = Object.assign(
   { of: (holder: Field | Value, options?: MoneyOptions) => amount({ kind: "of", of: holder }, options) },
 );
 
+/** ERPNext's largest float precision. */
+const DEFAULT_PLACES = 9;
+
+/** A copy, so a value shared elsewhere keeps its own words; a link's copy is a link to the described field, read when used. */
+const describedAs = <const X extends Value | Field>(x: X, description: string): X => {
+  const to = linkTo(x);
+  return (to === undefined ? Object.freeze({ ...x, description }) : link(to, description, describedAs)) as X;
+};
+
+/** A link whose field, once read, is `wrap` of the linked field: it stays lazy, keeps its edge and takes the wrapper's mark. */
+const wrappedLink = <X extends Value | Field>(x: X, wrap: (f: Field) => Field): X | undefined => {
+  const to = linkTo(x);
+  return to === undefined ? undefined : (link(() => wrap(to()), undefined, describedAs) as Field as X);
+};
+
+/** A value that may be left out; a field becomes a copy holding that value, so a field taken from it keeps the edge. */
+const optional = <X extends Value | Field>(x: X): X => {
+  const ofValue = (v: Value): Value => Object.freeze({ ...v, schema: Schema.optionalKey(v.schema), optional: true as const });
+  const ofField = (f: Field): Field => Object.freeze({ ...f, value: ofValue(f.value) });
+  return (wrappedLink(x, ofField) ?? (x.kind === "field" ? ofField(x) : ofValue(x))) as X;
+};
+
 export const Values: ValuesApi = {
   value,
-  // A copy, so a value shared elsewhere keeps its own words.
-  described: (x, description) => Object.freeze({ ...x, description }) as unknown as typeof x,
+  described: describedAs,
   id,
   uint: (bits) => described(whole(false, bits), { type: "uint", bits }),
   text: (options) => {
@@ -51,14 +74,28 @@ export const Values: ValuesApi = {
     return described(Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(max)), { type: "text", max });
   },
   instant: () => described(Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/), Schema.makeFilter(isRealInstant, { description: "a real instant, ISO 8601 with milliseconds" })), { type: "instant" }),
+  day: () => described(Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}$/), Schema.makeFilter(isRealDay, { description: "a day the calendar has, YYYY-MM-DD" })), { type: "day" }),
   account: () => described(Schema.String.check(Schema.isPattern(CAIP10)), { type: "account" }),
   money,
+  decimal: (options) => {
+    const places = options?.places ?? DEFAULT_PLACES;
+    return described(decimal(places), { type: "decimal", places });
+  },
+  link: (to) => link(to, undefined, describedAs),
   refAny: () =>
     described(Schema.Struct({
       declaration: Schema.String.check(Schema.isPattern(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/)),
       id: Schema.String.check(Schema.isMinLength(1)),
     }), { type: "schema", format: "ref-any" }),
+  bool: () => described(Schema.Boolean, { type: "schema", format: "bool" }),
+  oneOf: (options) => described(Schema.Literals(options), { type: "schema", format: "choice", options: [...options] }),
+  // A list of structs says the names of its rows' fields, so a reader of the model sees what each row holds.
+  list: (item) => {
+    const fields = (item.schema as { readonly fields?: object }).fields;
+    return described(Schema.Array(item.schema), { type: "schema", format: "list", ...(fields === undefined ? {} : { fields: Object.keys(fields) }) });
+  },
+  optional: optional as ValuesApi["optional"],
   email: () => Object.freeze({ ...described(Schema.String.check(Schema.isMaxLength(254), Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)), { type: "text", max: 254 }), format: "email" as const }),
 };
 
-export { isValue };
+export { isValue, Days, lazy, linkTo, wrappedLink, decimalText };

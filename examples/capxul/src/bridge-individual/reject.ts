@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/bridge-individual/verbs/reject.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/bridge-individual/reject.handler.ts";
 
 /**
@@ -41,17 +40,14 @@ import type { Handler } from "../../generated/api/src/bridge-individual/reject.h
  *   once it answers, it writes KycRejected: individual from the answer, reason from the payload;
  *   the call is the span bridge-individual.reject, and its commit bridge-individual.reject.commit.
  */
-const reject: Handler = (_payload, { steps, move }) =>
+const reject: Handler = ({ individual }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span bridge-individual.reject.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
-
+    // Step update: database, span bridge-individual.reject.update. Bridge's decision changes the state and nothing else; the
+    // reason travels in the event alone.
     // The move reject, from started, to rejected.
-    yield* move();
+    yield* steps.update(move());
 
-    return {
-      individual: yield* Handlers.blank("individual, a bridge-individual.id"),
-    };
+    return { individual };
   });
 
 export default reject;

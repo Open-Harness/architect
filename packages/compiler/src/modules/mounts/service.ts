@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { BlueprintSource, type PluginPackage } from "#modules/source/types.js";
 import { readLayout, type Layout, type MountSecret, type StoreFile, type ThingFiles } from "#modules/model/internal/layout.js";
 import { hashOf } from "#modules/model/internal/hash.js";
-import type { CallReach, MountModel, MountsApi } from "./types.ts";
+import type { BroughtAgent, BroughtSource, CallReach, MountModel, MountsApi } from "./types.ts";
 import { chosenOf, choicesIn } from "./internal/choices.ts";
 import { callsOf } from "./internal/calls.ts";
 import { renamed, renamedStores } from "./internal/fold.ts";
@@ -39,9 +39,13 @@ const standInOf = (descriptor: unknown): MountModel["standIn"] => {
   return stand?.how === "process" || stand?.how === "vendor" ? { how: stand.how, ...(stand.what === undefined ? {} : { what: stand.what }) } : stand?.how === "none" ? { how: "none" } : undefined;
 };
 
+/** The door a mount's adapter opens: only when it has one and the mount includes an event for it to receive. */
+const doorOf = (mount: string, descriptor: unknown, events: ReadonlyArray<string>): MountModel["door"] =>
+  (descriptor as { readonly door?: unknown }).door !== undefined && events.length > 0 ? { secret: `${mount.toUpperCase().replaceAll("-", "_")}_WEBHOOK_SIGNING` } : undefined;
+
 export const Mounts: MountsApi = {
   fold: (layout) => Effect.gen(function* () {
-    if (layout.mounts.size === 0) return { things: new Map(), stores: new Map(), journeys: new Map(), mounts: {}, calls: new Map(), secrets: [], problems: [] };
+    if (layout.mounts.size === 0) return { things: new Map(), stores: new Map(), journeys: new Map(), mounts: {}, calls: new Map(), agents: new Map(), sources: new Map(), secrets: [], problems: [] };
     const source = yield* BlueprintSource;
     const problems: Array<string> = [];
     const plugins = yield* source.plugins.pipe(Effect.catch((e) => Effect.sync(() => { problems.push(e.message); return [] as ReadonlyArray<PluginPackage>; })));
@@ -50,6 +54,9 @@ export const Mounts: MountsApi = {
     const calls = new Map<unknown, CallReach>();
     const journeys: Layout["journeys"] = new Map();
     const stores = new Map<string, StoreFile>();
+    const agents = new Map<string, BroughtAgent>();
+    const sources = new Map<string, BroughtSource>();
+    const extensions: Array<{ readonly file: string; readonly plugin: string; readonly t: ThingFiles }> = [];
     const brought = new Map<string, Matched>();
     const mounts: Record<string, MountModel> = {};
     const secrets: Array<MountSecret> = [];
@@ -61,17 +68,29 @@ export const Mounts: MountsApi = {
       const files = yield* source.pluginFiles(plugin.name).pipe(Effect.result);
       if (files._tag === "Failure") { problems.push(`${file}: ${files.failure.message}`); continue; }
       // A plugin's `blueprint/secrets.ts`, whatever its kind: its name in an environment comes from this mount and the export.
-      const declared = readLayout(files.success.files.filter((f) => f.path === "secrets.js"), (path) => `${plugin.name}/blueprint/${path}`);
+      // A built plugin has `secrets.js`; a workspace one (every generated adapter in an app's `plugins/`) has `secrets.ts`.
+      const declared = readLayout(files.success.files.filter((f) => f.path === "secrets.js" || f.path === "secrets.ts"), (path) => `${plugin.name}/blueprint/${path}`);
       problems.push(...declared.problems);
       for (const s of declared.secrets.values()) secrets.push({ ...s, mount: name, kind: me.kind as MountSecret["kind"], mountFile: file, package: plugin.name, version: plugin.version });
-      let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "layer" | "standIn"> = {};
+      let verbs: Pick<MountModel, "omitted" | "narrowed" | "calls" | "events" | "door" | "layer" | "standIn"> = {};
       if (me.kind === "feature" || me.kind === "adapter") {
         // An adapter adds no operations, but its errors are declared in its things, which the model names like a feature's.
-        const own = readLayout(files.success.files.filter((f) => f.path.startsWith("things/") || (me.kind === "feature" && (f.path.startsWith("journeys/") || f.path.startsWith("stores/")))), (path) => `${plugin.name}/blueprint/${path}`);
-        problems.push(...own.problems);
+        const own = readLayout(files.success.files.filter((f) => f.path.startsWith("things/") || (me.kind === "feature" && (f.path.startsWith("journeys/") || f.path.startsWith("stores/") || f.path.startsWith("agents/") || f.path.startsWith("sources/")))), (path) => `${plugin.name}/blueprint/${path}`);
+        // A folder of verbs and no thing.ts adds operations to a thing another plugin (or the app) brings: not a thing of its own.
+        const added = [...own.things.values()].filter((t) => !t.thing).map((t) => t.name);
+        problems.push(...own.problems.filter((p) => !added.some((n) => p === `${plugin.name}/blueprint/things/${n}: has no thing.ts`)));
         for (const [path, journey] of own.journeys) journeys.set(path, journey);
+        for (const [n, a] of own.agents) {
+          if (agents.has(n)) problems.push(`${file}: ${plugin.name} brings agent ${n} (${a.file}), and ${agents.get(n)!.mount} brings one by that name`);
+          else agents.set(n, { ...a, file: `blueprint/agents/${n}.ts`, mount: name });
+        }
+        for (const [n, s] of own.sources) {
+          if (sources.has(n)) problems.push(`${file}: ${plugin.name} brings source ${n} (${s.file}), and ${sources.get(n)!.file} brings one by that name: a source is named by its file`);
+          else sources.set(n, { ...s, mount: name, package: plugin.name });
+        }
         // Each thing gets its own verbs map, so an omit changes only this mount's copy.
-        const mine = renamed(own, name, plugin.name, plugin.version).map((t) => ({ ...t, verbs: new Map(t.verbs) }));
+        const written = me.kind === "adapter" && files.success.written ? { written: `${plugin.name}/src/written.ts` } : {};
+        const mine = renamed(own, name, plugin.name, plugin.version).map((t) => ({ ...t, ...written, verbs: new Map(t.verbs) }));
         const applied = applyVerbs(file, plugin.name, mount, mine, layout);
         problems.push(...applied.problems);
         for (const s of renamedStores(own, name, plugin.name, plugin.version)) {
@@ -82,10 +101,12 @@ export const Mounts: MountsApi = {
           else stores.set(s.name, s);
         }
         verbs = { ...(applied.omitted.length > 0 ? { omitted: applied.omitted } : {}), ...(Object.keys(applied.narrowed).length > 0 ? { narrowed: applied.narrowed } : {}) };
-        for (const t of mine) {
+        for (const t of mine.filter((x) => !x.thing)) extensions.push({ file, plugin: plugin.name, t });
+        for (const t of mine.filter((x) => x.thing)) {
           const app = layout.things.get(t.name);
           const other = brought.get(t.name);
-          if (app) problems.push(`${file}: ${plugin.name} brings thing ${t.name} (${t.base}), and the blueprint has one by that name, ${app.base}: mount it under another name`);
+          // An app folder with verbs and no thing.ts adds operations to the plugin's thing; it is not a second thing.
+          if (app?.thing) problems.push(`${file}: ${plugin.name} brings thing ${t.name} (${t.base}), and the blueprint has one by that name, ${app.base}: mount it under another name`);
           else if (other) problems.push(`${file}: ${plugin.name} brings thing ${t.name} (${t.base}), and ${other.file} brings one by that name from ${other.plugin.name}: mount one under another name`);
           else { things.set(t.name, t); brought.set(t.name, me); }
         }
@@ -95,14 +116,28 @@ export const Mounts: MountsApi = {
         problems.push(...reached.problems);
         for (const [call, reach] of reached.reach) calls.set(call, reach);
         const stand = standInOf(mount.plugin);
-        verbs = { ...verbs, ...(reached.included.length > 0 ? { calls: reached.included } : {}), ...(files.success.layer ? { layer: true as const } : {}), ...(stand ? { standIn: stand } : {}) };
+        const door = doorOf(name, mount.plugin, reached.events);
+        verbs = { ...verbs, ...(reached.included.length > 0 ? { calls: reached.included } : {}), ...(reached.events.length > 0 ? { events: reached.events } : {}), ...(files.success.layer ? { layer: true as const } : {}), ...(stand ? { standIn: stand } : {}), ...(door ? { door } : {}) };
       }
       const needs = needsOf(me, matched, plugins);
       problems.push(...needs.problems);
       const entry = { kind: me.kind as MountModel["kind"], file, package: plugin.name, version: plugin.version, integrity: files.success.integrity, chosen, ...verbs, ...(needs.needs.length > 0 ? { needs: needs.needs } : {}) };
       mounts[name] = { ...entry, hash: hashOf({ ...entry, file: undefined }) };
     }
-    return { things, stores, journeys, mounts, calls, secrets, problems };
+    // Each such folder joins its thing; its operations are the plugin's that wrote them.
+    for (const { file, plugin, t } of extensions) {
+      // The thing it adds to is found by the thing its operations are declared on, never by the folder's name: either mount may be aliased.
+      const declaredOn = [...t.verbs.values()][0]?.declaration.thing;
+      const target = declaredOn === undefined ? undefined : [...things.values(), ...layout.things.values()].find((x) => x.thing === declaredOn);
+      if (!target?.thing) { problems.push(`${file}: ${plugin} adds operations to thing ${t.from.kind === "app" ? t.name : t.from.thing}, which no mounted plugin or the app brings`); continue; }
+      for (const [verb, v] of t.verbs) {
+        const taken = target.verbs.get(verb);
+        // One operation has one declaration: an added verb may not be one the thing already has, nor one another folder adds.
+        if (taken) problems.push(`${file}: ${plugin} adds ${target.name}.${verb} (${v.file}), which ${target.name} already has (${taken.file}): name the operation another verb`);
+        else target.verbs.set(verb, { ...v, from: t.from });
+      }
+    }
+    return { things, stores, journeys, mounts, calls, agents, sources, secrets, problems };
   }),
   attributed,
 };

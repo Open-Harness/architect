@@ -1,17 +1,13 @@
 // generated/cli: `<project> <thing> <verb> --<field> ...`, one command per operation, calling the SDK.
 import type { Model, OperationModel } from "@orthograph/compiler";
-import { flagCode, helpOf } from "#modules/names/service.js";
+import { flagCode, helpOf, refAny } from "#modules/names/service.js";
 import { renderSessionCommands, sessionOperations } from "./session.ts";
 import { GENERATED, camel, exportedAs, lines, local, opVar } from "#modules/names/service.js";
 import type { RenderedFile } from "#modules/names/types.js";
 
 const command = (op: OperationModel): RenderedFile => {
   const optional = Object.values(op.payload).some((f) => f.optional);
-  const flags = Object.entries(op.payload).map(([k, f]) => {
-    const text = flagCode(k, f);
-    const flag = f.value.type === "schema" && f.value.format === "ref-any" ? `${text}.pipe(Flag.withSchema(Schema.fromJsonString(Schema.Unknown)))` : text;
-    return `${k}: ${f.optional ? `Flag.optional(${flag})` : flag}`;
-  });
+  const flags = Object.entries(op.payload).map(([k, f]) => `${k}: ${f.optional ? `Flag.optional(${flagCode(k, f)})` : flagCode(k, f)}`);
   return {
     path: `generated/cli/src/${op.thing}/${op.verb}.ts`,
     scaffold: false,
@@ -23,7 +19,7 @@ const command = (op: OperationModel): RenderedFile => {
       `import * as Sdk from "../../../sdk/src/index.ts";`,
       `import * as Output from "../output.ts"; // a namespace, so a verb named like a helper (answer) cannot clash`,
       "",
-      `/** ${op.description} Each flag is handed on as text${Object.values(op.payload).some((f) => f.value.type === "schema" && f.value.format === "ref-any") ? " (any-thing references are JSON objects)" : ""}; the declaration decodes it${optional ? "; a flag left out is not sent" : ""}. \`--json\` prints the whole answer as JSON. */`,
+      `/** ${op.description} Each flag is handed on as text${Object.values(op.payload).some(refAny) ? " (any-thing references are JSON objects)" : ""}${Object.values(op.payload).some((f) => f.json !== undefined) ? " (lists and objects are JSON)" : ""}; the declaration decodes it${optional ? "; a flag left out is not sent" : ""}. \`--json\` prints the whole answer as JSON. */`,
       `export const ${local(camel(op.verb))} = Command.make(`,
       `  "${op.verb}",`,
       `  { ${[...flags, `json: Flag.Boolean("json").pipe(Flag.withDefault(false))`].join(", ")} },`,
@@ -39,7 +35,8 @@ const output = (): RenderedFile => ({
   scaffold: false,
   content: lines(
     GENERATED,
-    `import { Console, Context, Effect, Option } from "effect";`,
+    `import { BigDecimal, Console, Context, Effect, Option } from "effect";`,
+    `import { decimalText } from "orthograph/server";`,
     `import { Errors } from "../../sdk/src/index.ts";`,
     "",
     "/** Set by the entry, so commands never touch the process. */",
@@ -49,18 +46,29 @@ const output = (): RenderedFile => ({
     "export const supplied = (flags: Readonly<Record<string, unknown>>) =>",
     "  Object.fromEntries(Object.entries(flags).flatMap(([k, v]) => (Option.isOption(v) ? (Option.isSome(v) ? [[k, v.value]] : []) : [[k, v]])));",
     "",
-    "const text = (x: unknown) => JSON.stringify(x, (_, v: unknown) => (typeof v === \"bigint\" ? v.toString() : v));",
+    "/** A value as it travels: a bigint as its digits, a decimal as its text (`1.50`, never an exponent). */",
+    "const wire = (v: unknown): unknown => (typeof v === \"bigint\" ? v.toString() : BigDecimal.isBigDecimal(v) ? decimalText(v) : v);",
+    "// A decimal is read from its holder, since JSON.stringify has already called its toJSON; every other value keeps what its own toJSON made of it.",
+    "// An `Option.some` keeps its own shape but hands back what it holds, so a decimal inside it is read from its holder too.",
+    "const text = (x: unknown) =>",
+    "  JSON.stringify(x, function (this: Readonly<Record<string, unknown>>, k: string, v: unknown) {",
+    "    const raw = this[k];",
+    "    return BigDecimal.isBigDecimal(raw) ? decimalText(raw) : Option.isOption(raw) && Option.isSome(raw) ? { ...(v as object), value: raw.value } : wire(v);",
+    "  });",
     "const exitOf = (tag: unknown): number =>",
-    "  typeof tag === \"string\" && tag in Errors.refusals ? Errors.refusals[tag as keyof typeof Errors.refusals].exit : tag === \"SchemaError\" ? 2 : 1;",
+    "  typeof tag === \"string\" && Object.hasOwn(Errors.refusals, tag) ? Errors.refusals[tag as keyof typeof Errors.refusals].exit : tag === \"SchemaError\" ? 2 : 1;",
     "",
     "/** `AL-002 Name { a: 1, b: x }`: a refusal's code, its name, and the values of its declared fields that the server sent (it cut them for this caller). */",
     "const said = (tag: unknown, code: unknown, fields: Readonly<Record<string, unknown>>) => {",
     "  // Only the project's own refusals have a code. Anything else (the CLI's own `NotSignedIn`) is told as it always was.",
-    "  if (typeof tag !== \"string\" || !(tag in Errors.codes)) return `${String(tag ?? \"Error\")}: ${text(fields)}`;",
+    "  if (typeof tag !== \"string\" || !Object.hasOwn(Errors.codes, tag)) return `${String(tag ?? \"Error\")}: ${text(fields)}`;",
     "  const declared = (Errors.declared as Readonly<Record<string, { readonly fields: Readonly<Record<string, unknown>> }>>)[tag];",
-    "  const shown = Object.entries(fields).filter(([k]) => declared === undefined || k in declared.fields).map(([k, v]) => `${k}: ${typeof v === \"object\" ? text(v) : String(v)}`);",
+    "  const shown = Object.entries(fields).filter(([k]) => declared === undefined || Object.hasOwn(declared.fields, k)).map(([k, v]) => `${k}: ${typeof v === \"object\" && !BigDecimal.isBigDecimal(v) ? text(v) : String(wire(v))}`);",
     "  return `${typeof code === \"string\" ? `[${code}] ` : \"\"}${tag}${shown.length > 0 ? ` { ${shown.join(\", \")} }` : \"\"}`;",
     "};",
+    "",
+    "/** A value printed plain: an `Option.some` of a decimal prints the decimal's text (`1.50`); anything else prints as it always did. */",
+    "const plain = (v: unknown): string => (Option.isOption(v) && Option.isSome(v) && BigDecimal.isBigDecimal(v.value) ? decimalText(v.value) : String(wire(v)));",
     "",
     "/** A refusal prints its code, name and public fields to stderr and exits with its exit code. */",
     "export const refused = <A, E, R>(effect: Effect.Effect<A, E, R>) =>",
@@ -77,7 +85,7 @@ const output = (): RenderedFile => ({
     "",
     "/** A one-field answer prints its value, or with `json` the whole answer as JSON. */",
     "export const answer = (json: boolean) => <A extends object, E, R>(effect: Effect.Effect<A, E, R>) =>",
-    "  effect.pipe(Effect.flatMap((a) => Console.log(!json && Object.keys(a).length === 1 ? String(Object.values(a)[0]) : text(a))), refused);",
+    "  effect.pipe(Effect.flatMap((a) => Console.log(!json && Object.keys(a).length === 1 ? plain(Object.values(a)[0]) : text(a))), refused);",
   ),
 });
 
@@ -104,11 +112,11 @@ const main = (model: Model, name: string): RenderedFile => {
       "",
       things.map((t) => {
         const subs = ops.filter((o) => o.thing === t).map(opVar);
-        return `const ${camel(t)} = Command.make("${t}").pipe(Command.withSubcommands([${subs.join(", ")}]));`;
+        return `const ${local(camel(t))} = Command.make("${t}").pipe(Command.withSubcommands([${subs.join(", ")}]));`;
       }),
       "",
       `Command.make("${name}").pipe(`,
-      `  Command.withSubcommands([${things.map(camel).join(", ")}]),`,
+      `  Command.withSubcommands([${things.map((t) => local(camel(t))).join(", ")}]),`,
       `  Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),`,
       "  Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),",
       `  Effect.provide(Sdk.layer(process.env["${env}_URL"] ?? "http://127.0.0.1:8787", process.env["${env}_TOKEN"])),`,

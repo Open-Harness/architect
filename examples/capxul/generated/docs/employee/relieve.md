@@ -54,6 +54,115 @@ Starts from the world `an employee`.
 - **the new employee can't be relieved the day before rejoining.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-01-31`, and is refused with RelievedBeforeJoined, EM-005, carrying dateOfJoining `2027-02-01`.
 - **but may be relieved on the day of rejoining itself.** `ada` (role company.owner) calls and sends employee the last call's employee, relievingDate `2027-02-01`, and gets back `2027-02-01`.
 
+### assign salary structures
+
+Starts from the world `a payroll outsider`.
+
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and is answered.
+- **Ada relieves Bo at Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and is answered.
+
+### attendance stays in its company
+
+Starts from the world `an attendance request`.
+
+- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### check every slip first
+
+Starts from the world `a third paid employee`.
+
+- **Ada relieves Olga on 31 January.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-01-31`, and is answered.
+
+### expense claims stay in their company
+
+Starts from the world `an expense claim`.
+
+- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### give interview feedback
+
+Starts from the world `an interview`.
+
+- **Ada relieves Cy on 3 December.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-12-03`, and gets back `2026-12-03`.
+
+### give performance feedback
+
+Starts from the world `a manual cycle draft`.
+
+- **Dee leaves.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-11-30`, and gets back the world's newHire.
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+
+### leave stays in its company
+
+Starts from the world `a leave application`.
+
+- **Olga leaves on 31 March 2027.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2027-03-31`, and gets back `2027-03-31`.
+
+### move an employee through the company
+
+Starts from the world `a new hire`.
+
+- **Ada relieves Dee on 31 December.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-12-31`, and gets back [the world's newHire, `2026-12-31`].
+
+### promote an employee
+
+Starts from the world `a second transfer`.
+
+- **Ada relieves Bo on 30 November.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
+### rate an appraisal
+
+Starts from the world `a manual cycle draft`.
+
+- **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+
+### run a payroll
+
+Starts from the world `an outside cost center`.
+
+- **Ada relieves Cy on 15 April, after the draft.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-04-15`, and is answered.
+- **Ada relieves Dee on 31 May.** `ada` (role company.owner) calls and sends employee the last call's items 1 employee, relievingDate `2026-05-31`, and is answered.
+
+### run a separation
+
+Starts from the world `a separation`.
+
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
+### run an appraisal cycle
+
+Starts from the world `a three-person cycle`.
+
+- **Dee leaves.** `ada` (role company.owner) calls and sends employee the world's newHire, relievingDate `2026-11-30`, and gets back the world's newHire.
+
+### schedule an interview
+
+Starts from the world `an outside employee`.
+
+- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### set and track goals
+
+Starts from the world `a started manual cycle`.
+
+- **Bo leaves Acme Logistics.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+- **Cy leaves.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
+### set up interview rounds
+
+Starts from the world `an outside employee`.
+
+- **Ada relieves Olga on 30 November.** `ada` (role company.owner) calls and sends employee the world's employee, relievingDate `2026-11-30`, and gets back `2026-11-30`.
+
+### transfer an employee
+
+Starts from the world `a second transfer`.
+
+- **Ada relieves Bo on 30 November.** `ada` (role company.owner) calls and sends employee the world's outsider, relievingDate `2026-11-30`, and gets back the world's outsider.
+- **Ada relieves Cy on 30 November.** `ada` (role company.owner) calls and sends employee the world's secondEmployee, relievingDate `2026-11-30`, and gets back the world's secondEmployee.
+
 ## How to call
 
 ```sh

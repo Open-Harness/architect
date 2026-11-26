@@ -44,15 +44,20 @@ const slashed = (path: string) => path.split(sep).join("/");
 /** `sha256-<base64>` over each file's path inside the package and its bytes, in path order; over `only` those files, when given. */
 export const integrityOf = (dir: string, only?: ReadonlyArray<string>): string => {
   const hash = createHash("sha256");
-  for (const file of walk(dir, (f) => only === undefined || only.includes(slashed(relative(dir, f)))).map((f) => slashed(relative(dir, f))).sort()) {
+  // `only` is read as named, never by walking the package, whose scratch folders may come and go while it is read.
+  const files = only === undefined ? walk(dir, () => true).map((f) => slashed(relative(dir, f))) : only.filter((f) => existsSync(join(dir, f)));
+  for (const file of [...files].sort()) {
     hash.update(file).update("\0").update(readFileSync(join(dir, file))).update("\0");
   }
   return `sha256-${hash.digest("base64")}`;
 };
 
-/** The `.js` files under a plugin's blueprint folder, relative to it, sorted. */
-export const blueprintFilesOf = (folder: string): ReadonlyArray<string> =>
-  walk(folder, (f) => f.endsWith(".js")).map((f) => slashed(relative(folder, f))).sort();
+/** The `.js` files under a plugin's blueprint folder, or its `.ts` files when it ships as source (no build), relative to it, sorted. */
+export const blueprintFilesOf = (folder: string): ReadonlyArray<string> => {
+  const found = walk(folder, (f) => f.endsWith(".js") || (f.endsWith(".ts") && !f.endsWith(".d.ts"))).map((f) => slashed(relative(folder, f))).sort();
+  // A plugin that ships both for one file is built: the `.js` is the one loaded, never the `.ts` beside it.
+  return found.filter((f) => !(f.endsWith(".ts") && found.includes(`${f.slice(0, -3)}.js`)));
+};
 
 /** A plugin's declared blueprint folder, as installed for the project, when it has one. */
 export const pluginFolder = (root: string, name: string): string | undefined => {
