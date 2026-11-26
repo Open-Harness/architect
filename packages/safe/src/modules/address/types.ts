@@ -9,9 +9,10 @@ export interface PredictInput {
 /** A Safe's address before it is deployed: the implementation's formula (`infrastructure:P/safe-address.ts:205-206`). */
 export interface SafeAddressApi {
   /**
-   * The `setup` call a new Safe is created with, byte for byte the implementation's: owners `[firstOwner]`, threshold 1,
-   * `to` = `SafeModuleSetup` with `data` = `enableModules([Safe4337Module])`, the 4337 module as fallback handler, and no
-   * payment (token, amount and receiver all zero).
+   * The `setup` call a new Safe is created with, byte for byte the implementation's (`infrastructure:P/safe-address.ts:114-141`):
+   * owners `[firstOwner]`, threshold 1, `to` = `MultiSend` with `data` = `multiSend` of one packed transaction (uint8 operation,
+   * address to, uint256 value, uint256 data length, bytes data) that delegatecalls `enableModules([Safe4337Module])` on
+   * `SafeModuleSetup`, the 4337 module as fallback handler, and no payment (token, amount and receiver all zero).
    */
   readonly initializer: (firstOwner: Address) => Effect.Effect<Hex, ChainFault>;
   /** `keccak256(abi.encodePacked(keccak256(initializer), saltNonce))`, as `SafeProxyFactory.createProxyWithNonce` makes it. */

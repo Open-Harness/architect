@@ -65,12 +65,12 @@ describe("SafeWorld.install, the world starter", () => {
 });
 
 describe("on an installed world, the factory deploys where the prediction says", () => {
-  test("the fixed vector: owner 0x5aAe…eAed with salt nonce 0 is deployed at 0x925d…4Bc9, as predicted", TIMEOUT, () =>
+  test("the fixed vector: owner 0x5aAe…eAed with salt nonce 0 is deployed at 0xC534…9C58, as predicted", TIMEOUT, () =>
     withWorld((world) => Effect.gen(function* () {
       yield* SafeWorld.install(world.rpcUrl);
       const owner = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
       const predicted = yield* SafeAddress.predict({ firstOwner: owner, saltNonce: 0n });
-      expect(predicted).toBe("0x925d0B0F1AE3B4Be9C3A831100b6bdF711dB4Bc9");
+      expect(predicted).toBe("0xC53486dfF84DDBcA04958BA4894F6e3b49879C58");
       expect(yield* deploySafe(world, owner, 0n)).toBe(predicted);
     })));
 

@@ -48,6 +48,7 @@ export const ABI = {
   setup: fn("setup", [["_owners", "address[]"], ["_threshold", "uint256"], ["to", "address"], ["data", "bytes"],
     ["fallbackHandler", "address"], ["paymentToken", "address"], ["payment", "uint256"], ["paymentReceiver", "address"]]),
   enableModules: fn("enableModules", [["modules", "address[]"]]),
+  multiSend: fn("multiSend", [["transactions", "bytes"]], [], "payable"),
   createProxyWithNonce: fn("createProxyWithNonce", [["_singleton", "address"], ["initializer", "bytes"], ["saltNonce", "uint256"]], ["address"]),
   proxyCreationCode: fn("proxyCreationCode", [], ["bytes"], "view"),
   getOwners: fn("getOwners", [], ["address[]"], "view"),
@@ -72,11 +73,18 @@ export const hex = (data: Uint8Array): Hex => `0x${Buffer.from(data).toString("h
 export const keccak = (data: Hex): Hex => hex(Keys.keccak256(bytes(data)));
 export const word = (value: bigint | Address): string => (typeof value === "bigint" ? value.toString(16) : value.slice(2)).padStart(64, "0");
 
-/** The initializer as the implementation writes it (`infrastructure:P/organization-safe.ts:44-71`), encoded by the check itself. */
+/**
+ * The initializer as the implementation writes it (`infrastructure:P/safe-address.ts:114-141`, the conductor's reading on #1161),
+ * encoded by the check itself: `to` is MultiSend, whose one packed transaction (uint8 operation, address to, uint256 value,
+ * uint256 data length, bytes data) is a delegatecall of `enableModules([Safe4337Module])` to SafeModuleSetup.
+ */
 export const expectedInitializer = (owner: Address) =>
   Effect.gen(function* () {
     const enable = yield* Abi.encodeCall(ABI.enableModules, [[CANON.safe4337Module]]);
-    return yield* Abi.encodeCall(ABI.setup, [[owner], 1n, CANON.moduleSetup, enable, CANON.safe4337Module, ZERO, 0n, ZERO]);
+    const length = BigInt((enable.length - 2) / 2);
+    const packed: Hex = `0x01${CANON.moduleSetup.slice(2).toLowerCase()}${word(0n)}${word(length)}${enable.slice(2)}`;
+    const transactions = yield* Abi.encodeCall(ABI.multiSend, [packed]);
+    return yield* Abi.encodeCall(ABI.setup, [[owner], 1n, CANON.multiSend, transactions, CANON.safe4337Module, ZERO, 0n, ZERO]);
   });
 
 export const rpc = <A>(rpcUrl: string, method: string, params: ReadonlyArray<unknown>) =>
