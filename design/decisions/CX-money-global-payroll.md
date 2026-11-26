@@ -194,7 +194,7 @@ Taken from ERPNext's own shape at `a6f54f9c` (the commit `examples/capxul/doctyp
     currency pair, Currency Exchange Settings' feed (with the feed), buying and selling rates, and the `FX` fields of
     record types not yet built, which each slice takes as it builds them.
 
-**The framework gap.** `M6-money.md` lets a row's asset come only from an `account()` field (a token) and leaves "a
+**The framework gap** (CX-composable-pieces' gap 6, owned here). `M6-money.md` lets a row's asset come only from an `account()` field (a token) and leaves "a
 per-row currency" for later. Items 2 to 6 need it: `money.of(a field naming an asset)`. That is Company currency
 (#882), parked by Aaron's call; this record unparks it. Converting with a rate and its rounding rule is a helper in the
 same values module, so every app rounds alike.
@@ -317,11 +317,10 @@ pieces chosen when its app is built. This record's work lands inside those piece
   its accrual through `ledger.post` in its own commit, crediting payroll payable with the worker as party; it never
   writes ledger lines itself and never moves money. `payments` moves money and settles outstandings. `ledger` owns the
   lines, both amounts and revaluation.
-- **`contractors`, core (proposed here, pending the other thread):** a contractor is a `parties` Supplier, as ERPNext
+- **`contractors`, core:** a contractor is a `parties` Supplier, as ERPNext
   and #1116 model one. The piece adds the tax form, the payout method, paying many through `payments`, and the 1099
   year-end. The forms are the US payer's, needed whether or not the company runs US payroll, so they can't live in
-  `payroll-tax-us`. The other thread proposed contractors as a kind of worker in `people`; this record keeps them as
-  suppliers, because a contractor abroad has no salary structure, slip or leave.
+  `payroll-tax-us`. Payroll stays for employees only: a contractor abroad has no salary structure, slip or leave.
 - **`bridge`:** external accounts in a payee's currency and transfers out, filling `payments`' rail contract; their
   receipts go to `banking` and are booked at the realised rate.
 - **`payroll-tax-us`:** optional, and later by decision 1.
