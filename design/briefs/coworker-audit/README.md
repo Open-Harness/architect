@@ -10,6 +10,7 @@ goal.
 
 | File | What it holds |
 |---|---|
+| [`HANDOFF.md`](HANDOFF.md) | **start here to build it**: Aaron's latest calls (headless hooks under Astryx, a fast experiment on a branch), the plan in steps, and the rules on the branch |
 | [`board.html`](board.html) | the audit on one page, for Aaron, ending in the decisions only he can make |
 | [`audit.md`](audit.md) | Coworker read from eight sides, with paths |
 | [`map.md`](map.md) | every finding against what Orthograph has, with its standing, and the gap list with owners |
