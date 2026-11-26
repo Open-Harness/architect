@@ -32,7 +32,6 @@
     "packages/orthograph/src/modules/deploy": 1,
     "packages/orthograph/src/modules/environments": 1,
     "packages/orthograph/src/modules/errors": 1,
-    "packages/orthograph/src/modules/events": 1,
     "packages/orthograph/src/modules/identity": 1,
     "packages/orthograph/src/modules/names": 1,
     "packages/orthograph/src/modules/operations": 1,

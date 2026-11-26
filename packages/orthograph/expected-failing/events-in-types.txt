@@ -1,0 +1,2 @@
+# #1165 (Goal 16, E1, events in from the chain, design/decisions/CX-events-in.md): orthograph/server's Inbox, host-cloudflare's Inboxes and Blueprint.on over an adapter event are not built yet. Clears with the E1 build (goal-16/events-in-build).
+test/events-in-types.test.ts > events in from the chain (E1): an adapter's event through Blueprint.on > compiles with no cast: the map is given the decoded payload, an `on:` list takes it, EventNames names it, and each planted error is an error
