@@ -235,7 +235,7 @@ or neither does, a refusal anywhere writes nothing, and a lost race runs the who
 to the outer handler afterwards and to the next inner step. Every refusal it can make is the outer's too: the compiler
 adds them to the outer's `errors`, `refusals` and `invariants`, at any depth, except an idempotent inner's
 `IdempotencyConflict`, since run inside another it keeps no request key. The compiler refuses an inner operation in
-another store, one that is no verb of the app, a cycle through the steps, an outer and an inner that declare one
+another store, one that is no verb of the app or is a read, a cycle through the steps, an outer and an inner that declare one
 refusal's name with two shapes, and an operation step on a chain-stored or on-device operation. The model records the
 step as `{ name: "run.pay.draft", type: "operation", operation: "entry.draft" }`, and the generated server wires it by
 its key, `operations: { draft: entryDraftServed }`, each inner operation served before its outer.
@@ -483,8 +483,8 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
 | The nine evals | `packages/prove/src/modules/evals/service.ts:7` | built |
 | An operation step, `Blueprint.step.operation` | `packages/orthograph/src/modules/operations/types.ts:28` | built |
 | An inner operation's refusals merged into its outer's, and what the compiler refuses of one | `packages/compiler/src/modules/model/internal/inner.ts:19` | built |
-| An inner operation run inside its outer's commit | `packages/language-effect/src/modules/handler/internal/inner.ts:52` | built |
-| Each inner operation wired into its outer by its step's key | `packages/projections/src/modules/server/internal/helpers.ts:18` | built |
+| An inner operation run inside its outer's commit | `packages/language-effect/src/modules/handler/internal/inner.ts:58` | built |
+| Each inner operation wired into its outer by its step's key | `packages/projections/src/modules/server/internal/helpers.ts:9` | built |
 | Each refusal's code and exit code in every door | `packages/projections/src/modules/api/internal/api.ts:56` | built |
 | Optional steps, eval 6 and the unused-step warning | `packages/prove/src/modules/evals/internal/calls.ts:114` and `ortho check` | planned, M1.26 |
 | An operation's own event | `packages/language-effect/src/modules/handler/service.ts:69` | planned, M3.16 |

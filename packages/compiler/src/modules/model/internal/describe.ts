@@ -199,8 +199,12 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
     const where = `${file}: step ${key}`;
     // An operation step names the inner operation it runs (#1079); its refusals are merged into this one's once every operation is modelled.
     if (step.type === "operation") {
-      const inner = opName((step as OperationStep).operation);
-      return { name: plain.name, type: "operation", operation: inner ?? problem(problems, `${where} runs an operation that is no verb of the app: run one declared in a verb file, blueprint/things/<thing>/verbs/<verb>.ts, imported from there`) };
+      const declaration = (step as OperationStep).operation as { readonly kind?: unknown };
+      const inner = opName(declaration);
+      // A read is a verb, but no operation: it has no commit to share, so it is refused as no verb of the app is.
+      if (inner !== undefined && declaration.kind === "operation") return { name: plain.name, type: "operation", operation: inner };
+      const what = inner === undefined ? "an operation that is no verb of the app" : `${inner}, a read, which is no operation of the app`;
+      return { name: plain.name, type: "operation", operation: problem(problems, `${where} runs ${what}: run one declared in a verb file, blueprint/things/<thing>/verbs/<verb>.ts, imported from there${inner === undefined ? "" : ", and read records in a database step"}`) };
     }
     if (step.type !== "call") return plain;
     const { call } = step as CallStep;
