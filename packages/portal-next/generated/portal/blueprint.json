@@ -451,10 +451,10 @@
         "kind": "projection",
         "file": "blueprint/projections/app.ts",
         "package": "@orthograph/projections",
-        "version": "0.0.0",
-        "integrity": "sha256-lf42urXmr/0z5F1HKL/5GyBrFxovFHfoIjx1CDtCCPI=",
+        "version": "0.1.0-next.1",
+        "integrity": "sha256-iHQXx35/6Ro6YDkcLRAEzA/rCXxYH4Vg3lPlZL52FVA=",
         "chosen": {},
-        "hash": "d56c3fb839a74896"
+        "hash": "2dc8d46fff4eb0c0"
       }
     }
   },
@@ -474,5 +474,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "8a7f32efe9a6167104210c2459deaa9e77e9f7c9eb58d013a648750efd25ee50"
+  "digest": "0a70c365c861217900079699cfa392c7934d908b5d5ffebb1e974ae441fa999d"
 }
