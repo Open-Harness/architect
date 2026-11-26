@@ -22,7 +22,7 @@ copy() { { echo "# $2"; cat "$app/$2"; } > "$out/$1"; }
 # ---- Say what done means ---------------------------------------------------------------------------------------------
 # The author's first step: a stub for each path, role and declared error of one thing. Each is a file of blanks.
 ortho stubs.txt add journeys handle
-copy stub-refused-not-owner.ts blueprint/journeys/handle-release-refused-not-handleOwner.ts
+copy stub-refused-not-owner.ts.txt blueprint/journeys/handle-release-refused-not-handleOwner.ts
 ortho stubs-check.txt check
 restore
 # The journeys as they stand, run on the scaffolded handlers: red on purpose.
@@ -34,15 +34,15 @@ ortho brief.txt brief handle.claim
 # Rung 0: the scaffold `ortho generate` writes when the handler is not there.
 mv "$app/src/handle/claim.ts" "$keep/claim.ts"
 ortho climb-0-generate.txt generate
-copy climb-0-handler.ts src/handle/claim.ts
+copy climb-0-handler.ts.txt src/handle/claim.ts
 ortho climb-0-prove.txt prove --only "claim a handle"
 # Rung 1: the records are written, and the move is forgotten.
 node -e 'const fs=require("node:fs"),[from,to]=process.argv.slice(1),text=fs.readFileSync(from,"utf8"),cut=text.replace(/\n    \/\/ The move claim, to claimed\.\n    yield\* move\(\);\n/,"\n");if(cut===text)throw new Error("the move is not where the recording expects it");fs.writeFileSync(to,cut)' "$keep/claim.ts" "$app/src/handle/claim.ts"
-copy climb-1-handler.ts src/handle/claim.ts
+copy climb-1-handler.ts.txt src/handle/claim.ts
 ortho climb-1-prove.txt prove --only "claim a handle"
 # Rung 2: the handler as it is in the repository.
 cp "$keep/claim.ts" "$app/src/handle/claim.ts"
-copy climb-2-handler.ts src/handle/claim.ts
+copy climb-2-handler.ts.txt src/handle/claim.ts
 ortho climb-2-prove.txt prove --only "claim a handle"
 restore
 ortho prove.txt prove

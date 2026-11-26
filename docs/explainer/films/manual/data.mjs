@@ -10,10 +10,11 @@ const quoted = [
 
 export default ({ repo, read }) => {
   const app = join(repo, "examples/plugged-in"), captures = join(repo, "docs/manual/captures");
-  // A recording opens with the command that was run, as `$ …`. A `.ts` recording is a file as it stood at that moment, under `# <path>`.
+  // A recording opens with the command that was run, as `$ …`. A `.ts.txt` recording is a file as it stood at that moment, under `# <path>`.
   const cap = Object.fromEntries(readdirSync(captures).map((f) => {
     const text = read(join(captures, f)), cut = text.indexOf("\n"), first = text.slice(0, cut), rest = text.slice(cut + 1);
-    return [f.replace(/\.(txt|ts)$/, f.endsWith(".ts") ? "-ts" : ""), f.endsWith(".ts") ? { path: first.replace(/^# /, ""), text: rest } : { cmd: first.replace(/^\$ /, ""), out: rest.replace(/\n$/, "") }];
+    const file = f.endsWith(".ts.txt");
+    return [f.replace(/(\.ts)?\.txt$/, file ? "-ts" : ""), file ? { path: first.replace(/^# /, ""), text: rest } : { cmd: first.replace(/^\$ /, ""), out: rest.replace(/\n$/, "") }];
   }));
   const model = JSON.parse(read(join(app, "generated/model/model.json")));
   const count = (text, re) => text.split("\n").filter((l) => re.test(l)).length;
