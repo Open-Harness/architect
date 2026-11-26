@@ -28,7 +28,7 @@
           "n": 3,
           "title": "Describe it",
           "question": "How does the plan become something the framework can check?",
-          "planned": "chapters/03-describe-it.md",
+          "file": "chapters/03-describe-it.md",
           "film": "describe",
           "section": "describe"
         }
