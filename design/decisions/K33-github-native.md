@@ -79,7 +79,8 @@ $ grep -c '^| `' design/ledger.md   # 731 rows of open problems, in a file nothi
      "Harness and model" line; a model is never a label, since models change weekly;
    - a comment on the slice issue when an agent takes it: `[goal-<n> · <role> · <harness> · <model>] Taking this.`;
    - and the same first line on every comment an agent posts, anywhere (item 15).
-   None of this is an attribution line in a commit; it is data on the work.
+   None of this is an attribution line in a commit; it is data on the work. (Amended by CI-claude-attribution, 26 November
+   2026: a Claude Code cloud session leaves the model out.)
 5. **Front matter on every goal brief.** A small YAML subset (the parser in `tools/github/frontmatter.mjs` refuses
    anything else): `goal`, `title`, `milestone`, `release`, `branch`, `base`, `status`, `lead`, `done_check`, `owns`,
    `slices`. The brief stays the whole context (K32); the front matter is the part a machine reads.
@@ -121,6 +122,7 @@ $ grep -c '^| `' design/ledger.md   # 731 rows of open problems, in a file nothi
 15. **Every comment an agent posts names itself** (Aaron, to the conductor: goals "can leave comments and … identify
     where they've come from, who they are"). Its first line is `[goal-<n> · <role> · <harness> · <model>]`, the
     conductor writing `conductor` in the goal's place. It is data on the work, like the labels, not an attribution line.
+    (Amended by CI-claude-attribution, 26 November 2026: a Claude Code cloud session leaves the model out.)
 16. **One GitHub Project, "Orthograph", over every goal** (Aaron, to the conductor, 21 November 2026: "we will be
     moving to GitHub projects with each of these goals being native to that GitHub projects … Goals are independent and
     asynchronous … they own their own goal"). One Project, owned by whoever owns the repository (the organization, after the move), not one per goal, so every goal shows on one board

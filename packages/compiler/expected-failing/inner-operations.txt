@@ -1,0 +1,8 @@
+# #1079 (CX-inner-operations): `Blueprint.step.operation` doesn't exist, so a blueprint that declares an inner operation doesn't load: the model has no
+# operation step and adds no inner refusals. Clears with #1079's build.
+src/modules/model/inner-operations.test.ts > #1079: an operation's step runs another operation of the app > records the step as an operation step naming the inner operation, beside the outer's own steps
+src/modules/model/inner-operations.test.ts > #1079: an operation's step runs another operation of the app > every refusal of an inner operation is the outer's: its declared errors in `errors`, all of them in `refusals`, its rules in `invariants`
+src/modules/model/inner-operations.test.ts > #1079: an operation's step runs another operation of the app > an inner operation's refusals reach the outer through an inner operation of its own (A runs B, B runs C)
+src/modules/model/inner-operations.test.ts > #1079: an operation's step runs another operation of the app > an outer open to anyone gets the inner's NotAllowed and <Thing>NotFound, which it has none of its own
+src/modules/model/inner-operations.test.ts > #1079: an operation's step runs another operation of the app > an idempotent inner operation's IdempotencyConflict stays its own: run inside another, it keeps no request key
+src/modules/model/inner-operations.test.ts > #1079: an operation's step runs another operation of the app > the outer's hash moves when only its inner operation changes

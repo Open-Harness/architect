@@ -2,7 +2,7 @@
 import { Effect } from "effect";
 import type { SqlClient } from "effect/sql";
 import type { D1Client } from "@effect/sql-d1";
-import type { Commit, Entry, ListRead, NamedRule, Write } from "@orthograph/language-effect";
+import type { Commit, Entry, ListRead, NamedRule, RowRead, Write } from "@orthograph/language-effect";
 import { encodeFields, lostGuard } from "./rows.ts";
 import { filtersOf } from "./list.ts";
 import { lostUnique } from "./unique.ts";
@@ -13,7 +13,10 @@ export interface Db {
   readonly d1: D1Client.D1Client;
 }
 
-export const commitD1 = ({ sql, d1 }: Db, tableOf: (thing: Write["thing"]) => string, { writes, entries, request, lists = [] }: Commit, rules: ReadonlyArray<NamedRule> = []) => {
+/** #1045: how many read rows one guard statement holds, two bound values each, under D1's 100. */
+const READS_PER_STATEMENT = 40;
+
+export const commitD1 = ({ sql, d1 }: Db, tableOf: (thing: Write["thing"]) => string, { writes, entries, request, lists = [], reads = [] }: Commit, rules: ReadonlyArray<NamedRule> = []) => {
   /**
    * #764: a list's rows count as read. Before the call's own writes, the rows matching the list's `where` and `state` must still be the ones it read, at
    * the same versions (their `id:version`, sorted by id). When they moved, a row of the table gets a NULL version, as a lost update guard does, and the
@@ -28,6 +31,21 @@ export const commitD1 = ({ sql, d1 }: Db, tableOf: (thing: Write["thing"]) => st
       const now = sql`COALESCE((SELECT group_concat("id" || ':' || "version", ',' ORDER BY "id") FROM ${table}${filter}), '')`;
       return sql`UPDATE ${table} SET "version" = NULL WHERE rowid = (SELECT min(rowid) FROM ${table}) AND ${now} <> ${read}`;
     });
+  /**
+   * #1045: so does each row the call found. Per table, a few rows a statement (D1 binds at most 100 values): a row whose version moved on gets a NULL
+   * version, and the batch fails as a `conflict` before any write. The store hands in only rows of this database's tables. A read row that is gone matches
+   * nothing here, where the in-memory store calls it a `conflict`: the two agree only because no write deletes a row.
+   */
+  const readGuards = (reads: ReadonlyArray<RowRead>) => {
+    const byTable = new Map<string, Array<RowRead>>();
+    for (const r of reads) {
+      const table = tableOf(r.thing);
+      (byTable.get(table) ?? byTable.set(table, []).get(table)!).push(r);
+    }
+    return [...byTable].flatMap(([name, rows]) =>
+      Array.from({ length: Math.ceil(rows.length / READS_PER_STATEMENT) }, (_, i) => rows.slice(i * READS_PER_STATEMENT, (i + 1) * READS_PER_STATEMENT)).map((chunk) =>
+        sql`UPDATE ${sql(name)} SET "version" = NULL WHERE ${sql.or(chunk.map(({ id, version }) => sql`("id" = ${id} AND "version" <> ${version})`))}`));
+  };
   const statementOf = (w: Write) =>
     Effect.gen(function* () {
       const table = sql(tableOf(w.thing));
@@ -49,7 +67,7 @@ export const commitD1 = ({ sql, d1 }: Db, tableOf: (thing: Write["thing"]) => st
     const keep = request ? [sql`INSERT INTO "_requests" ${sql.insert({ key: request.key, answer: request.answer })}`] : [];
     const changes = [...(yield* Effect.forEach(writes, statementOf)), ...entries.map(journalOf), ...keep];
     if (changes.length === 0) return "committed" as const;
-    const statements = [...(yield* Effect.forEach(lists, guardOf)), ...changes];
+    const statements = [...(yield* Effect.forEach(lists, guardOf)), ...readGuards(reads), ...changes];
     return yield* d1.batch(statements).pipe(
       Effect.as("committed" as const),
       Effect.catch((e) => (lostGuard(e) || lostUnique(e, writes, tableOf, rules) ? Effect.succeed("conflict" as const) : Effect.die(e))),
