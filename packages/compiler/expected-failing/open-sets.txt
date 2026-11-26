@@ -9,3 +9,5 @@ src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of t
 src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > leaves closed values as they were: a oneOf is not open, and a refAny() still names a declaration
 src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > a set is its owner's and its export's: the crm's PartyType and the ledger's are two sets, though both are `PartyType` in `values/ledger.js`
 src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > an open set the app declares is owned by the app: it holds the app's members in the app's order, and no feature's
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > a list of an open set, or of a reference to one, holds the same union in its item
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > a need with `when` counts once the mount picks it: bookkeeping, picked to post, adds to the ledger's set

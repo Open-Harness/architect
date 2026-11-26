@@ -1,26 +1,35 @@
 // Check 14 (#1132, CX-open-sets): an open set's members are the mounted features', at every door, on Cloudflare's database.
 //
-// Four feature packages are installed into a copy of acme, as a workspace installs them (a folder of TypeScript, linked into node_modules):
-// `@fixture/ledger` owns two open sets, VoucherType (its own member: Journal Entry) and PartyType (none of its own), and a reference to each;
-// `@fixture/payments` adds Payment Entry, `@fixture/parties` adds Customer and Supplier, and `@fixture/invoicing` adds Sales Invoice.
-// `@fixture/crm` needs nothing and owns an open set of its own that is also exported as `PartyType` from `blueprint/values/ledger.ts` (its
-// own member: Lead): a set is its owner's and its export's, so the two never share a member. The app owns one open set itself, `Channel`
-// (Web, Phone). The app mounts the ledger, payments, parties and the crm; invoicing is installed and never mounted. The app's own `posting`
-// thing holds a voucher type, a reference to a voucher and to a party, the crm's party type and a channel, and `posting.record` takes all five. The real command generates the app; a world runs it over local
-// D1, and ada calls it through the API, MCP and the generated CLI. Once the world has stopped, its D1 file is read.
+// Five feature packages are installed into a copy of acme, as a workspace installs them (a folder of TypeScript, linked into node_modules):
+// `@fixture/ledger` owns two open sets, VoucherType (its own members: Journal Entry, Contra Entry) and PartyType (none of its own), and a
+// reference to each; `@fixture/payments` adds Payment Entry, `@fixture/parties` adds Customer and Supplier, and `@fixture/invoicing` adds
+// Sales Invoice. `@fixture/crm` needs nothing and owns an open set of its own, also exported as `PartyType` from `blueprint/values/ledger.ts`
+// (its own member: Lead): a set is its owner's and its export's, so the two never share a member. The app owns two open sets itself,
+// `Channel` (Web, Phone) and `Tag` (no member). The app mounts the ledger, payments, parties and the crm; invoicing is installed and never
+// mounted. The app's own `posting` thing holds a voucher type, a reference to a voucher and to a party, the crm's party type and a channel;
+// `posting.record` takes those, an optional tag and a list of voucher types. The real command generates the app; a world runs it over
+// local D1, and ada calls it through the API, MCP and the generated CLI. The generated SDK is called on its own, with nothing listening.
+// Once the world has stopped, its D1 file is read.
 //
 // The contract judged, the same as the compiler's mounts/open-sets*.test.ts on the model:
 //  - nothing generated names the unmounted feature's member;
-//  - the API takes a member of the set, from the owner or a mounted feature, and refuses with 400 InvalidPayload a member of an unmounted
-//    feature, a name in no set, and a member of another set (the ledger's other set, or the crm's set of the same name), as a plain value
-//    and as a reference's kind, and a reference with an empty id;
-//  - MCP lists exactly the mounted members for each field of the tool, and refuses a call with the unmounted member;
-//  - the CLI's help names each mounted member and not the unmounted one, and the CLI's call is refused with it;
+//  - the API takes a member of the set, from the owner or a mounted feature, as a value, as a reference's kind and in a list, and refuses
+//    with 400 InvalidPayload: a member of an unmounted feature (plain, as a kind, in a list), a name in no set, a member of another set
+//    (the ledger's other set, or the crm's set of the same name, either way round), a reference of refAny()'s shape, a reference whose id
+//    is empty or a number, a member in another case or padded, and any value of a set with no member;
+//  - MCP lists, as each field's own enum (a reference's at its kind, a list's at its items), exactly the union in the model's order, with
+//    nothing beside it that lets other text through; it refuses a call with the unmounted member and one with the crm's member given the
+//    ledger's party type;
+//  - the CLI's help names, for each flag, its own set's members in order and no other set's, and the CLI's call is refused with the
+//    unmounted member and takes a mounted feature's;
+//  - the SDK refuses the unmounted member and the other same-name set's member with InvalidPayload before it sends anything, and sends a
+//    mounted feature's;
 //  - only the accepted calls wrote a row.
 // Written by the checks author for Goal 16; a builder never edits this file and only removes lines from `expected-failing/14-open-sets.txt`.
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, readFileSync, readdirSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { spawnSync } from "node:child_process";
 import { Effect } from "effect";
 import { Worlds } from "@orthograph/prove";
 import { afterEach, describe, expect, it } from "vitest";
@@ -92,9 +101,10 @@ export const Posting = Blueprint.thing({ description: "A posting the app keeps."
   "blueprint/things/posting/verbs/record.ts": `import { Blueprint } from "orthograph";
 import { Posting } from "../thing.ts";
 import { Tag } from "../../../values/channels.ts";
+import { VoucherType } from "@fixture/ledger/blueprint/values/ledger.js";
 export default Blueprint.operation(Posting, {
   description: "Record a posting.",
-  payload: { posting: Blueprint.id("pst"), tag: Blueprint.optional(Tag), voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party, contactType: Posting.fields.contactType, channel: Posting.fields.channel },
+  payload: { posting: Blueprint.id("pst"), tag: Blueprint.optional(Tag), kinds: Blueprint.list(VoucherType), voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party, contactType: Posting.fields.contactType, channel: Posting.fields.channel },
   answer: { posting: Posting.fields.id },
   allowed: [Blueprint.signedIn],
   steps: { save: Blueprint.step.database() },
@@ -162,8 +172,9 @@ const resolved = (s: unknown, root: unknown): Record<string, unknown> | undefine
  * The members a property takes, read where they constrain it: its own `enum`, in order, with no `anyOf`, `oneOf`, `allOf` or `not`
  * beside it that could let other text through; for a reference, its `kind`'s. Anything else is reported as what it is.
  */
-const membersAt = (property: unknown, root: unknown, reference: boolean): unknown => {
-  const at = resolved(reference ? (resolved(property, root)?.["properties"] as Record<string, unknown> | undefined)?.["kind"] : property, root);
+const membersAt = (property: unknown, root: unknown, shape: boolean | "list"): unknown => {
+  const outer = resolved(property, root);
+  const at = resolved(shape === "list" ? outer?.["items"] : shape ? (outer?.["properties"] as Record<string, unknown> | undefined)?.["kind"] : property, root);
   const loose = ["anyOf", "oneOf", "allOf", "not", "const"].filter((k) => at !== undefined && k in at);
   return loose.length > 0 ? `loosened by ${loose.join(", ")}: ${JSON.stringify(at)}` : at?.["enum"];
 };
@@ -245,10 +256,10 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         const post = sender(url, ada);
         let n = 0;
         const next = () => `pst_${String(++n)}`;
-        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string; tag?: string } = {}) =>
-          post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", ...more });
+        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string; tag?: string; kinds?: ReadonlyArray<string> } = {}) =>
+          post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], ...more });
         const api = {
-          payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
+          payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Contra Entry"] }),
           journal: await record("Journal Entry", voucher("Journal Entry", "j_1"), { kind: "Supplier", id: "s_1" }, { channel: "Phone" }),
           unmountedKind: await record("Sales Invoice", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
           unmountedRef: await record("Payment Entry", voucher("Sales Invoice"), { kind: "Customer", id: "c_1" }),
@@ -268,6 +279,7 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           paddedKind: await record(" Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
           // A set with no member takes nothing.
           emptySet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { tag: "Anything" }),
+          listUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Sales Invoice"] }),
           noSuchChannel: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { channel: "Fax" }),
         };
         const rpc = async (method: string, params: object) => {
@@ -279,9 +291,11 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           return JSON.parse(text.replace(/^data: /m, "").split("\n")[0]!) as { result?: { tools?: ReadonlyArray<{ name: string; inputSchema: unknown }>; isError?: boolean } };
         };
         const tool = (await rpc("tools/list", {})).result?.tools?.find((t) => t.name === "posting.record");
-        const mcpCall = async (kind: string) => (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web" } })).result;
-        const mcp = { tool, accepted: await mcpCall("Payment Entry"), refused: await mcpCall("Sales Invoice") };
-        const cli = (kind: string) => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }), "--contactType", "Lead", "--channel", "Web");
+        const mcpCall = async (kind: string, contactType = "Lead") =>
+          (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" }, contactType, channel: "Web", kinds: [kind] } })).result;
+        // The crm's set is another set of the same name: the ledger's member is not one of it.
+        const mcp = { tool, accepted: await mcpCall("Payment Entry"), refused: await mcpCall("Sales Invoice"), otherSameName: await mcpCall("Payment Entry", "Customer") };
+        const cli = (kind: string) => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }), "--contactType", "Lead", "--channel", "Web", "--kinds", JSON.stringify([kind]));
         const help = acmeCli(root, url, ada, "posting", "record", "--help");
         // The accepted call is a mounted feature's member: a CLI that knows only the owner's own members would refuse it.
         return { api, mcp, cli: { help, accepted: cli("Payment Entry"), refused: cli("Sales Invoice") } };
@@ -289,17 +303,33 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     })));
     nothingRunning(root);
 
+    // The SDK, on its own, pointed at a port nothing listens on: a payload it refuses never leaves it (InvalidPayload); one it takes is sent,
+    // and fails only for want of a server.
+    writeFileSync(join(root, "sdk-probe.ts"), `import { Effect, Exit, Cause } from "effect";
+import * as Sdk from "./generated/sdk/src/index.ts";
+const base = { posting: "pst_99", voucher: { kind: "Payment Entry", id: "v_1" }, party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"] };
+const tag = (over: object) => Effect.runPromiseExit(Sdk.posting.record({ ...base, voucherType: "Payment Entry", ...over } as never).pipe(Effect.provide(Sdk.layer("http://127.0.0.1:9", "t"))))
+  .then((exit) => Exit.isSuccess(exit) ? "sent and answered" : String((Cause.squash(exit.cause) as { _tag?: unknown })?._tag ?? Cause.pretty(exit.cause)));
+Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" })]).then(([accepted, unmounted, otherSameName]) => console.log(JSON.stringify({ accepted, unmounted, otherSameName })));
+`);
+    const probe = spawnSync(process.execPath, [join(root, "sdk-probe.ts")], { cwd: root, encoding: "utf8", timeout: 120_000 });
+    const sdk = JSON.parse(probe.stdout.trim().split("\n").pop() || "{}") as Record<string, string>;
+    expect(sdk["unmounted"], `the SDK refuses Sales Invoice before sending: ${probe.stdout}${probe.stderr}`).toBe("InvalidPayload");
+    expect(sdk["otherSameName"], "the SDK refuses the ledger's Customer as the crm's party type").toBe("InvalidPayload");
+    expect(sdk["accepted"], "the SDK sends Payment Entry (and finds no server)").not.toBe("InvalidPayload");
+    expect(sdk["accepted"]).not.toBe(undefined);
+
     // The API: a member of the set, the owner's or a mounted feature's, is taken; anything else is refused before the handler runs.
     expect(got.api.payment.status, JSON.stringify(got.api.payment.body)).toBe(200);
     expect(got.api.journal.status, JSON.stringify(got.api.journal.body)).toBe(200);
-    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "noSuchChannel"] as const) {
+    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "listUnmounted", "noSuchChannel"] as const) {
       expect(got.api[key], `${key}: ${JSON.stringify(got.api[key].body)}`).toMatchObject({ status: 400, body: { _tag: "InvalidPayload" } });
     }
 
     // MCP: the tool's input lists exactly the mounted members for each field, and refuses the unmounted one.
     expect(got.mcp.tool, "MCP lists posting.record").toBeDefined();
     const input = got.mcp.tool!.inputSchema as { properties?: Record<string, unknown> };
-    for (const [field, kinds, reference] of [["voucherType", VOUCHERS, false], ["voucher", VOUCHERS, true], ["party", PARTIES, true], ["contactType", CONTACTS, false], ["channel", CHANNELS, false], ["tag", [], false]] as const) {
+    for (const [field, kinds, reference] of [["voucherType", VOUCHERS, false], ["voucher", VOUCHERS, true], ["party", PARTIES, true], ["contactType", CONTACTS, false], ["channel", CHANNELS, false], ["tag", [], false], ["kinds", VOUCHERS, "list"]] as const) {
       // Exactly the union, in the model's order, once each, where it constrains the field; and no other member allowed anywhere under it.
       expect(membersAt(input.properties?.[field], input, reference), `${field}'s members`).toEqual(kinds);
       expect(kindsIn(input.properties?.[field], input), `${field}: no other member under it`).toEqual([...kinds].sort());
@@ -307,6 +337,8 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     expect(got.mcp.accepted?.isError, JSON.stringify(got.mcp.accepted)).not.toBe(true);
     expect(got.mcp.refused?.isError, JSON.stringify(got.mcp.refused)).toBe(true);
     expect(JSON.stringify(got.mcp.refused)).toContain("InvalidPayload");
+    expect(got.mcp.otherSameName?.isError, `MCP refuses the ledger's Customer as the crm's party type: ${JSON.stringify(got.mcp.otherSameName)}`).toBe(true);
+    expect(JSON.stringify(got.mcp.otherSameName)).toContain("InvalidPayload");
 
     // The CLI: its help names each member a caller may pass, and never the unmounted one; its call with that one is refused.
     expect(got.cli.help.status, got.cli.help.stderr).toBe(0);

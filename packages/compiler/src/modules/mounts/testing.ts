@@ -29,7 +29,7 @@ export const surface = (): OpenSets => {
 };
 
 /** Every feature package the checks install, by its own name (`@fixture/<name>`). */
-export type Name = "ledger" | "payments" | "expenses" | "parties" | "payroll" | "invoicing" | "rogue" | "crm" | "leads";
+export type Name = "ledger" | "payments" | "expenses" | "parties" | "payroll" | "invoicing" | "rogue" | "crm" | "leads" | "projects" | "bookkeeping";
 
 /** What one installed package is: its descriptor, and its blueprint files by path under its blueprint folder. */
 interface Pkg {
@@ -47,11 +47,15 @@ export const OWN_CHANNELS = ["Web", "Phone"] as const;
 /** The members of the crm's own `PartyType`, a set apart from the ledger's though it has the same export name in a file of the same path. */
 export const OWN_CONTACTS = ["Lead"] as const;
 
+/** A package's values, given the surface and the sets: what a check plants. */
+export type Plant = (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>;
+
 /**
  * The books, built fresh: the ledger's sets, a closed value beside them, its thing with an event and an operation, and each feature that adds.
- * `change` swaps one package's additions, so a refusal check plants exactly one wrong declaration.
+ * `change` swaps one package's additions, so a refusal check plants exactly one wrong declaration. `planted` gives any package, the owners
+ * included, one more file, `values/planted.js`, with what it exports.
  */
-export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>>> = {}) => {
+export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Plant>> = {}, planted: Partial<Record<Name, Plant>> = {}) => {
   const s = surface();
   const VoucherType = Blueprint.value(s.open(OWN_VOUCHERS));
   const PartyType = Blueprint.value(s.open([]));
@@ -63,7 +67,11 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, (s
   const CrmPartyType = Blueprint.value(s.open(OWN_CONTACTS));
   // The app's own open set: its owner is the app.
   const Channel = Blueprint.value(s.open(OWN_CHANNELS));
-  const ledger: Ledger = { VoucherType, PartyType, AccountType, Voucher, Party, CrmPartyType, Channel };
+  // Payments owns a set of its own: payroll needs payments and may add to it; expenses, its sibling (both need the ledger), may not.
+  const PaymentMethod = Blueprint.value(s.open(["Bank Transfer"]));
+  // Projects needs the crm and owns a set: the crm is what its owner needs, not something that depends on it, so the crm may not add.
+  const ProjectKind = Blueprint.value(s.open(["Internal"]));
+  const ledger: Ledger = { VoucherType, PartyType, AccountType, Voucher, Party, CrmPartyType, Channel, PaymentMethod, ProjectKind };
 
   const GlEntry = Blueprint.thing({
     description: "One line of the general ledger, posted by a voucher.",
@@ -83,7 +91,13 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, (s
   const payments = feature("Payments.", [ledgerFeature]);
   const crmFeature = Blueprint.feature({ description: "Contacts. Needs nothing, and is not the ledger." });
   const Contact = Blueprint.thing({ description: "Someone the crm keeps.", fields: { id: Blueprint.id("con"), partyType: CrmPartyType }, code: "CO" });
-  const adds = (name: Exclude<Name, "ledger" | "crm">, values: (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>) => (change[name] ?? values)(s, ledger);
+  const projectsFeature = feature("Projects.", [crmFeature]);
+  const Payment = Blueprint.thing({ description: "A payment.", fields: { id: Blueprint.id("pay"), method: PaymentMethod }, code: "PY" });
+  const Project = Blueprint.thing({ description: "A project.", fields: { id: Blueprint.id("prj"), kind: ProjectKind }, code: "PJ" });
+  // Bookkeeping needs the ledger only when its mount picks `posting`: unpicked, it doesn't depend on the ledger.
+  const mode = Blueprint.choice({ plain: "Keeps its own books.", posting: "Posts to the ledger." });
+  const bookkeeping = Blueprint.feature({ description: "Bookkeeping.", choices: { mode }, needs: [Blueprint.need(ledgerFeature, { when: mode.posting })] });
+  const adds = (name: Exclude<Name, "ledger" | "crm">, values: Plant) => (change[name] ?? values)(s, ledger);
 
   const pkgs: Record<Name, Pkg> = {
     ledger: {
@@ -112,10 +126,23 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, (s
     },
     // Leads needs the crm, not the ledger: it may add to the crm's set, and a refusal check plants it adding to the ledger's.
     leads: { descriptor: feature("Leads.", [crmFeature]), files: [file("values/leads.js", adds("leads", (x, l) => ({ prospect: x.add(l.CrmPartyType, ["Prospect"]) })))] },
+    projects: { descriptor: projectsFeature, files: [file("values/projects.js", { ProjectKind, ...adds("projects", () => ({})) }), file("things/project/thing.js", { Project })] },
+    bookkeeping: { descriptor: bookkeeping, files: [file("values/bookkeeping.js", adds("bookkeeping", (x, l) => ({ opening: x.add(l.VoucherType, ["Opening Balance"]) })))] },
   };
+  // Payments' own set sits beside its additions, in a file of its own.
+  pkgs.payments = { ...pkgs.payments, files: [...pkgs.payments.files, file("values/methods.js", { PaymentMethod }), file("things/payment/thing.js", { Payment })] };
+  for (const [name, plant] of Object.entries(planted) as ReadonlyArray<[Name, Plant]>) pkgs[name] = { ...pkgs[name], files: [...pkgs[name].files, file("values/planted.js", plant(s, ledger))] };
 
   // An app thing of its own that holds the ledger's sets, as an app that depends on the ledger may.
-  const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, party: Party, channel: Channel, alsoType: Blueprint.optional(VoucherType) }, code: "PS" });
+  // It also holds an optional field of a set, and lists of a set and of a reference to one.
+  const Posting = Blueprint.thing({
+    description: "A posting the app keeps.",
+    fields: {
+      id: Blueprint.id("pst"), voucherType: VoucherType, party: Party, channel: Channel, alsoType: Blueprint.optional(VoucherType),
+      kinds: Blueprint.list(VoucherType), vouchers: Blueprint.list(Voucher),
+    },
+    code: "PS",
+  });
   return { s, ledger, pkgs, Posting };
 };
 export interface Ledger {
@@ -128,6 +155,10 @@ export interface Ledger {
   readonly CrmPartyType: Value;
   /** The app's own open set, declared in the app's `blueprint/values/channels.ts`. */
   readonly Channel: Value;
+  /** Payments' own set, in `@fixture/payments/blueprint/values/methods.js`. */
+  readonly PaymentMethod: Value;
+  /** Projects' own set, in `@fixture/projects/blueprint/values/projects.js`; projects needs the crm. */
+  readonly ProjectKind: Value;
 }
 export type Books = ReturnType<typeof books>;
 
@@ -136,12 +167,18 @@ export interface AppSpec {
   readonly mounts: Readonly<Record<string, Name>>;
   /** The app's own files besides its mounts, under `blueprint/`. */
   readonly files?: ReadonlyArray<LoadedFile>;
+  /** The mounts that pick bookkeeping's `posting`, by mount name. */
+  readonly posting?: ReadonlyArray<string>;
 }
 
 /** The app's model: every package installed, only `mounts` mounted. */
 export const modelExit = (b: Books, app: AppSpec) => {
   const appFiles = [
-    ...Object.entries(app.mounts).map(([mount, name]) => file(`features/${mount}.ts`, { default: Blueprint.use(b.pkgs[name].descriptor) })),
+    ...Object.entries(app.mounts).map(([mount, name]) => file(`features/${mount}.ts`, {
+      default: app.posting?.includes(mount)
+        ? Blueprint.use(b.pkgs[name].descriptor as Feature<any>, (p: any) => [p.choose(p.choices.mode.posting)])
+        : Blueprint.use(b.pkgs[name].descriptor),
+    })),
     file("values/channels.ts", { Channel: b.ledger.Channel }),
     file("things/posting/thing.ts", { Posting: b.Posting }),
     ...(app.files ?? []),
@@ -175,3 +212,5 @@ export const problemsOf = (exit: Exit.Exit<unknown, unknown>): ReadonlyArray<str
 
 /** The books every positive check mounts: the ledger and four features that add, payroll through payments. */
 export const MOUNTED: AppSpec["mounts"] = { ledger: "ledger", payments: "payments", expenses: "expenses", parties: "parties", payroll: "payroll" };
+/** Every feature package but invoicing, mounted under its own name: what the whole dependency relation is judged on. */
+export const ALL: AppSpec["mounts"] = { ...MOUNTED, rogue: "rogue", crm: "crm", leads: "leads", projects: "projects", bookkeeping: "bookkeeping" };

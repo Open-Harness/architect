@@ -117,4 +117,18 @@ describe("#1132: an open set holds the members of the features that add to it", 
     const m = await modelOf(b, { mounts: MOUNTED, files: [email] });
     expect(optionsOf(m.things["posting"]?.fields["channel"])).toEqual([...OWN_CHANNELS, "Email"]);
   });
+
+  it("a list of an open set, or of a reference to one, holds the same union in its item", async () => {
+    const m = await modelOf(books(), { mounts: MOUNTED });
+    expect(m.things["posting"]?.fields["kinds"]?.value, "a list of the voucher set").toMatchObject({ type: "schema", format: "list", item: choice(VOUCHERS) });
+    expect(m.things["posting"]?.fields["vouchers"]?.value, "a list of voucher references").toMatchObject({ type: "schema", format: "list", item: reference(VOUCHERS) });
+    // A list of anything else is as it was: no item.
+    const plain = await modelOf(books(), { mounts: { ledger: "ledger" } });
+    expect(plain.things["posting"]?.fields["kinds"]?.value).toMatchObject({ type: "schema", format: "list", item: choice(["Journal Entry", "Contra Entry"]) });
+  });
+
+  it("a need with `when` counts once the mount picks it: bookkeeping, picked to post, adds to the ledger's set", async () => {
+    const m = await modelOf(books(), { mounts: { ...MOUNTED, bookkeeping: "bookkeeping" }, posting: ["bookkeeping"] });
+    expect(m.things["gl-entry"]?.fields["voucherType"]?.value).toMatchObject(choice(["Journal Entry", "Contra Entry", "Expense Claim", "Opening Balance", "Payment Entry", "Salary Slip"]));
+  });
 });
