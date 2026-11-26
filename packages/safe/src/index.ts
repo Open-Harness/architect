@@ -4,7 +4,7 @@
 export { SafeDeployment } from "./modules/deployment/service.ts";
 export type { SafeDeploymentInfo } from "./modules/deployment/types.ts";
 export { SafeAddress } from "./modules/address/service.ts";
-export type { PredictInput, SafeAddressApi } from "./modules/address/types.ts";
+export { NoOwners, OwnersNotUnique, type PredictInput, type SafeAddressApi } from "./modules/address/types.ts";
 export { SafeTx } from "./modules/safe-tx/service.ts";
 export type { SafeCallInput, SafeOperation, SafeTransaction, SafeTxApi, SafeTxField, SafeTxTypedData } from "./modules/safe-tx/types.ts";
 export { SafeWorld } from "./modules/world/service.ts";
