@@ -1,6 +1,6 @@
 {
   "name": "@orthograph/preset",
-  "version": "0.0.0",
+  "version": "0.1.0-next.1",
   "license": "Apache-2.0",
   "type": "module",
   "generators": "./generators.json",
@@ -11,12 +11,17 @@
     ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
+  "scripts": {
+    "prepack": "node ../../tools/release/starter.mjs pack",
+    "postpack": "node ../../tools/release/starter.mjs clean"
+  },
   "dependencies": {
     "@orthograph/compiler": "workspace:*",
     "@orthograph/generators": "workspace:*",
     "orthograph": "workspace:*",
     "@nx/devkit": "24.0.3",
-    "effect": "4.1.4"
+    "effect": "4.1.4",
+    "yaml": "2.9.0"
   },
   "devDependencies": {
     "nx": "24.0.3"
@@ -29,6 +34,7 @@
   ],
   "publishConfig": {
     "access": "public",
+    "tag": "next",
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",

@@ -35,6 +35,8 @@ export interface FieldModel {
   readonly solidity?: string;
   /** The value may be null (a union with null): its column may be NULL too. Absent for every other field. */
   readonly nullable?: true;
+  /** A payload field that travels as a list or an object: a command line takes it as JSON. Absent for every other field. */
+  readonly json?: "list" | "object";
   /** What the field is for, as the blueprint says (`Blueprint.described`); every output carries it (M1.42). */
   readonly description?: string;
   /** Absent means public, the default. Only a public field's value may be a span attribute, a log line or a journal field. */

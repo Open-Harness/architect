@@ -8550,6 +8550,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "GivenScores"
         }
       },
@@ -8638,7 +8639,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "dbfb61a88c7ad4f5"
+      "hash": "e97f08504cdf4a31"
     },
     "appraisal.self-rate": {
       "kind": "operation",
@@ -8663,6 +8664,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "GivenRatings"
         }
       },
@@ -8749,7 +8751,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "23fce24e084e48ac"
+      "hash": "d54f09c96b7bdfac"
     },
     "appraisal.submit": {
       "kind": "operation",
@@ -8991,6 +8993,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "Appraisees",
           "ref": "appraisal-cycle.appraisees"
         }
@@ -9064,7 +9067,7 @@
       "budget": {
         "p95Ms": 300
       },
-      "hash": "cd4becd0fda51b78"
+      "hash": "dbe245590f87f4bd"
     },
     "appraisal-cycle.get": {
       "kind": "read",
@@ -9371,6 +9374,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "TemplateKras",
           "ref": "appraisal-template.kras"
         },
@@ -9378,6 +9382,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "TemplateCriteria",
           "ref": "appraisal-template.criteria"
         }
@@ -9455,7 +9460,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "b5bbdc51c9d0ed83"
+      "hash": "8fb4f8a5eb2adba7"
     },
     "appraisal-template.get": {
       "kind": "read",
@@ -13344,6 +13349,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "GivenRatings"
         }
       },
@@ -13426,7 +13432,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "5746ed27e78b9a47"
+      "hash": "e0656fbd9879a27b"
     },
     "employee-performance-feedback.get": {
       "kind": "read",
@@ -19428,6 +19434,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "description": "Its lines, in order: each an account, a cost center, and a debit or a credit. At most 50."
         }
       },
@@ -19526,7 +19533,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "59d395645c1a1382"
+      "hash": "cd6f129d697f9430"
     },
     "journal-entry.get": {
       "kind": "read",

@@ -93,7 +93,7 @@ A green push run costs 21 runner-minutes on `main` and 55 on `goal/stage-1`. Run
    (`nx run prove:test -- --shard=<n>/3`, vitest splitting by file). The small `check` job needs both and passes only
    when both passed (`tools/ci/gate.sh`, its cases in `tools/ci/ci.test.sh`). It never skips, because a skipped
    required check counts as passed. The same tests run with the same config; only where they run changes.
-2. **`e2e-m1` runs as four shards and keeps its name** (`goal/stage-1` only, in the change that carries this one
+2. **`e2e-m1` runs as four shards and keeps its name** (_Superseded by CI-m1-balance, 26 November 2026: six shards, split by measured time_) (`goal/stage-1` only, in the change that carries this one
    there). Each shard runs the ratchet's vitest command with `--shard=<n>/4` and uploads its JSON report and
    hook-error file. The `e2e-m1` job then runs the ratchet's own unit test, joins the four reports
    (`tools/ci/m1-reports.sh`: every shard's test files and hook errors; it fails unless exactly four of each arrived,

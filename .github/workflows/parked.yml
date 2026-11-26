@@ -1,0 +1,155 @@
+name: parked
+
+# The suites of parked goals (design/goals/map.md), moved out of `ci` so a pull request does not wait on them
+# (design/decisions/CI-parked-suites-nightly.md): Goal 17's `e2e-superagent`, Goal 6's `e2e-portal-next`, Goal 5's
+# `e2e-ui-layer` and Goal 9's `e2e-m8`. No branch requires any of them. Each runs, with the same steps it had in `ci`:
+#   - every night on main, and by hand (workflow_dispatch) on any branch;
+#   - on a ready pull request that changes its goal's paths, is into its goal's branch, or once its goal is no longer
+#     parked (tools/ci/parked.sh reads each from the goal's brief); never on a docs-only one.
+# A failing night run on main is a Snag for the goal that owns the suite, logged by whoever sees it first.
+on:
+  schedule:
+    - cron: "41 2 * * *"
+  workflow_dispatch:
+  # Like `ci`: a draft runs only the `which` job, and marking it ready runs this once (CI-drafts.md, CI-drafts-race.md).
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+# As in `ci`: a newer push to the same pull request cancels the run it supersedes; every other run has its own group.
+concurrency:
+  group: parked-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Is the pull request a draft now (read from the API, never the payload, as `ci`'s `ready` job does)? And which suites
+  # does it run? A scheduled or hand-started run runs all four.
+  which:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      superagent: ${{ steps.suites.outputs.superagent }}
+      portal_next: ${{ steps.suites.outputs.portal_next }}
+      ui_layer: ${{ steps.suites.outputs.ui_layer }}
+      m8: ${{ steps.suites.outputs.m8 }}
+    steps:
+      - id: live
+        run: |
+          if [[ "$EVENT" == pull_request ]]; then
+            for try in 1 2 3; do
+              draft=$(gh api "repos/$REPO/pulls/$PR" --jq .draft) && break
+              [[ "$try" == 3 ]] && exit 1
+              sleep 5
+            done
+          else
+            draft=false
+          fi
+          echo "draft=$draft" >> "$GITHUB_OUTPUT"
+          echo "live draft: $draft"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+      - uses: actions/checkout@v7.0.1
+        if: github.event_name == 'pull_request' && steps.live.outputs.draft == 'false'
+        with:
+          fetch-depth: 0
+      - id: suites
+        run: |
+          if [[ "$EVENT" != pull_request ]]; then
+            printf '%s\n' superagent=true portal_next=true ui_layer=true m8=true | tee -a "$GITHUB_OUTPUT"
+          elif [[ "$DRAFT" != false ]]; then
+            printf '%s\n' superagent=false portal_next=false ui_layer=false m8=false | tee -a "$GITHUB_OUTPUT"
+          elif [[ "$(tools/ci/docs-only.sh "origin/$BASE_REF" HEAD)" == docs_only=true ]]; then
+            echo "A docs-only pull request (CI-docs-fast-path.md): no parked suite runs."
+            printf '%s\n' superagent=false portal_next=false ui_layer=false m8=false | tee -a "$GITHUB_OUTPUT"
+          else
+            tools/ci/parked.sh "$BASE_REF" "origin/$BASE_REF" HEAD | tee -a "$GITHUB_OUTPUT"
+          fi
+        env:
+          EVENT: ${{ github.event_name }}
+          DRAFT: ${{ steps.live.outputs.draft }}
+          BASE_REF: ${{ github.base_ref }}
+
+  # M8's checks (e2e/m8/README.md), written before time is built: the ratchet passes while every failure is listed in
+  # e2e/m8/expected-failing/, and fails on any other. Goal 9 is parked.
+  e2e-m8:
+    needs: which
+    if: needs.which.outputs.m8 == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: NX_DAEMON=false pnpm nx run e2e:m8-ratchet --outputStyle=static
+
+  # Goal 17's checks (e2e/superagent/README.md), written before the superagent is built: the ratchet passes while every
+  # failure is listed in e2e/superagent/expected-failing/, and fails on any other. Check 07 fetches the full published
+  # specs once into tmp/specs/ (no key). Goal 17 is parked; a pull request into goal/superagent always runs it.
+  e2e-superagent:
+    needs: which
+    if: needs.which.outputs.superagent == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/cache@v6.1.0
+        with:
+          path: tmp/specs
+          key: superagent-specs-${{ hashFiles('e2e/superagent/specs/pins.json') }}
+      - run: NX_DAEMON=false pnpm nx run e2e:superagent-ratchet --outputStyle=static
+      # Goal 17 decides its records on its branch, where `ci`'s e2e-m0 skips the supersedes guard on the fast gate, so it runs here too.
+      - run: tools/ci/supersedes.sh
+
+  # Goal 6's done check, begun (`design/goals/06-portal.md`): the new portal's checks, starting with the theme's. Goal 6 is parked.
+  e2e-portal-next:
+    needs: which
+    if: needs.which.outputs.portal_next == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Chromium plus the system libraries it needs on this image, as `ci`'s `e2e-grid` has it (K19).
+      - run: pnpm --filter @orthograph/e2e exec playwright install --with-deps chromium
+      - run: pnpm nx run e2e:portal-next --outputStyle=static
+
+  # Goal 5's done check, begun (`e2e/ui-layer/README.md`): the UI layer's checks through the ratchet, which passes while every failure is
+  # listed in e2e/ui-layer/expected-failing/ and fails on any other. Goal 5 is parked and landed on main (CI-main-ui-layer.md), so the
+  # night run on main is what watches it there. No Docker, no cloud, no secret: slice 1's check starts one HTTP server on a free port.
+  e2e-ui-layer:
+    needs: which
+    if: needs.which.outputs.ui_layer == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx run e2e:ui-layer --outputStyle=static

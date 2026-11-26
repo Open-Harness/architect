@@ -2,7 +2,7 @@
 # Waits until a ready pull request's CI run has finished, then says whether the checks its base branch requires passed
 # (design/decisions/CI-watch-required.md; CI-integration.md, part A, rule 1). Run it in the background after every push:
 #   tools/ci/watch-required.sh <pull request number> [poll seconds]
-# `gh pr checks --watch --required` alone can end early: a job that needs other jobs (`e2e-m1` needs its four shards) is
+# `gh pr checks --watch --required` alone can end early: a job that needs other jobs (`e2e-m1` needs its shards) is
 # not listed at all until they finish, so the watch sees nothing pending and stops (#653, 23 November 2026). This waits
 # for the newest `ci` run on the pull request's head to complete instead, then reads each required check by name (its
 # newest row, since an older cancelled run can list the same name).
