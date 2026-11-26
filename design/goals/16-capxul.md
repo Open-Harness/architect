@@ -191,3 +191,55 @@ unparked by CX-money-global-payroll and claimed by Goal 16; its checks (#923) st
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
 `goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at
 every slice merge.
+
+### Features lane, 26 November (handoff)
+
+Written by the 🧭 features lead (Claude Code) at the wind-down, so any harness can resume from the repository alone. The
+lane splits Capxul into features (`decisions/CX-features.md`, `decisions/CX-composable-pieces.md` sections 5 and 6).
+Every check pull request below holds only checks, which fail on `main` and are listed in its ratchet files. Each needs a 🔍
+pass and green CI to merge. The Goal 16 lead in Amp queues CI into `main`, so ask it for a slot on the pull request
+before marking one ready.
+
+**The framework gaps:**
+
+1. **One operation runs another inside its own commit** (#1079). Its checks merged into `main` (#1137, m2 check 13,
+   `decisions/CX-inner-operations.md`). Its build is #1176, from `goal-16/snag-1079-build` into `main`, a draft. The
+   27-test typed check passes, the spans no longer count an inner call, and the handlers docs are rewritten.
+   - Owner: the Goal 16 lead in Amp, who holds its queue slot.
+   - State: a 🔍 was still running at the wind-down; read the pull request for its verdict.
+   - Snag #1187: `prove` and the portal don't count moves made through an inner operation. It needs an author.
+2. **Open sets** (#1132). Its checks are #1175, from `goal-16/snag-1132-check`, at 281cbcc4, a draft, m2 check 14,
+   `decisions/CX-open-sets.md`.
+   - History: four 🔍 rounds. The needs relation is judged pairwise from the model. Where a set sits is judged as a
+     matrix: 4 positions by 9 wrappers by 2 leaves, through the API, SDK, MCP and CLI.
+   - State: a 🔍 of the matrix was running at the wind-down.
+   - Next: answer that 🔍, mark it ready, land it. Its build is not started.
+   - Collision: #1203 (snag #995, another goal's) also calls itself "m2 check 14". One of the two must take another
+     number before both land.
+3. **Contracts one feature declares and another fills** (#1133). Its checks are #1210, from `goal-16/snag-1133-check`,
+   a draft, m2 check 15, `decisions/CX-feature-contracts.md`.
+   - History: two 🔍 rounds. The last left one blocker: say in call 8 that a fill refused for who fills it still fills
+     its contract.
+   - Also open: three nits, and main is to be merged in.
+   - After #1193 lands: move "a fill's steps", the fill-writes-an-app-thing sentence and the re-entrant offers
+     exception into CX-feature-ownership's calls 2 and 6, since ownership owns who writes what.
+   - Next: a 🔍 of the author's last push, mark it ready, land it. Its build is not started.
+4. **`check` refuses a feature writing another feature's things** (#1134). Its checks are #1193, from
+   `goal-16/snag-1134-check`, at 3f0590ed, ready, m2 check 16, `decisions/CX-feature-ownership.md`.
+   - It passed its 🔍 after one round; the device and chain writes are now checked.
+   - Next: merge it when CI is green. Three of its lines need #1176's build. Its build is not started.
+5. **Add or drop a feature by rebuilding, with a forward migration** (#1135). Not started.
+6. **Money in a field's asset** (#882). Not started in this lane; CX-money-global-payroll owns it, and checks #923
+   stay a draft.
+7. **Two compositions proved in CI** (#1136). Not started.
+
+**The rename.** #1157 (`goal-16/features-rename` into `goal/capxul`) passed its 🔍. It carries this entry too, and
+merges when CI is green. It adds the `onchain-pay` row to the move, after `company` and `people`.
+
+**The move into `examples/capxul/plugins/<feature>/`.** Not started. It waits on the checks and builds of gaps 1 to 4. The order and
+the G12 pair per feature (`goal-16/features-<feature>-check` and `-build`) are in CX-composable-pieces section 6:
+`company`, then `ledger` and `people`, then `onchain-pay`, then the rest. The money lead's new Safe things stay in
+`blueprint/things/` until `company` and `people` move.
+
+**Then the split.** Two proposals, each written as a decision first: each feature's generated output in its own folder,
+and CI that runs only what a change can reach. Not started.
