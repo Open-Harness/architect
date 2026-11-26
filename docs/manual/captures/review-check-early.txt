@@ -1,0 +1,16 @@
+$ ortho check
+blanks left 0
+types ✔
+rules ✔
+drift ✘ 8
+  generated/actions/handle/claim.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/cli/src/handle/claim.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/mcp/src/index.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/model/model.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/sdk/src/handle/claim.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/handle/index.md  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/handle/claim.md  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/portal/blueprint.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+ratchets 0
+check ✘
+exit 1

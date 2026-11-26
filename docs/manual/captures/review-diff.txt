@@ -1,0 +1,11 @@
+$ git diff -U0 --relative -- blueprint
+diff --git a/blueprint/things/handle/verbs/claim.ts b/blueprint/things/handle/verbs/claim.ts
+index 9a669e24..76a17963 100644
+--- a/blueprint/things/handle/verbs/claim.ts
++++ b/blueprint/things/handle/verbs/claim.ts
+@@ -8 +8 @@ export default Blueprint.operation(Handle, {
+-  description: "Claim a free name and make it the address of your public page, with its profile.",
++  description: "Claim a free name. It becomes the address of your public page.",
+@@ -15 +15 @@ export default Blueprint.operation(Handle, {
+-  budget: { p95: "150 millis" },
++  budget: { p95: "100 millis" },

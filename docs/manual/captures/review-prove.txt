@@ -1,0 +1,80 @@
+$ ortho prove
+journey a name is claimed once ✔ 5/5 steps
+journey a stranger cannot edit a page ✔ 8/8 steps
+journey add, order and remove a link ✔ 12/12 steps
+journey anyone reads a public page ✔ 5/5 steps
+journey claim a handle ✔ 8/8 steps
+journey release a handle ✔ 13/13 steps
+journey a person claims a page and shares it ✔ 5/5 steps
+handle.claim answer shape ✔
+handle.claim declared errors ✔
+handle.claim machine path ✔
+handle.claim events ✔
+handle.claim who may call ✔
+handle.claim steps ✔
+handle.claim performance ✔ p50 18ms p95 33ms budget p95 100ms
+handle.claim coverage ✔
+handle.claim explainability ✔
+handle.claim 9 evals ✔ p50 18ms p95 33ms budget p95 100ms
+handle.release answer shape ✔
+handle.release declared errors ✔
+handle.release machine path ✔
+handle.release events ✔
+handle.release who may call ✔
+handle.release steps ✔
+handle.release performance ✔ p50 0ms p95 5ms budget p95 150ms
+handle.release coverage ✔
+handle.release explainability ✔
+handle.release 9 evals ✔ p50 0ms p95 5ms budget p95 150ms
+handle.resolve answer shape ✔
+handle.resolve declared errors ✔
+handle.resolve machine path ✔
+handle.resolve events ✔
+handle.resolve who may call ✔
+handle.resolve steps ✔
+handle.resolve performance ✔ p50 6ms p95 9ms budget p95 150ms
+handle.resolve coverage ✔
+handle.resolve explainability ✔
+handle.resolve 9 evals ✔ p50 6ms p95 9ms budget p95 150ms
+link.add answer shape ✔
+link.add declared errors ✔
+link.add machine path ✔
+link.add events ✔
+link.add who may call ✔
+link.add steps ✔
+link.add performance ✔ p50 22ms p95 29ms budget p95 150ms
+link.add coverage ✔
+link.add explainability ✔
+link.add 9 evals ✔ p50 22ms p95 29ms budget p95 150ms
+link.order answer shape ✔
+link.order declared errors ✔
+link.order machine path ✔
+link.order events ✔
+link.order who may call ✔
+link.order steps ✔
+link.order performance ✔ p50 9ms p95 9ms budget p95 150ms
+link.order coverage ✔
+link.order explainability ✔
+link.order 9 evals ✔ p50 9ms p95 9ms budget p95 150ms
+link.remove answer shape ✔
+link.remove declared errors ✔
+link.remove machine path ✔
+link.remove events ✔
+link.remove who may call ✔
+link.remove steps ✔
+link.remove performance ✔ p50 0ms p95 10ms budget p95 150ms
+link.remove coverage ✔
+link.remove explainability ✔
+link.remove 9 evals ✔ p50 0ms p95 10ms budget p95 150ms
+profile.get answer shape ✔
+profile.get declared errors ✔
+profile.get machine path ✔
+profile.get events ✔
+profile.get who may call ✔
+profile.get steps ✔
+profile.get performance ✔ p50 22ms p95 49ms budget p95 150ms
+profile.get coverage ✔
+profile.get explainability ✔
+profile.get 9 evals ✔ p50 22ms p95 49ms budget p95 150ms
+coverage ✔ moves 4/4 · outcomes 4/4 · refusals 6/6 · runtime refusals 6/7 (not counted: IdempotencyConflict, which no journey can cause: a step cannot send a second payload under a held request key)
+prove ✔

@@ -55,7 +55,7 @@
           "n": 6,
           "title": "Review without reading the code",
           "question": "Is this change what I asked for, and nothing more?",
-          "planned": "chapters/06-review-without-reading-the-code.md",
+          "file": "chapters/06-review-without-reading-the-code.md",
           "film": "review",
           "section": "review"
         }
