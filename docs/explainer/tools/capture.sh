@@ -5,8 +5,9 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")/.." && pwd)"; repo="$(cd "$here/../.." && pwd)"; app="$repo/examples/plugged-in"; out="$here/films/how-it-works/captures"
 ortho() { (cd "$app" && node "$repo/packages/cli/src/main.ts" "$@" 2>&1) || true; }
 restore() { git -C "$repo" checkout -- examples/plugged-in; }
-trap restore EXIT
+# Refuse before the restore is armed, so uncommitted work in the example is never thrown away.
 [ -z "$(git -C "$repo" status --porcelain examples/plugged-in)" ] || { echo "examples/plugged-in has changes: commit or stash them first" >&2; exit 1; }
+trap restore EXIT
 mkdir -p "$out"
 
 ortho check > "$out/check.txt"

@@ -8,7 +8,7 @@
   const clock = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
   const faces = ['400 26px "IBM Plex Sans"', '500 26px "IBM Plex Sans"', '600 26px "IBM Plex Sans"', '400 22px "JetBrains Mono"', '500 22px "JetBrains Mono"', '700 22px "JetBrains Mono"', '500 20px "Barlow Condensed"', '600 20px "Barlow Condensed"'];
 
-  let ctx = null, buffer = null, sound = null, starting = false, node = null, playing = false, offset = 0, startedAt = 0, wall = 0, dragging = false, captions = true;
+  let ctx = null, buffer = null, sound = null, starting = false, node = null, playing = false, offset = 0, startedAt = 0, wall = 0, dragging = false, captions = true, frame = 0;
   const now = () => (!playing ? offset : buffer ? offset + ctx.currentTime - startedAt : offset + (performance.now() - wall) / 1000);
   const stopNode = () => { if (node) { node.onended = null; try { node.stop(); } catch { /* not started */ } node = null; } };
   const startNode = () => { if (!buffer) { wall = performance.now(); return; } node = ctx.createBufferSource(); node.buffer = buffer; node.connect(ctx.destination); startedAt = ctx.currentTime; node.start(0, Math.min(offset, buffer.duration - 0.01)); };
@@ -21,7 +21,9 @@
     const line = Film.lineAt(t); $("caption").textContent = captions && line ? line.text : "";
     document.querySelectorAll("#chapters button").forEach((b, k) => b.classList.toggle("on", k === cur.index));
   }
-  function loop() { if (!playing) return; let t = now(); if (t >= T.total) { pause(); t = T.total; offset = T.total; } paint(t); if (playing) requestAnimationFrame(loop); }
+  function loop() { if (!playing) return; let t = now(); if (t >= T.total) { pause(); t = T.total; offset = T.total; } paint(t); if (playing) frame = requestAnimationFrame(loop); }
+  // One animation loop at a time: a jump while playing must not start a second one.
+  const run = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(loop); };
   async function play() {
     if (playing || starting) return;
     if (offset >= T.total - 0.05) offset = 0;
@@ -33,10 +35,10 @@
       if (!buffer) { sound = null; $("sound").hidden = false; }
     }
     if (ctx && ctx.state === "suspended") { try { await ctx.resume(); } catch { /* stays silent */ } }
-    playing = true; startNode(); $("play").textContent = "Pause"; $("bigplay").hidden = true; requestAnimationFrame(loop);
+    playing = true; startNode(); $("play").textContent = "Pause"; $("bigplay").hidden = true; run();
   }
   function pause() { if (!playing) return; offset = Math.min(T.total, now()); playing = false; stopNode(); $("play").textContent = "Play"; $("bigplay").hidden = false; }
-  function jump(t) { const was = playing; if (was) { playing = false; stopNode(); } offset = Math.max(0, Math.min(T.total, t)); if (was) { playing = true; startNode(); requestAnimationFrame(loop); } else paint(offset); }
+  function jump(t) { const was = playing; if (was) { playing = false; stopNode(); } offset = Math.max(0, Math.min(T.total, t)); if (was) { playing = true; startNode(); run(); } else paint(offset); }
 
   function controls() {
     $("scrub").max = T.total;
