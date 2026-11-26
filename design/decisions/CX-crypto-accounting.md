@@ -22,7 +22,7 @@ show the gain against cost on each sale, and the month-end mark carries the rest
 every disposal. Picking specific lots instead of oldest-first has to be recorded when the coins go out, not at filing,
 so it is a later setting if anyone asks for it.
 
-It's all core, no optional piece. Nothing is left for Aaron to decide.
+It's all core, no optional piece (Superseded by CX-features, 26 November 2026: "no optional feature"; every "piece" and "pieces" in this sense below reads "feature" and "features"). Nothing is left for Aaron to decide.
 
 ## 1. The design
 
