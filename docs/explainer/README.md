@@ -31,6 +31,7 @@ runs today, what is decided, and what the film proposes.
 | `films/how-it-works/captures/` | recorded output of `ortho` on Plugged In |
 | `films/capxul-lite/app/` | the Capxul Lite design: blueprint, a Solidity handler, a journey, and sketches of what falls out |
 | `films/capxul-lite/supplement/` | the page to read beside the film; it quotes the same files |
+| `films/capxul-lite/board/board.html` | the design board written after the first viewing: the notes on the film, the next step, every problem found and what was proposed for it. One file, published as it is |
 | `src/engine.js` | the timeline every scene writes to, the cue lookup, the code and terminal painters |
 | `src/film.css`, `src/shell.html`, `src/player.js` | the look, the frame around the stage, and the player |
 | `tools/capture.sh` | records the first film's captures; undoes every edit it makes to the example |

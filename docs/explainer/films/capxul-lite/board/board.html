@@ -1,0 +1,477 @@
+<title>Capxul Lite Design Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* A pinboard of design questions: wide, grouped, every card carrying its standing. Green runs, blue is decided, amber is proposed, red is open. */
+:root {
+  --bg: #f6f8fb; --panel: #ffffff; --panel2: #eef2f8; --rule: #d5dde9; --ink: #0c1a2c; --text2: #41526a; --muted: #6a7b93;
+  --blue: #0b63b8; --bluebg: #e6f0fb; --amber: #a35a00; --amberbg: #fff3df; --green: #0c7a4c; --greenbg: #e2f6ec; --red: #b3261e; --redbg: #fdeceb;
+  --k: #1d4fb0; --s: #0f6d4c; --c: #72829a; --n: #a14a12; --t: #0a6f78; --f: #6a3fb5;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", Menlo, Consolas, monospace; --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #08111f; --panel: #0e1c30; --panel2: #13253e; --rule: #25395a; --ink: #e9f0fa; --text2: #a9bcd6; --muted: #7d92ae;
+  --blue: #62c6ff; --bluebg: #10283f; --amber: #ffb55c; --amberbg: #2a2010; --green: #54d898; --greenbg: #0f2a22; --red: #ff8080; --redbg: #2c1518;
+  --k: #8db4ff; --s: #9adbb3; --c: #6f86a6; --n: #ffb98a; --t: #7adce0; --f: #c7b5ff; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #08111f; --panel: #0e1c30; --panel2: #13253e; --rule: #25395a; --ink: #e9f0fa; --text2: #a9bcd6; --muted: #7d92ae;
+  --blue: #62c6ff; --bluebg: #10283f; --amber: #ffb55c; --amberbg: #2a2010; --green: #54d898; --greenbg: #0f2a22; --red: #ff8080; --redbg: #2c1518;
+  --k: #8db4ff; --s: #9adbb3; --c: #6f86a6; --n: #ffb98a; --t: #7adce0; --f: #c7b5ff; color-scheme: dark; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16.5px; line-height: 1.55; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 40px 90px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 20px; }
+.wrap > * { min-width: 0; }
+h1 { font-size: clamp(32px, 5vw, 50px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; margin: 6px 0 0; text-wrap: balance; }
+h2 { font-size: 30px; line-height: 1.15; font-weight: 600; letter-spacing: -0.012em; margin: 40px 0 0; text-wrap: balance; }
+h3 { font-size: 19px; font-weight: 600; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 72ch; } .lede { font-size: 20px; color: var(--text2); }
+ul { margin: 0; padding-left: 20px; max-width: 72ch; display: flex; flex-direction: column; gap: 6px; }
+code { font-family: var(--mono); font-size: 0.88em; } b { font-weight: 600; }
+.eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-weight: 600; font-size: 17px; color: var(--blue); }
+.st { display: inline-block; font: 600 13px var(--label); text-transform: uppercase; letter-spacing: 0.12em; padding: 1px 8px; border: 1px solid currentColor; white-space: nowrap; vertical-align: 1px; }
+.st.run { color: var(--green); background: var(--greenbg); } .st.dec { color: var(--blue); background: var(--bluebg); } .st.new { color: var(--amber); background: var(--amberbg); } .st.open { color: var(--red); background: var(--redbg); } .st.film { color: var(--muted); border-style: dashed; }
+.by { font: 600 13px var(--label); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 15px; color: var(--text2); align-items: center; }
+.legend span { display: inline-flex; gap: 8px; align-items: center; }
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr)); gap: 14px; align-items: start; } .board > * { min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--rule); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.card .top { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; } .card .at { font: 500 14px var(--mono); color: var(--blue); }
+.card blockquote { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.35; } .card p { font-size: 15.5px; color: var(--text2); } .card p b { color: var(--ink); }
+.verdict { background: var(--panel); border: 1px solid var(--rule); border-left: 5px solid var(--blue); padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; } .verdict .big { font-size: 24px; font-weight: 600; line-height: 1.25; max-width: 40ch; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 16px; align-items: start; } .cols > * { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.file { margin: 0; background: var(--panel); border: 1px solid var(--rule); min-width: 0; }
+.file figcaption { display: flex; flex-wrap: wrap; overflow-wrap: anywhere; justify-content: space-between; gap: 4px 12px; padding: 8px 14px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 13.5px; color: var(--muted); }
+pre.code { margin: 0; padding: 12px 0; overflow-x: auto; font-family: var(--mono); font-size: 14px; line-height: 1.7; font-variant-ligatures: none; tab-size: 2; }
+pre.code .ln { display: block; padding: 0 16px; border-left: 3px solid transparent; white-space: pre; min-width: max-content; } pre.code .ln.isnew { border-left-color: var(--amber); background: var(--amberbg); }
+.k { color: var(--k); } .s { color: var(--s); } .c { color: var(--c); font-style: italic; } .n { color: var(--n); } .t { color: var(--t); } .f { color: var(--f); } .x { color: var(--muted); }
+.tablewrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; font-size: 15px; background: var(--panel); } th, td { border: 1px solid var(--rule); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); background: var(--panel2); white-space: nowrap; } td code, td.mono { font-family: var(--mono); font-size: 13.5px; } td.q { font-weight: 500; min-width: 170px; } td.a { min-width: 190px; color: var(--text2); } td.a b { color: var(--ink); }
+tr.grp td { background: var(--panel2); font: 600 15px var(--label); text-transform: uppercase; letter-spacing: 0.14em; color: var(--blue); }
+.seq { background: var(--panel); border: 1px solid var(--rule); overflow-x: auto; } .seq svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+.seq text { font-family: var(--sans); font-size: 13.5px; fill: var(--ink); } .seq .lab { paint-order: stroke; stroke: var(--panel); stroke-width: 6px; stroke-linejoin: round; } .seq .sub { fill: var(--muted); font-size: 12.5px; }
+.seq .hd rect { fill: var(--panel2); stroke: var(--ink); stroke-width: 1.5; } .seq .hd text { font-weight: 600; font-size: 14px; } .seq .life { stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.seq .ar { stroke: var(--ink); stroke-width: 1.8; fill: none; } .seq .ar.dash { stroke-dasharray: 6 5; } .seq .ar.new { stroke: var(--amber); } .seq .hdn { fill: var(--ink); } .seq .hdn.new { fill: var(--amber); } .seq text.new { fill: var(--amber); font-weight: 600; }
+.seq .stbox { fill: var(--panel2); stroke: var(--blue); stroke-width: 1.5; } .seq .stname { font-family: var(--mono); font-size: 16px; fill: var(--blue); font-weight: 500; } .seq .cap { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em; font-size: 13px; font-weight: 600; fill: var(--muted); } .seq .wait { fill: var(--panel2); stroke: var(--muted); stroke-dasharray: 3 3; }
+.chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; } .chain div { background: var(--panel); border: 1px solid var(--rule); padding: 10px 14px; flex: 1 1 170px; min-width: 0; } .chain div b { display: block; font-family: var(--mono); font-size: 15px; } .chain div span { font-size: 14px; color: var(--text2); } .chain i { align-self: center; font-style: normal; color: var(--muted); font-size: 20px; }
+.out { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 10px; } .out div { background: var(--panel); border: 1px solid var(--rule); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; } .out b { font-size: 16.5px; } .out code { color: var(--muted); overflow-wrap: anywhere; } .out span.d { font-size: 14.5px; color: var(--text2); }
+ol.ask { margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 12px; max-width: 76ch; } ol.ask li::marker { font-weight: 600; color: var(--blue); } ol.ask span { display: block; color: var(--text2); font-size: 15.5px; }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Orthograph · before the film is recut</div>
+  <h1>Capxul Lite, the design board</h1>
+  <p class="lede">Your nine notes on the film, answered against the repo. The next step, explained properly. Every problem either of us has found, with what we proposed for it. Seven decisions for you at the end.</p>
+  <div class="legend">
+    <span><i class="st run">runs today</i> in the repo and proved</span>
+    <span><i class="st dec">decided</i> in a decision record, not all built</span>
+    <span><i class="st new">proposed</i> by this design, nothing more</span>
+    <span><i class="st open">open</i> no answer yet</span>
+    <span><i class="st film">film</i> a fix to the film only</span>
+  </div>
+
+  <h2>Your notes, answered</h2>
+  <div class="board">
+    <div class="card"><div class="top"><span class="at">2:04</span><i class="st new">proposed</i></div>
+      <blockquote>It can live on chain, on a private chain.</blockquote>
+      <p><b>You're right, and the film was wrong.</b> It said a spend "can't live on a chain". K25 only refuses a private field on a <b>public</b> chain store, and it already sketches a private store kind.</p>
+      <p>So a thing has four places to live, not three. Privacy stops being the reason the spend is on our server. See "Where a thing lives".</p></div>
+    <div class="card"><div class="top"><span class="at">3:40</span><i class="st film">film</i></div>
+      <blockquote>What falls out should show what falls out.</blockquote>
+      <p>The film showed the contract, the ways in by user, and the reference. It never showed the SDK, the command line, the agent's tools, the server or the deployment as things you can look at.</p>
+      <p>The recut gives each output its own moment, all on the same spend. The full list is under "What falls out".</p></div>
+    <div class="card"><div class="top"><span class="at">5:08</span><i class="st dec">decided</i></div>
+      <blockquote>How do you know who is who? Where did the auth come from?</blockquote>
+      <p><b>Never shown.</b> The repo has the answer in three parts. People sign in with Better Auth, chosen per environment. On chain a person is an account. The server learns which accounts are Ada's when she signs its challenge with her wallet.</p>
+      <p>The third part, linking, is spiked and sits in no goal. See "Who is who".</p></div>
+    <div class="card"><div class="top"><span class="at">5:23</span><i class="st film">film</i></div>
+      <blockquote>This visualisation is not helpful. Maybe there's a better diagram type.</blockquote>
+      <p>There is. A payment that passes between six parties over time is a <b>sequence diagram</b>: one column per party, time running down, and the spend's own state beside it. It is drawn below, under "The next step".</p></div>
+    <div class="card"><div class="top"><span class="at">general</span><i class="st run">runs today</i></div>
+      <blockquote>Actors or not, on things? Why not explain?</blockquote>
+      <p>I never said. An actor is one of the places a thing can live, chosen in one line. In Capxul Lite <b>none of our things is an actor.</b> Two parts of the framework are: the relayer and the indexer.</p>
+      <p>See "Where a thing lives" for what each place gives you and costs you.</p></div>
+    <div class="card"><div class="top"><span class="at">5:49</span><i class="st open">rename pending</i></div>
+      <blockquote>Indexer, not follower. It knows the events too. Did we even mention events and errors?</blockquote>
+      <p>It is the indexer on this board. The repo says "follower" in 113 files, 26 of them in packages, so the rename is a decision record and a sweep for the framework goal. I have not touched it.</p>
+      <p>Events and errors were spoken once each and never shown as files. See "Events, errors and the indexer".</p></div>
+    <div class="card"><div class="top"><span class="at">5:54</span><i class="st new">answered below</i></div>
+      <blockquote>Is this just a workflow? Or still a machine? Is this another missing primitive?</blockquote>
+      <p><b>It is not a workflow. It is a machine.</b> Nothing has to remember where a spend has got to except the spend itself.</p>
+      <p>Two small pieces are missing, not a new primitive. See "Is a spend a workflow?".</p></div>
+    <div class="card"><div class="top"><span class="at">6:30</span><i class="st film">film</i></div>
+      <blockquote>You say it but don't show it. It's important to grok.</blockquote>
+      <p>The journey was read aloud over a still file. The recut <b>runs it on screen</b>. Each step goes green with its evidence beside it: the event, the receipt, the state it ended in. The world's clock visibly jumps a month.</p></div>
+    <div class="card"><div class="top"><span class="at">7:31</span><i class="st open">open</i></div>
+      <blockquote>Underspecified. What do you mean, chain? How? The server? The actors? Staging and prod?</blockquote>
+      <p>Agreed. Part of it exists and the film skipped it. Part of it is decided nowhere I could find, mostly the contract's side. See "Running it".</p></div>
+  </div>
+
+  <h2>The next step</h2>
+  <div class="cols">
+    <div>
+      <h3>The problem it solves</h3>
+      <p>Ada presses one button: Spend. Underneath, that is <b>two operations in two places, with her wallet between them.</b></p>
+      <ul>
+        <li><code>spend.draft</code> runs on our server. It records who is being paid and why. Ada is a signed-in person.</li>
+        <li><code>budget.spend</code> runs on the chain. It moves the money. Ada is an account, and her wallet signs.</li>
+      </ul>
+      <p>Everything Orthograph makes, it makes per operation. So on its own you get two SDK methods, two commands, two agent tools and two buttons, and nothing that says they belong together.</p>
+      <p>Every client then has to know the recipe. Draft. Take the id. Fill in the chain call. Try it. Ask the wallet. Send it. That recipe ends up written by hand in the app, in a script, and in the agent's prompt. That is the exact duplication the framework is for removing. And an agent that skips the draft moves money with no reason attached.</p>
+      <h3>The idea</h3>
+      <p>Say it once, on the first operation: <b>what the same caller does next, and which fields are carried across.</b></p>
+    </div>
+    <div>
+      <figure class="file"><figcaption><span>blueprint/things/spend/verbs/draft.ts</span><span>two lines are new</span></figcaption>
+<pre class="code">export default Blueprint.operation(Spend, {
+  description: "Say what you are about to pay for.",
+  payload: { budget: Spend.fields.budget, to: Spend.fields.to,
+             amount: Spend.fields.amount, reason: Spend.fields.reason },
+  answer: { spend: Spend.fields.id },
+  move: machine.moves.draft,
+  allowed: [holder.of("budget")],
+  steps: { record: Blueprint.step.database() },
+  // What the same caller does next, and what is carried across.
+  next: Blueprint.next(budgetSpend, (s) => // new
+    ({ budget: s.budget, amount: s.amount, to: s.to, note: s.id })), // new
+});</pre></figure>
+      <p>It is a fact about two operations, held in the model. So everything made from the model can use it.</p>
+    </div>
+  </div>
+
+  <div class="tablewrap"><table>
+    <tr><th>Way in</th><th>Without it</th><th>With it</th></tr>
+    <tr><td class="q">The SDK</td><td class="a">two methods that don't know each other</td><td class="a"><b>draft answers with the next call</b>, already filled in and already tried on the chain</td></tr>
+    <tr><td class="q">The app</td><td class="a">two pieces you wire together by hand</td><td class="a"><b>one Spend button</b>, with a strip under it: drafted, signed, sent, paid</td></tr>
+    <tr><td class="q">The command line</td><td class="a">two commands and an id you copy across</td><td class="a">one command that asks for your key and carries on</td></tr>
+    <tr><td class="q">An agent's tools</td><td class="a">two tools, and a prompt that explains the order</td><td class="a">the first tool's answer <b>names the next tool and its arguments</b></td></tr>
+    <tr><td class="q">The wallet</td><td class="a">raw call data</td><td class="a">the next operation's own description</td></tr>
+    <tr><td class="q">A journey</td><td class="a">two steps the author keeps in step</td><td class="a">one line: Ada does what comes next</td></tr>
+    <tr><td class="q">The trace</td><td class="a">two traces</td><td class="a">one trace, from the button to the books</td></tr>
+    <tr><td class="q">The check</td><td class="a">nothing to check</td><td class="a">a drafted spend must have a way out for yes, for no and for silence</td></tr>
+  </table></div>
+
+  <div class="cols">
+    <div>
+      <h3>What it is not</h3>
+      <ul>
+        <li><b>It enforces nothing.</b> It is a promise about the clients we generate. The contract can still be called directly from any wallet. That is why "unexplained" is a real state.</li>
+        <li><b>It is the same caller, straight away.</b> A different person acting later, like an owner approving a grant, is not a next step. That is the thing offering a move to whoever holds the role.</li>
+        <li><b>It is not new to the repo's thinking.</b> K5 sketched a "client" activity for exactly this. The workflows decision, M3.01, dropped it: the person calls the operation themselves. That is fine for the engine. It leaves every client guessing, which is the gap this fills.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Still open on it</h3>
+      <ul>
+        <li>Can there be a choice of next steps, or only one?</li>
+        <li>Can a next step have its own next step, three in a row?</li>
+        <li>Should a note be forced? The only way is for our server to co-sign every payment. Then nobody can spend while our server is down, which gives away the reason the limit is on chain.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>One spend, as a sequence</h3>
+  <p>This replaces the picture at 5:23. Time runs down. The left column is the spend's own state. Amber is what the next step adds.</p>
+  <div class="seq"><svg viewBox="0 0 1260 700" role="img" aria-label="Sequence diagram of one spend. Ada's app drafts a spend on our server. The app tries the payment on the contract without sending. The app asks her wallet to sign. The app hands the signed call to the relayer, which reports it submitted. The relayer sends it to the Treasury contract, which checks the role, the machine and the rule, pays, and emits BudgetSpent. The indexer waits three blocks and hands the confirmed event to our server, which marks the spend paid and writes the entry in one commit.">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="hdn" d="M0 0L10 5L0 10z"/></marker>
+      <marker id="ahn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="hdn new" d="M0 0L10 5L0 10z"/></marker>
+    </defs>
+    <text class="cap" x="16" y="46">The spend is</text>
+    <rect class="stbox" x="16" y="140" width="158" height="242"/><text class="stname" x="28" y="166">drafted</text><text class="sub" x="28" y="190">waits for her wallet</text><text class="sub" x="28" y="208">yes: she signs</text><text class="sub" x="28" y="226">no: she rejects</text><text class="sub" x="28" y="244">silence: 15 minutes</text>
+    <rect class="stbox" x="16" y="382" width="158" height="214"/><text class="stname" x="28" y="408">sent</text><text class="sub" x="28" y="432">waits for the chain</text><text class="sub" x="28" y="450">yes: confirmed</text><text class="sub" x="28" y="468">no: reverted, dropped</text><text class="sub" x="28" y="486">silence: 1 hour</text>
+    <rect class="stbox" x="16" y="596" width="158" height="84"/><text class="stname" x="28" y="622">paid</text><text class="sub" x="28" y="646">in the books</text>
+    <g class="hd"><rect x="180" y="20" width="140" height="42"/><text x="250" y="46" text-anchor="middle">Ada's app</text>
+      <rect x="350" y="20" width="140" height="42"/><text x="420" y="46" text-anchor="middle">Ada's wallet</text>
+      <rect x="520" y="20" width="140" height="42"/><text x="590" y="46" text-anchor="middle">Our server</text>
+      <rect x="690" y="20" width="140" height="42"/><text x="760" y="46" text-anchor="middle">Relayer</text>
+      <rect x="880" y="20" width="140" height="42"/><text x="950" y="46" text-anchor="middle">Treasury contract</text>
+      <rect x="1080" y="20" width="140" height="42"/><text x="1150" y="46" text-anchor="middle">Indexer</text></g>
+    <text class="sub" x="250" y="80" text-anchor="middle">her device</text><text class="sub" x="420" y="80" text-anchor="middle">her device</text><text class="sub" x="590" y="80" text-anchor="middle">notes and books</text><text class="sub" x="760" y="80" text-anchor="middle">ours, an actor</text><text class="sub" x="950" y="80" text-anchor="middle">the chain</text><text class="sub" x="1150" y="80" text-anchor="middle">ours, an actor</text>
+    <path class="life" d="M250 90V684M420 90V684M590 90V684M760 90V684M950 90V684M1150 90V684"/>
+    <path class="ar" d="M250 140H588" marker-end="url(#ah)"/><text class="lab" x="262" y="132">spend.draft: who, how much, why</text>
+    <path class="ar dash new" d="M250 200H948" marker-end="url(#ahn)"/><text class="lab new" x="262" y="192">try budget.spend, without sending</text>
+    <path class="ar dash new" d="M950 228H252" marker-end="url(#ahn)"/><text class="lab new" x="938" y="220" text-anchor="end">would pass. Or BudgetExceeded, and nothing is signed</text>
+    <path class="ar new" d="M250 290H418" marker-end="url(#ahn)"/><text class="lab new" x="262" y="282">ask her wallet to sign</text><text class="lab sub" x="262" y="310">it shows budget.spend's description</text>
+    <path class="ar new" d="M250 356H758" marker-end="url(#ahn)"/><text class="lab new" x="262" y="348">the signed call</text>
+    <path class="ar dash new" d="M760 382H592" marker-end="url(#ahn)"/><text class="lab new" x="676" y="374" text-anchor="middle">submitted</text>
+    <path class="ar" d="M760 440H948" marker-end="url(#ah)"/><text class="lab" x="855" y="432" text-anchor="middle">spendBySig</text><text class="lab sub" x="855" y="458" text-anchor="middle">and pays the gas</text>
+    <text class="lab sub" x="962" y="462">role · machine · rule</text><text class="lab sub" x="962" y="480">pay · emit BudgetSpent</text>
+    <path class="ar dash" d="M950 520H1148" marker-end="url(#ah)"/><text class="lab" x="1050" y="512" text-anchor="middle">BudgetSpent</text>
+    <rect class="wait" x="1140" y="528" width="20" height="50"/><text class="lab sub" x="1130" y="558" text-anchor="end">waits 3 blocks</text>
+    <path class="ar" d="M1150 596H592" marker-end="url(#ah)"/><text class="lab" x="870" y="588" text-anchor="middle">BudgetSpent, confirmed, with the note's id</text>
+    <text class="lab" x="602" y="626">spend.settle: paid, and the entry,</text><text class="lab" x="602" y="644">in one commit</text>
+  </svg></div>
+
+  <h2>Is a spend a workflow?</h2>
+  <div class="verdict">
+    <p class="big">No. It is a machine, and it should stay one.</p>
+    <p>The test I used: <b>does anything have to remember where the work has got to, other than the thing itself?</b> For a spend, no. Drafted, sent, paid and unexplained are the spend's own states. The accountant sees them. Each step is one move on one thing, in one commit. What joins the steps is an event, a clock, or Ada.</p>
+    <p>I owe you one correction on the repo's own wording. Its data page says work that changes a store and a chain "is a workflow, with a waiting state between". That sentence uses the word loosely. The repo also has a real workflow primitive, decided in M3.01 and not built: a long-running handler that calls operations and waits for events and dates. A spend does not need one. I would tighten that sentence.</p>
+  </div>
+  <div class="cols">
+    <div>
+      <h3>Why not write it as a workflow anyway</h3>
+      <ul>
+        <li><b>The order would move into code.</b> A workflow declares its activities, but the order and the branches live in its handler. That is the layer you should not have to read.</li>
+        <li><b>A machine is data.</b> So it can be checked for a state with no way out, drawn as the sequence above, and turned into the strip under the button.</li>
+        <li><b>It needs no new engine.</b> Events arrive through the outbox and the indexer. Time arrives through the keeper.</li>
+      </ul>
+      <h3>When a workflow is the right word</h3>
+      <p>When the progress belongs to no single thing. Paying forty people in one payroll run. Collecting signatures off chain from a changing set of owners. A loop, or a fan-out, with something to undo if it fails halfway.</p>
+      <h3>What is actually missing</h3>
+      <p>A machine is only a safe process if <b>every move says what makes it happen</b>. Five kinds of mover cover a spend. Three exist or are decided. Two are the small missing pieces.</p>
+    </div>
+    <div>
+      <div class="tablewrap"><table>
+        <tr><th>Move</th><th>Made by</th><th>Said with</th><th></th></tr>
+        <tr><td class="mono">draft</td><td>Ada, a call</td><td><code>allowed</code></td><td><i class="st run">runs today</i></td></tr>
+        <tr><td class="mono">sign and send</td><td>Ada again, straight away</td><td><code>next</code></td><td><i class="st new">proposed</i></td></tr>
+        <tr><td class="mono">send</td><td>the relayer took the signed call</td><td>an outcome of the chain call: submitted</td><td><i class="st new">proposed</i></td></tr>
+        <tr><td class="mono">settle</td><td>the event BudgetSpent, confirmed</td><td><code>on</code></td><td><i class="st dec">decided</i></td></tr>
+        <tr><td class="mono">discard</td><td>silence</td><td><code>by: time.after(…)</code></td><td><i class="st dec">decided</i></td></tr>
+        <tr><td class="mono">discard</td><td>the chain said no</td><td>an outcome: reverted, dropped</td><td><i class="st new">proposed</i></td></tr>
+        <tr><td class="mono">appear</td><td>money moved and no note matches</td><td><code>on</code>, with <code>onRefused</code></td><td><i class="st dec">decided</i></td></tr>
+        <tr><td class="mono">explain</td><td>Ada, a call</td><td><code>allowed</code></td><td><i class="st run">runs today</i></td></tr>
+        <tr><td class="mono">take back</td><td>the chain undid a confirmed payment</td><td>the indexer's correction</td><td><i class="st open">my machine has no state for it</i></td></tr>
+      </table></div>
+      <p>The second missing piece, in plain words: today a refusal on chain leaves no event, so our server never hears "no". The relayer knows. That knowledge has to be able to make a move.</p>
+    </div>
+  </div>
+
+  <h2>Where a thing lives</h2>
+  <p>This is the sheet the film skipped. It answers "actors or not", and it takes your correction about private chains.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Lives in</th><th>What it is</th><th>You get</th><th>You give up</th><th>In Capxul Lite</th><th></th></tr>
+    <tr><td class="q">a database</td><td class="a">rows in one store</td><td class="a">lists, filters, reports, rules across records</td><td class="a">it holds only as long as our server is right</td><td class="a"><b>Spend, Entry</b></td><td><i class="st run">runs today</i></td></tr>
+    <tr><td class="q">an actor</td><td class="a">one small server per instance</td><td class="a">each instance commits alone, so busy ones never race</td><td class="a">no list, and no rule across records. The compiler refuses one</td><td class="a">none of ours. <b>The relayer and the indexer</b></td><td><i class="st run">runs today</i></td></tr>
+    <tr><td class="q">a public chain</td><td class="a">a contract we generate</td><td class="a">it holds even if we are down or wrong, and anyone can check it</td><td class="a">every field is public, it answers late, and changing it is a migration</td><td class="a"><b>Treasury, Seat, Budget</b></td><td><i class="st dec">decided</i></td></tr>
+    <tr><td class="q">a private chain</td><td class="a">the same, where outsiders can't read</td><td class="a">it holds without us, and it stays private</td><td class="a">it answers late, someone has to run it, and it is one more join</td><td class="a">could hold <b>Spend</b></td><td><i class="st new">proposed</i></td></tr>
+  </table></div>
+  <div class="cols">
+    <div>
+      <p><b>A thing is used the same way wherever it lives</b>: its state, its fields, its moves. Where it lives is one line in the blueprint, and the check tells you what you lose by moving it. Moving onto a chain also changes the language its handler is written in.</p>
+      <p><b>What your correction changes.</b> In the film, "is it private?" sent a fact to our server. That question now has two answers. What still keeps the spend on our server is that the books need lists and reports, and that nothing breaks if a reason is wrong for an hour.</p>
+      <p><b>How I would say it:</b> the store says it must be private, and each environment has to bind it to a network that is. Bind it to a public one and the check refuses.</p>
+    </div>
+    <div>
+      <figure class="file"><figcaption><span>blueprint/stores/notes.ts, and an environment</span><span>proposed</span></figcaption>
+<pre class="code">// The store says what it needs.
+export default Blueprint.store.chain.evm({ visibility: "private" }); // new
+
+// blueprint/environments/staging.ts
+stores: {
+  treasury: Chain.evm.network("base-sepolia"),
+  notes:    Chain.evm.network("capxul-private-test"), // new
+},</pre></figure>
+    </div>
+  </div>
+
+  <h2>Who is who</h2>
+  <div class="chain">
+    <div><b>a person</b><span>Ada signs in. Better Auth, chosen per environment.</span></div><i>→</i>
+    <div><b>a link</b><span>She signs our server's challenge with her wallet.</span></div><i>→</i>
+    <div><b>an account</b><span>The only thing a chain can see.</span></div><i>→</i>
+    <div><b>a role</b><span>The budget's holder field names that account.</span></div><i>→</i>
+    <div><b>what she can do</b><span>Spend. The button appears.</span></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Caller</th><th>Proves who they are with</th><th>Our server sees</th><th>The chain sees</th></tr>
+    <tr><td class="q">Ada, in the app</td><td class="a">a session</td><td class="a">a person, and her linked accounts</td><td class="a">the account that signed</td></tr>
+    <tr><td class="q">Ada, at the command line</td><td class="a">device login, and a key in a local keystore</td><td class="a">the same person</td><td class="a">the account that signed</td></tr>
+    <tr><td class="q">An agent</td><td class="a">its own token, and its own key</td><td class="a">an agent, never a person</td><td class="a">the agent's own account. Agents never link</td></tr>
+    <tr><td class="q">The accountant</td><td class="a">a session</td><td class="a">a person with the books role</td><td class="a">nothing. They never touch it</td></tr>
+    <tr><td class="q">Anyone at all</td><td class="a">nothing</td><td class="a">nobody</td><td class="a">an address</td></tr>
+  </table></div>
+  <div class="cols">
+    <div>
+      <ul>
+        <li><i class="st run">runs today</i> Better Auth: sessions, API keys, device login for the command line, sign-in for agents' tools. Local and test environments use fixed test people.</li>
+        <li><i class="st dec">decided</i> K25: a person on chain is an account. Person ids never go on chain. The server finds a person's accounts through the link.</li>
+        <li><i class="st open">spiked, in no goal</i> The link itself, M2.13. Without it the film's "for Ada, the budget offers spend" has nothing to stand on.</li>
+        <li><i class="st open">open</i> Ada unlinks a wallet with a spend half way. Two people try to link one account.</li>
+      </ul>
+    </div>
+    <div>
+      <figure class="file"><figcaption><span>three files, one line each</span><span>exists or decided</span></figcaption>
+<pre class="code">// blueprint/environments/staging.ts
+identity: Identity.betterAuth,
+
+// blueprint/things/budget/thing.ts
+holder: Blueprint.account(),
+
+// blueprint/things/budget/roles.ts
+export const holder = Blueprint.role(Budget, { who: Budget.fields.holder });</pre></figure>
+    </div>
+  </div>
+
+  <h2>Events, errors and the indexer</h2>
+  <div class="cols">
+    <div>
+      <h3>An event</h3>
+      <p>Every move records one. It is written in the same commit as the change. On chain it is a Solidity event, with who signed and their nonce added in front. <b>Events are the only thing that crosses from one place to another.</b></p>
+      <h3>An error</h3>
+      <p>Declared once, and named on the operation or the rule that can raise it. It gets one code, kept in a lock file that only ever grows. So "budget exceeded" is the same name and the same code from the contract, the API, the SDK, the command line, an agent's tool and the app.</p>
+      <h3>The indexer</h3>
+      <ul>
+        <li>One per contract, per environment. It is an actor.</li>
+        <li><b>It knows the events from the model.</b> Nobody hands it an interface file. It turns raw logs back into the events you declared.</li>
+        <li>It keeps its place, waits as many blocks as the environment says, and hands on only what the chain will keep. If a confirmed event is undone later, it hands on a correction.</li>
+        <li>It feeds four things: operations started by an event, anything waiting on one, the list of budgets, because a contract has no list, and the portal and traces.</li>
+      </ul>
+    </div>
+    <div>
+      <figure class="file"><figcaption><span>blueprint/things/budget/events.ts</span><span>runs today</span></figcaption>
+<pre class="code">export const BudgetSpent = Blueprint.event({
+  budget: Budget.fields.id, amount: Usdc, to: Recipient,
+  remaining: Usdc, note: Spend.fields.id,
+});</pre></figure>
+      <figure class="file"><figcaption><span>blueprint/things/budget/errors.ts</span><span>runs today</span></figcaption>
+<pre class="code">export class BudgetExceeded
+  extends Blueprint.error({ remaining: Usdc }, { exit: 41 }) {}</pre></figure>
+      <figure class="file"><figcaption><span>blueprint/things/budget/machine.ts, one move</span><span>runs today</span></figcaption>
+<pre class="code">spend: { from: ["active"], to: ["active", "exhausted"],
+         emits: Events.BudgetSpent },</pre></figure>
+    </div>
+  </div>
+
+  <h2>What falls out</h2>
+  <p>Everything made from the Capxul Lite blueprint. The recut shows each one, on the same spend.</p>
+  <div class="out">
+    <div><b>The model</b><code>generated/model/</code><span class="d">The one description every other output is made from.</span><i class="st run">runs today</i></div>
+    <div><b>The contract</b><code>generated/solidity/TreasuryBase.sol</code><span class="d">The frame: row, role, machine, your handler, the rules, the event. Plus the signed entry.</span><i class="st dec">decided</i></div>
+    <div><b>The handlers, started for you</b><code>src/Treasury.sol, src/spend/draft.ts</code><span class="d">Scaffolded once, then yours. The only freehand.</span><i class="st run">runs today, in TypeScript</i></div>
+    <div><b>The server</b><code>generated/server/</code><span class="d">Routes, the one enforcer per operation, the database's migrations and indexes.</span><i class="st run">runs today</i></div>
+    <div><b>The actors</b><code>Relayer, Indexer</code><span class="d">Sends signed calls and pays the gas. Reads the chain back.</span><i class="st dec">on main, with bugs</i></div>
+    <div><b>The API</b><code>generated/api/</code><span class="d">Every served operation over HTTP.</span><i class="st run">runs today</i></div>
+    <div><b>The SDK</b><code>generated/sdk/</code><span class="d">Typed calls and typed refusals. Chain calls try, sign and send.</span><i class="st run">runs today for the server</i></div>
+    <div><b>The command line</b><code>generated/cli/</code><span class="d">A command per operation. Device login. A local keystore.</span><i class="st run">runs today</i></div>
+    <div><b>The agent's tools</b><code>generated/mcp/</code><span class="d">A tool per operation an agent may call, signed in as the agent.</span><i class="st run">runs today</i></div>
+    <div><b>The app's pieces</b><code>generated/web/</code><span class="d">One piece per operation, on UI SDK (K29).</span><i class="st open">spiked</i></div>
+    <div><b>A reference per thing</b><code>useBudget(id), Budget.Root</code><span class="d">The hook and the headless parts: state, the fields this caller may see, the moves open now.</span><i class="st new">proposed</i></div>
+    <div><b>The docs</b><code>generated/docs/</code><span class="d">Every thing, operation, refusal and journey.</span><i class="st run">runs today</i></div>
+    <div><b>The portal</b><code>generated/portal/</code><span class="d">The system as you described it, live: things, machines, roles, rules, traces.</span><i class="st dec">being built</i></div>
+    <div><b>The infrastructure</b><code>generated/infra/alchemy.run.ts</code><span class="d">The server, its database and its actors, as code. One command up, one down.</span><i class="st run">built for staging</i></div>
+    <div><b>The contract's deployment</b><code>nothing yet</code><span class="d">Where it is deployed, at what address, from which revision.</span><i class="st open">open</i></div>
+    <div><b>The proof</b><code>blueprint/journeys/</code><span class="d">Stories run in a world with a chain, a server and a cast with wallets.</span><i class="st run">runs today, chain worlds decided</i></div>
+  </div>
+
+  <h2>Running it</h2>
+  <p>An environment is a file. It binds each store to a place, picks how people sign in, and says what gets deployed. This is the sheet at 7:31, specified as far as the repo goes.</p>
+  <div class="tablewrap"><table>
+    <tr><th></th><th>local</th><th>test</th><th>staging</th><th>production</th></tr>
+    <tr><td class="q">Runs</td><td class="a">on this machine</td><td class="a">a fresh world per pull request, for two hours</td><td class="a">always on</td><td class="a">always on</td></tr>
+    <tr><td class="q">Server and actors</td><td class="a">the same runtime, locally</td><td class="a">a Worker</td><td class="a">a Worker</td><td class="a">a Worker</td></tr>
+    <tr><td class="q">Database</td><td class="a">emulated</td><td class="a">its own</td><td class="a">its own</td><td class="a">its own</td></tr>
+    <tr><td class="q">Chain</td><td class="a">a local chain, a process</td><td class="a">a local chain when the world runs here. In the cloud, not decided</td><td class="a">a test network</td><td class="a">the real network</td></tr>
+    <tr><td class="q">Contract</td><td class="a">deployed by the world at the start</td><td class="a">deployed fresh</td><td class="a">deployed once per network</td><td class="a">deployed once. It can never be destroyed</td></tr>
+    <tr><td class="q">Money</td><td class="a">test dollars</td><td class="a">test dollars</td><td class="a">test USDC</td><td class="a">USDC</td></tr>
+    <tr><td class="q">Confirmed after</td><td class="a">1 block</td><td class="a">3 blocks</td><td class="a">set per environment</td><td class="a">set per environment</td></tr>
+    <tr><td class="q">People</td><td class="a">fixed test people</td><td class="a">fixed test people</td><td class="a">Better Auth</td><td class="a">Better Auth</td></tr>
+    <tr><td class="q">Clock</td><td class="a">can be stepped</td><td class="a">can be stepped</td><td class="a">real</td><td class="a">real</td></tr>
+    <tr><td class="q">Standing</td><td><i class="st run">runs today</i></td><td><i class="st run">runs today</i></td><td><i class="st run">server built</i> <i class="st dec">chain decided</i></td><td><i class="st open">open</i></td></tr>
+  </table></div>
+  <div class="cols">
+    <div>
+      <h3>What exists</h3>
+      <ul>
+        <li>The environment file, with local, test and staging.</li>
+        <li>The server's infrastructure as generated code, and one command to bring staging up and take it down.</li>
+        <li>The server's bundle is built once per revision and deployed unchanged.</li>
+        <li>Decided, not built: an environment binds a chain store to a network. One deployment per network, not one per company.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What I could not find decided</h3>
+      <ul>
+        <li><b>Who deploys the contract, and where its address is kept.</b> I would keep it in a checked-in record that only grows, like the refusals lock.</li>
+        <li><b>Production as an environment.</b> It appears only in a portal brief, as "promotes from staging". A server can be promoted. A contract can't. It can only be deployed again from the same revision, and checked.</li>
+        <li><b>The order of bringing it up.</b> Contract, then the indexer from the contract's first block, then a funded relayer, then the server.</li>
+        <li><b>Taking it down.</b> The server and database are destroyed. A staging contract is left behind on its test network for good.</li>
+        <li><b>The relayer's gas.</b> Who funds it, and who is told when it runs low.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Every problem, and what we proposed</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Problem</th><th>Raised by</th><th>What we proposed</th><th></th></tr>
+    <tr class="grp"><td colspan="4">The framing</td></tr>
+    <tr><td class="q">The first film started from a feature, and from "everything falls out".</td><td class="by">you</td><td class="a">Start from the morning after: is it right, and what does a change touch. Show a whole system.</td><td><i class="st run">in film two</i></td></tr>
+    <tr><td class="q">"You never read the code" needs its reason.</td><td class="by">you</td><td class="a">You read the blueprint. Journeys prove the rest. The portal shows the live system at the level you described it.</td><td><i class="st film">portal barely shown</i></td></tr>
+    <tr><td class="q">Plugins, connectors and what comes free were missing.</td><td class="by">you</td><td class="a">Five plugin kinds exist: feature, adapter, projection, language, host. Capxul Lite leans on two of them: sign-in and wallets.</td><td><i class="st film">in neither film</i></td></tr>
+    <tr><td class="q">Correct has to include speed and failure.</td><td class="by">you</td><td class="a">A time budget on every operation, judged when journeys run. Refusals as journey steps.</td><td><i class="st run">runs today</i></td></tr>
+    <tr class="grp"><td colspan="4">Describing the system</td></tr>
+    <tr><td class="q">Rules must exist somewhere.</td><td class="by">you</td><td class="a">A unique rule across records runs today. A rule inside one record does not exist: "spent never passes the limit", said as data.</td><td><i class="st new">proposed</i></td></tr>
+    <tr><td class="q">A rule written in code can't mean the same in two languages.</td><td class="by">me</td><td class="a">Roles and rules as data, so TypeScript and Solidity are both generated from one line.</td><td><i class="st dec">roles decided</i></td></tr>
+    <tr><td class="q">Some operations are internal only.</td><td class="by">you</td><td class="a">Allowed only to the system and started by an event. They get no button, command or tool.</td><td><i class="st run">runs today</i></td></tr>
+    <tr><td class="q">Owners acting together is a small system behind one word.</td><td class="by">me</td><td class="a">One word that expands into a proposal you can see in the model: propose, approve once each, count, expire. Or declare the proposal yourself.</td><td><i class="st new">proposed</i></td></tr>
+    <tr><td class="q">Contracts that already exist.</td><td class="by">you</td><td class="a">A source behind an adapter, typed from its interface. For one you want to read like your own, a thing that mirrors it.</td><td><i class="st dec">decided</i> <i class="st new">mirror proposed</i></td></tr>
+    <tr class="grp"><td colspan="4">Where things live</td></tr>
+    <tr><td class="q">On chain and off chain have to be declared up front.</td><td class="by">you</td><td class="a">A store per place, and a short set of questions you ask of each fact.</td><td><i class="st dec">decided</i></td></tr>
+    <tr><td class="q">Private does not force a thing off chain.</td><td class="by">you</td><td class="a">Four places to live. The store says it must be private, and the environment's network has to be.</td><td><i class="st new">proposed</i></td></tr>
+    <tr><td class="q">Is a thing always an actor?</td><td class="by">you</td><td class="a">No. An actor is one place to live. Every thing is used the same way wherever it lives.</td><td><i class="st run">runs today</i></td></tr>
+    <tr><td class="q">One contract holds every company's money.</td><td class="by">me</td><td class="a">That is K25: one deployment per network. If each company needs its own address, that is a factory, and the blueprint has no word for it.</td><td><i class="st open">open</i></td></tr>
+    <tr><td class="q">Nothing wakes a contract on the first of the month.</td><td class="by">me</td><td class="a">K23: renewal is worked out at the next spend, or a keeper sends it. The app works out what is left from the same line.</td><td><i class="st dec">decided</i></td></tr>
+    <tr class="grp"><td colspan="4">Who is who</td></tr>
+    <tr><td class="q">How do you know who is who?</td><td class="by">you</td><td class="a">Sign-in per environment. An account on chain. A link between them, made by signing.</td><td><i class="st open">link is in no goal</i></td></tr>
+    <tr><td class="q">A person is not an account.</td><td class="by">me</td><td class="a">A role on a chain thing reaches a person through her linked accounts.</td><td><i class="st dec">decided</i></td></tr>
+    <tr class="grp"><td colspan="4">How things join</td></tr>
+    <tr><td class="q">An operation can't just become a component. Things compose.</td><td class="by">you</td><td class="a">A reference per thing: its state, the fields this caller may see, the moves open now. That is the hook and the headless parts.</td><td><i class="st new">proposed</i></td></tr>
+    <tr><td class="q">The blueprint is written per thing. Everything made is per operation.</td><td class="by">me</td><td class="a">The reference per thing, and the next step.</td><td><i class="st new">proposed</i></td></tr>
+    <tr><td class="q">One button is two operations in two places.</td><td class="by">me</td><td class="a">The next step.</td><td><i class="st new">proposed</i></td></tr>
+    <tr><td class="q">Is a spend just a workflow?</td><td class="by">you</td><td class="a">No. A machine, with every move saying what makes it.</td><td><i class="st new">two pieces missing</i></td></tr>
+    <tr><td class="q">A spend can wait for ever.</td><td class="by">me</td><td class="a">A check: every waiting state needs a way out for yes, no and silence. Silence is a move made by time.</td><td><i class="st new">check proposed</i></td></tr>
+    <tr><td class="q">A refusal on chain leaves no event.</td><td class="by">me</td><td class="a">The outcome of a chain call can make a move: submitted, reverted, dropped.</td><td><i class="st new">proposed</i></td></tr>
+    <tr><td class="q">Anyone can pay around the app.</td><td class="by">me</td><td class="a">"Unexplained" is a real state, and someone is asked to explain. Forcing a note means our server co-signs every payment.</td><td><i class="st open">open</i></td></tr>
+    <tr><td class="q">On a chain, what you "can" do is a guess.</td><td class="by">me</td><td class="a">The reference says what it expects. Trying the call, before anyone signs, is the answer.</td><td><i class="st dec">decided</i></td></tr>
+    <tr><td class="q">Follower should be indexer, and it knows the events.</td><td class="by">you</td><td class="a">Renamed here. A decision and a sweep of 113 files for the framework goal.</td><td><i class="st open">pending</i></td></tr>
+    <tr class="grp"><td colspan="4">What falls out</td></tr>
+    <tr><td class="q">Different users need different things.</td><td class="by">you</td><td class="a">Each way in is made only for the callers who can use it.</td><td><i class="st run">in film two</i></td></tr>
+    <tr><td class="q">Hooks and headless components.</td><td class="by">you</td><td class="a">The reference per thing. K29 says "pieces, not hooks", so this needs your call.</td><td><i class="st open">clashes with K29</i></td></tr>
+    <tr><td class="q">Show every output, deployment included.</td><td class="by">you</td><td class="a">One moment per output in the recut.</td><td><i class="st film">film</i></td></tr>
+    <tr><td class="q">A handler in two languages is two handlers.</td><td class="by">me</td><td class="a">The frame keeps the order and the refusals the same. Journeys prove the behaviour agrees.</td><td><i class="st dec">decided</i></td></tr>
+    <tr><td class="q">Proving only what changed proved everything.</td><td class="by">me</td><td class="a">Found recording film one. Reported in the pull request for whoever owns prove.</td><td><i class="st open">reported</i></td></tr>
+    <tr class="grp"><td colspan="4">Running it, and changing it</td></tr>
+    <tr><td class="q">Deployment is a headline, and it is all code.</td><td class="by">you</td><td class="a">Environments, generated infrastructure, one command up and down.</td><td><i class="st run">staging built</i></td></tr>
+    <tr><td class="q">The chain, the actors, staging and production were underspecified.</td><td class="by">you</td><td class="a">The table above, and five things nobody has decided.</td><td><i class="st open">open</i></td></tr>
+    <tr><td class="q">Changing a rule on chain is a migration with money in it.</td><td class="by">me</td><td class="a">No answer yet. Two roads: build the contract to be upgraded, or deploy a new one and move the money and the budgets.</td><td><i class="st open">open, the largest</i></td></tr>
+    <tr><td class="q">The proof was said, not shown.</td><td class="by">you</td><td class="a">Run the journey on screen, with its evidence.</td><td><i class="st film">film</i></td></tr>
+  </table></div>
+
+  <h2>Seven decisions for you</h2>
+  <ol class="ask">
+    <li><b>A spend is a machine, not a workflow. Agreed?</b><span>I would also tighten the repo's sentence that calls any work across two places a workflow.</span></li>
+    <li><b>Keep the next step as one line on the operation?</b><span>It is the smallest thing that makes one button out of two operations for every client at once.</span></li>
+    <li><b>Which private chain do you mean?</b><span>A permissioned network running the same contracts, or a privacy chain like Aztec with private notes. The first is nearly free. The second is another language.</span></li>
+    <li><b>One contract for every company, or one per company?</b><span>K25 says one per network. You asked for "one contract that is a multi-sig with budgets". If a company needs its own address, the blueprint needs a factory.</span></li>
+    <li><b>Is the reference per thing what you mean by hooks and headless components?</b><span>K29 says pieces, not hooks. I think both are wanted: a piece per operation, a reference per thing.</span></li>
+    <li><b>Changing a live contract: upgrade in place, or deploy new and move?</b><span>This decides what the "change" part of the film can honestly claim.</span></li>
+    <li><b>Shall I ask the framework goal to record "indexer"?</b><span>It is their name to change. I should not sweep 113 files from this session.</span></li>
+  </ol>
+  <p>After that, the recut: four places a thing can live, who is who, events and errors, each output shown, the spend as a sequence, the journey run on screen, and the four environments. That is longer than eight minutes. It may be better as two films.</p>
+</div>
+
+<script>
+(() => {
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const span = (c, t) => (c ? `<span class="${c}">${esc(t)}</span>` : esc(t));
+  const KW = new Set("import export from const let var function return if else class extends new default type as".split(" "));
+  function ts(line) {
+    let out = "", i = 0;
+    while (i < line.length) {
+      const rest = line.slice(i); let m;
+      if (rest.startsWith("//")) { out += span("c", rest); break; }
+      if ((m = /^("(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/.exec(rest))) { out += span("s", m[0]); i += m[0].length; continue; }
+      if ((m = /^\d[\d_.]*/.exec(rest))) { out += span("n", m[0]); i += m[0].length; continue; }
+      if ((m = /^[A-Za-z_$][\w$]*/.exec(rest))) { const w = m[0], after = rest.slice(w.length); out += span(KW.has(w) ? "k" : /^\s*\(/.test(after) ? "f" : /^[A-Z]/.test(w) ? "t" : "", w); i += w.length; continue; }
+      out += /[{}()[\];,.<>=:/|&?!+-]/.test(rest[0]) ? span("x", rest[0]) : esc(rest[0]); i++;
+    }
+    return out;
+  }
+  document.querySelectorAll("pre.code").forEach((pre) => {
+    pre.innerHTML = pre.textContent.replace(/\n$/, "").split("\n").map((raw) => {
+      const m = /^(.*?)\s*\/\/ new$/.exec(raw), line = m ? m[1] : raw;
+      return `<span class="ln${m ? " isnew" : ""}">${ts(line) || " "}</span>`;
+    }).join("");
+  });
+})();
+</script>
