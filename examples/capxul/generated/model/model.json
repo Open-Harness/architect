@@ -24920,9 +24920,18 @@
         }
       },
       "move": null,
-      "errors": [],
+      "errors": [
+        "AmountNegative",
+        "AmountFractional",
+        "AmountNotANumber",
+        "WorkStateUnknown"
+      ],
       "breaks": [],
       "refusals": [
+        "AmountNegative",
+        "AmountFractional",
+        "AmountNotANumber",
+        "WorkStateUnknown",
         "NotAllowed"
       ],
       "allowed": [
@@ -24936,7 +24945,7 @@
       "runs": "server",
       "test": "unit",
       "budget": null,
-      "hash": "08bef7d83e0ea556"
+      "hash": "30da97853fa59eac"
     }
   },
   "journeys": {
@@ -129393,9 +129402,9 @@
       "file": "blueprint/features/payroll-tax-us.ts",
       "package": "@capxul/payroll-tax-us",
       "version": "0.0.0",
-      "integrity": "sha256-ECIOZDNuO0J+fIsT3o5hJ72+4jb7DeUcz/Xx9U7t6oA=",
+      "integrity": "sha256-EBqqdp9JYMEYigCfSb0otSwB5cvzic2b2V+LBGTBog8=",
       "chosen": {},
-      "hash": "43c0ff8216852206"
+      "hash": "6a2ccf49894196fa"
     }
   }
 }

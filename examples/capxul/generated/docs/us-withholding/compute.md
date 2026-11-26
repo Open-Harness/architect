@@ -26,6 +26,10 @@ Work out one pay's US tax lines from its wage, frequency, pay date, work state, 
 
 | refusal | exit | code | when |
 |---|---|---|---|
+| AmountNegative | 41 | UW-001 | declared in errors.ts, carrying figure |
+| AmountFractional | 42 | UW-002 | declared in errors.ts, carrying figure |
+| AmountNotANumber | 43 | UW-003 | declared in errors.ts, carrying figure |
+| WorkStateUnknown | 44 | UW-004 | declared in errors.ts, carrying workState |
 | NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |
 
 ## Worked examples

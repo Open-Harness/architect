@@ -1,5 +1,6 @@
 import { Blueprint, Schema } from "orthograph";
 import { UsWithholding } from "../thing.ts";
+import { AmountFractional, AmountNegative, AmountNotANumber, WorkStateUnknown } from "../errors.ts";
 
 /** Form W-4 (2020 and later), its figures in USDC base units. Slice 2 makes it a value of its own, judged when malformed. */
 const W4 = Blueprint.value(Schema.Struct({
@@ -34,5 +35,6 @@ export default Blueprint.operation(UsWithholding, {
   answer: {
     lines: Blueprint.list(TaxLine),
   },
+  errors: [AmountNegative, AmountFractional, AmountNotANumber, WorkStateUnknown],
   allowed: [Blueprint.signedIn],
 });
