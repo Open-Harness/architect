@@ -35,7 +35,7 @@ So: not India; the United States first and mainly; then Europe, the UK and the U
       rest.
    3. Then the United Kingdom (PAYE and National Insurance), the United Arab Emirates (no personal income tax; the
       pension contribution for nationals) and Europe, one country at a time. These are not in dollars, so their modules
-      wait on Aaron's call on a company's own currency, which CX-grill section 3 deferred on 24 November 2026.
+      wait on Aaron's call on a company's own currency, which CX-grill section 3 deferred on 24 November 2026. (Superseded by the narrowing below, 26 November 2026: the United States only, in dollars.)
 5. **Journeys come from the publications' own worked examples.** Each jurisdiction's checks are written first by an
    author, from the official tables and examples, and a builder makes them green, as every Capxul slice does.
 6. **Not now:** filing returns and year-end forms (940, 941, W-2 and the states' own), tax deposits, payment files
@@ -47,6 +47,16 @@ So: not India; the United States first and mainly; then Europe, the UK and the U
    translation of a publication, not that it was read the way a regulator reads it. Who reviews, and when, is Aaron's
    call: it is production, and likely money.
 
+## Narrowed the same day: the United States only, in dollars
+
+**Aaron's call, 26 November 2026,** asked whether the UK, UAE and Europe modules should reopen his dollars-only call:
+"keep usa and usd".
+
+**The goal's reading:** Capxul's payroll is built for the United States alone, in USDC, the one dollar asset of CX-grill
+section 3. The UK, UAE and European modules in point 4.3 are not scheduled, and a company's own currency stays deferred.
+The shape is unchanged (point 2: a module per jurisdiction), so another country can be added later as a plugin without
+touching core, once Aaron reopens it.
+
 ## What this changes in the catalogue
 
 India's four income-tax exemption record types (Category, Sub Category, Declaration, Proof Submission) and the two lines
@@ -57,4 +67,5 @@ Declaration's place.
 ## Supersedes
 
 - `design/goals/16-capxul.md`: "India's tax-exemption shapes generalised" → "tax from a module per jurisdiction, the United States first (CX-payroll-tax)"
+- `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States first (CX-payroll-tax)" → "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)"
 - `examples/capxul/doctypes.md`: "India's income-tax exemption shape; slice 9 decides how to generalise it" → "India's income-tax exemption shape: not taken until a jurisdiction needs it (CX-payroll-tax)"
