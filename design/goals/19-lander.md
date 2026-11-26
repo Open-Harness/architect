@@ -100,9 +100,8 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Fifteen Capxul rounds have landed. `goal/capxul` is ahead of `main`
-  by payroll, slice 9a: #1078's checks with #1102's build, and #1105 (CX-payroll-tax: the United States only)
-  between them, which the next round lands together:
+- **Slice 3, the landing loop, is running.** Sixteen Capxul rounds have landed. `goal/capxul` is ahead of `main` by
+  #1103 (CX-from-doctype: `ortho add thing --from-doctype`), which a later round looks at:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -144,6 +143,14 @@ said no Claude-led goal is running now.
     stayed out. Merging `main` conflicted in `ci.yml`, where #1092 had moved `e2e-portal-next` and `e2e-ui-layer` into
     the `parked` workflow; the lander kept `main`'s layout and added only the new job. #1091 had no 🔍 of its own, so
     the lander's 🔍 reviewed its three files too and passed them, and Goal 16 was asked to post a 🔍 on every slice.
+  - #1118 brought payroll, slice 9a, at `cf6bb7c5`: #1078, the checks, #1105 (CX-payroll-tax: the United States only)
+    and #1102, the build. Merging `main` conflicted twice, after #1107 and again after #1120, each time only in Capxul's
+    generated `model.json` and `blueprint.json`; the lander took `goal/capxul`'s side and regenerated, which also gave
+    payroll's `salary-structure create` main's JSON list flags (Snag #1034). The 🔍 passed both merges: `prove` gives
+    102/102 moves, 95/95 outcomes and 206/206 refusals; on blank handlers only the seven payroll journeys fail, and four
+    of five planted wrong builds fail a named step (the fifth is equivalent to the right code). #1105 had no 🔍 of its
+    own, so the lander's 🔍 reviewed it; its nit, four supersede notes past 120 columns in CX-payroll-tax, is Goal 16's
+    to rewrap (#426).
 
   Capxul has no ratchet, so a checks slice lands only with its build. Since #1107, `e2e-capxul` runs `prove` on
   `examples/capxul` for pull requests into `goal/capxul` and `main`; it is not required, and it skips on push (noted for
