@@ -180,6 +180,29 @@ expect "deleting the grid list fails" 1 guard "$r"
 r=$(repo); echo changed >> "$r/e2e/m1/README.md"; commit "$r"
 expect "editing a suite README fails: it holds no totals now, so it is a check file like the rest" 1 guard "$r"
 
+# capxul-paths: the flag that lets e2e-capxul pass without its steps when the diff can't change what prove does for Capxul
+cx() { # <repo> <wanted flag>
+  local got; got=$(cd "$1" && "$here/capxul-paths.sh" base x-build)
+  [ "$got" = "capxul=$2" ] || { echo "got $got"; return 1; }
+}
+r=$(repo); mkdir -p "$r/examples/capxul/journeys"; echo j > "$r/examples/capxul/journeys/a.ts"; commit "$r"
+expect "capxul-paths: a Capxul journey runs it" 0 cx "$r" true
+r=$(repo); echo t >> "$r/packages/prove/src/modules/evals/a.ts"; commit "$r"
+expect "capxul-paths: a framework package runs it" 0 cx "$r" true
+r=$(repo); echo l > "$r/pnpm-lock.yaml"; echo t > "$r/tsconfig.base.json"; commit "$r"
+expect "capxul-paths: the lockfile or a root tsconfig runs it" 0 cx "$r" true
+r=$(repo); mkdir -p "$r/.github/workflows"; echo d > "$r/.github/workflows/ci.yml"; commit "$r"
+expect "capxul-paths: the workflow that holds the job runs it" 0 cx "$r" true
+r=$(repo); echo j >> "$r/examples/acme/journeys/a.ts"; echo t > "$r/e2e/m1/a.test.ts"; mkdir -p "$r/design" "$r/tools/climb"
+echo d > "$r/design/x.md"; echo s > "$r/tools/climb/a.mjs"; commit "$r"
+expect "capxul-paths: another example, e2e, design and other tools skip it" 0 cx "$r" false
+r=$(repo); mkdir -p "$r/examples/capxul-notes"; echo d > "$r/examples/capxul-notes/a.ts"; commit "$r"
+expect "capxul-paths: a folder whose name starts with capxul is not capxul" 0 cx "$r" false
+r=$(repo)
+expect "capxul-paths: an empty diff runs it" 0 cx "$r" true
+expect "capxul-paths: a base that does not exist fails, never skips" 128 \
+  bash -c "cd '$r' && '$here/capxul-paths.sh' no-such-base x-build"
+
 # docs-only: the flag that lets a docs-only pull request skip the layer gates
 docs() { # <repo> <wanted flag>
   local got; got=$(cd "$1" && "$here/docs-only.sh" base x-build)
