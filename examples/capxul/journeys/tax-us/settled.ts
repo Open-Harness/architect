@@ -10,7 +10,8 @@
 //   pointers, with every object's keys sorted at every depth, and no spaces. A pointer that resolves to nothing stops
 //   the importer, as a changed hash does.
 //
-// `open` entries are disagreements no person has settled from the agency's own text yet. The importer lets them pass
+// `open` entries are disagreements no person has settled from the agency's own text yet (none today; the type keeps the
+// status for the next refresh). The importer lets them pass
 // as listed, and the rows they touch say so for the payroll professional's review (CX-payroll-tax point 8).
 
 export interface Evidence {
@@ -147,11 +148,12 @@ export const settled: ReadonlyArray<Settled> = [
   },
   {
     id: "ma-weekly-exemption",
-    status: "open",
+    status: "settled",
     ruling:
-      "Unsettled: open-withholding works the exemption per period ($85 for the first weekly), the second source annually ($4,400 / 52). The weekly $150 to $160 cell both cite ($2.93) comes out $2.91 from open-withholding. Circular M must be read by a person; mass.gov refuses automated reads.",
+      "open-withholding is right for the percentage method, and both figures are the circular's own. Page 12's percentage method subtracts each period's printed exemption factor: weekly $85 for one exemption, or $19 times the number claimed plus $66 (annually $4,400, or $1,000 each plus $3,400). The wage-bracket tables (page 2 on, weekly) are built from the annual factors divided by the periods, at each row's middle, after 7.65% FICA: the weekly $150 to $160 cell with one exemption is (155 - 11.86 - 4,400/52) x 5% = $2.93, where page 12's $85 gives $2.91; four exemptions at $280 to $290 print $6.04, where page 12 gives $6.06. Capxul works page 12, so its rows keep the per-period factors, and Massachusetts' wage-bracket cells are not a bulk check of the percentage method (unlike Pub 15-T's). The mass.gov URL refuses automated reads; the archived copy has the sha256 open-withholding recorded from mass.gov.",
     evidence: [
-      { document: "Circular M, Massachusetts Income Tax Withholding Tables (effective 1 January 2026)", url: "https://www.mass.gov/doc/massachusetts-circular-m-income-tax-withholding-tables-at-50-effective-january-1-2026/download", at: "the percentage method and the weekly wage-bracket table", read: "not read" },
+      { document: "Circular M, Massachusetts Income Tax Withholding Tables at 5.0% (Rev. 12/25), effective 1 January 2026", url: "https://web.archive.org/web/20260312193631/https://www.mass.gov/doc/massachusetts-circular-m-income-tax-withholding-tables-at-50-effective-january-1-2026/download", at: "page 12, Percentage Methods, step 2 and Exemption Factors", sha256: "d3f12716311bb9977c9597de25c89a79523d50a5bdc293ab7e68368a453f79a8", read: "2026-11-26" },
+      { document: "Circular M, Massachusetts Income Tax Withholding Tables at 5.0% (Rev. 12/25), effective 1 January 2026", url: "https://web.archive.org/web/20260312193631/https://www.mass.gov/doc/massachusetts-circular-m-income-tax-withholding-tables-at-50-effective-january-1-2026/download", at: "page 2, Weekly Income Tax Withholding Table", sha256: "d3f12716311bb9977c9597de25c89a79523d50a5bdc293ab7e68368a453f79a8", read: "2026-11-26" },
     ],
     secondSource: {
       file: income,
@@ -162,13 +164,13 @@ export const settled: ReadonlyArray<Settled> = [
   },
   {
     id: "ma-blind-exemption",
-    status: "open",
+    status: "settled",
     ruling:
-      "Unsettled: open-withholding applies a blind exemption, the second source says its blindness credit is not applied. Circular M must be read by a person.",
+      "open-withholding is right: page 12's step 7 subtracts a blindness tax value from the period's tax for the employee and for a spouse who is blind (weekly $2.12, biweekly $4.23, semimonthly $4.58, monthly $9.17, daily $0.30, annually $110.00), and each wage-bracket table says the same. The second source leaves it out. The rows keep it, with the blind count taken from Form M-4.",
     evidence: [
-      { document: "Circular M, Massachusetts Income Tax Withholding Tables (effective 1 January 2026)", url: "https://www.mass.gov/doc/massachusetts-circular-m-income-tax-withholding-tables-at-50-effective-january-1-2026/download", at: "exemptions", read: "not read" },
+      { document: "Circular M, Massachusetts Income Tax Withholding Tables at 5.0% (Rev. 12/25), effective 1 January 2026", url: "https://web.archive.org/web/20260312193631/https://www.mass.gov/doc/massachusetts-circular-m-income-tax-withholding-tables-at-50-effective-january-1-2026/download", at: "page 12, Percentage Methods, step 7", sha256: "d3f12716311bb9977c9597de25c89a79523d50a5bdc293ab7e68368a453f79a8", read: "2026-11-26" },
     ],
     secondSource: { file: income, figures: ["/states/MA/0/note"], sha256: "1733e4ab121e0b4f152cc21a0425dfd982eaa5141aa2c9af60e29b2a66840aa6" },
-    review: true,
+    review: false,
   },
 ];
