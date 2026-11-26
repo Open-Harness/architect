@@ -450,7 +450,7 @@ its piece's folder and, at most, one mount file.
 | Banking | `banking`, `bridge-accounts` | `ledger` moved and the bank-account flip |
 | HR | `people`, `time`, `expenses` | the move's step 2 |
 | Payroll | `payroll` | `time` moved |
-| United States payroll tax | `payroll-tax-us`, built now in a lane of its own (Aaron, 26 November 2026) | nothing; it plugs into payroll's contract when gap 3 lands |
+| United States payroll tax | `payroll-tax-us`, a lane of its own (Aaron, 26 November 2026; brief `design/goals/16-lane-payroll-tax.md`) | its rates rows, its W-4 and its calculator are built now in its own folder; its link to `payroll` and its mount wait for move 7 (`payroll` moved) and gap 3 |
 | Optional books | `selling`, `buying`, `pos`, `subscriptions`, `assets`, `equity`, `projects`, `budgets` | `invoicing` built |
 | Optional HR | `performance`, `recruitment`, `workplace` | `people` moved |
 | CRM | `crm` | `parties` built |
@@ -467,11 +467,13 @@ Capxul is built, and adding it to a deployed Capxul is a rebuild with gap 5's fo
 
 ## 8. Decisions for Aaron
 
-**Answered by Aaron on 26 November 2026, by voice, relayed by Goal 16's lead:** "I'm giving yes to anything that you
-just said so far." So both decisions below are yes, as recommended.
+**Answered by Aaron on 26 November 2026, by voice, relayed by Goal 16's lead** (the same words are kept in
+CX-money-global-payroll, "Aaron's answers, 26 November 2026"): "I'm giving yes to anything that you just said so far. I
+haven't really looked at everything yet". So both decisions below are yes, as recommended.
 
-He also said the United States tax lane is not parked: it runs now as a lane of its own (in Amp). So contractors come
-first on the main path, and `payroll-tax-us` is built alongside as its own piece. It plugs into payroll's *tax on a
+On the tax lane he said: "I don't want to park the tax lane. I want to do that in a separate, what I want to do is I
+want to like scope it out. And then what we're going to do is we're going to fire it off in AMP. So it's going to be a
+separate thing and just like stay up to date with what we're doing." So contractors come first on the main path, and `payroll-tax-us` is built alongside as its own piece. It plugs into payroll's *tax on a
 slip* contract when gap 3 lands; until then a Capxul's payroll runs with no tax piece mounted.
 
 1. **Yes (Aaron, 26 November 2026).** **Is a business allowed to leave out selling, buying, the till, subscriptions, assets, equity, projects and the rest
