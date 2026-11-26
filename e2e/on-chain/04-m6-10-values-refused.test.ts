@@ -43,9 +43,11 @@ export const Ticket = Blueprint.thing({
   description: "A piece of work someone asked for.",
   code: "TK",
   fields: {
-    id: Blueprint.id("tkt"), title: Blueprint.text({ max: 80 }), cap: Cap,
+    // The long prefix is the thing's own id, the one a chain store refuses (below): a second id field must name a prefix some thing owns (Goal 18's slice 9 found the old
+    // fixture, a second field with the long prefix, refused for that, not for its length).
+    id: Blueprint.id("a-prefix-that-is-far-too-long-for-chain"), title: Blueprint.text({ max: 80 }), cap: Cap,
     contact: Blueprint.email(), pin: Blueprint.visibility.secret(Blueprint.text({ max: 40 })),
-    extra: Blueprint.value(Schema.Struct({ a: Schema.String })), ref: Blueprint.refAny(), long: Blueprint.id("a-prefix-that-is-far-too-long-for-chain"), odd: Blueprint.uint(12),
+    extra: Blueprint.value(Schema.Struct({ a: Schema.String })), ref: Blueprint.refAny(), odd: Blueprint.uint(12),
     ${role === "" ? "" : "balance: Blueprint.visibility.private(Blueprint.uint(64), grantee),"}
   },
 });
