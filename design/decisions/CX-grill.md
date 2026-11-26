@@ -60,15 +60,15 @@ the question is Orthograph's money units, not a workaround in Capxul.
 
 **Aaron's call, 24 November 2026** (relayed by the conductor from the Space): "for now, can't we just assume dollars?
 It's always going to be tied to some sort of crypto asset, because that's what the thing's in. Can't we just assume that
-for now?" For now every Capxul company keeps its books in one dollar asset.
+for now?" For now every Capxul company keeps its books in one dollar asset. (Superseded by CX-money-global-payroll, 26 November 2026: "A company keeps its books in its own reporting currency, with accounts in any currency.")
 
 **The goal's reading:**
 
-- The one asset is USDC, the fixed asset getting paid already starts with. Every Capxul amount is `Blueprint.money` of
+- The one asset is USDC (Superseded by CX-money-global-payroll, 26 November 2026: "Today's companies report in USDC"), the fixed asset getting paid already starts with. Every Capxul amount is `Blueprint.money` of
   it, so no amount names a currency of its own row.
-- A company's own currency and exchange rates are deferred by this call. Company currency (#882) is parked and unclaimed
+- A company's own currency and exchange rates are deferred by this call. (Superseded by CX-money-global-payroll, 26 November 2026: "A company's own currency and exchange rates are built in slice 7.") Company currency (#882) is parked and unclaimed (Superseded by CX-money-global-payroll, 26 November 2026: "Company currency (#882) is claimed by Goal 16")
   (its status row's lane is `none`), and its checks (#923) stay an unmerged draft that can be picked up as they stand. The catalogue's `FX` rows are deferred with
-  it: each is taken in USDC alone, and its exchange-rate and `base_*` fields are left out until a new call from Aaron.
+  it: each is taken in USDC alone, and its exchange-rate and `base_*` fields are left out until a new call from Aaron (Superseded by CX-money-global-payroll, 26 November 2026: "each is taken with its exchange-rate and `base_*` fields as its slice builds it").
 - Expense claims no longer wait on a company's currency: their amounts are USDC.
 
 ## 4. Paid services (#733): deferred; build everything now

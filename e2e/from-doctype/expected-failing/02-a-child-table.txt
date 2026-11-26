@@ -1,7 +1,0 @@
-# CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
-from-doctype/02-a-child-table.test.ts > CX-from-doctype 02: a record type with a child table > finds the table in ERPNext's layout and writes the menu's files and the line's thing.ts, and nothing else
-from-doctype/02-a-child-table.test.ts > CX-from-doctype 02: a record type with a child table > gives the line no machine, no events, no operation, no read and no blank: it is written with its parent
-from-doctype/02-a-child-table.test.ts > CX-from-doctype 02: a record type with a child table > keeps the menu's own fields and not the table, which is no field
-from-doctype/02-a-child-table.test.ts > CX-from-doctype 02: a record type with a child table > leaves the menu's who may act blank, and nothing else
-from-doctype/02-a-child-table.test.ts > CX-from-doctype 02: a record type with a child table > makes the table a line: parent and idx first, then its own fields, an edge to the blend scaffolded before it, layout dropped
-from-doctype/02-a-child-table.test.ts > CX-from-doctype 02: a record type with a child table > once filled, create and save take the rows as a list of the line's reqd fields that aren't read only, and write the menu and its lines
