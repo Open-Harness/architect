@@ -170,7 +170,8 @@ changes two things. Aaron hears both in this goal's next report.
 
 - **Paying a supplier (step 7) becomes Capxul's second feature.** Sending from the account needs the Safe deployed and
   a transaction executed through it: the `safe` adapter (ST3.04), which waits on the budgets decision (ST3.02) and so
-  on Goals 7, 4 and 8 (`main:design/goals/map.md:55`), and the signing flow (M6.15). Getting paid needs none of it.
+  on Goals 7, 4 and 8 (`main:design/goals/map.md:55`), and the signing flow (M6.15). (Superseded by CX-safe, 26 November
+  2026: "the `safe` adapter, which Goal 16 builds as its own unit, with no wait on the budgets decision or other goals".) Getting paid needs none of it.
   Splitting lets the first feature land on four other goals' early slices, not on stage 3.
 - **"Adopted" is read as a Safe at its future address.** Board step 1 says the account is "adopted" from the key. That
   was written beside the ERC-7702 design, where the key's own address is the account; Aaron's later call the same day

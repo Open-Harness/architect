@@ -3,7 +3,7 @@
 **Status: decided, 26 November 2026,** by Goal 16's 📐 designer thread, started by the money lane's 🧭 lead (issue
 #1158), under AGENTS.md "Who decides". It cuts Goal 16's slice 2, "each person's and each company's Safe, acted on from
 the CLI, MCP and an agent; a sales invoice with a pay link, paid from any wallet, settled by the chain, with the ledger
-lines posted" (`design/goals/16-capxul.md:93`), into five slices, names the framework gaps Goal 16 claims for them, and
+lines posted" (`design/goals/16-capxul.md:93`), into units that each land in about a day, names what Goal 16 claims for them, and
 says where the new things go. The two questions for Aaron are at the end; the decision goes ahead on the
 recommendation of each.
 
@@ -59,11 +59,23 @@ company's are the same contract made by the same factory (`M7-capxul.md:175-176`
 
 Its machine. A personal Safe: **`counterfactual`** (recorded, the address known, no code) → **`claimed`** (deployed, and
 the person's key swapped in for the bootstrap key, both seen on chain). A company's Safe: **`counterfactual`** →
-**`deployed`** (the factory's `ProxyCreation` for this address seen, confirmed by the tracker). After deploy, owners and
+**`deployed`** (the factory's `ProxyCreation` for this address seen, confirmed by the tracker). A take-back that drops
+the `ProxyCreation` (the follower's correction) moves `deployed` or `claimed` back to `counterfactual`, as S2 undoes a
+payment. After deploy, owners and
 threshold change only on chain (`addOwnerWithThreshold`, `removeOwner`, `swapOwner`, `changeThreshold`), each an
 owner-signed `safe-transaction`, and Capxul's row follows the adapter's reads. Refusals declared with the thing:
 `ThresholdOutOfRange`, `OwnersNotUnique`, `SafeNotDeployed`, `NotClaimed` (a personal Safe pays nothing, and signs for
 no company, until it is claimed), `AlreadyClaimed`, `NotAnOwner`.
+
+**Where `safe` lives, beside K25's Safe.** Capxul's `safe` is a record in Capxul's own database (the project's default
+store), not a thing that lives on chain: it exists before there is any contract to read. K25's `Safe`, "a thing living
+in a source behind the `safe` adapter" (`K25-the-blueprint-on-chain.md:115-116,125`), is the adapter's own on-chain
+view of a deployed Safe, and stays as K25 says; it is what A3 provides. They are two separate things, linked by the
+account: Capxul's record points at the address, and every read of a deployed Safe goes through the adapter's `Safe`.
+After deploy the chain owns owners and threshold: Capxul's `owners` and `threshold` are a read copy, refreshed from the
+adapter on each confirmed owner change the follower hands on, and where they differ the chain wins. Before deploy,
+Capxul's record is the only truth, because there is nothing on chain yet. So K25's words stand, and nothing of them is
+superseded here.
 
 **The bootstrap owner and the claim.** The implementation makes a person's Safe with one fixed owner,
 `CAPXUL_BOOTSTRAP_OWNER` (`infrastructure:P/safe-contracts.ts:54`), so its address depends on the salt alone, before the
@@ -108,8 +120,13 @@ spike ran 1.5.0 (`spikes/safe-hats-module/versions.json:190-193`); 1.4.1 is take
 and its 4337 path are on it, and the spike's findings Capxul uses (the SafeTx format and its order rules, module
 enabling, a non-owner submitting, ERC-20 payouts) hold on both. The 4337 module is set up from the start so the
 sponsored path (`design/later.md`) needs no new address; until then nothing sends a UserOperation. The addresses and
-bytecode are read from `@safe-global/safe-deployments` at an exact version and checked against these, never typed by
-hand in code. `SafeL2` is the L2 build: it emits `SafeMultiSigTransaction`, which the follower reads.
+code hashes are read from `@safe-global/safe-deployments` at an exact version and checked against these, never typed by
+hand in code. That package has no bytecode, so the bytecode (the proxy creation code, and the deployed code a world
+sets with `anvil_setCode`) comes from the contract artifacts at the pinned versions: `@safe-global/safe-smart-account`
+at 1.4.1 for the factory, the singleton, the proxy and MultiSend, and Safe's modules release that
+`infrastructure:P/safe-contracts.ts` pins for `SafeModuleSetup` and `Safe4337Module`; each is checked against its
+code hash. In the address formula the singleton's address follows the creation code padded to a uint256, as the
+factory encodes it (`abi.encodePacked(proxyCreationCode, uint256(uint160(singleton)))`). `SafeL2` is the L2 build: it emits `SafeMultiSigTransaction`, which the follower reads.
 
 **Which chain.** Base, 8453, in production, as the implementation and Bridge's `base` rail settle (CX-bridge-rails
 `:92-94,415-416`); Base Sepolia, 84532, in staging; Anvil, 31337, in a world. Each environment names its chain in
@@ -200,7 +217,7 @@ What is missing, and whose it is (section 3):
 `goal/capxul` does not yet hold Goal 18's chain-basics merge (#1104, a74aa622): S2's builder merges `main` into
 `goal/capxul` first.
 
-## 3. The framework gaps Goal 16 claims, and what it builds on
+## 3. What Goal 16 claims, and what it builds on
 
 **Goal 18 holds what its slice 9 built and runs in `e2e-on-chain` on `main`** (the conductor's answer, 26 November
 2026): keys and wallets (`packages/wallets`), the chain adapter with its ABI codec, transactions and contract client
@@ -208,69 +225,128 @@ What is missing, and whose it is (section 3):
 Goal 16 builds on those and does not take them over. A change any of them needs is a Snag issue naming Goal 18, pinned
 by its own check, and keeps `e2e-on-chain` green. Purely additive new files in chain-evm's `anvil` module and in the
 world are Goal 16's under `lane:goal-16`, as long as `e2e-on-chain` stays green; a change to existing world or Anvil
-code is a Snag naming Goal 18. Slice 9 itself only ran the suite on `main` and marked the relayer experimental (#1104:
-`ci.yml`, the relayer's README and doc comment, the status row, the canon page, the climb); it built none of the Safe,
-Hats, budget, `erc20` or events-in parts.
+code is a Snag naming Goal 18. Slice 9 itself only ran the suite on `main` and marked the relayer experimental (#1104);
+it built none of the Safe, Hats, budget, `erc20` or events-in parts.
 
-**Goal 16 claims three rows** (the conductor's answer), each in new files only:
+**Goal 16 claims** (the conductor's answers): `erc20-adapter` (ST2.02, #485), `events-in` (M5.03's chain part, #480),
+the Safe and budget parts of `safe-hats-budgets` (ST3.04, #484), and `--from-abi` (#474). The three adapters are
+separate packages, `packages/erc20/`, `packages/safe/` and `packages/zodiac-roles/`, built in parallel; the
+`safe-hats-budgets` row's path (`packages/wallets`) moves to the two new packages. Each claim includes the small wiring
+edits it needs in existing files: an export line in a package's `main.ts`, a dependency in a `package.json`, a project
+in the Nx graph, and for events-in the few existing files of `modules/events` and `modules/plugins` it must extend. Any
+edit beyond wiring in a Goal 18 path is a Snag. Hats is not built: the Org Budget is Zodiac Roles, so
+`ST3-budgets.md`'s recommendation is not taken for Capxul.
 
-| # | Row | What Goal 16 builds | Touches (new files) | Slice |
-|---|---|---|---|---|
-| G1 | `erc20-adapter` (ST2.02, #485, checks #497) | `@orthograph/erc20`: `transfer`, `balanceOf`, `Transfer`, its stand-in token deployed into a world | `packages/erc20/` (new package) | S2 |
-| G2 | `events-in` (M5.03's chain part, #480) | `on:` for an adapter's confirmed chain events, once each by `${chainId}:${blockHash}:${logIndex}`, with corrections; the inbox side of the follower's `FollowerSink` (Ask #481) | new files in `packages/orthograph/src/modules/events/` and `packages/orthograph/src/modules/plugins/` | S2 |
-| G3 | `safe-hats-budgets`, the Safe and budget parts (ST3.04, #484) | the `safe` adapter: `SafeDeployment` and the address prediction (S1); reads of owners, threshold and nonce, the SafeTx typed data, `execTransaction`, `approveHash`, `swapOwner`, `GS0xx` as typed refusals through chain-evm's existing `Abi.refusal` (S3); the world starter that puts the pinned bytecode at its addresses (S2); the Zodiac Roles 2.1.1 adapter, its `ModuleProxyFactory` and the Org Budget's calls (S4) | `packages/wallets/src/modules/safe/` and `packages/wallets/src/modules/roles/` (new modules); the world starter as new files in `packages/wallets/src/modules/world/` or `packages/chain-evm/src/modules/anvil/`; nothing existing changes | S1 to S4 |
+**Snags naming Goal 18, in Goal 18's milestone, each pinned by its own check:**
 
-The Payments adapter and the contract's copied source are Capxul's own (section 5). Hats is not built: the Org Budget
-is Zodiac Roles, so `ST3-budgets.md`'s recommendation is not taken for Capxul.
-
-**Snags naming Goal 18, each pinned by its own check, when the slice that needs it starts:**
-
-- **The relayer's four bugs (#784),** before Capxul's staging run, pinned against check 48: its slice 9 kept #784 open
+- **EIP-712 typed-data signing (M6.15).** `packages/wallets` on `main` has none, and S3 needs it to sign a SafeTx.
+- **The contract client (M6.14),** if a Safe's `GS0xx` revert cannot be decoded through the existing `Abi.refusal`.
+- **The relayer's four bugs (#784),** before Capxul's staging run, pinned against check 48: slice 9 kept #784 open
   "for the app that first pulls it" (`e2e/m1/48-g18-9-chain-basics.test.ts:9-10`), and a fix must change check 48's
   author first (`:21-22`). Capxul's journeys do not need the relayer: in a world, the claim, a deploy and an
   `execTransaction` are sent by a world key through `packages/wallets`'s existing submit, which the spike showed works
   from a non-owner (`spikes/safe-hats-module/README.md:49-52`).
-- **Signing typed data (M6.15),** if the existing signer cannot sign the SafeTx's EIP-712 digest, at S3.
-- **The contract client (M6.14),** if a Safe's `GS0xx` revert cannot be decoded through the existing `Abi.refusal`, at
-  S3.
-- **The follower's sink,** if G2 needs any change to it, at S2.
+- **The follower's sink,** only if events-in needs a change to it.
 
-**Flags for the lead.**
+**Taken from parked goals, credited, never merged.** Events-in takes what helps from `goal/superagent`'s slice 11
+(adapter events carrying `id` and `actor`, `status.md:191`; Goal 17 is parked); `--from-abi` takes what helps from
+parked Goal 12's draft checks, #497 on `goal-12/st2-02-check`. Each copies only what it needs and credits its source in
+the commit and the file.
 
-- **`ortho new adapter --from-abi` (#474) has no owner yet;** the lead is asking the conductor. Until then the `erc20`,
-  `safe`, Roles and Payments adapters are written by hand, and each file says it is to be regenerated when #474 lands.
-- **G2 takes from parked Goal 17's slice 11.** Adapter events carrying `id` and `actor` are on `goal/superagent`
-  (`status.md:191`). Take what helps, credit it in the commit and the file, copy only what is needed, never merge
-  `goal/superagent`, and claim the rest.
-- Capxul's checks for G1 to G3 go in each package's own tests and `e2e/capxul/`, not `e2e/on-chain/`, which is
-  Goal 18's to run.
+**What is lifted, and what is new.** Lifted from the implementation (Aaron's own, `infrastructure:packages/protocol/src/evm/`
+and `packages/contracts/`): the Safe's version, addresses and initializer, the address formula, the bootstrap owner
+and the claim, the company's Safe owned by personal Safes, CapxulPayments V3 unchanged, and the Org Budget's Roles
+deployment, scoping and allowance calls. New in Capxul: the Orthograph things and their machines and refusals, the
+salt keyed by Capxul's id, the journeys and checks, and the adapters' shape as Orthograph adapters (hand-written to the
+shape `--from-abi` will generate, then regenerated by it).
 
 **Not built here.** `@orthograph/budgets` (ST3.05) and `examples/budgets`, which CX-bridge-rails already sets aside
 (`:221-224,358-359`); ST3.06's durable signature workflow; a sponsored ERC-4337 path (`design/later.md`).
 
-## 4. The slices
+## 4. The units, and the order they run in
 
-Each slice is one branch and ends green with its check. A ✍️ author who is not the builder writes its journeys and
-checks first, red, and proves them fair (the `author` skill). Each slice adds things or operations, so it changes
-Capxul's `generated/` and lands as a G12 pair, `goal-16/<slice>-check` then `goal-16/<slice>-build`. The framework
-gaps land in `main` with their own checks, and are merged into `goal/capxul` before the Capxul slice that uses them.
+Aaron's steer, through the conductor, 26 November 2026: the smallest independent units, each one check and build pair
+that lands on its own in `goal/capxul` in about a day. A ✍️ author who is not the builder writes each unit's checks
+first, red, and proves them fair (the `author` skill); a 🔨 builder makes them green; a 🔍 that wrote neither passes it.
+A unit that changes Capxul's `generated/` lands as a G12 pair, `goal-16/<unit>-check` then `goal-16/<unit>-build`.
+Framework units land in `main` too, as soon as they are green, and are merged into `goal/capxul` before a Capxul unit
+uses them. Every unit's issue is a sub-issue of #1158, and the issue is the claim: an agent in any harness takes it by
+commenting on it.
 
-The lead's draft on #1158 had four slices. This cut adds one, **the chain door (S2)**, before the Safe goes on chain:
+| Unit | What it builds | Owns | Needs | Done when | `generated/` |
+|---|---|---|---|---|---|
+| **A1 · `--from-abi`** | `ortho new adapter --from-abi`: typed calls, events and reverts from an ABI, a stand-in contract deployed into a world | its own module in `packages/cli` (in `modules/add` or a new one) and in `packages/generators`, one line in `main.ts` | authoring now; the build after #1087 and #1153 land on `main` | a generated adapter's typed call, event and revert pass against its stand-in on Anvil | no |
+| **A2 · erc20** | `@orthograph/erc20`: `transfer`, `balanceOf`, `Transfer`, a test token for worlds | `packages/erc20/` | nothing | `transfer` and `Transfer` are typed, a revert decodes typed, against the test token on Anvil | no |
+| **A3 · safe** | `@orthograph/safe`: `SafeDeployment`, the address prediction, the world starter (`anvil_setCode` of the pinned bytecode), reads of owners, threshold and nonce, the SafeTx typed data, `execTransaction`, `approveHash`, `swapOwner`, `GS0xx` typed | `packages/safe/` | nothing | the prediction matches the implementation's formula on a fixed vector and the factory's address on Anvil; a SafeTx's digest equals `getTransactionHash`; a replay is `GS026`, typed | no |
+| **A4 · zodiac-roles** | `@orthograph/zodiac-roles`: the Roles modifier through `ModuleProxyFactory`, the Org Budget's calls, `setAllowance`, `execTransactionWithRole`, the allowance read | `packages/zodiac-roles/` | nothing | on Anvil, a role scoped to one call and an allowance passes a send within it and refuses one over it, read back typed | no |
+| **E1 · events-in** | `on:` for an adapter's confirmed chain events, once each by `${chainId}:${blockHash}:${logIndex}`, with corrections | new files in `packages/orthograph/src/modules/{events,plugins}/` and its wiring | nothing (the follower is built) | an event delivered twice settles once; a correction undoes it | no |
+| **S1 · The Safes recorded** | the `safe` thing; `safe.record` for a person and a company; acted on from the CLI, MCP and an agent; no chain | `examples/capxul/blueprint/things/safe/`, its journeys | A3's prediction (build only) | as S1 below | yes, a pair |
+| **S2 · Incoming transfers** | an `on:` for the `erc20` `Transfer` to a recorded Safe, kept as a received payment | the received-payment thing and its journeys in `examples/capxul/` | S1, A2, A3's world starter, E1 | as S2 below | yes, a pair |
+| **S3 · Deploy on first spend** | `safe.claim`, `safe-transaction`, a company's Safe deployed on its first spend, a director added | `examples/capxul/blueprint/things/safe-transaction/`, `safe`'s new moves, journeys | S2, A3, Snag G18-sign, Snag G18-client (if needed) | as S3 below | yes, a pair |
+| **S4 · The budget** | the Payments contract copied and its adapter; `org-budget`; `payment.send` under the role; `PayoutOverBudget` | `examples/capxul/blueprint/things/org-budget/`, `examples/capxul/plugins/onchain-pay/`, journeys | S3, A4 | as S4 below | yes, a pair |
+| **S5 · Getting paid by a link** | a pay link on an invoice, settled only by S2's `Transfer`, its ledger lines posted | the invoice's pay link and its journeys | S2; slice 7's sales invoices, which wait on #1079 and #1132 | as S5 below | yes, a pair |
+| **G18-sign** (Snag) | EIP-712 typed-data signing in `packages/wallets` (M6.15) | Goal 18's | nothing | the signer signs a SafeTx's typed data and the digest matches | no |
+| **G18-client** (Snag) | a Safe's `GS0xx` reverts decoded typed through the contract client (M6.14), if `Abi.refusal` cannot | Goal 18's | nothing | a planted `GS026` reaches the caller as a typed refusal | no |
+| **G18-relayer** (#784) | the relayer's four bugs, pinned against check 48 | Goal 18's | check 48's author first | as #784 says | no |
+
+```mermaid
+graph LR
+  A1["A1 --from-abi"] -. regenerates .-> A2
+  A1 -. regenerates .-> A3
+  A1 -. regenerates .-> A4
+  A2["A2 erc20"] --> S2
+  A3["A3 safe"] --> S1
+  A3 --> S2
+  A3 --> S3
+  A4["A4 zodiac-roles"] --> S4
+  E1["E1 events-in"] --> S2
+  S1["S1 Safes recorded"] --> S2
+  S2["S2 incoming transfers"] --> S3
+  S2 --> S5
+  SIGN["G18-sign"] --> S3
+  CLIENT["G18-client"] -.if needed.-> S3
+  S3["S3 deploy on first spend"] --> S4
+  S4["S4 the budget"]
+  INV["slice 7 invoices<br/>(#1079, #1132)"] --> S5
+  S5["S5 paid by a link"]
+  RELAY["G18-relayer #784"] -.staging.-> STG["Capxul staging"]
+```
+
+**What runs at once.** Now: the authors of A1, A2, A3, A4, E1 and S1, and the two Snags' authors in Goal 18. The
+builds of A2, A3, A4 and E1 at once, since none needs another; A1's build after #1087 and #1153; S1's build after A3.
+Then S2, then S3, then S4, in that order; S5 as soon as S2 and slice 7's invoices are in. A1 never blocks anything: the
+adapters are hand-written to its shape and regenerated once it lands. Bridge's R1 waits on S1, R2 on S2, R3 on S4
+(CX-bridge-rails `:410-411`).
+
+### The Capxul units' checks
+
+The lead's draft on #1158 had four slices. This cut adds **S2, incoming transfers**, before the Safe goes on chain:
 getting paid to a Safe needs no deploy (`M7-capxul.md:169-178`), and Bridge's deposits need the same door
-(CX-bridge-rails `:403,410`), so seeing money arrive comes before spending it. It also puts the claim in S3, since a
-person's Safe deploys when it is claimed.
+(CX-bridge-rails `:403,410`). It puts the claim in S3, since a person's Safe deploys when it is claimed.
 
-| Slice | What it builds | Done when | `generated/` |
-|---|---|---|---|
-| **S1 · The Safes recorded** | `SafeDeployment` and the prediction (G3, in `main`); the `safe` thing; `safe.record` for a person (bootstrap first owner, salt from `per_…`) and for a company (its founder's personal Safe the first owner, salt from `com_…`); no chain; acted on from the CLI, MCP and an agent. It unblocks Bridge R1, the company's Safe address as a fact (CX-bridge-rails `:402`) | in `prove`: a person's Safe has the address of a vector worked out with the implementation's own formula for a fixed salt nonce and owner; recording the same id twice gives one Safe; a company's Safe's address changes with its founder's Safe and nothing else; a company whose founder has no Safe is refused; a stranger cannot record a Safe for another person or company; an agent records one through MCP | yes, a pair |
-| **S2 · The chain door** | G1, G2 and G3's world starter in `main`; then in Capxul, an `on:` for the `erc20` `Transfer` to a recorded Safe, kept as a received payment on the Safe | on Anvil: USDC sent to a counterfactual Safe's address is recorded once on that Safe, typed; a second delivery of the same event changes nothing; an `anvil_reorg` that drops it gives a correction and the payment is undone; the address S1 worked out is the one the factory deploys at | yes, a pair |
-| **S3 · The Safe on chain** | G3's reads, SafeTx and typed refusals in `main`; then in Capxul, `safe.claim` (deploy and `swapOwner`, signed by the bootstrap key), `safe-transaction` (`propose`, `approve`) for a key owner and for a Safe owner, a company's Safe deployed on its first spend, adding a director's Safe as an owner | on Anvil: a person claims their Safe holding USDC, it reads `claimed` with their key its only owner, and they pay a supplier on their one signature; a second claim is `AlreadyClaimed`; an unclaimed Safe's payment is `NotClaimed`; the bootstrap key is used by the claim and by no other operation; a company's Safe owned by its founder's Safe is deployed and pays on the founder's approval; with a director added at threshold 2, it pays after the second approval and not after the first; an approval from a non-owner is `NotAnOwner` before anything is sent; a replayed SafeTx is refused by the Safe as `GS026`, typed | yes, a pair |
-| **S4 · The Org Budget** | G3's Roles adapter in `main`; the Payments contract copied, its adapter, deployed into worlds; `org-budget.grant` (a company Safe transaction: deploy the Roles modifier, enable it, assign the member's Safe, scope V3 `send`, `setAllowance`); `payment.send` under the role from the member's own Safe; `PayoutOverBudget { remaining }` at prepare; an owner's direct send | on Anvil: a member's Safe sends within the budget, `PaymentSent` carries its `settlementId`, and the allowance falls by exactly that; a send over it is refused `PayoutOverBudget` with the right `remaining` before any transaction; a spent budget gives `remaining: 0`; a second `send` with the same `settlementId` is refused by the contract; an owner's direct send needs no budget; a revoked budget refuses; the role cannot send a token it was not scoped to | yes, a pair |
-| **S5 · Getting paid by a link** | after slice 7's sales invoices (which wait on gaps #1079 and #1132, being built now) and the pages it needs: a pay link on an invoice, paid from any wallet to the person's or company's Safe, settled only by S2's `Transfer`, its ledger lines posted | `M7-capxul.md`'s journeys (section 4): paid by its link and settled; a second transfer for a settled invoice changes nothing; no call marks an invoice paid; a stranger reads an invoice by its link and nothing else; the ledger balances after each payment | yes, a pair |
-
-**Order and what waits.** S1 now. S2 after S1, G1, G2 and G3's world starter. S3 after S2 and G3's Safe reads (and any
-Snag above it meets). S4 after S3. S5 after S2 and slice 7's invoices, which wait on #1079 and #1132; it does not wait
-on S3 or S4. Bridge's R1 waits on S1, R2 on S2, R3 on S4 (CX-bridge-rails `:410-411`).
+- **S1 · The Safes recorded,** in `prove`: a person's Safe has the address of a vector worked out with the
+  implementation's own formula for a fixed salt nonce and owner; recording the same id twice gives one Safe; a
+  company's Safe's address changes with its founder's Safe and nothing else; a company whose founder has no Safe is
+  refused; a stranger cannot record a Safe for another person or company; an agent records one through MCP. It
+  unblocks Bridge R1, the company's Safe address as a fact (CX-bridge-rails `:402`).
+- **S2 · Incoming transfers,** on Anvil: USDC sent to a counterfactual Safe's address is recorded once on that Safe,
+  typed; a second delivery of the same event changes nothing; an `anvil_reorg` that drops it gives a correction and
+  the payment is undone; the address S1 worked out is the one the factory deploys at.
+- **S3 · Deploy on first spend,** on Anvil: a person claims their Safe holding USDC, it reads `claimed` with their key
+  its only owner, and they pay a supplier on their one signature; a second claim is `AlreadyClaimed`; an unclaimed
+  Safe's payment is `NotClaimed`; the bootstrap key is used by the claim and by no other operation; a company's Safe
+  owned by its founder's Safe is deployed and pays on the founder's approval; with a director added at threshold 2, it
+  pays after the second approval and not after the first; an approval from a non-owner is `NotAnOwner` before anything
+  is sent; a replayed SafeTx is refused by the Safe as `GS026`, typed; an `anvil_reorg` that drops the deploy puts the
+  Safe back to `counterfactual`.
+- **S4 · The budget,** on Anvil: a member's Safe sends within the budget, `PaymentSent` carries its `settlementId`,
+  and the allowance falls by exactly that; a send over it is refused `PayoutOverBudget` with the right `remaining`
+  before any transaction; a spent budget gives `remaining: 0`; a second `send` with the same `settlementId` is refused
+  by the contract; an owner's direct send needs no budget; a revoked budget refuses; the role cannot send a token it
+  was not scoped to.
+- **S5 · Getting paid by a link:** `M7-capxul.md`'s journeys (section 4): paid by its link and settled; a second
+  transfer for a settled invoice changes nothing; no call marks an invoice paid; a stranger reads an invoice by its
+  link and nothing else; the ledger balances after each payment.
 
 ## 5. Where the new things go
 
@@ -282,11 +358,12 @@ A feature may import only features, never the app (the conductor's answer). So, 
 | `safe-transaction` | `examples/capxul/blueprint/things/safe-transaction/` | it links to `safe` |
 | `org-budget` | `examples/capxul/blueprint/things/org-budget/` | it links to two `safe`s |
 | the Payments adapter, the contract's copied source and its ABI | `examples/capxul/plugins/onchain-pay/` | it needs nothing of the app, so it is in the feature from day one |
-| `SafeDeployment`, the prediction, the Roles calls | `packages/wallets/src/modules/{safe,roles}/` (G3) | they are the framework's, for any app's Safes |
+| `SafeDeployment`, the prediction, the Roles calls | `packages/safe/` (A3) and `packages/zodiac-roles/` (A4) | they are the framework's, for any app's Safes |
 | the salt's namespace and the bootstrap key's address, per environment | `examples/capxul/blueprint/environments/`, the key itself a secret | they are Capxul's and differ per environment |
 
 The three things move into `onchain-pay` after `company` and `people` have moved, as a move of its own; its row belongs
-on CX-features's move list (the features lead's file, so the lead adds it). Its journeys go in
+on CX-features's move list (#1157, `goal-16/features-rename`, not yet in `goal/capxul`; the features lead's file, so the
+lead adds it). Its journeys go in
 `examples/capxul/journeys/`, named `safe-…` as Bridge's are `bridge-…`; Capxul's CI job (`tools/ci/capxul-paths.sh`)
 already runs `prove` over `examples/capxul`. A rule that lives on chain changing by a migration with money in it has no
 word in the blueprint yet (`CX-composable-pieces.md:520-521`); S4 meets it first, and a Snag is logged then if it bites.
@@ -307,6 +384,9 @@ word in the blueprint yet (`CX-composable-pieces.md:520-521`); S4 meets it first
 - design/decisions/K25-the-blueprint-on-chain.md: "An organisation that wants a Safe points at it with an ordinary field." → "An organisation and its Safe are linked by an ordinary field; in Capxul the Safe's record points at its company, since a company may have several (CX-safe)."
 - design/decisions/M7-capxul.md: "Their personal account is an ordinary Safe owned by that key, at the address it will have once deployed." → "Their personal account is an ordinary Safe at the address it will have once deployed; until they claim it, its only owner is Capxul's bootstrap key, and claiming deploys it with their key in its place (CX-safe)."
 - design/decisions/M7-capxul.md: "and the Safe is deployed on its first pay-out, in the second feature" → "and the Safe is deployed when it is claimed (CX-safe)"
+- design/decisions/M7-capxul.md: "the `safe` adapter (ST3.04), which waits on the budgets decision (ST3.02) and so on Goals 7, 4 and 8" → "the `safe` adapter, which Goal 16 builds as its own unit, with no wait on the budgets decision or other goals"
+- design/goals/16-capxul.md: "later with the chain (after 7, 10)" → "in units (CX-safe); only its pay link waits on 7"
+- design/goals/16-capxul.md: slice 2's After cell "7, 10" → "7, for S5's pay link only"
 
 `ST3-budgets.md` is not decided (`ST3-budgets.md:3-7`), so no words of it are superseded; its Hats recommendation is
 not taken for Capxul, and a note beside its title says so.
