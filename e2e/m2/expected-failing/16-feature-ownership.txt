@@ -1,0 +1,4 @@
+# #1134 (CX-feature-ownership): `ortho check` refuses no feature's write to another feature's thing, and `ortho generate` can't load
+# `Blueprint.step.operation` (gap 1, #1079). Clears with #1134's build; the second line needs #1079's build too.
+m2/16-feature-ownership.test.ts > 16 ortho check refuses a feature writing another feature's thing > refuses payroll writing the ledger's line by a step and by a verb on the line, and takes payroll's own writes and the app's
+m2/16-feature-ownership.test.ts > 16 ortho check refuses a feature writing another feature's thing > takes payroll writing the ledger's line the allowed way, by running the ledger's post inside its commit (#1079)
