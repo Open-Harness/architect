@@ -18,8 +18,8 @@ links: [operations, doors, journeys, proof]
 
 A handler is the work inside one operation, and it is the only code in an Orthograph project written freehand.
 Everything around it is made from the declaration: the decoding, the role check, the machine's check, the spans, the
-commit, and every door. The handler gets the decoded payload and a context, and gives back the declared answer or a
-declared error. The shape it must fit is its **frame**, a type generated from the operation, so a handler that returns
+commit, and every door. The handler gets the decoded payload and a context, and gives back the declared answer, a
+declared error, or a refusal one of its operation steps made, at any depth (#1079). The shape it must fit is its **frame**, a type generated from the operation, so a handler that returns
 the wrong thing doesn't compile. The file it lives in starts as a **scaffold**, written once, and is yours from then
 on. One rule decides which files you touch: **a file that says "Generated from" is never edited; a file that says
 "Scaffolded from" is yours.** A **blank** is a part not written yet, in a declaration or in a handler. It compiles,

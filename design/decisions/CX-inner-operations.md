@@ -94,6 +94,9 @@ acme's generated files don't move (the checks build their own scratch ledger), s
 ## Supersedes
 
 - CX-recruitment: "When #972 lands, the second call folds into the offer's moves" → "When #972 lands, the applicant's own accept and reject run the offer's (CX-inner-operations, call 5)"
+- docs/canon/handlers.mdx: "and gives back the declared answer or a" → "and gives back the declared answer, a declared error, or a refusal one of its operation steps made, at any depth (#1079)"
+- docs/canon/handlers.mdx: "failing only with a declared error. Both are checked twice." → "failing only with a declared error or a refusal one of its operation steps made, at any depth (`InnerErrorOf`, #1079): never any other. Both are checked twice."
+- packages/language-effect/src/modules/handler/types.ts: "the declared payload in, the declared answer or a declared error out." → "the declared payload in, the declared answer or a declared error out, or a refusal one of its operation steps made (#1079), which the handler may let through as it came or map to its own."
 
 ## Known limits of the checks
 
