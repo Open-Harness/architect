@@ -30,10 +30,10 @@ slices:
   - "8 · HR, its basics finished: leave, timesheets, onboarding (after 6)"
   - "9 · Payroll (after 7, 8)"
   - "10 · Bridge for real: the adapter mounted, its webhooks, bank accounts and money in and out posting to the books (after 5, 7)"
-  - "11 · The CRM, an optional piece picked when a Capxul is built, off the path (after 9)"
+  - "11 · The CRM, an optional feature picked when a Capxul is built, off the path (after 9)"
   - "12 · Budgets: the accounting side; the on-chain module deployed outside the framework (after 7)"
   - "13 · Capxul's journeys run in CI"
-  - "14 · Capxul as pieces: today's things moved into feature plugins a business picks when its Capxul is built (after 6)"
+  - "14 · Capxul as features: today's things moved into feature plugins a business picks when its Capxul is built (after 6)"
 ---
 # Goal 16: Capxul core, rebuilt on Orthograph
 
@@ -62,7 +62,9 @@ and run it." Nothing else is needed.
 - **Words used:**
   - Capxul: a business app for small companies, being rebuilt here; its core is the free books, HR, payroll and Bridge;
   - the books: accounting (invoices, payments, the ledger); HR and payroll: a company's people, and paying them;
-  - the CRM: the people and companies a business deals with, an optional piece a business picks when its Capxul is built;
+  - a feature: one part of Capxul, a feature plugin in its own folder, that a business picks when its Capxul is built
+    (CX-features);
+  - the CRM: the people and companies a business deals with, an optional feature a business picks when its Capxul is built;
   - KYC and KYB: checking who a person or a business is; Bridge: moves money between the chain and banks;
   - ERPNext: an open-source business system whose shapes Capxul follows;
   - the design grill: Aaron asked question after question until a design is settled;
@@ -90,19 +92,19 @@ issues already have.
 | # | Slice | After |
 |---|---|---|
 | 1 | Capxul's plugins mapped, the first map: #487 lands with K43's superseded marks | — |
-| 2 | The Safe and getting paid on chain, in units (CX-safe): each person's and each company's Safe, acted on from the CLI, MCP and an agent; a sales invoice with a pay link, paid from any wallet, settled by the chain, with the ledger lines posted (`M7-capxul.md`, section 4), cut into units by `decisions/CX-safe.md` | 7, for S5's pay link only |
+| 2 | The Safe and getting paid on chain, in units (CX-safe): each person's and each company's Safe, acted on from the CLI, MCP and an agent; a sales invoice with a pay link, paid from any wallet, settled by the chain, with the ledger lines posted (`M7-capxul.md`, section 4), cut into units by `decisions/CX-safe.md`, the Safe modelled as two machines by `decisions/CX-safe-machines.md` | 7, for S5's pay link only |
 | 3 | The grill, with Aaron by voice: what is core, what is a module, what is paid and how a self-hosted Capxul reaches it, which licence Capxul carries, and K43's open list. A lawyer's read on the licence comes afterwards, by Aaron's call, and blocks nothing | — |
 | 4 | Spike: can Orthograph things, machines and journeys be scaffolded from ERPNext's record-type files (Sales Invoice, Payment Entry, GL Entry first)? If so, it becomes a scaffolder in the framework, built under K42's collision rule | — |
 | 5 | Spike: `ortho new adapter --from-openapi` on Bridge's published description; customers, KYC links, virtual accounts and transfers, against a stand-in | — |
 | 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge as board items, each at its stage, with every record type Capxul takes in one catalogue (CX-grill) | 1, 3, 4, 5 |
 | 7 | The books, double entry: first the chart of accounts, fiscal years, cost centres, journal entries and the general ledger (checks #1017), then parties, payments, sales and purchase invoices, period closing, and the trial balance, profit and loss and balance sheet; expense claims post here. Taxes, payment terms, pricing, POS and subscriptions come after | 6 |
 | 8 | HR, its basics finished: leave (checks #1026), timesheets and onboarding. Employees, departments, holidays, attendance, shifts, expense claims and recruitment are built; appraisals (#1030) are checked | 6 |
-| 9 | Payroll, 37 record types: salary components and structures, their assignment, pay runs and slips, each run posting to the books' journal; tax from a piece per jurisdiction, the United States in its own lane; contractors are their own piece (CX-money-global-payroll). A pay run starts from an operation a person or an agent calls; running it on a schedule pulls the board's timers row (the superagent's until K44) and needs no workflows, which K44 parks | 7, 8 |
+| 9 | Payroll, 37 record types: salary components and structures, their assignment, pay runs and slips, each run posting to the books' journal; tax from a feature per jurisdiction, the United States in its own lane; contractors are their own feature (CX-money-global-payroll). A pay run starts from an operation a person or an agent calls; running it on a schedule pulls the board's timers row (the superagent's until K44) and needs no workflows, which K44 parks | 7, 8 |
 | 10 | Bridge for real, through Capxul's own Bridge account: the generated adapter mounted, Bridge's webhooks deciding KYC and KYB, real bank details, and deposits and transfers posting to the books. Incorporation help and how the paid services are sold come later | 5, 7 |
-| 11 | The CRM, 40 Frappe CRM record types, as an optional piece a business picks when its Capxul is built; off the critical path (K44). Adding it to a deployed Capxul is a rebuild with a forward migration (CX-composable-pieces) | 9 |
+| 11 | The CRM, 40 Frappe CRM record types, as an optional feature a business picks when its Capxul is built; off the critical path (K44). Adding it to a deployed Capxul is a rebuild with a forward migration (CX-composable-pieces) | 9 |
 | 12 | Budgets, the accounting side: budgets against accounts and cost centres, checked as money is spent. The on-chain module is deployed outside the framework when it is wanted (K44, call 8) | 7 |
 | 13 | Capxul's journeys run in CI: a job that proves `examples/capxul`, so its green is CI's word (K44, section 3) | — |
-| 14 | Capxul as pieces (`decisions/CX-composable-pieces.md`): today's things moved, root first, into feature plugins in `examples/capxul/plugins/`, each move a G12 pair that keeps names and wire; first `company`, then `ledger` and `people`, then the rest in parallel lanes; the bank-account flip as its own pair | 6 |
+| 14 | Capxul as features (`decisions/CX-composable-pieces.md`): today's things moved, root first, into feature plugins in `examples/capxul/plugins/`, each move a G12 pair that keeps names and wire; first `company`, then `ledger` and `people`, then the rest in parallel lanes; the bank-account flip as its own pair | 6 |
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
@@ -114,7 +116,7 @@ Aaron's calls of 25 November (K44, section 3): two things are built, the Orthogr
 later; HR and payroll are Capxul's core offering; every money movement is double entry in ERPNext's shapes. So, in order:
 
 1. **Slice 13, Capxul's journeys in CI,** so its green is CI's word.
-1a. **Slice 14's first two moves,** `company`, then `ledger` and `people`, into their pieces (CX-composable-pieces). The
+1a. **Slice 14's first two moves,** `company`, then `ledger` and `people`, into their features (CX-composable-pieces). The
    currency slice (CX-money-global-payroll) comes after them and before slice 7's invoices; the rest of slice 14 runs
    in parallel lanes beside the path.
 2. **Slice 7, the books, double entry:** the chart of accounts, fiscal years, cost centres, journal entries and the
@@ -156,13 +158,13 @@ goal has claimed, and every fix reaches the alpha once it lands on `main`.
 
 ## Lanes
 
-A lane is one long-running agent that builds one piece of Capxul beside this goal's own slices, in its own paths, and
+A lane is one long-running agent that builds one feature of Capxul beside this goal's own slices, in its own paths, and
 lands each slice in `goal/capxul` (Aaron, 26 November 2026). Its brief, with its paths, slices and done check, is its
 own file; its "Where it stands" is one GitHub issue, which Goal 16's lead opens.
 
 | Lane | Harness | Builds | Brief |
 |---|---|---|---|
-| US payroll tax | Amp | the `payroll-tax-us` piece: federal and state withholding, FICA, FUTA and SUTA from the publications, then the tax on a payroll slip once gap 3 lands (CX-payroll-tax) | `16-lane-payroll-tax.md` |
+| US payroll tax | Amp | the `payroll-tax-us` feature: federal and state withholding, FICA, FUTA and SUTA from the publications, then the tax on a payroll slip once gap 3 lands (CX-payroll-tax) | `16-lane-payroll-tax.md` |
 
 ## Where it stands
 
@@ -189,3 +191,95 @@ unparked by CX-money-global-payroll and claimed by Goal 16; its checks (#923) st
 customers, built in full now, with what's paid sorted out later; the network dropped for now. `main` was merged into
 `goal/capxul` at the restart (#745), so this brief replaced the branch's old one; #773 merged it in again. The lead rewrites this section at
 every slice merge.
+
+### Features lane, 26 November (handoff)
+
+Written by the 🧭 features lead (Claude Code) at the wind-down, so any harness can resume from the repository alone. The
+lane splits Capxul into features (`decisions/CX-features.md`, `decisions/CX-composable-pieces.md` sections 5 and 6).
+Every check pull request below holds only checks, which fail on `main` and are listed in its ratchet files. Each needs a 🔍
+pass and green CI to merge. The Goal 16 lead in Amp queues CI into `main`, so ask it for a slot on the pull request
+before marking one ready.
+
+**The framework gaps:**
+
+1. **One operation runs another inside its own commit** (#1079). Its checks merged into `main` (#1137, m2 check 13,
+   `decisions/CX-inner-operations.md`). Its build is #1176, from `goal-16/snag-1079-build` into `main`, a draft. The
+   27-test typed check passes, the spans no longer count an inner call, and the handlers docs are rewritten.
+   - Owner: the Goal 16 lead in Amp, who holds its queue slot.
+   - State: a 🔍 was still running at the wind-down; read the pull request for its verdict.
+   - Snag #1187: `prove` and the portal don't count moves made through an inner operation. It needs an author.
+2. **Open sets** (#1132). Its checks are #1175, from `goal-16/snag-1132-check`, at 281cbcc4, a draft, m2 check 14,
+   `decisions/CX-open-sets.md`.
+   - History: four 🔍 rounds. The needs relation is judged pairwise from the model. Where a set sits is judged as a
+     matrix: 4 positions by 9 wrappers by 2 leaves, through the API, SDK, MCP and CLI.
+   - State: the fifth 🔍 (at 281cbcc4) blocked. The matrix misses value forms that main declares: a raw
+     `Schema.Array` as the value itself, a `.check(...)` refinement on an array or a struct (Capxul's journal-entry
+     `lines`), `Schema.fromJsonString(...)`, `Blueprint.described(...)` and `Blueprint.optional` over a struct or a list.
+     Two nits: say that only `Blueprint.list` names `fields`, and tie the three copies of the wrappers together. The
+     findings are in a comment on #1175.
+   - Next: add those wrappers (or plant their refusal), get a 🔍 pass, mark it ready, land it. Its build is not started.
+   - Collision: #1203 (snag #995, another goal's) also calls itself "m2 check 14". One of the two must take another
+     number before both land.
+3. **Contracts one feature declares and another fills** (#1133). Its checks are #1210, from `goal-16/snag-1133-check`,
+   a draft, m2 check 15, `decisions/CX-feature-contracts.md`.
+   - History: two 🔍 rounds. The last left one blocker: say in call 8 that a fill refused for who fills it still fills
+     its contract.
+   - Also open: three nits, and main is to be merged in.
+   - After #1193 lands: move "a fill's steps", the fill-writes-an-app-thing sentence and the re-entrant offers
+     exception into CX-feature-ownership's calls 2 and 6, since ownership owns who writes what.
+   - Next: a 🔍 of the author's last push, mark it ready, land it. Its build is not started.
+4. **`check` refuses a feature writing another feature's things** (#1134). Its checks are #1193, from
+   `goal-16/snag-1134-check`, at 3f0590ed, ready, m2 check 16, `decisions/CX-feature-ownership.md`.
+   - It passed its 🔍 after one round; the device and chain writes are now checked.
+   - Next: merge it when CI is green. Three of its lines need #1176's build. Its build is not started.
+5. **Add or drop a feature by rebuilding, with a forward migration** (#1135). Not started.
+6. **Money in a field's asset** (#882). Not started in this lane; CX-money-global-payroll owns it, and checks #923
+   stay a draft.
+7. **Two compositions proved in CI** (#1136). Not started.
+
+**The rename.** #1157 (`goal-16/features-rename` into `goal/capxul`) passed its 🔍. It carries this entry too, and
+merges when CI is green. It adds the `onchain-pay` row to the move, after `company` and `people`.
+
+**The move into `examples/capxul/plugins/<feature>/`.** Not started. It waits on the checks and builds of gaps 1 to 4. The order and
+the G12 pair per feature (`goal-16/features-<feature>-check` and `-build`) are in CX-composable-pieces section 6:
+`company`, then `ledger` and `people`, then `onchain-pay`, then the rest. The money lead's new Safe things stay in
+`blueprint/things/` until `company` and `people` move.
+
+**Then the split.** Two proposals, each written as a decision first: each feature's generated output in its own folder,
+and CI that runs only what a change can reach. Not started.
+
+### Money lane, 26 November (handoff)
+
+Wound down at 21:30 UTC for the week's usage, so that any harness can resume from this entry. Every open PR below is
+ready, not draft, with its branch pushed. Its next action is the one to take.
+
+**The plan.** `decisions/CX-safe.md` cuts the lane into units, one issue each. `decisions/CX-safe-machines.md` gives a
+person's Safe and a company's Safe as two state machines, with no bootstrap owner. The slices run in this order:
+- the Safe: S1, then S1b (the claim, after J1), S3a #1170, S3b #1196, C1 #1195, E2 #1201;
+- the keeper: K1, #1199;
+- Bridge: slice 10, per `CX-bridge-rails.md`;
+- contractors: `CX-money-global-payroll`.
+
+**Open PRs.** All of them are into `goal/capxul` unless marked.
+
+| PR | What | State | Next action |
+|---|---|---|---|
+| #1194 | CX-safe-machines decision | 🔍 passed | merge when CI is green |
+| #1182 | A3 checks: the Safe adapter, address prediction | 🔍 passed | merge when green, then start the A3 builder |
+| #1184 | A2 checks: `@orthograph/erc20` | 🔍 passed | merge when green, then start the A2 builder |
+| #1204 | A4 checks: `@orthograph/zodiac-roles` 2.1.1 | 🔍 passed | merge when green, then start the A4 builder (with LICENSE-zodiac) |
+| #1178 | E1 checks: events in from the chain (M5-reach-out option A) | 🔍 passed | merge when green, then start the E1 builder: a row that ends delivered, refused or failed gets back the `due` it had before its claim |
+| #1198 | A1 checks: `ortho new adapter --from-abi` | 🔍 passed | merge when green. If check-static fails again on the `host-cloudflare` fence.test.ts wall-clock assertion, file a Snag naming Goal 18. Start the A1 builder only after #1087 and #1153 land on `main` |
+| #1206 | S1 checks: a person's Safe recorded (G12 pair) | 🔍 passed | merge #1214 first, then this when green |
+| #1214 | S1 build, into `goal-16/safes-recorded-check` | 🔍 passed | merge when green. Advice: move `@noble/hashes` to dependencies; the salt formula needs one shared owner; take the namespace from environment settings once Snag #1213 lands |
+| #1209 | K1 checks: the keeper (CX-keeper widens M8-06's entry row) | 🔍 passed at 5e5cc3bc | merge when green, then start the K1 builder from `goal-16/keeper-check`. Notes are in #1209's last 🔍 comment. Three suite-05 tests wait on #1205 |
+| #1208 | J1 checks: `s.<name>.signs` (G12 pair) | 🔍 passed | merge #1215 first, then this when green |
+| #1215 | J1 build, into `goal-16/journey-signs-check` | 🔍 not finished | 🔍 it (prove loads wallets' server lazily, and its tests depend on `wallets:build`), then merge |
+
+#1155 (Snag #1001, Amp's builder) and #1180 (US payroll tax, red on purpose) carry the lane's label. They belong to
+other threads.
+
+**Waiting on Aaron.**
+- **Custody.** Safe refuses a setup with no owner, so a person's Safe has no address until they claim it. I recommend
+  no placeholder owner: Capxul holds no key over anyone's Safe.
+- **Gas on Base.** I recommend the relayer pays.

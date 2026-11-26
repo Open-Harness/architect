@@ -2,7 +2,7 @@
 
 **Decided 26 November 2026** by Goal 16's 📐 designer for the US payroll tax lane (session_01S8RF7DUPsuCAygXRCpaop8),
 under the standing authority in `AGENTS.md` ("Who decides"), after the 🔍 review of #1131 at `b53cfd06`. It is the
-building agent's architecture call. It applies CX-payroll-tax point 3 to the `payroll-tax-us` piece
+building agent's architecture call. It applies CX-payroll-tax point 3 to the `payroll-tax-us` piece (Superseded by CX-features, 26 November 2026: "the `payroll-tax-us` feature"; every "piece" and "pieces" in this sense below reads "feature" and "features")
 (`design/goals/16-lane-payroll-tax.md`) and changes none of CX-payroll-tax's words.
 
 ## The question

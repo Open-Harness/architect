@@ -518,6 +518,17 @@ CREATE TABLE "payroll-period" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "payroll-period_oneNamePerCompany" ON "payroll-period" ("company", "payrollPeriodName");
+CREATE TABLE "personal-safe" (
+  "id" TEXT PRIMARY KEY,
+  "person" TEXT NOT NULL,
+  "saltNonce" TEXT NOT NULL,
+  "signer" TEXT,
+  "firstOwner" TEXT,
+  "account" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "personal-safe_oneSafePerPerson" ON "personal-safe" ("person");
 CREATE TABLE "salary-component" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

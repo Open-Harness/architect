@@ -1,0 +1,39 @@
+{
+  "name": "@orthograph/erc20",
+  "version": "0.1.0-next.1",
+  "license": "Apache-2.0",
+  "type": "module",
+  "orthograph": {
+    "kind": "adapter",
+    "blueprint": "blueprint"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@orthograph/chain-evm": "workspace:*",
+    "effect": "4.1.4"
+  },
+  "peerDependencies": {
+    "orthograph": "workspace:^"
+  },
+  "devDependencies": {
+    "@orthograph/language-effect": "workspace:*",
+    "orthograph": "workspace:*"
+  },
+  "files": [
+    "abi",
+    "blueprint",
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "next",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  }
+}

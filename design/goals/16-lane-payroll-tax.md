@@ -1,6 +1,6 @@
 ---
 goal: 16
-title: "Goal 16's lane: US payroll tax, as its own piece"
+title: "Goal 16's lane: US payroll tax, as its own feature"
 milestone: "Goal 16: Capxul on Orthograph"
 release: beta
 branch: goal-16/lane-payroll-tax
@@ -33,10 +33,10 @@ slices:
   - "7 · Each company's own SUTA rate, entered and checked against its state's range (after 4)"
   - "8 · Into payroll: the tax on a slip, once gap 3 lands (after 3, 7)"
 ---
-# Goal 16's lane: US payroll tax, as its own piece
+# Goal 16's lane: US payroll tax, as its own feature
 
 Written 26 November 2026 by Goal 16's 📐 designer thread (session_01S8RF7DUPsuCAygXRCpaop8), started by Goal 16's lead
-(session_01S8RF7ASqmdxbN37WdpZMcB). A **lane** of Goal 16, not a goal of its own: it builds one Capxul piece,
+(session_01S8RF7ASqmdxbN37WdpZMcB). A **lane** of Goal 16, not a goal of its own: it builds one Capxul feature,
 `payroll-tax-us`, beside the rest of Capxul, in **Amp**, and lands every slice in `goal/capxul`.
 
 Aaron's call, 26 November 2026, heard by voice and kept as heard: "I don't want to park the tax lane. I want to do that in
@@ -67,7 +67,7 @@ Nothing else is needed.
   - FICA: Social Security and Medicare, taken from every paycheck; FUTA and SUTA: the federal and state unemployment
     taxes the employer pays;
   - Publication 15-T: the IRS booklet with the withholding tables and the method;
-  - a piece: one part of Capxul, kept in its own folder, that a business picks when its Capxul is built;
+  - a feature: one part of Capxul, kept in its own folder, that a business picks when its Capxul is built;
   - a journey: a scripted check that runs Capxul end to end and compares what comes back.
 
 ## Read first
@@ -84,11 +84,11 @@ Nothing else is needed.
 5. `design/decisions/CX-payroll.md`: the payroll that is built (9a): components, structures, assignments, periods,
    entries and slips. Its "Known limits" name what this lane fills (tax, 9b).
 6. `design/decisions/CX-composable-pieces.md` (PR #1123, on `origin/goal-16/composable-pieces-design` until it merges):
-   `payroll-tax-us` as an optional piece, section 2's contracts and gap 3, and section 6's move of today's things into
-   pieces. `design/decisions/CX-money-global-payroll.md` (PR #1121): contractors first on the main path, and its
-   section 7, "Aaron's answers": his yes to all of it, including section 2 point 6, the US tax piece on
+   `payroll-tax-us` as an optional feature, section 2's contracts and gap 3, and section 6's move of today's things into
+   features. `design/decisions/CX-money-global-payroll.md` (PR #1121): contractors first on the main path, and its
+   section 7, "Aaron's answers": his yes to all of it, including section 2 point 6, the US tax feature on
    open-withholding imported at a pinned commit, now in its own parallel lane.
-   `design/decisions/CX-tax-us-rows.md`: where this piece's rows live, and how its lines round.
+   `design/decisions/CX-tax-us-rows.md`: where this feature's rows live, and how its lines round.
 7. How a plugin is made and mounted: `examples/superagent/plugins/tickets/package.json` (a feature plugin) and
    `examples/superagent/blueprint/features/` (one mount file per plugin); `examples/capxul/plugins/bridge/` (Capxul's one
    plugin today, an adapter).
@@ -97,7 +97,7 @@ Nothing else is needed.
 
 The paths in the front matter's `owns:`, and nothing else:
 
-- `examples/capxul/plugins/payroll-tax-us/`: the piece. A feature plugin named **`@capxul/payroll-tax-us`**
+- `examples/capxul/plugins/payroll-tax-us/`: the feature. A feature plugin named **`@capxul/payroll-tax-us`**
   (`"orthograph": { "kind": "feature" }`, Nx tags `scope:plugin`, `env:runtime`), with:
   - its `blueprint/`;
   - its `src/`, in the six-slot module shape;
@@ -109,7 +109,7 @@ The paths in the front matter's `owns:`, and nothing else:
   internal/fold.ts:11`).
 - `examples/capxul/journeys/tax-us-*.ts` and `examples/capxul/blueprint/starting-worlds/tax-us-*.ts`: its journeys and
   starting worlds, written by its author only. They sit beside Capxul's others because `ortho prove --root
-  examples/capxul` reads only the app's `journeys/` and `blueprint/starting-worlds/`. Until the pieces move lands, they
+  examples/capxul` reads only the app's `journeys/` and `blueprint/starting-worlds/`. Until the features move lands, they
   import only `@capxul/payroll-tax-us` and `orthograph`, nothing of the app's.
 - `examples/capxul/journeys/tax-us/`: everything else the author writes:
   - the bulk checks that are too many for journeys (the 4,794 wage-bracket cells, the constructed cases), as
@@ -133,9 +133,9 @@ request that touches one.
 **Shared files it may touch, and how.** Each is a line or a section of its own, never a rewrite:
 
 - `docs/canon/status.md`: its own rows only (below, "On GitHub").
-- `pnpm-workspace.yaml`: the line `examples/capxul/plugins/*`, if the pieces move (CX-composable-pieces, move 1) has not
+- `pnpm-workspace.yaml`: the line `examples/capxul/plugins/*`, if the features move (CX-composable-pieces, move 1) has not
   added it by the time slice 0 needs it. It is the same line the move adds, so the two merge cleanly.
-- `examples/capxul/package.json`: the one dependency `"@capxul/payroll-tax-us": "workspace:*"`. The pieces move
+- `examples/capxul/package.json`: the one dependency `"@capxul/payroll-tax-us": "workspace:*"`. The features move
   (move 1) edits the same file. On a conflict, keep both sides' dependencies, then run `pnpm install`.
 - `examples/capxul/generated/`, `examples/capxul/blueprint/refusals.lock` and `pnpm-lock.yaml`: written by `ortho
   generate` and `pnpm install`, never by hand. On a merge conflict in any of them, take `goal/capxul`'s side, then run
@@ -148,8 +148,8 @@ their new home in `examples/capxul/plugins/payroll/` after the move). No other l
 journeys either. When the lane needs a change in one, it opens a Gap or Snag issue that names the lane that owns the fix
 (below) and goes on with what it can do.
 
-**The interim: proven before payroll calls it.** Until gap 3 lands, the piece stands on its own. Payroll's slips have
-no tax lines, which CX-composable-pieces says is valid. The piece offers one operation of its own,
+**The interim: proven before payroll calls it.** Until gap 3 lands, the feature stands on its own. Payroll's slips have
+no tax lines, which CX-composable-pieces says is valid. The feature offers one operation of its own,
 `us-withholding.compute`, on a thing `us-withholding` (prefixed, so no bare `withholding` name is taken). It takes:
 
 - the gross wage for one pay period, in USDC base units;
@@ -174,10 +174,10 @@ a journey checks what was stored, not just what was said. The journeys are the p
 citing its page. When gap 3 lands, slice 8 fills payroll's contract, "the tax on a slip", with the same computation, and
 the interim operation's journeys keep passing.
 
-**Mounted early, filling nothing.** The piece is mounted from slice 0, because `ortho prove` runs only what the app
-mounts. A mounted `payroll-tax-us` that fills no contract leaves payroll exactly as it is, so this is still "no tax piece
-filling payroll's contract", the interim CX-composable-pieces and CX-money-global-payroll describe. Until `payroll` is a
-plugin and gap 3 lands, the piece imports nothing of payroll's (Salary Slip, Employee, components) and nothing of the
+**Mounted early, filling nothing.** The feature is mounted from slice 0, because `ortho prove` runs only what the app
+mounts. A mounted `payroll-tax-us` that fills no contract leaves payroll exactly as it is, so this is still no tax feature
+filling payroll's contract, the interim CX-composable-pieces and CX-money-global-payroll describe. Until `payroll` is a
+plugin and gap 3 lands, the feature imports nothing of payroll's (Salary Slip, Employee, components) and nothing of the
 app's.
 
 ## Calls already made
@@ -185,10 +185,10 @@ app's.
 `design/decisions/CX-tax-us-rows.md`, written with this brief. The lane follows it and reopens it only with new
 evidence:
 
-1. The published figures are generated dated rows in Income Tax Slab's shape, under `data/<year>/`, shipped in the piece
+1. The published figures are generated dated rows in Income Tax Slab's shape, under `data/<year>/`, shipped in the feature
    and not stored in each Capxul. A company's SUTA rates and each employee's certificates are things.
 2. The importer runs on a machine, never in CI or at run time. CI reads the committed rows and `data/manifest.json`, so
-   a hand edit to a row fails the piece's check.
+   a hand edit to a row fails the feature's check.
 3. Figures neither source carries are typed by hand into `data/<year>/hand/`, each cited: FUTA's credit reduction
    states (the Labor Department's November list), and the SUI wage bases the spike found missing (AL, AR, AZ, DC, KS,
    LA, MS, NM, OK, SC, WV, and NH, NV and TN).
@@ -239,7 +239,7 @@ thread with its label, `thread-author`, `thread-builder`, `thread-reviewer`.
 | 5 | **California and New York,** each its own method: California's Method B with Tables 1 to 28 per frequency and its estimated-deduction allowances, SDI; New York's NYS-50-T-NYS per-period and annual methods with Method III's three top rates, and its paid family leave. New York City and Yonkers stay out (local taxes, CX-payroll-tax point 6) | 3 | California's Examples A to F, New York's examples (Example 2's two slips judged against the tables the booklet says to use, as the spike did), and constructed cases for the top brackets and the quarterly and daily tables no example reaches |
 | 6 | **The rest,** in batches of about five states, each batch its own pair of pull requests: first the spike's other checked states (DE, NJ, IL, MA, GA), then the rest of the income-taxing states and DC in the order open-withholding's data is most complete. For Massachusetts the lane reads Circular M itself, cites it, settles the weekly and blind exemptions, and flags both for the professional's review. If its harness can't reach mass.gov, the two rows stay open, and the lane says so on its lane issue | 5 | each state's printed worked examples, judged against the tables the publication says to use; New Jersey's A3, B2 and B3 as the spike found them; a constructed case per state's top bracket |
 | 7 | **Each company's own SUTA rate:** a thing per company, state and year, entered by its owner, refused outside the state's range for that year | 4; the `company` move | journeys: a rate in range is used by `us-withholding.compute`; one outside it is refused by name |
-| 8 | **Into payroll,** once gap 3 lands (a contract one piece declares and another fills when the app is built, CX-composable-pieces section 5). `payroll-tax-us` fills `payroll`'s contract "the tax on a slip": a payroll entry's submit gives each US employee's slip its tax lines. Only the employee's share (income tax withholding, the employee's Social Security and Medicare, the additional Medicare tax, and any employee share a state levies) is taken off net pay. The employer's share (the employer's Social Security and Medicare, FUTA, SUTA and any employer premium) never is: it posts as an employer expense with its tax liability. The accrual posts each to its account. Here the lane may touch `payroll`'s files, in the pair the gap names, and only after the payroll lane agrees on the Gap issue. Pay frequency comes from payroll settings (9c) or the entry's days, as the payroll lane decides | 3, 7; `payroll` moved into its plugin (the `payroll` move, CX-composable-pieces section 6), since a plugin may import only plugins; gap 3 (#1133) on `goal/capxul`; payroll 9c for the frequency | journeys: a payroll entry for a Texas and a California employee posts slips whose tax lines equal `us-withholding.compute`'s for the same figures; net pay falls by the employee's share only, and the employer's share posts as expense and liability, never off net pay; with no tax piece mounted, payroll's own journeys still pass |
+| 8 | **Into payroll,** once gap 3 lands (a contract one feature declares and another fills when the app is built, CX-composable-pieces section 5). `payroll-tax-us` fills `payroll`'s contract "the tax on a slip": a payroll entry's submit gives each US employee's slip its tax lines. Only the employee's share (income tax withholding, the employee's Social Security and Medicare, the additional Medicare tax, and any employee share a state levies) is taken off net pay. The employer's share (the employer's Social Security and Medicare, FUTA, SUTA and any employer premium) never is: it posts as an employer expense with its tax liability. The accrual posts each to its account. Here the lane may touch `payroll`'s files, in the pair the gap names, and only after the payroll lane agrees on the Gap issue. Pay frequency comes from payroll settings (9c) or the entry's days, as the payroll lane decides | 3, 7; `payroll` moved into its plugin (the `payroll` move, CX-composable-pieces section 6), since a plugin may import only plugins; gap 3 (#1133) on `goal/capxul`; payroll 9c for the frequency | journeys: a payroll entry for a Texas and a California employee posts slips whose tax lines equal `us-withholding.compute`'s for the same figures; net pay falls by the employee's share only, and the employer's share posts as expense and liability, never off net pay; with no tax feature mounted, payroll's own journeys still pass |
 
 ## Staying up to date
 
@@ -263,7 +263,7 @@ GitHub is the lane's only channel: Amp can't reach Claude Code's `send_message`,
   6. the newest decisions on `goal/capxul` (`git log --since=<last slice> -- design/decisions/`), above all
      CX-composable-pieces and CX-money-global-payroll, which may move payroll's files.
 - **Announcements.** A Discussions category "Announcements", where goals and lanes post what other lanes must know (a
-  decision that moves files, a piece moved, gap 3 landed), is proposed. Whether to have one is Goal 16's lead's call,
+  decision that moves files, a feature moved, gap 3 landed), is proposed. Whether to have one is Goal 16's lead's call,
   and the lane doesn't create it. Until one exists, announcements for the lane are posted on the lane issue.
 - **The lane issue** is its "Where it stands": one issue titled `Goal 16 lane: US payroll tax`, labelled `goal-16`,
   `lane:goal-16`, `harness:amp`, `release:beta`, in the milestone `Goal 16: Capxul on Orthograph`. At its start the
@@ -279,7 +279,7 @@ GitHub is the lane's only channel: Amp can't reach Claude Code's `send_message`,
   ```markdown
   **Where it stands** (the lane rewrites this body at every slice merge)
 
-  The US payroll tax lane builds Capxul's `payroll-tax-us` piece in Amp, beside the rest of Goal 16.
+  The US payroll tax lane builds Capxul's `payroll-tax-us` feature in Amp, beside the rest of Goal 16.
   Brief: `design/goals/16-lane-payroll-tax.md` on `goal/capxul`. Branch: `goal-16/lane-payroll-tax`.
 
   - **Now:** slice 0, the lane's footing.
@@ -297,7 +297,7 @@ GitHub is the lane's only channel: Amp can't reach Claude Code's `send_message`,
 - **Snags and gaps.** Every Snag or Gap issue the lane opens names the lane that owns the fix in its first line
   (`Owner: the payroll lane` or `Owner: this lane, US payroll tax`), with the paths, and is marked as blocking the slice
   it stops. A framework gap goes on the board by the collision rule (`design/goals/map.md`), claimed `lane:goal-16`.
-- **On the board.** The piece's row in `docs/canon/status.md` (`payroll-tax-us`, added in slice 0 if absent), lane
+- **On the board.** The feature's row in `docs/canon/status.md` (`payroll-tax-us`, added in slice 0 if absent), lane
   `goal-16`, its Touches the paths above, its stage moved in the pull request that moves it.
 - **Grills.** A question only Aaron can settle goes on the lane issue for Goal 16's lead, who files it as a Decision
   labelled `needs-aaron`. The lane goes on with every slice the question doesn't stop.

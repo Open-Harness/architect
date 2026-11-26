@@ -30,7 +30,7 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
 | The `Date` proxy, installed once, reading `AsyncLocalStorage`; `WorldClock.within(instant, f)` | `clock/internal/date.ts` |
 | Every entry wraps itself: `WorldEntry.entry` (Worker `fetch`, `scheduled`, `queue`), `WorldEntry.within` (a Workflows step, any promise-returning entry), `WorldEntry.withinNow` (an RPC that answers at once) | `world/internal/entry.ts` |
 | `ortho check` refuses a stepped or scaled clock on an environment in a promotion chain | `compiler/src/modules/time`, `model/internal/environments.ts` |
-| The generated Worker: `ORTHO_CLOCKS` in `wrangler.jsonc` and `export default WorldEntry.entry<Env>({…})`, only when some environment is stepped or scaled | `projections/src/modules/server/internal` |
+| The generated Worker: `ORTHO_CLOCKS` in `wrangler.jsonc` and `export default WorldEntry.entry<Env>({…})`, only when some environment is stepped or scaled (Superseded by CX-keeper, 26 November 2026: the entry also for any blueprint with a move made by time; `ORTHO_CLOCKS` unchanged) | `projections/src/modules/server/internal` |
 | The lint rules `no-wall-clock` and `effect-only` read SQL's `now()`, `CURRENT_TIMESTAMP` and `datetime('now')` in a string or template | `lint/src/modules/rules/internal/sql-clock.ts` |
 
 ## The calls
@@ -44,7 +44,8 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
    with `ORTHO_ENVIRONMENT` (`local` when unset), so no class is generated per blueprint and `World` and `Actor` stay the
    static classes the generated Worker already re-exports. An environment that is not named, or whose entry is not a
    clock, is real. A real clock is left out, so a blueprint that declares no clock, or a real one, generates exactly
-   what it did (proved below).
+   what it did (proved below). (Superseded by CX-keeper, 26 November 2026: a blueprint with a move made by time gets the
+   `WorldEntry` entry and the `World` subclass on a real clock too; `ORTHO_CLOCKS` still leaves a real clock out.)
 3. **Each entry kind.**
 
    | Entry | How it wraps | Why |

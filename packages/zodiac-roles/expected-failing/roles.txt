@@ -1,0 +1,44 @@
+# #1163 (A4): red until the zodiac-roles build lands.
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > a second short of two periods: still one refill
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > a timestamp an owner set in the future: the balance until a period after it
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > amounts over 2^53, exact
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > at maxRefill already
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > inside the first period
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > no period: the balance, however long
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > one and a half periods: one refill
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > one whole period
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > over maxRefill (an owner set it so): it stays
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > spent to 0, one period
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > spent to 0, three periods
+src/modules/roles/roles.test.ts > ZodiacRoles.accrued > two whole periods, capped at maxRefill
+src/modules/roles/roles.test.ts > ZodiacRoles.deploy > a Safe's modifier: owner, avatar and target all the Safe, its address worked out before it is deployed
+src/modules/roles/roles.test.ts > ZodiacRoles.deploy > a salt nonce that is not a uint256 is refused, before anything is worked out
+src/modules/roles/roles.test.ts > ZodiacRoles.deploy > every bit of the salt nonce counts: 0, 256, 2^64 + 1 and 2^256 - 1
+src/modules/roles/roles.test.ts > ZodiacRoles.deploy > the address changes with the Safe and with the salt nonce, and with nothing else
+src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > a member's call through its role, a Call (operation 0) on the modifier, with value 0 and shouldRevert true by default
+src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > a value that is not a uint256 is refused
+src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > the largest value there can be, 2^256 - 1, is sent as it is
+src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > the value and shouldRevert given are the ones sent, and the call itself sends no wei to the modifier
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status AllowanceExceeded (17), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status BitmaskNotAllowed (15), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status BitmaskOverflow (14), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status CallAllowanceExceeded (18), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status CustomConditionViolation (16), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status DelegateCallNotAllowed (1), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status EtherAllowanceExceeded (19), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status FunctionNotAllowed (3), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status NoArrayElementPasses (12), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status NorViolation (6), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status NotEveryArrayElementPasses (11), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status Ok (0), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status OrViolation (5), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status ParameterGreaterThanAllowed (9), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status ParameterLessThanAllowed (8), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status ParameterNotAMatch (10), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status ParameterNotAllowed (7), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status ParameterNotSubsetOfAllowed (13), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status SendNotAllowed (4), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status TargetAddressNotAllowed (2), typed by name
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > NoMembership, NotAuthorized with its sender, ModuleTransactionFailed and OwnableUnauthorizedAccount with its account
+src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > the info word is the one the modifier sent
+src/modules/roles/roles.test.ts > ZodiacRoles.refusals > one entry for each of Roles 2.1.1's errors, by its name and signature, each with a code of its own

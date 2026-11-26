@@ -163,6 +163,9 @@ import { submit as payrollEntrySubmit } from "./payroll-entry/submit.ts";
 import { submitSlips as payrollEntrySubmitSlips } from "./payroll-entry/submit-slips.ts";
 import { create as payrollPeriodCreate } from "./payroll-period/create.ts";
 import { get as payrollPeriodGet } from "./payroll-period/get.ts";
+import { get as personalSafeGet } from "./personal-safe/get.ts";
+import { list as personalSafeList } from "./personal-safe/list.ts";
+import { open as personalSafeOpen } from "./personal-safe/open.ts";
 import { create as salaryComponentCreate } from "./salary-component/create.ts";
 import { get as salaryComponentGet } from "./salary-component/get.ts";
 import { list as salaryDetailList } from "./salary-detail/list.ts";
@@ -240,6 +243,7 @@ const paymentEntry = Command.make("payment-entry").pipe(Command.withSubcommands(
 const payrollEmployeeDetail = Command.make("payroll-employee-detail").pipe(Command.withSubcommands([payrollEmployeeDetailList]));
 const payrollEntry = Command.make("payroll-entry").pipe(Command.withSubcommands([payrollEntryCreate, payrollEntryGet, payrollEntryList, payrollEntrySubmit, payrollEntrySubmitSlips]));
 const payrollPeriod = Command.make("payroll-period").pipe(Command.withSubcommands([payrollPeriodCreate, payrollPeriodGet]));
+const personalSafe = Command.make("personal-safe").pipe(Command.withSubcommands([personalSafeGet, personalSafeList, personalSafeOpen]));
 const salaryComponent = Command.make("salary-component").pipe(Command.withSubcommands([salaryComponentCreate, salaryComponentGet]));
 const salaryDetail = Command.make("salary-detail").pipe(Command.withSubcommands([salaryDetailList]));
 const salarySlip = Command.make("salary-slip").pipe(Command.withSubcommands([salarySlipGet, salarySlipList]));
@@ -251,7 +255,7 @@ const supplier = Command.make("supplier").pipe(Command.withSubcommands([supplier
 const supplierGroup = Command.make("supplier-group").pipe(Command.withSubcommands([supplierGroupCreate, supplierGroupGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, customer, customerGroup, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, paymentEntry, payrollEmployeeDetail, payrollEntry, payrollPeriod, salaryComponent, salaryDetail, salarySlip, salarySlipDetail, salaryStructure, salaryStructureAssignment, shiftType, supplier, supplierGroup]),
+  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, customer, customerGroup, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, paymentEntry, payrollEmployeeDetail, payrollEntry, payrollPeriod, personalSafe, salaryComponent, salaryDetail, salarySlip, salarySlipDetail, salaryStructure, salaryStructureAssignment, shiftType, supplier, supplierGroup]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

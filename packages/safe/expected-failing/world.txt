@@ -1,0 +1,11 @@
+# #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > a chain that does not answer is a ChainFault, not a defect
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > leaves the EntryPoint's address empty, and the world's own accounts as they were
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > puts each contract's pinned code at its canonical address, with the canonical code hash
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > puts the 4337 module at its address, bound to EntryPoint v0.7
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > running it twice changes nothing and fails nothing
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > the factory's proxy creation code is SafeProxy 1.4.1's
+src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > a fresh owner and a large salt nonce are deployed at the predicted address
+src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > each fixed vector, and owners B then A, is the address the factory answers to an eth_call of createProxyWithNonce
+src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > the deployed Safe is 1.4.1, owned by its first owner alone at threshold 1, with the 4337 module enabled and as fallback handler
+src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > the fixed vector: owner 0x5aAe…eAed with salt nonce 0 is deployed at 0xC534…9C58, as predicted

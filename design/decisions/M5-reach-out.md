@@ -141,7 +141,7 @@ The call:
 // the generated Worker, before the call routes: one door per mounted adapter that includes events
 if (path.startsWith("/_in/")) return Inbound.handle(doorsOf(env), request);
 
-// host-cloudflare/src/modules/events: what every source of outside events calls
+// host-cloudflare/src/modules/events: what every source of outside events calls   (Superseded by CX-events-in, 26 November 2026: the core is orthograph/server's `Inbox`, bound by host-cloudflare's `Inboxes.sink`)
 Inbox.accept({ source: "stripe", id: "evt_1Q…", event: "checkoutCompleted", fields })   // → "accepted" | "seen"
 ```
 
@@ -305,7 +305,7 @@ M3.01 (Goal 8) owns the declaration, wake-up and replay. From the event side, se
 - `language-effect`: `Entry.id`, `Commit.outbox`, and the delivery run with its forced key and the existing M2.03
   principals (M5.03, M5.04). Every wrapper over `Store` and `Records` (the logging one, `handler/service.ts:116`) passes
   the new fields on.
-- `host-cloudflare`: new modules `events` (`Inbound`, `Inbox`) and `outbox` (`Outbox`, its alarm), `_journal.id`,
+- `host-cloudflare`: new modules `events` (`Inbound`, `Inbox`; superseded by CX-events-in, 26 November 2026: `Inboxes`, binding orthograph's `Inbox`) and `outbox` (`Outbox`, its alarm), `_journal.id`,
   `_outbox`, actors' `_requests` and outbox (M5.03, M5.04).
 - `projections` (the server): `/_in/<mount>` before the call routes; the `Outbox` binding; the migration's new columns
   and table.
