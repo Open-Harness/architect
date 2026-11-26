@@ -7,7 +7,7 @@ import { Timers } from "@orthograph/language-effect";
 import { Anvil } from "@orthograph/chain-evm";
 import { Keys, makeChainPort, type Address, type ChainPort, type DecodedEvent, type EventSource, type Signer, type Submission } from "@orthograph/chain-evm/device";
 import { afterAll, describe, expect, test } from "vitest";
-import { probe, written, type Written } from "./testing.ts";
+import { probe, written, type Written } from "../../../test/from-abi.ts";
 
 const anvil = test.skipIf(process.env["ORTHO_CHAIN_EVM_ANVIL"] !== "1");
 
@@ -60,9 +60,9 @@ const included = (port: ChainPort, submission: Submission) =>
   port.track(submission, { depth: 1 }).pipe(Stream.runHead, Effect.flatMap((state) =>
     Option.isSome(state) && state.value._tag === "Included" ? Effect.succeed(state.value.receipt) : Effect.die(`not included: ${JSON.stringify(Option.getOrUndefined(state)?._tag)}`)));
 
-/** The events of a source seen so far, decoded: their names and arguments. */
+/** The events of a source confirmed so far (at depth 1, each is seen once as Observed and once as Confirmed), decoded: their names and arguments. */
 const seen = (port: ChainPort, source: EventSource<DecodedEvent>) =>
-  port.follow(source, { depth: 1 }).poll().pipe(Effect.map((poll) => poll.changes.filter((c) => c._tag === "Confirmed" || c._tag === "Observed")
+  port.follow(source, { depth: 1 }).poll().pipe(Effect.map((poll) => poll.changes.filter((c) => c._tag === "Confirmed")
     .map((c) => ({ eventName: c.event.eventName, args: c.event.args, address: c.event.address.toLowerCase() }))));
 
 const lower = (a: string) => a.toLowerCase();

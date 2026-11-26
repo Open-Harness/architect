@@ -1,7 +1,7 @@
 // What `AbiAdapter.generate` refuses (#1164, README.md "What it refuses"): `AbiRefused`, its message naming the contract and the
 // item, never a guess. Each ABI here is the smallest that shows one refusal; the rest of it is valid, so nothing else is refused.
 import { describe, expect, it } from "vitest";
-import { made, probe, refusal } from "./testing.ts";
+import { made, probe, refusal } from "../../../test/from-abi.ts";
 import type { ContractInput } from "./types.ts";
 
 type Item = Record<string, unknown>;

@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { made, repo } from "./testing.ts";
+import { made, repo } from "../../../test/from-abi.ts";
 
 const walk = (dir: string): ReadonlyArray<string> =>
   existsSync(dir) ? readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? walk(join(dir, d.name)).map((f) => `${d.name}/${f}`) : [d.name])) : [];

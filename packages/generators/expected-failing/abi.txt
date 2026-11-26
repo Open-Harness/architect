@@ -1,0 +1,17 @@
+# Goal 16 unit A1 (#1164): `ortho new adapter --from-abi` is not built yet. The checks came first (the author skill); the builder takes these lines off as each passes.
+src/modules/abi/abi.test.ts > one contract's module > exports abi, bytecode, at, events, deploy and one class per error, and nothing else at run time
+src/modules/abi/abi.test.ts > one contract's module > has no bytecode, no deploy and no error classes for a contract with none
+src/modules/abi/abi.test.ts > one contract's module > makes at(chain) one call per function, an overload as <name>_<n>, and calls nothing while it builds them
+src/modules/abi/abi.test.ts > one contract's module > makes each error a tagged error class of its name holding its fields, and one with no inputs holding none
+src/modules/abi/abi.test.ts > one contract's module > makes events.<Event>(address, fromBlock) a source of that event at that address, from that block
+src/modules/abi/abi.test.ts > the files > counts each contract's calls, events and errors, in the order given, and says which has a stand-in
+src/modules/abi/abi.test.ts > the files > gives the same bytes for the same input, whichever form the artifact came in, and different bytes for a different ABI
+src/modules/abi/abi.test.ts > the files > keeps each input in abi/ as { abi, bytecode }, two-space JSON and a newline, from forge's artifact, a flat artifact or a bare array
+src/modules/abi/abi.test.ts > the files > makes abi/, src/generated/ per contract and its index, the descriptor, blueprint/ and package.json, sorted by path
+src/modules/abi/abi.test.ts > the files > marks abi/ and src/generated/ generated, and the descriptor, blueprint/README.md and package.json scaffolds
+src/modules/abi/abi.test.ts > the files > opens each TypeScript file with its header, naming its ABI file or abi/, and nothing else
+src/modules/abi/abi.test.ts > the files > writes package.json as an adapter's: @orthograph/<name>, a module, its front door, effect and chain-evm at their versions, orthograph a peer
+src/modules/abi/abi.test.ts > the index and the descriptor > declares one effect-mode call per function, by contract, overloads as <name>_<n>
+src/modules/abi/abi.test.ts > the index and the descriptor > exports each contract as a namespace, calls and standIn, and nothing else
+src/modules/abi/abi.test.ts > the index and the descriptor > makes src/index.ts an adapter of those calls and that stand-in, re-exporting the contracts
+src/modules/abi/abi.test.ts > the index and the descriptor > says the stand-in is a process naming the contracts with bytecode, or none when none has any

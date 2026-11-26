@@ -1,0 +1,13 @@
+# Goal 16 unit A1 (#1164): `ortho new adapter --from-abi` is not built yet. The checks came first (the author skill); the builder takes these lines off as each passes.
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > leaves an earlier adapter as it was when a second run is refused
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > puts every generated file back when run again, and leaves the scaffolds as the user changed them
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > refuses, with nothing written > a file it can't read, named
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > refuses, with nothing written > a file that isn't JSON, named
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > refuses, with nothing written > a name that isn't lower case words
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > refuses, with nothing written > no file at all
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > refuses, with nothing written > what the generator refuses, in its words: a file that isn't an ABI
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > refuses, with nothing written > what the generator refuses: a file whose name isn't a contract's
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > refuses, with nothing written > what the generator refuses: two files of one contract
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > regenerates an adapter from its own abi/
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > says what it made on its last line: the contracts, calls, events and errors
+src/modules/from-abi/from-abi.test.ts > FromAbi.adapter > writes the generator's files for the contracts to plugins/<name>/, each contract named by its file, and nothing else

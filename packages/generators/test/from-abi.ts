@@ -1,15 +1,16 @@
-// What the `--from-abi` checks share (#1164): the fixtures, the generator run, and a generated adapter written to a folder of its
+// What the `--from-abi` checks in src/modules/abi/ share (#1164): the fixtures, the generator run, and a generated adapter written to a folder of its
 // own, where it can be imported and typechecked as a user's plugin is. Expected values come from the fixtures and README.md,
 // never from what the generator answered.
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { Effect } from "effect";
-import { AbiAdapter } from "./service.ts";
-import type { ContractInput, GeneratedAbiAdapter } from "./types.ts";
+import { AbiAdapter } from "../src/modules/abi/service.ts";
+import type { ContractInput, GeneratedAbiAdapter } from "../src/modules/abi/types.ts";
 
-export const here = import.meta.dirname;
-export const pkg = join(here, "../../..");
+/** The abi module's own folder, where its fixtures are. */
+export const here = join(import.meta.dirname, "../src/modules/abi");
+export const pkg = join(import.meta.dirname, "..");
 export const repo = join(pkg, "../..");
 
 const json = (file: string): unknown => JSON.parse(readFileSync(join(here, "fixtures", file), "utf8"));

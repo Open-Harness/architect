@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { callNames, fileOf, here, made, probe, probeArtifact, quiet, quietAbi, repo, written, type Written } from "./testing.ts";
+import { callNames, fileOf, here, made, probe, probeArtifact, quiet, quietAbi, repo, written, type Written } from "../../../test/from-abi.ts";
 
 const opened: Array<Written> = [];
 afterEach(() => { for (const w of opened.splice(0)) w.remove(); });

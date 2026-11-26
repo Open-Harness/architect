@@ -62,8 +62,8 @@ A call of `at(chain)`, for a function `f` (an overload is `f_1`, `f_2`, … ever
 
 | Item | Type |
 |---|---|
-| a tuple parameter `p` inside a type `T` | `T` + `Pascal(p)`: `BoxedB` for `boxed(Box b)`; inside that, `BoxedBInner` |
-| a tuple output `p` of `f` | `Pascal(f)` + `Answer` + `Pascal(p)`: `BoxedAnswerOut`; a lone unnamed tuple output is `Pascal(f)` + `Answer` itself |
+| a tuple `p` inside a generated type `T` (an `Args`, an `Answer`, an `EventArgs`, a `Fields`, `ConstructorArgs`, or another tuple's) | `T` + `Pascal(p)`: `BoxedArgsB` for `boxed(Box b)`, inside it `BoxedArgsBInner`; `BoxedAnswerOut` for its output `out` |
+| a lone unnamed tuple output of `f` | `Pascal(f)` + `Answer` itself: an interface of its components |
 | an overloaded name (two or more functions, events or errors of one name) | each is `<name>_<n>`, `n` counted from 1 in ABI order; a name with one member is left as it is |
 
 ## The mapping

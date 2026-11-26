@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, expect, it } from "vitest";
-import { probe, quiet, repo, written, type Written } from "./testing.ts";
+import { probe, quiet, repo, written, type Written } from "../../../test/from-abi.ts";
 
 const CHECK = `import { Effect } from "effect";
 import type { Address, ChainError, ChainPort, DecodedEvent, EventSource, Hex, Signer, Submission } from "@orthograph/chain-evm/device";
@@ -34,9 +34,9 @@ same<Probe.FundedAnswer, bigint>(true);
 same<Probe.OwnerAnswer, Address>(true);
 same<Probe.PairArgs, { readonly a: bigint; readonly b: bigint }>(true);
 same<Probe.PairAnswer, { readonly sum: bigint; readonly odd: boolean }>(true);
-same<Probe.BoxedArgs, { readonly b: Probe.BoxedB; readonly extra: ReadonlyArray<bigint> }>(true);
-same<Probe.BoxedB, { readonly width: bigint; readonly holder: Address; readonly inner: Probe.BoxedBInner }>(true);
-same<Probe.BoxedBInner, { readonly sealed_: boolean; readonly tag: Hex }>(true);
+same<Probe.BoxedArgs, { readonly b: Probe.BoxedArgsB; readonly extra: ReadonlyArray<bigint> }>(true);
+same<Probe.BoxedArgsB, { readonly width: bigint; readonly holder: Address; readonly inner: Probe.BoxedArgsBInner }>(true);
+same<Probe.BoxedArgsBInner, { readonly sealed_: boolean; readonly tag: Hex }>(true);
 same<Probe.BoxedAnswer, { readonly out: Probe.BoxedAnswerOut; readonly total: bigint }>(true);
 same<Probe.BoxedAnswerOut, { readonly width: bigint; readonly holder: Address; readonly inner: Probe.BoxedAnswerOutInner }>(true);
 same<Probe.BoxedAnswerOutInner, { readonly sealed_: boolean; readonly tag: Hex }>(true);
@@ -139,7 +139,7 @@ let ran: Promise<{ readonly status: number | null; readonly out: string }> | und
 const typechecked = () => (ran ??= (async () => {
   w = await written([probe, quiet]);
   writeFileSync(join(w.dir, "check.ts"), CHECK);
-  writeFileSync(join(w.dir, "tsconfig.json"), JSON.stringify({ extends: join(repo, "tsconfig.base.json"), include: ["**/*.ts"], exclude: ["node_modules"] }));
+  writeFileSync(join(w.dir, "tsconfig.json"), JSON.stringify({ extends: join(repo, "tsconfig.base.json"), compilerOptions: { typeRoots: [join(repo, "node_modules/@types")] }, include: ["**/*.ts"], exclude: ["node_modules"] }));
   const r = spawnSync(join(repo, "node_modules/.bin/tsc"), ["-p", w.dir, "--noEmit", "--pretty", "false"], { cwd: w.dir, encoding: "utf8" });
   return { status: r.status, out: `${r.stdout}${r.stderr}` };
 })());

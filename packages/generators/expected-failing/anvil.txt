@@ -1,0 +1,6 @@
+# Goal 16 unit A1 (#1164): `ortho new adapter --from-abi` is not built yet. The checks came first (the author skill); the builder takes these lines off as each passes.
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a payable write sends its value, an overload each its own function, and a write is its signer's
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a revert that is not one of the contract's errors stays the chain's own error
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a revert with one of the contract's errors fails as its class with its fields, and nothing is sent
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a write prepares, simulates, signs and submits, answering the Submission; its event decodes typed
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > deploy puts the stand-in on the chain with its constructor's arguments, and a read answers typed

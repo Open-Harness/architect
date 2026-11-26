@@ -1,0 +1,3 @@
+# Goal 16 unit A1 (#1164): `ortho new adapter --from-abi` is not built yet. The checks came first (the author skill); the builder takes these lines off as each passes.
+src/modules/abi/types.test.ts > the generated files themselves typecheck under the repository's strict settings
+src/modules/abi/types.test.ts > typechecks: every generated type is the README's for the fixture, and every wrong use is refused
