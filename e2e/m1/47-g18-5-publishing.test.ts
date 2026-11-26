@@ -16,13 +16,13 @@
 // Every refusal is one line on stdout or stderr that starts `refused:`; the verdict is exit 1; the blocks of every package are still printed (as check 44 says). Nothing here says how the command
 // gets pnpm's answer: it may run `pnpm pack`, or anything else that judges the same tarball. The expected values come from pnpm itself and from `examples/starter`, never from the command's output.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { parse } from "yaml";
 import { repo } from "./support.ts";
-import { blocks, cleanup, preview, publicOf, quiet, shimmed, type Ran } from "./npm-preview.ts";
+import { blocks, cleanup, manifestsOf, preview, publicOf, quiet, shimmed, type Ran } from "./npm-preview.ts";
 
 const roots: string[] = [];
 afterAll(() => { cleanup(); for (const r of roots) rmSync(r, { recursive: true, force: true }); });
@@ -262,6 +262,20 @@ describe("47 (d) the repository: a real version, and the starter packed into the
     expect(publicOf(repo).length).toBeGreaterThanOrEqual(14);
     for (const m of publicOf(repo)) expect(m.version, m.name).toMatch(/^0\.1\.0-next\.\d+$/);
     expect(new Set(publicOf(repo).map((m) => m.version)).size, versions.join(" ")).toBe(1);
+  });
+  it("every framework package a public package names, as a dependency or a peer, is a `workspace:` link or the release's version", () => {
+    // pnpm rewrites a `workspace:` link to the sibling's version when it packs; a literal version is published as written,
+    // so a peer left at 0.0.0 asks every app for a framework that was never released (Codex on #1090).
+    const release = publicOf(repo)[0]!.version;
+    const framework = new Set(manifestsOf(repo).map((m) => m.name));
+    const wrong = publicOf(repo).flatMap((m) => {
+      const manifest = JSON.parse(readFileSync(join(m.dir, "package.json"), "utf8")) as Readonly<Record<string, Readonly<Record<string, string>> | undefined>>;
+      return ["dependencies", "peerDependencies", "optionalDependencies"].flatMap((field) =>
+        Object.entries(manifest[field] ?? {})
+          .filter(([dep, spec]) => framework.has(dep) && !spec.startsWith("workspace:") && spec !== release)
+          .map(([dep, spec]) => `${m.name} ${field} ${dep}@${spec}`));
+    });
+    expect(wrong, `each should be workspace:* or ${release}`).toEqual([]);
   });
   it("the real dry run lists the preset with the starter's every file in its tarball", () => {
     const ran = realRun();

@@ -1480,6 +1480,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "TaskKinds",
           "ref": "milestone.kinds"
         },
@@ -1549,7 +1550,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "343a86926bb38881"
+      "hash": "0719bd4018335d3a"
     },
     "milestone.drop": {
       "kind": "operation",
@@ -2468,6 +2469,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "Options",
           "ref": "question.options"
         }
@@ -2522,7 +2524,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "ad554a00d4c4326a"
+      "hash": "34b919d702a344e6"
     },
     "question.list": {
       "kind": "read",
