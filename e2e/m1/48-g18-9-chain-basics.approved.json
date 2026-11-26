@@ -97,7 +97,8 @@
       "fast": "${{ steps.diff.outputs.fast }}",
       "affected_e2e": "${{ steps.aff.outputs.affected_e2e || 'true' }}",
       "affected_prove": "${{ steps.aff.outputs.affected_prove || 'true' }}",
-      "capxul": "${{ steps.diff.outputs.capxul || 'true' }}"
+      "capxul": "${{ steps.diff.outputs.capxul || 'true' }}",
+      "from_doctype": "${{ steps.diff.outputs.from_doctype || 'true' }}"
     },
     "steps": [
       {
@@ -108,7 +109,7 @@
       },
       {
         "id": "diff",
-        "run": "if [[ \"$EVENT\" == pull_request ]]; then\n  tools/ci/docs-only.sh \"origin/$BASE_REF\" HEAD >> \"$GITHUB_OUTPUT\"\n  tools/ci/capxul-paths.sh \"origin/$BASE_REF\" HEAD >> \"$GITHUB_OUTPUT\"\nelse\n  echo docs_only=false >> \"$GITHUB_OUTPUT\"\nfi\n# A pull request into a goal branch other than goal/stage-1 runs the fast gate only (CI-integration.md, B1).\ntools/ci/scope.sh \"$EVENT\" \"$BASE_REF\" >> \"$GITHUB_OUTPUT\"\ncat \"$GITHUB_OUTPUT\"\n",
+        "run": "if [[ \"$EVENT\" == pull_request ]]; then\n  tools/ci/docs-only.sh \"origin/$BASE_REF\" HEAD >> \"$GITHUB_OUTPUT\"\n  tools/ci/capxul-paths.sh \"origin/$BASE_REF\" HEAD >> \"$GITHUB_OUTPUT\"\n  tools/ci/from-doctype-paths.sh \"origin/$BASE_REF\" HEAD >> \"$GITHUB_OUTPUT\"\nelse\n  echo docs_only=false >> \"$GITHUB_OUTPUT\"\nfi\n# A pull request into a goal branch other than goal/stage-1 runs the fast gate only (CI-integration.md, B1).\ntools/ci/scope.sh \"$EVENT\" \"$BASE_REF\" >> \"$GITHUB_OUTPUT\"\ncat \"$GITHUB_OUTPUT\"\n",
         "env": {
           "EVENT": "${{ github.event_name }}",
           "BASE_REF": "${{ github.base_ref }}"
