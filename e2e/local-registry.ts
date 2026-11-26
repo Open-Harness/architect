@@ -19,6 +19,9 @@ export const repo = join(import.meta.dirname, "..");
 /** Checks 44 and 45's guard: loaded first in every process of the publish, it ends any connection to a host that is not loopback. */
 export const GUARD = join(repo, "e2e/m1/deny-network.mjs");
 
+/** Names served only from this run's publish, beside Orthograph's own (the third 🔍 review of #1145). */
+export const LOCAL_ONLY = ["ortho", "create-orthograph"];
+
 export interface PublicPackage { readonly dir: string; readonly name: string; readonly version: string }
 /** Every public package under packages/: no `"private": true` (the set tools/release/preview.mjs lists). */
 export const publicPackages = (): ReadonlyArray<PublicPackage> =>
@@ -90,7 +93,9 @@ export const startRegistry = async (work: string, port: number): Promise<Registr
   mkdirSync(storage, { recursive: true });
   // The shared config allows `orthograph` and `@orthograph/*`; a public package named otherwise (`create-orthograph`) gets the same entry.
   const base = readFileSync(join(repo, "tools/e2e/verdaccio.yaml"), "utf8").replaceAll("__STORAGE__", storage).replaceAll("__PORT__", String(port));
-  const own = publicPackages().map((p) => p.name).filter((n) => n !== "orthograph" && !n.startsWith("@orthograph/") && !base.includes(`'${n}':`))
+  // Two more names are kept local, never read from npmjs: `ortho`, the command's name (someone else's package there), and
+  // `create-orthograph` (not registered there; anyone could claim it). A step that asks for either gets this run's, or nothing.
+  const own = [...new Set([...publicPackages().map((p) => p.name), ...LOCAL_ONLY])].filter((n) => n !== "orthograph" && !n.startsWith("@orthograph/") && !base.includes(`'${n}':`))
     .map((n) => `  '${n}':\n    access: $all\n    publish: $all\n    unpublish: $all\n`).join("");
   const config = base.replace(/^packages:\n/m, `packages:\n${own}`);
   writeFileSync(join(work, "verdaccio.yaml"), config);

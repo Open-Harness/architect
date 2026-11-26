@@ -52,7 +52,9 @@ const FLAGS = ["-g", "--global", "-y", "--yes", "--json", "--env", "--port", "--
 /** Why a step is not a plain command a reader types (the contract above), or undefined when it is. `app` is the app's name (the page's own), or null for none. */
 export const refusal = (step: string, app: string | null = NAME ?? null): string | undefined => {
   const name = app ?? undefined;
-  if (/[;|&<>()`]|\$\(/.test(step)) return "it uses the shell (`;`, `|`, `&`, a redirect, `$(…)`, backticks or parentheses)";
+  // The third 🔍 review of #1145: a step runs in `bash -c`, which takes quotes and backslashes away and expands `$…`, `${…}` and
+  // `{a,b}` before npm sees a word, so `'--registry=…'` or `\--reg=…` would get past every rule below. Those characters are refused.
+  if (/[;|&<>()`'"\\${}]/.test(step)) return "it uses the shell (`;`, `|`, `&`, a redirect, `$`, backticks, parentheses, quotes, a backslash or braces)";
   // GOAL18-getting-started-acceptance and the 🔍 review of #1145: the only variables a page sets, by `export` or before a command, are
   // the app's own two, `<APP>_URL` and `<APP>_TOKEN`. Anything else (npm's or pnpm's config, PATH, HOME, NODE_*, COREPACK_*, YARN_*,
   // XDG_*, a proxy, a CA) would move what the reader's own npm, pnpm or Node does.
@@ -87,6 +89,9 @@ export const refusal = (step: string, app: string | null = NAME ?? null): string
   const plainArgs = rest.filter((w) => !w.startsWith("-"));
   if (RUNNER.test(step.replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, ""))) {
     const after = step.replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, "").replace(RUNNER, "").split(/\s+/)[0];
+    // `ortho` is someone else's name on npm: `npx ortho`, `npm exec ortho` and `pnpm dlx ortho` would fetch it. Only `pnpm exec`, `yarn exec`
+    // and `bun exec` run the ortho the app installed (the third 🔍 review of #1145).
+    if (after === "ortho" && !/^(?:pnpm|yarn|bun)\s+exec\s/.test(step.replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, ""))) return "it fetches `ortho` from the registry: run the installed ortho, or `pnpm exec ortho`";
     return runnable(after) ? undefined : `it runs \`${after}\`, not ortho, create-orthograph or the app's command`;
   }
   if (program === "ortho" || program === name) return undefined;

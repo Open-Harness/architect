@@ -6,7 +6,7 @@
 // exists, the getting-started page's steps (`docs/canon/getting-started.mdx`) are run as a reader runs them, in an empty folder.
 //
 // WHY IT IS RED TODAY: `ortho new app` is slice 6 (#1064, pull request #1087, a draft); the published `ortho` has no `new app`, so the run
-// stops at its second step and every step after it says "(not run: an earlier step failed)". The page is slice 7's and does not exist yet.
+// stops at its second step and every step after it says "(not run: an earlier step failed)". The page (slice 7, #1139) stops at its own `ortho new app` step the same way.
 //
 // THE REGISTRY (e2e/local-registry.ts, the one shared helper: tools/e2e/starter.sh's steps, from its own tools/e2e/verdaccio.yaml).
 // Verdaccio under Node, a process of this file, listening on 127.0.0.1 only. Orthograph's own names are served only from what this run
@@ -42,7 +42,7 @@ import { randomBytes } from "node:crypto";
 import { join, relative, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { freePorts } from "../ports.ts";
-import { GUARD, bare, publicPackages, publishAll, repo, runGroup, startRegistry, stopGroup, versionsOn, type Ran, type Registry } from "../local-registry.ts";
+import { GUARD, LOCAL_ONLY, bare, publicPackages, publishAll, repo, runGroup, startRegistry, stopGroup, versionsOn, type Ran, type Registry } from "../local-registry.ts";
 import { NAME, PREFIX, STEPS, createAt, devAt, orthoRun, page, proveAt, refusal, refused, toolAt, urlSetAt } from "./getting-started-steps.ts";
 
 const MIN = 60_000;
@@ -192,7 +192,7 @@ describe("09 controls: the registry is local and the guard holds", () => {
     expect(registry, `the registry was started: ${setup}`).toBeDefined();
     const config = registry?.config ?? "";
     expect(config).toMatch(/^listen: 127\.0\.0\.1:\d+$/m);
-    for (const name of ["orthograph", "@orthograph/*", ...publicPackages().map((p) => p.name).filter((n) => !n.startsWith("@orthograph/"))]) {
+    for (const name of ["orthograph", "@orthograph/*", ...LOCAL_ONLY, ...publicPackages().map((p) => p.name).filter((n) => !n.startsWith("@orthograph/"))]) {
       const block = new RegExp(`^  '${name.replace(/[*/]/g, "\\$&")}':\\n((?:    .*\\n)+)`, "m").exec(config)?.[1];
       expect(block, `a packages entry for ${name}`).toBeDefined();
       expect(block, `${name} is never read from npmjs`).not.toMatch(/proxy:/);
@@ -435,11 +435,23 @@ describe("09 the getting-started page, run as written: its steps are one input o
       expect(as(`${v} pnpm ortho prove`), `${v} before a command`).toMatch(new RegExp(`^it sets ${named}: a page sets only BAKERY_URL and BAKERY_TOKEN$`));
       expect(as(`BAKERY_URL=http://127.0.0.1:8787 ${v} node generated/cli/src/main.ts system health`), `${v} second before a command`).toMatch(new RegExp(`^it sets ${named}:`));
     }
-    for (const away of ["cd /home/user/orthograph/examples/starter", "cd ../..", "cd bakery/../../x", "cd ~", "cd $HOME", "cd bakery$X"]) expect(as(away), away).toMatch(/leaves the folder/);
+    for (const away of ["cd /home/user/orthograph/examples/starter", "cd ../..", "cd bakery/../../x", "cd ~"]) expect(as(away), away).toMatch(/leaves the folder/);
     for (const flag of ["npm install -g @orthograph/cli --registry=https://registry.npmjs.org", "pnpm install --registry https://registry.npmjs.org", "npm install -g @orthograph/cli --prefix /tmp/p",
       "pnpm install --store-dir /tmp/s", "npm install -g @orthograph/cli --@orthograph:registry=https://registry.npmjs.org/", "pnpm install --@orthograph:registry=https://registry.npmjs.org/",
       "pnpm install --//registry.npmjs.org/:_authToken=x", "npm install -g @orthograph/cli --userconfig /tmp/rc", "pnpm install --config.registry=https://registry.npmjs.org/"]) {
       expect(as(flag), flag).toMatch(/another registry, token, config or folder/);
+    }
+    // What bash would unquote, unescape or expand before npm sees it (the third 🔍 review of #1145).
+    for (const shell of ["npm create orthograph bakery '--registry=https://registry.npmjs.org/'", "npm create orthograph bakery \\--registry=https://registry.npmjs.org/",
+      "npm init orthograph bakery \"--reg=https://registry.npmjs.org/\"", "npm exec ''--registry=https://registry.npmjs.org/ create-orthograph bakery",
+      "npm create orthograph bakery ${X}--registry=https://registry.npmjs.org/", "npm create orthograph bakery {--registry=https://registry.npmjs.org/,}",
+      "npm create orthograph bakery '--userconfig=/tmp/rc'", "npm create orthograph bakery '--prefix=/tmp/p'", "ortho prove '--'only health", "pnpm ortho prove '--'changed",
+      "ortho prove '--root=/home/user/orthograph/examples/starter'", "ortho dev '--root=/tmp/x'", "cd $HOME", "cd bakery$X"]) {
+      expect(as(shell), shell).toBe("it uses the shell (`;`, `|`, `&`, a redirect, `$`, backticks, parentheses, quotes, a backslash or braces)");
+    }
+    // `ortho` fetched from npm, where the name is someone else's.
+    for (const fetched of ["npx ortho new app bakery", "npx -y ortho prove", "npm exec ortho prove", "npm exec -- ortho prove", "pnpm dlx ortho prove", "yarn dlx ortho prove", "bun dlx ortho prove"]) {
+      expect(as(fetched), fetched).toBe("it fetches `ortho` from the registry: run the installed ortho, or `pnpm exec ortho`");
     }
     // npm's abbreviations, and the flags a page has no use for, by the allow-list.
     for (const [step, flag] of [["npm i -g @orthograph/cli --reg=https://registry.npmjs.org/", "--reg"], ["npm install -g @orthograph/cli --regis=https://a.invalid/", "--regis"],
@@ -451,7 +463,7 @@ describe("09 the getting-started page, run as written: its steps are one input o
     }
     for (const fine of ["export BAKERY_URL=http://127.0.0.1:8787", "export BAKERY_TOKEN=abc", "BAKERY_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health",
       "BAKERY_URL=http://127.0.0.1:8787 BAKERY_TOKEN=abc bakery system health", "npm install -g @orthograph/cli@next", "npm install --global @orthograph/cli", "cd bakery", "pnpm install",
-      "pnpm ortho dev", "pnpm ortho dev --port 8787", "pnpm ortho prove --env local --json", "npx -y create-orthograph bakery", "node generated/cli/src/main.ts greeting say --name Ada --json"]) expect(as(fine), fine).toBeUndefined();
+      "pnpm ortho dev", "pnpm ortho dev --port 8787", "pnpm ortho prove --env local --json", "pnpm exec ortho prove", "ortho check", "npx -y create-orthograph@next bakery", "npx -y create-orthograph bakery", "node generated/cli/src/main.ts greeting say --name Ada --json"]) expect(as(fine), fine).toBeUndefined();
     // With no app named, no variable at all is the page's to set.
     expect(refusal("export BAKERY_URL=http://127.0.0.1:8787", null)).toMatch(/^it exports BAKERY_URL: a page sets no variable/);
   });
