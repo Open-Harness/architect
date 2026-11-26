@@ -152,8 +152,12 @@ on the framework's wallets and chain. It is listed so nothing else takes its rec
 **Presets, not pieces.** People don't pick from 28 names. `ortho new app` (status row `ortho-new`) offers presets that are
 lists of mounts: *Books* (`company`, `rates`, `ledger`, `parties`, `tax`, `items`, `payments`, `invoicing`, `banking`,
 `bridge-accounts`), *People* (`people`, `time`, `expenses`), *Payroll* (`payroll`, and a tax piece
-where one is built), *Capxul core* (all fifteen core pieces), and *Everything*. A preset writes mount files; afterwards a person adds or
-removes a mount file and rebuilds.
+where one is built), *Capxul core* (all fifteen core pieces), and *Everything*. A preset names the pieces a person
+asked for; `ortho new app` adds every piece they need (section 2's needs, transitively) before it writes the mount
+files. So *People* also mounts `company`, `rates`, `ledger`, `parties` and `payments` (`expenses` posts to the ledger
+and settles through payments), and *Payroll* mounts those five plus `people` and `time`. A set with an unmet need is
+refused by `ortho check`. Afterwards a person adds or removes a mount file and
+rebuilds.
 
 ## 2. Each piece's contract
 
