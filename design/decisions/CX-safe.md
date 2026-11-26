@@ -26,14 +26,14 @@ through CX-bridge-rails it is marked so. One fact still waits on the conductor a
 ## In short
 
 A Safe is a record Capxul keeps from the moment a person or a company has one. Its address is the one Safe's own
-factory will give it, worked out before anything is on chain from a salt and its first owner, so money can be paid
+factory will give it, worked out before anything is on chain from a salt and its first owner, so money can be paid (Superseded by CX-safe-machines, 26 November 2026.)
 there at once. A person's Safe starts owned by Capxul's bootstrap key, so its address needs nothing from the person;
-when the person claims it, it is deployed and their key replaces the bootstrap key as its only owner. A company's Safe
+when the person claims it, it is deployed and their key replaces the bootstrap key as its only owner. (Superseded by CX-safe-machines, 26 November 2026.) A company's Safe
 is owned by its founders' and directors' personal Safes, never their keys, so a person can change their key without
 any company's Safe moving. After deploy the chain is the truth for owners and threshold, read through the `safe`
 adapter. Budgets come next, as a Zodiac Roles module the company's Safe switches on, and getting paid by a link comes
 last, after the books have invoices. This is the earlier implementation's design (Aaron's own), lifted, with one
-change: the salt is keyed by Capxul's id, not by an email.
+change: the salt is keyed by Capxul's id, not by an email. (Superseded by CX-safe-machines, 26 November 2026.)
 
 The journeys run on Anvil, one per world, from the first slice that sends a transaction. No Safe stand-in is built:
 Anvil per world, keys per world, the ABI codec, transaction tracking and the follower already work, so a fake chain
@@ -43,7 +43,7 @@ would be thrown away. The first slice sends nothing, so it needs no chain at all
 
 Ids are new prefixes; amounts are base-unit digit strings, as everywhere in Capxul. Where each thing lives is section 5.
 
-**`safe`: a Safe Capxul knows about** (`Blueprint.id("saf")`). One thing for both kinds, because a person's Safe and a
+**`safe`: a Safe Capxul knows about** (`Blueprint.id("saf")`). One thing for both kinds (Superseded by CX-safe-machines, 26 November 2026.), because a person's Safe and a
 company's are the same contract made by the same factory (`M7-capxul.md:178-179`) and differ only in who owns them.
 
 | Field | Value | Why |
@@ -53,20 +53,20 @@ company's are the same contract made by the same factory (`M7-capxul.md:178-179`
 | `person` | `per_…`, set when `kind` is `personal` | whose Safe it is (`M7-capxul.md:150`) |
 | `company` | `com_…`, set when `kind` is `company` | the company it is for; a company may have several, a Safe may have no company (`K25-the-blueprint-on-chain.md:117`) |
 | `account` | `Blueprint.account()`, CAIP-10 | the address, worked out before deploy: `eip155:8453:0x…` on Base, `eip155:84532:0x…` in staging, `eip155:31337:0x…` in a world (`packages/orthograph/src/modules/values/service.ts:78`) |
-| `firstOwner` | `Blueprint.account()` | the one owner given to `setup`: the environment's bootstrap key for a personal Safe; the founder's personal Safe for a company's |
+| `firstOwner` | `Blueprint.account()` | the one owner given to `setup`: the environment's bootstrap key for a personal Safe; the founder's personal Safe for a company's (Superseded by CX-safe-machines, 26 November 2026.) |
 | `owners` | a list of `Blueprint.account()` | today's owners: `[firstOwner]` until the chain says otherwise, then a read copy |
 | `threshold` | a whole number, 1 to the number of owners | 1 at setup; a person's Safe stays 1 |
 | `saltNonce` | a uint256 digit string | the CREATE2 salt's nonce (below), stored so the address can be checked again |
 
 Its machine. A personal Safe: **`counterfactual`** (recorded, the address known, no code) → **`claimed`** (deployed, and
 the person's key swapped in for the bootstrap key, both seen on chain). A company's Safe: **`counterfactual`** →
-**`deployed`** (the factory's `ProxyCreation` for this address seen, confirmed by the tracker). A take-back that drops
-the `ProxyCreation` (the follower's correction) moves `deployed` or `claimed` back to `counterfactual`, as S2 undoes a
+**`deployed`** (Superseded by CX-safe-machines, 26 November 2026.) (the factory's `ProxyCreation` for this address seen, confirmed by the tracker). A take-back that drops
+the `ProxyCreation` (the follower's correction) moves `deployed` or `claimed` back to `counterfactual` (Superseded by CX-safe-machines, 26 November 2026.), as S2 undoes a
 payment. After deploy, owners and
 threshold change only on chain (`addOwnerWithThreshold`, `removeOwner`, `swapOwner`, `changeThreshold`), each an
 owner-signed `safe-transaction`, and Capxul's row follows the adapter's reads. Refusals declared with the thing:
 `ThresholdOutOfRange`, `OwnersNotUnique`, `SafeNotDeployed`, `NotClaimed` (a personal Safe pays nothing, and signs for
-no company, until it is claimed), `AlreadyClaimed`, `NotAnOwner`.
+no company, until it is claimed), `AlreadyClaimed`, `NotAnOwner`. (Superseded by CX-safe-machines, 26 November 2026.)
 
 **Where `safe` lives, beside K25's Safe.** Capxul's `safe` is a record in Capxul's own database (the project's default
 store), not a thing that lives on chain: it exists before there is any contract to read. K25's `Safe`, "a thing living
@@ -81,7 +81,7 @@ superseded here.
 **The bootstrap owner and the claim.** The implementation makes a person's Safe with one fixed owner,
 `CAPXUL_BOOTSTRAP_OWNER` (`infrastructure:P/safe-contracts.ts:54`), so its address depends on the salt alone, before the
 person has any signer; at claim, the person's signer replaces it by `swapOwner` (`infrastructure:P/safe-address.ts:143-174`).
-Capxul lifts this. Each environment has its own bootstrap key, held by the server (its custody declared `server`, M6.18;
+Capxul lifts this. Each environment has its own bootstrap key (Superseded by CX-safe-machines, 26 November 2026.), held by the server (its custody declared `server`, M6.18;
 a world key in a world); its address is part of every personal Safe's address in that environment. The bootstrap key
 signs exactly one kind of transaction: the claim, submitted (section 3, "How transactions reach the chain") as the
 factory's `createProxyWithNonce` followed by the Safe's `swapOwner(bootstrap → the person's key)`, signed by the bootstrap key. Nothing else Capxul
@@ -105,7 +105,7 @@ no money in them is carried over.
 saltNonce)` will give, worked out the factory's way: CREATE2 from the factory's address, salt
 `keccak256(encodePacked(keccak256(initializer), saltNonce))` (`infrastructure:P/safe-address.ts:205-206`), and the hash
 of the factory's proxy creation code (pinned at `infrastructure:P/safe-contracts.ts:59-69`) followed by the singleton's
-address. The initializer is the implementation's, byte for byte: `setup([firstOwner], 1, …)` with the setup call that
+address. The initializer is the implementation's, byte for byte (Superseded by CX-safe-machines, 26 November 2026.): `setup([firstOwner], 1, …)` with the setup call that
 enables the Safe 4337 module and that module as the fallback handler, and no payment
 (`infrastructure:P/organization-safe.ts:44-71`); no Roles modifier or allowance is set up then (`:40-110`). So the
 address depends only on the pinned contracts, the first owner and the salt, and adding a budget later never moves it.
@@ -151,7 +151,7 @@ owner approves depends on what it is:
   on chain: its own owner's key signs a SafeTx on the personal Safe that calls `approveHash(digest)` on the company's
   Safe, or, when it is the last approval, calls the company's `execTransaction` itself, where its approval counts
   because it is the sender. Each step is a transaction. **(conductor: confirm)** this is how the implementation
-  executes a company's transaction (`infrastructure:P/organization-safe.ts`, `packages/backend/src/permissions/`).
+  executes a company's transaction (`infrastructure:P/organization-safe.ts`, `packages/backend/src/permissions/`). (Confirmed in CX-safe-machines, 26 November 2026: the founder Safe sends and calls `execTransaction` with a pre-validated signature.)
 
 Each approval is an operation the owner calls; the call that reaches the threshold also submits. No workflow:
 workflows are parked (K44), so collecting approvals is a thing's machine, not ST3.06's durable workflow.
@@ -264,7 +264,7 @@ parked Goal 12's draft checks, #497 on `goal-12/st2-02-check`. Each copies only 
 the commit and the file.
 
 **What is lifted, and what is new.** Lifted from the implementation (Aaron's own, `infrastructure:packages/protocol/src/evm/`
-and `packages/contracts/`): the Safe's version, addresses and initializer, the address formula, the bootstrap owner
+and `packages/contracts/`): the Safe's version, addresses and initializer, the address formula, the bootstrap owner (Superseded by CX-safe-machines, 26 November 2026.)
 and the claim, the company's Safe owned by personal Safes, CapxulPayments V3 unchanged, and the Org Budget's Roles
 deployment, scoping and allowance calls. New in Capxul: the Orthograph things and their machines and refusals, the
 salt keyed by Capxul's id, the journeys and checks, and the adapters' shape as Orthograph adapters (hand-written to the
@@ -289,18 +289,20 @@ The table is grouped by kind, not in run order; the graph below is the order.
 |---|---|---|---|---|---|
 | **A1 · `--from-abi`** (#1164) | `ortho new adapter --from-abi`: typed calls, events and reverts from an ABI, a stand-in contract deployed into a world | new files in `packages/cli/src/modules/new/` and its own module in `packages/generators`; in `packages/cli/src/main.ts`, `newAdapter` (`:263-280`) refuses without `--from-openapi`, so it gains a second flag and a choice between the two, a few lines rather than one | authoring now; the build after #1087 and #1153 land on `main` | a generated adapter's typed call, event and revert pass against its stand-in on Anvil | no |
 | **A2 · erc20** (#1162) | `@orthograph/erc20`: `transfer`, `balanceOf`, `Transfer`, a test token for worlds | `packages/erc20/` | nothing | `transfer` and `Transfer` are typed, a revert decodes typed, against the test token on Anvil | no |
-| **A3 · safe** (#1161) | `@orthograph/safe`: `SafeDeployment`, the address prediction, the world starter (`anvil_setCode` of the pinned bytecode), reads of owners, threshold and nonce, the SafeTx typed data, `execTransaction`, `approveHash`, `swapOwner`, `GS0xx` typed | `packages/safe/` | nothing | the prediction matches the implementation's formula on a fixed vector and the factory's address on Anvil; a SafeTx's digest equals `getTransactionHash`; a replay is `GS026`, typed | no |
+| **A3 · safe** (#1161) | `@orthograph/safe`: `SafeDeployment`, the address prediction, the world starter (`anvil_setCode` of the pinned bytecode), reads of owners, threshold and nonce, the SafeTx typed data, `execTransaction`, `approveHash`, `swapOwner`, `GS0xx` typed | `packages/safe/` | nothing | the prediction matches the implementation's formula on a fixed vector (Superseded by CX-safe-machines, 26 November 2026.) and the factory's address on Anvil; a SafeTx's digest equals `getTransactionHash`; a replay is `GS026`, typed | no |
 | **A4 · zodiac-roles** (#1163) | `@orthograph/zodiac-roles`: the Roles modifier through `ModuleProxyFactory`, the Org Budget's calls, `setAllowance`, `execTransactionWithRole`, the allowance read | `packages/zodiac-roles/` | nothing | on Anvil, a role scoped to one call and an allowance passes a send within it and refuses one over it, read back typed | no |
-| **E1 · events-in** (#1165) | `on:` for an adapter's confirmed chain events, once each by `${chainId}:${blockHash}:${logIndex}`, with corrections | new files in `packages/orthograph/src/modules/{events,plugins}/` and its wiring | nothing (the follower is built) | an event delivered twice settles once; a correction undoes it | no |
-| **S1 · The Safes recorded** (#1168) | the `safe` thing; `safe.record` for a person and a company; acted on from the CLI, MCP and an agent; no chain | `examples/capxul/blueprint/things/safe/`, its journeys | A3's prediction (build only) | as S1 below | yes, a pair |
+| **E1 · events-in** (#1165) | `on:` for an adapter's confirmed chain events, once each by `${chainId}:${blockHash}:${logIndex}`, with corrections | new files in `packages/orthograph/src/modules/{events,plugins}/` and its wiring (Superseded by CX-safe-machines, 26 November 2026.) | nothing (the follower is built) | an event delivered twice settles once; a correction undoes it | no |
+| **S1 · The Safes recorded** (#1168) | the `safe` thing; `safe.record` for a person and a company (Superseded by CX-safe-machines, 26 November 2026.); acted on from the CLI, MCP and an agent; no chain | `examples/capxul/blueprint/things/safe/`, its journeys | A3's prediction (build only) | as S1 below | yes, a pair |
 | **S2 · Incoming transfers** (#1169) | an `on:` for the `erc20` `Transfer` to a recorded Safe, kept as a received payment | the received-payment thing and its journeys in `examples/capxul/` | S1, A2, A3's world starter, E1 | as S2 below | yes, a pair |
-| **S3 · Deploy on first spend** (#1170) | `safe.claim`, `safe-transaction`, a company's Safe deployed on its first spend, a director added | `examples/capxul/blueprint/things/safe-transaction/`, `safe`'s new moves, journeys | S2, A3, Snag G18-sign, Snag G18-client (if needed) | as S3 below | yes, a pair |
-| **S4 · The budget** (#1171) | the Payments contract copied and its adapter; `org-budget`; `payment.send` under the role; `PayoutOverBudget` | `examples/capxul/blueprint/things/org-budget/`, `examples/capxul/plugins/onchain-pay/`, journeys | S3, A4 | as S4 below | yes, a pair |
+| **S3 · Deploy on first spend** (#1170) | `safe.claim`, `safe-transaction`, a company's Safe deployed on its first spend, a director added (Superseded by CX-safe-machines, 26 November 2026.) | `examples/capxul/blueprint/things/safe-transaction/`, `safe`'s new moves, journeys | S2, A3, Snag G18-sign, Snag G18-client (if needed) | as S3 below | yes, a pair |
+| **S4 · The budget** (#1171) | the Payments contract copied and its adapter; `org-budget`; `payment.send` under the role; `PayoutOverBudget` | `examples/capxul/blueprint/things/org-budget/`, `examples/capxul/plugins/onchain-pay/`, journeys | S3, A4 (Superseded by CX-safe-machines, 26 November 2026.) | as S4 below | yes, a pair |
 | **S5 · Getting paid by a link** (#1172) | a pay link on an invoice, settled only by S2's `Transfer`, its ledger lines posted | the invoice's pay link and its journeys | S2; slice 7's sales invoices, which wait on #1079 and #1132 | as S5 below | yes, a pair |
 | **G18-sign** (Snag #1166) | EIP-712 typed-data signing in `packages/wallets` (M6.15) | Goal 18's | nothing | the signer signs a SafeTx's typed data and the digest matches | no |
 | **G18-client** (Snag #1167) | a Safe's `GS0xx` reverts decoded typed through the contract client (M6.14), if `Abi.refusal` cannot | Goal 18's | nothing | a planted `GS026` reaches the caller as a typed refusal | no |
 | **G18-relayer** (#784) | the relayer's four bugs, pinned against check 48 | Goal 18's | check 48's author first | as #784 says | no |
-| **P1 · The sponsored path** (#1174) | production's path (CX-bridge-rails `:125-126`): Capxul's calls as sponsored ERC-4337 UserOperations through the Safe 4337 module, a bundler and a paymaster on Base Sepolia, an owner Safe acting through its module | new files in `packages/safe/` (a `user-operation` module), Capxul's environment for staging | S3, S4; who pays the gas (For Aaron, 1); a bundler and paymaster credential for staging, which is Aaron's | a claim, an owner-approved payment and a budget send each land on Base Sepolia as a sponsored UserOperation with the same journeys' results as in a world | no |
+| **P1 · The sponsored path** (#1174) | production's path (CX-bridge-rails `:125-126`): Capxul's calls as sponsored ERC-4337 UserOperations through the Safe 4337 module, a bundler and a paymaster on Base Sepolia, an owner Safe acting through its module | new files in `packages/safe/` (a `user-operation` module), Capxul's environment for staging | S3, S4; who pays the gas (For Aaron, 1) (Superseded by CX-safe-machines, 26 November 2026.); a bundler and paymaster credential for staging, which is Aaron's | a claim, an owner-approved payment and a budget send each land on Base Sepolia as a sponsored UserOperation (Superseded by CX-safe-machines, 26 November 2026.) with the same journeys' results as in a world | no |
+
+(For the Safe's units, this order is superseded by CX-safe-machines section 5's graph, 26 November 2026.)
 
 ```mermaid
 graph LR
@@ -339,23 +341,23 @@ adapters are hand-written to its shape and regenerated once it lands. Bridge's R
 
 The lead's draft on #1158 had four slices. This cut adds **S2, incoming transfers**, before the Safe goes on chain:
 getting paid to a Safe needs no deploy (`M7-capxul.md:169-178`), and Bridge's deposits need the same door
-(CX-bridge-rails `:403,410`). It puts the claim in S3, since a person's Safe deploys when it is claimed.
+(CX-bridge-rails `:403,410`). It puts the claim in S3, since a person's Safe deploys when it is claimed. (Superseded by CX-safe-machines, 26 November 2026.)
 
 - **S1 · The Safes recorded,** in `prove`: a person's Safe has the address of a vector worked out with the
-  implementation's own formula for a fixed salt nonce and owner; recording the same id twice gives one Safe; a
+  implementation's own formula for a fixed salt nonce and owner (Superseded by CX-safe-machines, 26 November 2026.); recording the same id twice gives one Safe; a
   company's Safe's address changes with its founder's Safe and nothing else; a company whose founder has no Safe is
   refused; a stranger cannot record a Safe for another person or company; an agent records one through MCP. It
   unblocks Bridge R1, the company's Safe address as a fact (CX-bridge-rails `:402`).
-- **S2 · Incoming transfers,** on Anvil: USDC sent to a counterfactual Safe's address is recorded once on that Safe,
+- **S2 · Incoming transfers,** on Anvil: USDC sent to a counterfactual Safe's address is recorded once on that Safe, (Superseded by CX-safe-machines, 26 November 2026.)
   typed; a second delivery of the same event changes nothing; an `anvil_reorg` that drops it gives a correction and
   the payment is undone; the address S1 worked out is the one the factory deploys at.
 - **S3 · Deploy on first spend,** on Anvil: a person claims their Safe holding USDC, it reads `claimed` with their key
-  its only owner, and they pay a supplier on their one signature; a second claim is `AlreadyClaimed`; an unclaimed
-  Safe's payment is `NotClaimed`; the bootstrap key is used by the claim and by no other operation; a company's Safe
+  its only owner, and they pay a supplier on their one signature (Superseded by CX-safe-machines, 26 November 2026.); a second claim is `AlreadyClaimed` (Superseded by CX-safe-machines, 26 November 2026.); an unclaimed
+  Safe's payment is `NotClaimed`; the bootstrap key is used by the claim and by no other operation (Superseded by CX-safe-machines, 26 November 2026.); a company's Safe
   owned by its founder's Safe is deployed and pays on the founder's approval; with a director added at threshold 2, it
   pays after the second approval and not after the first; an approval from a non-owner is `NotAnOwner` before anything
   is sent; a replayed SafeTx is refused by the Safe as `GS026`, typed; an `anvil_reorg` that drops the deploy puts the
-  Safe back to `counterfactual`.
+  Safe back to `counterfactual` (Superseded by CX-safe-machines, 26 November 2026.).
 - **S4 · The budget,** on Anvil: a member's Safe sends within the budget, `PaymentSent` carries its `settlementId`,
   and the allowance falls by exactly that; a send over it is refused `PayoutOverBudget` with the right `remaining`
   before any transaction; a spent budget gives `remaining: 0`; a second `send` with the same `settlementId` is refused
@@ -376,7 +378,7 @@ A feature may import only features, never the app (the conductor's answer). So, 
 | `org-budget` | `examples/capxul/blueprint/things/org-budget/` | it links to two `safe`s |
 | the Payments adapter, the contract's copied source and its ABI | `examples/capxul/plugins/onchain-pay/` | it needs nothing of the app, so it is in the feature from day one |
 | `SafeDeployment`, the prediction, the Roles calls | `packages/safe/` (A3) and `packages/zodiac-roles/` (A4) | they are the framework's, for any app's Safes |
-| the salt's namespace and the bootstrap key's address, per environment | `examples/capxul/blueprint/environments/`, the key itself a secret | they are Capxul's and differ per environment |
+| the salt's namespace and the bootstrap key's address, per environment (Superseded by CX-safe-machines, 26 November 2026.) | `examples/capxul/blueprint/environments/`, the key itself a secret | they are Capxul's and differ per environment |
 
 The three things move into `onchain-pay` after `company` and `people` have moved, as a move of its own; its row belongs
 on CX-features's move list (#1157, `goal-16/features-rename`, not yet in `goal/capxul`; the features lead's file, so the
@@ -388,13 +390,13 @@ word in the blueprint yet (`CX-composable-pieces.md:520-521`); S4 meets it first
 ## For Aaron
 
 1. **Who pays the gas on Base?** Capxul's transactions go as sponsored UserOperations, as your implementation does. I
-   recommend Capxul sponsors them, for claims, deploys, Safe transactions and payouts: a cost of Capxul's, small on
+   recommend Capxul sponsors them, for claims, deploys, Safe transactions and payouts (Superseded by CX-safe-machines, 26 November 2026.): a cost of Capxul's, small on
    Base. The other choice is each company paying for its own, which needs ETH in every Safe before it can spend. The
    conductor is bringing this to you; proceeding on Capxul paying.
 2. **Is it all right that Capxul's bootstrap key owns a person's Safe until they claim it?** I recommend yes, as your
    earlier implementation does: it is what lets money arrive before a person has a key, and the key signs only the
    claim, which a journey proves. The other choice is to make each person's Safe only when they bring a key, so Capxul
-   never holds one, but then nobody can be paid before they sign up. Proceeding on the bootstrap key.
+   never holds one, but then nobody can be paid before they sign up. Proceeding on the bootstrap key. (Superseded by CX-safe-machines, 26 November 2026.)
 
 ## Supersedes
 

@@ -249,3 +249,7 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
   payout settles, its buffer excess is refunded to the Safe, but the Org Budget's allowance stays spent, because only an
   owner-signed `setAllowance` raises it. Waits until a crediting path exists that needs no owner signature for each
   payout.
+- **Setting a company's Safe up afresh after a definitive failure** (CX-safe-machines, Goal 16 S3b). A `company-safe`
+  in `failed` is final for its authorization, and `resume` only checks the same submission again. A fresh bootstrap
+  needs its own design: a new generation and a new authorization from the founder, once a failure in staging shows
+  what kind of failure it should answer.
