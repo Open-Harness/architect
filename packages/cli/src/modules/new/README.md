@@ -10,3 +10,5 @@ The generator is `@orthograph/generators/adapter` (pure: a parsed document in, f
 refuses what can't make an adapter before writing anything (`could not read`, `could not parse`, `not an OpenAPI or
 Swagger description`, `no operations`, `lower case words`), writes, and says what it made on the last line.
 Test: `new.test.ts`.
+
+`ortho new app <name>` is not here: it is `App.create` in `@orthograph/preset`, which `create-orthograph` calls too, so both make exactly what the preset makes. `main.ts` only parses the name and prints.
