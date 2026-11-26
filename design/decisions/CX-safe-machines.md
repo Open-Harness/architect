@@ -360,6 +360,10 @@ stateDiagram-v2
   rechecking --> ready: observe (verified again)
   rechecking --> attention: observe, recover
   rechecking --> failed: observe (definitive)
+  attention --> attention: observe (still unresolved, backing off)
+  attention --> ready: observe (verified)
+  attention --> rechecking: observe (orphaned)
+  attention --> failed: observe (definitive)
   attention --> processing: resume (a submission, not proven)
   attention --> rechecking: resume (a proof on record)
   attention --> awaiting: resume (no submission)
@@ -375,7 +379,7 @@ export const machine = Blueprint.machine(CompanySafe, {
     authorize: { from: ["awaiting"], to: "processing", emits: Events.CompanySafeBootstrapAuthorized },
     send: { from: ["processing"], to: "processing", emits: Events.CompanySafeBootstrapSent },
     observe: {
-      from: ["processing", "ready", "rechecking"],
+      from: ["processing", "attention", "ready", "rechecking"],
       to: ["processing", "attention", "ready", "rechecking", "failed"],
       emits: Events.CompanySafeObserved,
       by: Blueprint.time.after("nextCheckAt", "0 seconds"), // the builder confirms the compiler takes a zero span
@@ -399,7 +403,7 @@ export const machine = Blueprint.machine(CompanySafe, {
 | `authorize` | `submitAuthorization`'s admit and `acceptAuthorization` (`S/operations/submit-authorization.ts:22-59`, `S/writes/authorizations.ts:114-194`) | the founder | Payload: the signature. Admitted only if it recovers to the founder Safe's signer (`SignerMismatch`), the preparation is unexpired and is the one stored (`StalePreparation`), and the hash is bound to no other company (`HashBoundElsewhere`). Binds the submission, mints `sendToken`, and sets `nextCheckAt` to now. A replay of the same signed bootstrap answers as accepted and changes nothing. Emits `CompanySafeBootstrapAuthorized { safe, submission }`. |
 | `send` | `checkSendFence`, the send, `recordSendOutcome` (`S/reads/setups.ts:48-65`, `S/writes/authorizations.ts:217-258`) | the system, right after `authorize` | The send fence: refused `SendFenced { reason }` unless the generation, `sendToken` and submission hash match and the setup is not completed. Broadcasts the signed bytes, then records the outcome in its commit: acknowledged sets `acknowledgedAt`; failed or unknown, one value, sets `issue: submission_unknown`. Either way it clears `sendToken`, so the bytes go out once; the check already scheduled by `authorize` settles what happened. Emits `CompanySafeBootstrapSent { safe, outcome }`. |
 | `observe` | `claimCheck`, `observe`, `applyObservation` (`S/operations/observe.ts:29-56`, `S/writes/observations.ts:72-212`) | time, at `nextCheckAt` | Reads the chain and applies the policy below. A check is capped at 45 seconds; a timeout is a retryable provider failure (`S/external/bootstraps.ts:100-162`). An observation from another generation is stale and writes nothing. Emits `CompanySafeObserved { safe, observation, issue }`, and on the first `ready` or the first `failed` it is the setup's transition event. |
-| `recover` | `recover`, `recoverDuePage` (`S/operations/recover.ts:26-42`, `S/writes/checks.ts:245-292`) | time, every minute | For a setup whose check is overdue by more than 90 seconds: adds one to `abandonedChecks` and checks again now; at three it halts, to `attention` (or stays `ready` if proven) with `issue: worker_failed`. Emits `CompanySafeRecovered { safe, abandonedChecks }`. |
+| `recover` | `recover`, `recoverDuePage` (`S/operations/recover.ts:26-42`, `S/writes/checks.ts:245-292`) | time, every minute | For a setup whose check is overdue by more than 90 seconds: adds one to `abandonedChecks` and checks again now; at three it halts, to `attention` (or stays `ready` if proven) with `issue: worker_failed` and `nextCheckAt` cleared. Emits `CompanySafeRecovered { safe, abandonedChecks }`. |
 | `resume` | `resume` (`S/writes/resumes.ts:41-145`) | the founder, or an operator | No submission and the founder's facts still hold → `awaiting`; a submission not proven → `processing`; a proof on record → `rechecking`. Adds one to `generation`, clears the counters and `parkedAt`, and checks now. Emits `CompanySafeResumed { safe, generation }`. |
 
 Not lifted: `get`, `get-proof-receipt` and `list-mine` are reads; `load-authorization-context` is internal to
@@ -417,7 +421,12 @@ instance here also fixes the version the commit is guarded by"), so `claimCheck`
   `final` once the block is finalized) or `orphaned`.
 - **Otherwise:** the address worked out again (a difference → definitive `address_mismatch`); the receipt by the
   submission's hash (none, and the node still holds the transaction → `pending`; none and the node does not →
-  `pending`, and `recover`'s rule decides); a receipt whose sender is not the founder's Safe, or not the expected hash →
+  `pending`, and `recover`'s rule decides); the founder's Safe checked at the layer where it acts, never the
+  outer transaction's `from`, which is the bundler in production and the submitting world key in a world: in production,
+  the EntryPoint's `UserOperationEvent` in the receipt must carry the submission's UserOperation hash with `sender` the
+  founder's Safe and `success` true (the implementation's check of the UserOperation receipt's sender,
+  `S/external/verifications.ts:40-190`); in a world, the receipt must hold the founder Safe's own `ExecutionSuccess` for
+  the authorized SafeTx's hash, emitted by the founder Safe's address. Either missing, or a receipt for another hash →
   definitive `receipt_mismatch`; reverted → definitive `receipt_reverted`; its logs must hold exactly the factory's
   `ProxyCreation` of this address with the `SafeL2` singleton (and the founder Safe's own, when the bootstrap was its
   first spend) → else definitive `receipt_mismatch`; then at that block, the code at the address, `getOwners() =
@@ -439,7 +448,12 @@ the current run and the observation:
 | `workerFailure` | `attention`, `issue: worker_failed`; a proven setup stays `ready` |
 
 The next check, inside the first two minutes: 1, 2, 4, 8, 15 then 30 seconds while `pending`; 5, 15, 30, 60 then 300
-seconds after a provider failure. After two minutes, an unresolved check waits 1, 2, 4 … minutes, at most 60. After a
+seconds after a provider failure. After two minutes, an unresolved check waits 1, 2, 4 … minutes, at most 60, and
+these checks go on in `attention`: `attention` means a person should look, not that the chain stops being watched, so a
+bootstrap that lands after the cutoff still makes the setup `ready` by itself. Only parking and the abandoned-check halt
+stop observation, by clearing `nextCheckAt`, and `resume` is the way back from either. This is the implementation's
+rule: an unresolved run keeps its backoff schedule in `needsAttention` until it parks
+(`S/rules/policies.ts:113-130`, `S/writes/checks.ts:111-137`). After a
 day unresolved the setup is **parked**: `parkedAt` set, no next check, one alert, the state unchanged, until `resume`
 (`S/rules/policies.ts:33-37,113-130`, `S/writes/checks.ts:111-137`).
 
@@ -464,7 +478,7 @@ leaving owner's Safe for a joining one the same way (`infrastructure:B/organizat
 | `prepare` | not found | `NotAllowed` | — (`AlreadyAuthorized`) | — | — | — | — |
 | `authorize` | not found | `SignerMismatch`, `StalePreparation`, `HashBoundElsewhere`, `NotAllowed` | — (a replay of the same bytes answers as accepted) | — | — | — | — |
 | `send` | not found | — | `SendFenced` | — | — | — | — |
-| `observe` | not found | — | applies | — (parked or halted; `resume`) | applies | applies | — |
+| `observe` | not found | — | applies | applies, unless parked or halted (no `nextCheckAt`; `resume`) | applies | applies | — |
 | `recover` | not found | — | applies | — | applies | applies | — |
 | `resume` | not found | — | — (busy: the check is running) | `NotAllowed` | — | — | `NotAllowed` |
 
