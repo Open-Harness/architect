@@ -13,13 +13,13 @@ journey days inside that limit; payroll (Goal 16 slice 9) and closing a period n
 
 ## The calls
 
-1. **Each journey starts its clock again.** In a world with a stepped or scaled clock, a journey's clock starts on the
+1. **Each journey starts its clock again.** In a world with a stepped or scaled clock (check 12 tries a stepped one only), a journey's clock starts on the
    environment's declared start (`Blueprint.clock.stepped({ starts })`); its starting worlds' own clock steps then move it,
    oldest first, so the journey's first step stands on its starting world's day. The world's warm reset (ST1.24) is already
    the one way the clock goes back; how prove gets there per journey (a reset, a world of its own, or a door that puts the
    clock back) is the builder's. A real clock is never moved. Check 12 pins file order: the same journeys, whose days clash
    under one shared clock, pass with their files in either order.
-2. **The cast signs in again after each clock step.** After every clock step, in a starting world or a journey, prove gives
+2. **The cast signs in again after each clock step.** After every clock step, whether or not the step's own checks held, in a starting world or a journey, prove gives
    the journey's cast fresh credentials at the world's new time: the same people (same person id, email and password), new
    sessions, before the journey's next call; and a key the world minted for a way in (`via("key")`) still works after the
    step, minted again or kept. It is done on the step, not on a refusal: prove never retries a refused call. A step's

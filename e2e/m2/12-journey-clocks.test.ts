@@ -146,8 +146,9 @@ describe("12 the journeys' clocks don't depend on file order", () => {
     expect(failing.length, block!.said).toBeGreaterThan(0);
     for (const line of failing) expect(line.startsWith(`  ✘ "thirty-one days pass": `), block!.said).toBe(true);
     expect(block!.below.filter((l) => l.startsWith("  skipped ")), block!.said).toEqual([]);
-    nothingRunning(reversed().root);
   });
+
+  it("the second run leaves nothing running", () => nothingRunning(reversed().root));
 });
 
 describe("12 a session past its life is still refused", () => {

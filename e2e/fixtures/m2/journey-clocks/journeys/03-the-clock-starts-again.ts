@@ -15,6 +15,7 @@ export default Blueprint.journey("the clock starts again for each journey", {
     // 2027-01-22T09:00:00Z.
     s.step("ada is still signed in, and the server reads 22 January", s.ada.run(today, {}), expect((a) => a.clock).toBe(1800608400000n)),
     s.step("forty days pass", s.clock.advance("40 days"), expect((a) => a.now).toBe("2027-03-03T09:00:00.000Z")),
+    // No starting world gives Ada's id here, so this reads only that she is signed in; 01 and 02 hold that she is the same person.
     s.step("ada is still signed in, as herself", s.ada.run(show, {}), expect((a) => a.person).toBe(s.ada.person)),
   ],
 });
