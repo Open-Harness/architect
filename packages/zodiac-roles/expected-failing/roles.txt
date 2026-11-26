@@ -1,0 +1,41 @@
+# #1163 (A4): red until the zodiac-roles build lands.
+src/modules/roles/roles.test.ts > Roles.accrued > at maxRefill already
+src/modules/roles/roles.test.ts > Roles.accrued > inside the first period
+src/modules/roles/roles.test.ts > Roles.accrued > no period: the balance, however long
+src/modules/roles/roles.test.ts > Roles.accrued > one and a half periods: one refill
+src/modules/roles/roles.test.ts > Roles.accrued > one whole period
+src/modules/roles/roles.test.ts > Roles.accrued > over maxRefill (an owner set it so): it stays
+src/modules/roles/roles.test.ts > Roles.accrued > spent to 0, one period
+src/modules/roles/roles.test.ts > Roles.accrued > spent to 0, three periods
+src/modules/roles/roles.test.ts > Roles.accrued > two whole periods, capped at maxRefill
+src/modules/roles/roles.test.ts > Roles.budgetCalls > a parameter that is not one of the function's is refused, and so is one that is not static
+src/modules/roles/roles.test.ts > Roles.budgetCalls > an allowance with no refill sets maxRefill, refill and period to 0
+src/modules/roles/roles.test.ts > Roles.budgetCalls > every call is the Safe's to its modifier, with no value
+src/modules/roles/roles.test.ts > Roles.budgetCalls > the role assigned to each member once, the target scoped, the one function scoped with no value or delegate call, the allowance set
+src/modules/roles/roles.test.ts > Roles.deploy > a Safe's modifier: owner, avatar and target all the Safe, its address worked out before it is deployed
+src/modules/roles/roles.test.ts > Roles.deploy > the address changes with the Safe and with the salt nonce, and with nothing else
+src/modules/roles/roles.test.ts > Roles.execTransactionWithRole > a member's call through its role, a Call (operation 0) on the modifier, with value 0 and shouldRevert true by default
+src/modules/roles/roles.test.ts > Roles.execTransactionWithRole > the value and shouldRevert given are the ones sent, and the call itself sends no wei to the modifier
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status AllowanceExceeded (17), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status BitmaskNotAllowed (15), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status BitmaskOverflow (14), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status CallAllowanceExceeded (18), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status CustomConditionViolation (16), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status DelegateCallNotAllowed (1), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status EtherAllowanceExceeded (19), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status FunctionNotAllowed (3), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status NoArrayElementPasses (12), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status NorViolation (6), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status NotEveryArrayElementPasses (11), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status Ok (0), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status OrViolation (5), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status ParameterGreaterThanAllowed (9), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status ParameterLessThanAllowed (8), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status ParameterNotAMatch (10), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status ParameterNotAllowed (7), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status ParameterNotSubsetOfAllowed (13), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status SendNotAllowed (4), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > ConditionViolation, status TargetAddressNotAllowed (2), typed by name
+src/modules/roles/roles.test.ts > Roles.refusalOf > NoMembership, NotAuthorized with its sender, ModuleTransactionFailed and OwnableUnauthorizedAccount with its account
+src/modules/roles/roles.test.ts > Roles.refusalOf > the info word is the one the modifier sent
+src/modules/roles/roles.test.ts > Roles.refusals > one entry for each of Roles 2.1.1's errors, by its name and signature, each with a code of its own

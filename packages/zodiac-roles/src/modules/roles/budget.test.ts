@@ -52,6 +52,7 @@ test.skipIf(gate)("a send within the budget passes, pays exactly that, and the a
     const before = yield* Roles.allowance(w.port, w.modifier, key);
     // A maxRefill of 0 is stored as type(uint128).max (Roles 2.1.1, setAllowance), and timestamp 0 as the block's.
     expect(before).toMatchObject({ balance: 100n, refill: 0n, maxRefill: 2n ** 128n - 1n, period: 0n });
+    expect(Object.keys(before).sort()).toEqual(["balance", "maxRefill", "period", "refill", "timestamp"]);
     expect(before.timestamp).toBeGreaterThan(0n);
     expect(before.timestamp).toBeLessThanOrEqual(yield* w.now);
     const receipt = yield* spend(w, alice, 30n);

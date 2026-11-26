@@ -1,0 +1,4 @@
+# #1163 (A4): red until the zodiac-roles build lands.
+src/modules/world/world.test.ts > install puts the factory and the Roles 2.1.1 mastercopy, with its libraries, at their canonical addresses with their canonical code
+src/modules/world/world.test.ts > installing on a chain that already has them changes nothing
+src/modules/world/world.test.ts > the installed factory deploys a working modifier from the installed mastercopy
