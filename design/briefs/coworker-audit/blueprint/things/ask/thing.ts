@@ -14,6 +14,7 @@ export const Ask = Blueprint.thing({
     manager: Blueprint.optional(Manager.fields.id),
     about: Blueprint.optional(Task.fields.id),
     to: Blueprint.id("per"),
+    askerAgent: Blueprint.optional(Blueprint.id("agt")), // the agent that asked, told when it is answered; empty when a person asked
     need: Need,
     title: Title,
     shows: Body, // for approve: exactly what will be sent or done

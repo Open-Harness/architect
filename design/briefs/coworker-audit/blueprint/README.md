@@ -13,6 +13,8 @@ How to read it:
 - `Blueprint.todo("GAP <id>: …")` is a blank the framework cannot hold yet. Each id is a row in `../map.md`.
 - A line ending `// new` uses a form that is only sketched in K46 and has no slice.
 - Everything else is a form that exists on `main` today (`examples/work`, `examples/superagent`, `examples/starter`).
+- `end-to-end.md` is the proposal these files were written for. `app/` and `../web/` are its worked example of the
+  screens; `features/agents.ts` is its worked example of agents as actors talking through hops.
 
 What is left out on purpose, because it exists only for how the old code works (`../audit.md`, pass 2): the dedupe
 tables (`trigger`, `notice_sent`, receipts), the fan-out links (`join_item`, `person_ask_item`, `waiters`), the

@@ -68,9 +68,9 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Orthograph · an app audit · 26 November 2026 · second pass</div>
+  <div class="eyebrow">Orthograph · an app audit · 26 November 2026 · third pass</div>
   <h1>Coworker, the audit board</h1>
-  <p class="lede">Your app, read from eight sides. What Orthograph can hold of it today, and what it can't. What works in it now, which the rebuild must replace, front end included. The agents, which don't, and how to build them right. Six decisions are yours, at the end.</p>
+  <p class="lede">Your app, read from eight sides. What Orthograph can hold of it today, and what it can't. What works in it now, which the rebuild must replace, front end included. The agents, which don't, and how to build them right. Then how the whole thing works end to end, as you asked. Five decisions are yours, at the end.</p>
   <div class="legend">
     <span><i class="st run">runs today</i> green on main, proved by an app's journeys</span>
     <span><i class="st new">being built</i> code exists, not proved or not merged</span>
@@ -81,6 +81,19 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   <div class="note">
     <p><b>What I ran, and what I didn't.</b> The first pass only read. For this one I installed Coworker and ran it with every outside thing faked and no credential. It typechecks and builds, and <b>all 616 of its fast tests pass</b>. Its browser tests pass too, 65 of 65, and I have now seen your screens rendered.</p>
     <p>I did not run real mail, a real GitHub App, real containers, a real model, or staging. You used staging and wrote 78 findings, and where your findings and the green tests disagree, your findings win. On the Orthograph side I ran no suite: each standing comes from the status page, the ratchet lists and the pull requests' own words.</p>
+  </div>
+
+  <h2>What you decided, and asked for</h2>
+  <div class="board">
+    <div class="card"><div class="top"><span class="at">the screens</span><i class="st dec">decided</i></div>
+      <blockquote>We will take all the UI but rebuild it all on our things, including hooks and headless components.</blockquote>
+      <p><b>Done that way.</b> Every screen stays as the design. Each is rebuilt on a generated hook and headless parts per thing, and a generated piece per operation. This overrules my recommendation to keep the Astryx code.</p></div>
+    <div class="card"><div class="top"><span class="at">the agents</span><i class="st dec">decided</i></div>
+      <blockquote>They need to be actors, and they should follow the same pattern from Pi Durable and its examples in the repo.</blockquote>
+      <p><b>I read Pi's repository</b>: its spec and its 48 numbered examples. The pattern that fits actors is below.</p></div>
+    <div class="card"><div class="top"><span class="at">end to end</span><i class="st new">proposed</i></div>
+      <blockquote>Then it should propose how the whole thing should work end to end.</blockquote>
+      <p><b>Below, under "How the whole thing works"</b>: the parts, the rule between agents, one GitHub job through every part, and what it needs.</p></div>
   </div>
 
   <h2>Three things you said after the first pass</h2>
@@ -187,6 +200,113 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
       <p>Those are your findings' words. 134 test files, a score that can't go backwards, a real staging on Cloudflare, no CI and no traces.</p>
       <p><b>The stories its tests tell are good</b>, and become the first journeys.</p></div>
   </div>
+
+  <h2>How the whole thing works, end to end</h2>
+  <div class="verdict">
+    <p class="big">Inside an agent, Pi as it is. Between agents, Pi's own pattern for a webhook or a person.</p>
+    <p>Pi Durable keeps a manager and its workers in one harness. Every one of its subagent examples does. You want each agent to be an actor, with its own harness, and Pi has no way to join two harnesses.</p>
+    <p>But Pi's examples already show how something outside talks to a harness: a webhook (example 40) and a person (39). They come in as a submission with a request id, or a signal, taken once. And Pi says the host keeps the record of what is awaited. <b>So a worker reaches its manager the way a webhook does, and the record is a thing:</b> a run, or an ask.</p>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h3>Inside one agent's actor</h3>
+      <p>Pi exactly as its examples show it:</p>
+      <ul>
+        <li>a fork, so a fresh instance reviews the work (27);</li>
+        <li>child tasks, compaction, a turn limit (23, 24, 33);</li>
+        <li>a tool that waits on CI it started itself (40), or polls (41);</li>
+        <li>an approval gate before a tool (44).</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Between agents, and with people</h3>
+      <p>A thing keeps the record; its event is delivered as an input:</p>
+      <ul>
+        <li><b>start</b>: a run row, then a tell with the run's id;</li>
+        <li><b>report up</b>: the report is the manager's next input (22's reporter);</li>
+        <li><b>ask a person</b>: an ask row; the answer is the asker's next input (39);</li>
+        <li><b>stop</b>: a close, and Pi aborts inside the worker.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">
+    <p><b>The one rule, from Pi's own spec:</b> "a parked call keeps its run busy". So an agent's tool never waits for another agent or a person. It writes a thing and returns. The answer comes later as a new input. That keeps a manager free while it waits on you, which was your finding F68. It is also your call of this morning: a wait is a thing's state.</p>
+  </div>
+
+  <h3>One job: an issue on GitHub, to a merged pull request</h3>
+  <div class="seq">
+    <svg viewBox="0 0 1200 760" role="img" aria-label="Sequence: GitHub issue through the door, the manager, a worker, CI, a person's approval, and back">
+      <defs><marker id="sq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="hdn"/></marker></defs>
+      <g class="hd">
+        <rect x="20" y="16" width="150" height="44"/><text x="95" y="43" text-anchor="middle">GitHub</text>
+        <rect x="215" y="16" width="150" height="44"/><text x="290" y="43" text-anchor="middle">Door and intake</text>
+        <rect x="410" y="16" width="150" height="44"/><text x="485" y="43" text-anchor="middle">Things and outbox</text>
+        <rect x="605" y="16" width="150" height="44"/><text x="680" y="43" text-anchor="middle">Manager actor</text>
+        <rect x="800" y="16" width="150" height="44"/><text x="875" y="43" text-anchor="middle">Worker actor</text>
+        <rect x="995" y="16" width="150" height="44"/><text x="1070" y="43" text-anchor="middle">Ada, in the app</text>
+      </g>
+      <line class="life" x1="95" y1="60" x2="95" y2="745"/><line class="life" x1="290" y1="60" x2="290" y2="745"/><line class="life" x1="485" y1="60" x2="485" y2="745"/><line class="life" x1="680" y1="60" x2="680" y2="745"/><line class="life" x1="875" y1="60" x2="875" y2="745"/><line class="life" x1="1070" y1="60" x2="1070" y2="745"/>
+      <path class="ar" d="M95,90 L288,90" marker-end="url(#sq)"/><text class="lab" x="192" y="84" text-anchor="middle">issue mentions it</text>
+      <path class="ar" d="M290,120 L483,120" marker-end="url(#sq)"/><text class="lab" x="387" y="114" text-anchor="middle">signed, once; the gate says yes</text>
+      <path class="ar" d="M485,150 L678,150" marker-end="url(#sq)"/><text class="lab" x="582" y="144" text-anchor="middle">tell: the trigger</text>
+      <path class="ar dash" d="M680,180 L487,180" marker-end="url(#sq)"/><text class="lab" x="582" y="174" text-anchor="middle">task.create, run.start</text>
+      <path class="ar" d="M485,210 L873,210" marker-end="url(#sq)"/><text class="lab" x="680" y="204" text-anchor="middle">open, then tell: the brief</text>
+      <path class="ar dash" d="M875,240 L97,240" marker-end="url(#sq)"/><text class="lab" x="485" y="234" text-anchor="middle">comment on the issue: what it understood, done-when</text>
+      <rect class="wait" x="815" y="258" width="120" height="70"/><text class="sub" x="875" y="282" text-anchor="middle">in its sandbox;</text><text class="sub" x="875" y="300" text-anchor="middle">a fork reviews</text><text class="sub" x="875" y="318" text-anchor="middle">the diff (Pi 27)</text>
+      <path class="ar dash" d="M875,350 L97,350" marker-end="url(#sq)"/><text class="lab" x="485" y="344" text-anchor="middle">opens a pull request; CI runs; the tool waits on it (Pi 40)</text>
+      <path class="ar" d="M95,380 L873,380" marker-end="url(#sq)"/><text class="lab" x="485" y="374" text-anchor="middle">check passed: through the door, to this issue's worker</text>
+      <path class="ar dash" d="M875,410 L487,410" marker-end="url(#sq)"/><text class="lab" x="680" y="404" text-anchor="middle">run.report: ready, with the pull request</text>
+      <path class="ar" d="M485,440 L678,440" marker-end="url(#sq)"/><text class="lab" x="582" y="434" text-anchor="middle">tell: the report</text>
+      <path class="ar dash" d="M680,470 L487,470" marker-end="url(#sq)"/><text class="lab" x="582" y="464" text-anchor="middle">merge is set to ask: ask.raise</text>
+      <path class="ar" d="M485,500 L1068,500" marker-end="url(#sq)"/><text class="lab" x="777" y="494" text-anchor="middle">in Ada's inbox at once, showing what merging does</text>
+      <text class="sub" x="680" y="530" text-anchor="middle">its turn has ended; it is free for other work</text>
+      <path class="ar dash" d="M1070,560 L487,560" marker-end="url(#sq)"/><text class="lab" x="777" y="554" text-anchor="middle">ask.answer: yes</text>
+      <path class="ar" d="M485,590 L678,590" marker-end="url(#sq)"/><text class="lab" x="582" y="584" text-anchor="middle">tell: the answer</text>
+      <path class="ar dash" d="M680,620 L97,620" marker-end="url(#sq)"/><text class="lab" x="387" y="614" text-anchor="middle">merge; close the issue; tell whoever asked</text>
+      <path class="ar dash" d="M680,650 L487,650" marker-end="url(#sq)"/><text class="lab" x="582" y="644" text-anchor="middle">task.finish; run.stop</text>
+      <path class="ar" d="M485,680 L873,680" marker-end="url(#sq)"/><text class="lab" x="680" y="674" text-anchor="middle">close</text>
+      <text class="sub" x="20" y="720">Solid: an event delivered by the door or the outbox, retried and taken once. Dashed: an operation an agent or a person calls.</text>
+      <text class="sub" x="20" y="740">Every screen watching the task, the run or the ask changes as each row does.</text>
+    </svg>
+  </div>
+  <p>What Ada saw: one comment on the issue, a pull request, one question in her inbox, and a card that moved by itself. What she did: one click. That is your own measure, "minutes of your attention".</p>
+
+  <h3>Every screen, on our things</h3>
+  <div class="cols">
+    <div>
+      <p>Each screen is a page declared in the blueprint. It reads through a <b>reference per thing</b>, a generated hook and headless parts. It writes through a <b>piece per operation</b>. Nothing else talks to the server.</p>
+      <figure class="file"><figcaption><span>web/pages/question.tsx</span><span>a sketch</span></figcaption><pre class="code"><span class="ln">const ask = useAsk(id);  <span class="c">// state, fields, can, needs; live</span></span><span class="ln"> </span><span class="ln">&lt;Ask.Root id={id}&gt;</span><span class="ln">  &lt;Header title={&lt;Ask.Field name="title" /&gt;} /&gt;</span><span class="ln">  &lt;AskAnswer.Root subject={{ ask: id }}&gt;</span><span class="ln">    {options.map(o =&gt; &lt;OptionCard option={o}&gt;</span><span class="ln">      &lt;AskAnswer.Submit value={o.label} /&gt;</span><span class="ln">    &lt;/OptionCard&gt;)}</span><span class="ln">    &lt;AskAnswer.Answer label="Or in your own words" /&gt;</span><span class="ln">  &lt;/AskAnswer.Root&gt;</span><span class="ln">  &lt;Rail&gt;&lt;Ask.Needs /&gt;&lt;/Rail&gt;</span><span class="ln">&lt;/Ask.Root&gt;</span></pre></figure>
+    </div>
+    <div>
+      <p><b>What UI SDK does not ship is a composite</b>: its wiring generated, its behaviour written on UI SDK's own blocks. Coworker needs seven, and they will be the first in Orthograph:</p>
+      <div class="chain">
+        <div><b>Board</b><span>reorder and transfer</span></div>
+        <div><b>Table</b><span>grid focus, selection</span></div>
+        <div><b>Inbox</b><span>a list and a reading pane</span></div>
+        <div><b>Chat and thread</b><span>Pi's watch, relayed</span></div>
+        <div><b>Tree</b><span>managers, threads, pages</span></div>
+        <div><b>Charts</b><span>Home, Overview, Usage</span></div>
+        <div><b>Editor</b><span>mission, skills</span></div>
+      </div>
+      <p><b>Your look becomes a theme</b>: your tokens on UI SDK's, your shapes as CSS. Every rebuilt screen is shown beside its old screenshot.</p>
+    </div>
+  </div>
+
+  <h3>What it needs from the framework, in the order it needs it</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Piece</th><th>Standing</th><th>Whose</th></tr>
+    <tr><td class="q">The agent runtime, on Pi 1.6</td><td><i class="st new">draft</i></td><td class="a">the parked superagent's; Coworker takes it</td></tr>
+    <tr><td class="q">The outbox, and an actor's own events making hops</td><td><i class="st new">draft</i></td><td class="a">the same</td></tr>
+    <tr><td class="q">Tools from operations, and an agent's own credential</td><td><i class="st dec">decided</i></td><td class="a">the same</td></tr>
+    <tr><td class="q">Grants: on, ask or off, handed down</td><td><i class="st open">missing</i></td><td class="a">Coworker's; asks Capxul first</td></tr>
+    <tr><td class="q">The piece generator and the browser runtime</td><td><i class="st new">checks red</i></td><td class="a">parked UI goal; Coworker takes it</td></tr>
+    <tr><td class="q">The reference per thing: hooks and headless parts</td><td><i class="st dec">decided</i></td><td class="a">nobody yet</td></tr>
+    <tr><td class="q">Pages and composites in an app</td><td><i class="st new">built for the portal only</i></td><td class="a">parked portal goal; Coworker takes what it uses</td></tr>
+    <tr><td class="q">Live: references that update, a streaming transcript</td><td><i class="st open">missing, undecided</i></td><td class="a">a decision for the framework goal</td></tr>
+    <tr><td class="q">Moves made by a clock</td><td><i class="st new">spiked</i></td><td class="a">Capxul's by rank</td></tr>
+  </table></div>
+  <p>Three of these belong to goals that are parked. Taking them is allowed, and every Orthograph app will use them. But it is a large claim, and it is decision 3.</p>
 
   <h2>What works today</h2>
   <p>This is what the rebuild has to replace. "Works" means its tests pass here <b>and</b> none of your findings says it fails in real use.</p>
@@ -344,7 +464,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   </table></div>
 
   <h2>The front end</h2>
-  <p>No example in Orthograph has screens of its own today. One thing is further on than the status page says: <b>a generated action per operation is on main</b>, with a typed refusal and "ask once" built in. The generated form or button is not.</p>
+  <p><b>You have since decided this: option B, with your screens as the design.</b> The grading stays as the record of what it costs. No example in Orthograph has screens of its own today. One thing is further on than the status page says: <b>a generated action per operation is on main</b>, with a typed refusal and "ask once" built in. The generated form or button is not.</p>
   <div class="opts">
     <div class="opt">
       <span class="num">A · keep, new data layer</span>
@@ -359,7 +479,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
     <div class="opt">
       <span class="num">C · a staged mix</span>
       <h3>Your screens, generated actions</h3>
-      <p><b>Recommended.</b> As A, and every button that changes something calls a generated action, which exists today. A screen moves to generated pieces only if you marked it New or Redo, and only once the generator exists.</p>
+      <p><b>What I recommended, before you chose B.</b> As A, and every button that changes something calls a generated action, which exists today. A screen moves to generated pieces only if you marked it New or Redo, and only once the generator exists.</p>
     </div>
   </div>
   <div class="tablewrap"><table class="rubric">
@@ -439,7 +559,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   <p>It moves out when two things are true: the packages install from npm, and the plugins it mounts are packages. One thing I did not check: whether this repository's lint rules reach an example's own screens. If they do, scoping them away is the first framework change.</p>
 
   <h3>2 · What happens to the interface?</h3>
-  <p><b>Your screens and components stay, and every write goes through a generated action.</b> That is option C under "The front end", where the three ways are graded. Astryx stays as the look, which leaves two component libraries in the repository for a while. That is decision 4.</p>
+  <p><b>You decided: every screen rebuilt on our own hooks and headless components.</b> How is under "How the whole thing works". The first screen goes through the whole stack before any other: the question page.</p>
 
   <h3>3 · Which parts of its Pi Durable use carry over?</h3>
   <div class="tablewrap"><table>
@@ -514,11 +634,11 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   <h2>Decisions for you</h2>
   <p>Each has my recommendation. A line each is enough.</p>
   <ol class="ask">
-    <li><b>Which screens are the authority?</b><span>I recommend the built ones for everything that works, and the ones your page of 25 November agrees for the board, the task, the manager tree and the agents. And tell me whether "the canvas" your findings mention is the real authority.</span></li>
-    <li><b>Is Coworker a third thing being built?</b><span>You said on 25 November that two things are built now, the alpha and Capxul, and parked the superagent. Coworker needs the superagent's unfinished agent work. I recommend yes: Coworker becomes the app that pulls agents, takes those open pieces, and the superagent stays parked.</span></li>
-    <li><b>Where does it live?</b><span>I recommend inside this repository, beside Capxul, until the packages are on npm.</span></li>
-    <li><b>Do the Astryx screens stay?</b><span>I recommend yes: your screens and components kept, every write through a generated action, and UI SDK only for what Orthograph generates.</span></li>
-    <li><b>"On, ask or off, handed down": Coworker's own, or the framework's?</b><span>I recommend Coworker's own guard first, lifted into the framework once it works. Every app with agents will want it.</span></li>
-    <li><b>Four blanks in the model.</b><span>I recommend: a task keeps both its lane and "what happens next"; a worker is a saved agent with versions; a person's own permission changes stay; a connector's own view waits until pages exist.</span></li>
+    <li><b>Which screens are the authority?</b><span>All are rebuilt now. I recommend your built screens for what works, and the ones your page of 25 November agrees for the board, the task, the manager tree and the agents. And tell me whether "the canvas" your findings mention is a real file to rebuild from.</span></li>
+    <li><b>Keep your look exactly?</b><span>I recommend yes: your look, reproduced as a theme on our components, every screen checked beside its old screenshot.</span></li>
+    <li><b>Is Coworker a third thing being built?</b><span>It would take the agent work from the parked superagent, and the UI layer from the two parked screen goals. I recommend yes. It is a big claim, and it is the only way any app gets a UI on Orthograph soon.</span></li>
+    <li><b>Live updates are a framework decision.</b><span>I recommend: what a screen shows updates from the event log over one connection a page, and a thread streams from Pi's own watch, relayed from the agent's actor.</span></li>
+    <li><b>Where does it live?</b><span>I recommend inside this repository, beside Capxul, until the packages are on npm. Unchanged.</span></li>
   </ol>
+  <p>Still open from before, with my recommendation unchanged: "on, ask or off" handed down is Coworker's own guard first, lifted into the framework once it works; and the four blanks in the model.</p>
 </div>

@@ -16,12 +16,25 @@ goal.
 | [`blueprint/`](blueprint/README.md) | a first blueprint of Coworker's core, with a marked blank wherever Aaron has not decided. It does not compile |
 | [`inventory.md`](inventory.md) | what works in Coworker today, what was run to find out, and every module on a line |
 | [`front-end.md`](front-end.md) | three ways to do the front end, graded; the folder with the web app in it; parity as the done check |
+| [`end-to-end.md`](end-to-end.md) | **the proposal**: how the whole thing works, from a person or GitHub to the agents and back to a screen |
 | [`agents.md`](agents.md) | the agent layer: what is wired, stubbed and faked; agents as actors; Pi Durable against K46; nesting; the first slice |
 
 **Three lines from Aaron reached this audit after its first pass**, through the thread that started it, and the last
 three files answer them: "it needs a front end, it needs to replace everything that works currently in the vibe coded
 version"; "one thing that defo doesn't work is the agents they should be pi durable"; "and they should be actors."
 Where the first pass and these disagree, the sections below have been rewritten.
+
+**Then Aaron answered the second pass** (26 November 2026): "we will take all the ui but rebuild it all on our
+things. including hooks and headless components as for agents. they need to be actors and they should follow the same
+pattern from pi durable and its examples in the repo. then it should propose how the whole thing should work end to
+end". So:
+
+- **Decided: every screen is rebuilt on Orthograph's own layer**, a hook and headless parts per thing and a piece per
+  operation. This answers decision 4 and overrules the second pass's recommendation to keep the Astryx code
+  (`front-end.md`, option C). The screens stay as the design.
+- **Decided: every agent is an actor, following Pi Durable's own patterns.** Read in Pi's repository: its 48
+  examples and its spec (`end-to-end.md`, section 1).
+- **`end-to-end.md` is the proposal he asked for.** It is a proposal: nothing in it is decided until he says so.
 
 ## What was run, and what was not
 
@@ -79,26 +92,22 @@ that scoping is the first framework change.
 
 ### 2. What happens to the existing interface?
 
-**Keep his screens and components, and put every write through a generated action.** Three ways are graded on one
-rubric in `front-end.md`: keep the screens and replace only the data layer; rebuild on the generated UI layer as it
-lands; or a staged mix. The mix wins.
+**Aaron decided: every screen is kept as the design and rebuilt on Orthograph's own layer** (his words above). How,
+in `end-to-end.md`, section 4:
 
-- The screens come apart cleanly: each `team-*` module reaches the server through one interface. Those seven
-  interfaces are written again. Reads call the generated SDK. Writes call **generated actions**, which are on `main`
-  today and give a typed refusal and "ask once" for free.
-- Rebuilding on generated pieces is blocked on a generator, a browser runtime, pages, a table and a kanban board,
-  none of which exists, in two parked goals. It is where the app ends up, one screen at a time.
-- A screen `docs/screens.md` marks Keep or Adapt is ported. The eighteen marked New or Redo, and the board and task
-  page his findings reject, are drawn first as real screens.
-- **Two workspace projects in one folder**: the app, and `examples/coworker/web/`. Handlers are Effect code under
-  this repository's rules; screens are React. That needs a tag for an app's web project, the first framework change
-  the front end asks for.
-- Astryx stays as the look, with UI SDK for what Orthograph generates. That is two component libraries in the
-  repository for a while, and it is decision 4.
+- Each screen is a page declared in `blueprint/app/` (K31). Reads go through a generated **reference per thing**, a
+  hook and headless parts (`useTask(id)`, `<Task.Root>`, `<Task.Move>`: K46 call 9). Writes go through a generated
+  **piece per operation** (K29). No page talks to the server any other way.
+- What UI SDK does not ship (a board, a table, an inbox, a chat, a tree, charts, an editor) is a **composite** (K36):
+  its wiring generated, its behaviour written on UI SDK's blocks. They are the first of their kind in Orthograph.
+- Coworker's look becomes a **theme**: its tokens on UI SDK's `--ui-*`, its shapes as CSS. The 340 screenshots from
+  its suite are the reference, old beside new.
+- This builds the framework's UI layer, which is parked in Goals 5 and 6: the piece generator, `@orthograph/web`,
+  the reference, composites and live reads. `front-end.md` graded this way lowest on speed; it is now the plan, and
+  the order in `end-to-end.md` section 7 starts with one screen through the whole stack.
 
-**Done is parity, proved by a list that only shrinks** (`front-end.md`): Coworker's 36 flow files become journeys,
-its 20 browser specs are ported, each has a file in an `expected-failing/` folder that a builder may only delete,
-and each of Aaron's findings gets a check so a bug is not rebuilt. The agents are outside parity.
+**Done is still parity** (`front-end.md`): Coworker's flows as journeys, its browser specs ported, a list of what is
+red that only shrinks, and a check for each of Aaron's findings.
 
 ### 3. Which parts of its Pi Durable use map onto `@orthograph/agents`?
 
@@ -124,6 +133,11 @@ runtime is draft #781, on Pi Durable 1.5.0. Coworker is on 1.6.0. "Maps" below m
 | `LiveDoc`, `observeCommits`, `chord/delta` for streaming | no | nothing: no live read |
 | A model call routed through the workspace's vault | no | models are per environment |
 | `UsageDoc` and budgets | no | nothing |
+
+**How the agents follow Pi's own patterns** is `end-to-end.md`, section 1 and 3. In short: inside an agent's actor, Pi
+as it is (forks, a reviewer, child tasks, gates, a CI wait). Between agents, Pi's own pattern for a webhook or a
+person (examples 39, 40) and its background-subagent reporter (22): a thing keeps the record, and its event is
+delivered to the other agent as a submission with a request id.
 
 The agent hierarchy does not need Pi's parent and child at all. A manager above a manager is two `Agent`s and an
 event between them, which is how every level then looks the same.
@@ -155,16 +169,10 @@ Two tracks, side by side. Every slice ends green on a check it names.
 6. **A real model, once, on staging.** A scripted model proves the plumbing and nothing about judgement. Needs
    Aaron's yes for the credential.
 
-**Everything that works, replaced.** Each ends by deleting files from the two parity lists.
-
-1. **Getting in.** Sign-in, workspaces, joining, roles, and their screens. The starter's things, copied.
-2. **Settings and people**, and their screens.
-3. **The inbox**, and its screens. It shares the `Ask` with the agents' third slice.
-4. **Hearing the world.** The gate and GitHub in, from the superagent's plugins; an email adapter written in the
-   app; Events and Sources.
-5. **Keys and the vault**, lifted as a plugin; a workspace's own model.
-6. **The board and the task page, drawn again**, then built.
-7. **Sandboxes, usage and billing.**
+**Everything that works, replaced, on Orthograph's own UI layer.** The order is `end-to-end.md`, section 7: one
+screen through the whole stack first (the question page: a reference, a piece, a page), then the Inbox, the Board,
+the chat and a thread, getting in and settings, the charts, and the rest of `docs/screens.md`. Each ends with the
+new screen beside its old screenshot, and with files deleted from the parity lists.
 
 Later, each its own slice: the agreed new screens, connectors with a view, MCP servers, a store per tenant.
 
@@ -180,8 +188,9 @@ Batched, each with a recommendation. The board ends with the same list.
    Coworker needs the superagent's unfinished agent work. *Recommend yes, as the app that pulls agents*: it takes the
    superagent's open agent slices, and the superagent stays parked.
 3. **Where does it live?** *Recommend inside this repository*, as `examples/coworker`, until the packages are on npm.
-4. **Do the Astryx screens stay?** *Recommend yes*: his screens and components kept, every write through a generated
-   action, and UI SDK only for what Orthograph generates.
+4. ~~Do the Astryx screens stay?~~ **Decided by Aaron, 26 November**: rebuilt on Orthograph's own hooks and headless
+   components. Two questions follow, in `end-to-end.md` section 8: keep his look exactly as a theme (recommended), and
+   live updates as a framework decision (references reloaded from the journal; the transcript as Pi's watch relayed).
 5. **On, ask or off, handed down: Coworker's own guard, or a framework primitive?** *Recommend Coworker's guard first,
    then lifted into the framework once it works*, which is how every plugin here has been made.
 6. **Four blanks in the model**, one line each. *Recommend:* a task keeps both a lane and a "what happens next"; a

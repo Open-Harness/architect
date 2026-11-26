@@ -3,6 +3,10 @@
 Added 26 November 2026, after Aaron's line: "it needs more than that. it needs a front end, it needs to replace
 everything that works currently in the vibe coded version."
 
+**Overtaken the same day.** Aaron then decided: "we will take all the ui but rebuild it all on our things, including
+hooks and headless components". That is option B below, with his screens as the design. The grading stands as the
+record of what it costs; `end-to-end.md`, section 4, is how it is done.
+
 So the rebuild is not a back end with an interface to follow. It is done when a person can do, in the rebuilt app,
 everything that works in Coworker today, on screens. `inventory.md` is the list of what that is.
 
@@ -51,7 +55,7 @@ only when it is one `docs/screens.md` marks New or Redo, and only once the gener
 | Fits K24 ("go in all the way" on UI SDK) | **D** | **A** | **C** it says where UI SDK comes in, and when |
 | Risk | the old interfaces leak the old model into the new one | the product has no screens for months | two component libraries for a while |
 
-**Recommended: C.** It replaces what works at the speed of the back end, keeps the interface, and puts every write
+**Recommended then: C. Aaron chose B** (see the top of this file). It replaces what works at the speed of the back end, keeps the interface, and puts every write
 through something the framework generates and checks. B is where it ends up, one screen at a time, and no screen
 waits on it.
 

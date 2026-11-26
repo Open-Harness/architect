@@ -12,6 +12,7 @@ export const Run = Blueprint.thing({
     task: Task.fields.id,
     from: Blueprint.optional(Blueprint.id("run")), // the thread it forked from, so threads draw as a tree
     agent: Blueprint.id("agt"),
+    managerAgent: Blueprint.id("agt"), // the manager's Agent, so a report is told to it without a lookup
     role: Blueprint.text({ max: 60 }),
     brief: Body,
     report: Blueprint.optional(Report),

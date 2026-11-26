@@ -10,6 +10,10 @@ Added 26 November 2026, after three lines from Aaron that reached this audit thr
 So the agents are not part of what has to be matched. There is nothing working to match. They are the part the
 rebuild exists to get right: **nested durable managers that control worker agents, on Pi Durable, each one an actor.**
 
+Aaron then added: "they need to be actors and they should follow the same pattern from pi durable and its examples
+in the repo". `end-to-end.md`, sections 1 and 3, reads Pi's 48 examples and says which pattern holds where. It
+refines "Does Pi Durable fit things last?" below: Pi's own spec agrees that a parked tool call holds its run busy.
+
 ## What is actually there in Coworker
 
 Read from the code. The fast tests were run for this addendum (`inventory.md` says what passed); no agent was seen
