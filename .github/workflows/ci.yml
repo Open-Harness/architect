@@ -329,19 +329,20 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
-      # Only a pull request that runs real suites asks which ones. A push, a docs-only or a fast pull request needs no answer.
+      # Only a pull request asks which suites it touches; a push or a docs-only one needs no answer. A fast pull request (into a
+      # goal branch) asks too, so its prove-tests skip when prove is not affected, as on main (CI-fast-affected.md).
       # Should any step here fail, `changes` fails and every job runs.
-      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         uses: pnpm/action-setup@v6.1.0
-      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         uses: actions/setup-node@v7.1.0
         with:
           node-version: 24
           cache: pnpm
-      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         run: pnpm install --frozen-lockfile
       - id: aff
-        if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         run: |
           tools/ci/affected.sh "origin/$BASE_REF" HEAD e2e prove | tee -a "$GITHUB_OUTPUT"
         env:
