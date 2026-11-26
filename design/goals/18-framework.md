@@ -5,11 +5,11 @@ milestone: "Goal 18: the framework"
 release: preview
 branch: main
 base: main
-status: ready          # ready | running | landing | done | parked
+status: running        # ready | running | landing | done | parked
 lead:
-  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
-  model: null          # the model id it runs on
-  since: null          # the date it started
+  harness: claude      # claude | codex | opencode | amp, set by the lead when it starts
+  model: claude-opus-5-5 # the model id it runs on
+  since: 2026-11-26    # the date it started
 done_check: from a registry, `ortho new app` makes an app that declares, generates, proves and runs, and its generated CLI, SDK and MCP answer; then the same from npm (slices 11 and 12)
 owns:
   - design/goals/
@@ -124,6 +124,8 @@ Each round:
   world destroyed, processes stopped by their id, and no publish without Aaron.
 
 ## Where it stands
+
+26 November 2026: led from Claude Code (Claude Opus 5.5) since this morning. Slices 1, 2 and 4 are closed on GitHub (#719, #720, #1062). Slice 13's script and kit merged (#1075), and the dashboard was made again in this account from the kit: https://claude.ai/artifact/TdjaPiom3zeWDzSLBUDdhv. Authors are writing the checks for slice 5 (publishing), slice 6 (`ortho new app`) and slice 10 (the starter's #446 and #449); builders follow each red check.
 
 25 November 2026: given the alpha by K44 (slices 4 to 12), and waiting for a lead. Aaron starts it with the line above.
 Slice 4, the board re-sorted, is K45's pull request: the alpha's milestone and Capxul's path, the release rule, the 30
