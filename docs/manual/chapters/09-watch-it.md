@@ -159,7 +159,8 @@ Everything above was recorded on 26 November 2026 on Plugged In, in the test env
 a real address, and the traffic was ours: two claims and twenty-eight reads. The drift was staged. Nothing was slow,
 so we tightened a budget in the blueprint for the length of the recording and put it back. We read in watch's own
 notes (`packages/cli/src/modules/watch/README.md`) that an eval failing on real calls fails the watch, and that
-`--source axiom` reads a hosted store; we recorded neither, because Axiom and the portal were not available to us.
+`--source axiom` reads a hosted store. We recorded neither: no eval failed on our calls, and Axiom was not available
+to us.
 
 Two things are missing. Watch prints one window and compares it with nothing, so "what changed this week" is you
 reading this week's screen beside last week's. And nothing runs it for you: no schedule, and no message when an
