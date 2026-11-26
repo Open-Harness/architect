@@ -490,8 +490,8 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 | Salary Withholding | thing | SUB | 13 | `hrms/hrms/payroll/doctype/salary_withholding/salary_withholding.json` |  |
 | Employee Benefit Application Detail | line |  | 4 | `hrms/hrms/payroll/doctype/employee_benefit_application_detail/employee_benefit_application_detail.json` |  |
 | Employee Cost Center | line |  | 2 | `hrms/hrms/payroll/doctype/employee_cost_center/employee_cost_center.json` |  |
-| Employee Tax Exemption Declaration Category | line |  | 4 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration_category/employee_tax_exemption_declaration_category.json` || a line of Employee Tax Exemption Declaration; as above |
-| Employee Tax Exemption Proof Submission Detail | line |  | 6 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission_detail/employee_tax_exemption_proof_submission_detail.json` || a line of Employee Tax Exemption Proof Submission; as above |
+| Employee Tax Exemption Declaration Category | line |  | 4 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration_category/employee_tax_exemption_declaration_category.json` | a line of Employee Tax Exemption Declaration; as above |
+| Employee Tax Exemption Proof Submission Detail | line |  | 6 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission_detail/employee_tax_exemption_proof_submission_detail.json` | a line of Employee Tax Exemption Proof Submission; as above |
 | Gratuity Applicable Component | line |  | 1 | `hrms/hrms/payroll/doctype/gratuity_applicable_component/gratuity_applicable_component.json` |  |
 | Gratuity Rule Slab | line |  | 3 | `hrms/hrms/payroll/doctype/gratuity_rule_slab/gratuity_rule_slab.json` |  |
 | Income Tax Slab Other Charges | line |  | 4 | `hrms/hrms/payroll/doctype/income_tax_slab_other_charges/income_tax_slab_other_charges.json` |  |

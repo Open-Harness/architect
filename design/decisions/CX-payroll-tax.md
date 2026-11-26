@@ -12,8 +12,7 @@ jurisdictions as well, right? So we want to target USA, obviously number one, Eu
 things. But mainly the main one is obviously the state side." And: "Ideally, it would be great if we could do it in this
 workflow."
 
-So: not India; the United States first and mainly; then Europe, the UK and the UAE; and, ideally, built by the agents in
-this repository's own workflow.
+So: not India; the United States first and mainly; then Europe, the UK and the UAE.
 
 ## The goal's reading
 
