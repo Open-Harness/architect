@@ -61,21 +61,20 @@ The result is then held in USDC base units. This is not the ledger's conversion 
 ## What it changes in the catalogue
 
 `examples/capxul/doctypes.md` is unchanged. Its Income Tax Slab rows say "a progressive tax table; check against each
-country payroll supports", which this record follows. The India exemption types stay "not taken until a jurisdiction
-needs it" (CX-payroll-tax).
+country payroll supports", which this record follows, and the India exemption types stay "not taken until a
+jurisdiction needs it" (CX-payroll-tax).
 
-CX-composable-pieces (#1123), section 1, item 16, should read, word for word:
+CX-composable-pieces, a dated record, keeps its words and gains "Superseded by CX-tax-us-rows" beside the two below:
 
-> 16. **`payroll-tax-us`** (optional, one per jurisdiction; payroll runs with none, and then a slip has no tax lines).
->     United States payroll tax (CX-payroll-tax). Its published figures are generated dated rows in Income Tax Slab's
->     shape, shipped in the piece and not stored (CX-tax-us-rows); a company's SUTA rates and each employee's
->     withholding certificates are its things. 3 (2): Income Tax Slab (and Other Charges, Taxable Salary Slab), taken as
->     the rows' shape. India's four exemption record types and their two lines stay listed and are not taken
->     (CX-payroll-tax, "What this changes in the catalogue").
-
-That takes 6 record types out of the piece's count (9 becomes 3). Section 1's total ("28 pieces take all 485 record
-types") then needs those six named as listed and not taken.
+- Section 1, item 16 (`payroll-tax-us`): its record types become 3 (2), Income Tax Slab and its two lines, taken as the
+  rows' shape. India's four exemption types and their two lines are listed and not taken.
+- Section 1's total: 28 pieces take 479 of the 485 record types, and the other 6 stay listed and not taken.
 
 ## Supersedes
 
-None: no decided words change. CX-payroll-tax point 3's "rows" holds; this record says where they live.
+CX-payroll-tax point 3's words hold; this record says where its rows live. In CX-composable-pieces (decided the same
+day, #1123):
+
+- `design/decisions/CX-composable-pieces.md`: "payroll tax as dated rows (CX-payroll-tax). 9 (4): Income Tax Slab (and Other Charges, Taxable Salary Slab)," → "payroll tax (CX-payroll-tax). Its published figures are generated dated rows in Income Tax Slab's shape, shipped in the piece and not stored (CX-tax-us-rows); a company's SUTA rates and each employee's withholding certificates are its things. 3 (2): Income Tax Slab (and Other Charges, Taxable Salary Slab), taken as the rows' shape."
+- `design/decisions/CX-composable-pieces.md`: "Employee Tax Exemption Category, Sub Category, Declaration and Proof Submission, with their lines." → "India's four exemption record types and their two lines stay listed and are not taken (CX-payroll-tax, 'What this changes in the catalogue')."
+- `design/decisions/CX-composable-pieces.md`: "28 pieces take all 485 record types" → "28 pieces take 479 of the 485 record types, and the other 6, India's income-tax exemption types and their lines, stay listed and are not taken (CX-payroll-tax)"
