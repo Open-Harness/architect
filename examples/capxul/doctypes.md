@@ -90,15 +90,15 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Coupon Code | thing |  | 11 | `erpnext/erpnext/accounts/doctype/coupon_code/coupon_code.json` |  |
 | Currency Exchange | thing | FX | 6 | `erpnext/erpnext/setup/doctype/currency_exchange/currency_exchange.json` | a rate between two currencies, in `rates` (CX-money-global-payroll) |
 | Currency Exchange Settings | settings |  | 6 | `erpnext/erpnext/accounts/doctype/currency_exchange_settings/currency_exchange_settings.json` | where rates come from; a rate source is an adapter |
-| Customer | thing |  | 42 | `erpnext/erpnext/selling/doctype/customer/customer.json` |  |
-| Customer Group | thing |  | 8 | `erpnext/erpnext/setup/doctype/customer_group/customer_group.json` |  |
+| Customer | thing |  | 42 | `erpnext/erpnext/selling/doctype/customer/customer.json` | the company's own: name, type, an optional ledger group; `disabled` is its state, and a disabled customer's payment can't be submitted. Its balance is read from the ledger lines with it as their party. Party accounts, credit limits, contacts and the rest come later (CX-parties-payments) |
+| Customer Group | thing |  | 8 | `erpnext/erpnext/setup/doctype/customer_group/customer_group.json` | a tree like Account, the company's own, with one root: name (unique in the company), an optional parent group; group or ledger is its state (CX-parties-payments) |
 | Dunning | thing | SUB FX | 34 | `erpnext/erpnext/accounts/doctype/dunning/dunning.json` |  |
 | Dunning Type | thing |  | 7 | `erpnext/erpnext/accounts/doctype/dunning_type/dunning_type.json` |  |
 | Email Digest | job |  | 29 | `erpnext/erpnext/setup/doctype/email_digest/email_digest.json` |  |
 | Exchange Rate Revaluation | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/exchange_rate_revaluation/exchange_rate_revaluation.json` | in `ledger` (CX-money-global-payroll) |
 | Finance Book | thing |  | 1 | `erpnext/erpnext/accounts/doctype/finance_book/finance_book.json` |  |
 | Fiscal Year | thing |  | 6 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` | per company, not site-wide with a Fiscal Year Company table: name, first and last day, short year. A year not marked short is exactly a year less a day; a short one no longer; no overlap with the company's other years (CX-ledger) |
-| GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit, and by its cancel as a reversal with debit and credit swapped, both lines marked `isCancelled`. No machine and no operation of its own; read by account (CX-ledger) |
+| GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit, and by its cancel as a reversal with debit and credit swapped, both lines marked `isCancelled`. No machine and no operation of its own; read by account (CX-ledger). A payment's party line carries its party type and party (CX-parties-payments) |
 | Global Defaults | settings |  | 8 | `erpnext/erpnext/setup/doctype/global_defaults/global_defaults.json` |  |
 | Incoterm | thing |  | 3 | `erpnext/erpnext/setup/doctype/incoterm/incoterm.json` |  |
 | Industry Type | thing |  | 1 | `erpnext/erpnext/selling/doctype/industry_type/industry_type.json` |  |
@@ -127,8 +127,8 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | POS Settings | settings |  | 0 | `erpnext/erpnext/accounts/doctype/pos_settings/pos_settings.json` |  |
 | Party Link | thing |  | 4 | `erpnext/erpnext/accounts/doctype/party_link/party_link.json` |  |
 | Party Specific Item | thing |  | 4 | `erpnext/erpnext/selling/doctype/party_specific_item/party_specific_item.json` |  |
-| Party Type | thing |  | 2 | `erpnext/erpnext/setup/doctype/party_type/party_type.json` |  |
-| Payment Entry | thing | SUB FX | 64 | `erpnext/erpnext/accounts/doctype/payment_entry/payment_entry.json` | slice 2: the payment that settles an invoice |
+| Party Type | thing |  | 2 | `erpnext/erpnext/setup/doctype/party_type/party_type.json` | taken as a value, not a thing: Customer (Receivable) and Supplier (Payable), ERPNext's install fixtures; Employee and Shareholder come later (CX-parties-payments) |
+| Payment Entry | thing | SUB FX | 64 | `erpnext/erpnext/accounts/doctype/payment_entry/payment_entry.json` | draft, submitted, cancelled: Receive or Pay with a customer or supplier of the company, with no invoice yet (an advance), in USDC; submit posts the party's line and the bank's, cancel reverses both. References and allocation wait on invoices and #972; Internal Transfer, deductions and taxes come later (CX-parties-payments). Slice 2: the payment that settles an invoice |
 | Payment Gateway Account | thing |  | 7 | `erpnext/erpnext/accounts/doctype/payment_gateway_account/payment_gateway_account.json` | a card gateway account; Capxul's payments settle on the chain, so only its shape is kept for later |
 | Payment Ledger Entry | thing |  | 20 | `erpnext/erpnext/accounts/doctype/payment_ledger_entry/payment_ledger_entry.json` | ledger line for outstanding amounts |
 | Payment Order | thing | SUB | 9 | `erpnext/erpnext/accounts/doctype/payment_order/payment_order.json` |  |
@@ -174,8 +174,8 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Subscription | thing |  | 24 | `erpnext/erpnext/accounts/doctype/subscription/subscription.json` | repeating invoices; waits on timers and workflows |
 | Subscription Plan | thing |  | 11 | `erpnext/erpnext/accounts/doctype/subscription_plan/subscription_plan.json` |  |
 | Subscription Settings | settings |  | 3 | `erpnext/erpnext/accounts/doctype/subscription_settings/subscription_settings.json` |  |
-| Supplier | thing |  | 35 | `erpnext/erpnext/buying/doctype/supplier/supplier.json` |  |
-| Supplier Group | thing |  | 7 | `erpnext/erpnext/setup/doctype/supplier_group/supplier_group.json` |  |
+| Supplier | thing |  | 35 | `erpnext/erpnext/buying/doctype/supplier/supplier.json` | as Customer, with a Supplier Group; holds come later (CX-parties-payments) |
+| Supplier Group | thing |  | 7 | `erpnext/erpnext/setup/doctype/supplier_group/supplier_group.json` | as Customer Group (CX-parties-payments) |
 | Supplier Quotation | thing | SUB FX | 69 | `erpnext/erpnext/buying/doctype/supplier_quotation/supplier_quotation.json` |  |
 | Supplier Scorecard | thing |  | 13 | `erpnext/erpnext/buying/doctype/supplier_scorecard/supplier_scorecard.json` |  |
 | Supplier Scorecard Criteria | thing |  | 4 | `erpnext/erpnext/buying/doctype/supplier_scorecard_criteria/supplier_scorecard_criteria.json` |  |

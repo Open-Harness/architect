@@ -53,6 +53,13 @@ import { create as companyCreate } from "./company/create.ts";
 import { get as companyGet } from "./company/get.ts";
 import { create as costCenterCreate } from "./cost-center/create.ts";
 import { get as costCenterGet } from "./cost-center/get.ts";
+import { balance as customerBalance } from "./customer/balance.ts";
+import { create as customerCreate } from "./customer/create.ts";
+import { disable as customerDisable } from "./customer/disable.ts";
+import { enable as customerEnable } from "./customer/enable.ts";
+import { get as customerGet } from "./customer/get.ts";
+import { create as customerGroupCreate } from "./customer-group/create.ts";
+import { get as customerGroupGet } from "./customer-group/get.ts";
 import { create as departmentCreate } from "./department/create.ts";
 import { get as departmentGet } from "./department/get.ts";
 import { create as designationCreate } from "./designation/create.ts";
@@ -144,6 +151,10 @@ import { get as leaveApplicationGet } from "./leave-application/get.ts";
 import { reject as leaveApplicationReject } from "./leave-application/reject.ts";
 import { create as leaveTypeCreate } from "./leave-type/create.ts";
 import { get as leaveTypeGet } from "./leave-type/get.ts";
+import { cancel as paymentEntryCancel } from "./payment-entry/cancel.ts";
+import { create as paymentEntryCreate } from "./payment-entry/create.ts";
+import { get as paymentEntryGet } from "./payment-entry/get.ts";
+import { submit as paymentEntrySubmit } from "./payment-entry/submit.ts";
 import { list as payrollEmployeeDetailList } from "./payroll-employee-detail/list.ts";
 import { create as payrollEntryCreate } from "./payroll-entry/create.ts";
 import { get as payrollEntryGet } from "./payroll-entry/get.ts";
@@ -169,6 +180,13 @@ import { list as salaryStructureAssignmentList } from "./salary-structure-assign
 import { submit as salaryStructureAssignmentSubmit } from "./salary-structure-assignment/submit.ts";
 import { create as shiftTypeCreate } from "./shift-type/create.ts";
 import { get as shiftTypeGet } from "./shift-type/get.ts";
+import { balance as supplierBalance } from "./supplier/balance.ts";
+import { create as supplierCreate } from "./supplier/create.ts";
+import { disable as supplierDisable } from "./supplier/disable.ts";
+import { enable as supplierEnable } from "./supplier/enable.ts";
+import { get as supplierGet } from "./supplier/get.ts";
+import { create as supplierGroupCreate } from "./supplier-group/create.ts";
+import { get as supplierGroupGet } from "./supplier-group/get.ts";
 
 // The release version is stamped in when the CLI is published (`ortho publish`); run from source, it says 0.0.0.
 declare const ORTHO_VERSION: string | undefined;
@@ -186,6 +204,8 @@ const bridgeBusiness = Command.make("bridge-business").pipe(Command.withSubcomma
 const bridgeIndividual = Command.make("bridge-individual").pipe(Command.withSubcommands([bridgeIndividualApprove, bridgeIndividualGet, bridgeIndividualReject, bridgeIndividualStart]));
 const company = Command.make("company").pipe(Command.withSubcommands([companyCreate, companyGet]));
 const costCenter = Command.make("cost-center").pipe(Command.withSubcommands([costCenterCreate, costCenterGet]));
+const customer = Command.make("customer").pipe(Command.withSubcommands([customerBalance, customerCreate, customerDisable, customerEnable, customerGet]));
+const customerGroup = Command.make("customer-group").pipe(Command.withSubcommands([customerGroupCreate, customerGroupGet]));
 const department = Command.make("department").pipe(Command.withSubcommands([departmentCreate, departmentGet]));
 const designation = Command.make("designation").pipe(Command.withSubcommands([designationCreate, designationGet]));
 const employee = Command.make("employee").pipe(Command.withSubcommands([employeeGet, employeeHire, employeeRelieve]));
@@ -216,6 +236,7 @@ const kra = Command.make("kra").pipe(Command.withSubcommands([kraCreate, kraGet]
 const leaveAllocation = Command.make("leave-allocation").pipe(Command.withSubcommands([leaveAllocationCreate, leaveAllocationGet, leaveAllocationSubmit]));
 const leaveApplication = Command.make("leave-application").pipe(Command.withSubcommands([leaveApplicationApprove, leaveApplicationCancel, leaveApplicationCreate, leaveApplicationGet, leaveApplicationReject]));
 const leaveType = Command.make("leave-type").pipe(Command.withSubcommands([leaveTypeCreate, leaveTypeGet]));
+const paymentEntry = Command.make("payment-entry").pipe(Command.withSubcommands([paymentEntryCancel, paymentEntryCreate, paymentEntryGet, paymentEntrySubmit]));
 const payrollEmployeeDetail = Command.make("payroll-employee-detail").pipe(Command.withSubcommands([payrollEmployeeDetailList]));
 const payrollEntry = Command.make("payroll-entry").pipe(Command.withSubcommands([payrollEntryCreate, payrollEntryGet, payrollEntryList, payrollEntrySubmit, payrollEntrySubmitSlips]));
 const payrollPeriod = Command.make("payroll-period").pipe(Command.withSubcommands([payrollPeriodCreate, payrollPeriodGet]));
@@ -226,9 +247,11 @@ const salarySlipDetail = Command.make("salary-slip-detail").pipe(Command.withSub
 const salaryStructure = Command.make("salary-structure").pipe(Command.withSubcommands([salaryStructureCancel, salaryStructureCreate, salaryStructureGet, salaryStructureSubmit]));
 const salaryStructureAssignment = Command.make("salary-structure-assignment").pipe(Command.withSubcommands([salaryStructureAssignmentCancel, salaryStructureAssignmentCreate, salaryStructureAssignmentGet, salaryStructureAssignmentList, salaryStructureAssignmentSubmit]));
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
+const supplier = Command.make("supplier").pipe(Command.withSubcommands([supplierBalance, supplierCreate, supplierDisable, supplierEnable, supplierGet]));
+const supplierGroup = Command.make("supplier-group").pipe(Command.withSubcommands([supplierGroupCreate, supplierGroupGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, payrollEmployeeDetail, payrollEntry, payrollPeriod, salaryComponent, salaryDetail, salarySlip, salarySlipDetail, salaryStructure, salaryStructureAssignment, shiftType]),
+  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, customer, customerGroup, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, paymentEntry, payrollEmployeeDetail, payrollEntry, payrollPeriod, salaryComponent, salaryDetail, salarySlip, salarySlipDetail, salaryStructure, salaryStructureAssignment, shiftType, supplier, supplierGroup]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),
