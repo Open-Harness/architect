@@ -51,7 +51,7 @@ export const endpoint = HttpApiEndpoint.post("join", "/sheet/join", {
 
 The MCP door is on the same Worker, and calls the same served operations:
 
-```ts file=examples/signup/generated/server/main.ts name=tools lines=116-121
+```ts file=examples/signup/generated/server/main.ts name=tools lines=117-122
 /** One tool per operation and read: the same served operations as the API, called as the person the access token names. */
 const tools = Mcp.tools<Services>({
   catalog,
@@ -122,11 +122,11 @@ if (broken !== undefined) return yield* settleViolation(name, invariants, logs, 
 const writes = yield* unit.writes;
 // #764: the lists the handler read, which the store guards like an update's version.
 const lists = yield* unit.lists;
-const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
+// #1045: the rows it found, guarded the same way: one another call changed since makes this attempt a `conflict`, and the call runs again.
+const reads = yield* unit.reads;
+const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}), ...(reads.length > 0 ? { reads } : {}) }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
     "commit.outcome": outcome,
-    // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
-    ...(outcome === "committed" && entries[0] !== undefined ? { "event.name": entries[0].event } : {}),
 ```
 
 A `conflict` reruns the whole attempt, up to 64 times (`service.ts:21`). For a chain operation the enforcer is the

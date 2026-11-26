@@ -6,6 +6,7 @@ import type { AdapterDoor, EventActor } from "./door-types.ts";
 
 export type { AdapterDoor, EventActor };
 import type { Event, On } from "#modules/events/types.js";
+import type { Json, StandCall } from "#modules/journeys/types.js";
 import type { Operation, Read } from "#modules/operations/types.js";
 import type { Value } from "#modules/values/types.js";
 
@@ -266,4 +267,6 @@ export interface StandApi {
   readonly vendor: (what: string) => StandIn;
   /** Nothing stands in locally: its journeys run only in the cloud pass. */
   readonly none: StandIn;
+  /** A command to the stand-in of `mount`, for a journey's step: `Stand.command<Args, Answer>("pricing", "seed")({ pair })`. */
+  readonly command: <Args extends Json, A>(mount: string, name: string) => (args: Args) => StandCall<A>;
 }

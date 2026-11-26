@@ -5,6 +5,8 @@ K33 (design/decisions/K33-github-native.md). Before opening:
   who did what; no assignee, no attribution line.
 - Title: what it does, in plain words. Body: fill every line below; write "none" rather than deleting one.
 - Every comment you post here opens with `[goal-<n> · <role> · <harness> · <model>]` (the github skill).
+- A Claude Code cloud session leaves the model id out of both, and its environment adds a footer and commit trailers
+  (CI-claude-attribution); a reviewer blocks on neither.
 - Into main, write `Closes #<n>`. Into a goal branch GitHub won't close it: close the issue yourself when this merges.
 -->
 
@@ -12,7 +14,7 @@ Lands #<the slice, snag, ask or gap this lands>
 
 - **Goal and slice:** Goal <n>, slice <n> (or: none)
 - **Role:** lead | author | builder | reviewer | designer | spike
-- **Harness and model:** <claude | amp | codex | opencode>, <model id>
+- **Harness and model:** <claude | amp | codex | opencode>[, <model id>]
 - **Check:** `<the command>`: <what it printed>
 
 ## What it changes

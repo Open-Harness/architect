@@ -29,6 +29,8 @@ export interface CallRecord {
   readonly tools?: true;
   /** The step moved the world's clock (`s.clock.advance`, `.moveTo`): no operation ran and no span comes; `body` is the door's `{ now, fired }` or its refusal. */
   readonly clock?: true;
+  /** The step sent a command to a mount's stand-in (`Stand.command`): no operation ran and no span comes; `body` is the stand-in's answer. */
+  readonly stand?: true;
 }
 
 export type { D1Access } from "./internal/d1-facts.ts";
@@ -109,6 +111,8 @@ export interface JourneysApi {
    * closed the door (staging) gives its database instead.
    * `device`: where a plugin's operation that runs on the device is run (its `world` entry, in this process). Without
    * one such a call goes to the server like any other, which has no route for it.
+   * `stands`: the address of each stand-in the world's prove started, by mount (G16-adapter-mounts call 4). A step's command
+   * to a mount with none fails, and nothing is sent.
    */
-  readonly run: (project: Project, url: string, journey: Journey, index: number, people?: "world" | "sign-up", facts?: Facts, empty?: boolean, device?: DeviceHost) => Effect.Effect<JourneyRun>;
+  readonly run: (project: Project, url: string, journey: Journey, index: number, people?: "world" | "sign-up", facts?: Facts, empty?: boolean, device?: DeviceHost, stands?: Readonly<Record<string, string>>) => Effect.Effect<JourneyRun>;
 }
