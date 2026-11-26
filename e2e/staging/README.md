@@ -38,12 +38,14 @@ Red today on one reason: `ortho env` has `up`, `down` and `status` for a long-li
 
 | Step | Credentials | What it judges |
 |---|---|---|
-| plan | none | `ortho env up staging --plan --run <run id>` prints a plan; `prefix` is read from it and never typed again |
+| select | none | `runs.mjs select <app>`: the run the dispatch chose (`plugged-in` by default, or `capxul`), its root into `$GITHUB_ENV` as `ROOT` and its journeys into `journeys.txt` (CX-staging) |
+| plan | none | `ortho env up staging --plan --run <run id> --root "$ROOT"` prints a plan; `prefix` is read from it and never typed again |
 | snapshot before | token, account | the account's whole listing before anything is made, kept in `tmp/staging/private/` and never uploaded |
 | up | token, account | `ortho env up staging --run <id>`; allowed to fail so that destroy runs, and still fails the job |
 | snapshot while up | token, account | what the account holds with the run up |
 | subdomain | token, account | `subdomain.mjs`: the account's workers.dev subdomain, written as `subdomain=<name>` to the step output and nothing else |
-| the story | none | `ortho prove --env staging --run <id> --only "a person claims a page and shares it"`, with `ORTHO_STAGING_SUBDOMAIN` from the step above; allowed to fail, still fails the job |
+| the story | token, account | `ortho prove --env staging --run <id> --root "$ROOT"` with one `--only` per journey of the chosen run, with `ORTHO_STAGING_SUBDOMAIN` from the step above; allowed to fail, still fails the job |
+| the story judged the list | none | `runs.mjs judged`: the story's `--report` holds every journey of `journeys.txt` once and no other; runs whenever the story ran, pass or fail |
 | destroy | token, account | `ortho env destroy staging --run <id>`, **`if: always()`** |
 | snapshot after | token, account | the listing after destroy, **`if: always()`** |
 | judge | none | from the files alone, **`if: always()`**; see below |
@@ -64,11 +66,11 @@ count (`REMOVED 2 workers (not this run's)`), never by name. The run id is `${{ 
 first attempt's leftovers; the job names `environment: staging`, which GitHub can restrict to protected branches (its rule is set on GitHub, not here).
 
 `workflow.mjs` judges the workflow's own text (by hand only; destroy, the listing and the judge always; the two credentials only in the four steps that talk to Cloudflare, and only as `secrets.CLOUDFLARE_API_TOKEN` and
-`vars.CLOUDFLARE_ACCOUNT_ID`; nothing prints the environment; the evidence is those five named files, never wrangler's log or a whole-account listing). Both its tests and the lister's run in `nx run e2e:test`.
+`vars.CLOUDFLARE_ACCOUNT_ID`; nothing prints the environment; the evidence is those seven named files, never wrangler's log or a whole-account listing). Both its tests and the lister's run in `nx run e2e:test`.
 
-**What is not checked here, and why.** The story step calls `ortho prove --env staging --run <id> --only "a person claims a page and shares it"` (the journey's own name; `"the story"` matched no journey). M7.04 owns that command
+**What is not checked here, and why.** The story step calls `ortho prove --env staging --run <id> --root "$ROOT"` with one `--only` per journey of the chosen run (by default the story alone, by its own name; `"the story"` matched no journey), and `--report`, which the `judged` step reads to check every journey of the list was judged once (CX-staging). M7.04 owns that command
 (`design/decisions/M7-cloud.md`, addendum of 21 November 2026) and check 41 ([`e2e/m1/41-m7-04-prove-staging.test.ts`](../m1/41-m7-04-prove-staging.test.ts), 97 tests: 64 controls pass today, 33 are red in `e2e/m1/expected-failing/41-m7-04-prove-staging.txt`)
-pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check 37's name) on `ORTHO_STAGING_SUBDOMAIN`, the output of the `subdomain` step before the story (it holds the token and reads the account's subdomain with [`subdomain.mjs`](subdomain.mjs), writing only `subdomain=<name>`, never the response; the story step holds none); `ORTHO_STAGING_ORIGIN` points the same code at a world served on this machine. What it cannot judge is the cloud itself: https, and a Worker whose `/_world` is closed so D1's own API must be read for facts (spike snags 15 and 16). The first real run is that proof.
+pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check 37's name) on `ORTHO_STAGING_SUBDOMAIN`, the output of the `subdomain` step before the story (it holds the token and reads the account's subdomain with [`subdomain.mjs`](subdomain.mjs), writing only `subdomain=<name>`, never the response; the story step holds the two credentials only to read the run's D1 databases, M7-04-story-reads-d1); `ORTHO_STAGING_ORIGIN` points the same code at a world served on this machine. What it cannot judge is the cloud itself: https, and a Worker whose `/_world` is closed so D1's own API must be read for facts (spike snags 15 and 16). The first real run is that proof.
 
 ## The lister's own tests
 
@@ -77,3 +79,11 @@ pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check
 - [`recorded/`](recorded/): the listings run 44742578303 of the spike wrote, while up (`run-5-while-up.json`) and after destroy (`run-5-after-destroy.json`). The account's other 36 resources are renamed `other-app-*`; the
   run's own names are as recorded. They give the clean case, the everything-left case (six resources), and the base for one leftover of each kind and for lookalikes.
 - `snapshot` is run against a fake account served from `127.0.0.1` (`ORTHO_STAGING_API`, loopback only): every page, a refused kind written as an error, and neither the token nor the account id printed or written.
+
+## Capxul's run (CX-staging)
+
+The dispatch's `app` input chooses a run from [`runs.mjs`](runs.mjs): `plugged-in`, the default, is the story alone and makes exactly the commands this workflow made before it took an input;
+`capxul` is Goal 16's finish line, its journeys listed by name part by part (the books, HR, payroll, KYC and KYB, the bank account). [`runs.test.mjs`](runs.test.mjs) holds each list to the
+journey files, so a renamed journey fails there. `workflow.test.mjs` runs the select, plan, up, story and destroy steps with a stand-in `ortho` for both runs, and walks the job with each step
+failing in turn (`shape`: one up, one destroy, a failed run still destroys). Check 50 ([`e2e/m1/50-cx-staging-capxul.test.ts`](../m1/50-cx-staging-capxul.test.ts)) pins several `--only` and
+Capxul's plan. Where the Bridge journeys run, and any new secret, wait on Aaron (`design/decisions/CX-staging.md`, section 4).
