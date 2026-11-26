@@ -5,12 +5,13 @@
 //    from --help): the subcommand exists under that command, each flag is a flag of that command, a flag with choices is given
 //    one of them, and an add command or a `$` line has the argument it needs.
 // 3. A chapter types nothing it could read. Every fenced block in chapters/ is a quote: `capture=<file>` (each line is a line of
-//    that recording in captures/, in order; it opens with the `$` command the recording ran, unless the block is marked `part`)
+//    that recording in captures/, in order; it opens with the recording's first line, unless the block is marked `part`)
 //    or `file=<path> lines=a-b` (those lines of that file, exactly). A line that ends " …" matches a recorded line that starts
 //    the same way. Output written in a sentence, in backticks with ✔ or ✘, must be in a recording too.
 //    What it cannot know: whether the lines a quote leaves out change its meaning, or whether a number in a sentence is right.
 //    Those are a reviewer's.
-// 4. A chapter has the four parts and nothing else, says how it stands, names a film that exists, and its links resolve.
+// 4. A chapter is in spine.json under its own title, opens with that title and a `Film:` line, has no heading but its own `##`
+//    sections, ends with "When it goes wrong" and "How this stands", and its links resolve.
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
@@ -74,20 +75,30 @@ for (const file of pages) {
 }
 
 // The chapters: every block is a quote of a recording or of a file, and each has the four parts.
-const parts = ["What you do", "What your agent does", "What you read", "What goes wrong"];
+const ends = ["When it goes wrong", "How this stands"];
+const spine = JSON.parse(read(join(here, "spine.json"))), placed = new Map([[spine.opening.file, undefined], ...spine.parts.flatMap((p) => p.chapters).filter((c) => c.file).map((c) => [c.file, c.title])]);
+for (const file of placed.keys()) if (!existsSync(join(here, file))) problems.push(`spine.json: ${file} is not there`);
 const chapters = existsSync(join(here, "chapters")) ? readdirSync(join(here, "chapters")).filter((f) => f.endsWith(".md")).sort() : [];
 const recordings = readdirSync(join(here, "captures")).filter((f) => f.endsWith(".txt")).map((f) => read(join(here, "captures", f)));
 const slug = (heading) => heading.toLowerCase().replace(/[^a-z0-9 -]/g, "").trim().replace(/ /g, "-");
 let quotes = 0;
 for (const name of chapters) {
   const file = join(here, "chapters", name), text = read(file), at = `chapters/${name}`, say = (what) => problems.push(`${at}: ${what}`);
-  const heads = [...text.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
-  const others = [...text.matchAll(/^(#|###+) (.+)$/gm)].filter((m) => !(m[1] === "#" && m.index === 0));
-  if (others.length) say(`has a heading that is not one of its four parts: "${others[0][2]}"`);
-  if (heads.join(" | ") !== parts.join(" | ")) say(`its parts are "${heads.join('", "')}", and a chapter has exactly "${parts.join('", "')}"`);
-  if (!/^\*\*How it stands\.\*\* /m.test(text)) say("it does not say how it stands");
-  const film = /^Film: `(docs\/explainer\/films\/[a-z-]+)\/`/m.exec(text);
-  if (!film) say("it names no film"); else if (!existsSync(join(repo, film[1], "script.json"))) say(`its film ${film[1]} has no script.json`);
+  // A chapter is in the spine under its own title, opens with that title and a Film line, tells its story under headings of its
+  // own, and always ends the same way: what goes wrong, then how this part stands today.
+  if (!placed.has(at)) say("is not in spine.json");
+  const title = /^# (.+)\n\nFilm: (`docs\/explainer\/films\/[a-z-]+\/`|none yet)\n/.exec(text);
+  if (!title) say("does not open with its title and a `Film:` line (a film's folder, or `none yet`)");
+  else {
+    if (placed.get(at) !== undefined && placed.get(at) !== title[1]) say(`is titled "${title[1]}", and spine.json calls it "${placed.get(at)}"`);
+    if (title[2] !== "none yet" && !existsSync(join(repo, title[2].slice(1, -2), "script.json"))) say(`its film ${title[2]} has no script.json`);
+  }
+  const prose = text.replace(/^```[^\n]*\n[\s\S]*?\n```$/gm, "");
+  const heads = [...prose.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  if (heads.slice(-2).join(" | ") !== ends.join(" | ")) say(`ends with "${heads.slice(-2).join('", "')}", and a chapter ends with "${ends.join('", "')}"`);
+  if (heads.length < 3) say("has no story between its opening and its two closing sections");
+  const others = [...prose.matchAll(/^(#|###+) (.+)$/gm)].filter((m) => !(m[1] === "#" && m.index === 0));
+  if (others.length) say(`has a heading the check does not expect: "${others[0][2]}"`);
   for (const m of text.matchAll(/\]\(([^)#]+)(?:#([^)]*))?\)/g)) {
     const to = resolve(dirname(file), m[1]);
     if (/^[a-z]+:/.test(m[1])) continue;
@@ -114,7 +125,7 @@ for (const name of chapters) {
     if (capture) {
       if (!/^[\w.-]+\.txt$/.test(capture[1]) || !existsSync(join(here, "captures", capture[1]))) { say(`quotes captures/${capture[1]}, which is not a recording`); continue; }
       const recorded = read(join(here, "captures", capture[1])).split("\n"); let from = 0;
-      if (!lines.some((l) => l.startsWith("$ ")) && !/\bpart\b/.test(info)) say(`its quote of captures/${capture[1]} does not open with the command that was run: add the \`$\` line, or mark the block \`part\``);
+      if (lines[0] !== recorded[0] && !/\bpart\b/.test(info)) say(`its quote of captures/${capture[1]} does not open with the recording's first line: add it, or mark the block \`part\``);
       for (const row of lines) {
         if (row.startsWith("$ ") && row !== recorded[0]) { say(`says captures/${capture[1]} ran\n    ${row}\n  and it ran\n    ${recorded[0]}`); continue; }
         const cut = row.endsWith(" …") ? row.slice(0, -2) : undefined;

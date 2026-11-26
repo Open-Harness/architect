@@ -1,20 +1,20 @@
-# 7 · Run it, break it, read the trace
+# Run it, break it, read the trace
 
-Film: `docs/explainer/films/read-trace/` · App: `examples/plugged-in`
+Film: `docs/explainer/films/read-trace/`
 
-**How it stands.** Running the app, calling it and printing a trace all run today, and every line of output was
-recorded by `docs/manual/capture.sh`. Two parts are missing. No command signs a test person in to a local app: the
-recording asks the local world's own door for a session, as journeys do. And the generated command line tool does not
-print a trace's id: it is in the answer's `x-trace-id` header. Plugged In has no screens yet, so "the screen" here is
-a terminal.
+Everything is green. So you try the app yourself, and something looks wrong. You want to know why, and you do not
+want to read the code to find out.
 
-## What you do
+## Run it, and say what you saw
 
-You try it, and you say what looks wrong, in your own words. You do not have to find the cause.
+One command runs the app on your machine, with a local world and no cloud account.
 
 ```sh capture=dev.txt
 $ ortho dev --port 4517
 ```
+
+Plugged In has no screens yet, so we call it through the command line tool that was generated from its blueprint. We
+claim a name, and then a second one.
 
 ```sh capture=claim-first.txt
 $ plugged-in handle claim --name firstpage
@@ -27,13 +27,13 @@ $ plugged-in handle claim --name secondpage
 exit 12
 ```
 
-The tool printed the first line. `exit 12` is the status it ended with, written down by the recording.
+The tool printed the refusal. The last line is the status it ended with, written down by the recording. Is that a
+bug? You don't have to know. "I asked for a second name and it said no" is enough to hand to your agent.
 
-"I asked for a second name and it said no" is enough to hand over.
+## Find the one call
 
-## What your agent does
-
-It makes the same call again and keeps the trace's id from the answer.
+We want the agent to read what happened, not to guess at it. Every answer the app gives carries the id of its
+[trace](../../canon/traces.mdx), so the agent makes the same call again and keeps that id.
 
 ```sh part capture=refusal-http.txt
 HTTP/1.1 422 Unprocessable Entity
@@ -41,7 +41,7 @@ x-trace-id: 6586442f3b59173fa3fa4d9a1e3b62cf
 {"_tag":"HandleAlreadyOwned","code":"HN-002"}
 ```
 
-Then it prints that one [trace](../../canon/traces.mdx) and reads it back to you.
+Then it prints that one trace.
 
 ```sh capture=trace-refused.txt
 $ ortho telemetry trace 6586442f3b59173fa3fa4d9a1e3b62cf
@@ -50,8 +50,23 @@ handle.claim  20 ms  refused HandleAlreadyOwned  move claim → claimed
   handle.claim.record  1.0 ms  step database
 ```
 
-The second line names the [rule](../../canon/invariants.mdx) that refused. The rule is one declaration in the
-blueprint, and that is the line that gave the refusal.
+## Read it
+
+A trace is everything one call did. The operation's line says which operation ran, how long it took, and that it was
+refused, with the refusal's name. The line under it is the cause: a [rule](../../canon/invariants.mdx), by its name in
+the blueprint.
+
+What is missing matters as much. The record step ran, and there is no commit: the rule was checked after the work and
+before anything was saved. A call that was answered ends differently.
+
+```sh part capture=trace-answered.txt
+profile.get  22 ms
+  profile.get.commit  0.0 ms  step commit
+```
+
+## The line that gave it
+
+So the refusal did not come from the handler at all. It came from six lines of blueprint.
 
 ```ts file=examples/plugged-in/blueprint/things/handle/invariants.ts lines=12-17
 // A person holds one claimed name at a time.
@@ -62,30 +77,24 @@ export const oneNamePerPerson = Blueprint.invariant.unique(Handle.fields.owner, 
 });
 ```
 
-## What you read
+Now the question is yours, and it is a real one. Should a person hold only one name? If yes, the app is right and the
+message needs work. If no, the rule changes, and that is a later chapter.
 
-- **The operation's line, under the trace's id**: the operation, how long it took, and `refused` with the refusal's name. A refusal
-  is the system working. A fault is marked as a defect instead, with a ✘, and that is a bug. This chapter did not record one: the mark is
-  from the telemetry command's own page, `packages/cli/src/modules/telemetry/README.md`.
-- **The line under it**: which rule refused, by its name in the blueprint.
-- **What is missing.** The step `handle.claim.record` ran and there is no `handle.claim.commit`: the rule was
-  checked after the work and before the commit, so nothing was saved. Compare a call that was answered:
+## When it goes wrong
 
-```sh part capture=trace-answered.txt
-profile.get  22 ms
-  profile.get.commit  0.0 ms  step commit
-```
+A refusal and a defect are different things, and a trace marks them differently. Refused means a declared answer,
+with a code. A defect is the server failing, and it goes to a builder with the trace attached. We did not record a
+defect for this chapter: its mark is described in the telemetry command's own notes.
 
-- **The rule itself**, six lines of blueprint. Now the question is yours: should a person hold one name? If yes, the
-  app is right and the message is what needs work. If no, the rule changes, and that is chapter 10.
+An agent will sometimes explain a refusal from the handler. Here the handler never refuses a second name: the runtime
+does, from the rule. If an explanation does not name a line of the blueprint, ask for the trace.
 
-## What goes wrong
+And sometimes the trace is not there yet. The Collector writes its files a moment after the call, so wait a few
+seconds. A trace recorded before the app was stopped still prints afterwards, because the command reads files.
 
-- **Nobody kept the trace's id.** The command line tool shows the refusal's code and not the id. Ask the agent to
-  repeat the call and read the header.
-- **The trace is not there yet.** The Collector writes its files a moment after the call. Wait a few seconds.
-- **The app was stopped.** `ortho telemetry trace` reads files, so a trace recorded before the stop still prints.
-- **The agent explains the refusal from the handler.** The handler never refuses `HandleAlreadyOwned`: the runtime
-  does, from the rule. If an explanation does not name a line of the blueprint, ask for the trace.
-- **You are reading a defect as a refusal.** `refused` is a declared answer with a code. A defect is the server
-  failing, and it goes to a builder with the trace attached.
+## How this stands
+
+Running the app, calling it and printing a trace all run today, and everything above was recorded on Plugged In. Two
+parts are missing. No command signs a test person in to a local app, so the recording asked the local world's own
+door for a session, as journeys do. And the generated command line tool prints a refusal's code and not its trace's
+id, which is why the agent repeats the call to read the id from the answer.

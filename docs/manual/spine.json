@@ -1,0 +1,25 @@
+{
+  "note": "The manual's order: an opening, eleven chapters in four parts, and the reference at the back. build.mjs draws the page from this, and check.mjs holds each written chapter to it. A chapter with no file is shown in its place as not written yet.",
+  "opening": { "file": "chapters/00-why-this-exists.md" },
+  "parts": [
+    { "title": "Before any code", "chapters": [
+      { "n": 1, "title": "Plan it", "question": "What is the system, and what don't we know yet?", "file": "chapters/01-plan-it.md" },
+      { "n": 2, "title": "Spike what you doubt", "question": "Will the part I'm unsure of actually work?" },
+      { "n": 3, "title": "Describe it", "question": "How does the plan become something the framework can check?" } ] },
+    { "title": "Build it", "chapters": [
+      { "n": 4, "title": "Say what done means", "question": "How will I know it's right without reading the code?", "file": "chapters/04-say-what-done-means.md" },
+      { "n": 5, "title": "Build until green", "question": "How do I hand work to an agent and get back something proved?", "file": "chapters/05-build-until-green.md" },
+      { "n": 6, "title": "Review without reading the code", "question": "Is this change what I asked for, and nothing more?" } ] },
+    { "title": "Run it", "chapters": [
+      { "n": 7, "title": "Run it, break it, read the trace", "question": "When something looks wrong, how do I find out why?", "file": "chapters/07-run-it-and-read-the-trace.md" },
+      { "n": 8, "title": "Stage it", "question": "How does it get from my machine to a real address?" },
+      { "n": 9, "title": "Watch it", "question": "Is it healthy, and what changed this week?" } ] },
+    { "title": "Live with it", "chapters": [
+      { "n": 10, "title": "Change it, months later", "question": "I need one rule different. What else has to change?" },
+      { "n": 11, "title": "More than one agent", "question": "How do several agents work at once without stepping on each other?" } ] }
+  ],
+  "reference": [
+    { "title": "Working with your agents", "file": "working-with-your-agents.md" },
+    { "title": "The agent kit", "file": "kit/README.md" }
+  ]
+}

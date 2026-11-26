@@ -13,22 +13,27 @@ The docs have three parts. This folder is the first.
 
 ## What is written
 
+`spine.json` is the manual's order: an opening, eleven chapters in four parts, and the reference at the back.
+
 | Page | How it stands |
 |---|---|
-| [Working with your agents](working-with-your-agents.md) | written. The roles are this repository's own practice, proved daily here. Orthograph does not yet give a new app any of it |
-| [The agent kit](kit/README.md) | written, as files to copy into an app. Nothing generates it yet (M3.12 is parked) |
-| [4 · Say what done means](chapters/04-say-what-done-means.md) | pilot. Recorded on Plugged In. Film: `docs/explainer/films/say-done/` |
-| [5 · Build until green](chapters/05-build-until-green.md) | pilot. Recorded on Plugged In; the climb is a replay of one handler at three points. Film: `docs/explainer/films/build-green/` |
-| [7 · Run it, break it, read the trace](chapters/07-run-it-and-read-the-trace.md) | pilot. Recorded on Plugged In. Film: `docs/explainer/films/read-trace/` |
+| [The hard part is the next morning](chapters/00-why-this-exists.md) | the opening: the problem, what Orthograph does about it, how to read the manual, the cast |
+| [1 · Plan it](chapters/01-plan-it.md) | written around a real first page an agent drew for Plugged In's next stage. The owner has not answered it yet, and it has no film |
+| [4 · Say what done means](chapters/04-say-what-done-means.md) | recorded on Plugged In. Film: `docs/explainer/films/say-done/` |
+| [5 · Build until green](chapters/05-build-until-green.md) | recorded on Plugged In; the climb is a replay of one handler at three points. Film: `docs/explainer/films/build-green/` |
+| [7 · Run it, break it, read the trace](chapters/07-run-it-and-read-the-trace.md) | recorded on Plugged In. Film: `docs/explainer/films/read-trace/` |
+| [Working with your agents](working-with-your-agents.md) | reference. The roles are this repository's own practice. Orthograph does not yet give a new app any of it |
+| [The agent kit](kit/README.md) | reference, as files to copy into an app. Nothing generates it yet (M3.12 is parked) |
 
-The three chapters are a pilot, to fix the format before the rest is written. The other chapters, the guided read of a
-blueprint and the canon's missing pages are planned in `docs/explainer/docs-plan/` and not started.
+Chapters 2, 3, 6 and 8 to 11 are in the spine and not written; the page shows each in its place. `plan/` holds the plan
+this order came from and the specimen Aaron agreed the voice and look on (26 November 2026).
 
 ## What is where
 
 | Path | What it is |
 |---|---|
-| `chapters/` | one page per chapter, numbered as the plan numbers them. Four parts and nothing else |
+| `chapters/` | one page per chapter, numbered as `spine.json` numbers them |
+| `spine.json` | the order, the parts, and the question each chapter answers |
 | `capture.sh` | records every command the chapters and their films show, on `examples/plugged-in`, into `captures/`. It changes the example to record, and restores it on the way out |
 | `captures/` | the recordings, committed. Each opens with the command that was run |
 | `check.mjs` | fails when a role's words differ, a written command is not in the command line's recorded tree (`captures/cli.json`), or a chapter quotes a line that was not recorded. CI runs it in the `e2e-m0` job |
@@ -52,7 +57,9 @@ matches, and the films pick the new recordings up when they are next built.
 - **Nothing is typed that can be read.** A command it names exists, with its flags. Every fenced block in a chapter is
   a quote, of a recording (`capture=<file>`) or of a file (`file=<path> lines=a-b`), and `check.mjs` fails when one is not.
   The check cannot tell whether the lines a quote leaves out change its meaning: that is a reviewer's to read.
-- **A chapter has four parts and nothing else**: what you do, what your agent does, what you read, what goes wrong.
-- **It says how each part stands**: runs today, decided, this repository's practice, or missing.
+- **A chapter is written the way it happens.** It opens with the problem in plain words. Each section says what we want,
+  then how, then shows what was recorded. It uses no tables, lists or boxes. It always ends with "When it goes wrong" and
+  "How this stands", and limits are said in the same voice as everything else.
+- **It says how each part stands**, in its last section: runs today, decided, this repository's practice, or missing.
 - **A role's limits are written once**, in `kit/roles.json`. The page, the kit's `AGENTS.md` and each skill say the same
   words, and `node docs/manual/check.mjs` fails when they differ.
