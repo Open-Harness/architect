@@ -4,10 +4,13 @@ import { Names } from "orthograph/server";
 import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
+import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
 import { ModelCommand } from "#modules/model/service.js";
+import { Handoff } from "#modules/handoff/service.js";
 import { Add } from "#modules/add/service.js";
 import { New } from "#modules/new/service.js";
 import { SecretsCommand } from "#modules/secrets/service.js";
@@ -477,13 +480,43 @@ const worlds = Command.make("worlds").pipe(Command.withDescription("Look after t
 // The CLI's own version is the one in its package.json, which sits next to `src/` and next to `dist/`, so one path serves source and the published package.
 const ownVersion: string = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { readonly version: string }).version;
 
-const onCommandLine = SecretsCommand.refusesValue(process.argv.slice(2));
-if (onCommandLine !== undefined) { process.stderr.write(onCommandLine); process.exit(2); }
+// A global `ortho` inside an app that has its own `@orthograph/cli` runs that one instead, so only the app's packages are loaded (#1151).
+// The child gets the hand-off mark and drops it from its own environment, so nothing it starts inherits it.
+const handedOff = Names.variable("HANDED_OFF");
+const alreadyHanded = process.env[handedOff] !== undefined;
+delete process.env[handedOff];
+const found = alreadyHanded ? undefined : Handoff.target({ from: Handoff.from(process.argv.slice(2), process.cwd()), own: fileURLToPath(new URL("..", import.meta.url)) });
+if (found !== undefined && "broken" in found) process.stderr.write(`${found.broken}: @orthograph/cli is installed here, but its ortho entry can't be read, so the global ortho runs instead\n`);
 
-Command.make(Names.short).pipe(
-  Command.withDescription("Orthograph: declare an app as a blueprint, then generate, prove, run and ship it"),
-  Command.withSubcommands([model, dev, prove, promote, secrets, add, newCommand, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
-  Command.run({ version: ownVersion }),
-  Effect.provide(NodeServices.layer),
-  NodeRuntime.runMain,
-);
+/** Runs the app's own `ortho`, passing on every signal, and ends as it ends: its exit code, or the signal that stopped it. */
+const handOff = (entry: string) => {
+  const child = spawn(process.execPath, [entry, ...process.argv.slice(2)], { stdio: "inherit", env: { ...process.env, [handedOff]: "1" } });
+  const signals = ["SIGINT", "SIGTERM", "SIGHUP"] as const;
+  const forward = (signal: NodeJS.Signals) => { child.kill(signal); };
+  for (const signal of signals) process.on(signal, forward);
+  child.on("error", (e) => {
+    process.stderr.write(`couldn't run the app's own ortho (${entry}): ${e.message}\n`);
+    process.exit(1);
+  });
+  child.on("exit", (code, signal) => {
+    for (const s of signals) process.off(s, forward);
+    if (signal !== null) process.kill(process.pid, signal);
+    else process.exit(code ?? 1);
+  });
+};
+
+/** This CLI itself: the value guard, then the parser. */
+const runOwn = () => {
+  const onCommandLine = SecretsCommand.refusesValue(process.argv.slice(2));
+  if (onCommandLine !== undefined) { process.stderr.write(onCommandLine); process.exit(2); }
+  Command.make(Names.short).pipe(
+    Command.withDescription("Orthograph: declare an app as a blueprint, then generate, prove, run and ship it"),
+    Command.withSubcommands([model, dev, prove, promote, secrets, add, newCommand, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
+    Command.run({ version: ownVersion }),
+    Effect.provide(NodeServices.layer),
+    NodeRuntime.runMain,
+  );
+};
+
+if (found !== undefined && "run" in found) handOff(found.run);
+else runOwn();
