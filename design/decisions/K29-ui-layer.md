@@ -56,9 +56,9 @@ K24 named five layers. This is what each one is, in files, from the bottom of th
 |---|---|---|---|
 | 1. The blueprint | what things mean | the app's author | `blueprint/` |
 | 2. The action | one per operation: who calls, the payload check, a declared refusal that writes nothing, approval asked once | generated (M1.22) on `orthograph/actions` (M1.23) | `generated/actions/<thing>/<verb>.ts` |
-| 3. The piece | one per operation: a UI SDK primitive bound to its action, and its parts per framework | generated (the web projection, new) on `@orthograph/web` | `generated/web/<thing>/<verb>.ts` and `.react.tsx` |
+| 3. The piece | one per operation: a UI SDK primitive bound to its action, and its parts per framework (Superseded by K48, 26 November 2026, for an app's screens: a generated headless hook per operation, drawn by the app's own library) | generated (the web projection, new) on `@orthograph/web` | `generated/web/<thing>/<verb>.ts` and `.react.tsx` |
 | 4. Pages and the app's own components | the look: layout, words, the app's own components. The map (pages, routes, navigation, the shell) is declared in the blueprint (K31) | the app's author | `src/web/`, and `blueprint/app/` for the map |
-| 5. UI SDK's widgets | inputs, buttons, dialogs, focus, keyboard, screen readers, the agent bridge | UI SDK | `@ui-sdk/*` |
+| 5. UI SDK's widgets | inputs, buttons, dialogs, focus, keyboard, screen readers, the agent bridge (Superseded by K48, 26 November 2026, for an app's screens: the app's own component library; the portal keeps UI SDK) | UI SDK | `@ui-sdk/*` |
 
 Two packages of ours hold what is written once, by hand:
 
