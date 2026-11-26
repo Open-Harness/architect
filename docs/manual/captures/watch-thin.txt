@@ -1,10 +1,10 @@
 $ ortho watch --env test
 watch test  last 1h  from files .ortho/environments/test/telemetry
-handle.claim p95 41ms (budget 150ms) ✔
-profile.get p95 25ms (budget 10ms) ✔
+handle.claim p95 50ms (budget 150ms) ✔
+profile.get p95 22ms (budget 10ms) ✔
 calls: handle.claim 2  profile.get 3
 refusals: HandleAlreadyOwned 1 (HN-002)
 defects: none
 evals: answer shape ✔  declared errors ✔  steps ✔  explainability ✔  (judged by prove only: who may call, machine path, events, coverage)
-thin: profile.get p95 25ms is over its budget of 10ms but 3 calls are too few to call drift (20 needed)
+thin: profile.get p95 22ms is over its budget of 10ms but 3 calls are too few to call drift (20 needed)
 drift none

@@ -1,0 +1,174 @@
+{
+ "title": "Watch it",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Budget",
+  "Watch",
+  "Drift",
+  "Task",
+  "Stands"
+ ],
+ "about": "Every line of code in this film is read from examples/plugged-in, and every line of terminal output is replayed from docs/manual/captures, recorded by running the commands for real on the test environment on one machine.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "pictures": {
+  "carries": "The budget bar: one row for each operation that was called, its p95 drawn as a bar against the line of its budget, with watch's own mark at the end; it is drawn in the watch scene, is left over the line in the drift scene, and is under it again at the end of the task scene.",
+  "budget": "You are acting: an editor quotes the budget line of examples/plugged-in/blueprint/things/profile/verbs/get.ts, then a terminal replays the seven performance lines of captures/watch-prove.txt, one for each operation.",
+  "watch": "You are acting: a terminal replays captures/watch-nothing.txt, then watch-up.txt, watch-claim-first.txt and watch-claim-second.txt, then watch-healthy.txt line by line, while the budget bars for handle.claim and profile.get are drawn from its two p95 lines.",
+  "drift": "You are acting: the editor shows the same budget line of get.ts with 150 millis struck through and 10 millis beside it, marked as staged, then a terminal replays captures/watch-drift.txt while the profile.get bar, unchanged in length, is left over the moved line.",
+  "task": "The builder is acting: an editor quotes captures/watch-task.md.txt, the file watch wrote, then a terminal replays the two lines the chapter quotes of captures/watch-slowest.txt, and last captures/watch-back.txt with the bar under its line again.",
+  "stands": "A terminal replays captures/watch-local.txt, the thin line of captures/watch-thin.txt and captures/watch-up-uncommitted.txt, then Kit.stand marks what runs today (watch over an environment's files), what was staged (the drift) and what is missing (Axiom and the portal not shown, no comparison of weeks, no schedule)."
+ },
+ "scenes": [
+  {
+   "id": "budget",
+   "title": "A number you agreed to",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "Plugged In is running, and people are calling it. Nobody is running journeys against those calls."
+    },
+    {
+     "id": "a2",
+     "text": "So the question changes. Is it healthy, and what changed this week?"
+    },
+    {
+     "id": "a3",
+     "text": "Start with what is already written down. Every operation in the blueprint carries a budget. For the public page, profile.get, it's a hundred and fifty milliseconds.",
+     "say": "Start with what is already written down. Every operation in the blueprint carries a budget. For the public page, profile dot get, it's a hundred and fifty milliseconds."
+    },
+    {
+     "id": "a4",
+     "text": "The proof has held the app to that number all along. A full run prints a line for each operation, with its budget."
+    },
+    {
+     "id": "a5",
+     "text": "But those are the journeys' own calls. They say nothing about this week."
+    }
+   ]
+  },
+  {
+   "id": "watch",
+   "title": "What an environment recorded",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "One command judges real calls. ortho watch, with the name of an environment.",
+     "say": "One command judges real calls. Ortho watch, with the name of an environment."
+    },
+    {
+     "id": "b2",
+     "text": "Before the environment has run, there's nothing to read, and watch says so."
+    },
+    {
+     "id": "b3",
+     "text": "So we start the test environment on this machine, and use it. A name claimed. A second one refused. The public page, read three times."
+    },
+    {
+     "id": "b4",
+     "text": "Watch again. Each operation that was called has a line, against its own budget. Both pass.",
+     "gap": 0.6
+    },
+    {
+     "id": "b5",
+     "text": "Then the counts. Two claims, three reads. One refusal, by name. A refusal is the app saying no on purpose. Defects: none."
+    },
+    {
+     "id": "b6",
+     "text": "And the evals. That's the proof again, on real calls. Drift: none."
+    }
+   ]
+  },
+  {
+   "id": "drift",
+   "title": "Over a budget",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "c1",
+     "text": "Nothing on our machine was slow. So, to see what slow looks like, we tightened one budget in the blueprint. From a hundred and fifty milliseconds, to ten."
+    },
+    {
+     "id": "c2",
+     "text": "Then we read the page twenty-five more times, and watched again.",
+     "gap": 0.6
+    },
+    {
+     "id": "c3",
+     "text": "Now profile.get is marked. Twenty-two milliseconds, against ten. And the drift line names it.",
+     "say": "Now profile dot get is marked. Twenty-two milliseconds, against ten. And the drift line names it."
+    },
+    {
+     "id": "c4",
+     "text": "Watch did one more thing. It wrote a file."
+    }
+   ]
+  },
+  {
+   "id": "task",
+   "title": "Drift becomes a task",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "d1",
+     "text": "The file is a task, ready to hand to a builder."
+    },
+    {
+     "id": "d2",
+     "text": "It has the numbers. It names the slowest calls by their trace, so the builder reads one before it guesses."
+    },
+    {
+     "id": "d3",
+     "text": "It points at the brief for that one operation."
+    },
+    {
+     "id": "d4",
+     "text": "And it ends with a line for you. Making the handler faster is a builder's job. Loosening the budget is your decision."
+    },
+    {
+     "id": "d5",
+     "text": "We put the budget back. The same twenty-eight calls are healthy again."
+    }
+   ]
+  },
+  {
+   "id": "stands",
+   "title": "What to know",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "e1",
+     "text": "What goes wrong? Calls you make under ortho dev are not watched. We made three, and watch counted none."
+    },
+    {
+     "id": "e2",
+     "text": "A few calls are not a pattern. Under twenty, watch says the numbers are thin, and won't call it drift."
+    },
+    {
+     "id": "e3",
+     "text": "And an environment only starts from committed work. One stray file, and ours was refused."
+    },
+    {
+     "id": "e4",
+     "text": "One honest note. The drift you saw was staged, by tightening a budget. The traffic was ours, on one machine. Axiom and the portal were not available to us, so they are not shown.",
+     "gap": 0.6
+    },
+    {
+     "id": "e5",
+     "text": "And watch prints one window. It doesn't compare weeks, and nothing runs it for you. Someone has to ask. Next: change it, months later."
+    }
+   ]
+  }
+ ]
+}

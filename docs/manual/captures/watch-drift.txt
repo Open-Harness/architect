@@ -1,7 +1,7 @@
 $ ortho watch --env test
 watch test  last 1h  from files .ortho/environments/test/telemetry
-handle.claim p95 41ms (budget 150ms) ✔
-profile.get p95 27ms (budget 10ms) ✘
+handle.claim p95 50ms (budget 150ms) ✔
+profile.get p95 22ms (budget 10ms) ✘
 calls: handle.claim 2  profile.get 28
 refusals: HandleAlreadyOwned 1 (HN-002)
 defects: none
