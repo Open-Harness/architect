@@ -23,7 +23,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { cli, repo } from "../layer1/support.ts";
 
 // The preset's own project files, read by path through `repo` (packages are imported by scope, and this module is internal).
-const { IGNORES, TSCONFIG, WORKSPACE, mergeWorkspace, packageJson } = (await import(/* @vite-ignore */ join(repo, "packages/preset/src/modules/starter/internal/project.ts"))) as typeof import("../../packages/preset/src/modules/starter/internal/project.ts");
+const { AGE_EXEMPT, IGNORES, TSCONFIG, WORKSPACE, addToList, mergeWorkspace, packageJson } = (await import(/* @vite-ignore */ join(repo, "packages/preset/src/modules/starter/internal/project.ts"))) as typeof import("../../packages/preset/src/modules/starter/internal/project.ts");
 const starter = join(repo, "examples/starter");
 const presetVersion = (JSON.parse(readFileSync(join(repo, "packages/preset/package.json"), "utf8")) as { readonly version: string }).version;
 
@@ -123,7 +123,9 @@ describe("08 ortho new app: what it makes", () => {
     expect(made.get("package.json")).not.toContain("workspace:");
     expect(JSON.parse(made.get("tsconfig.json") ?? "null"), "tsconfig.json").toEqual(TSCONFIG);
     expect(made.get(".gitignore"), ".gitignore").toBe(IGNORES.join("\n") + "\n");
-    expect(made.get("pnpm-workspace.yaml"), "pnpm-workspace.yaml").toBe(mergeWorkspace("", WORKSPACE));
+    // The preset's own workspace file, as `Starter.write` makes it since slice 5 (#1090): its settings, then the release-age
+    // exemption for the framework's own packages (check 47 (e)), so a new app can install the `next` packages.
+    expect(made.get("pnpm-workspace.yaml"), "pnpm-workspace.yaml").toBe(addToList(mergeWorkspace("", WORKSPACE), "minimumReleaseAgeExclude", AGE_EXEMPT));
     expect(made.get("pnpm-workspace.yaml")).toContain("kysely");
   });
 
