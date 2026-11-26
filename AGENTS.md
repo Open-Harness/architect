@@ -115,6 +115,9 @@ the process and the style guide), `kanban` (the board Aaron and the conductor tr
 in the repo, and `STATE.md`, where the project stands), `ui-sdk` (UI SDK's own skill, vendored at the pinned version, for
 the generated pieces, pages and the portal's components on it; its `README.md` says how we use it) and `github` (how the
 work lives on GitHub: a milestone per goal, the issue kinds and forms, labels, the pull request template and the sync, K33).
+Three more are for design and teaching: `design-board` (working a design question through with Aaron on a board, then landing
+what he decides as a record, in the canon and past the supersedes guard), `explainer` (making a narrated film as code, in
+`docs/explainer`) and `app-audit` (auditing an existing app before rebuilding it on Orthograph).
 On `goal/on-chain`, the `goal-4` skill is how Goal 4's lead works and resumes; its state is
 `.agents/skills/goal-4/STATE.md`. `.claude/skills` and `.claude/agents/reviewer.md`
 are links to it; edit them only in `.agents/skills/`.

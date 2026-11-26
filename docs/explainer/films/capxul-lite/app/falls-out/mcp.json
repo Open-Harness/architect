@@ -1,0 +1,7 @@
+{
+  "name": "budget_spend",
+  "description": "Pay someone from the treasury, out of this budget.",
+  "arguments": { "budget": "a budget's id", "to": "an account", "amount": "USDC", "reason": "text, kept private" },
+  "refuses": ["BudgetExceeded", "BudgetNotActive", "NotAllowed"],
+  "signs": "with the agent's own key"
+}
