@@ -8,7 +8,7 @@
   const clock = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
   const faces = ['400 26px "IBM Plex Sans"', '500 26px "IBM Plex Sans"', '600 26px "IBM Plex Sans"', '400 22px "JetBrains Mono"', '500 22px "JetBrains Mono"', '700 22px "JetBrains Mono"', '500 20px "Barlow Condensed"', '600 20px "Barlow Condensed"'];
 
-  let ctx = null, buffer = null, bytes = null, node = null, playing = false, offset = 0, startedAt = 0, wall = 0, dragging = false, captions = true;
+  let ctx = null, buffer = null, sound = null, starting = false, node = null, playing = false, offset = 0, startedAt = 0, wall = 0, dragging = false, captions = true;
   const now = () => (!playing ? offset : buffer ? offset + ctx.currentTime - startedAt : offset + (performance.now() - wall) / 1000);
   const stopNode = () => { if (node) { node.onended = null; try { node.stop(); } catch { /* not started */ } node = null; } };
   const startNode = () => { if (!buffer) { wall = performance.now(); return; } node = ctx.createBufferSource(); node.buffer = buffer; node.connect(ctx.destination); startedAt = ctx.currentTime; node.start(0, Math.min(offset, buffer.duration - 0.01)); };
@@ -23,9 +23,15 @@
   }
   function loop() { if (!playing) return; let t = now(); if (t >= T.total) { pause(); t = T.total; offset = T.total; } paint(t); if (playing) requestAnimationFrame(loop); }
   async function play() {
-    if (playing) return;
+    if (playing || starting) return;
     if (offset >= T.total - 0.05) offset = 0;
-    if (!ctx && bytes) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); buffer = await ctx.decodeAudioData(bytes.slice(0)); } catch { buffer = null; } }
+    // The first play waits for the narration instead of starting without it. The context is made here, inside the click.
+    if (!buffer && sound) {
+      starting = true; $("play").textContent = "Loading sound…"; $("bigplay").hidden = true;
+      try { ctx ??= new (window.AudioContext || window.webkitAudioContext)(); const bytes = await sound; buffer = bytes ? await ctx.decodeAudioData(bytes.slice(0)) : null; } catch { buffer = null; }
+      starting = false;
+      if (!buffer) { sound = null; $("sound").hidden = false; }
+    }
     if (ctx && ctx.state === "suspended") { try { await ctx.resume(); } catch { /* stays silent */ } }
     playing = true; startNode(); $("play").textContent = "Pause"; $("bigplay").hidden = true; requestAnimationFrame(loop);
   }
@@ -47,7 +53,7 @@
       if (e.target.closest("input, button") && e.key === " ") return;
       if (e.key === " ") { e.preventDefault(); if (playing) pause(); else play(); } else if (e.key === "ArrowRight") jump(now() + 5); else if (e.key === "ArrowLeft") jump(now() - 5);
     });
-    fetch("narration.mp3").then((r) => (r.ok ? r.arrayBuffer() : null)).then((a) => { bytes = a; }).catch(() => { bytes = null; });
+    sound = fetch("narration.mp3").then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
   }
 
   Promise.all(faces.map((f) => document.fonts.load(f))).catch(() => {}).then(() => document.fonts.ready).then(() => {
