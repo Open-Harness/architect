@@ -4,7 +4,7 @@
 //   --root <dir>                               the folder that holds the suites (default: e2e/)
 // Tests are counted by `vitest list --json` (nothing runs) with e2e/vitest.<suite>.config.ts, else e2e/vitest.config.ts.
 // Reds are the lines of the files in e2e/<suite>/expected-failing/ (one `<check>.txt` per check file). CI appends the output to the
-// e2e-m1 job's step summary; nothing is written to a README.
+// e2e-totals job's step summary; nothing is written to a README.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";

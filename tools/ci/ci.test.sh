@@ -396,6 +396,108 @@ expect "m1-reports: hook errors and unhandled errors carry over" 0 jq -e '(.suit
 d=$(mktemp -d "$scratch/m1.XXXX"); shard "$d" 1 /e2e/m1/a.test.ts; shard "$d" 2 /e2e/m1/b.test.ts; echo 'not json' > "$d/m1-report-1/m1-errors.json"
 expect "m1-reports: a broken hook-error file fails" 1 join "$d"
 
+# m1-shards: the M1 check files split by measured time, every file in exactly one shard (design/decisions/CI-m1-balance.md)
+m1tree() { # <dir> <file>...: an e2e folder holding m1/<file> for each
+  local f; mkdir -p "$1/m1/sub"; for f in "${@:2}"; do mkdir -p "$(dirname "$1/m1/$f")"; echo t > "$1/m1/$f"; done
+}
+d=$(mktemp -d "$scratch/shards.XXXX"); m1tree "$d/e2e" a.test.ts b.test.ts c.test.ts d.test.ts sub/e.test.ts
+echo '{"m1/a.test.ts": 200, "m1/b.test.ts": 40, "m1/c.test.ts": 30, "m1/d.test.ts": 20, "m1/gone.test.ts": 999}' > "$d/t.json"
+split() { "$here/m1-shards.sh" "$1" "$2" "$d/t.json" "$d/e2e"; }
+expect "m1-shards: the heaviest file has a shard to itself" 0 bash -c "[ \"\$($here/m1-shards.sh 1 2 $d/t.json $d/e2e)\" = m1/a.test.ts ]"
+expect "m1-shards: the rest, and a file the table does not know, fill the other" 0 bash -c \
+  "[ \"\$($here/m1-shards.sh 2 2 $d/t.json $d/e2e | tr '\n' ' ')\" = 'm1/b.test.ts m1/c.test.ts m1/d.test.ts m1/sub/e.test.ts ' ]"
+expect "m1-shards: three shards are a partition of every file" 0 bash -c \
+  "for i in 1 2 3; do $here/m1-shards.sh \$i 3 $d/t.json $d/e2e; done | sort | diff - <(cd $d/e2e && find m1 -name '*.test.ts' | sort)"
+expect "m1-shards: the split is the same every time" 0 bash -c \
+  "[ \"\$($here/m1-shards.sh 2 3 $d/t.json $d/e2e)\" = \"\$($here/m1-shards.sh 2 3 $d/t.json $d/e2e)\" ]"
+expect "m1-shards: a shard left empty fails, so vitest is never given no file" 1 split 6 6
+expect "m1-shards: a shard past the count is a usage error" 2 split 3 2
+expect "m1-shards: a shard of zero is a usage error" 2 split 0 2
+echo '{"m1/a.test.ts": "slow"}' > "$d/bad.json"
+expect "m1-shards: a table that is not seconds fails" 1 "$here/m1-shards.sh" 1 2 "$d/bad.json" "$d/e2e"
+expect "m1-shards: the committed table is a table of seconds" 0 jq -e 'type == "object" and length > 0 and all(.[]; type == "number")' "$here/m1-timings.json"
+
+# m1-timings: the table's medians from shard reports
+d=$(mktemp -d "$scratch/timings.XXXX"); mkdir -p "$d/r1/x" "$d/r2" "$d/r3"
+for r in 1 2 3; do jq -n --argjson s "$((r * 10))" '{testResults: [{name: "/w/e2e/m1/a.test.ts", startTime: 0, endTime: ($s * 1000)}, {name: "/w/e2e/m1/b.test.ts", startTime: 0, endTime: 1500}]}' > "$d/r$r/m1-report.json"; done
+mv "$d/r1/m1-report.json" "$d/r1/x/m1-report.json"
+expect "m1-timings: each file's median, in seconds, found at any depth" 0 bash -c \
+  "$here/m1-timings.sh $d | jq -e '. == {\"m1/a.test.ts\": 20, \"m1/b.test.ts\": 1.5}'"
+rm "$d/r3/m1-report.json"
+expect "m1-timings: an even count takes the mean of the middle two" 0 bash -c "$here/m1-timings.sh $d | jq -e '.[\"m1/a.test.ts\"] == 15'"
+expect "m1-timings: a folder with no reports fails" 1 "$here/m1-timings.sh" "$(mktemp -d "$scratch/empty.XXXX")"
+
+# parked: a parked goal's suite runs on a pull request only into its branch, through its paths, or once it is not parked
+# (design/decisions/CI-parked-suites-nightly.md)
+pk=$(mktemp -d "$scratch/parked.XXXX"); git -C "$pk" init -q -b base; git -C "$pk" config user.email ci@example.invalid; git -C "$pk" config user.name ci
+mkdir -p "$pk/design/goals" "$pk/e2e/superagent" "$pk/examples/superagent" "$pk/packages/prove" "$pk/e2e/fixtures/m8"
+brief() { # <file> <status> <branch> <owned path>...
+  { echo ---; echo "goal: 1"; echo "branch: $3"; echo "status: $2         # ready | running | parked"; echo "owns:"
+    local p; for p in "${@:4}"; do echo "  - $p"; done; echo "done_check: x"; echo ---; echo "# brief"; } > "$pk/design/goals/$1"
+}
+brief 17-superagent.md parked goal/superagent examples/superagent/ e2e/superagent/ design/decisions/K39.md
+brief 06-portal.md parked goal/portal packages/portal-next/ e2e/portal-next/
+brief 05-ui-layer.md parked goal/ui-layer packages/web/
+brief 09-time.md parked goal/time e2e/m8/
+echo a > "$pk/packages/prove/a.ts"; echo b > "$pk/e2e/superagent/a.ts"
+git -C "$pk" add -A && git -C "$pk" commit -qm base
+change() { # <path>...: a branch off base that changes each path; prints nothing
+  git -C "$pk" checkout -q base; git -C "$pk" checkout -q -B x
+  local p; for p in "$@"; do mkdir -p "$(dirname "$pk/$p")"; echo "$RANDOM" >> "$pk/$p"; done
+  git -C "$pk" add -A && git -C "$pk" commit -qm x
+}
+parked() { (cd "$pk" && "$here/parked.sh" "$1" base x 2> /dev/null) | grep -x "$2" > /dev/null; }
+change packages/prove/a.ts
+expect "parked: a change to shared code runs no parked suite" 0 bash -c \
+  "cd $pk && [ \"\$($here/parked.sh main base x 2> /dev/null | tr '\n' ' ')\" = 'superagent=false portal_next=false ui_layer=false m8=false ' ]"
+expect "parked: a pull request into the goal's branch runs its suite" 0 parked goal/superagent superagent=true
+expect "parked: and only that goal's" 0 parked goal/superagent m8=false
+change examples/superagent/blueprint.ts
+expect "parked: a path the goal owns runs its suite" 0 parked main superagent=true
+expect "parked: a path another goal owns does not" 0 parked main portal_next=false
+change e2e/fixtures/m8/clock.ts
+expect "parked: a path of the suite's own beyond the brief runs it" 0 parked main m8=true
+change design/decisions/K39.md
+expect "parked: an owned path under design/ runs nothing" 0 parked main superagent=false
+change e2e/ratchet/check.ts
+expect "parked: the shared ratchet runs every suite" 0 bash -c \
+  "cd $pk && [ \"\$($here/parked.sh main base x 2> /dev/null | grep -c '=true$')\" = 4 ]"
+change packages/prove/a.ts; brief 09-time.md running goal/time e2e/m8/; git -C "$pk" commit -qam unpark
+expect "parked: a goal no longer parked runs its suite on every pull request" 0 parked main m8=true
+change packages/prove/a.ts; rm "$pk/design/goals/06-portal.md"; git -C "$pk" commit -qam gone
+expect "parked: a goal whose brief is gone runs its suite" 0 parked main portal_next=true
+expect "parked: an unreadable diff runs every suite" 0 bash -c \
+  "cd $pk && [ \"\$($here/parked.sh main base nowhere 2> /dev/null | grep -c '=true$')\" = 4 ]"
+expect "parked: missing arguments are a usage error" 2 "$here/parked.sh" main base
+# Which suites a path turns on, exactly: each path a suite reads outside its folder, and each shared path (the 🔍 on #1092)
+pk2=$(mktemp -d "$scratch/parked.XXXX"); git -C "$pk2" init -q -b base; git -C "$pk2" config user.email ci@example.invalid; git -C "$pk2" config user.name ci
+mkdir -p "$pk2/design/goals"; for b in 17-superagent 06-portal 05-ui-layer 09-time; do
+  { echo ---; echo "branch: goal/$b"; echo "status: parked"; echo "owns:"; echo "  - nowhere/$b/"; echo ---; } > "$pk2/design/goals/$b.md"; done
+echo a > "$pk2/a"; git -C "$pk2" add -A && git -C "$pk2" commit -qm base
+turns_on() { # <path> <the suites that run, space-separated, or "none">
+  git -C "$pk2" checkout -q base; git -C "$pk2" checkout -q -B x
+  mkdir -p "$(dirname "$pk2/$1")"; echo "$RANDOM" >> "$pk2/$1"; git -C "$pk2" add -A && git -C "$pk2" commit -qm x
+  local got; got=$(cd "$pk2" && "$here/parked.sh" main base x 2> /dev/null | sed -n 's/=true$//p' | tr '\n' ' ' | sed 's/ $//')
+  [ "${got:-none}" = "$2" ] || { echo "$1 turned on '${got:-none}', wanted '$2'"; return 1; }
+}
+for p in e2e/project.json e2e/tsconfig.json e2e/package.json pnpm-lock.yaml e2e/layer1/support.ts e2e/stage1/support.ts \
+  e2e/ratchet/check.ts .github/workflows/parked.yml tools/ci/parked.sh; do
+  expect "parked: $p is shared, so it runs every suite" 0 turns_on "$p" "superagent portal_next ui_layer m8"
+done
+expect "parked: a served-portal change runs portal-next" 0 turns_on e2e/served-portal/service.ts portal_next
+expect "parked: a new M1 check runs portal-next's parity" 0 turns_on e2e/m1/50-new.test.ts portal_next
+expect "parked: a grid change runs portal-next's grid" 0 turns_on e2e/grid/src/main.ts portal_next
+expect "parked: the old portal runs portal-next" 0 turns_on packages/portal/src/app.tsx portal_next
+expect "parked: portal-ui is not the old portal" 0 turns_on packages/portal-ui/src/a.ts none
+expect "parked: e2e/m1/clients.ts runs ui-layer and portal-next" 0 turns_on e2e/m1/clients.ts "portal_next ui_layer"
+expect "parked: e2e/m1/loop-world.ts runs ui-layer and portal-next" 0 turns_on e2e/m1/loop-world.ts "portal_next ui_layer"
+expect "parked: e2e/m1/prove-speed.ts runs superagent, portal-next and ui-layer" 0 turns_on e2e/m1/prove-speed.ts "superagent portal_next ui_layer"
+expect "parked: e2e/ports.ts runs ui-layer" 0 turns_on e2e/ports.ts ui_layer
+expect "parked: a superagent fixture runs superagent" 0 turns_on e2e/fixtures/superagent/a.json superagent
+expect "parked: an m8 config runs m8" 0 turns_on e2e/vitest.m8.config.ts m8
+expect "parked: an owned path runs its suite alone" 0 turns_on nowhere/09-time/a.ts m8
+expect "parked: a package outside every list runs none" 0 turns_on packages/prove/src/a.ts none
+
 # required-jobs: no draft run, and no stale draft payload, can pass a required check (design/decisions/CI-drafts-race.md)
 wf() { # <body of one job, its keys indented four spaces>; prints the path of a workflow holding it as job `gate`
   local f; f="$(mktemp "$scratch/wf.XXXX")"

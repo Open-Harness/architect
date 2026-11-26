@@ -1,6 +1,6 @@
 {
   "name": "@orthograph/cli",
-  "version": "0.0.0",
+  "version": "0.1.0-next.1",
   "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
@@ -33,6 +33,7 @@
   ],
   "publishConfig": {
     "access": "public",
+    "tag": "next",
     "imports": {
       "#modules/*.js": "./dist/modules/*.js"
     },

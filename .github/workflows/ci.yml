@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+# How many e2e-m1-shard jobs there are (design/decisions/CI-m1-balance.md). Change it with the shard matrix below, together.
+env:
+  M1_SHARDS: "6"
+
 # A newer push to the same pull request cancels the run it supersedes, so the queue holds only live work.
 # Every push to main, a milestone branch or goal/stage-1 gets its own group, so none is cancelled or dropped.
 # A run that cancels another always starts after it, and so reads the pull request's draft state later (`ready` below).
@@ -30,6 +34,9 @@ concurrency:
 #   2. Its name is `${{ needs.ready.outputs.draft != 'false' && '<id> (draft)' || '<id>' }}`. GitHub never evaluates a
 #      skipped job's name, so a draft run's skipped jobs carry that text, not the required name, and the checks stay
 #      expected: a draft run can never pass one.
+
+# The suites of parked goals (`e2e-superagent`, `e2e-portal-next`, `e2e-ui-layer`, `e2e-m8`) are in the `parked` workflow, which
+# runs them nightly on main and on the pull requests that touch them (design/decisions/CI-parked-suites-nightly.md).
 
 # Every job has a timeout, about twice its longest green run, so a hung run or one left behind by a closed pull request
 # frees its runner instead of holding it for hours.
@@ -288,7 +295,8 @@ jobs:
 
   # Is this pull request docs only? Then the layer gates and the other required jobs of goal/stage-1 (e2e-climb, e2e-grid,
   # e2e-m1, e2e-stage1) pass without running their steps, since a required job never skips (CI-drafts-race.md), and
-  # prove-tests, the M1 shards, e2e-m2 and e2e-m8 skip (design/decisions/CI-docs-fast-path.md, CI-speed.md): main is
+  # prove-tests, the M1 shards, e2e-totals and e2e-m2 skip (design/decisions/CI-docs-fast-path.md, CI-speed.md; the parked suites,
+  # e2e-m8 among them, are the `parked` workflow's, which skips them too): main is
   # strict, so every pull request reruns all of CI each time another lands, and a docs change cannot move them.
   # Docs-only is every changed path under design/ (but not design/grid/), a *.md file outside packages/, e2e/ and examples/,
   # or a path no gated suite reads: spikes/, .agents/, .claude/, issue templates (tools/ci/docs-only.sh, CI-docs-inert.md). A push, or a pull request with any other change, runs everything. check-static, `e2e-m0` and
@@ -325,19 +333,20 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
-      # Only a pull request that runs real suites asks which ones. A push, a docs-only or a fast pull request needs no answer.
+      # Only a pull request asks which suites it touches; a push or a docs-only one needs no answer. A fast pull request (into a
+      # goal branch) asks too, so its prove-tests skip when prove is not affected, as on main (CI-fast-affected.md).
       # Should any step here fail, `changes` fails and every job runs.
-      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         uses: pnpm/action-setup@v6.1.0
-      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         uses: actions/setup-node@v7.1.0
         with:
           node-version: 24
           cache: pnpm
-      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+      - if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         run: pnpm install --frozen-lockfile
       - id: aff
-        if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'
+        if: github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true'
         run: |
           tools/ci/affected.sh "origin/$BASE_REF" HEAD e2e prove | tee -a "$GITHUB_OUTPUT"
         env:
@@ -459,50 +468,6 @@ jobs:
       - if: env.SKIP != 'true'
         run: NX_DAEMON=false pnpm nx run e2e:layer2 --outputStyle=static
 
-  # M8's checks (e2e/m8/README.md), written before time is built: the ratchet passes while every failure is listed in
-  # e2e/m8/expected-failing/, and fails on any other. Skipped on a docs-only pull request; no branch requires it.
-  e2e-m8:
-    needs: [ready, changes]
-    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: pnpm/action-setup@v6.1.0
-      - uses: actions/setup-node@v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: NX_DAEMON=false pnpm nx run e2e:m8-ratchet --outputStyle=static
-
-  # Goal 17's checks (e2e/superagent/README.md), written before the superagent is built: the ratchet passes while every
-  # failure is listed in e2e/superagent/expected-failing/, and fails on any other. Check 07 fetches the full published
-  # specs once into tmp/specs/ (no key). Skipped on a docs-only pull request, like the gates above. Unlike them, it also
-  # runs on the fast gate of a pull request into goal/superagent: these are that goal's own checks, so its builders' pull
-  # requests must run them (an exception to CI-integration.md B1, for Goal 17's integration branch). Like every job, it
-  # goes by the live draft state from `ready` (CI-drafts-race).
-  e2e-superagent:
-    needs: [ready, changes]
-    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || (needs.changes.outputs.fast == 'true' && github.base_ref != 'goal/superagent'))) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: pnpm/action-setup@v6.1.0
-      - uses: actions/setup-node@v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - uses: actions/cache@v6.1.0
-        with:
-          path: tmp/specs
-          key: superagent-specs-${{ hashFiles('e2e/superagent/specs/pins.json') }}
-      - run: NX_DAEMON=false pnpm nx run e2e:superagent-ratchet --outputStyle=static
-      # Goal 17 decides its records on this branch, where e2e-m0's supersedes guard is skipped by the fast gate, so it runs here too.
-      - run: tools/ci/supersedes.sh
-
   # Gate M0 (M0.06): no old name outside the records. The canon's check (docs/canon/README.md) runs beside it: every quote,
   # reference and component in the MDX pages, and every link in its READMEs and status page. It replaced the old docs page's
   # link check when K41 retired that page (design/decisions/K41-canon-map.md).
@@ -540,19 +505,21 @@ jobs:
 
   # M1's checks also run together in CI, through the ratchet (e2e/ratchet/README.md): the checks whose slice has not landed
   # are on the per-check files of e2e/m1/expected-failing/ (G9) and may fail; any other failure fails the job, so a regression cannot merge unseen.
-  # They run as four shards (design/decisions/CI-speed.md): each runs a quarter of the files, still one file at a time on its
-  # own runner, with the vitest command of `nx run e2e:m1-ratchet` plus `--shard`, and hands on its JSON report and hook-error
-  # file. A shard passes when it wrote both, whatever its tests did; the `e2e-m1` job below judges them all together.
+  # They run as M1_SHARDS shards (design/decisions/CI-speed.md, CI-m1-balance.md): each runs the files tools/ci/m1-shards.sh gives it,
+  # balanced by the measured seconds in tools/ci/m1-timings.json, still one file at a time on its own runner, with the vitest command
+  # of `nx run e2e:m1-ratchet` given those files, and hands on its JSON report and hook-error file. A shard passes when it wrote
+  # both, whatever its tests did; the `e2e-m1` job below judges them all together.
   # Skipped on a docs-only pull request: no M1 check reads design/ or a doc outside packages/, e2e/ and examples/.
   e2e-m1-shard:
     needs: [ready, changes, portal-ui]
     # Not skipped when portal-ui is: a skipped job reads as passed where it is required, and this one cannot pass without the client. It runs, and fails at the artifact.
     if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
-    name: e2e-m1-shard (${{ matrix.shard }}/4)
+    name: e2e-m1-shard (${{ matrix.shard }}/${{ strategy.job-total }})
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        # One entry per shard, 1 to M1_SHARDS (the step below fails on any other count).
+        shard: [1, 2, 3, 4, 5, 6]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -592,14 +559,18 @@ jobs:
           version: v1.8.6
       # K19: the portal is read in headless Chromium (e2e/served-portal). Playwright's own download plus the system libraries it needs on this image.
       - run: pnpm --filter @orthograph/e2e exec playwright install --with-deps chromium
-      # The vitest command of `nx run e2e:m1-ratchet` (e2e/project.json), with --shard. Its exit is not the verdict (listed
-      # checks fail here by design); the report and the hook-error file are, so both must exist.
+      # The vitest command of `nx run e2e:m1-ratchet` (e2e/project.json), given this shard's files in place of `m1`. Its exit is
+      # not the verdict (listed checks fail here by design); the report and the hook-error file are, so both must exist.
       - name: Run this shard's M1 checks
         run: |
+          [ "$TOTAL" = "$M1_SHARDS" ] || { echo "::error::the matrix has $TOTAL shards and M1_SHARDS is $M1_SHARDS"; exit 1; }
+          files=$(tools/ci/m1-shards.sh "$SHARD" "$M1_SHARDS")
+          echo "This shard's files:"; printf '  %s\n' $files
           mkdir -p tmp && rm -f tmp/m1-report.json tmp/m1-errors.json
           code=0
-          RATCHET_ERRORS_FILE=tmp/m1-errors.json pnpm exec vitest run --root e2e --config vitest.m1-ratchet.config.ts m1 \
-            --shard="$SHARD/4" --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts \
+          # shellcheck disable=SC2086
+          RATCHET_ERRORS_FILE=tmp/m1-errors.json pnpm exec vitest run --root e2e --config vitest.m1-ratchet.config.ts $files \
+            --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts \
             --outputFile.json=../tmp/m1-report.json || code=$?
           echo "vitest exited $code; the e2e-m1 job judges the report."
           for file in tmp/m1-report.json tmp/m1-errors.json; do
@@ -607,6 +578,7 @@ jobs:
           done
         env:
           SHARD: ${{ matrix.shard }}
+          TOTAL: ${{ strategy.job-total }}
       - uses: actions/upload-artifact@v7.0.2
         with:
           name: m1-report-${{ matrix.shard }}
@@ -617,7 +589,7 @@ jobs:
           overwrite: true
           retention-days: 3
 
-  # The required check's name: the ratchet over all four shards' reports at once. It never skips (a skipped required check
+  # The required check's name: the ratchet over every shard's report at once. It never skips (a skipped required check
   # counts as passed): on a docs-only pull request whose shards skipped it passes, and otherwise it needs every shard to
   # have passed, joins their reports (tools/ci/m1-reports.sh) and runs the ratchet's unit test and its check, unchanged.
   # Gate M1 (M1.15) empties the list.
@@ -652,10 +624,26 @@ jobs:
       - name: The ratchet over every shard
         if: needs.e2e-m1-shard.result == 'success'
         run: |
-          tools/ci/m1-reports.sh tmp/m1-shards 4 "$(find e2e/m1 -name '*.test.ts' | wc -l)" tmp
+          tools/ci/m1-reports.sh tmp/m1-shards "$M1_SHARDS" "$(find e2e/m1 -name '*.test.ts' | wc -l)" tmp
           node e2e/ratchet/check.ts tmp/m1-report.json e2e/m1/expected-failing tmp/m1-errors.json
-          # The totals are printed, never committed (G9): the job's summary carries them.
-          node e2e/totals/totals.mjs >> "$GITHUB_STEP_SUMMARY"
+
+  # The e2e suites' totals (G9), printed in this job's summary and never committed. They count tests with `vitest list` and read
+  # the expected-failing lists, and nothing they print is a verdict, so they run beside the shards rather than after them in
+  # `e2e-m1`, where they held the required check for a minute (CI-m1-balance.md). Same skips as the shards; no branch requires it.
+  e2e-totals:
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node e2e/totals/totals.mjs >> "$GITHUB_STEP_SUMMARY"
 
   # M2's checks run through the ratchet too (e2e/ratchet/README.md): the checks whose slice has not landed are on the per-check files of
   # e2e/m2/expected-failing/ and may fail; any other failure fails the job. One runner, one job: M2 has a handful of checks so far.
@@ -874,45 +862,6 @@ jobs:
       - if: env.SKIP != 'true'
         name: Prove Capxul
         run: node packages/cli/src/main.ts prove --root examples/capxul
-
-  # Goal 6's done check, begun (`design/goals/06-portal.md`): the new portal's checks, starting with the theme's. Not a required
-  # check yet, so a red run does not block; slice 2 puts the rest of the portal checks behind it. Skipped on a docs-only pull
-  # request, where a skip counts as passed. Should `changes` itself fail, this runs.
-  e2e-portal-next:
-    needs: [ready, changes]
-    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: pnpm/action-setup@v6.1.0
-      - uses: actions/setup-node@v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      # Chromium plus the system libraries it needs on this image, as `e2e-grid` has it (K19).
-      - run: pnpm --filter @orthograph/e2e exec playwright install --with-deps chromium
-      - run: pnpm nx run e2e:portal-next --outputStyle=static
-
-  # Goal 5's done check, begun (`e2e/ui-layer/README.md`): the UI layer's checks through the ratchet, which passes while every failure is
-  # listed in e2e/ui-layer/expected-failing/ and fails on any other. For main and goal/ui-layer: pull requests into either and
-  # pushes to either (CI-main-ui-layer.md). Skipped on a docs-only pull request, where a skip counts as passed (CI-docs-fast-path.md). Should `changes` itself fail,
-  # this runs. No Docker, no cloud, no secret: slice 1's check starts one HTTP server on a free port.
-  e2e-ui-layer:
-    needs: [ready, changes]
-    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && ((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/ui-layer')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/ui-layer') && !(needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: pnpm/action-setup@v6.1.0
-      - uses: actions/setup-node@v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm nx run e2e:ui-layer --outputStyle=static
 
   # Goal 3's grid runner (`e2e/grid/README.md`): its unit tests, then `ortho prove` and every switched-on cell, with the ratchet of
   # `design/decisions/G7-grid-ratchet.md`: a red pair not on `e2e/grid/expected-red.json` fails, and so does a listed pair that is green.
