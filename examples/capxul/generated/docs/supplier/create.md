@@ -51,10 +51,17 @@ Starts from the world `an outside supplier`.
 
 - **nor add a supplier.** `bo` (signed in) calls and sends company the world's company, supplierName `Bo's Vans`, supplierType `Individual`, and is refused with NotAllowed, AR-001.
 - **a supplier in All Supplier Groups is refused: it is a group.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Rift Paper`, supplierType `Company`, supplierGroup the world's allSupplierGroups, and is refused with SupplierGroupIsGroup, SU-002.
+- **a supplier put in it is refused too.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Rift Paper`, supplierType `Company`, supplierGroup the last call's supplierGroup, and is refused with SupplierGroupIsGroup, SU-002.
 - **an Acme Trading supplier in it is refused for its company first.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Rift Paper`, supplierType `Company`, supplierGroup the last call's supplierGroup, and is refused with SupplierGroupNotInCompany, SU-001.
 - **an Acme Logistics supplier in Acme Trading's Services is refused.** `ada` (role company.owner) calls and sends company the world's otherCompany, supplierName `Jinja Tyres`, supplierType `Company`, supplierGroup the world's supplierGroup, and is refused with SupplierGroupNotInCompany, SU-001.
-- **Ada adds Otieno Plumbing, a partnership in no group.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Otieno Plumbing`, supplierType `Partnership`, and gets back an answer matching `^sup_[0-9a-z]+$`.
-- **a second Mara Office Rentals is a supplier of its own.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Mara Office Rentals`, supplierType `Individual`, supplierGroup the world's supplierGroup, and gets back false.
+- **Ada adds a supplier, a partnership in no group.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Otieno Plumbing`, supplierType `Partnership`, and gets back an answer matching `^sup_[0-9a-z]+$`.
+- **a second supplier of the same name is a supplier of its own.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Mara Office Rentals`, supplierType `Individual`, supplierGroup the world's supplierGroup, and gets back an answer matching `^sup_[0-9a-z]+$`.
+
+### post a payment entry
+
+Starts from the world `a received advance`.
+
+- **Ada adds a second supplier of the same name.** `ada` (role company.owner) calls and sends company the world's company, supplierName `Mara Office Rentals`, supplierType `Company`, and gets back an answer matching `^sup_[0-9a-z]+$`.
 
 ## How to call
 

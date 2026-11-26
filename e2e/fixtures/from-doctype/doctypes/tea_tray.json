@@ -1,0 +1,30 @@
+{
+ "doctype": "DocType",
+ "name": "Tea Tray",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 0,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "tray_name",
+   "fieldtype": "Data",
+   "label": "Tray Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pots",
+   "fieldtype": "Table",
+   "label": "Pots",
+   "options": "Tea Teapot"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Tea Master",
+   "permlevel": 0,
+   "read": 1,
+   "create": 1
+  }
+ ]
+}

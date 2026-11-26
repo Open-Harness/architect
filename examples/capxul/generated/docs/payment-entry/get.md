@@ -42,8 +42,8 @@ Read one payment-entry by its id: company, paymentType, postingDate, partyType, 
 
 Starts from the world `an outside supplier`.
 
-- **it reads back a draft, as she typed it.** `ada` (role company.owner) calls and sends id the last call's paymentEntry, and gets back [the world's company, `Receive`, `2026-02-10`, `Customer`, the world's customer, the world's debtors, the world's bank, `500000000`, the world's costCenter, `draft`].
 - **Bo can't read it.** `bo` (signed in) calls and sends id the last call's paymentEntry, and is refused with NotAllowed, AR-001.
+- **it reads back a draft, as she typed it.** `ada` (role company.owner) calls and sends id the last call's paymentEntry, and gets back [the world's company, `Receive`, `2026-02-10`, `Customer`, the world's customer, the world's debtors, the world's bank, `500000000`, the world's costCenter, `draft`].
 - **it reads back with the bank as Paid From and Creditors as Paid To.** `ada` (role company.owner) calls and sends id the last call's paymentEntry, and gets back [the world's company, `Pay`, `2026-03-05`, `Supplier`, the world's supplier, the world's bank, the world's creditors, `200000000`, the world's costCenter, `draft`].
 - **it reads back as Receive from the supplier.** `ada` (role company.owner) calls and sends id the last call's paymentEntry, and gets back [the world's company, `Receive`, `2026-03-05`, `Supplier`, the world's supplier, the world's creditors, the world's bank, `50000000`, the world's costCenter, `draft`].
 - **it reads back as Pay to the customer, one base unit.** `ada` (role company.owner) calls and sends id the last call's paymentEntry, and gets back [the world's company, `Pay`, `2026-02-10`, `Customer`, the world's customer, the world's bank, the world's debtors, `1`, the world's costCenter, `draft`].

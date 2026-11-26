@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/salary-structure/verbs/submit.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/salary-structure/submit.handler.ts";
 
@@ -43,24 +42,25 @@ const { StructureNetPayNegative } = Errors.declared;
  *   once it answers, it writes SalaryStructureSubmitted: salaryStructure from the answer;
  *   the call is the span salary-structure.submit, and its commit salary-structure.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ salaryStructure }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // StructureNetPayNegative: exit 46, SS-006.
-    if (yield* Handlers.blank<boolean>("refuse StructureNetPayNegative when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StructureNetPayNegative was refused"));
-      return yield* new StructureNetPayNegative({
-        netPay: yield* Handlers.blank("StructureNetPayNegative.netPay, a Balance"),
-      });
+    if (!subject) return yield* Effect.die(new Error(`salary structure ${salaryStructure} was checked and then not found`));
+
+    // StructureNetPayNegative: exit 46, SS-006. A net pay of exactly nothing may be submitted.
+    const netPay = subject["netPay"] as bigint;
+    if (netPay < 0n) {
+      yield* Effect.logInfo(`the structure's net pay is ${netPay}, below nothing`);
+      return yield* new StructureNetPayNegative({ netPay });
     }
 
-    // Step update: database, span salary-structure.submit.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span salary-structure.submit.update. The move alone changes the structure.
+    yield* steps.update(Effect.void);
 
     // The move submit, from draft, to submitted.
     yield* move();
 
     return {
-      salaryStructure: yield* Handlers.blank("salaryStructure, a salary-structure.id"),
+      salaryStructure,
     };
   });
 

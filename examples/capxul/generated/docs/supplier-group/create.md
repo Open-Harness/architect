@@ -50,6 +50,7 @@ Add a supplier group to a company, under a group or as its one root.
 
 Starts from the world `an outside supplier`.
 
+- **Ada adds a supplier group that is a group, under the root.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Utilities`, parentSupplierGroup the world's allSupplierGroups, isGroup true, and gets back an answer matching `^sgr_`.
 - **Ada adds Acme Logistics' root supplier group.** `ada` (role company.owner) calls and sends company the world's otherCompany, supplierGroupName `All Supplier Groups`, isGroup true, and gets back an answer matching `^sgr_`.
 
 ### set up party groups
@@ -59,12 +60,17 @@ Starts from the world `a supplier group`.
 - **nor add a supplier group.** `bo` (signed in) calls and sends company the world's company, supplierGroupName `Raw Materials`, parentSupplierGroup the world's allSupplierGroups, isGroup false, and is refused with NotAllowed, AR-001.
 - **a second root is refused, carrying the root.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Vendors`, isGroup true, and is refused with SupplierGroupRootExists, SG-003, carrying root the world's allSupplierGroups.
 - **a group under a ledger is refused.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Cleaning`, parentSupplierGroup the world's supplierGroup, isGroup false, and is refused with ParentSupplierGroupIsLedger, SG-002.
-- **Ada adds Raw Materials, a ledger under the root.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Raw Materials`, parentSupplierGroup the world's allSupplierGroups, isGroup false, and gets back an answer matching `^sgr_[0-9a-z]+$`.
+- **Ada adds a second ledger supplier group under the root.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Raw Materials`, parentSupplierGroup the world's allSupplierGroups, isGroup false, and gets back an answer matching `^sgr_[0-9a-z]+$`.
 - **a name already taken is refused.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Services`, parentSupplierGroup the world's allSupplierGroups, isGroup false, and is refused with SupplierGroupNameTaken, SG-004.
-- **a customer group's name is no supplier group's: Commercial is free here.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Commercial`, parentSupplierGroup the world's allSupplierGroups, isGroup false, and is answered.
+- **a customer group's name is no supplier group's: it is free here.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Commercial`, parentSupplierGroup the world's allSupplierGroups, isGroup false, and is answered.
+- **Ada adds a supplier group that is a group, under the root.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Utilities`, parentSupplierGroup the world's allSupplierGroups, isGroup true, and is answered.
+- **and a ledger under it, two levels below the root.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Water`, parentSupplierGroup the last call's supplierGroup, isGroup false, and is answered.
 - **Acme Logistics may have its own root.** `ada` (role company.owner) calls and sends company the world's otherCompany, supplierGroupName `All Supplier Groups`, isGroup true, and is answered.
 - **an Acme Trading group under it is refused.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Fuel`, parentSupplierGroup the last call's supplierGroup, isGroup false, and is refused with ParentSupplierGroupNotInCompany, SG-001.
 - **and so is a second root for Acme Logistics, carrying its own root.** `ada` (role company.owner) calls and sends company the world's otherCompany, supplierGroupName `Vendors`, isGroup true, and is refused with SupplierGroupRootExists, SG-003, carrying root the last call's supplierGroup.
+- **Acme Logistics adds a ledger under its root.** `ada` (role company.owner) calls and sends company the world's otherCompany, supplierGroupName `Fuel`, parentSupplierGroup the last call's supplierGroup, isGroup false, and is answered.
+- **an Acme Trading group under that ledger is refused for its company first.** `ada` (role company.owner) calls and sends company the world's company, supplierGroupName `Diesel`, parentSupplierGroup the last call's supplierGroup, isGroup false, and is refused with ParentSupplierGroupNotInCompany, SG-001.
+- **while Acme Logistics' own is refused for the ledger.** `ada` (role company.owner) calls and sends company the world's otherCompany, supplierGroupName `Diesel`, parentSupplierGroup the last call's supplierGroup, isGroup false, and is refused with ParentSupplierGroupIsLedger, SG-002.
 
 ## How to call
 

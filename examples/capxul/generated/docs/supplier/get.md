@@ -37,10 +37,12 @@ Read one supplier by its id: company, supplierName, supplierType, supplierGroup,
 
 Starts from the world `an outside supplier`.
 
-- **Mara Office Rentals reads back an active company in Services.** `ada` (role company.owner) calls and sends id the world's supplier, and gets back [the world's company, `Mara Office Rentals`, `Company`, the world's supplierGroup, `active`].
-- **Nile Fuel reads back in Acme Logistics, in no group.** `ada` (role company.owner) calls and sends id the world's otherSupplier, and gets back [the world's otherCompany, `Nile Fuel`, `Company`, null, `active`].
+- **Acme Trading's supplier reads back an active company in its ledger group.** `ada` (role company.owner) calls and sends id the world's supplier, and gets back [the world's company, `Mara Office Rentals`, `Company`, the world's supplierGroup, `active`].
+- **Acme Logistics' supplier reads back there, in no group.** `ada` (role company.owner) calls and sends id the world's otherSupplier, and gets back [the world's otherCompany, `Nile Fuel`, `Company`, null, `active`].
 - **Bo can't read Mara Office Rentals.** `bo` (signed in) calls and sends id the world's supplier, and is refused with NotAllowed, AR-001.
 - **it reads back as typed.** `ada` (role company.owner) calls and sends id the last call's supplier, and gets back [the world's company, `Otieno Plumbing`, `Partnership`, null, `active`].
+- **it reads back a disabled individual.** `ada` (role company.owner) calls and sends id the last call's supplier, and gets back [the world's company, `Mara Office Rentals`, `Individual`, the world's supplierGroup, `disabled`].
+- **and the first is still a company.** `ada` (role company.owner) calls and sends id the world's supplier, and gets back [the world's company, `Mara Office Rentals`, `Company`, the world's supplierGroup, `active`].
 - **it reads back disabled.** `ada` (role company.owner) calls and sends id the world's supplier, and gets back [the world's company, `Mara Office Rentals`, `Company`, the world's supplierGroup, `disabled`].
 
 ## How to call

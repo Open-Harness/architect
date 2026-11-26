@@ -43,6 +43,7 @@ Disable a supplier: no payment to it can be submitted until it is enabled again.
 
 Starts from the world `an outside supplier`.
 
+- **Ada disables the second.** `ada` (role company.owner) calls and sends supplier the last call's supplier, and is answered.
 - **Bo can't disable it.** `bo` (signed in) calls and sends supplier the world's supplier, and is refused with NotAllowed, AR-001.
 - **Ada disables it.** `ada` (role company.owner) calls and sends supplier the world's supplier, and is answered.
 - **it can't be disabled twice.** `ada` (role company.owner) calls and sends supplier the world's supplier, and is refused with SupplierNotActive, SU-900, carrying state `disabled`.

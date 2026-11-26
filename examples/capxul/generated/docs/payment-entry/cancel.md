@@ -49,7 +49,7 @@ Starts from the world `a received advance`.
 - **Bo can't cancel it.** `bo` (signed in) calls and sends paymentEntry the world's paymentEntry, and is refused with NotAllowed, AR-001.
 - **Ada cancels it: two reversing lines.** `ada` (role company.owner) calls and sends paymentEntry the world's paymentEntry, and gets back [the world's paymentEntry, `2`].
 - **it can't be cancelled twice.** `ada` (role company.owner) calls and sends paymentEntry the world's paymentEntry, and is refused with PaymentEntryNotDraft, PY-900, carrying state `cancelled`.
-- **Ada cancels the refund.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
+- **and cancels it.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
 
 ## How to call
 

@@ -10839,6 +10839,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "GivenScores"
         }
       },
@@ -10927,7 +10928,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "dbfb61a88c7ad4f5"
+      "hash": "e97f08504cdf4a31"
     },
     "appraisal.self-rate": {
       "kind": "operation",
@@ -10952,6 +10953,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "GivenRatings"
         }
       },
@@ -11038,7 +11040,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "23fce24e084e48ac"
+      "hash": "d54f09c96b7bdfac"
     },
     "appraisal.submit": {
       "kind": "operation",
@@ -11280,6 +11282,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "Appraisees",
           "ref": "appraisal-cycle.appraisees"
         }
@@ -11353,7 +11356,7 @@
       "budget": {
         "p95Ms": 300
       },
-      "hash": "cd4becd0fda51b78"
+      "hash": "dbe245590f87f4bd"
     },
     "appraisal-cycle.get": {
       "kind": "read",
@@ -11660,6 +11663,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "TemplateKras",
           "ref": "appraisal-template.kras"
         },
@@ -11667,6 +11671,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "TemplateCriteria",
           "ref": "appraisal-template.criteria"
         }
@@ -11744,7 +11749,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "b5bbdc51c9d0ed83"
+      "hash": "8fb4f8a5eb2adba7"
     },
     "appraisal-template.get": {
       "kind": "read",
@@ -16263,6 +16268,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "named": "GivenRatings"
         }
       },
@@ -16345,7 +16351,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "5746ed27e78b9a47"
+      "hash": "e0656fbd9879a27b"
     },
     "employee-performance-feedback.get": {
       "kind": "read",
@@ -22347,6 +22353,7 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "description": "Its lines, in order: each an account, a cost center, and a debit or a credit. At most 50."
         }
       },
@@ -22445,7 +22452,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "59d395645c1a1382"
+      "hash": "cd6f129d697f9430"
     },
     "journal-entry.get": {
       "kind": "read",
@@ -25862,12 +25869,14 @@
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "description": "Its earnings, in order: each a component and its amount, 0 for the component's own. At most 50."
         },
         "deductions": {
           "value": {
             "type": "schema"
           },
+          "json": "list",
           "description": "Its deductions, in order: each a component and its amount, 0 for the component's own. At most 50."
         }
       },
@@ -25981,7 +25990,7 @@
       "budget": {
         "p95Ms": 200
       },
-      "hash": "3b0578ef51bd94bf"
+      "hash": "fc5cc2b809e3ee76"
     },
     "salary-structure.get": {
       "kind": "read",
@@ -27644,7 +27653,7 @@
       "starts": "an outside supplier",
       "steps": [
         {
-          "title": "Kibo Stores reads back an active company in Commercial",
+          "title": "Acme Trading's customer reads back an active company in its ledger group",
           "call": {
             "actor": "ada",
             "operation": "customer.get",
@@ -27684,7 +27693,7 @@
           ]
         },
         {
-          "title": "Kampala Traders reads back in Acme Logistics, in no group",
+          "title": "Acme Logistics' customer reads back there, in no group",
           "call": {
             "actor": "ada",
             "operation": "customer.get",
@@ -27816,6 +27825,69 @@
           ]
         },
         {
+          "title": "Ada adds a customer group that is a group, under the root",
+          "call": {
+            "actor": "ada",
+            "operation": "customer-group.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "customerGroupName": "Retail",
+              "parentCustomerGroup": {
+                "ref": [
+                  "world",
+                  "allCustomerGroups"
+                ]
+              },
+              "isGroup": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^cgr_",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "a customer put in it is refused too: it is a group, though not the root",
+          "call": {
+            "actor": "ada",
+            "operation": "customer.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "customerName": "Duka Mart",
+              "customerType": "Company",
+              "customerGroup": {
+                "ref": [
+                  "last",
+                  "customerGroup"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "CustomerGroupIsGroup",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Ada adds Acme Logistics' root customer group",
           "call": {
             "actor": "ada",
@@ -27906,7 +27978,7 @@
           ]
         },
         {
-          "title": "Ada adds Wanjiru Njoroge, an individual in no group",
+          "title": "Ada adds a customer, an individual in no group",
           "call": {
             "actor": "ada",
             "operation": "customer.create",
@@ -28000,7 +28072,7 @@
           ]
         },
         {
-          "title": "a second Kibo Stores is a customer of its own: two may share a name",
+          "title": "a second customer of the same name is a customer of its own: two may share a name",
           "call": {
             "actor": "ada",
             "operation": "customer.create",
@@ -28023,8 +28095,9 @@
           },
           "checks": [
             {
-              "kind": "expect-equal",
-              "value": false
+              "kind": "expect",
+              "match": "^cus_[0-9a-z]+$",
+              "flags": ""
             },
             {
               "kind": "is-in",
@@ -28040,7 +28113,35 @@
           ]
         },
         {
-          "title": "it reads back as a partnership",
+          "title": "Ada disables the second",
+          "call": {
+            "actor": "ada",
+            "operation": "customer.disable",
+            "payload": {
+              "customer": {
+                "ref": [
+                  "last",
+                  "customer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "customer",
+              "id": {
+                "ref": [
+                  "last",
+                  "customer"
+                ]
+              },
+              "state": "disabled"
+            }
+          ]
+        },
+        {
+          "title": "it reads back a disabled partnership",
           "call": {
             "actor": "ada",
             "operation": "customer.get",
@@ -28065,6 +28166,43 @@
                 },
                 "Kibo Stores",
                 "Partnership",
+                {
+                  "ref": [
+                    "world",
+                    "customerGroup"
+                  ]
+                },
+                "disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and the first is still a company",
+          "call": {
+            "actor": "ada",
+            "operation": "customer.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Kibo Stores",
+                "Company",
                 {
                   "ref": [
                     "world",
@@ -28394,7 +28532,7 @@
           ]
         },
         {
-          "title": "Kampala Traders, in Acme Logistics, is still active",
+          "title": "Acme Logistics' customer is still active",
           "call": {
             "actor": "ada",
             "operation": "customer.get",
@@ -28415,7 +28553,7 @@
           ]
         },
         {
-          "title": "Mara Office Rentals reads back an active company in Services",
+          "title": "Acme Trading's supplier reads back an active company in its ledger group",
           "call": {
             "actor": "ada",
             "operation": "supplier.get",
@@ -28452,7 +28590,7 @@
           ]
         },
         {
-          "title": "Nile Fuel reads back in Acme Logistics, in no group",
+          "title": "Acme Logistics' supplier reads back there, in no group",
           "call": {
             "actor": "ada",
             "operation": "supplier.get",
@@ -28569,6 +28707,69 @@
           ]
         },
         {
+          "title": "Ada adds a supplier group that is a group, under the root",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "supplierGroupName": "Utilities",
+              "parentSupplierGroup": {
+                "ref": [
+                  "world",
+                  "allSupplierGroups"
+                ]
+              },
+              "isGroup": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^sgr_",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "a supplier put in it is refused too",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "supplierName": "Rift Paper",
+              "supplierType": "Company",
+              "supplierGroup": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "SupplierGroupIsGroup",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "Ada adds Acme Logistics' root supplier group",
           "call": {
             "actor": "ada",
@@ -28659,7 +28860,7 @@
           ]
         },
         {
-          "title": "Ada adds Otieno Plumbing, a partnership in no group",
+          "title": "Ada adds a supplier, a partnership in no group",
           "call": {
             "actor": "ada",
             "operation": "supplier.create",
@@ -28753,7 +28954,7 @@
           ]
         },
         {
-          "title": "a second Mara Office Rentals is a supplier of its own",
+          "title": "a second supplier of the same name is a supplier of its own",
           "call": {
             "actor": "ada",
             "operation": "supplier.create",
@@ -28776,8 +28977,111 @@
           },
           "checks": [
             {
+              "kind": "expect",
+              "match": "^sup_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "Ada disables the second",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier.disable",
+            "payload": {
+              "supplier": {
+                "ref": [
+                  "last",
+                  "supplier"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "supplier",
+              "id": {
+                "ref": [
+                  "last",
+                  "supplier"
+                ]
+              },
+              "state": "disabled"
+            }
+          ]
+        },
+        {
+          "title": "it reads back a disabled individual",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "supplier"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
               "kind": "expect-equal",
-              "value": false
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Mara Office Rentals",
+                "Individual",
+                {
+                  "ref": [
+                    "world",
+                    "supplierGroup"
+                  ]
+                },
+                "disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and the first is still a company",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "supplier"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Mara Office Rentals",
+                "Company",
+                {
+                  "ref": [
+                    "world",
+                    "supplierGroup"
+                  ]
+                },
+                "active"
+              ]
             }
           ]
         },
@@ -29091,7 +29395,7 @@
           ]
         }
       ],
-      "sourceHash": "3c053b53e5e5a3497aec7ee7a48ae08529ffe2e01e565bf542e449c75f5ce3a8"
+      "sourceHash": "67294d3246a797ba32e6ba925a726ecda945714e93e520a41c9f9f1adf1a25eb"
     },
     "journeys/add-holidays.ts": {
       "name": "add holidays",
@@ -49565,6 +49869,144 @@
           ]
         },
         {
+          "title": "a group account below the root is refused too",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "paymentType": "Receive",
+              "postingDate": "2026-02-10",
+              "partyType": "Customer",
+              "party": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "debtors"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "operating"
+                ]
+              },
+              "paidAmount": "500000000",
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PaymentAccountIsGroup",
+              "fields": {
+                "side": "Paid To"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada adds a group cost center under the root",
+          "call": {
+            "actor": "ada",
+            "operation": "cost-center.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "costCenterName": "Sales",
+              "parentCostCenter": {
+                "ref": [
+                  "world",
+                  "mainCostCenter"
+                ]
+              },
+              "isGroup": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^cct_",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "a group cost center below the root is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "paymentType": "Receive",
+              "postingDate": "2026-02-10",
+              "partyType": "Customer",
+              "party": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "debtors"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              },
+              "paidAmount": "500000000",
+              "costCenter": {
+                "ref": [
+                  "last",
+                  "costCenter"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "PaymentCostCenterIsGroup",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "another company's group cost center is refused for its company first",
           "call": {
             "actor": "ada",
@@ -50719,6 +51161,31 @@
           ]
         },
         {
+          "title": "Bo can't read it",
+          "call": {
+            "actor": "bo",
+            "operation": "payment-entry.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "it reads back a draft, as she typed it",
           "call": {
             "actor": "ada",
@@ -50772,31 +51239,6 @@
                 },
                 "draft"
               ]
-            },
-            {
-              "kind": "no-events"
-            }
-          ]
-        },
-        {
-          "title": "Bo can't read it",
-          "call": {
-            "actor": "bo",
-            "operation": "payment-entry.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "paymentEntry"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "refuses",
-              "error": "NotAllowed",
-              "fields": {}
             },
             {
               "kind": "no-events"
@@ -51238,6 +51680,62 @@
           ]
         },
         {
+          "title": "the side the money reaches isn't judged for its type: a ledger with none may take it",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "paymentType": "Receive",
+              "postingDate": "2026-02-10",
+              "partyType": "Customer",
+              "party": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "debtors"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "rent"
+                ]
+              },
+              "paidAmount": "500000000",
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
           "title": "a date outside every fiscal year may be drafted: it is judged on submit",
           "call": {
             "actor": "ada",
@@ -51376,7 +51874,7 @@
           ]
         }
       ],
-      "sourceHash": "8c9eb12958c4b4f3d961911ad577272de28bf4a91adc82a98f1797db79fed762"
+      "sourceHash": "7e0d11c63cf8cb3f76a4b962b621a19e8e9adf8ded0db25356f144ba31924661"
     },
     "journeys/every-weekday.ts": {
       "name": "every weekday",
@@ -72971,7 +73469,7 @@
           ]
         },
         {
-          "title": "Creditors' ledger holds the party's debit, with Mara Office Rentals as its party",
+          "title": "Creditors' ledger, read by this payment, holds the party's debit, with Mara Office Rentals as its party",
           "call": {
             "actor": "ada",
             "operation": "gl-entry.list",
@@ -72980,6 +73478,12 @@
                 "ref": [
                   "world",
                   "creditors"
+                ]
+              },
+              "voucherId": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
                 ]
               }
             }
@@ -73018,12 +73522,6 @@
                     ]
                   },
                   "Payment Entry",
-                  {
-                    "ref": [
-                      "last",
-                      "paymentEntry"
-                    ]
-                  },
                   false
                 ]
               ]
@@ -73031,7 +73529,85 @@
           ]
         },
         {
-          "title": "and Bank's newest line is the credit, with no party",
+          "title": "Bank's ledger, read by the same payment, holds the credit, with no party",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              },
+              "voucherId": {
+                "ref": [
+                  "last",
+                  "items",
+                  "0",
+                  "voucherId"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "bank"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "2026-03-05",
+                  "0",
+                  "200000000",
+                  null,
+                  null,
+                  "Payment Entry",
+                  false
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "title": "it is Creditors' only line",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "creditors"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "title": "and Bank holds three",
           "call": {
             "actor": "ada",
             "operation": "gl-entry.list",
@@ -73048,42 +73624,6 @@
             {
               "kind": "expect-equal",
               "value": 3
-            },
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                {
-                  "ref": [
-                    "world",
-                    "bank"
-                  ]
-                },
-                {
-                  "ref": [
-                    "world",
-                    "costCenter"
-                  ]
-                },
-                "2026-03-05",
-                "0",
-                "200000000",
-                null,
-                null,
-                "Payment Entry",
-                {
-                  "ref": [
-                    "last",
-                    "paymentEntry"
-                  ]
-                },
-                false
-              ]
             }
           ]
         },
@@ -73312,7 +73852,7 @@
           ]
         },
         {
-          "title": "Creditors' newest line is the party's credit",
+          "title": "Creditors' ledger, read by the refund, holds the party's credit",
           "call": {
             "actor": "ada",
             "operation": "gl-entry.list",
@@ -73322,53 +73862,51 @@
                   "world",
                   "creditors"
                 ]
+              },
+              "voucherId": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
               }
             }
           },
           "checks": [
             {
               "kind": "expect-equal",
-              "value": 2
-            },
-            {
-              "kind": "expect-equal",
               "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                {
-                  "ref": [
-                    "world",
-                    "creditors"
-                  ]
-                },
-                {
-                  "ref": [
-                    "world",
-                    "costCenter"
-                  ]
-                },
-                "2026-03-20",
-                "0",
-                "50000000",
-                "Supplier",
-                {
-                  "ref": [
-                    "world",
-                    "supplier"
-                  ]
-                },
-                "Payment Entry",
-                {
-                  "ref": [
-                    "last",
-                    "paymentEntry"
-                  ]
-                },
-                false
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "creditors"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "2026-03-20",
+                  "0",
+                  "50000000",
+                  "Supplier",
+                  {
+                    "ref": [
+                      "world",
+                      "supplier"
+                    ]
+                  },
+                  "Payment Entry",
+                  false
+                ]
               ]
             }
           ]
@@ -73426,7 +73964,84 @@
           ]
         },
         {
-          "title": "Ada cancels the refund",
+          "title": "Mara Office Rentals refunds 20 USDC on 25 March",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              },
+              "paymentType": "Receive",
+              "postingDate": "2026-03-25",
+              "partyType": "Supplier",
+              "party": {
+                "ref": [
+                  "world",
+                  "supplier"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "creditors"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              },
+              "paidAmount": "20000000"
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "Ada submits it",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.submit",
+            "payload": {
+              "paymentEntry": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "title": "and cancels it",
           "call": {
             "actor": "ada",
             "operation": "payment-entry.cancel",
@@ -73445,6 +74060,19 @@
               "value": "2"
             },
             {
+              "kind": "emits",
+              "event": "PaymentEntryCancelled",
+              "fields": {
+                "paymentEntry": {
+                  "ref": [
+                    "last",
+                    "paymentEntry"
+                  ]
+                },
+                "reversed": "2"
+              }
+            },
+            {
               "kind": "is-in",
               "thing": "payment-entry",
               "id": {
@@ -73458,7 +74086,7 @@
           ]
         },
         {
-          "title": "Creditors' ledger keeps the refund and adds its reversal, both cancelled",
+          "title": "Creditors' ledger, read by it, keeps its credit and adds the reversal, a debit with the same party, both cancelled",
           "call": {
             "actor": "ada",
             "operation": "gl-entry.list",
@@ -73467,6 +74095,12 @@
                 "ref": [
                   "world",
                   "creditors"
+                ]
+              },
+              "voucherId": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
                 ]
               }
             }
@@ -73494,9 +74128,9 @@
                       "costCenter"
                     ]
                   },
-                  "2026-03-20",
+                  "2026-03-25",
                   "0",
-                  "50000000",
+                  "20000000",
                   "Supplier",
                   {
                     "ref": [
@@ -73505,12 +74139,6 @@
                     ]
                   },
                   "Payment Entry",
-                  {
-                    "ref": [
-                      "last",
-                      "paymentEntry"
-                    ]
-                  },
                   true
                 ],
                 [
@@ -73532,8 +74160,8 @@
                       "costCenter"
                     ]
                   },
-                  "2026-03-20",
-                  "50000000",
+                  "2026-03-25",
+                  "20000000",
                   "0",
                   "Supplier",
                   {
@@ -73543,24 +74171,40 @@
                     ]
                   },
                   "Payment Entry",
-                  {
-                    "ref": [
-                      "last",
-                      "paymentEntry"
-                    ]
-                  },
                   true
                 ]
               ]
-            },
-            {
-              "kind": "expect-equal",
-              "value": false
             }
           ]
         },
         {
-          "title": "and Mara Office Rentals' balance is the advance again",
+          "title": "the advance and the first refund are untouched: Creditors holds four lines, two of them cancelled",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "creditors"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                false,
+                false,
+                true,
+                true
+              ]
+            }
+          ]
+        },
+        {
+          "title": "and Mara Office Rentals' balance is still 150 USDC",
           "call": {
             "actor": "ada",
             "operation": "supplier.balance",
@@ -73579,8 +74223,8 @@
               "kind": "expect-equal",
               "value": [
                 "200000000",
-                "0",
-                "200000000"
+                "50000000",
+                "150000000"
               ]
             }
           ]
@@ -73663,7 +74307,67 @@
           ]
         },
         {
-          "title": "Debtors' newest line is the party's debit",
+          "title": "Debtors' ledger, read by it, holds the party's debit",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "debtors"
+                ]
+              },
+              "voucherId": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "debtors"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "costCenter"
+                    ]
+                  },
+                  "2026-04-01",
+                  "100000000",
+                  "0",
+                  "Customer",
+                  {
+                    "ref": [
+                      "world",
+                      "customer"
+                    ]
+                  },
+                  "Payment Entry",
+                  false
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Debtors now holds three lines",
           "call": {
             "actor": "ada",
             "operation": "gl-entry.list",
@@ -73680,47 +74384,6 @@
             {
               "kind": "expect-equal",
               "value": 3
-            },
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                {
-                  "ref": [
-                    "world",
-                    "debtors"
-                  ]
-                },
-                {
-                  "ref": [
-                    "world",
-                    "costCenter"
-                  ]
-                },
-                "2026-04-01",
-                "100000000",
-                "0",
-                "Customer",
-                {
-                  "ref": [
-                    "world",
-                    "customer"
-                  ]
-                },
-                "Payment Entry",
-                {
-                  "ref": [
-                    "last",
-                    "paymentEntry"
-                  ]
-                },
-                false
-              ]
             }
           ]
         },
@@ -73777,7 +74440,7 @@
           ]
         },
         {
-          "title": "Ada adds a second Kibo Stores",
+          "title": "Ada adds a second customer of the same name",
           "call": {
             "actor": "ada",
             "operation": "customer.create",
@@ -73794,8 +74457,9 @@
           },
           "checks": [
             {
-              "kind": "expect-equal",
-              "value": false
+              "kind": "expect",
+              "match": "^cus_[0-9a-z]+$",
+              "flags": ""
             }
           ]
         },
@@ -74450,6 +75114,32 @@
           ]
         },
         {
+          "title": "a disabled supplier's balance still reads from the ledger",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier.balance",
+            "payload": {
+              "supplier": {
+                "ref": [
+                  "world",
+                  "supplier"
+                ]
+              },
+              "onDay": "2026-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "200000000",
+                "50000000",
+                "150000000"
+              ]
+            }
+          ]
+        },
+        {
           "title": "a payment to it in 2027 may be drafted",
           "call": {
             "actor": "ada",
@@ -74648,7 +75338,7 @@
           "checks": [
             {
               "kind": "expect-equal",
-              "value": 3
+              "value": 4
             }
           ]
         },
@@ -74786,8 +75476,161 @@
               "kind": "expect-equal",
               "value": [
                 "230000000",
-                "0",
-                "230000000"
+                "50000000",
+                "180000000"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Ada adds a second supplier of the same name",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "supplierName": "Mara Office Rentals",
+              "supplierType": "Company"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect",
+              "match": "^sup_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "and pays it 40 USDC on 6 March, to Creditors",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "costCenter": {
+                "ref": [
+                  "world",
+                  "costCenter"
+                ]
+              },
+              "paymentType": "Pay",
+              "postingDate": "2026-03-06",
+              "partyType": "Supplier",
+              "party": {
+                "ref": [
+                  "last",
+                  "supplier"
+                ]
+              },
+              "paidFrom": {
+                "ref": [
+                  "world",
+                  "bank"
+                ]
+              },
+              "paidTo": {
+                "ref": [
+                  "world",
+                  "creditors"
+                ]
+              },
+              "paidAmount": "40000000"
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "payment-entry",
+              "id": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              },
+              "state": "draft"
+            }
+          ]
+        },
+        {
+          "title": "submitted",
+          "call": {
+            "actor": "ada",
+            "operation": "payment-entry.submit",
+            "payload": {
+              "paymentEntry": {
+                "ref": [
+                  "last",
+                  "paymentEntry"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "title": "the first supplier's balance doesn't move",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier.balance",
+            "payload": {
+              "supplier": {
+                "ref": [
+                  "world",
+                  "supplier"
+                ]
+              },
+              "onDay": "2026-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "230000000",
+                "50000000",
+                "180000000"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "while Creditors holds both",
+          "call": {
+            "actor": "ada",
+            "operation": "account.balance",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "creditors"
+                ]
+              },
+              "onDay": "2026-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "270000000",
+                "50000000",
+                "220000000"
               ]
             }
           ]
@@ -74815,6 +75658,32 @@
                   "customer"
                 ]
               }
+            }
+          ]
+        },
+        {
+          "title": "a disabled customer's balance still reads from the ledger",
+          "call": {
+            "actor": "ada",
+            "operation": "customer.balance",
+            "payload": {
+              "customer": {
+                "ref": [
+                  "world",
+                  "customer"
+                ]
+              },
+              "onDay": "2027-12-31"
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "100000000",
+                "2",
+                "99999998"
+              ]
             }
           ]
         },
@@ -74898,9 +75767,51 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "no line was ever posted to a group: Assets' ledger is empty",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "assets"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "title": "and Liabilities'",
+          "call": {
+            "actor": "ada",
+            "operation": "gl-entry.list",
+            "payload": {
+              "account": {
+                "ref": [
+                  "world",
+                  "liabilities"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 0
+            }
+          ]
         }
       ],
-      "sourceHash": "efab4a7577a23a708a20f07e928fe4bbf895b9f94994b0f84d5e9a82c1b6d0fe"
+      "sourceHash": "fcc112c70227bbbdc66f51c8ea3f4f37110b3ae9ab50e17e10d194aba864d64b"
     },
     "journeys/promote-an-employee.ts": {
       "name": "promote an employee",
@@ -107166,7 +108077,7 @@
       "starts": "a supplier group",
       "steps": [
         {
-          "title": "All Customer Groups reads back Acme Trading's root, a group with no parent",
+          "title": "the root customer group reads back Acme Trading's, a group with no parent",
           "call": {
             "actor": "ada",
             "operation": "customer-group.get",
@@ -107200,7 +108111,7 @@
           ]
         },
         {
-          "title": "Commercial reads back a ledger under it",
+          "title": "the ledger customer group reads back under it",
           "call": {
             "actor": "ada",
             "operation": "customer-group.get",
@@ -107477,7 +108388,7 @@
           ]
         },
         {
-          "title": "Ada adds Retail, a group under the root",
+          "title": "Ada adds a group under the root",
           "call": {
             "actor": "ada",
             "operation": "customer-group.create",
@@ -107545,42 +108456,6 @@
           ]
         },
         {
-          "title": "it reads back as she typed it",
-          "call": {
-            "actor": "ada",
-            "operation": "customer-group.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "customerGroup"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "Retail",
-                {
-                  "ref": [
-                    "world",
-                    "allCustomerGroups"
-                  ]
-                },
-                "group"
-              ]
-            }
-          ]
-        },
-        {
           "title": "a name already taken in the company is refused, under another parent",
           "call": {
             "actor": "ada",
@@ -107614,7 +108489,7 @@
           ]
         },
         {
-          "title": "Ada adds Corner Shops, a ledger under Retail, two levels below the root",
+          "title": "Ada adds a ledger under the new group, two levels below the root",
           "call": {
             "actor": "ada",
             "operation": "customer-group.create",
@@ -107650,7 +108525,7 @@
           ]
         },
         {
-          "title": "it reads back under Retail",
+          "title": "it reads back a ledger under the new group, not under the root",
           "call": {
             "actor": "ada",
             "operation": "customer-group.get",
@@ -107667,8 +108542,55 @@
             {
               "kind": "expect-equal",
               "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
                 "Corner Shops",
                 "ledger"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^cgr_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "its parent reads back as the group made before it, a group under the root",
+          "call": {
+            "actor": "ada",
+            "operation": "customer-group.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "parentCustomerGroup"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Retail",
+                {
+                  "ref": [
+                    "world",
+                    "allCustomerGroups"
+                  ]
+                },
+                "group"
               ]
             }
           ]
@@ -107718,37 +108640,6 @@
                 ]
               },
               "state": "group"
-            }
-          ]
-        },
-        {
-          "title": "it reads back in Acme Logistics",
-          "call": {
-            "actor": "ada",
-            "operation": "customer-group.get",
-            "payload": {
-              "id": {
-                "ref": [
-                  "last",
-                  "customerGroup"
-                ]
-              }
-            }
-          },
-          "checks": [
-            {
-              "kind": "expect-equal",
-              "value": [
-                {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                },
-                "All Customer Groups",
-                null,
-                "group"
-              ]
             }
           ]
         },
@@ -107820,7 +108711,7 @@
           ]
         },
         {
-          "title": "Acme Logistics may have its own Commercial, a ledger under its root",
+          "title": "Acme Logistics may have a ledger group of the same name as Acme Trading's, under its root",
           "call": {
             "actor": "ada",
             "operation": "customer-group.create",
@@ -107922,7 +108813,73 @@
           ]
         },
         {
-          "title": "All Supplier Groups reads back Acme Trading's root",
+          "title": "that ledger reads back in Acme Logistics, under its own root",
+          "call": {
+            "actor": "ada",
+            "operation": "customer-group.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "customerGroup"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "Commercial",
+                "ledger"
+              ]
+            },
+            {
+              "kind": "expect",
+              "match": "^cgr_[0-9a-z]+$",
+              "flags": ""
+            }
+          ]
+        },
+        {
+          "title": "its parent reads back as Acme Logistics' root",
+          "call": {
+            "actor": "ada",
+            "operation": "customer-group.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "parentCustomerGroup"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "otherCompany"
+                  ]
+                },
+                "All Customer Groups",
+                null,
+                "group"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the root supplier group reads back Acme Trading's",
           "call": {
             "actor": "ada",
             "operation": "supplier-group.get",
@@ -107953,7 +108910,7 @@
           ]
         },
         {
-          "title": "Services reads back a ledger under it",
+          "title": "the ledger supplier group reads back under it",
           "call": {
             "actor": "ada",
             "operation": "supplier-group.get",
@@ -108114,7 +109071,7 @@
           ]
         },
         {
-          "title": "Ada adds Raw Materials, a ledger under the root",
+          "title": "Ada adds a second ledger supplier group under the root",
           "call": {
             "actor": "ada",
             "operation": "supplier-group.create",
@@ -108251,7 +109208,7 @@
           ]
         },
         {
-          "title": "a customer group's name is no supplier group's: Commercial is free here",
+          "title": "a customer group's name is no supplier group's: it is free here",
           "call": {
             "actor": "ada",
             "operation": "supplier-group.create",
@@ -108283,6 +109240,144 @@
                 ]
               },
               "state": "ledger"
+            }
+          ]
+        },
+        {
+          "title": "Ada adds a supplier group that is a group, under the root",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "supplierGroupName": "Utilities",
+              "parentSupplierGroup": {
+                "ref": [
+                  "world",
+                  "allSupplierGroups"
+                ]
+              },
+              "isGroup": true
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "supplier-group",
+              "id": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              },
+              "state": "group"
+            }
+          ]
+        },
+        {
+          "title": "and a ledger under it, two levels below the root",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "supplierGroupName": "Water",
+              "parentSupplierGroup": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "supplier-group",
+              "id": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              },
+              "state": "ledger"
+            }
+          ]
+        },
+        {
+          "title": "the ledger reads back in Acme Trading",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Water",
+                "ledger"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "its parent reads back as the group made before it, under the root",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "last",
+                  "parentSupplierGroup"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "company"
+                  ]
+                },
+                "Utilities",
+                {
+                  "ref": [
+                    "world",
+                    "allSupplierGroups"
+                  ]
+                },
+                "group"
+              ]
             }
           ]
         },
@@ -108382,9 +109477,111 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Acme Logistics adds a ledger under its root",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "supplierGroupName": "Fuel",
+              "parentSupplierGroup": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "is-in",
+              "thing": "supplier-group",
+              "id": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              },
+              "state": "ledger"
+            }
+          ]
+        },
+        {
+          "title": "an Acme Trading group under that ledger is refused for its company first",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              },
+              "supplierGroupName": "Diesel",
+              "parentSupplierGroup": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ParentSupplierGroupNotInCompany",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "while Acme Logistics' own is refused for the ledger",
+          "call": {
+            "actor": "ada",
+            "operation": "supplier-group.create",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "otherCompany"
+                ]
+              },
+              "supplierGroupName": "Diesel",
+              "parentSupplierGroup": {
+                "ref": [
+                  "last",
+                  "supplierGroup"
+                ]
+              },
+              "isGroup": false
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "ParentSupplierGroupIsLedger",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "3b866385f1aa461ad082445d47a507e81962375ae238c0a0811f69f85adc578e"
+      "sourceHash": "4816d6d0a9bdfae6f3a2f5c60ad9621377e8fee8f743d70fa53010b40c7b25d9"
     },
     "journeys/set-up-payroll-periods.ts": {
       "name": "set up payroll periods",

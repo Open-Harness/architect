@@ -53,6 +53,7 @@ Starts from the world `a received advance`.
 - **nor submitted again.** `ada` (role company.owner) calls and sends paymentEntry the world's paymentEntry, and is refused with PaymentEntryNotDraft, PY-900, carrying state `cancelled`.
 - **and submits it: two ledger lines.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
 - **Ada submits it.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
+- **Ada submits it.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
 - **and submits it.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
 - **submitted.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
 - **it can't be submitted: the day is in none of Acme Trading's fiscal years.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PaymentPostingDateOutsideFiscalYear, PY-009, carrying postingDate `2025-12-31`.
@@ -63,6 +64,7 @@ Starts from the world `a received advance`.
 - **but not submitted: the fiscal year is judged before the party.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PaymentPostingDateOutsideFiscalYear, PY-009, carrying postingDate `2027-01-04`.
 - **but not submitted: Mara Office Rentals is disabled.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PartyDisabled, PY-010.
 - **now it submits.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
+- **submitted.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and gets back `2`.
 - **but not submitted: money in from a disabled customer is refused too.** `ada` (role company.owner) calls and sends paymentEntry the last call's paymentEntry, and is refused with PartyDisabled, PY-010.
 
 ## How to call

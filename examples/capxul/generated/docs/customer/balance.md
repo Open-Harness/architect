@@ -62,6 +62,7 @@ Starts from the world `a received advance`.
 - **and nothing on 31 March.** `ada` (role company.owner) calls and sends customer the world's customer, onDay `2026-03-31`, and gets back [`0`, `0`, `0`].
 - **the first Kibo Stores' balance doesn't move.** `ada` (role company.owner) calls and sends customer the world's customer, onDay `2026-12-31`, and gets back [`100000000`, `0`, `100000000`].
 - **Kibo Stores' balance counts both base units, and none of the refused.** `ada` (role company.owner) calls and sends customer the world's customer, onDay `2027-12-31`, and gets back [`100000000`, `2`, `99999998`].
+- **a disabled customer's balance still reads from the ledger.** `ada` (role company.owner) calls and sends customer the world's customer, onDay `2027-12-31`, and gets back [`100000000`, `2`, `99999998`].
 
 ## How to call
 

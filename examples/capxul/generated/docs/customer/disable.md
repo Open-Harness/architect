@@ -43,6 +43,7 @@ Disable a customer: no payment from it can be submitted until it is enabled agai
 
 Starts from the world `an outside supplier`.
 
+- **Ada disables the second.** `ada` (role company.owner) calls and sends customer the last call's customer, and is answered.
 - **nor disable Kibo Stores.** `bo` (signed in) calls and sends customer the world's customer, and is refused with NotAllowed, AR-001.
 - **Ada disables it.** `ada` (role company.owner) calls and sends customer the world's customer, and gets back the world's customer.
 - **it can't be disabled twice.** `ada` (role company.owner) calls and sends customer the world's customer, and is refused with CustomerNotActive, CU-900, carrying state `disabled`.

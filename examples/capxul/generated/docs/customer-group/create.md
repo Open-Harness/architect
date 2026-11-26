@@ -50,6 +50,7 @@ Add a customer group to a company, under a group or as its one root.
 
 Starts from the world `an outside supplier`.
 
+- **Ada adds a customer group that is a group, under the root.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Retail`, parentCustomerGroup the world's allCustomerGroups, isGroup true, and gets back an answer matching `^cgr_`.
 - **Ada adds Acme Logistics' root customer group.** `ada` (role company.owner) calls and sends company the world's otherCompany, customerGroupName `All Customer Groups`, isGroup true, and gets back an answer matching `^cgr_`.
 
 ### set up party groups
@@ -62,13 +63,13 @@ Starts from the world `a supplier group`.
 - **and before the name it would take twice: the root is judged first.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `All Customer Groups`, isGroup true, and is refused with CustomerGroupRootExists, CG-003, carrying root the world's allCustomerGroups.
 - **a group under a ledger is refused.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Corner Shops`, parentCustomerGroup the world's customerGroup, isGroup false, and is refused with ParentCustomerGroupIsLedger, CG-002.
 - **before a name already taken.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Commercial`, parentCustomerGroup the world's customerGroup, isGroup true, and is refused with ParentCustomerGroupIsLedger, CG-002.
-- **Ada adds Retail, a group under the root.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Retail`, parentCustomerGroup the world's allCustomerGroups, isGroup true, and gets back an answer matching `^cgr_[0-9a-z]+$`.
+- **Ada adds a group under the root.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Retail`, parentCustomerGroup the world's allCustomerGroups, isGroup true, and gets back an answer matching `^cgr_[0-9a-z]+$`.
 - **a name already taken in the company is refused, under another parent.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Commercial`, parentCustomerGroup the last call's customerGroup, isGroup false, and is refused with CustomerGroupNameTaken, CG-004.
-- **Ada adds Corner Shops, a ledger under Retail, two levels below the root.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Corner Shops`, parentCustomerGroup the last call's customerGroup, isGroup false, and is answered.
+- **Ada adds a ledger under the new group, two levels below the root.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Corner Shops`, parentCustomerGroup the last call's customerGroup, isGroup false, and is answered.
 - **Acme Logistics may have its own root, of the same name.** `ada` (role company.owner) calls and sends company the world's otherCompany, customerGroupName `All Customer Groups`, isGroup true, and is answered.
 - **a second root for Acme Logistics carries its own root, not Acme Trading's.** `ada` (role company.owner) calls and sends company the world's otherCompany, customerGroupName `Everyone`, isGroup true, and is refused with CustomerGroupRootExists, CG-003, carrying root the last call's customerGroup.
 - **an Acme Trading group under Acme Logistics' root is refused.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Exporters`, parentCustomerGroup the last call's customerGroup, isGroup false, and is refused with ParentCustomerGroupNotInCompany, CG-001.
-- **Acme Logistics may have its own Commercial, a ledger under its root.** `ada` (role company.owner) calls and sends company the world's otherCompany, customerGroupName `Commercial`, parentCustomerGroup the last call's customerGroup, isGroup false, and is answered.
+- **Acme Logistics may have a ledger group of the same name as Acme Trading's, under its root.** `ada` (role company.owner) calls and sends company the world's otherCompany, customerGroupName `Commercial`, parentCustomerGroup the last call's customerGroup, isGroup false, and is answered.
 - **an Acme Trading group under that ledger is refused for its company first.** `ada` (role company.owner) calls and sends company the world's company, customerGroupName `Exporters`, parentCustomerGroup the last call's customerGroup, isGroup false, and is refused with ParentCustomerGroupNotInCompany, CG-001.
 - **while Acme Logistics' own is refused for the ledger.** `ada` (role company.owner) calls and sends company the world's otherCompany, customerGroupName `Exporters`, parentCustomerGroup the last call's customerGroup, isGroup false, and is refused with ParentCustomerGroupIsLedger, CG-002.
 

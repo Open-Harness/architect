@@ -1,0 +1,5 @@
+# CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
+from-doctype/06-the-column-limit.test.ts > CX-from-doctype 06: the column limit > refuses a doctype of 101 columns, naming it, its count and the limit
+from-doctype/06-the-column-limit.test.ts > CX-from-doctype 06: the column limit > refuses a doctype whose table needs 101 columns, naming the line, and writes neither
+from-doctype/06-the-column-limit.test.ts > CX-from-doctype 06: the column limit > scaffolds a doctype of exactly 100 columns, not counting its layout, virtual and naming_series fields, and the migration holds them
+from-doctype/06-the-column-limit.test.ts > CX-from-doctype 06: the column limit > scaffolds a line of exactly 100 columns: its parent and idx count, and it has no state

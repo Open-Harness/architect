@@ -37,13 +37,14 @@ Read one customer by its id: company, customerName, customerType, customerGroup,
 
 Starts from the world `an outside supplier`.
 
-- **Kibo Stores reads back an active company in Commercial.** `ada` (role company.owner) calls and sends id the world's customer, and gets back [the world's company, `Kibo Stores`, `Company`, the world's customerGroup, `active`].
-- **Kampala Traders reads back in Acme Logistics, in no group.** `ada` (role company.owner) calls and sends id the world's otherCustomer, and gets back [the world's otherCompany, `Kampala Traders`, `Company`, null, `active`].
+- **Acme Trading's customer reads back an active company in its ledger group.** `ada` (role company.owner) calls and sends id the world's customer, and gets back [the world's company, `Kibo Stores`, `Company`, the world's customerGroup, `active`].
+- **Acme Logistics' customer reads back there, in no group.** `ada` (role company.owner) calls and sends id the world's otherCustomer, and gets back [the world's otherCompany, `Kampala Traders`, `Company`, null, `active`].
 - **Bo can't read Kibo Stores.** `bo` (signed in) calls and sends id the world's customer, and is refused with NotAllowed, AR-001.
 - **she reads back as typed, in no group.** `ada` (role company.owner) calls and sends id the last call's customer, and gets back [the world's company, `Wanjiru Njoroge`, `Individual`, null, `active`].
-- **it reads back as a partnership.** `ada` (role company.owner) calls and sends id the last call's customer, and gets back [the world's company, `Kibo Stores`, `Partnership`, the world's customerGroup, `active`].
+- **it reads back a disabled partnership.** `ada` (role company.owner) calls and sends id the last call's customer, and gets back [the world's company, `Kibo Stores`, `Partnership`, the world's customerGroup, `disabled`].
+- **and the first is still a company.** `ada` (role company.owner) calls and sends id the world's customer, and gets back [the world's company, `Kibo Stores`, `Company`, the world's customerGroup, `active`].
 - **it reads back disabled, with the rest as it was.** `ada` (role company.owner) calls and sends id the world's customer, and gets back [the world's company, `Kibo Stores`, `Company`, the world's customerGroup, `disabled`].
-- **Kampala Traders, in Acme Logistics, is still active.** `ada` (role company.owner) calls and sends id the world's otherCustomer, and gets back `active`.
+- **Acme Logistics' customer is still active.** `ada` (role company.owner) calls and sends id the world's otherCustomer, and gets back `active`.
 
 ## How to call
 

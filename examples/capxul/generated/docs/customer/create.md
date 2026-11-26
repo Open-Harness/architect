@@ -51,16 +51,17 @@ Starts from the world `an outside supplier`.
 
 - **nor add a customer to Acme Trading.** `bo` (signed in) calls and sends company the world's company, customerName `Bo's Shop`, customerType `Individual`, and is refused with NotAllowed, AR-001.
 - **a customer put in a group that has groups under it is refused.** `ada` (role company.owner) calls and sends company the world's company, customerName `Duka Mart`, customerType `Company`, customerGroup the world's allCustomerGroups, and is refused with CustomerGroupIsGroup, CU-002.
+- **a customer put in it is refused too: it is a group, though not the root.** `ada` (role company.owner) calls and sends company the world's company, customerName `Duka Mart`, customerType `Company`, customerGroup the last call's customerGroup, and is refused with CustomerGroupIsGroup, CU-002.
 - **an Acme Trading customer in it is refused for its company before its being a group.** `ada` (role company.owner) calls and sends company the world's company, customerName `Duka Mart`, customerType `Company`, customerGroup the last call's customerGroup, and is refused with CustomerGroupNotInCompany, CU-001.
 - **an Acme Logistics customer in Acme Trading's Commercial is refused.** `ada` (role company.owner) calls and sends company the world's otherCompany, customerName `Gulu Traders`, customerType `Company`, customerGroup the world's customerGroup, and is refused with CustomerGroupNotInCompany, CU-001.
-- **Ada adds Wanjiru Njoroge, an individual in no group.** `ada` (role company.owner) calls and sends company the world's company, customerName `Wanjiru Njoroge`, customerType `Individual`, and gets back an answer matching `^cus_[0-9a-z]+$`.
-- **a second Kibo Stores is a customer of its own: two may share a name.** `ada` (role company.owner) calls and sends company the world's company, customerName `Kibo Stores`, customerType `Partnership`, customerGroup the world's customerGroup, and gets back false.
+- **Ada adds a customer, an individual in no group.** `ada` (role company.owner) calls and sends company the world's company, customerName `Wanjiru Njoroge`, customerType `Individual`, and gets back an answer matching `^cus_[0-9a-z]+$`.
+- **a second customer of the same name is a customer of its own: two may share a name.** `ada` (role company.owner) calls and sends company the world's company, customerName `Kibo Stores`, customerType `Partnership`, customerGroup the world's customerGroup, and gets back an answer matching `^cus_[0-9a-z]+$`.
 
 ### post a payment entry
 
 Starts from the world `a received advance`.
 
-- **Ada adds a second Kibo Stores.** `ada` (role company.owner) calls and sends company the world's company, customerName `Kibo Stores`, customerType `Company`, and gets back false.
+- **Ada adds a second customer of the same name.** `ada` (role company.owner) calls and sends company the world's company, customerName `Kibo Stores`, customerType `Company`, and gets back an answer matching `^cus_[0-9a-z]+$`.
 
 ## How to call
 

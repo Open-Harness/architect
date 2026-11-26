@@ -94,6 +94,7 @@ Starts from the world `a received advance`.
 - **Liabilities, above Creditors, holds it.** `ada` (role company.owner) calls and sends account the world's liabilities, onDay `2026-12-31`, and gets back [`200000000`, `0`, `200000000`].
 - **Bank is 200 USDC down.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`0`, `200000000`, `-200000000`].
 - **while Debtors holds both.** `ada` (role company.owner) calls and sends account the world's debtors, onDay `2026-12-31`, and gets back [`100000000`, `70000000`, `30000000`].
+- **while Creditors holds both.** `ada` (role company.owner) calls and sends account the world's creditors, onDay `2026-12-31`, and gets back [`270000000`, `50000000`, `220000000`].
 
 ### run a payroll
 

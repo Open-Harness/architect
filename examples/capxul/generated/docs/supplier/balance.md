@@ -51,8 +51,10 @@ Starts from the world `a received advance`.
 - **Bo can't read Mara Office Rentals' balance.** `bo` (signed in) calls and sends supplier the world's supplier, onDay `2026-12-31`, and is refused with NotAllowed, AR-001.
 - **Mara Office Rentals' balance is 150 USDC.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-12-31`, and gets back [`200000000`, `50000000`, `150000000`].
 - **but 200 USDC the day before the refund.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-03-19`, and gets back [`200000000`, `0`, `200000000`].
-- **and Mara Office Rentals' balance is the advance again.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-12-31`, and gets back [`200000000`, `0`, `200000000`].
-- **and Mara Office Rentals' balance takes it.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-12-31`, and gets back [`230000000`, `0`, `230000000`].
+- **and Mara Office Rentals' balance is still 150 USDC.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-12-31`, and gets back [`200000000`, `50000000`, `150000000`].
+- **a disabled supplier's balance still reads from the ledger.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-12-31`, and gets back [`200000000`, `50000000`, `150000000`].
+- **and Mara Office Rentals' balance takes it.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-12-31`, and gets back [`230000000`, `50000000`, `180000000`].
+- **the first supplier's balance doesn't move.** `ada` (role company.owner) calls and sends supplier the world's supplier, onDay `2026-12-31`, and gets back [`230000000`, `50000000`, `180000000`].
 
 ## How to call
 

@@ -36,10 +36,12 @@ Read one supplier-group by its id: company, supplierGroupName, parentSupplierGro
 
 Starts from the world `a supplier group`.
 
-- **All Supplier Groups reads back Acme Trading's root.** `ada` (role company.owner) calls and sends id the world's allSupplierGroups, and gets back [the world's company, `All Supplier Groups`, null, `group`].
-- **Services reads back a ledger under it.** `ada` (role company.owner) calls and sends id the world's supplierGroup, and gets back [the world's company, `Services`, the world's allSupplierGroups, `ledger`].
+- **the root supplier group reads back Acme Trading's.** `ada` (role company.owner) calls and sends id the world's allSupplierGroups, and gets back [the world's company, `All Supplier Groups`, null, `group`].
+- **the ledger supplier group reads back under it.** `ada` (role company.owner) calls and sends id the world's supplierGroup, and gets back [the world's company, `Services`, the world's allSupplierGroups, `ledger`].
 - **Bo can't read it.** `bo` (signed in) calls and sends id the world's supplierGroup, and is refused with NotAllowed, AR-001.
 - **it reads back as she typed it.** `ada` (role company.owner) calls and sends id the last call's supplierGroup, and gets back [the world's company, `Raw Materials`, the world's allSupplierGroups, `ledger`].
+- **the ledger reads back in Acme Trading.** `ada` (role company.owner) calls and sends id the last call's supplierGroup, and gets back [the world's company, `Water`, `ledger`].
+- **its parent reads back as the group made before it, under the root.** `ada` (role company.owner) calls and sends id the last call's parentSupplierGroup, and gets back [the world's company, `Utilities`, the world's allSupplierGroups, `group`].
 
 ## How to call
 

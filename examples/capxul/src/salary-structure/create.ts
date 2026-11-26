@@ -1,6 +1,9 @@
 // Scaffolded from blueprint/things/salary-structure/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Ids, Records } from "@orthograph/language-effect";
+import { SalaryComponent } from "../../blueprint/things/salary-component/thing.ts";
+import { SalaryDetail } from "../../blueprint/things/salary-detail/thing.ts";
+import { SalaryStructure } from "../../blueprint/things/salary-structure/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/salary-structure/create.handler.ts";
 
@@ -52,51 +55,82 @@ const { StructureWithoutEarnings, StructureComponentNotInCompany, StructureCompo
  *   once it answers, it writes SalaryStructureDrafted: salaryStructure and netPay from the answer, company from the payload;
  *   the call is the span salary-structure.create, and its commit salary-structure.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, salaryStructureName, earnings, deductions }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span salary-structure.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Every line, earnings then deductions, with the table it is in.
+    const lines = [
+      ...earnings.map((line) => ({ ...line, type: "Earning" as const })),
+      ...deductions.map((line) => ({ ...line, type: "Deduction" as const })),
+    ];
 
+    // Step load: database, span salary-structure.create.load. Each line's component; one that isn't there is no
+    // component of this company's.
+    const components = yield* steps.load(Effect.forEach(lines, (line) => records.find(SalaryComponent, line.salaryComponent)));
+
+    // Refusal order (errors.ts). Each line refusal names the component of the first line that breaks it.
     // StructureWithoutEarnings: exit 41, SS-001.
-    if (yield* Handlers.blank<boolean>("refuse StructureWithoutEarnings when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StructureWithoutEarnings was refused"));
+    if (earnings.length === 0) {
+      yield* Effect.logInfo("the structure has no earning");
       return yield* new StructureWithoutEarnings({});
     }
 
-    // StructureComponentNotInCompany: exit 42, SS-002.
-    if (yield* Handlers.blank<boolean>("refuse StructureComponentNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StructureComponentNotInCompany was refused"));
-      return yield* new StructureComponentNotInCompany({
-        salaryComponent: yield* Handlers.blank("StructureComponentNotInCompany.salaryComponent, a salary-component.id"),
-      });
+    // The company and type checks, line by line.
+    for (const [i, line] of lines.entries()) {
+      const component = components[i];
+      // StructureComponentNotInCompany: exit 42, SS-002.
+      if (!component || component["company"] !== company) {
+        yield* Effect.logInfo(`${line.salaryComponent} is no component of this company's`);
+        return yield* new StructureComponentNotInCompany({ salaryComponent: line.salaryComponent });
+      }
+      // StructureComponentWrongType: exit 43, SS-003.
+      if (component["type"] !== line.type) {
+        yield* Effect.logInfo(`${line.salaryComponent} is a ${component["type"]}, among the ${line.type.toLowerCase()}s`);
+        return yield* new StructureComponentWrongType({ salaryComponent: line.salaryComponent });
+      }
     }
 
-    // StructureComponentWrongType: exit 43, SS-003.
-    if (yield* Handlers.blank<boolean>("refuse StructureComponentWrongType when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StructureComponentWrongType was refused"));
-      return yield* new StructureComponentWrongType({
-        salaryComponent: yield* Handlers.blank("StructureComponentWrongType.salaryComponent, a salary-component.id"),
-      });
+    // A line given 0 pays its component's amount (HRMS's `set_missing_values`).
+    const paid = lines.map((line, i) => ({ ...line, amount: line.amount === 0n ? (components[i]!["amount"] as bigint) : line.amount }));
+
+    // StructureLineWithoutAmount: exit 44, SS-004. Over every line, before any repeat.
+    const unpaid = paid.find((line) => line.amount === 0n);
+    if (unpaid) {
+      yield* Effect.logInfo(`the line for ${unpaid.salaryComponent} pays nothing, and its component has no amount`);
+      return yield* new StructureLineWithoutAmount({ salaryComponent: unpaid.salaryComponent });
     }
 
-    // StructureLineWithoutAmount: exit 44, SS-004.
-    if (yield* Handlers.blank<boolean>("refuse StructureLineWithoutAmount when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StructureLineWithoutAmount was refused"));
-      return yield* new StructureLineWithoutAmount({
-        salaryComponent: yield* Handlers.blank("StructureLineWithoutAmount.salaryComponent, a salary-component.id"),
-      });
+    // StructureComponentRepeated: exit 45, SS-005. The first line that repeats an earlier one names it.
+    const repeat = lines.find((line, i) => lines.findIndex((l) => l.salaryComponent === line.salaryComponent) < i);
+    if (repeat) {
+      yield* Effect.logInfo(`${repeat.salaryComponent} is on two lines`);
+      return yield* new StructureComponentRepeated({ salaryComponent: repeat.salaryComponent });
     }
 
-    // StructureComponentRepeated: exit 45, SS-005.
-    if (yield* Handlers.blank<boolean>("refuse StructureComponentRepeated when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StructureComponentRepeated was refused"));
-      return yield* new StructureComponentRepeated({
-        salaryComponent: yield* Handlers.blank("StructureComponentRepeated.salaryComponent, a salary-component.id"),
-      });
-    }
-
-    // Step insert: database, in the store salary-structure, salary-detail, span salary-structure.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, in the store salary-structure, salary-detail, span salary-structure.create.insert. The
+    // structure with its totals, then its lines, each table numbered from 1 in the order given.
+    const sum = (type: "Earning" | "Deduction") => paid.filter((l) => l.type === type).reduce((total, l) => total + l.amount, 0n);
+    const totalEarning = sum("Earning");
+    const totalDeduction = sum("Deduction");
+    const netPay = totalEarning - totalDeduction;
+    yield* steps.insert(
+      Effect.gen(function* () {
+        yield* records.insert(SalaryStructure, { id, company, salaryStructureName, totalEarning, totalDeduction, netPay });
+        for (const type of ["Earning", "Deduction"] as const) {
+          for (const [i, l] of paid.filter((p) => p.type === type).entries()) {
+            const lineId = yield* Ids.of(SalaryDetail.fields.id);
+            yield* records.insert(SalaryDetail, {
+              id: lineId,
+              salaryStructure: id,
+              type,
+              line: BigInt(i + 1),
+              salaryComponent: l.salaryComponent,
+              amount: l.amount,
+            });
+          }
+        }
+      }),
+    );
 
     // The move create, to draft.
     yield* move();
@@ -104,9 +138,9 @@ const create: Handler = (_payload, { steps, move, id }) =>
     return {
       // SalaryStructureDrafted needs salaryStructure, and only the answer can give it.
       salaryStructure: id,
-      totalEarning: yield* Handlers.blank("totalEarning, a salary-structure.totalEarning"),
-      totalDeduction: yield* Handlers.blank("totalDeduction, a salary-structure.totalDeduction"),
-      netPay: yield* Handlers.blank("netPay, a salary-structure.netPay"),
+      totalEarning,
+      totalDeduction,
+      netPay,
     };
   });
 
