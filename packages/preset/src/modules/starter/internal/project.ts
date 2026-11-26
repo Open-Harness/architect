@@ -1,5 +1,6 @@
 // The files around the blueprint that make the workspace a project: its package.json, tsconfig and ignores.
 import { Names } from "orthograph/server";
+import { YAMLSeq, isScalar, isSeq, parseDocument } from "yaml";
 const EXACT = {
   effect: "4.1.4",
   "@effect/platform-node": "4.1.4",
@@ -63,18 +64,23 @@ export const mergeWorkspace = (yaml: string, settings: typeof WORKSPACE): string
 };
 
 /** What pnpm's minimum release age must not hold back: the framework's own packages, which are published as often as it is built (K28). */
-export const AGE_EXEMPT = ["orthograph", "'@orthograph/*'"];
+export const AGE_EXEMPT = ["orthograph", "@orthograph/*"];
 
-/** Add entries to a top-level list of a pnpm-workspace.yaml (created if missing), each once, keeping every entry already there. */
-export const addToList = (yaml: string, key: string, entries: ReadonlyArray<string>): string => {
-  const lines = yaml.trimEnd() === "" ? [] : yaml.trimEnd().split("\n");
-  let at = lines.findIndex((l) => l === `${key}:` || l === `${key}: []`);
-  if (at === -1) { lines.push(`${key}:`); at = lines.length - 1; }
-  else lines[at] = `${key}:`;
-  let end = at + 1;
-  while (end < lines.length && /^(\s|-)/.test(lines[end]!)) end++;
-  const bare = (s: string) => s.replace(/^\s*-\s*/, "").replace(/^['"]|['"]$/g, "");
-  const present = new Set(lines.slice(at + 1, end).map(bare));
-  for (const e of entries) if (!present.has(bare(e))) { lines.splice(end, 0, `  - ${e}`); end++; }
-  return lines.join("\n") + "\n";
+/**
+ * Add entries to a top-level list of a pnpm-workspace.yaml (created if missing), each once, keeping every entry already there.
+ * The file is parsed, so a block list, an inline list (`key: ['nx']`) and a key with a trailing comment all take the entries
+ * under the one key; the file's other keys and comments are kept as the parser keeps them.
+ */
+export const addToList = (text: string, key: string, entries: ReadonlyArray<string>): string => {
+  const doc = parseDocument(text);
+  const found = doc.get(key, true);
+  const list = isSeq(found) ? found : new YAMLSeq();
+  if (!isSeq(found)) {
+    if (isScalar(found)) { list.commentBefore = found.commentBefore ?? null; list.comment = found.comment ?? null; }
+    doc.set(key, list);
+  }
+  if (list.items.length === 0) list.flow = false;
+  const present = new Set(list.items.map((i) => String(isScalar(i) ? i.value : i)));
+  for (const e of entries) if (!present.has(e)) { list.add(doc.createNode(e)); present.add(e); }
+  return doc.toString({ singleQuote: true });
 };

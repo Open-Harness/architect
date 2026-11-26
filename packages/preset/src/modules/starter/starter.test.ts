@@ -3,6 +3,7 @@
 import { resolve } from "node:path";
 import { createTreeWithEmptyWorkspace } from "nx/src/generators/testing-utils/create-tree-with-empty-workspace.js";
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import { Starter } from "./service.ts";
 import { AGE_EXEMPT, WORKSPACE, addToList, mergeWorkspace } from "./internal/project.ts";
 
@@ -53,5 +54,52 @@ describe("the starter preset", () => {
     expect(addToList(once, "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe(once);
     expect(addToList("minimumReleaseAgeExclude: []\n", "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe("minimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\n");
     expect(addToList("", "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe("minimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\n");
+  });
+
+  describe("addToList, which parses the workspace file", () => {
+    const key = "minimumReleaseAgeExclude";
+    const listed = (text: string): ReadonlyArray<string> => (parse(text) as Record<string, ReadonlyArray<string>>)[key] ?? [];
+    const keys = (text: string) => text.split("\n").filter((l) => l.startsWith(`${key}:`)).length;
+
+    it("adds the key when there is none, keeping the file's other keys", () => {
+      const out = addToList("autoInstallPeers: true\n", key, AGE_EXEMPT);
+      expect(out).toBe("autoInstallPeers: true\nminimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\n");
+    });
+
+    it("adds to a block list under `key:`", () => {
+      expect(addToList("minimumReleaseAgeExclude:\n  - 'x@1'\nother: 1\n", key, AGE_EXEMPT)).toBe(
+        "minimumReleaseAgeExclude:\n  - 'x@1'\n  - orthograph\n  - '@orthograph/*'\nother: 1\n",
+      );
+      expect(addToList("minimumReleaseAgeExclude:\nother: 1\n", key, AGE_EXEMPT)).toBe(
+        "minimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\nother: 1\n",
+      );
+    });
+
+    it("fills `key: []` as a block list", () => {
+      expect(addToList("minimumReleaseAgeExclude: []\n", key, AGE_EXEMPT)).toBe("minimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\n");
+    });
+
+    it("adds to a non-empty inline list under the one key", () => {
+      const out = addToList("minimumReleaseAgeExclude: ['nx']\n", key, AGE_EXEMPT);
+      expect(keys(out)).toBe(1);
+      expect(listed(out)).toEqual(["nx", "orthograph", "@orthograph/*"]);
+    });
+
+    it("keeps a trailing comment on the key line, and the file's other comments, under the one key", () => {
+      const text = "# pnpm settings\nminimumReleaseAgeExclude: # young on purpose\n  - 'x@1' # its reason\n";
+      const out = addToList(text, key, AGE_EXEMPT);
+      expect(keys(out)).toBe(1);
+      expect(listed(out)).toEqual(["x@1", "orthograph", "@orthograph/*"]);
+      for (const c of ["# pnpm settings", "# young on purpose", "# its reason"]) expect(out).toContain(c);
+      const inline = addToList("minimumReleaseAgeExclude: ['nx'] # kept\n", key, AGE_EXEMPT);
+      expect(keys(inline)).toBe(1);
+      expect(inline).toContain("# kept");
+    });
+
+    it("adds nothing already listed, however it is quoted", () => {
+      const text = "minimumReleaseAgeExclude:\n  - \"@orthograph/*\"\n  - orthograph\n";
+      expect(addToList(text, key, AGE_EXEMPT)).toBe(text);
+      expect(listed(addToList("minimumReleaseAgeExclude: [orthograph]\n", key, AGE_EXEMPT))).toEqual(["orthograph", "@orthograph/*"]);
+    });
   });
 });
