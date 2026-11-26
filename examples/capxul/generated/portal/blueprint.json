@@ -93323,6 +93323,28 @@
         "deploy": {},
         "publish": {},
         "hash": "3203bdcf48498b69"
+      },
+      "staging": {
+        "name": "staging",
+        "file": "blueprint/environments/staging.ts",
+        "runs": "always on",
+        "identity": "better-auth",
+        "lifetimeMs": null,
+        "cloud": {
+          "provider": "cloudflare",
+          "database": "d1"
+        },
+        "database": null,
+        "secrets": {},
+        "promotesFrom": null,
+        "deploy": {
+          "server": {
+            "how": "worker",
+            "domain": null
+          }
+        },
+        "publish": {},
+        "hash": "1f38e5ae45256ddc"
       }
     },
     "alertRules": [
@@ -107427,10 +107449,30 @@
         }
       },
       {
+        "id": "verdict:a one-day list:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "a one-day list",
+          "severity": "page",
+          "owner": "journeys/a-one-day-list.ts"
+        }
+      },
+      {
         "id": "verdict:add holidays:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "add holidays",
+          "severity": "page",
+          "owner": "journeys/add-holidays.ts"
+        }
+      },
+      {
+        "id": "verdict:add holidays:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "add holidays",
           "severity": "page",
           "owner": "journeys/add-holidays.ts"
@@ -107447,10 +107489,30 @@
         }
       },
       {
+        "id": "verdict:allocate leave:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "allocate leave",
+          "severity": "page",
+          "owner": "journeys/allocate-leave.ts"
+        }
+      },
+      {
         "id": "verdict:an employee leaves:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "an employee leaves",
+          "severity": "page",
+          "owner": "journeys/an-employee-leaves.ts"
+        }
+      },
+      {
+        "id": "verdict:an employee leaves:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "an employee leaves",
           "severity": "page",
           "owner": "journeys/an-employee-leaves.ts"
@@ -107467,10 +107529,30 @@
         }
       },
       {
+        "id": "verdict:another company's department is refused:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "another company's department is refused",
+          "severity": "page",
+          "owner": "journeys/another-companys-department-is-refused.ts"
+        }
+      },
+      {
         "id": "verdict:another company's job title is refused:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "another company's job title is refused",
+          "severity": "page",
+          "owner": "journeys/another-companys-job-title-is-refused.ts"
+        }
+      },
+      {
+        "id": "verdict:another company's job title is refused:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "another company's job title is refused",
           "severity": "page",
           "owner": "journeys/another-companys-job-title-is-refused.ts"
@@ -107487,10 +107569,30 @@
         }
       },
       {
+        "id": "verdict:appraise a year:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "appraise a year",
+          "severity": "page",
+          "owner": "journeys/appraise-a-year.ts"
+        }
+      },
+      {
         "id": "verdict:approve an attendance request:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "approve an attendance request",
+          "severity": "page",
+          "owner": "journeys/approve-an-attendance-request.ts"
+        }
+      },
+      {
+        "id": "verdict:approve an attendance request:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "approve an attendance request",
           "severity": "page",
           "owner": "journeys/approve-an-attendance-request.ts"
@@ -107507,10 +107609,30 @@
         }
       },
       {
+        "id": "verdict:attendance requests and leave:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "attendance requests and leave",
+          "severity": "page",
+          "owner": "journeys/attendance-requests-and-leave.ts"
+        }
+      },
+      {
         "id": "verdict:attendance stays in its company:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "attendance stays in its company",
+          "severity": "page",
+          "owner": "journeys/attendance-stays-in-its-company.ts"
+        }
+      },
+      {
+        "id": "verdict:attendance stays in its company:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "attendance stays in its company",
           "severity": "page",
           "owner": "journeys/attendance-stays-in-its-company.ts"
@@ -107527,10 +107649,30 @@
         }
       },
       {
+        "id": "verdict:branch names are the company's:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "branch names are the company's",
+          "severity": "page",
+          "owner": "journeys/branch-names-are-the-companys.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: a bank account closes:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: a bank account closes",
+          "severity": "page",
+          "owner": "journeys/bridge-a-bank-account-closes.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: a bank account closes:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: a bank account closes",
           "severity": "page",
           "owner": "journeys/bridge-a-bank-account-closes.ts"
@@ -107547,10 +107689,30 @@
         }
       },
       {
+        "id": "verdict:bridge: a bank account, end to end:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "bridge: a bank account, end to end",
+          "severity": "page",
+          "owner": "journeys/bridge-a-bank-account-end-to-end.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: a deposit lands:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: a deposit lands",
+          "severity": "page",
+          "owner": "journeys/bridge-a-deposit-lands.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: a deposit lands:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: a deposit lands",
           "severity": "page",
           "owner": "journeys/bridge-a-deposit-lands.ts"
@@ -107567,10 +107729,30 @@
         }
       },
       {
+        "id": "verdict:bridge: a kyc keeps what bridge gave:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "bridge: a kyc keeps what bridge gave",
+          "severity": "page",
+          "owner": "journeys/bridge-a-kyc-keeps-what-bridge-gave.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: a person is checked:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: a person is checked",
+          "severity": "page",
+          "owner": "journeys/bridge-a-person-is-checked.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: a person is checked:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: a person is checked",
           "severity": "page",
           "owner": "journeys/bridge-a-person-is-checked.ts"
@@ -107587,10 +107769,30 @@
         }
       },
       {
+        "id": "verdict:bridge: a rejected kyb keeps what bridge gave:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "bridge: a rejected kyb keeps what bridge gave",
+          "severity": "page",
+          "owner": "journeys/bridge-a-rejected-kyb-keeps-what-bridge-gave.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: a reopened account is its own:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: a reopened account is its own",
+          "severity": "page",
+          "owner": "journeys/bridge-a-reopened-account-is-its-own.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: a reopened account is its own:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: a reopened account is its own",
           "severity": "page",
           "owner": "journeys/bridge-a-reopened-account-is-its-own.ts"
@@ -107607,10 +107809,30 @@
         }
       },
       {
+        "id": "verdict:bridge: a transfer is paid or returned:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "bridge: a transfer is paid or returned",
+          "severity": "page",
+          "owner": "journeys/bridge-a-transfer-is-paid-or-returned.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: an approved kyc keeps what bridge gave:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: an approved kyc keeps what bridge gave",
+          "severity": "page",
+          "owner": "journeys/bridge-an-approved-kyc-keeps-what-bridge-gave.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: an approved kyc keeps what bridge gave:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: an approved kyc keeps what bridge gave",
           "severity": "page",
           "owner": "journeys/bridge-an-approved-kyc-keeps-what-bridge-gave.ts"
@@ -107627,10 +107849,30 @@
         }
       },
       {
+        "id": "verdict:bridge: each company's money is its own:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "bridge: each company's money is its own",
+          "severity": "page",
+          "owner": "journeys/bridge-each-companys-money-is-its-own.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: kyb is decided by bridge:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: kyb is decided by bridge",
+          "severity": "page",
+          "owner": "journeys/bridge-kyb-is-decided-by-bridge.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: kyb is decided by bridge:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: kyb is decided by bridge",
           "severity": "page",
           "owner": "journeys/bridge-kyb-is-decided-by-bridge.ts"
@@ -107647,10 +107889,30 @@
         }
       },
       {
+        "id": "verdict:bridge: open a bank account:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "bridge: open a bank account",
+          "severity": "page",
+          "owner": "journeys/bridge-open-a-bank-account.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: send money out:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: send money out",
+          "severity": "page",
+          "owner": "journeys/bridge-send-money-out.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: send money out:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: send money out",
           "severity": "page",
           "owner": "journeys/bridge-send-money-out.ts"
@@ -107667,10 +107929,30 @@
         }
       },
       {
+        "id": "verdict:bridge: start a kyb:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "bridge: start a kyb",
+          "severity": "page",
+          "owner": "journeys/bridge-start-a-kyb.ts"
+        }
+      },
+      {
         "id": "verdict:bridge: two kycs are each their own:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "bridge: two kycs are each their own",
+          "severity": "page",
+          "owner": "journeys/bridge-two-kycs-are-each-their-own.ts"
+        }
+      },
+      {
+        "id": "verdict:bridge: two kycs are each their own:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "bridge: two kycs are each their own",
           "severity": "page",
           "owner": "journeys/bridge-two-kycs-are-each-their-own.ts"
@@ -107687,10 +107969,30 @@
         }
       },
       {
+        "id": "verdict:claim expenses:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "claim expenses",
+          "severity": "page",
+          "owner": "journeys/claim-expenses.ts"
+        }
+      },
+      {
         "id": "verdict:companies are kept apart:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "companies are kept apart",
+          "severity": "page",
+          "owner": "journeys/companies-are-kept-apart.ts"
+        }
+      },
+      {
+        "id": "verdict:companies are kept apart:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "companies are kept apart",
           "severity": "page",
           "owner": "journeys/companies-are-kept-apart.ts"
@@ -107707,10 +108009,30 @@
         }
       },
       {
+        "id": "verdict:draft a journal entry:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "draft a journal entry",
+          "severity": "page",
+          "owner": "journeys/draft-a-journal-entry.ts"
+        }
+      },
+      {
         "id": "verdict:every weekday:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "every weekday",
+          "severity": "page",
+          "owner": "journeys/every-weekday.ts"
+        }
+      },
+      {
+        "id": "verdict:every weekday:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "every weekday",
           "severity": "page",
           "owner": "journeys/every-weekday.ts"
@@ -107727,10 +108049,30 @@
         }
       },
       {
+        "id": "verdict:expense claims stay in their company:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "expense claims stay in their company",
+          "severity": "page",
+          "owner": "journeys/expense-claims-stay-in-their-company.ts"
+        }
+      },
+      {
         "id": "verdict:give interview feedback:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "give interview feedback",
+          "severity": "page",
+          "owner": "journeys/give-interview-feedback.ts"
+        }
+      },
+      {
+        "id": "verdict:give interview feedback:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "give interview feedback",
           "severity": "page",
           "owner": "journeys/give-interview-feedback.ts"
@@ -107747,10 +108089,30 @@
         }
       },
       {
+        "id": "verdict:give performance feedback:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "give performance feedback",
+          "severity": "page",
+          "owner": "journeys/give-performance-feedback.ts"
+        }
+      },
+      {
         "id": "verdict:grade names are the company's:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "grade names are the company's",
+          "severity": "page",
+          "owner": "journeys/grade-names-are-the-companys.ts"
+        }
+      },
+      {
+        "id": "verdict:grade names are the company's:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "grade names are the company's",
           "severity": "page",
           "owner": "journeys/grade-names-are-the-companys.ts"
@@ -107767,10 +108129,30 @@
         }
       },
       {
+        "id": "verdict:hire an employee:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "hire an employee",
+          "severity": "page",
+          "owner": "journeys/hire-an-employee.ts"
+        }
+      },
+      {
         "id": "verdict:hire from a job opening:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "hire from a job opening",
+          "severity": "page",
+          "owner": "journeys/hire-from-a-job-opening.ts"
+        }
+      },
+      {
+        "id": "verdict:hire from a job opening:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "hire from a job opening",
           "severity": "page",
           "owner": "journeys/hire-from-a-job-opening.ts"
@@ -107787,10 +108169,30 @@
         }
       },
       {
+        "id": "verdict:keep the books:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "keep the books",
+          "severity": "page",
+          "owner": "journeys/keep-the-books.ts"
+        }
+      },
+      {
         "id": "verdict:leave balance:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "leave balance",
+          "severity": "page",
+          "owner": "journeys/leave-balance.ts"
+        }
+      },
+      {
+        "id": "verdict:leave balance:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "leave balance",
           "severity": "page",
           "owner": "journeys/leave-balance.ts"
@@ -107807,10 +108209,30 @@
         }
       },
       {
+        "id": "verdict:leave days:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "leave days",
+          "severity": "page",
+          "owner": "journeys/leave-days.ts"
+        }
+      },
+      {
         "id": "verdict:leave stays in its company:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "leave stays in its company",
+          "severity": "page",
+          "owner": "journeys/leave-stays-in-its-company.ts"
+        }
+      },
+      {
+        "id": "verdict:leave stays in its company:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "leave stays in its company",
           "severity": "page",
           "owner": "journeys/leave-stays-in-its-company.ts"
@@ -107827,10 +108249,30 @@
         }
       },
       {
+        "id": "verdict:make a job offer:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "make a job offer",
+          "severity": "page",
+          "owner": "journeys/make-a-job-offer.ts"
+        }
+      },
+      {
         "id": "verdict:mark attendance:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "mark attendance",
+          "severity": "page",
+          "owner": "journeys/mark-attendance.ts"
+        }
+      },
+      {
+        "id": "verdict:mark attendance:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "mark attendance",
           "severity": "page",
           "owner": "journeys/mark-attendance.ts"
@@ -107847,10 +108289,30 @@
         }
       },
       {
+        "id": "verdict:move an employee through the company:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "move an employee through the company",
+          "severity": "page",
+          "owner": "journeys/move-an-employee-through-the-company.ts"
+        }
+      },
+      {
         "id": "verdict:open a job:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "open a job",
+          "severity": "page",
+          "owner": "journeys/open-a-job.ts"
+        }
+      },
+      {
+        "id": "verdict:open a job:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "open a job",
           "severity": "page",
           "owner": "journeys/open-a-job.ts"
@@ -107867,10 +108329,30 @@
         }
       },
       {
+        "id": "verdict:overlapping leave:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "overlapping leave",
+          "severity": "page",
+          "owner": "journeys/overlapping-leave.ts"
+        }
+      },
+      {
         "id": "verdict:post a journal entry:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "post a journal entry",
+          "severity": "page",
+          "owner": "journeys/post-a-journal-entry.ts"
+        }
+      },
+      {
+        "id": "verdict:post a journal entry:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "post a journal entry",
           "severity": "page",
           "owner": "journeys/post-a-journal-entry.ts"
@@ -107887,10 +108369,30 @@
         }
       },
       {
+        "id": "verdict:promote an employee:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "promote an employee",
+          "severity": "page",
+          "owner": "journeys/promote-an-employee.ts"
+        }
+      },
+      {
         "id": "verdict:rate an appraisal:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "rate an appraisal",
+          "severity": "page",
+          "owner": "journeys/rate-an-appraisal.ts"
+        }
+      },
+      {
+        "id": "verdict:rate an appraisal:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "rate an appraisal",
           "severity": "page",
           "owner": "journeys/rate-an-appraisal.ts"
@@ -107907,10 +108409,30 @@
         }
       },
       {
+        "id": "verdict:reject an attendance request:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "reject an attendance request",
+          "severity": "page",
+          "owner": "journeys/reject-an-attendance-request.ts"
+        }
+      },
+      {
         "id": "verdict:reject an expense claim:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "reject an expense claim",
+          "severity": "page",
+          "owner": "journeys/reject-an-expense-claim.ts"
+        }
+      },
+      {
+        "id": "verdict:reject an expense claim:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "reject an expense claim",
           "severity": "page",
           "owner": "journeys/reject-an-expense-claim.ts"
@@ -107927,10 +108449,30 @@
         }
       },
       {
+        "id": "verdict:request attendance:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "request attendance",
+          "severity": "page",
+          "owner": "journeys/request-attendance.ts"
+        }
+      },
+      {
         "id": "verdict:run a separation:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "run a separation",
+          "severity": "page",
+          "owner": "journeys/run-a-separation.ts"
+        }
+      },
+      {
+        "id": "verdict:run a separation:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "run a separation",
           "severity": "page",
           "owner": "journeys/run-a-separation.ts"
@@ -107947,10 +108489,30 @@
         }
       },
       {
+        "id": "verdict:run an appraisal cycle:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "run an appraisal cycle",
+          "severity": "page",
+          "owner": "journeys/run-an-appraisal-cycle.ts"
+        }
+      },
+      {
         "id": "verdict:schedule an interview:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "schedule an interview",
+          "severity": "page",
+          "owner": "journeys/schedule-an-interview.ts"
+        }
+      },
+      {
+        "id": "verdict:schedule an interview:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "schedule an interview",
           "severity": "page",
           "owner": "journeys/schedule-an-interview.ts"
@@ -107967,10 +108529,30 @@
         }
       },
       {
+        "id": "verdict:set and track goals:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set and track goals",
+          "severity": "page",
+          "owner": "journeys/set-and-track-goals.ts"
+        }
+      },
+      {
         "id": "verdict:set up a chart of accounts:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up a chart of accounts",
+          "severity": "page",
+          "owner": "journeys/set-up-a-chart-of-accounts.ts"
+        }
+      },
+      {
+        "id": "verdict:set up a chart of accounts:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up a chart of accounts",
           "severity": "page",
           "owner": "journeys/set-up-a-chart-of-accounts.ts"
@@ -107987,10 +108569,30 @@
         }
       },
       {
+        "id": "verdict:set up a company:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set up a company",
+          "severity": "page",
+          "owner": "journeys/set-up-a-company.ts"
+        }
+      },
+      {
         "id": "verdict:set up a holiday list:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up a holiday list",
+          "severity": "page",
+          "owner": "journeys/set-up-a-holiday-list.ts"
+        }
+      },
+      {
+        "id": "verdict:set up a holiday list:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up a holiday list",
           "severity": "page",
           "owner": "journeys/set-up-a-holiday-list.ts"
@@ -108007,10 +108609,30 @@
         }
       },
       {
+        "id": "verdict:set up appraisal templates:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set up appraisal templates",
+          "severity": "page",
+          "owner": "journeys/set-up-appraisal-templates.ts"
+        }
+      },
+      {
         "id": "verdict:set up branches:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up branches",
+          "severity": "page",
+          "owner": "journeys/set-up-branches.ts"
+        }
+      },
+      {
+        "id": "verdict:set up branches:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up branches",
           "severity": "page",
           "owner": "journeys/set-up-branches.ts"
@@ -108027,10 +108649,30 @@
         }
       },
       {
+        "id": "verdict:set up cost centers:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set up cost centers",
+          "severity": "page",
+          "owner": "journeys/set-up-cost-centers.ts"
+        }
+      },
+      {
         "id": "verdict:set up departments and job titles:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up departments and job titles",
+          "severity": "page",
+          "owner": "journeys/set-up-departments-and-job-titles.ts"
+        }
+      },
+      {
+        "id": "verdict:set up departments and job titles:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up departments and job titles",
           "severity": "page",
           "owner": "journeys/set-up-departments-and-job-titles.ts"
@@ -108047,10 +108689,30 @@
         }
       },
       {
+        "id": "verdict:set up employment types:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set up employment types",
+          "severity": "page",
+          "owner": "journeys/set-up-employment-types.ts"
+        }
+      },
+      {
         "id": "verdict:set up expense types:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up expense types",
+          "severity": "page",
+          "owner": "journeys/set-up-expense-types.ts"
+        }
+      },
+      {
+        "id": "verdict:set up expense types:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up expense types",
           "severity": "page",
           "owner": "journeys/set-up-expense-types.ts"
@@ -108067,10 +108729,30 @@
         }
       },
       {
+        "id": "verdict:set up fiscal years:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set up fiscal years",
+          "severity": "page",
+          "owner": "journeys/set-up-fiscal-years.ts"
+        }
+      },
+      {
         "id": "verdict:set up grades:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up grades",
+          "severity": "page",
+          "owner": "journeys/set-up-grades.ts"
+        }
+      },
+      {
+        "id": "verdict:set up grades:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up grades",
           "severity": "page",
           "owner": "journeys/set-up-grades.ts"
@@ -108087,10 +108769,30 @@
         }
       },
       {
+        "id": "verdict:set up interview rounds:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set up interview rounds",
+          "severity": "page",
+          "owner": "journeys/set-up-interview-rounds.ts"
+        }
+      },
+      {
         "id": "verdict:set up kras and criteria:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up kras and criteria",
+          "severity": "page",
+          "owner": "journeys/set-up-kras-and-criteria.ts"
+        }
+      },
+      {
+        "id": "verdict:set up kras and criteria:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up kras and criteria",
           "severity": "page",
           "owner": "journeys/set-up-kras-and-criteria.ts"
@@ -108107,10 +108809,30 @@
         }
       },
       {
+        "id": "verdict:set up leave types:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "set up leave types",
+          "severity": "page",
+          "owner": "journeys/set-up-leave-types.ts"
+        }
+      },
+      {
         "id": "verdict:set up shift types:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "set up shift types",
+          "severity": "page",
+          "owner": "journeys/set-up-shift-types.ts"
+        }
+      },
+      {
+        "id": "verdict:set up shift types:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "set up shift types",
           "severity": "page",
           "owner": "journeys/set-up-shift-types.ts"
@@ -108127,6 +108849,16 @@
         }
       },
       {
+        "id": "verdict:take leave:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "take leave",
+          "severity": "page",
+          "owner": "journeys/take-leave.ts"
+        }
+      },
+      {
         "id": "verdict:transfer an employee:local",
         "kind": "verdict",
         "labels": {
@@ -108137,10 +108869,30 @@
         }
       },
       {
+        "id": "verdict:transfer an employee:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "transfer an employee",
+          "severity": "page",
+          "owner": "journeys/transfer-an-employee.ts"
+        }
+      },
+      {
         "id": "verdict:weekly offs:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
+          "journey": "weekly offs",
+          "severity": "page",
+          "owner": "journeys/weekly-offs.ts"
+        }
+      },
+      {
+        "id": "verdict:weekly offs:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
           "journey": "weekly offs",
           "severity": "page",
           "owner": "journeys/weekly-offs.ts"
@@ -109204,5 +109956,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "6bcd59ef205707fc6f0a3ffebf40230d6cfd1c801ceb2a658fc44d1b84aae373"
+  "digest": "23de634b54e301229c84cc3fe57b7531515fe62007f66a9a3b4532dae744b505"
 }
