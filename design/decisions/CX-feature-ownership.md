@@ -42,12 +42,14 @@ judged a second time in payroll, and every later feature that posts would do the
 6. **What the refusal says.** One problem per operation and thing it may not write, opened by the file that declares the operation
    (after the mount's file, as every problem of a mounted feature is): `the feature <writer> writes <thing> in <operation>
    (<how>), and <thing> is the feature <owner>'s: a feature writes only its own things.` `<how>` names every way that operation writes
-   that thing, `move <key>` and `step <key>`, joined by "and". Then either `Run one of <owner>'s operations that write it inside this
-   commit instead, as a step (Blueprint.step.operation): <operations>`, listing, sorted, every operation of the owner's mount in the
-   model that writes the thing by any way of call 2 (one the app's mount omits isn't in the model, so it isn't offered), or, when there
+   that thing, `move <key>` and `step <key>`, its move first and then its steps in the order declared, joined by " and ". Then either `Run one of <owner>'s operations that write it inside this
+   commit instead, as a step (Blueprint.step.operation): <operations>`, listing every operation of the owner's mount in the model that
+   writes the thing by any way of call 2 (a caller's, the keeper's, the runtime's), joined by ", " in plain code-unit order (one the
+   app's mount omits isn't in the model, so it isn't offered, and the writer's own operations never are), or, when there
    is none, `<owner> offers no operation that writes it to run inside this commit (Blueprint.step.operation): ask its owner for one`.
-   Every name is the model's: the mount's name and the thing's and operation's names under it. An installed feature that isn't mounted
-   is never read, so it refuses nothing.
+   Every name is the model's: the mount's name and the thing's and operation's names under it. Every mounted feature is judged against
+   every other, whatever order they are mounted in or need each other. An installed feature that isn't mounted is never read, and an
+   operation the app's mount omits isn't in the app, so neither refuses anything.
 
 ## Interim
 
@@ -57,10 +59,11 @@ in the app. The model gains no field for this: an operation's `from` and a thing
 
 ## Checks
 
-- `packages/compiler/src/modules/mounts/ownership-refused.test.ts` (12): each way of writing, refused with what call 6 says; a feature
-  that doesn't need the owner; an unmounted feature; other mount names; an omitted operation.
-- `packages/compiler/src/modules/mounts/ownership.test.ts` (5): a feature's own writes by every way, reads and links, the app's writes
-  and the allowed way compile, each beside the one wrong write, refused. The scratch books are `mounts/ownership-testing.ts`.
+- `packages/compiler/src/modules/mounts/ownership-refused.test.ts` (14): each way of writing, refused with call 6's sentence word for
+  word; a first-mounted feature writing a later one's thing; a feature that doesn't need the owner; an unmounted feature; other mount
+  names; omitted operations of the owner.
+- `packages/compiler/src/modules/mounts/ownership.test.ts` (6): a feature's own writes by every way, reads and links, the app's writes,
+  the allowed way and an omitted writer compile, each beside the one wrong write, refused. The scratch books are `mounts/ownership-testing.ts`.
 - `e2e/m2/16-feature-ownership.test.ts` (m2 check 16): the `ortho check` and `ortho generate` doors, in a copy of acme with two
   installed feature packages.
 

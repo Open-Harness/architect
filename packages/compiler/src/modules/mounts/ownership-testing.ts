@@ -41,17 +41,24 @@ export const operation = (thing: Thing, spec: { readonly move?: unknown; readonl
 
 /**
  * The books, built fresh for each check, so no declaration is shared between two compilations.
- * The ledger's operations that write a line are `gl-entry.post`, `gl-entry.reverse` and `journal-entry.submit` (its step writes lines);
- * `gl-entry.get` (a read), `gl-entry.preview` (reads only) and `journal-entry.draft` (writes its own entry) don't write a line.
+ * The ledger writes a line by every way: `gl-entry.post` (a creating move), `gl-entry.reverse` (a move), `gl-entry.archive` (the keeper's move),
+ * `gl-entry.touch` (a step naming nothing), `gl-entry.sweep` (the runtime's, on its own event, a step naming the line) and
+ * `journal-entry.submit` (a step on another of its things). `gl-entry.get` (a read), `gl-entry.preview` (reads only) and
+ * `journal-entry.draft` (writes its own entry) don't write a line.
  */
 export const books = () => {
   // ---- ledger ----
-  const GlEntry = Blueprint.thing({ description: "One line of the general ledger.", fields: { id: id("gle"), memo }, code: "GL" });
+  const GlEntry = Blueprint.thing({ description: "One line of the general ledger.", fields: { id: id("gle"), memo, postedAt: Blueprint.instant() }, code: "GL" });
   const Posted = Blueprint.event({ id: GlEntry.fields.id });
   const Reversed = Blueprint.event({ id: GlEntry.fields.id });
+  const Archived = Blueprint.event({ id: GlEntry.fields.id });
   const glMachine = Blueprint.machine(GlEntry, {
-    states: ["posted", "reversed"],
-    moves: { post: { from: [], to: "posted", emits: Posted }, reverse: { from: ["posted"], to: "reversed", emits: Reversed } },
+    states: ["posted", "reversed", "archived"],
+    moves: {
+      post: { from: [], to: "posted", emits: Posted },
+      reverse: { from: ["posted"], to: "reversed", emits: Reversed },
+      archive: { from: ["posted"], to: "archived", emits: Archived, by: Blueprint.time.after("postedAt", "1 year") },
+    },
     notFrom: { exit: 70 },
   });
   const JournalEntry = Blueprint.thing({ description: "A voucher of balanced lines.", fields: { id: id("jen"), memo }, code: "JE" });
@@ -64,9 +71,13 @@ export const books = () => {
   });
   const Account = Blueprint.thing({ description: "An account in the chart.", fields: { id: id("acc"), memo }, code: "AC" });
   const ledger = {
-    GlEntry, Posted, Reversed, glMachine, JournalEntry, Drafted, Submitted, jeMachine, Account,
+    GlEntry, Posted, Reversed, Archived, glMachine, JournalEntry, Drafted, Submitted, jeMachine, Account,
     post: operation(GlEntry, { move: glMachine.moves.post, steps: { lines: Blueprint.step.database() } }),
     reverse: operation(GlEntry, { move: glMachine.moves.reverse }),
+    // The ledger writes its line by every way too: the keeper's move, a bare step, and a step the runtime runs on its own event.
+    archive: operation(GlEntry, { move: glMachine.moves.archive, allowed: [Blueprint.keeper] }),
+    touch: operation(GlEntry, { steps: { save: Blueprint.step.database() } }),
+    sweep: operation(GlEntry, { allowed: [Blueprint.system], on: [Blueprint.on(Reversed, (e) => ({ id: e.id }))], steps: { save: Blueprint.step.database({ writes: [GlEntry] }) } }),
     get: Blueprint.read(GlEntry, { by: "id", fields: ["id", "memo", "state"], allowed: [Blueprint.signedIn] }),
     preview: operation(GlEntry, { steps: { look: Blueprint.step.database({ writes: [] }) } }),
     draft: operation(JournalEntry, { move: jeMachine.moves.draft }),
@@ -123,10 +134,13 @@ const baseFiles = (b: Books, verbs: ReturnType<Books["payrollVerbs"]>): Record<N
   return {
     ledger: [
       file("things/gl-entry/thing.js", { GlEntry: l.GlEntry }),
-      file("things/gl-entry/events.js", { Posted: l.Posted, Reversed: l.Reversed }),
+      file("things/gl-entry/events.js", { Posted: l.Posted, Reversed: l.Reversed, Archived: l.Archived }),
       file("things/gl-entry/machine.js", { machine: l.glMachine }),
       file("things/gl-entry/verbs/post.js", { default: l.post }),
       file("things/gl-entry/verbs/reverse.js", { default: l.reverse }),
+      file("things/gl-entry/verbs/archive.js", { default: l.archive }),
+      file("things/gl-entry/verbs/touch.js", { default: l.touch }),
+      file("things/gl-entry/verbs/sweep.js", { default: l.sweep }),
       file("things/gl-entry/verbs/get.js", { default: l.get }),
       file("things/gl-entry/verbs/preview.js", { default: l.preview }),
       file("things/journal-entry/thing.js", { JournalEntry: l.JournalEntry }),
@@ -213,6 +227,32 @@ export const MOUNTED: AppSpec["mounts"] = { ledger: "ledger", payroll: "payroll"
 /** Where a planted file of a package is, as a problem names it. */
 export const at = (name: Name, path: string) => `@fixture/${name}/blueprint/${path}`;
 
-/** The ledger's operations that write a line, and the ones that don't, as the model names them under the mount `ledger`. */
-export const LINE_WRITERS = ["gl-entry.post", "gl-entry.reverse", "journal-entry.submit"] as const;
-export const NOT_LINE_WRITERS = ["gl-entry.get", "gl-entry.preview", "journal-entry.draft"] as const;
+/** The ledger's operations that write a line, as the model names them under the mount `ledger`, in code-unit order. */
+export const LINE_WRITERS = ["gl-entry.archive", "gl-entry.post", "gl-entry.reverse", "gl-entry.sweep", "gl-entry.touch", "journal-entry.submit"] as const;
+/** The ledger's operations that write a journal entry. */
+export const ENTRY_WRITERS = ["journal-entry.draft", "journal-entry.submit"] as const;
+/** Payroll's operations that write a slip: its own four, and the pay run's, whose step writes slips. */
+export const SLIP_WRITERS = ["payroll-entry.start", "salary-slip.draft", "salary-slip.lapse", "salary-slip.settle", "salary-slip.submit"] as const;
+
+export interface Refusal {
+  /** The mount that brought the file, and the file under the package's blueprint folder. */
+  readonly mount: string;
+  readonly pkg: Name;
+  readonly path: string;
+  readonly feature: string;
+  readonly operation: string;
+  /** Every way it writes the thing: its move, then its steps in the order declared. */
+  readonly how: ReadonlyArray<string>;
+  readonly thing: string;
+  readonly owner: string;
+  /** Every operation of the owner's mount, in the model, that writes the thing. */
+  readonly offers: ReadonlyArray<string>;
+}
+
+/** The whole refusal, word for word, as CX-feature-ownership call 6 says it: built from the fixture, never read from what it judges. */
+export const refusal = (r: Refusal): string =>
+  `blueprint/features/${r.mount}.ts: ${at(r.pkg, r.path)}: the feature ${r.feature} writes ${r.thing} in ${r.operation} (${r.how.join(" and ")}), ` +
+  `and ${r.thing} is the feature ${r.owner}'s: a feature writes only its own things. ` +
+  (r.offers.length > 0
+    ? `Run one of ${r.owner}'s operations that write it inside this commit instead, as a step (Blueprint.step.operation): ${[...r.offers].sort().join(", ")}`
+    : `${r.owner} offers no operation that writes it to run inside this commit (Blueprint.step.operation): ask its owner for one`);

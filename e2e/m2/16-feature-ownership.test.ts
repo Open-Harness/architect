@@ -194,18 +194,19 @@ const app = (variant: Variant): App => {
 
 const OWNERSHIP = "writes only its own things";
 
-/** `ortho check` and `ortho generate` both refuse the project, and the check says, on one line, who writes what and what to run instead. */
-const refused = (variant: "step" | "verb", file: string, s: { readonly operation: string; readonly how: string }) => {
+/** `ortho check` and `ortho generate` both refuse the project, and the check says, on one line, word for word, who writes what and what to run instead (call 6). */
+const refused = (variant: "step" | "verb", path: string, s: { readonly operation: string; readonly how: string }) => {
   const copy = app(variant);
   const checked = run(copy.root, "check");
   expect(checked.status, `ortho check refuses the ${variant} variant:\n${checked.out}`).not.toBe(0);
   expect(checked.out).toMatch(/model ✘/);
+  const file = `@fixture/payroll/blueprint/${path}`;
   const lines = checked.out.split("\n").filter((l) => l.includes(file));
-  expect(lines, `one line of ortho check names ${file}:\n${checked.out}`).toHaveLength(1);
-  const said = lines[0]!;
-  for (const part of ["feature payroll", s.operation, s.how, "gl-entry", "feature ledger", "gl-entry.post", "Blueprint.step.operation"]) expect(said, `names ${part}`).toContain(part);
-  // The ledger's read doesn't write a line, so it isn't offered.
-  expect(said).not.toContain("gl-entry.get");
+  // The ledger's only operation that writes a line is its post; its read, get, isn't offered.
+  expect(lines, `one line of ortho check names ${file}:\n${checked.out}`).toEqual([
+    `  blueprint/features/payroll.ts: ${file}: the feature payroll writes gl-entry in ${s.operation} (${s.how}), and gl-entry is the feature ledger's: a feature writes only its own things. ` +
+    `Run one of ledger's operations that write it inside this commit instead, as a step (Blueprint.step.operation): gl-entry.post`,
+  ]);
   const generated = run(copy.root, "generate");
   expect(generated.status, `ortho generate refuses the ${variant} variant:\n${generated.out}`).not.toBe(0);
   expect(generated.out).toContain(file);
@@ -223,8 +224,8 @@ const compiles = (variant: "own" | "inner") => {
 
 describe("16 ortho check refuses a feature writing another feature's thing", () => {
   it("refuses payroll writing the ledger's line by a step and by a verb on the line, and takes payroll's own writes and the app's", () => {
-    refused("step", "@fixture/payroll/blueprint/things/salary-slip/verbs/submit.ts", { operation: "salary-slip.submit", how: "step lines" });
-    refused("verb", "@fixture/payroll/blueprint/things/gl-entry/verbs/accrue.ts", { operation: "gl-entry.accrue", how: "move post" });
+    refused("step", "things/salary-slip/verbs/submit.ts", { operation: "salary-slip.submit", how: "step lines" });
+    refused("verb", "things/gl-entry/verbs/accrue.ts", { operation: "gl-entry.accrue", how: "move post and step save" });
     compiles("own");
   }, 240_000);
 

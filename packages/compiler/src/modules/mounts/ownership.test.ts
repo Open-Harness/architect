@@ -18,7 +18,7 @@ describe("#1134: a feature writes its own things, reads anyone's, and writes ano
   it("compiles a feature writing its own things by every way: a creating move, a move, a step, the keeper, a reaction, two of its things in one step", async () => {
     const b = books();
     const m = await modelOf(b, { mounts: MOUNTED });
-    for (const op of ["salary-slip.draft", "salary-slip.submit", "salary-slip.lapse", "salary-slip.settle", "payroll-entry.start", "journal-entry.submit", "gl-entry.post"]) {
+    for (const op of ["salary-slip.draft", "salary-slip.submit", "salary-slip.lapse", "salary-slip.settle", "payroll-entry.start", "journal-entry.submit", "gl-entry.post", "gl-entry.archive", "gl-entry.touch", "gl-entry.sweep"]) {
       expect(m.operations[op], `${op} is in the model`).toBeDefined();
     }
     expect(m.operations["payroll-entry.start"]?.steps["slips"]?.writes).toEqual(["payroll-entry", "salary-slip"]);
@@ -87,5 +87,14 @@ describe("#1134: a feature writes its own things, reads anyone's, and writes ano
     expect(Object.keys(m.things).filter((t) => t.startsWith("books-") || t.startsWith("wages-")).sort()).toEqual(["books-account", "books-gl-entry", "books-journal-entry", "wages-payroll-entry", "wages-salary-slip"]);
     const wrong = books();
     await refusedAt([wrong, { mounts, verbs: wrong.payrollVerbs({ settle: { post: Blueprint.step.database({ writes: [wrong.ledger.GlEntry] }) } }) }], at("payroll", "things/salary-slip/verbs/settle.js"));
+  });
+
+  it("never judges an operation the app's mount omits: it isn't in the app; kept, the same operation is refused", async () => {
+    const b = books();
+    const verbs = b.payrollVerbs({ submit: { post: Blueprint.step.database({ writes: [b.ledger.GlEntry] }) } });
+    const m = await modelOf(b, { mounts: MOUNTED, verbs, edits: { payroll: (p) => [p.omit(verbs.submit)] } });
+    expect(m.operations["salary-slip.submit"]).toBeUndefined();
+    const wrong = books();
+    await refusedAt([wrong, { mounts: MOUNTED, verbs: wrong.payrollVerbs({ submit: { post: Blueprint.step.database({ writes: [wrong.ledger.GlEntry] }) } }) }], at("payroll", "things/salary-slip/verbs/submit.js"));
   });
 });
