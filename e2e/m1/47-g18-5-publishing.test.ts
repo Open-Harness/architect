@@ -9,7 +9,8 @@
 //      `files/generated/model/model.json` (what `tools/e2e/starter.sh` copies from `examples/starter`). A `refused:` line naming `@orthograph/preset` and the word "starter". Judged on the tarball,
 //      not on the disk: a `files/` folder that `package.json`'s `files` leaves out is as missing as none.
 //  (d) THE REPOSITORY: every public package is at one version, `0.1.0-next.<n>`; the real dry run lists the preset with the starter's files in its tarball, packed there from `examples/starter`
-//      (the copy is made when it is packed, not checked in: the dry run leaves no `packages/preset/files` behind that it did not find).
+//      (the copy is made when it is packed, not checked in: the dry run leaves no `packages/preset/files` behind that it did not find). The dry run BUILDS the publishable packages first (the lead's call), so the
+//      repository run is clean (exit 0, no `refused:`) and the cli's and the compiler's blocks list `dist/main.js`; and `pnpm pack` of the preset itself puts the starter in the tarball (checked with `tar -tzf`).
 //  (e) THE PRESET'S WORKSPACE EXEMPTS `orthograph` AND `@orthograph/*` FROM pnpm's minimum release age: the pnpm-workspace.yaml `Starter.write` leaves lists both under `minimumReleaseAgeExclude`,
 //      keeps what Nx wrote there, adds each once, adds nothing else, and does not turn the age off.
 // Every refusal is one line on stdout or stderr that starts `refused:`; the verdict is exit 1; the blocks of every package are still printed (as check 44 says). Nothing here says how the command
@@ -277,9 +278,32 @@ describe("47 (d) the repository: a real version, and the starter packed into the
     expect(starterFiles.filter((f) => f.startsWith("files/")).length).toBeGreaterThan(0);
     expect(block!.files.filter((f) => f.startsWith("files/")).length, "the preset carries a starter").toBeGreaterThan(0);
   });
+  it("the real dry run builds first and is clean: exit 0, no `refused:` line, and the cli's and the compiler's blocks list the `dist/main.js` their `publishConfig.bin` names, not the source file", () => {
+    const ran = realRun();
+    expect(ran.status, lines(ran)).toBe(0);
+    expect(refusals(ran), lines(ran)).toEqual([]);
+    for (const name of ["@orthograph/cli", "@orthograph/compiler"]) {
+      const block = blocks(ran.out).find((b) => b.name === name);
+      expect(block, `${name} is not listed`).toBeDefined();
+      expect(block!.files, name).toContain("dist/main.js");
+      expect(block!.files, name).not.toContain("src/main.ts");
+    }
+  });
   it("a dry run sends nothing and leaves nothing: `packages/preset/files` is as it was found", () => {
     realRun();
     expect(existsSync(presetFiles)).toBe(before);
+  });
+  it("the preset, packed by pnpm as a publish would pack it, holds the starter in the tarball itself (the copy is made when it is packed)", () => {
+    const out = mkdtempSync(join(realpathSync(tmpdir()), "ortho-g18-5-real-"));
+    roots.push(out);
+    try {
+      const done = spawnSync("pnpm", ["pack", "--pack-destination", out], { cwd: join(repo, "packages/preset"), encoding: "utf8", env: quiet(), timeout: 300_000 });
+      expect(done.status, `${done.stdout}${done.stderr}`.slice(0, 300)).toBe(0);
+      const tgz = join(out, readdirSync(out).find((f) => f.endsWith(".tgz")) ?? "none.tgz");
+      const listed = spawnSync("tar", ["-tzf", tgz], { encoding: "utf8" }).stdout.split("\n").filter(Boolean).map((f) => f.replace(/^package\//, ""));
+      expect(starterFiles.filter((f) => !listed.includes(f)).slice(0, 5)).toEqual([]);
+      expect(listed.filter((f) => f.startsWith("files/") && !starterFiles.includes(f))).toEqual([]);
+    } finally { if (!before) rmSync(presetFiles, { recursive: true, force: true }); }
   });
 });
 

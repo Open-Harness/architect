@@ -1,4 +1,4 @@
-# Goal 18, slice 5 (#1063, publishing that works): check 47 was written before the build. Red until the version, the starter packed into the preset, the release-age exemption and the dry run's three refusals land (design/goals/18-framework.md, slice 5).
+# Goal 18, slice 5 (#1063, publishing that works): check 47 was written before the build. Red until the version, the starter packed into the preset, the release-age exemption, the build-first dry run and its three refusals land (design/goals/18-framework.md, slice 5).
 m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > in dependencies: exit 1, one refusal naming the package and the dependency, and no other package
 m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > in devDependencies: exit 1, one refusal naming the package and the dependency, and no other package
 m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > in optionalDependencies: exit 1, one refusal naming the package and the dependency, and no other package
@@ -16,6 +16,10 @@ m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > ev
 m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > no `files/` at all
 m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > the starter is on the disk but `package.json`'s `files` leaves it out of the tarball
 m1/47-g18-5-publishing.test.ts > 47 (d) the repository: a real version, and the starter packed into the preset > every public package is at one version, 0.1.0-next.<n>, and not 0.0.0
+m1/47-g18-5-publishing.test.ts > 47 (d) the repository: a real version, and the starter packed into the preset > the preset's tarball holds nothing of the starter's that the starter does not have (no stale copy, no extras under files/)
+m1/47-g18-5-publishing.test.ts > 47 (d) the repository: a real version, and the starter packed into the preset > the preset, packed by pnpm as a publish would pack it, holds the starter in the tarball itself (the copy is made when it is packed)
+m1/47-g18-5-publishing.test.ts > 47 (d) the repository: a real version, and the starter packed into the preset > the real dry run builds first and is clean: exit 0, no `refused:` line, and the cli's and the compiler's blocks list the `dist/main.js` their `publishConfig.bin` names, not the source file
+m1/47-g18-5-publishing.test.ts > 47 (d) the repository: a real version, and the starter packed into the preset > the real dry run lists the preset with the starter's every file in its tarball
 m1/47-g18-5-publishing.test.ts > 47 (e) the preset's workspace exempts orthograph and @orthograph/* from the minimum release age > a fresh workspace lists exactly `orthograph` and `@orthograph/*`
 m1/47-g18-5-publishing.test.ts > 47 (e) the preset's workspace exempts orthograph and @orthograph/* from the minimum release age > one Nx already wrote is kept, and both are added to it, each once
 m1/47-g18-5-publishing.test.ts > 47 (e) the preset's workspace exempts orthograph and @orthograph/* from the minimum release age > one that already lists them is not given them twice, and the minimum age is not turned off
