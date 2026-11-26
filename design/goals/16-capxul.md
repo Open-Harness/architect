@@ -32,6 +32,7 @@ slices:
   - "11 · The CRM, an optional piece picked when a Capxul is built, off the path (after 9)"
   - "12 · Budgets: the accounting side; the on-chain module deployed outside the framework (after 7)"
   - "13 · Capxul's journeys run in CI"
+  - "14 · Capxul as pieces: today's things moved into feature plugins a business picks when its Capxul is built (after 6)"
 ---
 # Goal 16: Capxul core, rebuilt on Orthograph
 
@@ -100,6 +101,7 @@ issues already have.
 | 11 | The CRM, 40 Frappe CRM record types, as an optional piece a business picks when its Capxul is built; off the critical path (K44). Adding it to a deployed Capxul is a rebuild with a forward migration (CX-composable-pieces) | 9 |
 | 12 | Budgets, the accounting side: budgets against accounts and cost centres, checked as money is spent. The on-chain module is deployed outside the framework when it is wanted (K44, call 8) | 7 |
 | 13 | Capxul's journeys run in CI: a job that proves `examples/capxul`, so its green is CI's word (K44, section 3) | — |
+| 14 | Capxul as pieces (`decisions/CX-composable-pieces.md`): today's things moved, root first, into feature plugins in `examples/capxul/plugins/`, each move a G12 pair that keeps names and wire; first `company`, then `ledger` and `people`, then the rest in parallel lanes; the bank-account flip as its own pair | 6 |
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
@@ -111,6 +113,9 @@ Aaron's calls of 25 November (K44, section 3): two things are built, the Orthogr
 later; HR and payroll are Capxul's core offering; every money movement is double entry in ERPNext's shapes. So, in order:
 
 1. **Slice 13, Capxul's journeys in CI,** so its green is CI's word.
+1a. **Slice 14's first two moves,** `company`, then `ledger` and `people`, into their pieces (CX-composable-pieces). The
+   currency slice (CX-money-global-payroll) comes after them and before slice 7's invoices; the rest of slice 14 runs
+   in parallel lanes beside the path.
 2. **Slice 7, the books, double entry:** the chart of accounts, fiscal years, cost centres, journal entries and the
    general ledger first (their checks are #1017), then parties, payments, sales and purchase invoices, period closing,
    and the trial balance, profit and loss and balance sheet.
