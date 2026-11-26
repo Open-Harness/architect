@@ -34,7 +34,8 @@ const compile = (): ReadonlyArray<Diagnostic> => (compiled ??= (() => {
 })());
 const errorsIn = (file: string) => compile().filter((d) => d.file === join(fixture, file));
 const shown = (d: Diagnostic) => `${String(d.line)}:${String(d.column)}: ${d.text.slice(0, 600)}`;
-const accepted = () => [...errorsIn("ledger.ts"), ...errorsIn("accepts.ts")].map(shown);
+/** The fixture compiles against the framework's own types: an error in them (or anywhere outside the fixture) is no clean compile. */
+const accepted = () => [...compile().filter((d) => !d.file.startsWith(`${fixture}/`)), ...errorsIn("ledger.ts"), ...errorsIn("accepts.ts")].map(shown);
 
 describe("#1079: a handler lets its inner operations' refusals through, at any depth, and nothing else", () => {
   it("compiles with no cast: steps.<inner>(payload) one and two deep, each refusal at any depth refused by the handler itself, and each runner's refusals", { timeout: 60_000 }, () => {
@@ -48,9 +49,11 @@ describe("#1079: a handler lets its inner operations' refusals through, at any d
   const refusals = readdirSync(join(fixture, "refuses")).filter((f) => f.endsWith(".ts")).sort();
   it("has every refusal the table names", () => {
     expect(refusals).toEqual([
-      "draft-from-its-outer.ts", "pay-other-operation.ts", "pay-plain-failure.ts", "pay-stranger.ts", "pay-wrong-answer.ts", "pay-wrong-payload.ts",
-      "post-from-its-outer.ts", "runner-from-its-outer.ts", "runner-not-its-inner.ts", "runner-stranger.ts", "split-not-its-step.ts",
-      "split-sibling-outer.ts", "split-undeclared-step.ts",
+      "close-stranger.ts", "draft-from-its-outer.ts", "draft-not-found.ts", "pay-answer-missing.ts", "pay-other-operation.ts",
+      "pay-payload-extra.ts", "pay-payload-missing.ts", "pay-payload-none.ts", "pay-plain-failure.ts", "pay-stranger.ts", "pay-wrong-answer.ts",
+      "pay-wrong-payload.ts", "post-from-its-outer.ts", "post-inner-step.ts", "runner-answer-typed.ts", "runner-answer-undeclared.ts",
+      "runner-deep-stranger.ts", "runner-from-its-outer.ts", "runner-not-its-inner.ts", "runner-stranger.ts", "split-not-its-step.ts",
+      "split-sibling-outer.ts", "split-undeclared-step.ts", "submit-stranger.ts", "submit-wrong-answer.ts",
     ]);
   });
   for (const file of refusals) {
