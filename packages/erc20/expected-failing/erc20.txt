@@ -1,4 +1,6 @@
 # #1162 (A2, the erc20 adapter): red until the build lands. The builder deletes each line as its check goes green.
-src/modules/erc20/erc20.test.ts > the Transfer event source > decodes a Transfer log to its typed arguments and where it was mined
-src/modules/erc20/erc20.test.ts > the Transfer event source > is the standard Transfer event, at the token's address, from the block asked
-src/modules/erc20/erc20.test.ts > the Transfer event source > refuses a log that is not this token's Transfer: an Approval, or a Transfer of another contract
+test/erc20.test.ts > the ERC20 contract > carries the test token's creation code, for its stand-in
+test/erc20.test.ts > the Transfer event source > decodes a Transfer log to its typed arguments and where it was mined
+test/erc20.test.ts > the Transfer event source > is the standard Transfer event, at the token's address, from the block asked
+test/erc20.test.ts > the Transfer event source > refuses a log a reorg removed, one not yet mined, and one missing its indexed topics
+test/erc20.test.ts > the Transfer event source > refuses a log that is not this token's Transfer: an Approval, or a Transfer of another contract

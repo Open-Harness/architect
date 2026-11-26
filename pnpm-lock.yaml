@@ -597,6 +597,9 @@ importers:
       '@orthograph/language-effect':
         specifier: workspace:*
         version: link:../language-effect
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
 
   packages/generators:
     dependencies:
