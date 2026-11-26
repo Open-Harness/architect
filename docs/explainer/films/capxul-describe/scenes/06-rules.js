@@ -1,11 +1,11 @@
-// Sheet 5. How a budget behaves: its machine, with a move made by time; then roles and rules said as data, and the owners together.
+// Sheet 6. How a budget behaves: its machine, with a move made by time; then roles and a rule, said as data.
 Film.scene("rules", {
-  step: "describe",
+  step: "rules",
   html: (D) => `<style>
       #scene-rules .node { position: absolute; top: 824px; height: 62px; width: 220px; display: grid; place-items: center; border: 2px solid var(--paper); font-family: var(--mono); font-size: 24px; background: var(--bg2); }
       #scene-rules .both { left: 96px; top: 730px; display: flex; gap: 14px; align-items: center; } #scene-rules .both .kpill { font-family: var(--sans); font-size: 26px; color: var(--paper); padding: 8px 18px; }
     </style>
-    <div class="head"><div class="eyebrow">Describe · how it behaves</div><div class="hl">A machine, and who may move it.</div></div>
+    <div class="head"><div class="eyebrow">Describe · how a budget behaves</div><div class="hl">A machine, and who may move it.</div></div>
     ${Kit.ed(D, { id: "e-mach", file: "blueprint/things/budget/machine.ts", x: 96, y: 262, w: 1728, tag: '<span class="tag">you write</span>' })}
     <svg class="ink mach" viewBox="0 0 1920 1080"><circle class="dot fillpaper" cx="250" cy="855" r="9"/>
       <path class="v0" d="M265 855H424"/><path class="h0 fillpaper" d="M438 855l-16-8v16z"/><path class="v1" d="M658 855H946"/><path class="h1 fillpaper" d="M960 855l-16-8v16z"/>
@@ -28,6 +28,5 @@ Film.scene("rules", {
     s.focus(bb, [L(br, /export const holder/) - 1, L(br, /export const holder/)], c("m3", "holder")); s.focus(tb, [L(tr, /export const owner /) - 1, L(tr, /export const owner /) + 3], c("m3", "An owner"));
     s.in(".both", c("m4", "data") - 0.2); s.focus(bb, null, c("m4")); s.focus(tb, null, c("m4"));
     s.focus(bb, [L(br, /withinLimit/) - 1, L(br, /withinLimit/) + 3], c("m5", "rules")); s.focus(tb, [L(tr, /export const owner /), L(tr, /export const owner /)], c("m5", "rules"), 0.01); s.to(tb, { opacity: 0.35, duration: 0.3 }, c("m5", "rules"));
-    s.to(tb, { opacity: 1, duration: 0.3 }, c("m6")); s.to(bb, { opacity: 0.35, duration: 0.3 }, c("m6")); s.focus(tb, [L(tr, /export const owners/) - 1, L(tr, /export const owners/)], c("m6", "owners together"));
   },
 });
