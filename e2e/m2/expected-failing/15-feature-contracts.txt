@@ -1,0 +1,4 @@
+# #1133 (CX-feature-contracts): `ortho generate` can't load a feature that declares `Blueprint.contract`, so no filler runs in its caller's commit at any door.
+# Clears with #1133's build.
+m2/15-feature-contracts.test.ts > 15 a contract one feature declares and another fills runs in the caller's commit, at every door, on D1 > filled, every door answers the filler's output and the slip and its tax line land together; the filler's refusal is the operation's and writes nothing
+m2/15-feature-contracts.test.ts > 15 a contract one feature declares and another fills runs in the caller's commit, at every door, on D1 > with the filler installed and not mounted, the app builds and a slip has no tax and no tax line; with the contract required, check refuses the app
