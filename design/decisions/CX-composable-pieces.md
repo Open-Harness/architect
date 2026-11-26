@@ -225,8 +225,8 @@ link (L), in-commit call (I), event (E), adapter (A).
 **Payroll, payments and the ledger** (agreed with the money and global payroll designer, CX-money-global-payroll).
 Payroll calculates gross to net and posts its accrual through `ledger.post` in its own commit (payroll payable, party
 the worker); it never writes ledger lines and never moves money. A payable is the ledger's outstanding against a party,
-not a record of its own. `payments` records money moved and settles outstandings; a rail (`bridge-accounts`, later
-the Safe) moves the money and records through `payments`, and without one the company moves it outside Capxul. The ledger owns the lines, both amounts on each and revaluation; `rates` owns the rates.
+not a record of its own. A rail moves money; `payments` records it and settles outstandings. The rails are
+`bridge-accounts` and later the Safe; without one the company moves the money and Capxul records it. The ledger owns the lines, both amounts on each and revaluation; `rates` owns the rates.
 
 **Rules every contract keeps.** A piece writes only its own things, except through an in-commit call its owner offers
 (gap 4 makes `check` say so). A core piece never links to an optional one: when a core record must know about an
