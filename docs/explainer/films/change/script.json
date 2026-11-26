@@ -1,0 +1,170 @@
+{
+ "title": "Change it, months later",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Rule",
+  "Stale",
+  "Check",
+  "Red",
+  "Who"
+ ],
+ "about": "Every line of code in this film is read from examples/plugged-in, and every line of terminal output is replayed from docs/manual/captures, recorded by running the commands for real.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "pictures": {
+  "carries": "The row of seven operations, one dot each: all green after the full proof, all amber when the rule goes, and still not green at the end. It returns on every sheet.",
+  "rule": "You and the designer. An editor on blueprint/things/handle/invariants.ts with the six lines of oneNamePerPerson struck out, replaying captures/change-diff.txt; above it the seven dots, green, from captures/change-impact-before.txt.",
+  "stale": "Your agent. A terminal replays captures/change-impact.txt line by line, and as the stale line prints the seven dots turn amber together and the proven count drops to none.",
+  "check": "Your agent. A terminal replays captures/change-check.txt with its three parts held open: types, drift and changes; an editor beside it shows the line of src/link/add.ts that read through the rule; then captures/change-generate.txt prints its nine files and the drift part clears.",
+  "red": "Your agent, then the author's page. A terminal replays captures/change-prove-changed.txt (all seven chosen, then the build failing), a card marked staged for the stand-in, then captures/change-prove.txt at the journey claim a handle, six of eight, beside the step from journeys/claim-a-handle.ts that says the old rule.",
+  "who": "The cast in a row with Kit.who: you, the designer, the author, the builder, each over the one thing they change. A terminal replays captures/change-impact-after.txt and captures/change-version.txt, and Kit.stand marks what ran, what is practice, what was staged and what is missing."
+ },
+ "scenes": [
+  {
+   "id": "rule",
+   "title": "One rule goes",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "Plugged In has been live for months. And you've decided: a person may hold more than one name."
+    },
+    {
+     "id": "a2",
+     "text": "It's one rule. But what was leaning on it?"
+    },
+    {
+     "id": "a3",
+     "text": "First, your agent runs the whole proof on the app as it stands. Seven operations, all proven. That's the record the change is measured from."
+    },
+    {
+     "id": "a4",
+     "text": "Then the designer takes the rule out of the blueprint. Six lines, and nothing else. This is the part you read."
+    }
+   ]
+  },
+  {
+   "id": "stale",
+   "title": "What went stale",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "Before anything is rebuilt, ask what the change did. The command is ortho impact."
+    },
+    {
+     "id": "b2",
+     "text": "It names the change: the handle's rules, and one operation, handle.claim.",
+     "say": "It names the change: the handle's rules, and one operation, handle dot claim."
+    },
+    {
+     "id": "b3",
+     "text": "Then the cost. Stale: all seven operations. Proven: none.",
+     "gap": 0.6
+    },
+    {
+     "id": "b4",
+     "text": "In an app this small, one rule on the handle unproved everything."
+    }
+   ]
+  },
+  {
+   "id": "check",
+   "title": "What leaned on the rule",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "c1",
+     "text": "Now the check. It fails, in three parts."
+    },
+    {
+     "id": "c2",
+     "text": "Drift: nine generated files still describe the old rule. That's the framework's own work, and generate rewrites them."
+    },
+    {
+     "id": "c3",
+     "text": "Changes: a refusal your callers could be given is gone. That's counted as a major change."
+    },
+    {
+     "id": "c4",
+     "text": "And types. The handler for link.add no longer fits. It found your page through this rule: one name meant one page.",
+     "say": "And types. The handler for link dot add no longer fits. It found your page through this rule: one name meant one page."
+    },
+    {
+     "id": "c5",
+     "text": "So with two names, which page gets the link? That isn't a builder's question. It comes back to you."
+    }
+   ]
+  },
+  {
+   "id": "red",
+   "title": "The journey that said the old rule",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "d1",
+     "text": "Prove what changed. It can't place the regenerated files, so it chooses all seven journeys. And then it can't run: the app doesn't build."
+    },
+    {
+     "id": "d2",
+     "text": "To see further, we stood in for the builder. The link goes on the oldest name. Nobody decided that."
+    },
+    {
+     "id": "d3",
+     "text": "Now the whole proof. Six journeys pass. Claim a handle: six of eight.",
+     "gap": 0.7
+    },
+    {
+     "id": "d4",
+     "text": "Read the reason. Expected refused, with handle already owned. It answered."
+    },
+    {
+     "id": "d5",
+     "text": "That's the proof working. Months ago, an author wrote the old rule down as a step. The step is still there."
+    }
+   ]
+  },
+  {
+   "id": "who",
+   "title": "Who changes what",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "e1",
+     "text": "So the red step is the author's to change, and nobody else's. The author also writes the new story: a person with two names adds a link. It fails first."
+    },
+    {
+     "id": "e2",
+     "text": "Only then does a builder take the brief for link.add, and climb.",
+     "say": "Only then does a builder take the brief for link dot add, and climb."
+    },
+    {
+     "id": "e3",
+     "text": "What goes wrong. After a failed proof, impact forgets the change, and calls every operation unproven. So ask before you prove again."
+    },
+    {
+     "id": "e4",
+     "text": "And the next version needs a logbook. On a laptop, we had none."
+    },
+    {
+     "id": "e5",
+     "text": "One honest note. We made the edit ourselves, and the stand-in handler was staged. No author and no builder were filmed, so this film stops at red.",
+     "gap": 0.6
+    },
+    {
+     "id": "e6",
+     "text": "The roles are our practice. Nothing enforces them for you yet. Next: more than one agent."
+    }
+   ]
+  }
+ ]
+}

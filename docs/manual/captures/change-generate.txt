@@ -1,0 +1,10 @@
+$ ortho generate
+updated generated/actions/handle/claim.ts
+updated generated/api/src/handle/claim.ts
+updated generated/mcp/src/index.ts
+updated generated/model/model.json
+updated generated/server/main.ts
+updated generated/server/migrations/0001_things.sql
+updated generated/docs/handle/index.md
+updated generated/docs/handle/claim.md
+updated generated/portal/blueprint.json
