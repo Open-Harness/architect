@@ -21,7 +21,8 @@ So: not India; the United States first and mainly; then Europe, the UK and the U
    module for the employee's place of work.
 2. **Each jurisdiction is its own module**, a plugin under `examples/capxul/plugins/`, so a new country is a new
    plugin, not a change to core. Slice 9 mounts the United States module when the app is made; mounting a module into
-   a Capxul that already holds data waits on slice 11, which proves it (K43, section 2).
+   a Capxul that already holds data waits on slice 11, which proves it (K43, section 2). (Superseded by CX-composable-pieces, 26 November 2026:
+   adding a module to a deployed Capxul is a rebuild with a forward migration, gap 5.)
 3. **Rates are dated data, never code.** Brackets, rates, wage bases, thresholds and allowances are rows with the
    period they apply to and the official publication they are read from. ERPNext's Income Tax Slab is the shape they
    generalise. A new tax year is new rows.

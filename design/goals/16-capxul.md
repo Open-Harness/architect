@@ -29,7 +29,7 @@ slices:
   - "8 · HR, its basics finished: leave, timesheets, onboarding (after 6)"
   - "9 · Payroll (after 7, 8)"
   - "10 · Bridge for real: the adapter mounted, its webhooks, bank accounts and money in and out posting to the books (after 5, 7)"
-  - "11 · The CRM, a module switched on later, off the path (after 9)"
+  - "11 · The CRM, an optional piece picked when a Capxul is built, off the path (after 9)"
   - "12 · Budgets: the accounting side; the on-chain module deployed outside the framework (after 7)"
   - "13 · Capxul's journeys run in CI"
 ---
@@ -60,7 +60,7 @@ and run it." Nothing else is needed.
 - **Words used:**
   - Capxul: a business app for small companies, being rebuilt here; its core is the free books, HR, payroll and Bridge;
   - the books: accounting (invoices, payments, the ledger); HR and payroll: a company's people, and paying them;
-  - the CRM: the people and companies a business deals with, a module someone switches on later;
+  - the CRM: the people and companies a business deals with, an optional piece a business picks when its Capxul is built;
   - KYC and KYB: checking who a person or a business is; Bridge: moves money between the chain and banks;
   - ERPNext: an open-source business system whose shapes Capxul follows;
   - the design grill: Aaron asked question after question until a design is settled;
@@ -97,7 +97,7 @@ issues already have.
 | 8 | HR, its basics finished: leave (checks #1026), timesheets and onboarding. Employees, departments, holidays, attendance, shifts, expense claims and recruitment are built; appraisals (#1030) are checked | 6 |
 | 9 | Payroll, 37 record types: salary components and structures, their assignment, pay runs and slips, each run posting to the books' journal; tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax). A pay run starts from an operation a person or an agent calls; running it on a schedule pulls the board's timers row (the superagent's until K44) and needs no workflows, which K44 parks | 7, 8 |
 | 10 | Bridge for real, through Capxul's own Bridge account: the generated adapter mounted, Bridge's webhooks deciding KYC and KYB, real bank details, and deposits and transfers posting to the books. Incorporation help and how the paid services are sold come later | 5, 7 |
-| 11 | The CRM, 40 Frappe CRM record types, as a module a running Capxul mounts; off the critical path (K44). Pulls mounting a plugin into an app that already holds data (K43, section 2) | 9 |
+| 11 | The CRM, 40 Frappe CRM record types, as an optional piece a business picks when its Capxul is built; off the critical path (K44). Adding it to a deployed Capxul is a rebuild with a forward migration (CX-composable-pieces) | 9 |
 | 12 | Budgets, the accounting side: budgets against accounts and cost centres, checked as money is spent. The on-chain module is deployed outside the framework when it is wanted (K44, call 8) | 7 |
 | 13 | Capxul's journeys run in CI: a job that proves `examples/capxul`, so its green is CI's word (K44, section 3) | — |
 
