@@ -190,7 +190,7 @@ stay M5.04's, and `ortho outbox redeliver` and `POST /_world/outbox/redeliver` a
   journal row has that trace. A delivery due now is counted work (`Busy`) from the door's commit: the world is not quiet
   until it has run, so a clock step, a zero step and a world's reset all wait for it. The door answers without waiting.
 - **Refusals and defects.** A refusal is `refused` with its tag after one attempt and is never retried. A defect (a `map`
-  that throws or answers a payload outside the declaration included) is retried on Q5's schedule, 1 s doubling, never more
+  that throws or answers a payload outside the declaration) is retried on Q5's schedule, 1 s doubling, never more
   than an hour between, 15 attempts, then `failed`. Every wait is `Timers`, so a stepped world steps the backoff: there is
   no `ORTHO_OUTBOX_BACKOFF` (GOAL17-check-harness call 3), and a real world's alarm drives the same drain.
 - **What a check reads.** `GET /_world/outbox` answers `rows`, GOAL17-check-harness call 3's `OutboxRow` (`outcome` is the
