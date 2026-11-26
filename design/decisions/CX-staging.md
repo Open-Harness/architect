@@ -86,7 +86,7 @@ These are not decided here, and nothing in this change depends on them:
 ## Supersedes
 
 - `e2e/staging/workflow.mjs`: "workflow_dispatch takes no inputs: the run is named by its id" → "workflow_dispatch takes exactly one input, app"
-- `e2e/staging/README.md`: "The story step calls `ortho prove --env staging --run <id> --only \"a person claims a page and shares it\"`" → "The story step calls `ortho prove --env staging --run <id> --root \"$ROOT\"` with one `--only` per journey of the chosen run"
+- `e2e/staging/README.md`: "The story step calls `ortho prove --env staging --run <id> --only "a person claims a page and shares it"`" → "The story step calls `ortho prove --env staging --run <id> --root "$ROOT"` with one `--only` per journey of the chosen run"
 - `e2e/staging/README.md`: "the evidence is those five named files" → "the evidence is those seven named files"
-- `e2e/staging/README.md`, the story's row: "| the story | none |" → "| the story | token, account |" (the story has held them since M7-04-story-reads-d1)
+- `e2e/staging/README.md`, the story's row: "| the story | none |" → "| the story | token, account |"
 - `.github/workflows/staging.yml`: "It plans, deploys Plugged In to Cloudflare `workers.dev`, runs the story" → "It plans, deploys the chosen app to Cloudflare `workers.dev`, runs its journeys"
