@@ -5,6 +5,7 @@ import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import { spawn } from "node:child_process";
+import { constants } from "node:os";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -468,8 +469,11 @@ const handOff = (entry: string) => {
   });
   child.on("exit", (code, signal) => {
     for (const s of signals) process.off(s, forward);
-    if (signal !== null) process.kill(process.pid, signal);
-    else process.exit(code ?? 1);
+    // The same signal ends this process too; one Node ignores (SIGPIPE) would leave it to exit 0, so the exit is the shell's 128 + n.
+    if (signal !== null) {
+      process.kill(process.pid, signal);
+      process.exit(128 + constants.signals[signal]);
+    } else process.exit(code ?? 1);
   });
 };
 
