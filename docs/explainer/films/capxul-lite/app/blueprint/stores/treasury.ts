@@ -1,5 +1,6 @@
 import { Blueprint } from "orthograph";
 
 // A chain store (K25). The contract takes its name from this file: "Treasury".
-// Every thing that lives here shares that one contract.
-export default Blueprint.store.chain.evm();
+export default Blueprint.store.chain.evm({
+  upgradeable: true, // new: its owners may take a newer version in place
+});

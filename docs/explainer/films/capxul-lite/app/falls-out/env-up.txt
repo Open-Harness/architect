@@ -1,0 +1,8 @@
+$ ortho env up staging
+contract   Treasury v3 published on base-sepolia · factory 0x7a21…04
+indexer    following the factory, from block 18 204 551
+relayer    funded
+database   2 migrations applied
+server     capxul-lite-staging.workers.dev
+journeys   4 of 4 green against it
+up ✔

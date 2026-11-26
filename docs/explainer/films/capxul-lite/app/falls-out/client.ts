@@ -1,9 +1,8 @@
-// What a client does with it. The same lines run in the app, the CLI and an agent's tool.
-const spend = await sdk.spend.draft({ budget, to, amount, reason });
+// The SDK. The same call from the app, a script, or an agent's tool.
+const call = sdk.budget.spend({ budget, to, amount: 400n, reason: "Design work, March" });
 
-const pay = spend.next;          // budget.spend, already filled in
-await pay.simulate();            // refused here, for free: BudgetExceeded
-await pay.sign(wallet);          // the wallet shows the operation's description
-for await (const at of pay.follow()) {
-  // "sent", then "paid" once the chain will keep it
+await call.try();            // free. Refused here: BudgetExceeded
+await call.sign(wallet);     // one signature: the money, and the reason's seal
+for await (const at of call.follow()) {
+  // "submitted", then "confirmed" once the chain will keep it
 }

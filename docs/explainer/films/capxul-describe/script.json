@@ -1,0 +1,88 @@
+{
+  "title": "Capxul Lite: Describe It",
+  "source": "a design · part one of two",
+  "steps": ["Problem", "System", "Where", "Who", "Rules", "Join", "Needs"],
+  "uses": ["../capxul-lite/kit.js"],
+  "voice": "af_heart",
+  "speed": 1.0,
+  "gap": 0.4,
+  "scenes": [
+    { "id": "problem", "title": "The morning after", "lead": 0.7, "tail": 0.7, "lines": [
+      { "id": "a1", "text": "You've built this before. A company's money, on chain. Owners who sign together. Budgets that people can spend on their own. And books that have to agree with all of it.", "gap": 0.6 },
+      { "id": "a2", "text": "So you know where the work goes. The same few facts get written again and again. Who may spend. What the limit is. What paid means." },
+      { "id": "a3", "text": "They end up in the contract, the server, the database, the app, the SDK, and now the agent's tools.", "gap": 0.6 },
+      { "id": "a4", "text": "An agent can write every one of those in an afternoon. That was never the hard part." },
+      { "id": "a5", "text": "The hard part is the next morning. Is it right? And when one rule changes, what else has to change? To answer, you'd have to read all of it." }
+    ] },
+    { "id": "stance", "title": "Where you work", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "s1", "text": "Orthograph takes a position on that." },
+      { "id": "s2", "text": "You work on the system: the things in it, who may do what, and what must always be true. That description is the blueprint, and you read it." },
+      { "id": "s3", "text": "Everything below it, the agent writes and the framework makes. And you don't take anyone's word for it. The running system is proved, against stories you agreed to.", "gap": 0.6 },
+      { "id": "s4", "text": "So you never read the code to know it's correct. You read the blueprint, down to whatever level you care about." }
+    ] },
+    { "id": "system", "title": "Capxul Lite", "lead": 0.8, "tail": 0.8, "lines": [
+      { "id": "y1", "text": "Here's the system we'll build. Call it Capxul Lite.", "say": "Here's the system we'll build. Call it Capsule Light." },
+      { "id": "y2", "text": "A company has a treasury: its money on chain, in a contract of its own, controlled by its owners together." },
+      { "id": "y3", "text": "The owners can give someone a budget: so much a month, to spend without asking. That someone can be a person, or an agent." },
+      { "id": "y4", "text": "And every payment lands in the books, with its reason and its receipt.", "gap": 0.6 },
+      { "id": "y5", "text": "Notice that things get decided in three places. The chain decides the money. Our server decides the notes and the books. And a wallet decides whether to sign." },
+      { "id": "y6", "text": "Most of the difficulty in a system like this is in the joins between those three." }
+    ] },
+    { "id": "lives", "title": "Where each thing lives", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "l1", "text": "Start by saying what exists, and where each thing lives. There are four places." },
+      { "id": "l2", "text": "A database: rows, with lists, reports, and rules across records. It's only as right as our server." },
+      { "id": "l3", "text": "An actor: one small server for each instance. Busy ones never race, but there's no list." },
+      { "id": "l4", "text": "A public chain: a contract we generate. It holds even if we're down, and anyone can check it. But every field is public, and it answers late." },
+      { "id": "l5", "text": "And a private chain, where the same promises hold and outsiders can't read. That one is designed, not built.", "gap": 0.6 },
+      { "id": "l6", "text": "In Capxul Lite, the treasury, its seats, its budgets and its proposals live on the public chain. Each treasury is the root of its own contract, so every company has its own address.", "say": "In Capsule Light, the treasury, its seats, its budgets and its proposals live on the public chain. Each treasury is the root of its own contract, so every company has its own address." },
+      { "id": "l7", "text": "The spends and the books live in our database, because an accountant needs lists. None of our things is an actor. Two parts of the framework are: the relayer, and the indexer." }
+    ] },
+    { "id": "who", "title": "Who is who", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "w1", "text": "Next, who is who. On our server, Ada is a person. She signs in, and each environment says how." },
+      { "id": "w2", "text": "On a chain, there are no people. There are only accounts, and an account is whoever holds its key." },
+      { "id": "w3", "text": "The two are linked once. Our server sends a challenge, and Ada signs it with her wallet.", "gap": 0.6 },
+      { "id": "w4", "text": "From then on, a role can cross. The budget's holder is an account. That account is Ada's. So when Ada opens the app, the budget offers her: spend." },
+      { "id": "w5", "text": "An agent never links. It has a key of its own, and a budget of its own." }
+    ] },
+    { "id": "rules", "title": "How a budget behaves", "lead": 0.8, "tail": 0.8, "lines": [
+      { "id": "m1", "text": "Next, how a budget behaves. Active, exhausted, revoked." },
+      { "id": "m2", "text": "Spending has two outcomes: still active, or exhausted. And renewing is a move made by time: every month, from the day it started.", "gap": 0.6 },
+      { "id": "m3", "text": "Who may act is a role. The holder is whoever the holder field names. An owner is whoever holds a seat on the treasury." },
+      { "id": "m4", "text": "Roles like these are data, not code. That matters, because they have to mean the same thing in TypeScript and in Solidity.", "gap": 0.6 },
+      { "id": "m5", "text": "The same goes for rules. Spent never passes the limit. Say it once, as data, and both sides enforce it." }
+    ] },
+    { "id": "events", "title": "Events and refusals", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "e1", "text": "Every move records one event, in the same commit as the change. Events are the only thing that crosses from one place to another." },
+      { "id": "e2", "text": "And every refusal is declared once. It gets one code, in a file that only ever grows. Budget exceeded is the same name from the contract, the command line, and the app." }
+    ] },
+    { "id": "seal", "title": "One act", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "o1", "text": "Now the verb. Ada means one thing: pay this supplier, from my budget, for this reason." },
+      { "id": "o2", "text": "But two places have to change. The chain moves the money. And the reason can't go on a public chain.", "gap": 0.6 },
+      { "id": "o3", "text": "So the reason is sealed. It's one operation, with one word on one field." },
+      { "id": "o4", "text": "The reason travels with her signed call to our server. The chain carries only its seal: a hash nobody can read back." },
+      { "id": "o5", "text": "She signs once, and that signature covers the money and the reason together." }
+    ] },
+    { "id": "flow", "title": "One spend", "lead": 0.8, "tail": 1.0, "lines": [
+      { "id": "p1", "text": "Follow it through." },
+      { "id": "p2", "text": "First the payment is tried on the chain, without being sent. Over her limit, it's refused here, for free, before anyone signs." },
+      { "id": "p3", "text": "Her wallet shows the operation's own description, and she signs, once." },
+      { "id": "p4", "text": "The signed call and the reason go to our relayer. It keeps the reason under its seal, sends the call, and pays the gas." },
+      { "id": "p5", "text": "Her company's contract checks the role, the machine and the rule. It pays, and emits budget spent, carrying the seal." },
+      { "id": "p6", "text": "The indexer knows that event from the blueprint. It waits until the chain won't take it back, and hands it on." },
+      { "id": "p7", "text": "Our server matches the seal to the reason, records the spend, and writes the books, in one commit.", "gap": 0.7 },
+      { "id": "p8", "text": "And if someone pays around the app, there's a seal with no reason behind it. The spend is marked unexplained, and any explanation has to match what was signed." }
+    ] },
+    { "id": "needs", "title": "A thing that waits", "lead": 0.8, "tail": 1.0, "lines": [
+      { "id": "g1", "text": "Not everything can be one act. A new budget needs two of the three owners, and they won't all be there at once." },
+      { "id": "g2", "text": "So something has to wait. And the rule is simple: operations are short. If something waits, it's a thing.", "gap": 0.6 },
+      { "id": "g3", "text": "A grant is a proposal. It's open, then passed, or expired." },
+      { "id": "g4", "text": "And a waiting thing says what it needs. To pass, this one asks for enough owners to approve." },
+      { "id": "g5", "text": "The framework does the asking. Bob and Carol each see it waiting on them. When the second one approves, it passes, and the budget is granted in the same transaction.", "gap": 0.6 },
+      { "id": "g6", "text": "And if nobody answers, a clock closes it after seven days. Every way out is declared, so a check can find a thing that could wait for ever." }
+    ] },
+    { "id": "close", "title": "Described", "lead": 0.8, "tail": 2.6, "lines": [
+      { "id": "z1", "text": "That's the description. The things, where they live, who may move them, what must stay true, and how they join." },
+      { "id": "z2", "text": "None of it is code you'd have to trust. In the next film: what falls out of it, and how it runs." }
+    ] }
+  ]
+}

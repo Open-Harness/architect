@@ -1,12 +1,13 @@
 # The explainer films
 
-Two narrated films about Orthograph, for developers. Both are code: the pictures are a web page drawn frame by frame,
+Three narrated films about Orthograph, for developers. All are code: the pictures are a web page drawn frame by frame,
 the voice is synthesised from a script, and every scene is timed by the words the voice actually spoke.
 
 | Film | Folder | What it is |
 |---|---|---|
 | **How Orthograph works** (5:25) | `films/how-it-works/` | What runs today, shown on Plugged In. One operation, `handle.claim`, through the loop. |
-| **Capxul Lite on Orthograph** (8:18) | `films/capxul-lite/` | The design, on a stripped-back Capxul: one contract that is a treasury with budgets built in, and a server that keeps the reasons and the books. Starts from the problem, and says what is built and what is proposed. |
+| **Capxul Lite: Describe It** | `films/capxul-describe/` | Part one of the design, on a stripped-back Capxul: the problem, the system, where each thing lives, who is who, rules, events, one sealed spend followed through, and a proposal that waits for its owners. |
+| **Capxul Lite: What Falls Out** | `films/capxul-runs/` | Part two: the contract, the server and its two actors, the ways in, the app, a journey run on screen, a rule change as a published version, and the environments it runs in. |
 
 ## The rule each film keeps
 
@@ -15,11 +16,12 @@ built, and every line of terminal output is replayed from `films/how-it-works/ca
 by running `ortho` for real. A quoted file that is gone fails the build, and a quoted line that is gone fails the first
 frame. One exception says so on screen: the six "written by hand" snippets on sheet 1.
 
-**The second film is a design, and says so.** Its example lives in `films/capxul-lite/app/`, written as if all of
+**The two Capxul Lite films are a design, and say so.** Their example lives in `films/capxul-lite/app/`, written as if all of
 Orthograph existed. Nothing in it is compiled or run. Most of its syntax is real or decided (`examples/budgets`, K20, K23,
 K25, M6-chain, M6-money). A line that ends `// new` is a proposal of the design, and is drawn with an amber edge wherever
-it appears. Output that was designed, not recorded, is labelled so on screen, and sheet 15 sorts everything into what
-runs today, what is decided, and what the film proposes.
+it appears. Output that was designed, not recorded, is labelled so on screen, and the second film ends by sorting everything
+into what runs today, what is decided, and what is proposed. They replace one earlier film of eight minutes, recut after its
+first viewing; `films/capxul-lite/board/board.html` has the notes and the decisions that led here.
 
 ## What is where
 
@@ -29,8 +31,9 @@ runs today, what is decided, and what the film proposes.
 | `films/<film>/scenes/` | one file per sheet, in order |
 | `films/<film>/data.mjs` | what the film quotes: it reads files, and hands them to the scenes |
 | `films/how-it-works/captures/` | recorded output of `ortho` on Plugged In |
-| `films/capxul-lite/app/` | the Capxul Lite design: blueprint, a Solidity handler, a journey, and sketches of what falls out |
-| `films/capxul-lite/supplement/` | the page to read beside the film; it quotes the same files |
+| `films/capxul-lite/app/` | the Capxul Lite design both films quote: blueprint, a Solidity handler, a journey, and sketches of what falls out |
+| `films/capxul-lite/kit.js` | scene helpers both films share; a script names it under `uses` |
+| `films/capxul-lite/supplement/` | the docs page for both films; it quotes the same files |
 | `films/capxul-lite/board/board.html` | the design board written after the first viewing: the notes on the film, the next step, every problem found and what was proposed for it. One file, published as it is |
 | `src/engine.js` | the timeline every scene writes to, the cue lookup, the code and terminal painters |
 | `src/film.css`, `src/shell.html`, `src/player.js` | the look, the frame around the stage, and the player |
@@ -74,7 +77,7 @@ split the film across workers and what lets the player scrub.
 
 - **The words.** Edit `script.json`, then `narrate.py`, `mix.py`, `build.mjs`. Check the cues the build lists.
 - **A scene.** Edit its file in `scenes/`, run `build.mjs`, and look at a few frames with `shot.mjs` before rendering.
-- **What a scene quotes.** In the first film, add the file to `quoted` in its `data.mjs`. In the second, add it under `app/`.
+- **What a scene quotes.** In the first film, add the file to `quoted` in its `data.mjs`. In the Capxul Lite films, add it under `films/capxul-lite/app/`.
 - **A class name in a scene.** Don't use `k`, `s`, `c`, `n`, `t`, `f`, `p`, `x` or `r` as a whole class: they colour code.
 
 ## What the recording found
@@ -85,5 +88,5 @@ the regenerated files (`films/how-it-works/captures/change-prove-changed.txt` ha
 
 ## What the design found
 
-The supplement lists nine places where Capxul Lite strains. The largest: changing a rule that lives on a chain is a
-migration with money in it, and the blueprint has no word for that yet.
+The board lists every problem found and what was proposed for it. Two ideas carry the design: a thing that waits says what
+it needs, and the framework asks; and when the other half of an act is only data, it is sealed into the one signed call.

@@ -1,0 +1,75 @@
+{
+  "title": "Capxul Lite: What Falls Out",
+  "source": "a design · part two of two",
+  "steps": ["Contract", "Server", "Ways in", "App", "Prove", "Change", "Run"],
+  "uses": ["../capxul-lite/kit.js"],
+  "voice": "af_heart",
+  "speed": 1.0,
+  "gap": 0.4,
+  "scenes": [
+    { "id": "recap", "title": "From one description", "lead": 0.7, "tail": 0.8, "lines": [
+      { "id": "r1", "text": "In the first film we described Capxul Lite: a treasury with budgets, on a chain, and a server that keeps the reasons and the books.", "say": "In the first film we described Capsule Light: a treasury with budgets, on a chain, and a server that keeps the reasons and the books." },
+      { "id": "r2", "text": "Now, what falls out of that description. Every piece here is made from it, and stays in step with it." }
+    ] },
+    { "id": "contract", "title": "The contract", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "f1", "text": "On the chain side, a contract." },
+      { "id": "f2", "text": "The frame is generated. For each operation it checks the row is there, then the role, then the machine. It runs your handler, checks the rules, and emits the event.", "gap": 0.6 },
+      { "id": "f3", "text": "That's the same order the server uses. One enforcer for each operation. Here, the enforcer is the contract." },
+      { "id": "f4", "text": "The only Solidity you write is behaviour: add to what's spent, pay, and say which state it ended in.", "gap": 0.6 },
+      { "id": "f5", "text": "The reason never appears. The frame takes its seal, and puts it in the event." }
+    ] },
+    { "id": "server", "title": "The server, and two actors", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "v1", "text": "On our side, a server. A route for each operation it serves, the same enforcer, and the database's tables, with an index for each rule." },
+      { "id": "v2", "text": "And two actors. The relayer takes signed calls, keeps each reason under its seal, and pays the gas." },
+      { "id": "v3", "text": "The indexer reads the chain back. It knows every event from the blueprint, so nobody hands it an interface. It also keeps the list of budgets, because a contract has no list." }
+    ] },
+    { "id": "ways", "title": "Three ways in", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "k1", "text": "Then the ways in. The same spend, three times." },
+      { "id": "k2", "text": "The SDK: try it, sign it, follow it. Refusals come back typed." },
+      { "id": "k3", "text": "The command line: one command, and it asks for your key." },
+      { "id": "k4", "text": "And a tool for an agent, with the refusals it can expect. The agent signs with its own key, and the contract holds its limit. That's why you can let it spend.", "gap": 0.6 },
+      { "id": "k5", "text": "You didn't write any of the three. And an accountant, who never touches the chain, gets none of them." }
+    ] },
+    { "id": "app", "title": "The app", "lead": 0.8, "tail": 0.9, "lines": [
+      { "id": "h1", "text": "For the app, each thing gives you a reference: its state, the fields this caller may see, and the moves open to them right now." },
+      { "id": "h2", "text": "That's your hook, and your headless components.", "gap": 0.6 },
+      { "id": "h3", "text": "For Ada, the budget offers spend. For Bob, it offers revoke." },
+      { "id": "h4", "text": "And a thing that's waiting says what it needs. Bob opens the app, and the proposal tells him: one more owner, within six days." }
+    ] },
+    { "id": "prove", "title": "Proof", "lead": 0.8, "tail": 1.0, "lines": [
+      { "id": "q1", "text": "How do you know any of it is right? Journeys." },
+      { "id": "q2", "text": "A journey runs in a world: a local chain, a local server, and a cast of people with wallets." },
+      { "id": "q3", "text": "Ada pays a supplier and says why. The event is there, one transaction was sent, and the spend is in the books." },
+      { "id": "q4", "text": "Then she goes over her limit. Refused, and nothing was sent." },
+      { "id": "q5", "text": "A month passes on the world's clock, and she can spend again." },
+      { "id": "q6", "text": "Then she pays around the app. The money moves, and the books ask why.", "gap": 0.6 },
+      { "id": "q7", "text": "A different agent writes these, before the builder starts. The builder climbs until they're green." }
+    ] },
+    { "id": "change", "title": "A rule changes", "lead": 0.8, "tail": 1.0, "lines": [
+      { "id": "c1", "text": "Now the question from the start. A rule changes: budgets renew every week, not every month." },
+      { "id": "c2", "text": "You change one line. The model says what that touched: the contract, the client, the app, the docs, and two journeys.", "gap": 0.6 },
+      { "id": "c3", "text": "But this contract is live, with money in it. So the change is published as a new version, and nothing live moves." },
+      { "id": "c4", "text": "New companies get it. For the others, their owners take it up: in place, if the contract can be upgraded, or by moving to a new one if it can't.", "gap": 0.6 },
+      { "id": "c5", "text": "Everything else is still proven. And you know that without reading any of it." }
+    ] },
+    { "id": "run", "title": "Where it runs", "lead": 0.8, "tail": 1.0, "lines": [
+      { "id": "n1", "text": "And it runs somewhere. An environment is a file. It binds each store to a place, and says how people sign in." },
+      { "id": "n2", "text": "Locally, everything is on your machine: a local chain, test people, and a clock you can step." },
+      { "id": "n3", "text": "Staging is a real server, a test network, and real sign-in. Production is the same revision, already proved, on the real network.", "gap": 0.6 },
+      { "id": "n4", "text": "The infrastructure is generated too: the server, its database, the two actors, and the contract's factory." },
+      { "id": "n5", "text": "One command brings it up, and runs the journeys against it.", "gap": 0.6 },
+      { "id": "n6", "text": "And in the portal, you see the system the way you described it: the things, their machines, who may do what, and what each one is waiting for." }
+    ] },
+    { "id": "status", "title": "Where this stands", "lead": 0.8, "tail": 1.0, "lines": [
+      { "id": "t1", "text": "An honest note on where this stands." },
+      { "id": "t2", "text": "The server side runs today: the blueprint, the generated ways in, the handlers, the proof, and staging for the server." },
+      { "id": "t3", "text": "The chain side is decided, and being built: the chain store, accounts, the signed entry, the relayer and the indexer." },
+      { "id": "t4", "text": "And some of this is only proposed: sealing, a thing that says what it needs, the reference to a thing, rules as data, and versions of a contract." }
+    ] },
+    { "id": "close", "title": "The idea", "lead": 0.8, "tail": 2.8, "lines": [
+      { "id": "z1", "text": "That's the whole idea. Describe the system once, at the level you think in." },
+      { "id": "z2", "text": "The agent builds below it. The framework keeps every piece in step, and proves it." },
+      { "id": "z3", "text": "And you stay where you should be: deciding how it all fits together." }
+    ] }
+  ]
+}

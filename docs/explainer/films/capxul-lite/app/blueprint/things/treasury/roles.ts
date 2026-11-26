@@ -6,6 +6,3 @@ export const owner = Blueprint.role(Treasury, {
   holds: Seat.fields.treasury,
   who: Seat.fields.owner,
 });
-
-// Enough owners to reach the treasury's threshold, acting as one.
-export const owners = Blueprint.together(owner, Treasury.fields.threshold); // new

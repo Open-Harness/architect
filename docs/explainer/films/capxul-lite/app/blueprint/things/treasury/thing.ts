@@ -9,7 +9,7 @@ export const Treasury = Blueprint.thing({
     threshold: Blueprint.uint(8), // how many owners it takes
     balance: Blueprint.money(usdc),
   },
-  lives: treasury,
+  lives: treasury.root(), // new: a contract of its own for each treasury, made by a factory
 });
 
 export const Seat = Blueprint.thing({

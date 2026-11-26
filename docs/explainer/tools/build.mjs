@@ -35,7 +35,8 @@ mkdirSync(out, { recursive: true });
 writeFileSync(join(out, "captions.srt"), captions.map((c, k) => `${k + 1}\n${stamp(c.t0)} --> ${stamp(Math.max(c.t1, c.t0 + 0.4))}\n${c.text}\n`).join("\n"));
 
 const data = { meta, timing, captions, ...load({ repo, home, read, walk, filesUnder }) };
-const scenes = readdirSync(join(home, "scenes")).filter((f) => f.endsWith(".js")).sort().map((f) => read(join(home, "scenes", f)));
+// A script may name scene files it shares with another film (`"uses": ["../capxul-lite/kit.js"]`); they are read first.
+const scenes = [...(script.uses ?? []).map((p) => read(join(home, p))), ...readdirSync(join(home, "scenes")).filter((f) => f.endsWith(".js")).sort().map((f) => read(join(home, "scenes", f)))];
 const inline = (js) => js.replace(/<\/script/g, "<\\/script");
 const head = `<title>${meta.title}</title>
 <meta name="claude:viewport-fit-sides" content="cover">

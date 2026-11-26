@@ -1,5 +1,7 @@
-waiting states   spend
-  drafted   out on yes: send     out on no: discard    out on silence: nothing
-  sent      out on yes: settle   out on no: discard    out on silence: nothing
-    A spend can wait in `sent` for ever. Give it a move made by time.
-check ✘
+$ ortho check
+waiting   proposal · open
+            yes       pass, when enough owners approve
+            no        nothing
+            silence   expire, after 7 days
+          An open proposal can't be turned down. Its owners can only let it run out.
+check ✔ with 1 note

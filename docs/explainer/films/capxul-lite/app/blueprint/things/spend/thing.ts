@@ -1,19 +1,18 @@
 import { Blueprint } from "orthograph";
 import { Budget } from "../budget/thing.ts";
-import { Reason, Receipt, Usdc } from "../../values/money.ts";
+import { Reason, Usdc } from "../../values/money.ts";
 
-// No `lives`: it gets the project's database. It could not live on a chain:
-// a public chain shows every field, and two of these are private.
+// No `lives`: it gets the project's database.
+// The accountant needs lists and reports, and a contract has neither.
 export const Spend = Blueprint.thing({
-  description: "Why money left the treasury: who was paid, for what, and the receipt.",
+  description: "A payment out of a budget, with its reason. What the accountant sees.",
   code: "SP",
   fields: {
     id: Blueprint.id("spd"),
     budget: Budget.fields.id,
-    by: Blueprint.id("per"),
     to: Blueprint.account(),
     amount: Usdc,
     reason: Blueprint.visibility.private(Reason),
-    receipt: Blueprint.visibility.private(Receipt),
+    transaction: Blueprint.text({ max: 128 }),
   },
 });

@@ -339,11 +339,11 @@ a { color: var(--blue); }
 <pre class="code">export const machine = Blueprint.machine(Proposal, {
   states: ["open", "passed", "expired"],
   moves: {
-    propose: { from: [], to: "open", emits: Events.Proposed },
-    approve: { from: ["open"], to: ["open", "passed"],
-               emits: Events.Approved,
-               asks: owner }, // new
-    expire:  { from: ["open"], to: "expired", emits: Events.Expired,
+    propose: { from: [], to: "open", emits: Events.ProposalOpened },
+    approve: { from: ["open"], to: "open", emits: Events.ProposalApproved },
+    pass:    { from: ["open"], to: "passed", emits: Events.ProposalPassed,
+               asks: Blueprint.atLeast(Treasury.fields.threshold, owner, "approve") }, // new
+    expire:  { from: ["open"], to: "expired", emits: Events.ProposalExpired,
                by: Blueprint.time.after("openedAt", "7 days") },
   },
 });</pre></figure>
@@ -688,9 +688,9 @@ export const holder = Blueprint.role(Budget, { who: Budget.fields.holder });</pr
     <tr><td class="q">The proof was said, not shown.</td><td class="by">you</td><td class="a">Run the journey on screen, with its evidence.</td><td><i class="st film">film</i></td></tr>
   </table></div>
 
-  <h2>One decision left</h2>
+  <h2>The last decision</h2>
   <ol class="ask">
-    <li><b>Both layers?</b><span>Things last and say what they need. That is the model. A spend is sealed, because its other half is only data. A grant is a proposal that needs its owners. If you agree, the films are drawn that way.</span></li>
+    <li><b>Both layers.</b> <i class="st run">agreed, 26 November</i><span>Things last and say what they need. That is the model. A spend is sealed, because its other half is only data. A grant is a proposal that needs its owners. The two films are drawn that way.</span></li>
   </ol>
 
   <h2>How I'll do the films</h2>
