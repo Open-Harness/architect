@@ -142,10 +142,11 @@ key in a world). Waiting payouts then shrink to people who have no Capxul Safe a
 | `id` | `saf_…` | at open |
 | `person` | `per_…`, **required** | at open |
 | `saltNonce` | a uint256 digit string, `uint256(keccak256("capxul:<environment>:safe:v1:<per_…>"))` | at open |
-| `signer` | `Blueprint.account()`: today's one owner | at claim; changed by `rotate` |
+| `signer` | `Blueprint.account()`: today's one owner | at claim; changed by `rotated` |
 | `firstOwner` | `Blueprint.account()`: the owner in the initializer, which the address commits to; never changes | at claim (at open, in the bootstrap variant) |
 | `account` | `Blueprint.account()`, CAIP-10: the Safe's address on the environment's chain | at claim (at open, in the variant) |
-| `fenceAttempt`, `fenceTransaction`, `fenceSigned`, `fenceSentAt` | the send fence (below), each optional: an attempt id, the transaction's hash, its signed bytes, an instant | by `send`; cleared by `observe` and `recover` |
+| `fenceAttempt`, `fenceSubmission`, `fenceSigned`, `fenceSentAt` | the send fence (below), each optional: an attempt id, the submission's hash (a UserOperation hash in production, a transaction hash in a world), its signed bytes, an instant | by `send`; cleared by `observe` and `recover` |
+| `nextCheckAt` | optional instant: when `recover` next runs | by `send`, `recover` and `correct`; cleared on leaving `deploying` |
 | `issue` | optional: `deploy_stuck` or `deploy_reverted`, with a bounded detail | by `recover` and `observe` |
 
 Rule: `Blueprint.invariant.unique([PersonalSafe.fields.person], { refuse: SafeAlreadyOpen })`. A person's Safe has one
@@ -173,12 +174,13 @@ rotation ("post-claim rotation is a separate lane", `B/accounts/claims/rules.ts:
 stateDiagram-v2
   [*] --> unclaimed: open
   unclaimed --> claimed: claim
-  claimed --> claimed: rotate (signed by today's signer; deploys only as a first spend)
+  claimed --> claimed: observe (nothing at the address yet)
+  claimed --> deployed: observe (code and the expected owner already there)
   claimed --> deploying: send (the first spend)
   deploying --> deploying: observe or recover, outcome still unknown
   deploying --> deployed: observe or recover, the Safe's code and owner seen
   deploying --> claimed: observe or recover, the send proven dead
-  deployed --> deployed: rotate
+  deployed --> deployed: rotated (the owner change seen on chain)
   deployed --> deploying: correct (a reorg dropped the deploy)
 ```
 
@@ -189,12 +191,14 @@ export const machine = Blueprint.machine(PersonalSafe, {
     open: { from: [], to: "unclaimed", emits: Events.PersonalSafeOpened },
     claim: { from: ["unclaimed"], to: "claimed", emits: Events.PersonalSafeClaimed },
     send: { from: ["claimed"], to: "deploying", emits: Events.PersonalSafeDeploySent },
-    observe: { from: ["deploying"], to: ["deploying", "deployed", "claimed"], emits: Events.PersonalSafeObserved },
+    observe: {
+      from: ["claimed", "deploying"], to: ["claimed", "deploying", "deployed"], emits: Events.PersonalSafeObserved,
+    },
     recover: {
       from: ["deploying"], to: ["deploying", "deployed", "claimed"], emits: Events.PersonalSafeObserved,
-      by: Blueprint.time.after("fenceSentAt", "2 minutes"),
+      by: Blueprint.time.after("nextCheckAt", "0 seconds"), // fired by the keeper, K1
     },
-    rotate: { from: ["claimed", "deployed"], to: ["claimed", "deployed"], emits: Events.PersonalSafeSignerRotated },
+    rotated: { from: ["deployed"], to: "deployed", emits: Events.PersonalSafeSignerRotated },
     correct: { from: ["deployed"], to: "deploying", emits: Events.PersonalSafeDeployUndone },
   },
   notFrom: { exit: 40 }, // generates PersonalSafeNotUnclaimed, carrying the state it found
@@ -206,7 +210,7 @@ export const machine = Blueprint.machine(PersonalSafe, {
 - **`open`**, by a signed-in person, for themselves: its payload is empty and the person is the caller, so nobody opens
   a Safe for someone else (S1's author: a role cannot judge a `per_…` in the payload, since there is no person thing to
   walk to, `packages/language-effect/src/modules/access/service.ts`). A second operation, **`openFor { person }`**,
-  system only, makes the same move for a person a Capxul company owes money before they have a Safe (S3). Sets the salt
+  system only, makes the same move for a person a Capxul company owes money before they have a Safe (S3a). Sets the salt
   nonce. Emits `PersonalSafeOpened { safe, person }`.
 - **`claim`**, by the person whose Safe it is. Payload: the Safe, the signer's address, and a proof: an EIP-191
   `personal_sign` by the signer of the exact text `Capxul: claim Safe <saf_…> for <per_…>` (one line, no trailing
@@ -222,46 +226,57 @@ export const machine = Blueprint.machine(PersonalSafe, {
     `{ safe, signer: s.last.signer, proof: s.last.signature }`; the wrong-key step has another member sign this text.
   - Refused alternatives: a fixed text with no ids (a proof could be replayed onto another person's Safe), and taking
     the signer unproven until the first spend (the address would commit to a key nobody had shown they hold).
-- **`send`**, by the system, when the first spend's Safe transaction (S3's `safe-transaction`) is ready to submit. The
-  first spend deploys: one transaction carries the factory's `createProxyWithNonce(SafeL2, initializer, saltNonce)` and
-  the Safe's own `execTransaction` of the spend, signed by the signer: in production as one sponsored UserOperation with
-  the factory call as its `factory`/`factoryData` and the spend as its `callData`, as the implementation's claim does
-  (`infrastructure:B/accounts/claims/external/ownership.ts:70-103`, `P/safe-4337.ts:156-166`; P1); in a world, through
-  `MultiSendCallOnly` from a world key. It writes the fence in its commit, and the broadcast follows the commit (below).
-  Emits `PersonalSafeDeploySent { safe, attempt, transaction }`.
+- **`send`**, by the system, when the first spend's Safe transaction (S3a's `safe-transaction`) is ready to submit. It
+  reads the code at the address first. With none, the first spend deploys: one submission carries the factory's
+  `createProxyWithNonce(SafeL2, initializer, saltNonce)` and the Safe's own `execTransaction` of the spend, signed by the
+  signer; in production as one sponsored UserOperation with the factory call as its `factory`/`factoryData` and the
+  spend as its `callData`, as the implementation's claim does (`infrastructure:B/accounts/claims/external/ownership.ts:70-103`,
+  `P/safe-4337.ts:156-166`; P1); in a world, through `MultiSendCallOnly` from a world key. With code already there
+  (anyone may deploy a claimed Safe's initializer), it leaves the factory call out, and the same check moves the Safe
+  straight to `deployed` instead, as `observe` would. It writes the fence and `nextCheckAt` (two minutes on) in its
+  commit, and the broadcast follows the commit (below). Emits `PersonalSafeDeploySent { safe, attempt, submission }`.
 - **`observe`**, by the system, when the follower hands on the factory's `ProxyCreation` for this address, the spend's
-  `ExecutionSuccess` or `ExecutionFailure`, or the transaction's receipt. It reads the code at the address, its
-  `getOwners()`, and the receipt by `fenceTransaction`, and chooses:
-  - code there and `getOwners() = [signer]` → `deployed`, the fence cleared. Someone else deploying the same initializer
-    first is this case too (the implementation's `adoptOnChain`): the same Safe with the same owner. A spend that did not
+  `ExecutionSuccess` or `ExecutionFailure`, or the submission's receipt. It reads the code at the address, its
+  `getOwners()`, and the receipt by `fenceSubmission`, and chooses:
+  - code there and `getOwners() = [signer]` → `deployed`, the fence cleared. This holds from `claimed` as well as from
+    `deploying`: someone else deploying the same initializer, or a send proven dead that lands late, is adopted, as
+    the implementation's `adoptOnChain` does (`B/accounts/claims/operations/adopt-on-chain.ts:13-33`). A spend that did not
     run is then sent again as an ordinary Safe transaction.
-  - a reverted receipt, or the transaction dropped and its nonce used by another, and no code → `claimed`, the fence
-    cleared, `issue: deploy_reverted`, and the spend refused to its caller with `DeployFailed { reason }`;
-  - nothing known yet → stays `deploying`.
+  - from `deploying`, the send **proven dead** and no code → `claimed`, the fence cleared, `issue: deploy_reverted`, and
+    the spend refused to its caller with `DeployFailed { reason }`. Proven dead means: a reverted receipt; or, in
+    production, the UserOperation past its `validUntil` with no receipt; or, in a world, the submitting key's nonce used
+    by another transaction with no receipt.
+  - nothing known yet → stays where it was; from `deploying`, `nextCheckAt` moves on (below).
 
   Emits `PersonalSafeObserved { safe, attempt, outcome }`. An observation for an attempt that is not `fenceAttempt` is
   stale and writes nothing (the implementation's "same lock only", `B/accounts/claims/writes/rows.ts:48-60`).
-- **`recover`**, made by time: the keeper fires it two minutes after `fenceSentAt`, and again while the Safe stays
-  `deploying`. It does what `observe` does; when nothing is known and the node no longer holds the transaction, it
-  **sends the same signed bytes again**, never a new signature (`M6-relayer-rebroadcast.md`: the same bytes are safe to
-  send at any moment, and CREATE2 and the Safe's nonce make a second landing impossible). A fence ten minutes old with no
-  outcome sets `issue: deploy_stuck`, for an operator to see (the implementation's claim lock is ten minutes,
-  `B/accounts/claims/rules.ts:64-80`); it refuses nothing, and the Safe stays `deploying`.
-- **`rotate`**, by the person, proving the new signer as `claim` does (the text `Capxul: rotate Safe <saf_…> to
-  <address>`) and signed by today's signer. From `deployed` it proposes the Safe transaction `swapOwner(SENTINEL,
-  signer, newSigner)`, and the move is made when the follower sees it executed (S3). From `claimed`, that Safe
-  transaction is the first spend and deploys the Safe; the move is made the same way. `firstOwner` and `account` never
-  change. Emits `PersonalSafeSignerRotated { safe, from, to }`.
+- **`recover`**, made by time, fired by the keeper (K1) at `nextCheckAt`. It does what `observe` does; when nothing is
+  known and the node (or the bundler) no longer holds the submission, it **sends the same signed bytes again**, never a
+  new signature (`M6-relayer-rebroadcast.md`). Each `recover` that leaves the Safe in `deploying` writes `nextCheckAt`
+  again, 2, 4, 8 then every 10 minutes on, and that rewrite is what re-arms it: an `after(field, span)` move fires once
+  for the field's value, so K1 must fire it again when a self-move writes the field anew, and K1's checks pin that. A
+  fence ten minutes old with no outcome sets `issue: deploy_stuck`, for an operator to see (the implementation's claim
+  lock is ten minutes, `B/accounts/claims/rules.ts:64-80`); it refuses nothing, and the Safe stays `deploying`. Leaving
+  `deploying` clears `nextCheckAt`.
+- **`rotate`**, an operation by the person that makes no move of its own: it proves the new signer as `claim` does (the
+  text `Capxul: rotate Safe <saf_…> to <address>`), is signed by today's signer, and proposes the Safe transaction
+  `swapOwner(SENTINEL, signer, newSigner)` (S3a). On a `claimed` Safe that transaction is the first spend, so it goes
+  through `send` and deploys the Safe; on a `deploying` one it is refused `DeployPending` until the deploy settles.
+- **`rotated`**, by the system, when the follower hands on the Safe's `RemovedOwner` and `AddedOwner` for that swap,
+  executed. It sets `signer` to the new signer; `firstOwner` and `account` never change. Emits
+  `PersonalSafeSignerRotated { safe, from, to }`.
 - **`correct`**, by the system, when the follower's correction drops the `ProxyCreation` (a reorg). The same signed
-  transaction is usually included again, so the Safe goes back to `deploying` with its fence restored from the
-  `PersonalSafeDeploySent` event, and `observe` or `recover` settles it. Emits `PersonalSafeDeployUndone { safe }`.
+  submission is usually included again, so the Safe goes back to `deploying` with its fence restored from the
+  `PersonalSafeDeploySent` event and `nextCheckAt` set to now, and `observe` or `recover` settles it. Emits
+  `PersonalSafeDeployUndone { safe }`.
 
-**The send fence.** One Safe never has two deploy transactions in flight, and an unknown outcome is never answered with
-a second signature. Three rules:
+**The send fence.** One Safe never has two deploys in flight, and an unknown outcome is never answered with a second
+signature. Four rules:
 
 1. **The machine is the first half.** `send` starts only from `claimed`; it moves the Safe to `deploying` and writes the
-   four fence fields (a fresh attempt id, the transaction's hash, its signed bytes, the time) in the same commit. A
-   second `send` on a `deploying` Safe is refused by the machine before anything is signed.
+   fence fields (a fresh attempt id, the submission's hash, its signed bytes, the time) in the same commit. A second
+   `send` on a `deploying` Safe is refused by the machine before anything is signed. The submission's hash is the
+   UserOperation hash in production and the transaction hash in a world.
 2. **The bytes are written before they are sent.** The broadcast is a step after the commit. A crash between the two
    leaves a fence whose bytes were never sent, and `recover` sends them. A crash after the broadcast leaves a fence with
    an unknown outcome, and `observe` or `recover` settles it.
@@ -269,22 +284,32 @@ a second signature. Three rules:
    by a timeout or a node's error. This is the implementation's rule: "The send fence: it can stop a send that has not
    started; it cannot recall bytes in flight" (`infrastructure:S/reads/setups.ts:48-65`), and a failed or unknown send
    is one recorded value, `submission_unknown`, that only a check resolves (`S/writes/authorizations.ts:217-258`).
+4. **A new signature after a send proven dead reuses the Safe nonce.** The spend is signed again for the same Safe
+   nonce as the dead one, which never executed, so if the old submission comes back late, at most one of the two can
+   execute the spend: the second is refused by the Safe (`GS026`), and its factory call by the factory or the EntryPoint,
+   since the address has code. Sending the same bytes again is harmless for the same reason, the Safe nonce and CREATE2.
+   Under 4337 the paymaster's sponsorship has a window too: after it closes, a resend is rejected by the bundler, which
+   is still safe, and the send is then proven dead once `validUntil` has passed.
 
 **Refusals, from every state.** `—` is the machine's own refusal, generated, `PersonalSafeNotUnclaimed { state }` (exit
-40, code 900): named after the first state, it covers every move from a wrong state.
+40, code 900): named after the first state, it covers every move from a wrong state. `rotate`, which makes no move, has
+data refusals only.
 
 | Move \ state | none yet | `unclaimed` | `claimed` | `deploying` | `deployed` |
 |---|---|---|---|---|---|
 | `open` | `SafeAlreadyOpen` if the person has one | — | — | — | — |
 | `claim` | `PersonalSafeNotFound` | `SignerNotProven`; `NotAllowed` to anyone else | — (a second claim) | — | — |
-| `send` | not found | — (the spend is `NotClaimed` at propose) | system only | — (the fence: already sending) | — (a deployed Safe spends with no deploy) |
-| `observe`, `recover` | not found | — | — | moves | — |
-| `rotate` | not found | — (`NotClaimed`) | `SignerNotProven`, `NotAnOwner` | — (wait for the deploy) | `SignerNotProven`, `NotAnOwner` |
+| `send` | not found | — (the spend is `NotClaimed` at propose) | system only; moves to `deployed` if code is already there | — (the fence: already sending) | — (a deployed Safe spends with no deploy) |
+| `observe` | not found | — | moves (adopts a deploy) or stays | moves | — |
+| `recover` | not found | — | — | moves | — |
+| `rotate` (no move) | not found | `NotClaimed` | `SignerNotProven`, `NotAnOwner` | `DeployPending` | `SignerNotProven`, `NotAnOwner` |
+| `rotated` | not found | — | — | — | moves |
 | `correct` | not found | — | — | — | moves |
 
 Errors declared with the thing (`errors.ts`, exits from 41): `SafeAlreadyOpen { person }`, `SignerNotProven { signer }`,
-`NotClaimed { safe }` (a spend on a Safe with no signer, which S3's `safe-transaction` refuses at propose),
-`NotAnOwner { signer }` (a rotation not signed by today's signer), `DeployFailed { reason }`. `NotAllowed` and
+`NotClaimed { safe }` (a spend or a rotation on a Safe with no signer; S3a's `safe-transaction` refuses a spend at
+propose), `NotAnOwner { signer }` (a rotation not signed by today's signer), `DeployPending { safe }`,
+`DeployFailed { reason }`. `NotAllowed` and
 `PersonalSafeNotFound` are the runtime's (K16).
 
 ## 4. A company's Safe
@@ -382,15 +407,15 @@ export const machine = Blueprint.machine(CompanySafe, {
       from: ["processing", "attention", "ready", "rechecking"],
       to: ["processing", "attention", "ready", "rechecking", "failed"],
       emits: Events.CompanySafeObserved,
-      by: Blueprint.time.after("nextCheckAt", "0 seconds"), // the builder confirms the compiler takes a zero span
+      by: Blueprint.time.after("nextCheckAt", "0 seconds"), // fired by the keeper, K1; each observe rewrites nextCheckAt, which re-arms it
     },
     recover: {
       from: ["processing", "ready", "rechecking"], to: ["processing", "attention", "ready", "rechecking"],
-      emits: Events.CompanySafeRecovered, by: Blueprint.time.every("1 minute"),
+      emits: Events.CompanySafeRecovered, by: Blueprint.time.every("1 minute"), // fired by the keeper, K1
     },
     resume: { from: ["attention", "failed"], to: ["awaiting", "processing", "rechecking"], emits: Events.CompanySafeResumed },
   },
-  notFrom: { exit: 50 }, // generates CompanySafeNotAwaiting, carrying the state it found
+  notFrom: { exit: 40 }, // generates CompanySafeNotAwaiting, carrying the state it found
 });
 ```
 
@@ -401,7 +426,7 @@ export const machine = Blueprint.machine(CompanySafe, {
 | `begin` | `begin` (`S/writes/begins.ts:138-183`) | the company's owner, the founder | Works out the address from the founder's personal Safe and the salt; generation 1. The founder's Safe must be claimed (`FounderNotReady`); the signer, the founder's Safe and the company Safe must be distinct (`S/writes/begins.ts:80-89`). Sends nothing. Emits `CompanySafeSetupStarted { safe, company, founder, account }`. |
 | `prepare` | `prepareAuthorization`, `recordPreparation` (`S/operations/prepare-authorization.ts:14-47`, `S/writes/authorizations.ts:33-87`) | the founder | Builds the bootstrap, stores its digest and hash, good for ten minutes, and answers the digest and the expected signer. A new `prepare` replaces an unexpired one. Emits `CompanySafeBootstrapPrepared { safe, digest, expiresAt }`. |
 | `authorize` | `submitAuthorization`'s admit and `acceptAuthorization` (`S/operations/submit-authorization.ts:22-59`, `S/writes/authorizations.ts:114-194`) | the founder | Payload: the signature. Admitted only if it recovers to the founder Safe's signer (`SignerMismatch`), the preparation is unexpired and is the one stored (`StalePreparation`), and the hash is bound to no other company (`HashBoundElsewhere`). Binds the submission, mints `sendToken`, and sets `nextCheckAt` to now. A replay of the same signed bootstrap answers as accepted and changes nothing. Emits `CompanySafeBootstrapAuthorized { safe, submission }`. |
-| `send` | `checkSendFence`, the send, `recordSendOutcome` (`S/reads/setups.ts:48-65`, `S/writes/authorizations.ts:217-258`) | the system, right after `authorize` | The send fence: refused `SendFenced { reason }` unless the generation, `sendToken` and submission hash match and the setup is not completed. Broadcasts the signed bytes, then records the outcome in its commit: acknowledged sets `acknowledgedAt`; failed or unknown, one value, sets `issue: submission_unknown`. Either way it clears `sendToken`, so the bytes go out once; the check already scheduled by `authorize` settles what happened. Emits `CompanySafeBootstrapSent { safe, outcome }`. |
+| `send` | `checkSendFence`, the send, `recordSendOutcome` (`S/reads/setups.ts:48-65`, `S/writes/authorizations.ts:217-258`) | the system, right after `authorize` | The send fence: refused `SendFenced { reason }` unless the generation, `sendToken` and submission hash match and the setup is not completed. Broadcasts the signed bytes, then records the outcome in its commit: acknowledged sets `acknowledgedAt`; failed or unknown, one value, sets `issue: submission_unknown`. Either way it clears `sendToken`, so one authorization is broadcast once from `send`; a crash after the broadcast and before the commit leaves `sendToken` set, so a retried `send` broadcasts the same bytes again, which is harmless only because the Safe's nonce and CREATE2 let them land once; the check already scheduled by `authorize` settles what happened. Emits `CompanySafeBootstrapSent { safe, outcome }`. |
 | `observe` | `claimCheck`, `observe`, `applyObservation` (`S/operations/observe.ts:29-56`, `S/writes/observations.ts:72-212`) | time, at `nextCheckAt` | Reads the chain and applies the policy below. A check is capped at 45 seconds; a timeout is a retryable provider failure (`S/external/bootstraps.ts:100-162`). An observation from another generation is stale and writes nothing. Emits `CompanySafeObserved { safe, observation, issue }`, and on the first `ready` or the first `failed` it is the setup's transition event. |
 | `recover` | `recover`, `recoverDuePage` (`S/operations/recover.ts:26-42`, `S/writes/checks.ts:245-292`) | time, every minute | For a setup whose check is overdue by more than 90 seconds: adds one to `abandonedChecks` and checks again now; at three it halts, to `attention` (or stays `ready` if proven) with `issue: worker_failed` and `nextCheckAt` cleared. Emits `CompanySafeRecovered { safe, abandonedChecks }`. |
 | `resume` | `resume` (`S/writes/resumes.ts:41-145`) | the founder, or an operator | No submission and the founder's facts still hold → `awaiting`; a submission not proven → `processing`; a proof on record → `rechecking`. Adds one to `generation`, clears the counters and `parkedAt`, and checks now. Emits `CompanySafeResumed { safe, generation }`. |
@@ -424,10 +449,11 @@ instance here also fixes the version the commit is guarded by"), so `claimCheck`
   `pending`, and `recover`'s rule decides); the founder's Safe checked at the layer where it acts, never the
   outer transaction's `from`, which is the bundler in production and the submitting world key in a world: in production,
   the EntryPoint's `UserOperationEvent` in the receipt must carry the submission's UserOperation hash with `sender` the
-  founder's Safe and `success` true (the implementation's check of the UserOperation receipt's sender,
+  founder's Safe (the implementation's check of the UserOperation receipt's sender,
   `S/external/verifications.ts:40-190`); in a world, the receipt must hold the founder Safe's own `ExecutionSuccess` for
   the authorized SafeTx's hash, emitted by the founder Safe's address. Either missing, or a receipt for another hash →
-  definitive `receipt_mismatch`; reverted → definitive `receipt_reverted`; its logs must hold exactly the factory's
+  definitive `receipt_mismatch`; a reverted receipt, a `UserOperationEvent` with `success` false, or the founder Safe's
+  `ExecutionFailure` for that hash → definitive `receipt_reverted`; its logs must hold exactly the factory's
   `ProxyCreation` of this address with the `SafeL2` singleton (and the founder Safe's own, when the bootstrap was its
   first spend) → else definitive `receipt_mismatch`; then at that block, the code at the address, `getOwners() =
   [founder's Safe]`, `getThreshold() = 1` and `isModuleEnabled(Safe4337Module)` → else definitive
@@ -442,7 +468,7 @@ the current run and the observation:
 | `verified` | `ready`; the first one sets `completedAt` and is the `ready` event; checked again in 60 seconds |
 | `sameProof` | `ready`; checked again in 60 seconds unless `final` |
 | `orphaned` | `rechecking`, `issue: bootstrap_reorg`, `generation` + 1, the proof marked `orphaned` |
-| definitive | `failed`; the first one sets `failedAt` and is the `failed` event |
+| definitive | `failed`; the first one sets `failedAt` and is the `failed` event. `failed` is final for that authorization: Capxul never sends it, or a new one, again by itself. `resume` from `failed` only checks the same submission again (a reorg can change what the chain shows); setting the company's Safe up afresh after a definitive failure is not designed here (`design/later.md`) |
 | `pending` | still `processing` (or `rechecking`) while the run is under two minutes old; then `attention`, `issue: receipt_unresolved` if the send was acknowledged, else `submission_unknown`; a proven setup stays `ready` |
 | `providerFailure` | as `pending`, but `attention` at once if not retryable, `issue: provider_unavailable`; a proven setup stays `ready` |
 | `workerFailure` | `attention`, `issue: worker_failed`; a proven setup stays `ready` |
@@ -470,19 +496,19 @@ flight" (`S/reads/setups.ts:48-65`, `S/operations/submit-authorization.ts:39-55`
 `AddedOwner`, `RemovedOwner` and `ChangedThreshold`, and the chain wins where they differ. The implementation swaps a
 leaving owner's Safe for a joining one the same way (`infrastructure:B/organizations/proposals/rules/owner-changes.ts:20-25,195-225`).
 
-**Refusals, from every state.** `—` is the generated `CompanySafeNotAwaiting { state }` (exit 50, code 900).
+**Refusals, from every state.** `—` is the generated `CompanySafeNotAwaiting { state }` (exit 40, code 900).
 
 | Move \ state | none yet | `awaiting` | `processing` | `attention` | `ready` | `rechecking` | `failed` |
 |---|---|---|---|---|---|---|---|
 | `begin` | `CompanySafeExists`, `FounderNotReady`, `OwnersNotUnique`, `NotAllowed` | — | — | — | — | — | — |
-| `prepare` | not found | `NotAllowed` | — (`AlreadyAuthorized`) | — | — | — | — |
+| `prepare` | not found | `NotAllowed` | — | — | — | — | — |
 | `authorize` | not found | `SignerMismatch`, `StalePreparation`, `HashBoundElsewhere`, `NotAllowed` | — (a replay of the same bytes answers as accepted) | — | — | — | — |
 | `send` | not found | — | `SendFenced` | — | — | — | — |
 | `observe` | not found | — | applies | applies, unless parked or halted (no `nextCheckAt`; `resume`) | applies | applies | — |
 | `recover` | not found | — | applies | — | applies | applies | — |
 | `resume` | not found | — | — (busy: the check is running) | `NotAllowed` | — | — | `NotAllowed` |
 
-Errors declared with the thing (`errors.ts`, exits from 51): `CompanySafeExists { company }`, `FounderNotReady
+Errors declared with the thing (`errors.ts`, exits from 41): `CompanySafeExists { company }`, `FounderNotReady
 { founder }` (the founder's personal Safe is not claimed), `OwnersNotUnique` (the signer, the founder's Safe and the
 company Safe are not three addresses), `SignerMismatch { signer }`, `StalePreparation`, `HashBoundElsewhere`,
 `SendFenced { reason }` (`generation`, `token`, `hash` or `completed`), `ThresholdOutOfRange` (for S3's owner changes).
@@ -505,12 +531,19 @@ CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten o
   is `NotAllowed`. Needs S1's `claim`. It unblocks Bridge R1, the company's Safe address as a fact (CX-bridge-rails
   `:402`).
 - **S3a · A person's Safe on chain, and Safe transactions** (#1170): `personal-safe`'s `send`, `observe`, `recover`,
-  `rotate` and `correct`; `safe-transaction`; `openFor` and the waiting payout advanced by a claim. Needs S2.
+  `rotate` and `correct`; `safe-transaction`; `openFor` and the waiting payout advanced by a claim. Needs S2 and K1.
 - **S3b · A company's Safe set up** (#1196): `company-safe`'s `prepare`, `authorize`, `send`, `observe`, `recover`
-  and `resume`, and a director added after `ready`. Needs C1, and S3a's send and fence. CX-safe's S4 (the budget) now
-  needs S3b.
-- **S2, S4, S5 and P1** keep their words; "a counterfactual Safe" in S2's check reads "a claimed Safe not yet deployed,
-  or a begun company Safe".
+  and `resume`, and a director added after `ready`. Needs C1, S3a's send and fence, and K1. CX-safe's S4 (the budget)
+  now needs S3b, under Supersedes.
+- **S2** (#1169) keeps its shape; its money arrives at a claimed person's Safe not yet deployed, or at a begun company
+  Safe, not at "a counterfactual Safe" (under Supersedes; #1169 rewritten).
+- **S4, S5 and P1** keep their words, except that S4 needs S3b, not S3.
+- **K1 · time-fired moves run (the keeper)** (#1200): the keeper that fires a move declared `by:
+  Blueprint.time.after(field, span)` or `.every(span)`, once per due instant, as counted work, and fires an `after` move
+  again when a self-move writes its field anew. No package has it: `docs/canon/status.md:182` has
+  `world-clock-keeper` spiked and claimed by none, "the rest is M8's", and no Capxul machine uses `by` today. The moves
+  stay declared by time, which is the right model. Who builds it, Goal 16 or M8, the lead is settling with the
+  conductor. S3a and S3b need it.
 - **J1 · a journey's actor signs** (#1190): `s.<actor>.signs(template)`, a framework gap Goal 16 claims (K42: no running
   goal holds it). S1's claim journeys and S3a's need it.
 
@@ -542,3 +575,11 @@ CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten o
 - design/decisions/CX-safe.md: "Proceeding on the bootstrap key." → "Proceeding without it (CX-safe-machines)."
 - design/decisions/M7-capxul.md: "until they claim it, its only owner is Capxul's bootstrap key, and claiming deploys it with their key in its place" → "fixed when they claim it with their key, its one owner; it is deployed on its first spend (CX-safe-machines)"
 - design/decisions/M7-capxul.md: "and the Safe is deployed when it is claimed" → "and the Safe is deployed on its first spend (CX-safe-machines)"
+- design/decisions/CX-safe.md: "worked out before anything is on chain from a salt and its first owner, so money can be paid" → "worked out from a salt and its one owner, before anything is on chain, so money can be paid there once a person has claimed it (CX-safe-machines)"
+- design/decisions/CX-safe.md: "moves `deployed` or `claimed` back to `counterfactual`" → "moves `deployed` back to `deploying`, and a company's `ready` to `rechecking` (CX-safe-machines)"
+- design/decisions/CX-safe.md: "`AlreadyClaimed`, `NotAnOwner`." → "`PersonalSafeNotUnclaimed` (a second claim, the machine's own), `NotAnOwner` (CX-safe-machines)."
+- design/decisions/CX-safe.md: "a second claim is `AlreadyClaimed`" → "a second claim is `PersonalSafeNotUnclaimed`"
+- design/decisions/CX-safe.md: "It puts the claim in S3, since a person's Safe deploys when it is claimed." → "It puts the claim in S1, sending nothing, and the deploy in S3a, on the first spend (CX-safe-machines)."
+- design/decisions/CX-safe.md: "the address formula, the bootstrap owner" → "the address formula, the claim lane's states and its fence, but not its bootstrap owner (CX-safe-machines)"
+- design/decisions/CX-safe.md: "USDC sent to a counterfactual Safe's address is recorded once on that Safe," → "USDC sent to a claimed person's Safe not yet deployed, or to a begun company Safe, is recorded once on that Safe,"
+- design/decisions/CX-safe.md: "journeys | S3, A4 |" → "journeys | S3b, A4 |"
