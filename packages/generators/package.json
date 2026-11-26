@@ -16,12 +16,14 @@
     "#modules/*.js": "./src/modules/*.ts"
   },
   "devDependencies": {
+    "@orthograph/chain-evm": "workspace:*",
     "nx": "24.0.3"
   },
   "exports": {
     ".": "./src/main.ts",
     "./sync": "./src/modules/sync/service.ts",
     "./adapter": "./src/modules/adapter/service.ts",
+    "./abi": "./src/modules/abi/service.ts",
     "./package.json": "./package.json",
     "./render": "./src/modules/render/service.ts"
   },
@@ -43,6 +45,10 @@
       "./adapter": {
         "types": "./dist/modules/adapter/service.d.ts",
         "default": "./dist/modules/adapter/service.js"
+      },
+      "./abi": {
+        "types": "./dist/modules/abi/service.d.ts",
+        "default": "./dist/modules/abi/service.js"
       },
       "./package.json": "./package.json",
       "./render": {

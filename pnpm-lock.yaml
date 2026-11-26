@@ -606,6 +606,9 @@ importers:
         specifier: workspace:*
         version: link:../orthograph
     devDependencies:
+      '@orthograph/chain-evm':
+        specifier: workspace:*
+        version: link:../chain-evm
       nx:
         specifier: 24.0.3
         version: 24.0.3
