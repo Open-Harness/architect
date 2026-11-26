@@ -5,7 +5,7 @@ import { Effect } from "effect";
 import type { Model } from "@orthograph/compiler";
 import { Render } from "@orthograph/generators/render";
 import type { StarterApi } from "./types.ts";
-import { IGNORES, TSCONFIG, WORKSPACE, mergeWorkspace, packageJson } from "./internal/project.ts";
+import { AGE_EXEMPT, IGNORES, TSCONFIG, WORKSPACE, addToList, mergeWorkspace, packageJson } from "./internal/project.ts";
 
 const PARTS = ["blueprint", "src", "journeys"];
 
@@ -29,7 +29,7 @@ const write: StarterApi["write"] = (tree, { name }, source) => {
   const ignore = tree.exists(".gitignore") ? tree.read(".gitignore", "utf8")! : "";
   tree.write(".gitignore", [ignore.trimEnd(), ...IGNORES.filter((i) => !ignore.includes(i))].filter(Boolean).join("\n") + "\n");
   const workspace = tree.exists("pnpm-workspace.yaml") ? tree.read("pnpm-workspace.yaml", "utf8")! : "";
-  tree.write("pnpm-workspace.yaml", mergeWorkspace(workspace, WORKSPACE));
+  tree.write("pnpm-workspace.yaml", addToList(mergeWorkspace(workspace, WORKSPACE), "minimumReleaseAgeExclude", AGE_EXEMPT));
   return () => installPackagesTask(tree);
 };
 

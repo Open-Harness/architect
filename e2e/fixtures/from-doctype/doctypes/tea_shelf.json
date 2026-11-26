@@ -1,0 +1,30 @@
+{
+ "doctype": "DocType",
+ "name": "Tea Shelf",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 0,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "shelf_name",
+   "fieldtype": "Data",
+   "label": "Shelf Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "slots",
+   "fieldtype": "Table",
+   "label": "Slots",
+   "options": "Tea Shelf Slot"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Tea Master",
+   "permlevel": 0,
+   "read": 1,
+   "create": 1
+  }
+ ]
+}

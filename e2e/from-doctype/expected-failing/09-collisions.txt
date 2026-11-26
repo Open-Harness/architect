@@ -1,0 +1,4 @@
+# CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
+from-doctype/09-collisions.test.ts > CX-from-doctype 09: collisions > lengthens a refusal code another thing of the same run takes: Tea Teapot, beside Tea Tray's TT, is TTE
+from-doctype/09-collisions.test.ts > CX-from-doctype 09: collisions > lengthens an id prefix a thing from an earlier run holds: Tea Blend Lot after Tea Blend is tblx
+from-doctype/09-collisions.test.ts > CX-from-doctype 09: collisions > refuses a record type when every code up to four letters is taken, naming it
