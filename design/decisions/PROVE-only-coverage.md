@@ -36,5 +36,10 @@ found on `examples/plugged-in`. Aaron's words on the findings: "they should work
 
 The comments that say `--only` exits 1 on coverage are stale after this: `e2e/ui-layer/04-a-name-is-claimed-once-through-web.test.ts`
 (line 14), `e2e/m1/17-telemetry-model.test.ts` (line 326), `e2e/m1/30-st1-24-warm-world.test.ts` (line 216),
-`e2e/m2/09-journey-stand-calls.test.ts` (line 212) and `e2e/m2/10-prove-stand-ins.test.ts` (line 267). A builder may
-not edit them. Their assertions hold either way.
+`e2e/m1/42-m2-02-principal-journeys.test.ts` (line 72), `e2e/m2/09-journey-stand-calls.test.ts` (line 212) and
+`e2e/m2/10-prove-stand-ins.test.ts` (line 267). A builder may not edit them. Their assertions hold either way.
+
+## Supersedes
+
+- `packages/prove/src/modules/prove/README.md`: "`--only` selects a journey by its declared name." → "`--only` selects a journey by its declared name or by its file as `ortho brief` and `ortho model` list it"
+- `design/later.md`: "**`--only` should not count coverage against the journeys it excluded, and the climber's worktree needs `pnpm install` said**" → "**The climber's worktree needs `pnpm install` said**"
