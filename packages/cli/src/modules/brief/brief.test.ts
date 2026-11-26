@@ -17,6 +17,7 @@ describe("ortho brief", () => {
     expect(out).toContain("  blueprint/journeys/**");
     expect(out).toContain("allowance.spend's 9 evals: answer shape, declared errors, machine path, events, who may call, steps, performance, coverage, explainability");
     expect(out).toContain("journeys/spend-within-allowance.ts");
+    expect(out).toMatch(/^  \(to run one of them alone: ortho prove --only journeys\/[a-z-]+\.ts\)$/m);
     expect(out).toContain("refuse with AllowanceExceeded (exit 41)");
     expect(out).toContain("never refuse AllowanceNotActive or NotAllowed yourself");
     expect(Brief.forbidden).toContain("blueprint/journeys/**");
