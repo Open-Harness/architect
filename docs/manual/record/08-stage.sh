@@ -24,4 +24,5 @@ rec stage-up-no-account.txt "ortho env up staging --run $run" -- env -u CLOUDFLA
 rec stage-destroy-no-account.txt "ortho env destroy staging --run $run" -- env -u CLOUDFLARE_API_TOKEN -u CLOUDFLARE_ACCOUNT_ID node "$repo/packages/cli/src/main.ts" env destroy staging --run "$run"
 rec stage-prove-no-address.txt "ortho prove --env staging --run $run" -- env -u ORTHO_STAGING_SUBDOMAIN -u ORTHO_STAGING_ORIGIN node "$repo/packages/cli/src/main.ts" prove --env staging --run "$run"
 rec stage-promote.txt "ortho promote --to staging" -- env -u ORTHO_LOGBOOK_URL node "$repo/packages/cli/src/main.ts" promote --to staging
+rec stage-logbook.txt "ortho env up logbook" -- env -u ORTHO_OIDC_ISSUER -u ORTHO_OIDC_REPOSITORY -u ORTHO_OIDC_REF -u ORTHO_OIDC_WORKFLOW node "$repo/packages/cli/src/main.ts" env up logbook
 ortho stage-promote-help.txt promote --help

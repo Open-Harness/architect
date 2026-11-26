@@ -142,7 +142,7 @@
     },
     {
      "id": "a3",
-     "text": "Those values are yours. You set them where the command runs. No agent is handed them."
+     "text": "Those values are yours. You set them where the command runs. Keeping them from an agent is practice. The framework only never prints them."
     },
     {
      "id": "a4",
@@ -150,7 +150,7 @@
     },
     {
      "id": "a5",
-     "text": "One honest note. There is no real deployment in this film. It waits on the owner's credential, and it will be recorded then. Everything you saw ran with no cloud account.",
+     "text": "One honest note. There is no real deployment in this film. It waits on a cloud credential we do not have yet, and it will be recorded then. Everything you saw ran with no cloud account.",
      "gap": 0.6
     },
     {

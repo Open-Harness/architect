@@ -33,7 +33,8 @@ Plugged In declares none, so nothing is owed. An app that had some would see the
 ## Ask for the plan before anything is made
 
 We want the list of what will exist in the account, and we want it without touching the account. A staging in the
-cloud is made for one run, and you give the run a short name. The command that makes it prints its plan first.
+cloud is made for one run, and you give the run a short name. Given the word plan, the command that makes it prints
+what it would make, and stops.
 
 ```json capture=stage-plan.txt
 $ ortho env up staging --plan --run demo1
@@ -147,8 +148,16 @@ promote couldn't run: no logbook: start one with `ortho env up logbook`, or set 
 exit 2
 ```
 
-We tried `ortho env up logbook` as well, and it asked for a policy that only a pipeline has. So on your own machine
-you stage with the commands above, and promote waits for one.
+We tried that as well, and it stops too.
+
+```sh capture=stage-logbook.txt
+$ ortho env up logbook
+the logbook needs a policy: ORTHO_OIDC_ISSUER, ORTHO_OIDC_REPOSITORY, ORTHO_OIDC_REF and ORTHO_OIDC_WORKFLOW
+exit 2
+```
+
+Those four describe a pipeline, not a person at a desk. So on your own machine you stage with the commands above,
+and promote waits for a pipeline.
 
 And a deploy can die halfway. The notes say destroy needs nothing from the run that failed: it lists the account
 and deletes what carries the run's prefix. We have not recorded that either.
@@ -156,9 +165,9 @@ and deletes what carries the run's prefix. We have not recorded that either.
 ## How this stands
 
 The plan, the build, staging on this machine and every refusal above run today, and were recorded on Plugged In on
-26 November 2026 with no cloud account. The real deployment in this chapter is not recorded. It waits on the owner's
-credential, and it will be recorded when he gives it. So this chapter shows the path to a real address, and no
-address.
+26 November 2026 with no cloud account. The real deployment in this chapter is not recorded. It waits on a cloud
+credential from this repository's owner, and it will be recorded when there is one. So this chapter shows the path to
+a real address, and no address. Nothing here was staged or replayed: each recording is the command's own output.
 
 The status page (`docs/canon/status.md`) says the same. The plan and the two commands are built, proved with no
 credential and no network. A live staging run is building: in this repository it is a workflow started by hand.
