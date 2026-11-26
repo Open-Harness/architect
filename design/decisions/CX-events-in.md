@@ -28,6 +28,8 @@ A first cut of E1's checks (#1178, first head) ran the hops inside `accept` and 
    - **The host binds it** in `packages/host-cloudflare/src/modules/events`, a new module that is not Goal 18's (Goal 18 holds the follower and the
      relayer). The binding is `Inboxes.sink(inbox)`, the follower's sink. Its `accept` answers as soon as the core's `accept` has. It then runs a pass as
      counted work (`Busy`), and sets `Timers.at(next, "events/inbox", "pass", …)` for the next one. Every wait goes through `Timers`.
+     A pass the timer starts is counted work too, and sets the timer after it in turn. One inbox keeps at most one pending pass timer for an
+     instant, however many entries it accepted.
 2. **`accept(entry)`, in one step, then the answer** (Q2.3). An entry is `{ source, id, event, fields }`.
    - **A new id.** The core writes:
      - its journal row, id `<source>:<id>`;
@@ -55,14 +57,16 @@ A first cut of E1's checks (#1178, first head) ran the hops inside `accept` and 
    - `EventNames` takes an adapter event as well as a blueprint event.
    - A hop whose event has no name is a defect at `Inbox.make`, naming the hop's operation.
 5. **Deliveries** (Q3, Q5).
-   - **The pass.** It takes every due `pending` row, in journal order, and claims it: `claimed`, `due = now + lease`. It runs the hop with the key
+   - **The pass.** It takes every due `pending` row, in journal order and one after another (never two at once), and claims it: `claimed`, `due = now + lease`. It runs the hop with the key
      `on|<journal id>|<operation>` (Q3.2), so a redelivery answers what the first answered. It records the outcome only on the row it claimed.
    - **A success** is `delivered`.
    - **A typed failure is a refusal** (Q3.3). It is `refused`, its `_tag` is the `outcome`, and it is never retried.
    - **A defect** (a hop that dies or throws, or a `map` that throws) is retried (Q5.1):
-     - the next due is 1 s after it, doubling, never more than an hour apart;
+     - the next due is 1 s after the pass that met it (not after the row's old `due`), doubling, never more than an hour apart;
      - the 15th failed attempt ends `failed`, with the defect's first line as its `outcome` (Q5.2).
    - **A claimed row whose pass died** is due again when its 30-second lease ends, and runs again under the same key.
+   - **A pass answers `next`,** the earliest `due` of every row still `pending` or `claimed`, or nothing.
+   - **A repeat changes no row.** A `"seen"` entry never sets a `refused` or `failed` row back to `pending`: only `ortho outbox redeliver` does (Q5.3).
    - **No row waits on another.** A chain event's subject is its own id, so a retrying row never holds a later event's row (Q1.3's order is per
      subject).
    - **The numbers are M5-reach-out's:** backoff 1 s, maximum one hour, 15 attempts, lease 30 s.

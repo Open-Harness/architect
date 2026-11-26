@@ -69,4 +69,55 @@ describe("events in from the chain (E1, CX-events-in): Inboxes.sink, the followe
       expect((yield* inbox.rows).map((r) => r.state)).toEqual(["refused"]);
       expect(yield* (yield* Timers).pending).toEqual([]);
     })));
+
+  it("the pass a timer starts is counted work: once the world is quiet after the firing, a retry that takes its time has ended delivered", () =>
+    run(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const slow = Effect.forEach(Array.from({ length: 20 }), () => Effect.yieldNow, { discard: true });
+      const { inbox } = inboxWith((n) => (n === 1 ? Effect.die(new Error("the database is away")) : slow));
+      yield* sinkOf(inbox).accept(entry(0));
+      yield* busy.quiet;
+      yield* TestClock.setTime(1_000);
+      yield* timers.fire(1_000);
+      yield* busy.quiet;
+      expect((yield* inbox.rows).map((r) => [r.state, r.attempts])).toEqual([["delivered", 2]]);
+    })));
+
+  it("the pass a timer starts sets the timer after it: a delivery that dies twice is tried at 1 s and 3 s, then delivered", () =>
+    run(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const { calls, inbox } = inboxWith((n) => (n <= 2 ? Effect.die(new Error("the database is away")) : Effect.void));
+      yield* sinkOf(inbox).accept(entry(0));
+      yield* busy.quiet;
+      yield* TestClock.setTime(1_000);
+      yield* timers.fire(1_000);
+      yield* busy.quiet;
+      expect((yield* timers.pending).map((t) => [t.at, t.owner, t.name])).toEqual([[3_000, "events/inbox", "pass"]]);
+      yield* TestClock.setTime(3_000);
+      yield* timers.fire(3_000);
+      yield* busy.quiet;
+      expect(calls.length).toBe(3);
+      expect((yield* inbox.rows).map((r) => [r.state, r.attempts])).toEqual([["delivered", 3]]);
+      expect(yield* timers.pending).toEqual([]);
+    })));
+
+  it("one inbox keeps one pass timer for an instant: two entries that each die once leave one timer, and its pass delivers both", () =>
+    run(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const { inbox } = inboxWith((n) => (n <= 2 ? Effect.die(new Error("the database is away")) : Effect.void));
+      const sink = sinkOf(inbox);
+      yield* sink.accept(entry(0));
+      yield* busy.quiet;
+      yield* sink.accept(entry(1));
+      yield* busy.quiet;
+      expect((yield* timers.pending).map((t) => [t.at, t.owner, t.name])).toEqual([[1_000, "events/inbox", "pass"]]);
+      yield* TestClock.setTime(1_000);
+      yield* timers.fire(1_000);
+      yield* busy.quiet;
+      expect((yield* inbox.rows).map((r) => r.state)).toEqual(["delivered", "delivered"]);
+      expect(yield* timers.pending).toEqual([]);
+    })));
 });
