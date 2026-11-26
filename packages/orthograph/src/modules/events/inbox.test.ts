@@ -4,9 +4,10 @@
 // Done when (#1165): a confirmed event delivered twice settles once; an `anvil_reorg` that drops it delivers a correction and the handler's effect is undone;
 // a restart replays nothing already settled.
 //
-// The seam is CX-events-in's: `Inbox.memory()` and `Inbox.make({ store, hops })` on `orthograph/server`, with `accept(entry)` (settle the id and write its
-// delivery rows in one step, then answer; never run a hop, never fail on the entry), `pass` (deliver every due row once at the clock's instant), and
-// `journal` and `rows` (the `_journal` and `_outbox` rows of M5-reach-out Q1 and Q2.3). A correction is an event of its own (K7 Q6), taken with plain
+// The seam is CX-events-in's: `Inbox.memory()` and `Inbox.make({ store, hops, wait })` on `orthograph/server`, with `accept(entry)` (settle the id and
+// write its delivery rows in one step, then answer; never run a hop, never fail on the entry), `pass` (deliver every due row once at the clock's instant,
+// under a claim it renews through `wait`), `journal` and `rows` (the `_journal` and `_outbox` rows of M5-reach-out Q1 and Q2.3) and `seen` (the
+// inbox's own record of each id it settled, with the defect of one that did not decode). A correction is an event of its own (K7 Q6), taken with plain
 // `Blueprint.on`. The entries are those `e2e/on-chain/11-m6-09-follower.test.ts` proves the follower hands on after a real `anvil_reorg`; the Anvil run
 // into this inbox is S2's check (#1169). This file: settling, fan-out and one delivery. `inbox-delivery.test.ts`: refusals, retries, restarts and leases.
 // Prior art: Goal 17 slice 11's door inbox (`host-cloudflare/src/modules/inbound/internal/accept.ts`), credited in the decision.
@@ -27,6 +28,7 @@ describe("events in from the chain (E1, CX-events-in): accept settles and writes
       expect(a.calls).toEqual([]);
       expect(yield* a.inbox.journal).toEqual([{ id: `chain:${CHAIN}:${hashA}:0`, operation: "in:chain", move: "", subject: `chain:${CHAIN}:${hashA}:0`, event: "Token.Transfer", fields: e.fields }]);
       expect(yield* a.inbox.rows).toEqual([pendingRow(e, "payment.record", 1)]);
+      expect(yield* a.inbox.seen).toEqual([{ id: journalId(e) }]);
     })));
 
   it("a confirmed event delivered twice settles once: the repeat is \"seen\" and writes nothing, before and after its delivery", () =>
@@ -71,17 +73,18 @@ describe("events in from the chain (E1, CX-events-in): accept settles and writes
       expect(a.balanceOf(SAFE)).toBe(BIG);
     })));
 
-  it("an entry whose fields do not decode is answered and settled: \"accepted\", a journal row with a defect naming its event, no delivery, and the next entry flows", () =>
+  it("an entry whose fields do not decode is answered and settled (Q2.2): \"accepted\", nothing in the journal, its defect in the inbox's seen record, and the next entry flows", () =>
     run(Effect.gen(function* () {
       const a = app(inbox().memory());
       const bad = frozen({ ...confirmed(hashA, 0, 1n), fields: { from: PAYER, to: SAFE, value: "not-a-number" } });
       const next = confirmed(hashA, 1, 7n);
       expect([yield* a.inbox.accept(bad), yield* a.inbox.accept(bad), yield* a.inbox.accept(next)]).toEqual(["accepted", "seen", "accepted"]);
-      const [kept, ...rest] = yield* a.inbox.journal;
-      expect(kept).toMatchObject({ id: journalId(bad), event: "Token.Transfer", fields: bad.fields });
-      expect(kept!.defect).toEqual(expect.stringContaining("Token.Transfer"));
-      expect(rest.map((r) => [r.id, r.defect])).toEqual([[journalId(next), undefined]]);
-      expect(yield* a.inbox.rows).toEqual([pendingRow(next, "payment.record", 2)]);
+      // `_journal` holds only what decoded: views, rebuilds and /_world/facts/journal never read the bad one.
+      expect((yield* a.inbox.journal).map((r) => r.id)).toEqual([journalId(next)]);
+      const [kept, ...rest] = yield* a.inbox.seen;
+      expect(kept).toEqual({ id: journalId(bad), defect: expect.stringContaining("Token.Transfer") });
+      expect(rest).toEqual([{ id: journalId(next) }]);
+      expect(yield* a.inbox.rows).toEqual([pendingRow(next, "payment.record", 1)]);
       yield* a.inbox.pass;
       expect(a.calls.map((c) => (c.payload as { value: bigint }).value)).toEqual([7n]);
     })));
@@ -91,7 +94,8 @@ describe("events in from the chain (E1, CX-events-in): accept settles and writes
       const a = app(inbox().memory());
       const approval = frozen({ source: "chain", id: `${CHAIN}:${hashA}:2`, event: "Token.Approval", fields: { owner: PAYER, spender: SAFE, value: "1" } });
       expect([yield* a.inbox.accept(approval), yield* a.inbox.accept(approval)]).toEqual(["accepted", "seen"]);
-      expect((yield* a.inbox.journal).map((r) => [r.id, r.defect])).toEqual([[journalId(approval), undefined]]);
+      expect((yield* a.inbox.journal).map((r) => r.id)).toEqual([journalId(approval)]);
+      expect(yield* a.inbox.seen).toEqual([{ id: journalId(approval) }]);
       expect(yield* a.inbox.rows).toEqual([]);
     })));
 

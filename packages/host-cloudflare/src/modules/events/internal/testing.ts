@@ -4,7 +4,7 @@
 import type { Busy, Timers } from "@orthograph/language-effect";
 import { Blueprint } from "orthograph";
 import * as Server from "orthograph/server";
-import { Effect, Schema } from "effect";
+import { Clock, Duration, Effect, Schema } from "effect";
 import * as Host from "../../../index.ts";
 
 export type Answer = "accepted" | "seen";
@@ -13,9 +13,12 @@ export interface InboxOf { readonly rows: Effect.Effect<ReadonlyArray<{ readonly
 export interface Sink { readonly accept: (entry: Entry) => Effect.Effect<Answer, never, Busy | Timers> }
 
 export const missing = (what: string): never => Effect.runSync(Effect.die(new Error(what)));
-export const sinkOf = (inbox: unknown): Sink => {
-  const found = (Host as Record<string, unknown>)["Inboxes"] as { readonly sink: (inbox: unknown) => Sink } | undefined;
-  return found === undefined ? missing("@orthograph/host-cloudflare exports no `Inboxes`: E1 adds `Inboxes.sink(inbox)`, the follower's sink over orthograph's Inbox (CX-events-in)") : found.sink(inbox);
+/** The inbox's identity, as the follower names itself; a sink's timers are owned by `events/inbox/<name>`. */
+export const NAME = "eip155:31337:0x00000000000000000000000000000000000ec40e";
+export const ownerOf = (name: string) => `events/inbox/${name}`;
+export const sinkOf = (inbox: unknown, name: string = NAME): Sink => {
+  const found = (Host as Record<string, unknown>)["Inboxes"] as { readonly sink: (inbox: unknown, options: { readonly name: string }) => Sink } | undefined;
+  return found === undefined ? missing("@orthograph/host-cloudflare exports no `Inboxes`: E1 adds `Inboxes.sink(inbox, { name })`, the follower's sink over orthograph's Inbox (CX-events-in)") : found.sink(inbox, { name });
 };
 export const coreOf = () => {
   const found = (Server as Record<string, unknown>)["Inbox"] as { readonly memory: () => unknown; readonly make: (spec: unknown) => InboxOf } | undefined;
@@ -34,5 +37,5 @@ export const inboxWith = (behave: (attempt: number) => Effect.Effect<unknown, un
   let attempt = 0;
   const hop = { to: "payment.record", on: on((e) => e), run: (payload: unknown) => Effect.suspend(() => { calls.push(payload); attempt++; return behave(attempt); }) };
   const core = coreOf();
-  return { calls, inbox: core.make({ store: core.memory(), hops: [hop] }) };
+  return { calls, inbox: core.make({ store: core.memory(), hops: [hop], wait: (ms: number) => Effect.flatMap(Clock.Clock, (clock) => clock.sleep(Duration.millis(ms))) }) };
 };

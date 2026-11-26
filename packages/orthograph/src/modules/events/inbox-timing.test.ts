@@ -83,6 +83,8 @@ describe("events in from the chain (E1, CX-events-in): next, backoff, repeats an
       expect(yield* dying.inbox.rows).toEqual(failed);
     })));
 
+  // Journal order holds while the pass is E1's own. When the outbox takes the pass over as its drain, the order becomes (to, subject, seq) (Q1.3,
+  // CX-events-in call 5): this check's two hops and two events then interleave differently, and its author changes it with that slice.
   it("a pass runs its rows one after another in journal order: a hop that waits ends before the next row starts", () =>
     run(Effect.gen(function* () {
       const log: Array<string> = [];

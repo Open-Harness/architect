@@ -3,7 +3,7 @@
 // checks come first"). `testing.ts`, so the build leaves it out (tsconfig.build.json).
 //
 // The names E1 adds are read off the front door at run time, so this file typechecks before they exist and a check fails on the missing name.
-import { Effect, Schema } from "effect";
+import { Clock, Duration, Effect, Schema } from "effect";
 import { TestClock } from "effect/testing";
 import { Blueprint } from "../../../index.ts";
 import * as Server from "../../../server.ts";
@@ -35,6 +35,10 @@ export interface JournalRow {
   readonly subject: string;
   readonly event: string;
   readonly fields: unknown;
+}
+/** The inbox's own record of an id it settled (CX-events-in, call 2): never `_journal`. */
+export interface SeenRecord {
+  readonly id: string;
   readonly defect?: string;
 }
 export interface DeliveryRow {
@@ -45,6 +49,8 @@ export interface DeliveryRow {
   readonly state: "pending" | "claimed" | "delivered" | "refused" | "failed";
   readonly attempts: number;
   readonly due: number;
+  /** Only while the row is `claimed`. */
+  readonly claim?: string;
   readonly outcome?: string;
 }
 export interface InboxOf {
@@ -52,10 +58,13 @@ export interface InboxOf {
   readonly pass: Effect.Effect<{ readonly next: number | undefined }>;
   readonly journal: Effect.Effect<ReadonlyArray<JournalRow>>;
   readonly rows: Effect.Effect<ReadonlyArray<DeliveryRow>>;
+  readonly seen: Effect.Effect<ReadonlyArray<SeenRecord>>;
 }
+/** How the inbox waits to renew a claim: the host gives it `Timers.sleep`; these checks give it the test clock. */
+export type Wait = (ms: number) => Effect.Effect<void>;
 interface InboxApi {
   readonly memory: () => unknown;
-  readonly make: (spec: { readonly store: unknown; readonly hops: ReadonlyArray<Hop> }) => InboxOf;
+  readonly make: (spec: { readonly store: unknown; readonly hops: ReadonlyArray<Hop>; readonly wait: Wait }) => InboxOf;
 }
 interface Naming {
   readonly name: (event: unknown, name: string) => void;
@@ -68,9 +77,13 @@ export const ATTEMPTS = 15;
 export const LEASE = 30_000;
 
 const missing = (what: string): never => Effect.runSync(Effect.die(new Error(what)));
-export const inbox = (): InboxApi => {
+/** A wait on the test clock: it ends when a check moves the clock past it. */
+export const clockWait: Wait = (ms) => Effect.flatMap(Clock.Clock, (clock) => clock.sleep(Duration.millis(ms)));
+/** The front door's `Inbox`; a `make` without a `wait` is given `clockWait`, so a check names a wait only when the wait is what it judges. */
+export const inbox = (): { readonly memory: () => unknown; readonly make: (spec: { readonly store: unknown; readonly hops: ReadonlyArray<Hop>; readonly wait?: Wait }) => InboxOf } => {
   const found = (Server as Record<string, unknown>)["Inbox"];
-  return found === undefined ? missing("orthograph/server exports no `Inbox`: E1 adds `Inbox.memory()` and `Inbox.make({ store, hops })` (CX-events-in)") : (found as InboxApi);
+  const api = found === undefined ? missing("orthograph/server exports no `Inbox`: E1 adds `Inbox.memory()` and `Inbox.make({ store, hops, wait })` (CX-events-in)") : (found as InboxApi);
+  return { memory: () => api.memory(), make: (spec) => api.make({ ...spec, wait: spec.wait ?? clockWait }) };
 };
 /** What generated code does once per event: give it its wire name. */
 const naming = (Server as unknown as { readonly EventNames: Naming }).EventNames;

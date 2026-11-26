@@ -24,22 +24,31 @@ A first cut of E1's checks (#1178, first head) ran the hops inside `accept` and 
      - fanning it out to delivery rows;
      - one delivery pass at the clock's instant, with the claim, the key, the outcome and the backoff.
 
-     It depends only on Effect and reads time only through Effect's `Clock`, which a world sets. It never waits. A pass answers when a row is next due.
+     It depends only on Effect and reads time only through Effect's `Clock`, which a world sets. It waits only through the `wait` it is given at
+     `Inbox.make({ store, hops, wait })` (the host's `Timers.sleep`), and only to renew a claim (call 5). A pass answers when a row is next due.
    - **The host binds it** in `packages/host-cloudflare/src/modules/events`, a new module that is not Goal 18's (Goal 18 holds the follower and the
-     relayer). The binding is `Inboxes.sink(inbox)`, the follower's sink. Its `accept` answers as soon as the core's `accept` has. It then runs a pass as
-     counted work (`Busy`), and sets `Timers.at(next, "events/inbox", "pass", …)` for the next one. Every wait goes through `Timers`.
+     relayer). The binding is `Inboxes.sink(inbox, { name })`, the follower's sink; `name` is the inbox's identity (the follower's own name,
+     `eip155:<chainId>:<address>`). Its `accept` answers as soon as the core's `accept` has. It then runs a pass as counted work (`Busy`), and sets
+     `Timers.at(next, "events/inbox/<name>", "pass", …)` for the next one, so two inboxes in one process never share a timer's owner. Every wait goes
+     through `Timers`.
      A pass the timer starts is counted work too, and sets the timer after it in turn. One inbox keeps at most one pending pass timer for an
      instant, however many entries it accepted.
 2. **`accept(entry)`, in one step, then the answer** (Q2.3). An entry is `{ source, id, event, fields }`.
-   - **A new id.** The core writes:
+   - **The inbox's seen record.** The inbox keeps its own record of every id it settled, `{ id: "<source>:<id>", defect? }`, beside the journal
+     and never in it. `accept` reads it first.
+   - **A new id that decodes.** The core writes, in one store write:
+     - its seen record;
      - its journal row, id `<source>:<id>`;
-     - one delivery row for each hop that takes its event;
+     - one delivery row for each hop that takes its event.
 
-     both in one store write. Then it answers `"accepted"`.
+     Then it answers `"accepted"`.
    - **An id it has.** It writes nothing and answers `"seen"`.
-   - **Fields that do not decode by the hop's event schema** (Q2.2). It is still answered `"accepted"`. The journal row is kept, so a repeat is
-     `"seen"`, and the row carries a `defect` naming the event. It writes no delivery row. It never fails and never makes the follower retry.
-   - **An event no hop takes.** Its journal row is kept and it fans out to nothing.
+   - **Fields that do not decode by the hop's event schema** (Q2.2: an included event that does not decode gets nothing written and a defect). It
+     is answered `"accepted"`. Nothing goes to `_journal`, so views, rebuilds and `/_world/facts/journal` never read it, and no delivery row is written.
+     Only the seen record is written, carrying the defect, which names the event, so a repeat is `"seen"`. The host also puts the defect on its
+     span. It never fails and never makes the follower retry.
+   - **An event no hop takes.** Its seen record and journal row are written, and it fans out to nothing (Q1.1: an event nobody subscribes to writes
+     no outbox row).
    - **`accept` has no error channel.** A store that cannot write is a defect.
 3. **A correction is an event of its own** (K7 Q6, `K7-chain-languages.md:401`; M5-reach-out Q2.4). The follower hands `<Contract>.<Event>Corrected`
    on with its own id (`…:corrected`) and the event's fields plus `wasConfirmed`.
@@ -57,10 +66,19 @@ A first cut of E1's checks (#1178, first head) ran the hops inside `accept` and 
    - `EventNames` takes an adapter event as well as a blueprint event.
    - A hop whose event has no name is a defect at `Inbox.make`, naming the hop's operation.
 5. **Deliveries** (Q3, Q5).
-   - **The pass.** It takes every due `pending` row, in journal order and one after another (never two at once), and claims it: `claimed`, `due = now + lease`. It runs the hop with the key
-     `on|<journal id>|<operation>` (Q3.2), so a redelivery answers what the first answered. It records the outcome only on the row it claimed.
+   - **The pass.** It runs the due rows one after another, never two at once, in journal order. When the outbox takes the pass over as its drain, the
+     order becomes the drain's `(to, subject, seq)` (Q1.3); a chain event is its own subject, so only rows of one subject keep their order then.
+   - **The claim** (Q1.3). Passes of one store may overlap: the host starts one per accept and one per timer.
+     - A pass claims a row in one step, re-reading it at that moment: only a row that is `pending` and due, or `claimed` with its lease over, is
+       taken. Taking it makes it `claimed`, `due = now + lease`, with a fresh `claim` token.
+     - It runs the hop with the key `on|<journal id>|<operation>` (Q3.2), so a redelivery answers what the first answered.
+     - While the hop runs, the claimer renews its lease every half lease (`due = now + lease`, through `wait`), as long as the token is still
+       its own.
+     - It records the outcome only where the row's `claim` is still its token. A claimer whose lease ran out and was claimed again records
+       nothing, and the row stays as the newer claimer left it.
    - **A success** is `delivered`.
-   - **A typed failure is a refusal** (Q3.3). It is `refused`, its `_tag` is the `outcome`, and it is never retried.
+   - **A typed failure is a refusal** (Q3.3). It is `refused`, and it is never retried. Its `outcome` is its `_tag`, or `"Refused"` for an error with
+     none.
    - **A defect** (a hop that dies or throws, or a `map` that throws) is retried (Q5.1):
      - the next due is 1 s after the pass that met it (not after the row's old `due`), doubling, never more than an hour apart;
      - the 15th failed attempt ends `failed`, with the defect's first line as its `outcome` (Q5.2).
@@ -71,10 +89,12 @@ A first cut of E1's checks (#1178, first head) ran the hops inside `accept` and 
      subject).
    - **The numbers are M5-reach-out's:** backoff 1 s, maximum one hour, 15 attempts, lease 30 s.
 6. **The store's contract, against `_journal` and `_outbox`** (Q1, Q2.3).
-   - **A journal row** is:
-     - `{ id: "<source>:<id>", operation: "in:<source>", move: "", subject: <the journal id>, event, fields, defect? }` (a chain event names no object, so its subject is itself).
+   - **A journal row** is `_journal`'s and nothing more:
+     - `{ id: "<source>:<id>", operation: "in:<source>", move: "", subject: <the journal id>, event, fields }` (a chain event names no object, so its subject is itself).
+   - **A seen record** is the inbox's own: `{ id: <the journal id>, defect? }`. A D1 store keeps it in a table of its own.
    - **A delivery row** is `_outbox`'s:
-     - `{ event: <journal id>, seq, to: "op:<operation>", subject, state, claim?, attempts, due, outcome? }`;
+     - `{ event: <journal id>, seq, to: "op:<operation>", subject, state, claim?, attempts, due, outcome? }`; `claim` is there only while the row is
+       `claimed`;
      - `state` is `pending | claimed | delivered | refused | failed`, and `(event, to)` is unique.
    - **The two stores.** `Inbox.memory()` keeps exactly these rows in memory, for worlds and tests. A D1 store keeps the same rows in the default
      database's tables, written in one batch.
@@ -88,7 +108,8 @@ A first cut of E1's checks (#1178, first head) ran the hops inside `accept` and 
 
 ## What E1's checks pin
 
-- `packages/orthograph/src/modules/events/inbox.test.ts` and `inbox-delivery.test.ts`, over `internal/testing.ts`: the core, through the front door
+- `packages/orthograph/src/modules/events/inbox.test.ts`, `inbox-delivery.test.ts`, `inbox-timing.test.ts` and `inbox-claims.test.ts`, over
+  `internal/testing.ts`: the core, through the front door
   (`Blueprint` from `orthograph`, `Inbox` and `EventNames` from `orthograph/server`).
 - `packages/orthograph/test/events-in-types.test.ts`, over `test/fixtures/events-in-types/`: an adapter event typechecks through `Blueprint.on` with
   no cast, so S2 can write `Blueprint.on(token.events.Transfer, (e) => …)`.
@@ -97,25 +118,21 @@ A first cut of E1's checks (#1178, first head) ran the hops inside `accept` and 
 
 ## Not E1's
 
-- **The D1 store and the wiring** (`_journal` rows from the chain, `_outbox`, binding `FOLLOWER_SINK` to `Inboxes.sink`), and an Anvil run through the
-  follower. These are S2's need, as a unit of their own or within S2 (#1169); the lead files it.
+- **The D1 store and the wiring** (`_journal` rows from the chain, `_outbox`, the seen record's table, binding `FOLLOWER_SINK` to `Inboxes.sink`),
+  and an Anvil run through the follower. These are E2 (#1201), which S2 (#1169) needs.
 - A view or a workflow `await` as a subscriber.
 - `ortho outbox redeliver`.
 - A `seen` whose fields differ (`in.mismatch`, the door's).
 
 ## Supersedes
 
-- M5-reach-out.md (Q2, the code under option A): "host-cloudflare/src/modules/events: what every source of outside events calls" → "orthograph/server's
-  `Inbox` (the pure core), which host-cloudflare/src/modules/events binds as `Inboxes.sink`: what every source of outside events calls"
-- M5-reach-out.md ("What changes"): "new modules `events` (`Inbound`, `Inbox`)" → "new modules `events` (`Inbound`, and `Inboxes`, which binds
-  orthograph's `Inbox`)"
+- design/decisions/M5-reach-out.md: "host-cloudflare/src/modules/events: what every source of outside events calls" → "orthograph/server's `Inbox` (the pure core), which host-cloudflare/src/modules/events binds as `Inboxes.sink`: what every source of outside events calls"
+- design/decisions/M5-reach-out.md: "new modules `events` (`Inbound`, `Inbox`)" → "new modules `events` (`Inbound`, and `Inboxes`, which binds orthograph's `Inbox`)"
 
-Goal 18's live files say Goal 11 fills the sink. They are Goal 18's, so this record does not edit them; the lead raises them with Goal 18:
+**Still to change, in Goal 18's files.** The follower's own words say Goal 11's `Inbox` fills its sink
+(`packages/host-cloudflare/src/modules/follower/types.ts:46`, `packages/host-cloudflare/src/modules/follower/README.md:7`). Those files are Goal 18's,
+so this record does not edit them. Snag #1207, in Goal 18's milestone, asks Goal 18 to say instead that `orthograph/server`'s `Inbox`, bound by
+`host-cloudflare/src/modules/events`, fills it.
 
-- packages/host-cloudflare/src/modules/follower/types.ts:46: "Goal 11's `Inbox.accept` fills it" → "orthograph's `Inbox`, bound by host-cloudflare's
-  `Inboxes.sink`, fills it (CX-events-in)"
-- packages/host-cloudflare/src/modules/follower/README.md:7: "Goal 11's `Inbox` takes that binding over" → "host-cloudflare's `Inboxes.sink`, over
-  orthograph's `Inbox`, takes that binding over (CX-events-in)"
-
-CX-safe (#1159, not yet merged) still names only `orthograph`'s `events` and `plugins` modules among E1's paths. E1 also owns the new
-`host-cloudflare/src/modules/events`; the lead adds it there.
+CX-safe merged into `goal/capxul` at 730873b0, naming only `orthograph`'s `events` and `plugins` modules among E1's paths. #1194 adds
+`host-cloudflare/src/modules/events`.

@@ -1,16 +1,16 @@
 // Goal 16, unit E1 (#1165): the host's binding of orthograph's `Inbox`, `Inboxes.sink`, the follower's sink (design/decisions/CX-events-in.md, call 1;
 // M5-reach-out Q2 option A and Q5). Written by the checks author; a builder never edits this file.
 //
-// The seam: `Inboxes.sink(inbox)` from `@orthograph/host-cloudflare`'s front door answers `{ accept(entry) }`, `FollowerSink.accept`'s shape, in Effect
+// The seam: `Inboxes.sink(inbox, { name })` from `@orthograph/host-cloudflare`'s front door answers `{ accept(entry) }`, `FollowerSink.accept`'s shape, in Effect
 // with `Busy` and `Timers`. It answers as soon as the inbox's `accept` has, so no hop ever holds the follower (its `SINK_TIMEOUT_MS`). It then runs the
-// inbox's `pass` as counted work, and sets the next one with `Timers.at(next, "events/inbox", "pass", …)`, so a retry waits on the world's clock and nothing
+// inbox's `pass` as counted work, and sets the next one with `Timers.at(next, "events/inbox/<name>", "pass", …)`, so a retry waits on the world's clock and nothing
 // else. The core's own rules (rows, keys, refusals, backoff) are pinned in `packages/orthograph/src/modules/events/inbox*.test.ts`.
 // The names E1 adds are read off the front doors at run time, so this file typechecks before they exist.
 import { Busy, BusyLive, Timers, TimersMemory } from "@orthograph/language-effect";
 import { Deferred, Effect, Layer } from "effect";
 import { TestClock } from "effect/testing";
 import { describe, expect, it } from "vitest";
-import { entry, inboxWith, sinkOf } from "./internal/testing.ts";
+import { NAME, entry, inboxWith, ownerOf, sinkOf } from "./internal/testing.ts";
 
 const world = TimersMemory.pipe(Layer.provideMerge(BusyLive), Layer.provideMerge(TestClock.layer()));
 const run = <A>(e: Effect.Effect<A, unknown, Busy | Timers>) => Effect.runPromise(Effect.provide(e, world));
@@ -48,7 +48,7 @@ describe("events in from the chain (E1, CX-events-in): Inboxes.sink, the followe
       yield* sinkOf(inbox).accept(entry(0));
       yield* busy.quiet;
       expect(calls.length).toBe(1);
-      expect((yield* timers.pending).map((t) => ({ at: t.at, owner: t.owner, name: t.name }))).toEqual([{ at: 1_000, owner: "events/inbox", name: "pass" }]);
+      expect((yield* timers.pending).map((t) => ({ at: t.at, owner: t.owner, name: t.name }))).toEqual([{ at: 1_000, owner: ownerOf(NAME), name: "pass" }]);
       expect(yield* timers.due(999)).toBeUndefined();
       yield* TestClock.setTime(1_000);
       yield* timers.fire(1_000);
@@ -94,7 +94,7 @@ describe("events in from the chain (E1, CX-events-in): Inboxes.sink, the followe
       yield* TestClock.setTime(1_000);
       yield* timers.fire(1_000);
       yield* busy.quiet;
-      expect((yield* timers.pending).map((t) => [t.at, t.owner, t.name])).toEqual([[3_000, "events/inbox", "pass"]]);
+      expect((yield* timers.pending).map((t) => [t.at, t.owner, t.name])).toEqual([[3_000, ownerOf(NAME), "pass"]]);
       yield* TestClock.setTime(3_000);
       yield* timers.fire(3_000);
       yield* busy.quiet;
@@ -113,11 +113,25 @@ describe("events in from the chain (E1, CX-events-in): Inboxes.sink, the followe
       yield* busy.quiet;
       yield* sink.accept(entry(1));
       yield* busy.quiet;
-      expect((yield* timers.pending).map((t) => [t.at, t.owner, t.name])).toEqual([[1_000, "events/inbox", "pass"]]);
+      expect((yield* timers.pending).map((t) => [t.at, t.owner, t.name])).toEqual([[1_000, ownerOf(NAME), "pass"]]);
       yield* TestClock.setTime(1_000);
       yield* timers.fire(1_000);
       yield* busy.quiet;
       expect((yield* inbox.rows).map((r) => r.state)).toEqual(["delivered", "delivered"]);
       expect(yield* timers.pending).toEqual([]);
+    })));
+
+  it("two inboxes in one process keep their timers apart: each retry's timer is owned by its own inbox's name", () =>
+    run(Effect.gen(function* () {
+      const busy = yield* Busy;
+      const timers = yield* Timers;
+      const dies = (n: number) => (n === 1 ? Effect.die(new Error("the database is away")) : Effect.void);
+      const a = inboxWith(dies);
+      const b = inboxWith(dies);
+      const other = "eip155:31337:0x0000000000000000000000000000000000000b0b";
+      yield* sinkOf(a.inbox).accept(entry(0));
+      yield* sinkOf(b.inbox, other).accept(entry(0));
+      yield* busy.quiet;
+      expect((yield* timers.pending).map((t) => [t.at, t.owner]).sort()).toEqual([[1_000, ownerOf(NAME)], [1_000, ownerOf(other)]].sort());
     })));
 });
