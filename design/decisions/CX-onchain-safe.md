@@ -25,7 +25,7 @@ recommendations. The same day, before any of it was written, he dropped it. His 
 
 - K25, the blueprint on chain, including item 7: an organisation is not on chain, and a Safe is someone else's
   contract behind the `safe` adapter.
-- The planned `onchain-pay` piece in `CX-composable-pieces.md` (each person's and company's Safe, and getting paid by
+- The planned `onchain-pay` piece (Superseded by CX-features, 26 November 2026: "the planned `onchain-pay` feature") in `CX-composable-pieces.md` (each person's and company's Safe, and getting paid by
   a link).
 - Goal 16's slice 2, "The Safe and getting paid on chain, later with the chain" (`design/goals/16-capxul.md`).
 

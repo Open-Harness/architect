@@ -1,4 +1,4 @@
-# CX-composable-pieces: Capxul as pieces a business picks when its app is built
+# CX-composable-pieces: Capxul as pieces a business picks when its app is built (Superseded by CX-features, 26 November 2026: "Capxul as features a business picks when its app is built")
 
 **Drafted 26 November 2026** by Goal 16's 📐 composable-pieces designer (session `session_01S8RF7CccTeLkaVUQpKSExm`),
 started by Goal 16's lead, with Aaron in the loop. Grounded at `goal/capxul` `66b3c131`. The architecture calls are the
@@ -22,7 +22,7 @@ Example", and ERPNext `a6f54f9c` and Frappe HRMS `46b38904` (outside data, read,
 A Capxul piece is an ordinary **feature plugin** (`M1-plugins.md`, `docs/canon/plugins.mdx`): a package in
 `examples/capxul/plugins/<piece>/`, tagged `scope:plugin`, mounted by one file, `examples/capxul/blueprint/features/<piece>.ts`.
 A business's Capxul is the set of mount files it has; `ortho check` refuses a set with an unmet need; `ortho generate`
-makes the app. No new framework word is needed: "piece" in this record is plain English for "a Capxul feature plugin".
+makes the app. No new framework word is needed: "piece" in this record is plain English for "a Capxul feature plugin". (Superseded by CX-features, 26 November 2026: "feature", the code's own word for a feature plugin; every "piece" and "pieces" in this record's composability sense reads "feature" and "features".)
 The superagent already works this way on `goal/superagent` (five plugins, a dependency order, cross-plugin links by
 import, cross-plugin events wired in the app's mount files with `on`), so Capxul follows a proved path. Every piece's
 things live in the app's one default database, because the books need a document and its ledger lines in one commit and
@@ -154,7 +154,7 @@ built in `examples/capxul/blueprint/things/`.
 Later, with the chain (K44): **`onchain-pay`**, each person's and company's Safe and getting paid by a link (slice 2),
 on the framework's wallets and chain. It is listed so nothing else takes its records.
 
-**Presets, not pieces.** People don't pick from 28 names. `ortho new app` (status row `ortho-new`) offers presets that are
+**Presets, not pieces.** (Superseded by CX-features, 26 November 2026: "Presets, not features.") People don't pick from 28 names. `ortho new app` (status row `ortho-new`) offers presets that are
 lists of mounts: *Books* (`company`, `rates`, `ledger`, `parties`, `tax`, `items`, `payments`, `invoicing`, `banking`,
 `bridge-accounts`), *People* (`people`, `time`, `expenses`), *Payroll* (`payroll`, and a tax piece
 where one is built), *Capxul core* (all fifteen core pieces), and *Everything*. A preset names the pieces a person
@@ -421,8 +421,8 @@ pieces, as a journey does. Their import paths change in each pair's check half, 
 out. A thing moved into a piece mounted under its own name keeps its name, so its table, its wire, its commands and
 its trace don't change, and no journey's assertions change. What changes in a journey is its import paths
 (`../blueprint/things/company/roles.ts` is imported by 74 journey files), and a builder never edits a journey. So each
-move lands as a pair under G12: `goal-16/pieces-<piece>-check`, where an author changes only import paths and proves
-the journeys unchanged otherwise, and `goal-16/pieces-<piece>-build`, which moves the things, handlers and values,
+move lands as a pair under G12: `goal-16/pieces-<piece>-check` (Superseded by CX-features, 26 November 2026: "`goal-16/features-<feature>-check`"), where an author changes only import paths and proves
+the journeys unchanged otherwise, and `goal-16/pieces-<piece>-build` (Superseded by CX-features, 26 November 2026: "`goal-16/features-<feature>-build`"), which moves the things, handlers and values,
 writes the mount file, and ends with `prove` passing everything that passed before.
 
 1. **`company`** first, alone: everything links to it. This move also adds `examples/capxul/plugins/*` to the workspace
@@ -473,7 +473,7 @@ critical path (K44) is unchanged in order: books, HR, payroll, money in and out,
 **Slice changes.** Slice 11 (the CRM) needs no runtime mounting: it is an optional piece a business picks when its
 Capxul is built, and adding it to a deployed Capxul is a rebuild with gap 5's forward migration. The status row
 `adopt-mounted-thing` goes back to what K22 decided it for, an app calling a mounted thing by its own word, and the
-`crm` row no longer needs it. A new slice, "Capxul as pieces" (the move, section 6), goes before slice 7b's invoices.
+`crm` row no longer needs it. A new slice, "Capxul as pieces" (Superseded by CX-features, 26 November 2026: "Capxul as features") (the move, section 6), goes before slice 7b's invoices.
 
 ## 8. Decisions for Aaron
 

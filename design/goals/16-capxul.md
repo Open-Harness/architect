@@ -30,10 +30,10 @@ slices:
   - "8 · HR, its basics finished: leave, timesheets, onboarding (after 6)"
   - "9 · Payroll (after 7, 8)"
   - "10 · Bridge for real: the adapter mounted, its webhooks, bank accounts and money in and out posting to the books (after 5, 7)"
-  - "11 · The CRM, an optional piece picked when a Capxul is built, off the path (after 9)"
+  - "11 · The CRM, an optional feature picked when a Capxul is built, off the path (after 9)"
   - "12 · Budgets: the accounting side; the on-chain module deployed outside the framework (after 7)"
   - "13 · Capxul's journeys run in CI"
-  - "14 · Capxul as pieces: today's things moved into feature plugins a business picks when its Capxul is built (after 6)"
+  - "14 · Capxul as features: today's things moved into feature plugins a business picks when its Capxul is built (after 6)"
 ---
 # Goal 16: Capxul core, rebuilt on Orthograph
 
@@ -62,7 +62,9 @@ and run it." Nothing else is needed.
 - **Words used:**
   - Capxul: a business app for small companies, being rebuilt here; its core is the free books, HR, payroll and Bridge;
   - the books: accounting (invoices, payments, the ledger); HR and payroll: a company's people, and paying them;
-  - the CRM: the people and companies a business deals with, an optional piece a business picks when its Capxul is built;
+  - a feature: one part of Capxul, a feature plugin in its own folder, that a business picks when its Capxul is built
+    (CX-features);
+  - the CRM: the people and companies a business deals with, an optional feature a business picks when its Capxul is built;
   - KYC and KYB: checking who a person or a business is; Bridge: moves money between the chain and banks;
   - ERPNext: an open-source business system whose shapes Capxul follows;
   - the design grill: Aaron asked question after question until a design is settled;
@@ -97,12 +99,12 @@ issues already have.
 | 6 | The provisional map: every part of the books, HR, payroll, the CRM, Bridge as board items, each at its stage, with every record type Capxul takes in one catalogue (CX-grill) | 1, 3, 4, 5 |
 | 7 | The books, double entry: first the chart of accounts, fiscal years, cost centres, journal entries and the general ledger (checks #1017), then parties, payments, sales and purchase invoices, period closing, and the trial balance, profit and loss and balance sheet; expense claims post here. Taxes, payment terms, pricing, POS and subscriptions come after | 6 |
 | 8 | HR, its basics finished: leave (checks #1026), timesheets and onboarding. Employees, departments, holidays, attendance, shifts, expense claims and recruitment are built; appraisals (#1030) are checked | 6 |
-| 9 | Payroll, 37 record types: salary components and structures, their assignment, pay runs and slips, each run posting to the books' journal; tax from a piece per jurisdiction, the United States in its own lane; contractors are their own piece (CX-money-global-payroll). A pay run starts from an operation a person or an agent calls; running it on a schedule pulls the board's timers row (the superagent's until K44) and needs no workflows, which K44 parks | 7, 8 |
+| 9 | Payroll, 37 record types: salary components and structures, their assignment, pay runs and slips, each run posting to the books' journal; tax from a feature per jurisdiction, the United States in its own lane; contractors are their own feature (CX-money-global-payroll). A pay run starts from an operation a person or an agent calls; running it on a schedule pulls the board's timers row (the superagent's until K44) and needs no workflows, which K44 parks | 7, 8 |
 | 10 | Bridge for real, through Capxul's own Bridge account: the generated adapter mounted, Bridge's webhooks deciding KYC and KYB, real bank details, and deposits and transfers posting to the books. Incorporation help and how the paid services are sold come later | 5, 7 |
-| 11 | The CRM, 40 Frappe CRM record types, as an optional piece a business picks when its Capxul is built; off the critical path (K44). Adding it to a deployed Capxul is a rebuild with a forward migration (CX-composable-pieces) | 9 |
+| 11 | The CRM, 40 Frappe CRM record types, as an optional feature a business picks when its Capxul is built; off the critical path (K44). Adding it to a deployed Capxul is a rebuild with a forward migration (CX-composable-pieces) | 9 |
 | 12 | Budgets, the accounting side: budgets against accounts and cost centres, checked as money is spent. The on-chain module is deployed outside the framework when it is wanted (K44, call 8) | 7 |
 | 13 | Capxul's journeys run in CI: a job that proves `examples/capxul`, so its green is CI's word (K44, section 3) | — |
-| 14 | Capxul as pieces (`decisions/CX-composable-pieces.md`): today's things moved, root first, into feature plugins in `examples/capxul/plugins/`, each move a G12 pair that keeps names and wire; first `company`, then `ledger` and `people`, then the rest in parallel lanes; the bank-account flip as its own pair | 6 |
+| 14 | Capxul as features (`decisions/CX-composable-pieces.md`): today's things moved, root first, into feature plugins in `examples/capxul/plugins/`, each move a G12 pair that keeps names and wire; first `company`, then `ledger` and `people`, then the rest in parallel lanes; the bank-account flip as its own pair | 6 |
 
 Slice 2's issue still carries blocked-by links to the Ask issues for the pieces it needs from Goals 3, 4, 11, 12 and
 15. Under K42 those pieces are this goal's to take when their goals have stopped (K42, section 3, case 1); Goal 18
@@ -114,7 +116,7 @@ Aaron's calls of 25 November (K44, section 3): two things are built, the Orthogr
 later; HR and payroll are Capxul's core offering; every money movement is double entry in ERPNext's shapes. So, in order:
 
 1. **Slice 13, Capxul's journeys in CI,** so its green is CI's word.
-1a. **Slice 14's first two moves,** `company`, then `ledger` and `people`, into their pieces (CX-composable-pieces). The
+1a. **Slice 14's first two moves,** `company`, then `ledger` and `people`, into their features (CX-composable-pieces). The
    currency slice (CX-money-global-payroll) comes after them and before slice 7's invoices; the rest of slice 14 runs
    in parallel lanes beside the path.
 2. **Slice 7, the books, double entry:** the chart of accounts, fiscal years, cost centres, journal entries and the
@@ -156,13 +158,13 @@ goal has claimed, and every fix reaches the alpha once it lands on `main`.
 
 ## Lanes
 
-A lane is one long-running agent that builds one piece of Capxul beside this goal's own slices, in its own paths, and
+A lane is one long-running agent that builds one feature of Capxul beside this goal's own slices, in its own paths, and
 lands each slice in `goal/capxul` (Aaron, 26 November 2026). Its brief, with its paths, slices and done check, is its
 own file; its "Where it stands" is one GitHub issue, which Goal 16's lead opens.
 
 | Lane | Harness | Builds | Brief |
 |---|---|---|---|
-| US payroll tax | Amp | the `payroll-tax-us` piece: federal and state withholding, FICA, FUTA and SUTA from the publications, then the tax on a payroll slip once gap 3 lands (CX-payroll-tax) | `16-lane-payroll-tax.md` |
+| US payroll tax | Amp | the `payroll-tax-us` feature: federal and state withholding, FICA, FUTA and SUTA from the publications, then the tax on a payroll slip once gap 3 lands (CX-payroll-tax) | `16-lane-payroll-tax.md` |
 
 ## Where it stands
 

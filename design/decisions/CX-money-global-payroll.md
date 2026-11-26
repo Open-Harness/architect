@@ -29,7 +29,7 @@ done (*unsure* that nothing else applies, question 1). Payroll duties follow whe
 
 | Case | What the company must do | What Capxul does |
 |---|---|---|
-| (a) Employees in the US | Collect a W-4 and I-9; withhold federal and state income tax, Social Security and Medicare; pay federal and state unemployment tax; file quarterly and yearly returns; deposit electronically; give W-2s | Calculates (the US tax piece, in its own lane), records, collects the W-4; filing and deposits go to an outside service |
+| (a) Employees in the US | Collect a W-4 and I-9; withhold federal and state income tax, Social Security and Medicare; pay federal and state unemployment tax; file quarterly and yearly returns; deposit electronically; give W-2s | Calculates (the US tax piece (Superseded by CX-features, 26 November 2026: "the US tax feature"; every "piece" and "pieces" in this sense below reads "feature" and "features"), in its own lane), records, collects the W-4; filing and deposits go to an outside service |
 | (b) Contractors in the US | Collect a W-9; withhold 24% if no taxpayer number is given; file a 1099-NEC by 31 January for each contractor paid at least the year's threshold ($2,000 for 2026), or from whom anything was withheld | Collects the W-9, pays, totals the year, produces the 1099 figures and the upload file; the company files |
 | (c) Contractors abroad | Collect a W-8BEN (a person) or W-8BEN-E (a business); pay for work done abroad is not wages and is not withheld; no 1099. Whether they are truly contractors is the local country's law (*unsure*, question 4) | Collects the form, pays in the contractor's choice; nothing withheld or filed |
 | (d) US citizens abroad | Social Security and Medicare still apply when the employer is American, which a Delaware company is; income tax withholding often doesn't, on the employee's Form 673 | The US tax piece with two switches, in its own lane (question 3) |
@@ -157,7 +157,7 @@ Each is a new outside dependency, so each is Aaron's call. None is needed for st
 6. **The catalogue's `FX` rows** stop being deferred: each is taken with its rate and `base_*` fields as its slice
    builds it.
 
-**The pieces**, agreed with the composable-pieces thread (#1123, session_01S8RF7CccTeLkaVUQpKSExm) on 26 November 2026:
+**The pieces** (Superseded by CX-features, 26 November 2026: "The features"), agreed with the composable-pieces thread (#1123, session_01S8RF7CccTeLkaVUQpKSExm) on 26 November 2026:
 
 - Money is Orthograph's value, not a piece. `company` holds the asset files and the reporting currency.
 - `rates` (core) holds Currency Exchange, its settings and Pegged Currencies; `ledger` reads it and never fetches.

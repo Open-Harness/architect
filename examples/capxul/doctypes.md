@@ -505,7 +505,7 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 
 ## The CRM
 
-Frappe CRM, an optional piece picked when a Capxul is built (CX-composable-pieces). Slice 11.
+Frappe CRM, an optional feature picked when a Capxul is built (CX-composable-pieces). Slice 11.
 
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
@@ -601,19 +601,19 @@ reverse it. Item, its prices and its units are taken, so an invoice can carry go
 | Project Template | Projects | Project | not needed beyond project, task and timesheet |
 | Project Type | Projects | Project | not needed beyond project, task and timesheet |
 | Task Type | Projects | Task | not needed beyond project, task and timesheet |
-| Batch | Stock | Asset Capitalization, Asset Capitalization Stock Item, Item Price and 5 more | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Customs Tariff Number | Stock | Item | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Delivery Note | Stock | POS Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Delivery Trip | Stock | Expense Claim | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Item Attribute | Stock | Item Variant Attribute | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Manufacturer | Stock | Item, Purchase Invoice Item, Purchase Order Item and 1 more | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Material Request | Stock | Purchase Invoice Item, Purchase Order Item, Request for Quotation Item and 2 more | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Purchase Receipt | Stock | Asset, Purchase Invoice Item | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Quality Inspection | Stock | POS Invoice Item, Purchase Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Quality Inspection Template | Stock | Item | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Serial and Batch Bundle | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Installation Note Item and 4 more | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Stock Entry | Stock | Journal Entry | stock, left out by the goal's reading (above); a stock piece can be added later |
-| Warehouse | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Company and 21 more | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Batch | Stock | Asset Capitalization, Asset Capitalization Stock Item, Item Price and 5 more | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Customs Tariff Number | Stock | Item | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Delivery Note | Stock | POS Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Delivery Trip | Stock | Expense Claim | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Item Attribute | Stock | Item Variant Attribute | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Manufacturer | Stock | Item, Purchase Invoice Item, Purchase Order Item and 1 more | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Material Request | Stock | Purchase Invoice Item, Purchase Order Item, Request for Quotation Item and 2 more | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Purchase Receipt | Stock | Asset, Purchase Invoice Item | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Quality Inspection | Stock | POS Invoice Item, Purchase Invoice Item, Sales Invoice Item | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Quality Inspection Template | Stock | Item | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Serial and Batch Bundle | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Installation Note Item and 4 more | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Stock Entry | Stock | Journal Entry | stock, left out by the goal's reading (above); a stock feature can be added later |
+| Warehouse | Stock | Asset Capitalization Stock Item, Asset Repair Consumed Item, Company and 21 more | stock, left out by the goal's reading (above); a stock feature can be added later |
 | Issue | Support | Task | not part of Capxul core |
 
 ### The rest of ERPNext, by module
@@ -631,7 +631,7 @@ reverse it. Item, its prices and its units are taken, so an invoice can carry go
 | Projects | 4 | not needed beyond project, task and timesheet |
 | Quality Management | 16 | not part of Capxul core |
 | Regional | 5 | country-specific records; a country's rules come with the company that needs them |
-| Stock | 45 | stock, left out by the goal's reading (above); a stock piece can be added later |
+| Stock | 45 | stock, left out by the goal's reading (above); a stock feature can be added later |
 | Subcontracting | 8 | manufacturing is not part of Capxul core |
 | Support | 10 | not part of Capxul core |
 | Telephony | 5 | not part of Capxul core |
