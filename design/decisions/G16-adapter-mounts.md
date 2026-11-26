@@ -139,7 +139,7 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
   says no line within 60 s, fails the world. Stopping escalates to SIGKILL, so a stand-in that ignores SIGTERM still goes.
   An early exit fails it at once, not at the 60 s mark: prove is done within 30 s of the exit, and within 90 s of a silent
   stand-in's start. The grace before SIGKILL is at most 10 s, as `e2e/superagent/servers.ts` gives, and the stand-ins are
-  stopped together, not one after another. Check 08 holds those bounds.
+  stopped together, not one after another. Check 10 holds those bounds.
   (Added from the hostile pass on #1016, 25 November 2026.)
 - **Known limit: the key is judged only where a call reaches it.** No check sees that a `Stand.vendor` or `Stand.none` mount
   is not given `world-<mount>`; the contract says the key is for "each mount it stood up".
@@ -169,7 +169,7 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 
 - **Gap 5:** `packages/host-cloudflare/src/modules/inbound/rsa-door.test.ts`.
 - **Gap 1:** `e2e/m2/07-generated-adapter-calls.test.ts`.
-- **Gap 2:** `e2e/m2/08-prove-stand-ins.test.ts`.
+- **Gap 2:** `e2e/m2/10-prove-stand-ins.test.ts`.
 - The others are added here as they land.
 
 ## Supersedes
