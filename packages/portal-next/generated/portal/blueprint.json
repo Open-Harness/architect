@@ -452,9 +452,9 @@
         "file": "blueprint/projections/app.ts",
         "package": "@orthograph/projections",
         "version": "0.1.0-next.1",
-        "integrity": "sha256-5hp2p7W+h0tgH1WcGQY1LdIKNdKmOr0IJY35dXWtHR8=",
+        "integrity": "sha256-iHQXx35/6Ro6YDkcLRAEzA/rCXxYH4Vg3lPlZL52FVA=",
         "chosen": {},
-        "hash": "5748a6afcb85618f"
+        "hash": "2dc8d46fff4eb0c0"
       }
     }
   },
@@ -474,5 +474,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "43a4656d0c8a85db34b21580f9bd4676598169a22efe2fe971824e4a8a7a511f"
+  "digest": "0a70c365c861217900079699cfa392c7934d908b5d5ffebb1e974ae441fa999d"
 }

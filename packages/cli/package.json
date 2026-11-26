@@ -33,6 +33,7 @@
   ],
   "publishConfig": {
     "access": "public",
+    "tag": "next",
     "imports": {
       "#modules/*.js": "./dist/modules/*.js"
     },

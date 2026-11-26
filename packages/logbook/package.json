@@ -25,6 +25,7 @@
   ],
   "publishConfig": {
     "access": "public",
+    "tag": "next",
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",

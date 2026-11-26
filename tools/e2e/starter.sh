@@ -58,7 +58,7 @@ unset token password
 # The preset's `prepack` (tools/release/starter.mjs) copies examples/starter into it as it is packed, and its `postpack` removes the copy.
 step "publish"
 for p in orthograph compiler language-effect chain-evm lint portal projections generators host-cloudflare logbook prove cli preset; do
-  (cd "$repo/packages/$p" && NPM_CONFIG_USERCONFIG="$work/npmrc" pnpm publish --registry "$registry" --no-git-checks >/dev/null)
+  (cd "$repo/packages/$p" && NPM_CONFIG_USERCONFIG="$work/npmrc" pnpm publish --registry "$registry" --tag next --no-git-checks >/dev/null)
   echo "published $p"
 done
 
