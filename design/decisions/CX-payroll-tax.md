@@ -57,6 +57,17 @@ section 3. The UK, UAE and European modules in point 4.3 are not scheduled, and 
 The shape is unchanged (point 2: a module per jurisdiction), so another country can be added later as a plugin without
 touching core, once Aaron reopens it.
 
+## Filing and paying: an outside service, later
+
+**Aaron's call, 26 November 2026,** agreeing the lead's proposal ("we calculate tax ourselves, and use an outside
+payroll-tax service later for filing and paying the authorities"): "agreed on all".
+
+**The goal's reading:** point 7 stands for the calculation, which is Capxul's own and free. Filing returns, depositing
+tax and registering a company with each authority (point 6's "not now") go through an outside payroll-tax service,
+reached through an adapter like Bridge's, once a real company runs payroll. Which service is chosen then. In the same
+call Aaron agreed that a payroll professional checks the numbers before real wages are paid (point 8); who and when is
+still his.
+
 ## What this changes in the catalogue
 
 India's four income-tax exemption record types (Category, Sub Category, Declaration, Proof Submission) and the two lines
