@@ -4,10 +4,13 @@ import { Names } from "orthograph/server";
 import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
 import { ModelCommand } from "#modules/model/service.js";
+import { Handoff } from "#modules/handoff/service.js";
 import { Add } from "#modules/add/service.js";
 import { New } from "#modules/new/service.js";
 import { SecretsCommand } from "#modules/secrets/service.js";
@@ -444,6 +447,14 @@ const worlds = Command.make("worlds").pipe(Command.withDescription("Look after t
 
 // The CLI's own version is the one in its package.json, which sits next to `src/` and next to `dist/`, so one path serves source and the published package.
 const ownVersion: string = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { readonly version: string }).version;
+
+// A global `ortho` inside an app that has its own `@orthograph/cli` runs that one instead, so only the app's packages are loaded (#1151).
+const handedOff = Names.variable("HANDED_OFF");
+const local = process.env[handedOff] ? undefined : Handoff.target({ from: Handoff.from(process.argv.slice(2), process.cwd()), own: fileURLToPath(new URL("..", import.meta.url)) });
+if (local !== undefined) {
+  const ran = spawnSync(process.execPath, [local, ...process.argv.slice(2)], { stdio: "inherit", env: { ...process.env, [handedOff]: "1" } });
+  process.exit(ran.status ?? 1);
+}
 
 const onCommandLine = SecretsCommand.refusesValue(process.argv.slice(2));
 if (onCommandLine !== undefined) { process.stderr.write(onCommandLine); process.exit(2); }
