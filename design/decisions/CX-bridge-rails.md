@@ -42,7 +42,8 @@ Bridge holds the money only in transit, between the bank leg and the chain leg. 
 amounts are not the company's Safe's, and the books must say whose they are:
 
 - **Capxul's developer fee**, if one is set, is withheld by Bridge and paid to Capxul's fee account monthly. It is
-  Capxul's income and the company's expense. None is set today (V16).
+  Capxul's income and the company's expense. None is set in the implementation (V16); Aaron, 26 November 2026: "yes
+  configurable", so it is a setting per company, zero by default.
 - **The fixed-output buffer.** A payout fixes what the supplier receives, so the Safe sends the quoted input plus a
   slippage buffer of about 1%. What the buffer doesn't use is the company's money, held by Capxul in its "Fixed Outputs
   Excess Funds" wallet (`infrastructure:B/banking/payouts/README.md`, ADR-0025 R4 amended). Aaron, 26 November 2026,
@@ -231,7 +232,9 @@ reads `active` (`infrastructure:Br/customer-answers.ts:43-55`). R5 decodes both.
 
 - **Developer fee.** Capxul's own: a fixed `developer_fee` in US dollars and cents on fixed-amount transfers;
   `developer_fee_percent` on virtual accounts. Withheld from the customer's amount and "paid out monthly on the 5th of
-  each month" in USD to Capxul's fee account (`devfees`, `mins`). **Not set anywhere in the implementation.** Question 1.
+  each month" in USD to Capxul's fee account (`devfees`, `mins`). **Not set anywhere in the implementation.** Aaron, 26 November 2026: "yes configurable". So it is a
+  setting per company, defaulting to zero: on payouts a fixed `developer_fee` in US dollars and cents, and on virtual
+  accounts a `developer_fee_percent`, the only form Bridge takes there. R6 builds it.
 - **Bridge's own:** `exchange_fee_amount` and `gas_fee`, on each event and receipt.
 - **For the books:** a deposit's Bank Transaction is the **net that reached the Safe**, with the gross and each fee
   beside it, so the receivable it settles (the gross) and the bank line (the net) reconcile, and the fee is the
@@ -372,12 +375,12 @@ Each slice is one branch and ends green with its check. Authors write the journe
 | R3 | Payouts as the lifted machine: fixed output, return address the Safe, leg 1 a Capxul Payment spent against a budget, M1, M2, M3, M5, M6, save before dispatch, `transferConflict`; `AllowanceExceeded` at prepare and on chain | V7 to V10 pass against the stand-in and a chain stand-in, including `missing_return_policy` as an alarm at once and a returned payout's USDC back in the Safe; a payout over its budget is refused `AllowanceExceeded` before Bridge is called, and an owner's direct payout needs no budget |
 | R4 | Bridge's webhook door: RSA signature, journal on `event_id`, states only forward, catch-up over `webhook_events`, events for other environments ignored (#995 gaps 4 and 5) | V11 to V14 pass, with events from the stand-in signed as Bridge signs |
 | R5 | KYB and KYC states, terms, endorsements, rejection reasons | V15 passes in `prove` |
-| R6 | Fees, the buffer's refund to the Safe on settlement (crediting the budget back), and minimums | V16 and V17 pass; the books show the fee as the company's expense, the buffer's excess recorded with its owner until it is refunded, the refund back in the Safe when the payout settles, and the net in the Safe |
+| R6 | Fees (the developer fee as a setting per company, zero by default), the buffer's refund to the Safe on settlement (crediting the budget back), and minimums | V16 and V17 pass; the books show the fee as the company's expense, the buffer's excess recorded with its owner until it is refunded, the refund back in the Safe when the payout settles, and the net in the Safe |
 | R7 | Recordings straight into the tests; the stand-in gains the devnet's chain moves and the sandbox's quirks | V18 to V20 pass in `prove`; most of V20 is recorded already, and anything the sandbox shows later is recorded here |
 
 R1 comes after the Safe's address (Aaron: "yes"). R2 and R3 need M6's chain door and Capxul's Payments on a Safe (slice 2). R4 waits on #995.
 
-## 6. Questions for Aaron
+## 6. Aaron's answers
 
 Settled by the implementation: the chain is Base; payouts are one Bridge transfer each with a fixed output, not
 liquidation addresses.
@@ -390,10 +393,9 @@ Answered by Aaron, 26 November 2026:
   `AllowanceExceeded` ("Who signs", above).
 - **The buffer's excess:** "agreed". It is refunded to the company's Safe when each payout settles.
 
-Still open:
+- **The developer fee:** "yes configurable". A setting per company, zero by default (Fees, above).
 
-1. **Does Capxul charge a developer fee, and how much?** Recommendation: build the setting now, at zero, and decide the
-   price with the paid services.
+No question is left open for Aaron.
 
 ## Supersedes
 
