@@ -48,7 +48,7 @@ describe("CX-from-doctype 03: a submittable record type", () => {
     const t = thingOf(model(blank().root), "tea-invoice");
     expect(Object.keys(t.fields)).toEqual(Object.keys(fields));
     for (const [key, field] of Object.entries(fields)) expect(t.fields[key], key).toEqual(field);
-    expect(t.description).toBe("Tea Invoice, as ERPNext keeps it.");
+    expect([t.code, t.description]).toEqual(["TI", "Tea Invoice, as ERPNext keeps it."]);
   });
 
   it("has ERPNext's docstatus machine: draft, submitted, cancelled, with create, save, submit and cancel and their events", () => {

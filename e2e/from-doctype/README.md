@@ -13,7 +13,8 @@ board item #877 (`erpnext-scaffolder`). Every check is red today because the fla
 | `04-links` | a link to a thing in the project is an edge (kept when optional), to one not scaffolded the target's name in a shared `<Target>Link` value, to itself its own id, a Dynamic Link any record; scaffolding the target later changes no file already written | `tea_order`, `tea_supplier` |
 | `05-refusals` | exit 2, the reason named, nothing written: an unknown field type (in the doctype or its table), a table with no file, Currency with no `--asset` or a missing asset, a name beside the flag, a line already there | `tea_tasting`, `tea_crate`, `tea_blend`, `tea_menu` |
 | `06-the-column-limit` | 100 columns fit (97 fields of a doctype, 96 of a line) and the migration holds exactly them; 101 is refused, naming the record type, the count and the limit | `tea_ledger`, `tea_ledger_wide`, `tea_shelf`, `tea_rack` |
-| `07-determinism` | two projects get the same bytes from the same files; `--dry-run` prints exactly what a run writes and writes nothing; a second run is refused and changes nothing | all of 01 to 04 |
+| `07-determinism` | two projects get the same bytes from the same files, the second run with every clock 400 days on (`later-clock.mjs`); `--dry-run` prints exactly what a run writes, link values and lines included, and writes nothing; a second run is refused and changes nothing | 01 to 04, `infusion` |
+| `08-more-shapes` | a one-word name starting with a vowel whose code is taken (`INF`, "an infusion"); Data with Phone and URL options as text; a default making a field required; a reqd read-only field kept but not in the payload; two tables, one not reqd, both in the payload and the writes, in order; a line linking to a record type not scaffolded; a right no role holds | `infusion`, `infusion_step`, `infusion_tag` |
 
 ## How they are built
 
@@ -26,8 +27,11 @@ board item #877 (`erpnext-scaffolder`). Every check is red today because the fla
   (`fill`, as a person would, with `[Blueprint.signedIn]`), the operations are read whole. Expected values are written
   in the checks from the fixtures and the decision, never read back from the output.
 - **Exactly.** Each thing's fields are compared whole and in order, so a field added, left out, widened or made
-  optional fails. The files a run writes are compared as a set, so an extra file fails. A refusal must also leave
-  every file under `blueprint/` and `src/` as it was.
+  optional fails. Each thing's code and each who-may-act blank are compared word for word. The files a run writes are
+  compared as a set across the whole project (`node_modules` and `generated/` aside), so an extra file anywhere fails,
+  and a refusal must leave the whole project as it was.
+- **Values decoded.** Where the model shows only a schema (a `Time` value, a table's rows, a link value), the check
+  decodes wire values through the scaffolded schema in a process of its own (`accepts`), good ones and bad.
 
 ## Running them
 

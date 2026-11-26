@@ -1,8 +1,9 @@
 # CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
+from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > declares a Time field's value in the thing's file, <Thing><Field>, text HH:MM:SS with optional fractions
 from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > gives a record that isn't submittable one state, `active`, made by create and kept by save, each emitting its event of the id
 from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > leaves who may act blank, and nothing else: one blank per operation and read, naming the ERPNext roles holding that right
 from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > maps every field type to its value, in the JSON's order, required only with reqd, a default or a Check, and drops layout, virtual and naming_series
-from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > names the thing from the doctype, takes its description, keeps it in the database, and writes no role
+from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > names the thing from the doctype, gives it the initials as its code, takes its description, keeps it in the database, and writes no role
 from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > once who may act is filled, create takes the reqd fields, save the id and the same, get answers every field, and ortho check passes
 from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > type-checks and passes the rules as scaffolded, with only those blanks left
 from-doctype/01-a-plain-record-type.test.ts > CX-from-doctype 01: a plain record type > writes the thing, its machine and events, create, save and get, and nothing else, each opening with the scaffold line

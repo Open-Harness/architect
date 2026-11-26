@@ -3,7 +3,7 @@
 // operation; the menu's create and save take its rows and write both. Tea Blend is scaffolded first, so the entry's
 // link to it is an edge.
 import { afterAll, describe, expect, it } from "vitest";
-import { blanksOf, checked, cleanup, doctype, fill, generated, headed, model, nested, once, operationOf, project, scaffolds, snapshot, thingOf, whoMayAct, written } from "./support.ts";
+import { accepts, blanksOf, checked, cleanup, doctype, fill, generated, headed, model, nested, once, operationOf, project, scaffolds, snapshot, thingOf, whoMayAct, written } from "./support.ts";
 
 afterAll(cleanup);
 
@@ -65,7 +65,8 @@ describe("CX-from-doctype 02: a record type with a child table", () => {
     const t = thingOf(model(blank().root), "tea-menu-entry");
     expect(Object.keys(t.fields)).toEqual(Object.keys(entry));
     for (const [key, field] of Object.entries(entry)) expect(t.fields[key], key).toEqual(field);
-    expect([t.identifier, t.description, t.lives]).toEqual(["TeaMenuEntry", "One row of a Tea Menu's Entries.", "database"]);
+    expect([t.identifier, t.code, t.description, t.lives]).toEqual(["TeaMenuEntry", "TME", "One row of a Tea Menu's Entries.", "database"]);
+    expect(thingOf(model(blank().root), "tea-menu").code).toBe("TM");
   });
 
   it("gives the line no machine, no events, no operation, no read and no blank: it is written with its parent", () => {
@@ -97,6 +98,16 @@ describe("CX-from-doctype 02: a record type with a child table", () => {
       expect(Object.keys(op.steps)).toEqual(["record"]);
       expect([op.steps["record"]?.type, op.steps["record"]?.writes]).toEqual(["database", ["tea-menu", "tea-menu-entry"]]);
     }
+    // Each row is the line's own fields: a blend's id and an amount, never text in their place.
+    const rowsOf = (at: string) => accepts(root, at, "default.payload.entries", [
+      [{ blend: "tbl_x", cupPrice: "1500000" }],
+      [],
+      [{ blend: "tbl_x", cupPrice: "lots" }],
+      [{ blend: 7, cupPrice: "1500000" }],
+      [{ blend: "tbl_x" }],
+      { blend: "tbl_x", cupPrice: "1500000" },
+    ]);
+    for (const at of ["blueprint/things/tea-menu/verbs/create.ts", "blueprint/things/tea-menu/verbs/save.ts"]) expect(rowsOf(at), at).toEqual([true, true, false, false, false, false]);
     expect(Object.keys(operationOf(m, "tea-menu.get").answer)).toEqual(["state", "title", "season", "printed"]);
     const said = checked(root);
     expect(said.lines, said.out).toContain("check ✔");

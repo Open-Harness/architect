@@ -4,3 +4,4 @@ from-doctype/04-links.test.ts > CX-from-doctype 04: links > makes each kind of l
 from-doctype/04-links.test.ts > CX-from-doctype 04: links > scaffolds the target later without touching what was written: the earlier link stays a name, and the shared link value is kept
 from-doctype/04-links.test.ts > CX-from-doctype 04: links > type-checks and passes the rules with the three record types and their link values
 from-doctype/04-links.test.ts > CX-from-doctype 04: links > writes a link value for each record type not scaffolded yet, beside the thing's files
+from-doctype/04-links.test.ts > CX-from-doctype 04: links > writes each link value as the target's name: text of at most 140 characters

@@ -1,0 +1,30 @@
+{
+ "doctype": "DocType",
+ "name": "Infusion Step",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 1,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "kettle",
+   "fieldtype": "Link",
+   "label": "Kettle",
+   "options": "Tea Kettle",
+   "reqd": 1
+  },
+  {
+   "fieldname": "minutes",
+   "fieldtype": "Int",
+   "label": "Minutes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "temperature",
+   "fieldtype": "Float",
+   "label": "Temperature",
+   "precision": "1"
+  }
+ ],
+ "permissions": []
+}

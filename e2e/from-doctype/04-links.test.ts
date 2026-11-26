@@ -3,7 +3,7 @@
 // (its own id, no edge) and, through a Dynamic Link, to any record. Scaffolding Tea Supplier afterwards changes no
 // file already written, shares the Tea Shop value, and makes its link back to Tea Order an edge.
 import { afterAll, describe, expect, it } from "vitest";
-import { type FieldJson, checked, cleanup, doctype, generated, headed, model, once, project, scaffolds, snapshot, textAt, thingOf, written } from "./support.ts";
+import { type FieldJson, accepts, checked, cleanup, doctype, generated, headed, model, once, project, scaffolds, snapshot, textAt, thingOf, written } from "./support.ts";
 
 afterAll(cleanup);
 
@@ -55,7 +55,16 @@ describe("CX-from-doctype 04: links", () => {
   });
 
   it("makes each kind of link its own field: an edge, an optional edge, a target's name, its own id, any record; the Dynamic Link's doctype field is dropped", () => {
-    sameFields(thingOf(model(ordered().root), "tea-order").fields, order, { shop: "TeaShopLink" });
+    const t = thingOf(model(ordered().root), "tea-order");
+    sameFields(t.fields, order, { shop: "TeaShopLink" });
+    expect(t.code).toBe("TO");
+  });
+
+  it("writes each link value as the target's name: text of at most 140 characters", () => {
+    const { root } = ordered();
+    for (const [at, name] of [["blueprint/values/tea-supplier-link.ts", "TeaSupplierLink"], ["blueprint/values/tea-shop-link.ts", "TeaShopLink"]] as const) {
+      expect(accepts(root, at, name, ["Leaf and Co", "x".repeat(140), "x".repeat(141), 7]), at).toEqual([true, true, false, false]);
+    }
   });
 
   it("scaffolds the target later without touching what was written: the earlier link stays a name, and the shared link value is kept", () => {
@@ -70,6 +79,7 @@ describe("CX-from-doctype 04: links", () => {
   it("gives the later record type the shared value and an edge back to the one already there", () => {
     const m = model(supplied().root);
     sameFields(thingOf(m, "tea-supplier").fields, supplier, { shop: "TeaShopLink" });
+    expect(thingOf(m, "tea-supplier").code).toBe("TS");
     expect(thingOf(m, "tea-order").fields["supplier"]).toEqual(order.supplier);
   });
 

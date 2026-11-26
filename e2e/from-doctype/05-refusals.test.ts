@@ -3,7 +3,8 @@
 // asset that isn't there; a name given beside --from-doctype; and a line already in the project.
 import { afterAll, describe, expect, it } from "vitest";
 import { ortho } from "../layer1/support.ts";
-import { cleanup, doctype, nested, project, refused, scaffolds } from "./support.ts";
+import { join } from "node:path";
+import { cleanup, doctype, fixtures, nested, project, refused, scaffolds } from "./support.ts";
 
 afterAll(cleanup);
 
@@ -14,12 +15,27 @@ describe("CX-from-doctype 05: refusals", () => {
   });
 
   it("refuses a table whose doctype file is in neither place it looks, naming the table and both paths", () => {
-    refused(project(), ["slots", "Tea Crate Slot", "doctypes/tea_crate_slot.json", "tea_crate_slot/tea_crate_slot.json"], doctype("tea_crate"));
+    const ran = refused(project(), ["slots", "Tea Crate Slot", join(fixtures, "doctypes/tea_crate_slot.json")], doctype("tea_crate"));
+    // ERPNext's layout: the folder beside the doctype's own, written either way.
+    const beside = [join(fixtures, "doctypes/../tea_crate_slot/tea_crate_slot.json"), join(fixtures, "tea_crate_slot/tea_crate_slot.json")];
+    expect(beside.some((p) => ran.out.includes(p)), `the refusal should name one of ${beside.join(" or ")}:\n${ran.out}`).toBe(true);
+    expect(ran.out, "never a folder inside doctypes/").not.toContain(join(fixtures, "doctypes/tea_crate_slot/"));
   });
 
   it("refuses Currency fields with no --asset, naming them and the flag, and not a virtual one it drops anyway", () => {
     const ran = refused(project(), ["--asset", "price"], doctype("tea_blend"));
     expect(ran.out).not.toContain("display_price");
+  });
+
+  it("refuses Currency fields in a table with no --asset, naming them", () => {
+    const root = project();
+    scaffolds(root, doctype("tea_blend"), "--asset", "usdc");
+    refused(root, ["--asset", "cup_price", "pot_price"], nested("tea_menu"));
+  });
+
+  it("refuses with --dry-run as it refuses without it", () => {
+    refused(project(), ["--asset", "price"], doctype("tea_blend"), "--dry-run");
+    refused(project(), ["Tea Tasting.signature (Signature)"], doctype("tea_tasting"), "--dry-run");
   });
 
   it("refuses an --asset that isn't in blueprint/assets", () => {

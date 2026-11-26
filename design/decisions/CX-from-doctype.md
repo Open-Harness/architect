@@ -40,10 +40,12 @@ ortho add thing --from-doctype <file> [--asset <name>] [--dry-run] [--root <dir>
   spaces (`Tea Menu Entry` → `tea_menu_entry`).
 - `--asset <name>` names `blueprint/assets/<name>.ts`, the asset its `Currency` fields count. It is needed only when
   the doctype or one of its tables has a `Currency` field.
-- `--dry-run` prints each file as `ortho add` does (`--- <path>` then its content) and writes nothing.
+- `--dry-run` prints each file as `ortho add` does (`--- <path>` then its content) and writes nothing. It refuses
+  what a run refuses.
 - Like every `ortho add` kind it never overwrites: if any file it would write (other than a link value, below) is
   there, it writes none, and says which.
-- One doctype per run, with its tables. Two runs on the same project and the same files write the same bytes.
+- One doctype per run, with its tables. Two runs on the same project and the same files write the same bytes, on any
+  day: nothing it writes comes from a clock, a random number or the machine.
 
 ## What it writes
 
@@ -51,9 +53,11 @@ Names: the thing's folder is the doctype's name in kebab case (`Tea Blend` → `
 (`TeaBlend`), each field the `fieldname` in camel case (`blend_name` → `blendName`). Its id prefix is the lower-case
 initials of the name's words; under three letters, the letters after the last word's initial fill it to three
 (`Tea Blend` → `tbl`, `Company` → `com`, `Sales Invoice Item` → `sii`); while that prefix is another thing's, an `x`
-is added (`Tea Menu Entry`, beside `Tea Menu`'s `tme`, → `tmex`). Its refusal `code` is the capital initials, two to
-four (one word: its first two letters), lengthened the same way past one already taken. Every file opens with
-`// Scaffolded from <file's name>, ERPNext's <Doctype>. Yours from now on.`
+is added (`Tea Menu Entry`, beside `Tea Menu`'s `tme`, → `tmex`). Its refusal `code` is the capital initials, at
+most four (one word: its first two letters); while that code is another thing's or `AR`, the last word's next unused
+letter is added, up to four (`Infusion`, beside Invitation's `IN`, → `INF`; `Tea Shelf` beside a `TS` → `TSH`). Every
+file opens with `// Scaffolded from <file's name>, ERPNext's <Doctype>. Yours from now on.`, naming the doctype the
+file was made from; a link value names the doctype given to the command.
 
 **For a doctype** (not `istable`): `blueprint/things/<thing>/thing.ts`, `machine.ts`, `events.ts`, and
 `verbs/<move>.ts` for each move and `verbs/get.ts`; no `roles.ts` (below).
@@ -102,8 +106,9 @@ four (one word: its first two letters), lengthened the same way past one already
     keyed by the `Table` field's camel name and described with its label, of rows of the line's fields with `reqd`
     that are not `read_only` (`Blueprint.list` of a `Schema.Struct`). `save`'s is the thing's id, then the same.
   - `submit`'s and `cancel`'s is the thing's id.
-  - Each has one database step, `record`. `create`'s and `save`'s write the thing and its lines
-    (`writes: [<Thing>, <Line>...]`); the others write the thing alone.
+  - Each has one database step, `record`. `create`'s and `save`'s write the thing and its lines, in the tables'
+    order (`writes: [<Thing>, <Line>...]`); the others write the thing alone (with no lines, `writes` may be left
+    out: an unset `writes` is the operation's own thing, CX-takeover).
 - **The read**, `get`, by id, answering `state` and every field the thing keeps, in order.
 - **Who may act is blank.** An ERPNext role is a grant across a company; an Orthograph role is a rule on one instance,
   and the faithful form is a role on Company, `.of("company")` (the spike's found 6). So no role is written, and every
@@ -122,7 +127,7 @@ sharing is a modelling call.
 
 ## What it refuses
 
-Each refusal exits 2, prints its reason, and writes nothing.
+Each refusal exits 2, prints its reason, and writes nothing anywhere in the project.
 
 - **A field type it doesn't know**, in the doctype or any of its tables: every such field, each as
   `<Doctype>.<fieldname> (<fieldtype>)`. `Signature`, `Geolocation`, `Table MultiSelect`, `Duration`, `Rating`,
@@ -130,10 +135,10 @@ Each refusal exits 2, prints its reason, and writes nothing.
 - **A record type wider than the host allows.** A thing is a table, and D1 allows 100 columns: the fields it keeps,
   plus `state` for a doctype (each has a machine) and `version`; a line's are its fields, with `parent` and `idx`, plus
   `version`. Over 100 is refused, naming the doctype, its count and the limit (`Tea Rack Slot needs 101 columns; the
-  host allows 100`). Layout fields and dropped fields don't count. This holds until wide things (#879) change how the
+  host allows 100`, in those words). Layout fields and dropped fields don't count. This holds until wide things (#879) change how the
   host keeps a thing; then this refusal and its check change with it.
-- **A child table whose file isn't there**: the table's field and the paths it looked in.
-- **`Currency` fields with no `--asset`**, naming them; and an `--asset` with no `blueprint/assets/<name>.ts`.
+- **A child table whose file isn't there**: the table's field, its doctype and the two paths it looked in, in full.
+- **`Currency` fields with no `--asset`**, in the doctype or its tables, naming them; and an `--asset` with no `blueprint/assets/<name>.ts`.
 - **A thing or a line already there**, naming it.
 
 ## What is left out

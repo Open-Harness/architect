@@ -18,7 +18,7 @@ describe("CX-from-doctype 06: the column limit", () => {
   });
 
   it("refuses a doctype of 101 columns, naming it, its count and the limit", () => {
-    refused(project(), ["Tea Ledger Wide", "101", "100"], doctype("tea_ledger_wide"));
+    refused(project(), ["Tea Ledger Wide", /\b101\b/, /\ballows 100\b/], doctype("tea_ledger_wide"));
   });
 
   it("scaffolds a line of exactly 100 columns: its parent and idx count, and it has no state", () => {
@@ -29,7 +29,7 @@ describe("CX-from-doctype 06: the column limit", () => {
   });
 
   it("refuses a doctype whose table needs 101 columns, naming the line, and writes neither", () => {
-    const ran = refused(project(), ["Tea Rack Slot", "101", "100"], doctype("tea_rack"));
+    const ran = refused(project(), ["Tea Rack Slot", /\b101\b/, /\ballows 100\b/], doctype("tea_rack"));
     expect(ran.out, "the doctype itself fits; the refusal is the line's").not.toMatch(/Tea Rack needs/);
   });
 });

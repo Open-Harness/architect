@@ -3,7 +3,7 @@
 // those are filled, a blueprint `ortho check` passes. Expected values are written here from the fixture and the
 // decision, never read back from the output.
 import { afterAll, describe, expect, it } from "vitest";
-import { blanksOf, checked, cleanup, doctype, fill, generated, headed, model, once, operationOf, project, scaffolds, snapshot, thingOf, whoMayAct, written } from "./support.ts";
+import { accepts, blanksOf, checked, cleanup, doctype, fill, generated, headed, model, once, operationOf, project, scaffolds, snapshot, thingOf, whoMayAct, written } from "./support.ts";
 
 afterAll(cleanup);
 
@@ -64,9 +64,14 @@ describe("CX-from-doctype 01: a plain record type", () => {
     for (const [key, field] of Object.entries(fields)) expect(t.fields[key], key).toEqual(field);
   });
 
-  it("names the thing from the doctype, takes its description, keeps it in the database, and writes no role", () => {
+  it("declares a Time field's value in the thing's file, <Thing><Field>, text HH:MM:SS with optional fractions", () => {
+    const said = accepts(blank().root, "blueprint/things/tea-blend/thing.ts", "TeaBlendSteepTime", ["12:30:00", "07:05:59.25", "12:30", "1:30:00", "12:30:00Z", "noon"]);
+    expect(said).toEqual([true, true, false, false, false, false]);
+  });
+
+  it("names the thing from the doctype, gives it the initials as its code, takes its description, keeps it in the database, and writes no role", () => {
     const t = thingOf(model(blank().root), "tea-blend");
-    expect([t.identifier, t.description, t.lives, t.roles]).toEqual(["TeaBlend", "A blend of teas, as the shop sells it.", "database", []]);
+    expect([t.identifier, t.code, t.description, t.lives, t.roles]).toEqual(["TeaBlend", "TB", "A blend of teas, as the shop sells it.", "database", []]);
   });
 
   it("gives a record that isn't submittable one state, `active`, made by create and kept by save, each emitting its event of the id", () => {
