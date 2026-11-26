@@ -47,8 +47,8 @@ export default Blueprint.journey("safe: opening again is the same safe", {
       noEvents(),
     ),
     s.step(
-      "the world holds that one Safe and no other",
-      s.nobody.run(list, {}),
+      "the system lists that one Safe for Ada, and no other",
+      s.nobody.run(list, { person: s.ada.person }),
       expect((p) => p.items.map((i: { readonly id: string; readonly person: string }) => [i.id, i.person])).toEqual([[s.world.adaSafe, s.ada.person]]),
       noEvents(),
     ),

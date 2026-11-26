@@ -110,14 +110,22 @@ export default Blueprint.journey("safe: a person opens their safe", {
       refuses(Blueprint.NotAllowed),
       noEvents(),
     ),
+    ...([["Ada", s.ada], ["Bo", s.bo], ["Cy", s.cy]] as const).map(([name, who]) =>
+      s.step(
+        `${name}'s open wrote one Safe for ${name}, and no second`,
+        s.nobody.run(list, { person: who.person }),
+        expect((p) => p.items.map((i: Item) => [i.person, i.signer ?? "none", i.account ?? "none", i.state, saltProblem(i)])).toEqual([
+          [who.person, "none", "none", "unclaimed", ""],
+        ]),
+        noEvents(),
+      ),
+    ),
     s.step(
-      "three opens wrote three Safes, one each for Ada, Bo and Cy, and no other",
+      // Journeys share the world, so this is every Safe any journey opened: none may be malformed. An open that also
+      // writes a well-formed Safe for a person who doesn't exist is beyond what a journey can see (no stable count).
+      "no Safe in the world holds a salt nonce that isn't its own person's",
       s.nobody.run(list, {}),
-      expect((p) => p.items.map((i: Item) => [i.person, i.signer ?? "none", i.account ?? "none", i.state, saltProblem(i)])).toEqual([
-        [s.ada.person, "none", "none", "unclaimed", ""],
-        [s.bo.person, "none", "none", "unclaimed", ""],
-        [s.cy.person, "none", "none", "unclaimed", ""],
-      ]),
+      expect((p) => p.items.map((i: Item) => saltProblem(i)).filter((x: string) => x !== "")).toEqual([]),
       noEvents(),
     ),
     s.step(

@@ -23326,8 +23326,17 @@
       "from": {
         "kind": "app"
       },
-      "description": "List personal-safes, oldest first, 50 to a page.",
+      "description": "List personal-safes, oldest first, 50 to a page, filtered by person.",
       "payload": {
+        "person": {
+          "value": {
+            "type": "id",
+            "prefix": "per"
+          },
+          "ref": "personal-safe.person",
+          "description": "Whose Safe it is.",
+          "optional": true
+        },
         "cursor": {
           "value": {
             "type": "text",
@@ -23368,11 +23377,13 @@
         "p95Ms": 80
       },
       "list": {
-        "where": [],
+        "where": [
+          "person"
+        ],
         "order": "oldest",
         "page": 50
       },
-      "hash": "100626a0d9b1ff6f"
+      "hash": "97c1eb3e12e54440"
     },
     "personal-safe.open": {
       "kind": "operation",
@@ -81959,11 +81970,19 @@
           ]
         },
         {
-          "title": "three opens wrote three Safes, one each for Ada, Bo and Cy, and no other",
+          "title": "Ada's open wrote one Safe for Ada, and no second",
           "call": {
             "actor": "nobody",
             "operation": "personal-safe.list",
-            "payload": {}
+            "payload": {
+              "person": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "person"
+                ]
+              }
+            }
           },
           "checks": [
             {
@@ -81981,7 +82000,33 @@
                   "none",
                   "unclaimed",
                   ""
-                ],
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo's open wrote one Safe for Bo, and no second",
+          "call": {
+            "actor": "nobody",
+            "operation": "personal-safe.list",
+            "payload": {
+              "person": {
+                "ref": [
+                  "cast",
+                  "bo",
+                  "person"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
                 [
                   {
                     "ref": [
@@ -81994,7 +82039,33 @@
                   "none",
                   "unclaimed",
                   ""
-                ],
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Cy's open wrote one Safe for Cy, and no second",
+          "call": {
+            "actor": "nobody",
+            "operation": "personal-safe.list",
+            "payload": {
+              "person": {
+                "ref": [
+                  "cast",
+                  "cy",
+                  "person"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
                 [
                   {
                     "ref": [
@@ -82016,11 +82087,28 @@
           ]
         },
         {
+          "title": "no Safe in the world holds a salt nonce that isn't its own person's",
+          "call": {
+            "actor": "nobody",
+            "operation": "personal-safe.list",
+            "payload": {}
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "an agent's MCP tools hold opening and reading a Safe",
           "skipped": "the tools list is not an operation"
         }
       ],
-      "sourceHash": "c39831e2c8467fc1d312ac1c62a632fbb5af995e92f15428996e0f8bc9d48767"
+      "sourceHash": "f076265d18b5a7e9d2d51613f1291203cfa9850fd43ce0822df6b3de96b97547"
     },
     "journeys/safe-opening-again-is-the-same-safe.ts": {
       "name": "safe: opening again is the same safe",
@@ -82189,11 +82277,19 @@
           ]
         },
         {
-          "title": "the world holds that one Safe and no other",
+          "title": "the system lists that one Safe for Ada, and no other",
           "call": {
             "actor": "nobody",
             "operation": "personal-safe.list",
-            "payload": {}
+            "payload": {
+              "person": {
+                "ref": [
+                  "cast",
+                  "ada",
+                  "person"
+                ]
+              }
+            }
           },
           "checks": [
             {
@@ -82222,7 +82318,7 @@
           ]
         }
       ],
-      "sourceHash": "a688ca8ac8299358242a0dea6543853384a794bba586117564c64d78956636a9"
+      "sourceHash": "06d7583c154113adfb2389094ef65aba3f564c980772c3b96c5911bbed6da524"
     },
     "journeys/schedule-an-interview.ts": {
       "name": "schedule an interview",
