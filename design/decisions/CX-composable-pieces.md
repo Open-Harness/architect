@@ -321,8 +321,8 @@ A page to look at: https://claude.ai/artifact/FPWu4Xyw5bEMZ5htkU7HTD (section 4'
 
 ## 5. Framework gaps
 
-Ranked by what they block. Gaps 1 and 6 are filed already (#1079, #882); 2, 3, 4, 5 and 7 are new. Each new one is drafted as a board item for the lead to file (the `github` skill's Gap form,
-milestone Goal 16, `lane:goal-16` unless a running goal has it).
+Ranked by what they block. Gaps 1 and 6 were filed already (#1079, #882); 2, 3, 4, 5 and 7 are new and filed as #1132, #1133, #1134, #1135
+and #1136 (Gap issues, milestone Goal 16, `lane:goal-16`).
 
 1. **One operation runs another's inside its commit** (#1079, with #972's second move). *Blocks* the books' contract:
    without it every poster writes the ledger's things itself and the ledger's rules are duplicated in payroll, expenses,
@@ -331,7 +331,7 @@ milestone Goal 16, `lane:goal-16` unless a running goal has it).
    its refusal refuses the caller. Checks: payroll's submit posts through `ledger.post` and lands its slips and GL lines
    together; a posting to a closed period refuses the submit and writes nothing; a call into another store is a compile
    error naming both." Before invoices (slice 7b).
-2. **Open sets.** A reference to one of several kinds exists (`Blueprint.refAny()`,
+2. **Open sets** (#1132). A reference to one of several kinds exists (`Blueprint.refAny()`,
    `packages/orthograph/src/modules/values/service.ts:85`); what is missing is the open set of kinds. It has an interim, so
    the Books lane doesn't wait on it. It is needed to split `ledger` cleanly from the pieces that post:
    `values/ledger.ts:31` lists `VoucherType` as `["Journal Entry"]`, #1116 adds Payment Entry, and each new voucher
@@ -340,17 +340,17 @@ milestone Goal 16, `lane:goal-16` unless a running goal has it).
    compiled model holds the union of the mounted pieces' members. A reference (`voucher`, `party`) holds a kind from that
    set and an id. Checks: a member added by an unmounted piece is absent from the API, CLI and MCP; a reference to a kind
    not in the set is refused." Interim: the ledger keeps a closed list as plain names, no import.
-3. **Contracts one piece declares and another fills at build time.** *Blocks* `payroll-tax-us` as its own piece and
+3. **Contracts one piece declares and another fills at build time** (#1133). *Blocks* `payroll-tax-us` as its own piece and
    `budgets`' stop (slice 12). M1.08's needs name a plugin, not a contract several plugins can meet. Draft: "A feature
    declares a contract (an input and output schema, run in the caller's commit); another feature fills it; `check`
    refuses a required contract with no filler or two, and an optional one with none is skipped. Checks: a required contract with no filler, or with two, is refused; payroll with no
    tax piece compiles and its slips have no tax lines; with `payroll-tax-us` a United States employee's slip carries its
    tax lines; with no budgets a posting is not checked." Interim: payroll runs with no tax piece mounted, while
    `payroll-tax-us` is built in its own lane (Aaron, 26 November 2026).
-4. **`check` enforces that a piece writes only its own things.** *Doesn't block*; makes section 2's rule real. Draft:
+4. **`check` enforces that a piece writes only its own things** (#1134). *Doesn't block*; makes section 2's rule real. Draft:
    "A step's `writes` may name only things of its own plugin or the app's; another plugin's thing is a compile error
    naming the owner's in-commit operation to call." After gap 1.
-5. **A deployed app adds or drops a piece by rebuilding, with a forward migration.** This replaces "mount into a running
+5. **A deployed app adds or drops a piece by rebuilding, with a forward migration** (#1135). This replaces "mount into a running
    app" (K43, section 2). Today the model renders one `0001_things.sql`, regenerated; `design/later.md:215` already parks
    the same need for a door added to a deployed app, and D2 leaves migrations of a live app to stage three. *Doesn't block* until a Capxul is
    deployed with data and then adds a piece (the CRM, slice 11). Draft: "Migrations are a sequence: `generate` diffs the
@@ -359,7 +359,7 @@ milestone Goal 16, `lane:goal-16` unless a running goal has it).
    rows; dropping a piece without the flag is refused."
 6. **Money in a field's asset** (#882, unparked by CX-money-global-payroll, which owns it): `money.of` a field naming
    an asset, and a conversion with rounding in the values module. *Blocks* several currencies; not the pieces.
-7. **Two compositions proved in CI.** *Doesn't block*; proves optional pieces are optional. Draft: "Slice 13's job also
+7. **Two compositions proved in CI** (#1136). *Doesn't block*; proves optional pieces are optional. Draft: "Slice 13's job also
    builds a Capxul with only the *Books* preset and runs the journeys whose pieces it mounts; a journey that needs an
    unmounted piece is skipped by name." Needs the journeys tagged by piece; journeys stay in `examples/capxul/journeys/`
    (the superagent keeps its own in `e2e/superagent/`).
@@ -467,8 +467,8 @@ Capxul is built, and adding it to a deployed Capxul is a rebuild with gap 5's fo
 
 ## 8. Decisions for Aaron
 
-**Answered by Aaron on 26 November 2026, by voice, relayed by Goal 16's lead** (the same words are kept in
-CX-money-global-payroll, "Aaron's answers, 26 November 2026"): "I'm giving yes to anything that you just said so far. I
+**Answered by Aaron on 26 November 2026, by voice, relayed by Goal 16's lead** (CX-money-global-payroll records
+his answers too, under "Aaron's answers, 26 November 2026"): "I'm giving yes to anything that you just said so far. I
 haven't really looked at everything yet". So both decisions below are yes, as recommended.
 
 On the tax lane he said: "I don't want to park the tax lane. I want to do that in a separate, what I want to do is I
