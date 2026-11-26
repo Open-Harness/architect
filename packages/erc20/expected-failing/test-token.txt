@@ -1,0 +1,2 @@
+# #1162 (A2, the erc20 adapter): red until the build lands. The builder deletes each line as its check goes green.
+src/modules/test-token/test-token.test.ts > the test token in a world > deploys with 6 decimals and the whole supply its deployer's, for any supply and deployer

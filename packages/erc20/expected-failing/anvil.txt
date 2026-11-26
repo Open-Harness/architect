@@ -1,0 +1,7 @@
+# #1162 (A2, the erc20 adapter): red until the build lands. The builder deletes each line as its check goes green.
+src/modules/erc20/anvil.test.ts > the erc20 adapter on Anvil, against a token that is not the test token > reads its balances, reads no decimals it lacks, sends its transfer, and leaves its own revert the port's error
+src/modules/erc20/anvil.test.ts > the erc20 adapter on Anvil, against the test token > a transfer beyond the balance fails typed as ERC20InsufficientBalance, its fields the chain's, and nothing is sent (with nothing locked)
+src/modules/erc20/anvil.test.ts > the erc20 adapter on Anvil, against the test token > a transfer beyond the balance fails typed as ERC20InsufficientBalance, its fields the chain's, and nothing is sent (with the token's errors in the port's refusals.lock)
+src/modules/erc20/anvil.test.ts > the erc20 adapter on Anvil, against the test token > a transfer to the zero address fails typed as ERC20InvalidReceiver, and nothing is sent
+src/modules/erc20/anvil.test.ts > the erc20 adapter on Anvil, against the test token > a typed transfer is sent from its signer, mines one Transfer, and the balances move by its value
+src/modules/erc20/anvil.test.ts > the erc20 adapter on Anvil, against the test token > balanceOf reads back what the chain holds, for each account, and decimals is 6
