@@ -20,99 +20,27 @@
 //     settled runs nothing and answers "seen". A correction (id `<the event's id>:corrected`, event `<Contract>.<Event>Corrected`, fields the event's and `wasConfirmed: true`) runs
 //     the event's `corrected` hops once and is itself settled by its own id. A hop that fails fails `accept` with its error and settles nothing, so the follower's outbox hands the
 //     same entry on again and it runs then (the follower keeps it until the sink takes it, its README). A restart is a new `Inbox.make` over the same store.
+//     In full, as the checks below plant it (the hostile pass's table is in the pull request):
+//       - a hop's event is matched on the whole wire name: `OtherToken.Transfer` is not `Token.Transfer`, and an adapter's own `Token.TransferCorrected`
+//         (an id without `:corrected`, fields without `wasConfirmed`) is a confirmed event of that name, not a correction;
+//       - the id is the whole of `${chainId}:${blockHash}:${logIndex}`: the same block hash and log index on another chain is another event;
+//       - each hop is given its own `map`'s answer, from the fields decoded by its event's `schema` (each field as the schema says; `wasConfirmed` is not the event's);
+//       - an event's hops run one after another, in the order given;
+//       - `accept` fails, and settles nothing, when a hop fails (with that very error, typed), when a hop throws, and when the fields do not decode; a correction
+//         whose undo fails is retried like any entry;
+//       - the entry `accept` is handed is not changed (it is frozen here, as it is after RPC).
+//     Not judged here: two `accept`s of one id at the same moment (the follower hands entries on one at a time, its README), and a correction of an event this
+//     store never took (the follower hands a correction on only after the event's own entry was taken).
 //
 // Prior art, credited: the unique id that answers "accepted" or "seen" is Goal 17 slice 11's door inbox (`packages/host-cloudflare/src/modules/inbound/internal/accept.ts`, built
 // on `goal/superagent`, GOAL17-slice11-build), and the entries are those `e2e/on-chain/11-m6-09-follower.test.ts` proves the follower hands on after a real `anvil_reorg`.
 // What the Anvil run adds on top of these entries (a real reorg through the follower into this inbox) is S2's check (#1169), which uses this unit.
 //
 // The new names are read off their modules at run time, so this file typechecks before they exist and fails on the missing name, not on a compile error.
-import { Effect, Exit, Schema } from "effect";
+import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
-import * as Server from "../../server.ts";
-import { Plugins } from "#modules/plugins/service.js";
-import { Events } from "./service.ts";
-import type { On } from "./types.ts";
-
-// ---- the seam, as this check states it ----
-interface Entry {
-  readonly source: "chain";
-  readonly id: string;
-  readonly event: string;
-  readonly fields: Readonly<Record<string, unknown>>;
-}
-type Answer = "accepted" | "seen";
-interface Hop {
-  readonly event: string;
-  readonly on: On;
-  readonly run: (input: unknown) => Effect.Effect<void, unknown>;
-}
-interface InboxApi {
-  readonly memory: () => unknown;
-  readonly make: (spec: { readonly store: unknown; readonly hops: ReadonlyArray<Hop> }) => { readonly accept: (entry: Entry) => Effect.Effect<Answer, unknown> };
-}
-type CorrectedFn = (event: unknown, map: (fields: never) => unknown) => On & { readonly corrected?: unknown };
-
-const inbox = (): InboxApi => {
-  const found = (Server as Record<string, unknown>)["Inbox"];
-  if (found === undefined) throw new Error("orthograph/server exports no `Inbox`: E1 adds `Inbox.make({ store, hops })` and `Inbox.memory()` (#1165)");
-  return found as InboxApi;
-};
-const corrected: CorrectedFn = (event, map) => {
-  const found = (Events as unknown as Record<string, unknown>)["corrected"];
-  if (typeof found !== "function") throw new Error("`Blueprint.corrected` does not exist: E1 adds it, the `on:` entry that undoes a chain event when the chain takes it back (#1165)");
-  return (found as CorrectedFn)(event, map);
-};
-const on = (event: unknown, map: (fields: never) => unknown): On => Events.on(event as never, map as never);
-
-// ---- an ERC-20 `Transfer`, as an adapter declares it and the follower hands it on ----
-const Transfer = Plugins.incoming(Schema.Struct({ from: Schema.String, to: Schema.String, value: Schema.BigIntFromString }));
-const Approval = Plugins.incoming(Schema.Struct({ owner: Schema.String, spender: Schema.String, value: Schema.BigIntFromString }));
-const token = Plugins.adapter({ description: "A test token.", events: { Transfer, Approval } });
-
-const CHAIN = 31337;
-const SAFE = "0x5afe00000000000000000000000000000000cafe";
-const PAYER = "0x00000000000000000000000000000000000000aa";
-const hashA = `0x${"a1".repeat(32)}`;
-const hashB = `0x${"b2".repeat(32)}`;
-// Beyond 2^53: a handler given a JavaScript number, or the string itself, is seen to.
-const BIG = 9007199254740993n;
-
-const confirmed = (blockHash: string, logIndex: number, value: bigint, from = PAYER): Entry => ({
-  source: "chain", id: `${CHAIN}:${blockHash}:${logIndex}`, event: "Token.Transfer", fields: { from, to: SAFE, value: String(value) },
-});
-const correctionOf = (e: Entry): Entry => ({ source: "chain", id: `${e.id}:corrected`, event: `${e.event}Corrected`, fields: { ...e.fields, wasConfirmed: true } });
-
-/** An app's effect that the check can read: a received-payment ledger, as S2 keeps one. `record` adds what a Transfer brought, `undo` takes it away again. */
-const ledger = () => {
-  const calls: Array<{ readonly hop: string; readonly input: unknown }> = [];
-  const balance = new Map<string, bigint>();
-  const add = (input: unknown, sign: 1n | -1n) => {
-    const { to, value } = input as { to: string; value: bigint };
-    if (typeof value !== "bigint") throw new Error(`the hop was given value ${JSON.stringify(String(value))} of type ${typeof value}: map must be given the fields decoded by the event's schema (a bigint)`);
-    balance.set(to, (balance.get(to) ?? 0n) + sign * value);
-  };
-  const hop = (name: string, eventName: string, declared: On, sign: 1n | -1n): Hop => ({
-    event: eventName, on: declared,
-    run: (input) => Effect.sync(() => { calls.push({ hop: name, input }); add(input, sign); }),
-  });
-  return { calls, balanceOf: (who: string) => balance.get(who) ?? 0n, hop, named: (name: string) => calls.filter((c) => c.hop === name) };
-};
-
-const record = (e: { from: string; to: string; value: bigint }) => ({ to: e.to, value: e.value, payer: e.from });
-const undo = (e: { from: string; to: string; value: bigint }) => ({ to: e.to, value: e.value, payer: e.from });
-
-/** The inbox an app with S2's two operations makes: `payment.record` on a Transfer, `payment.undo` on its correction. */
-const app = (store: unknown) => {
-  const l = ledger();
-  const hops = [
-    l.hop("record", "Token.Transfer", on(token.events.Transfer, record as never), 1n),
-    l.hop("undo", "Token.Transfer", corrected(token.events.Transfer, undo as never), -1n),
-  ];
-  return { ...l, inbox: inbox().make({ store, hops }) };
-};
-const run = <A>(e: Effect.Effect<A, unknown>) => Effect.runPromise(e);
-const acceptAll = (box: { accept: (e: Entry) => Effect.Effect<Answer, unknown> }, entries: ReadonlyArray<Entry>) =>
-  run(Effect.forEach(entries, (e) => box.accept(e)));
+import { BIG, CHAIN, PAYER, SAFE, Transfer, acceptAll, app, busy, confirmed, corrected, correctionOf, frozen, hashA, hashB, inbox, ledger, on, record, run, token, undo } from "./internal/inbox-fixture.ts";
+import type { Hop } from "./internal/inbox-fixture.ts";
 
 describe("events in from the chain (E1, #1165): `on:` for an adapter's confirmed chain events, once each, with corrections", () => {
   it("`Blueprint.corrected` declares the `on:` entry that undoes a chain event: its event, its map and `corrected: true`, frozen; `Blueprint.on` is not a correction", () => {
@@ -151,7 +79,7 @@ describe("events in from the chain (E1, #1165): `on:` for an adapter's confirmed
     // What check 11 shows the follower hands on after `anvil_reorg` replays the transfer in a new block: the correction of the first, then the new event.
     const replayed = confirmed(hashB, 0, BIG);
     expect(await acceptAll(a.inbox, [first, correctionOf(first)])).toEqual(["accepted", "accepted"]);
-    expect(a.named("undo")).toEqual([{ hop: "undo", input: { to: SAFE, value: BIG, payer: PAYER } }]);
+    expect(a.named("undo")).toEqual([{ hop: "undo", input: { from: PAYER, to: SAFE, value: BIG } }]);
     expect(a.named("record")).toHaveLength(1);
     expect(a.balanceOf(SAFE)).toBe(0n);
     expect(await run(a.inbox.accept(correctionOf(first)))).toBe("seen");
@@ -194,18 +122,16 @@ describe("events in from the chain (E1, #1165): `on:` for an adapter's confirmed
   });
 
   it("a hop that fails settles nothing: `accept` fails with its error, and the follower's retry of the same entry runs it and is \"accepted\"", async () => {
-    class Busy extends Error { readonly _tag = "Busy"; }
     const l = ledger();
     let failNext = true;
     const flaky: Hop = {
       event: "Token.Transfer", on: on(token.events.Transfer, record as never),
-      run: (input) => (failNext ? Effect.sync(() => { failNext = false; }).pipe(Effect.andThen(Effect.fail(new Busy()))) : l.hop("record", "Token.Transfer", on(token.events.Transfer, record as never), 1n).run(input)),
+      run: (input) => (failNext ? Effect.sync(() => { failNext = false; }).pipe(Effect.andThen(Effect.fail(busy))) : l.hop("record", "Token.Transfer", on(token.events.Transfer, record as never), 1n).run(input)),
     };
     const box = inbox().make({ store: inbox().memory(), hops: [flaky] });
     const entry = confirmed(hashA, 0, 5n);
-    const exit = await Effect.runPromiseExit(box.accept(entry));
-    expect(Exit.isFailure(exit)).toBe(true);
-    expect(JSON.stringify(exit)).toContain("Busy");
+    // `accept` fails with the hop's own error, as a typed failure (not a defect, not wrapped), so the follower's step sees it and retries.
+    expect(await Effect.runPromise(Effect.flip(box.accept(entry)))).toBe(busy);
     expect(l.calls).toEqual([]);
     expect(await run(box.accept(entry))).toBe("accepted");
     expect(l.calls).toHaveLength(1);
@@ -218,18 +144,18 @@ describe("events in from the chain (E1, #1165): `on:` for an adapter's confirmed
     const approvals: Array<unknown> = [];
     const hops: ReadonlyArray<Hop> = [
       l.hop("record", "Token.Transfer", on(token.events.Transfer, record as never), 1n),
-      l.hop("also", "Token.Transfer", on(token.events.Transfer, record as never), 1n),
+      l.hop("also", "Token.Transfer", on(token.events.Transfer, ((e: { to: string; value: bigint }) => ({ to: e.to, value: e.value * 2n, payer: "also" })) as never), 1n),
       l.hop("undo", "Token.Transfer", corrected(token.events.Transfer, undo as never), -1n),
       { event: "Token.Approval", on: on(token.events.Approval, ((e: { owner: string }) => ({ owner: e.owner })) as never), run: (input) => Effect.sync(() => void approvals.push(input)) },
     ];
     const box = inbox().make({ store: inbox().memory(), hops });
     const transfer = confirmed(hashA, 0, 5n);
     expect(await run(box.accept(transfer))).toBe("accepted");
-    expect(l.calls.map((c) => c.hop)).toEqual(["record", "also"]);
+    expect(l.calls).toEqual([{ hop: "record", input: { to: SAFE, value: 5n, payer: PAYER } }, { hop: "also", input: { to: SAFE, value: 10n, payer: "also" } }]);
     expect(approvals).toEqual([]);
     expect(await run(box.accept(correctionOf(transfer)))).toBe("accepted");
     expect(l.calls.map((c) => c.hop)).toEqual(["record", "also", "undo"]);
-    const approval: Entry = { source: "chain", id: `${CHAIN}:${hashB}:3`, event: "Token.Approval", fields: { owner: PAYER, spender: SAFE, value: "1" } };
+    const approval = frozen({ source: "chain", id: `${CHAIN}:${hashB}:3`, event: "Token.Approval", fields: { owner: PAYER, spender: SAFE, value: "1" } });
     expect(await run(box.accept(approval))).toBe("accepted");
     expect(approvals).toEqual([{ owner: PAYER }]);
     expect(l.calls).toHaveLength(3);
@@ -237,7 +163,7 @@ describe("events in from the chain (E1, #1165): `on:` for an adapter's confirmed
 
   it("an event no hop takes is still settled once: \"accepted\", then \"seen\"", async () => {
     const a = app(inbox().memory());
-    const approval: Entry = { source: "chain", id: `${CHAIN}:${hashA}:2`, event: "Token.Approval", fields: { owner: PAYER, spender: SAFE, value: "1" } };
+    const approval = frozen({ source: "chain", id: `${CHAIN}:${hashA}:2`, event: "Token.Approval", fields: { owner: PAYER, spender: SAFE, value: "1" } });
     expect(await acceptAll(a.inbox, [approval, approval])).toEqual(["accepted", "seen"]);
     expect(a.calls).toEqual([]);
   });
