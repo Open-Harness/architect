@@ -1,0 +1,28 @@
+brief handle.claim
+
+Write   src/handle/claim.ts, and nothing else.
+
+Read
+  blueprint/things/handle/verbs/claim.ts  the declaration: payload, answer, move, steps, errors
+  generated/api/src/handle/claim.handler.ts  what the handler is given and may return
+  generated/docs/handle/claim.md  the same, in words, with every refusal
+  generated/docs/handle/index.md  the handle: fields, machine, roles
+
+Do
+  run step handle.claim.record (database) through steps.record(...)
+  a database step wraps one call of Records (yield* Records, from @orthograph/language-effect): find, insert or update. A move changes the machine's state only; a field changes only when you write it, as steps.x(records.update(Thing, id, { field: value }))
+  make the move with move(): claim, emitting HandleClaimed
+  never refuse HandleTaken or HandleAlreadyOwned or NotAllowed yourself: the runtime does, before the handler runs
+
+Don't touch
+  blueprint/**
+  blueprint/journeys/**
+  blueprint/starting-worlds/**
+  journeys/**
+  generated/**
+  test/**
+
+Done when
+  ortho prove --env local passes, with handle.claim's 9 evals: answer shape, declared errors, machine path, events, who may call, steps, performance, coverage, explainability
+  and the journeys that call it: journeys/a-name-is-claimed-once.ts, journeys/a-stranger-cannot-edit-a-page.ts, journeys/claim-a-handle.ts, journeys/release-a-handle.ts, journeys/the-story.ts
+  ortho check passes
