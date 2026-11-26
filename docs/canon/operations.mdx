@@ -208,7 +208,7 @@ Three rules decide what a step is (K5, seam 3):
   and all, up to a fixed number of times. The call is named once, before its first attempt, and each attempt's span carries that name
   as `call.id`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=161-169
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=163-171
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
   attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
@@ -334,7 +334,7 @@ answers what it answered the first time and changes nothing. No step runs, no ev
 
 The key is the operation, the caller and the request together, so one caller's key never answers another's call:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=155-158
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=157-160
 // Keyed by operation and caller as well, so one caller's key never answers another's call.
 // Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
 const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;

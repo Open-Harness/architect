@@ -78,9 +78,9 @@ export default Blueprint.thing({ description: "An entry in the ledger.", fields:
 A handler never writes to a store. It writes to `Records`, which holds every write back until the call ends. Then
 the handler wrapper makes one commit and looks at the one thing it returns:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=132-141
-const lists = yield* unit.lists;
-const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=134-143
+const reads = yield* unit.reads;
+const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}), ...(reads.length > 0 ? { reads } : {}) }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
     "commit.outcome": outcome,
     // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
@@ -93,7 +93,7 @@ const committed = yield* store.commit({ writes, entries, ...request, ...(lists.l
 
 What goes in, and what comes back, is the port every store kind implements:
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Commit,Committed lines=32-51
+```ts file=packages/language-effect/src/modules/records/types.ts name=Commit,Committed lines=42-70
 /** Everything one call changes: its writes and the events its move emitted, committed together or not at all. */
 export interface Commit {
   readonly writes: ReadonlyArray<Write>;
@@ -102,6 +102,15 @@ export interface Commit {
   readonly request?: { readonly key: string; readonly answer: string };
   /** #764: each list the call read. The store answers `conflict` when the rows matching a list's `thing`, `where` and `state` are not these any more. */
   readonly lists?: ReadonlyArray<ListRead>;
+  /** #1045: each row the call found, at the version it found it. The store answers `conflict` when one of them moved on. */
+  readonly reads?: ReadonlyArray<RowRead>;
+}
+
+/** A row one call found (#1045): its thing, its id and the version it was read at. */
+export interface RowRead {
+  readonly thing: Thing;
+  readonly id: string;
+  readonly version: number;
 }
 
 /** A list one call read (#764): every row then matching its `thing`, `where` and `state`, whatever page the call asked for, at the version the call read it. */
@@ -116,7 +125,7 @@ export interface ListRead {
 export type Committed = "committed" | "conflict";
 ```
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=82-95
+```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=101-114
 /** The host's side. A failing store dies: it is never the caller's refusal. */
 export class Store extends Context.Service<Store, {
   /** The rules this store enforces at commit (G5), as the model carries them; a unit made over it looks through the same ones. Absent when the project declares none. */
@@ -134,8 +143,8 @@ export class Store extends Context.Service<Store, {
 ```
 
 There are only two outcomes. `committed` means the writes, the journal entries and the request's answer all landed.
-`conflict` means none of them did, because something else changed one of those things first, or changed which rows match
-a list the call read (#764). A store that fails in
+`conflict` means none of them did, because something else changed one of those things first, changed a row the call
+found by its id (#1045), or changed which rows match a list the call read (#764). A store that fails in
 any other way dies: that is a defect, never the caller's refusal.
 
 <Scene name="handler-lifecycle" caption="The commit is the last thing a call does: every refusal leaves before it, so a refused call writes nothing." />
@@ -146,16 +155,16 @@ Every update carries the version this call read. The commit lands only if the st
 kind enforces it in its own way. The `database` kind turns a stale version into a NULL on a NOT NULL column, which
 fails D1's whole batch:
 
-```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=39-40
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=57-58
 // The guard: a stale version becomes NULL on a NOT NULL column, which fails the whole batch (D2 #36).
 const guard = sql`"version" = CASE WHEN "version" = ${w.version} THEN "version" + 1 ELSE NULL END`;
 ```
 
-```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=49-57
+```ts file=packages/host-cloudflare/src/modules/store/internal/commit.ts name=commitD1 lines=67-75
   const keep = request ? [sql`INSERT INTO "_requests" ${sql.insert({ key: request.key, answer: request.answer })}`] : [];
   const changes = [...(yield* Effect.forEach(writes, statementOf)), ...entries.map(journalOf), ...keep];
   if (changes.length === 0) return "committed" as const;
-  const statements = [...(yield* Effect.forEach(lists, guardOf)), ...changes];
+  const statements = [...(yield* Effect.forEach(lists, guardOf)), ...readGuards(reads), ...changes];
   return yield* d1.batch(statements).pipe(
     Effect.as("committed" as const),
     Effect.catch((e) => (lostGuard(e) || lostUnique(e, writes, tableOf, rules) ? Effect.succeed("conflict" as const) : Effect.die(e))),
@@ -179,7 +188,7 @@ return this.ctx.storage.transactionSync((): Committed => {
 A `conflict` never reaches the caller. The wrapper runs the whole call again from the top, reading fresh, up to 64
 times:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=161-168
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=163-170
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
   attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>

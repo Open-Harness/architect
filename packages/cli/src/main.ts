@@ -4,10 +4,14 @@ import { Names } from "orthograph/server";
 import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
+import { spawn } from "node:child_process";
+import { constants } from "node:os";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
 import { ModelCommand } from "#modules/model/service.js";
+import { Handoff } from "#modules/handoff/service.js";
 import { Add } from "#modules/add/service.js";
 import { New } from "#modules/new/service.js";
 import { SecretsCommand } from "#modules/secrets/service.js";
@@ -22,6 +26,7 @@ import { TelemetryCommand } from "#modules/telemetry/service.js";
 import { WatchCommand } from "#modules/watch/service.js";
 import { proveAddress, stagingLive } from "#modules/staging/service.js";
 import { Compiler, nodeSource } from "@orthograph/compiler";
+import { App } from "@orthograph/preset";
 
 /** `--root`: the app's folder, the current one by default; `what` says what the command does there. */
 const rootFlag = (what: string) => Flag.String("root").pipe(Flag.withDefault(process.cwd()), Flag.withDescription(`The app's folder ${what} (the current folder by default)`));
@@ -259,7 +264,24 @@ const newAdapter = Command.make(
           Effect.catchTag("NewRefused", (e) => fail(e.message, 2)),
         ),
 ).pipe(Command.withDescription("Generate an adapter from a service's own OpenAPI description"));
-const newCommand = Command.make("new").pipe(Command.withDescription("Create something new from a source, such as an adapter from an API description"), Command.withSubcommands([newAdapter]));
+// `ortho new app <name>`: the starter project, as a folder named <name> in the working directory (the same one `npm create orthograph` makes).
+const newApp = Command.make(
+  "app",
+  {
+    name: Argument.String("name").pipe(Argument.variadic(), Argument.withDescription("The new app's name, lower case words joined by dashes; its folder takes the same name")),
+    root: Flag.String("root").pipe(Flag.withDefault(process.cwd()), Flag.withDescription("The folder the new app's folder is made in (the current folder by default)")),
+  },
+  ({ name, root }) =>
+    App.nameIn(name).pipe(
+      Effect.flatMap((one) => App.create({ parent: root, name: one })),
+      Effect.flatMap((lines) => Console.log(lines.join("\n"))),
+      Effect.catchTag("AppRefused", (e) => fail(e.message, 2)),
+    ),
+).pipe(Command.withDescription("Make a new app, the starter project, in a folder of its name"));
+const newCommand = Command.make("new").pipe(
+  Command.withDescription("Create something new: an app from the starter, or an adapter from an API description"),
+  Command.withSubcommands([newAdapter, newApp]),
+);
 
 const tsFiles = (dir: string): ReadonlyArray<string> =>
   existsSync(dir) ? readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? tsFiles(join(dir, d.name)) : d.name.endsWith(".ts") ? [join(dir, d.name)] : [])) : [];
@@ -445,13 +467,46 @@ const worlds = Command.make("worlds").pipe(Command.withDescription("Look after t
 // The CLI's own version is the one in its package.json, which sits next to `src/` and next to `dist/`, so one path serves source and the published package.
 const ownVersion: string = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { readonly version: string }).version;
 
-const onCommandLine = SecretsCommand.refusesValue(process.argv.slice(2));
-if (onCommandLine !== undefined) { process.stderr.write(onCommandLine); process.exit(2); }
+// A global `ortho` inside an app that has its own `@orthograph/cli` runs that one instead, so only the app's packages are loaded (#1151).
+// The child gets the hand-off mark and drops it from its own environment, so nothing it starts inherits it.
+const handedOff = Names.variable("HANDED_OFF");
+const alreadyHanded = process.env[handedOff] !== undefined;
+delete process.env[handedOff];
+const found = alreadyHanded ? undefined : Handoff.target({ from: Handoff.from(process.argv.slice(2), process.cwd()), own: fileURLToPath(new URL("..", import.meta.url)) });
+if (found !== undefined && "broken" in found) process.stderr.write(`${found.broken}: @orthograph/cli is installed here, but its ortho entry can't be read, so the global ortho runs instead\n`);
 
-Command.make(Names.short).pipe(
-  Command.withDescription("Orthograph: declare an app as a blueprint, then generate, prove, run and ship it"),
-  Command.withSubcommands([model, dev, prove, promote, secrets, add, newCommand, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
-  Command.run({ version: ownVersion }),
-  Effect.provide(NodeServices.layer),
-  NodeRuntime.runMain,
-);
+/** Runs the app's own `ortho`, passing on every signal, and ends as it ends: its exit code, or the signal that stopped it. */
+const handOff = (entry: string) => {
+  const child = spawn(process.execPath, [entry, ...process.argv.slice(2)], { stdio: "inherit", env: { ...process.env, [handedOff]: "1" } });
+  const signals = ["SIGINT", "SIGTERM", "SIGHUP"] as const;
+  const forward = (signal: NodeJS.Signals) => { child.kill(signal); };
+  for (const signal of signals) process.on(signal, forward);
+  child.on("error", (e) => {
+    process.stderr.write(`couldn't run the app's own ortho (${entry}): ${e.message}\n`);
+    process.exit(1);
+  });
+  child.on("exit", (code, signal) => {
+    for (const s of signals) process.off(s, forward);
+    // The same signal ends this process too; one Node ignores (SIGPIPE) would leave it to exit 0, so the exit is the shell's 128 + n.
+    if (signal !== null) {
+      process.kill(process.pid, signal);
+      process.exit(128 + constants.signals[signal]);
+    } else process.exit(code ?? 1);
+  });
+};
+
+/** This CLI itself: the value guard, then the parser. */
+const runOwn = () => {
+  const onCommandLine = SecretsCommand.refusesValue(process.argv.slice(2));
+  if (onCommandLine !== undefined) { process.stderr.write(onCommandLine); process.exit(2); }
+  Command.make(Names.short).pipe(
+    Command.withDescription("Orthograph: declare an app as a blueprint, then generate, prove, run and ship it"),
+    Command.withSubcommands([model, dev, prove, promote, secrets, add, newCommand, check, generate, brief, impact, version, publish, build, env, worlds, telemetry, watch]),
+    Command.run({ version: ownVersion }),
+    Effect.provide(NodeServices.layer),
+    NodeRuntime.runMain,
+  );
+};
+
+if (found !== undefined && "run" in found) handOff(found.run);
+else runOwn();

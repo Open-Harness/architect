@@ -73,7 +73,7 @@ The compiled model records the operation's place, `runs: "server"`, the only one
 2. **The language names what it needs from a host, as services.** The store is one of them. The language declares the
    port and says what a store must do; it never says how:
 
-```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=82-95
+```ts file=packages/language-effect/src/modules/records/types.ts name=Store lines=101-114
 /** The host's side. A failing store dies: it is never the caller's refusal. */
 export class Store extends Context.Service<Store, {
   /** The rules this store enforces at commit (G5), as the model carries them; a unit made over it looks through the same ones. Absent when the project declares none. */

@@ -97,7 +97,7 @@ The wrapper runs every call to an Effect operation through the same order (`pack
 
 The last four, as code:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=107-137
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=107-139
 // What the payload names, read once and handed in; a missing one is refused before the handler, then the from-check.
 const handed = yield* prehandle(op, notFound, payload, unit);
 const from = yield* checkFrom(op, notFrom, handed.subject);
@@ -124,7 +124,9 @@ if (broken !== undefined) return yield* settleViolation(name, invariants, logs, 
 const writes = yield* unit.writes;
 // #764: the lists the handler read, which the store guards like an update's version.
 const lists = yield* unit.lists;
-const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
+// #1045: the rows it found, guarded the same way: one another call changed since makes this attempt a `conflict`, and the call runs again.
+const reads = yield* unit.reads;
+const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}), ...(reads.length > 0 ? { reads } : {}) }).pipe(
   Effect.tap((outcome) => Effect.annotateCurrentSpan({
     "commit.outcome": outcome,
     // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.

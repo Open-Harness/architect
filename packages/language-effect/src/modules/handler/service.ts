@@ -130,7 +130,9 @@ const serve = ({ name, operation, handler, notFrom, notFound = {}, calls, codes,
         const writes = yield* unit.writes;
         // #764: the lists the handler read, which the store guards like an update's version.
         const lists = yield* unit.lists;
-        const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}) }).pipe(
+        // #1045: the rows it found, guarded the same way: one another call changed since makes this attempt a `conflict`, and the call runs again.
+        const reads = yield* unit.reads;
+        const committed = yield* store.commit({ writes, entries, ...request, ...(lists.length > 0 ? { lists } : {}), ...(reads.length > 0 ? { reads } : {}) }).pipe(
           Effect.tap((outcome) => Effect.annotateCurrentSpan({
             "commit.outcome": outcome,
             // The event the move emitted, named only on the commit that journalled it: a conflicted attempt emitted nothing.
