@@ -73,6 +73,8 @@ export const postRunners: Handler<typeof entryPost> = ({ book, amount }, { steps
 export const splitRunner: Handler<typeof runSplit> = ({ run, book, amount }, { steps }) =>
   Effect.gen(function* () {
     yield* refusesWith(steps.draft({ book, amount }), new BookClosed({ book }));
+    // `entry.draft` runs no inner step, so its runtime refusals reach this runner only as its own, never through an inner's.
+    yield* refusesWith(steps.draft({ book, amount }), new NotAllowed(), new NotFrom({ _tag: "EntryNotDraft", state: "x" }), new NotFound({ _tag: "BookNotFound", id: "bok_1" }));
     return { run };
   });
 
