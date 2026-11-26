@@ -167,10 +167,10 @@ export const machine = Blueprint.machine(PersonalSafe, {
   system only, makes the same move for a person a Capxul company owes money before they have one (S3). Sets the salt
   nonce. Emits `PersonalSafeOpened { safe, person }`.
 - **`claim`**, by the person only. Payload: the Safe, the signer's address, and a proof: an EIP-191 `personal_sign` by
-  the signer of the exact text `Capxul: claim Safe <saf_…> for <per_…>`, recovered on the server (`viem`'s
+  the signer of the exact text `Capxul: claim Safe <saf_…> for <per_…>` (one line, no trailing newline, no chain id, since the address is the same on every EVM chain, and no nonce, since the machine allows one claim), recovered on the server (`viem`'s
   `recoverMessageAddress`; `packages/chain-evm` already depends on `viem`). A journey cannot sign today: its payload is
   literal data or refs resolved to recorded values (`packages/orthograph/src/modules/journeys/internal/refs.ts`), and an
-  actor has no `sign`. So unit **J1** adds one: `s.<actor>.signs(template)`, answering `{ signature, signer }`, the
+  actor has no `sign`. So unit **J1** (#1190) adds one: `s.<actor>.signs(template)`, answering `{ signature, signer }`, the
   template's refs resolved, then signed EIP-191 by the world key that cast member holds (a world key's `signMessage`,
   `packages/chain-evm/src/modules/keys/types.ts:9-10`). The claim step reads
   `{ safe, signer: s.last.signer, proof: s.last.signature }`. A fixed text with no ids was refused: a proof could then be
