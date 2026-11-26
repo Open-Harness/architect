@@ -22,7 +22,7 @@ export interface PortalEnv {
   readonly ORTHO_PORTAL_FEED?: string;
   /** Where the monitor keeps its issues past the window (M1.49, `portal.md` hole 7): a key-value binding, the shape of Workers KV. Without one they live as long as the isolate does. */
   readonly PORTAL_LEDGER?: PortalLedgerBinding;
-  /** The client's files, as the Worker's static assets (K19). Without them `/portal` says the client is missing. */
+  /** The client's files, as the Worker's static assets (K19). Without them (a published `@orthograph/portal` has none) every screen is 501, not in this release (Preview): a page or JSON by `accept`. */
   readonly PORTAL_ASSETS?: PortalAssets;
 }
 

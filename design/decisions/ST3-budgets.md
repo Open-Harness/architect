@@ -1,5 +1,7 @@
 # ST3-budgets, not decided: the spike's recommendation that the Safe owns the budget and Hats decides who can spend
 
+**For Capxul (CX-safe, 26 November 2026):** this recommendation is not taken. Capxul's budget is an Org Budget, a Zodiac Roles 2.1.1 role the company's Safe grants (CX-bridge-rails), not a Hats module.
+
 **Not a decision.** This is the safe-hats-module spike's recommendation, written 21 November 2026 as a draft for Goal 7's
 lead and landed in `main` on 23 November 2026 for the record. Nobody has decided it. Under K42 a piece is decided and
 built when the first app needs it, and Capxul (K43, Goal 16) is the app expected to need budgets first. The decision

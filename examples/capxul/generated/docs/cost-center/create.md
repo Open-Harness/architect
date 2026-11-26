@@ -53,6 +53,12 @@ Starts from the world `a fiscal year`.
 - **Ada adds a root cost center to her other company.** `ada` (role company.owner) calls and sends company the world's otherCompany, costCenterName `Acme Logistics`, isGroup true, and gets back an answer matching `^cct_`.
 - **and a ledger cost center under it.** `ada` (role company.owner) calls and sends company the world's otherCompany, costCenterName `Operations`, parentCostCenter the last call's costCenter, isGroup false, and gets back an answer matching `^cct_`.
 
+### draft a payment entry
+
+Starts from the world `an outside supplier`.
+
+- **Ada adds a group cost center under the root.** `ada` (role company.owner) calls and sends company the world's company, costCenterName `Sales`, parentCostCenter the world's mainCostCenter, isGroup true, and gets back an answer matching `^cct_`.
+
 ### post a journal entry
 
 Starts from the world `a capital entry`.
