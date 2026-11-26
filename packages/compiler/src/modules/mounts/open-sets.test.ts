@@ -122,13 +122,29 @@ describe("#1132: an open set holds the members of the features that add to it", 
     const m = await modelOf(books(), { mounts: MOUNTED });
     expect(m.things["posting"]?.fields["kinds"]?.value, "a list of the voucher set").toMatchObject({ type: "schema", format: "list", item: choice(VOUCHERS) });
     expect(m.things["posting"]?.fields["vouchers"]?.value, "a list of voucher references").toMatchObject({ type: "schema", format: "list", item: reference(VOUCHERS) });
-    // A list of anything else is as it was: no item.
     const plain = await modelOf(books(), { mounts: { ledger: "ledger" } });
     expect(plain.things["posting"]?.fields["kinds"]?.value).toMatchObject({ type: "schema", format: "list", item: choice(["Journal Entry", "Contra Entry"]) });
+    // A list of anything else is as it was: no item.
+    const payload = m.operations["gl-entry.post"]?.payload;
+    expect(payload?.["notes"]?.value, "a list of text").toEqual({ type: "schema", format: "list" });
+    expect(payload?.["plainLines"]?.value, "a list of structs holding no set").toEqual({ type: "schema", format: "list", fields: ["note"] });
   });
 
   it("a need with `when` counts once the mount picks it: bookkeeping, picked to post, adds to the ledger's set", async () => {
     const m = await modelOf(books(), { mounts: { ...MOUNTED, bookkeeping: "bookkeeping" }, posting: ["bookkeeping"] });
     expect(m.things["gl-entry"]?.fields["voucherType"]?.value).toMatchObject(choice(["Journal Entry", "Contra Entry", "Expense Claim", "Opening Balance", "Payment Entry", "Salary Slip"]));
+  });
+
+  it("a struct that holds an open set, at any depth and in a list, holds the union in that field; a struct holding none is as it was", async () => {
+    const m = await modelOf(books(), { mounts: MOUNTED });
+    const payload = m.operations["gl-entry.post"]?.payload;
+    // Only the fields that hold a set are named, each with its model: `note` is plain text and isn't.
+    expect(payload?.["line"]?.value, "a struct").toEqual({ type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)), against: expect.objectContaining(reference(VOUCHERS)) } });
+    expect(payload?.["deep"]?.value, "a struct inside a struct").toEqual({ type: "schema", struct: { inner: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } } });
+    expect(payload?.["lines"]?.value, "a list of structs").toEqual({ type: "schema", format: "list", fields: ["kind", "note"], item: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } });
+    expect(payload?.["plainLine"]?.value, "a struct holding no set").toEqual({ type: "schema" });
+    // With invoicing mounted, the member it adds is in the struct's field too.
+    const withIt = await modelOf(books(), { mounts: { ...MOUNTED, invoicing: "invoicing" } });
+    expect(optionsOf({ value: (withIt.operations["gl-entry.post"]?.payload["deep"]?.value as { struct?: { inner?: { struct?: { kind?: unknown } } } }).struct?.inner?.struct?.kind })).toContain("Sales Invoice");
   });
 });

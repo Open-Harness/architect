@@ -7,7 +7,7 @@
 // reference holding a kind from a set and an id.
 import { Effect, Exit, Layer } from "effect";
 import { expect } from "vitest";
-import { Blueprint, type Feature, type Value } from "orthograph";
+import { Blueprint, Schema, type Feature, type Value } from "orthograph";
 import { BlueprintSource, type LoadedFile, type PluginPackage } from "#modules/source/types.js";
 import { BlueprintInvalid, type Model } from "#modules/model/types.js";
 import { Compiler } from "#modules/model/service.js";
@@ -83,7 +83,16 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
   const Posted = Blueprint.event({ entry: GlEntry.fields.id, voucherType: GlEntry.fields.voucherType, voucher: GlEntry.fields.voucher });
   const post = Blueprint.operation(GlEntry, {
     description: "Post a line.",
-    payload: { voucherType: GlEntry.fields.voucherType, voucher: GlEntry.fields.voucher, party: GlEntry.fields.party, account: GlEntry.fields.account },
+    payload: {
+      voucherType: GlEntry.fields.voucherType, voucher: GlEntry.fields.voucher, party: GlEntry.fields.party, account: GlEntry.fields.account,
+      // A struct holding the set and a reference to it, a struct inside a struct, a list of structs, and plain ones beside them.
+      line: Blueprint.value(Schema.Struct({ kind: VoucherType.schema, against: Voucher.schema, note: Schema.String })),
+      deep: Blueprint.value(Schema.Struct({ inner: Schema.Struct({ kind: VoucherType.schema }) })),
+      lines: Blueprint.list(Blueprint.value(Schema.Struct({ kind: VoucherType.schema, note: Schema.String }))),
+      plainLine: Blueprint.value(Schema.Struct({ note: Schema.String })),
+      plainLines: Blueprint.list(Blueprint.value(Schema.Struct({ note: Schema.String }))),
+      notes: Blueprint.list(Blueprint.text()),
+    },
     answer: { entry: GlEntry.fields.id },
     allowed: [Blueprint.signedIn],
   });
