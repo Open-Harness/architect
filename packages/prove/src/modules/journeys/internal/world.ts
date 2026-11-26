@@ -26,6 +26,20 @@ export const castPeople = (url: string, names: ReadonlyArray<string>, anonymous:
   );
 
 /**
+ * Put a world whose clock moves back to its declared start, for the next journey (G16-journey-clocks call 1), by the world's
+ * own warm reset (ST1.24): its records go, its cast's people stay, and its clock and timers start again. The reset names the
+ * world by the nonce its health answer says (a world prove started has none, and takes any name). A world with no reset (one
+ * with leases, or no `/_world` at all) answers 404 and keeps its clock; any other refusal is the problem, in its words.
+ */
+export const resetWorld = (url: string) =>
+  Effect.gen(function* () {
+    const health = yield* fetchJson(`${url}/_world/health`);
+    const nonce = (health.body as { readonly nonce?: unknown } | null)?.nonce;
+    const reset = yield* fetchJson(`${url}/_world/reset`, { method: "POST", headers: { "x-ortho-world": typeof nonce === "string" ? nonce : "prove" } });
+    return reset.status === 200 || reset.status === 404 ? undefined : `${reset.status} ${JSON.stringify(reset.body)}`;
+  });
+
+/**
  * A POST from something that is not a browser. Node's `fetch` adds `Sec-Fetch-*` headers, which Better Auth reads as a
  * browser's first login and so demands an `Origin` for; `node:http` sends none, as `curl` doesn't. The transport is chosen by the address's protocol: a deployed Worker is `https`.
  */
