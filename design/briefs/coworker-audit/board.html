@@ -68,18 +68,35 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Orthograph · an app audit · 26 November 2026</div>
+  <div class="eyebrow">Orthograph · an app audit · 26 November 2026 · second pass</div>
   <h1>Coworker, the audit board</h1>
-  <p class="lede">Your app, read from eight sides. What Orthograph can hold of it today, and what it can't. A first blueprint with the blanks marked. Six decisions are yours, at the end.</p>
+  <p class="lede">Your app, read from eight sides. What Orthograph can hold of it today, and what it can't. What works in it now, which the rebuild must replace, front end included. The agents, which don't, and how to build them right. Six decisions are yours, at the end.</p>
   <div class="legend">
     <span><i class="st run">runs today</i> green on main, proved by an app's journeys</span>
     <span><i class="st new">being built</i> code exists, not proved or not merged</span>
     <span><i class="st dec">decided</i> a record, and no code</span>
-    <span><i class="st open">missing</i> nothing</span>
+    <span><i class="st open">missing</i> nothing, or it does not work</span>
   </div>
 
   <div class="note">
-    <p><b>Nothing was run.</b> Coworker was read, at its one commit of 25 November. It was not installed, built, tested or opened, and I saw no screen rendered. Its score of 81 out of 81 was not reproduced. On the Orthograph side I ran no suite either: each standing comes from the status page, the ratchet lists and the pull requests' own words. An app only read is an app not seen working.</p>
+    <p><b>What I ran, and what I didn't.</b> The first pass only read. For this one I installed Coworker and ran it with every outside thing faked and no credential. It typechecks and builds, and <b>all 616 of its fast tests pass</b>. Its browser tests pass too, 65 of 65, and I have now seen your screens rendered.</p>
+    <p>I did not run real mail, a real GitHub App, real containers, a real model, or staging. You used staging and wrote 78 findings, and where your findings and the green tests disagree, your findings win. On the Orthograph side I ran no suite: each standing comes from the status page, the ratchet lists and the pull requests' own words.</p>
+  </div>
+
+  <h2>Three things you said after the first pass</h2>
+  <div class="board">
+    <div class="card"><div class="top"><span class="at">front end</span><i class="st new">answered below</i></div>
+      <blockquote>It needs a front end. It needs to replace everything that works currently in the vibe coded version.</blockquote>
+      <p><b>Agreed, and the first pass had this wrong.</b> It put the screens third. The rebuild is done when a person can do on screens everything that works today.</p>
+      <p>So there is now a list of what works, a way to prove it is all replaced, and a graded choice for the front end. See "What works today" and "The front end".</p></div>
+    <div class="card"><div class="top"><span class="at">agents</span><i class="st open">does not work</i></div>
+      <blockquote>One thing that definitely doesn't work is the agents. They should be Pi Durable.</blockquote>
+      <p><b>The code agrees with you.</b> Pi Durable is wired in. What is built on it is one level deep, a worker's report wakes nobody, and every test runs a scripted model.</p>
+      <p>So the agents are not matched. They are built right, and they come first. See "The agents".</p></div>
+    <div class="card"><div class="top"><span class="at">actors</span><i class="st new">being built</i></div>
+      <blockquote>And they should be actors.</blockquote>
+      <p><b>They already are, in Orthograph's design.</b> The Agent thing lives as an actor, one Durable Object each, and the draft keeps the Pi conversation inside that same object.</p>
+      <p>An actor can't be listed. So the board's lists come from rows the actors report to. See "Agents as actors".</p></div>
   </div>
 
   <h2>What you asked, said back</h2>
@@ -171,6 +188,30 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
       <p><b>The stories its tests tell are good</b>, and become the first journeys.</p></div>
   </div>
 
+  <h2>What works today</h2>
+  <p>This is what the rebuild has to replace. "Works" means its tests pass here <b>and</b> none of your findings says it fails in real use.</p>
+  <div class="board">
+    <div class="card"><div class="top"><span class="at">getting in</span><i class="st run">works</i></div>
+      <p>Sign-in by link, Google or GitHub. Workspaces with an address and a region. Joining four ways. Owner, Builder, Member, each opening only their pages. First-run set-up.</p></div>
+    <div class="card"><div class="top"><span class="at">settings</span><i class="st run">works</i></div>
+      <p>Every settings page exists and saves. Members, roles, usage, security, the audit log with its export. Agents, skills and environments are saved, though not in the editors you drew.</p></div>
+    <div class="card"><div class="top"><span class="at">the inbox</span><i class="st run">works</i></div>
+      <p>Approvals, questions and notices reach a person and are answered by option or in their own words. An approval does not yet show what will be sent.</p></div>
+    <div class="card"><div class="top"><span class="at">hearing the world</span><i class="st run">works</i></div>
+      <p>Email in, with ten awkward cases. GitHub in, with twelve. The gate on who may ask. Going out is thin: a reply by mail, a comment on GitHub.</p></div>
+    <div class="card"><div class="top"><span class="at">keys and the vault</span><i class="st run">works in tests</i></div>
+      <p>A key is sealed, used and never returned. A provider key connects. ChatGPT sign-in and "own endpoint" pass their tests and fail on staging, so they don't count.</p></div>
+    <div class="card"><div class="top"><span class="at">board, task, mission</span><i class="st new">works, not as you want</i></div>
+      <p>The board, the task page, mission pages and search all run. <b>Fourteen of your findings say the board and the task page are wrong.</b> Those two are drawn again, not ported.</p></div>
+    <div class="card"><div class="top"><span class="at">sandboxes and money</span><i class="st new">partly</i></div>
+      <p>Commands in containers ran on staging only. Seats and hours are counted. Nobody is ever billed.</p></div>
+    <div class="card"><div class="top"><span class="at">the agents</span><i class="st open">does not work</i></div>
+      <p>Not counted, whatever the tests say. Every agent test runs a scripted model.</p></div>
+    <div class="card"><div class="top"><span class="at">the older chat app</span><i class="st film">left out</i></div>
+      <p>Chats, Library, Admin. Its own page says it is kept only until the rebuild. I have assumed you don't want it. Say if you do.</p></div>
+  </div>
+  <p>Every one of the 56 modules has a line in <code>inventory.md</code>: what it is, whether it works, and what holds it in Orthograph.</p>
+
   <h2>Which screens are the authority?</h2>
   <p>Your screens page counts 49 screens: 3 kept, 27 adapted, 7 redone, 11 new, 1 dropped. So "the screens are how I want it" can mean two things.</p>
   <div class="opts">
@@ -194,9 +235,11 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
         <li>Threads as a tree; "In and out"; a connector's own view.</li>
         <li>Connectors and accounts, MCP servers, Build inside Settings.</li>
       </ul>
-      <p><b>Recommended.</b> It is a day old and it is where nested managers live. Eighteen of these screens have never been drawn, so they are drawn before they are built.</p>
+      <p>It is a day old and it is where nested managers live. Eighteen of these screens have never been drawn.</p>
     </div>
   </div>
+
+  <p><b>Recommended: both, split by what works.</b> The built screens are the authority for everything that works: getting in, settings, the inbox, hearing the world. The agreed screens are the authority for the board, the task, the manager tree and everything about agents. Your findings also speak of screens "drawn on the canvas". I have not seen that canvas. If it is the real authority, I need it.</p>
 
   <h2>What Orthograph holds today</h2>
   <div class="verdict">
@@ -213,6 +256,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
     <tr><td class="q">Versions of a manager, an agent, a page</td><td><i class="st new">being built</i></td><td class="a">in use in the superagent example</td></tr>
     <tr><td class="q">Lists with filters; a record under a parent</td><td><i class="st dec">decided</i></td><td class="a">both wait on Capxul's books</td></tr>
     <tr class="grp"><td colspan="3">Who is who</td></tr>
+    <tr><td class="q">A store per workspace, as Coworker has</td><td><i class="st open">missing</i></td><td class="a">one database per environment; tenants are kept apart by roles</td></tr>
     <tr><td class="q">Sign-in, workspaces, members, invitations</td><td><i class="st new">being built</i></td><td class="a">Better Auth in the host; the things are copied into each app, not yet a package</td></tr>
     <tr><td class="q">Owner, Builder, Member</td><td><i class="st dec">decided</i></td><td class="a">only a rule in code exists; Capxul landed a company-wide role</td></tr>
     <tr><td class="q">An agent as a caller, told apart from a person</td><td><i class="st new">being built</i></td><td class="a">the form is on main, the caller is in the draft</td></tr>
@@ -221,7 +265,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
     <tr><td class="q">Tools from operations</td><td><i class="st dec">decided</i></td><td class="a">"not wired yet", in the draft's own words</td></tr>
     <tr><td class="q">Managers above managers</td><td><i class="st open">missing</i></td><td class="a">nothing generic. It needs no new idea: two agents and an event between them</td></tr>
     <tr><td class="q">An agent asks a person and carries on</td><td><i class="st dec">decided</i></td><td class="a">your call of this morning: the wait is a thing's state</td></tr>
-    <tr><td class="q">On, ask or off per action, handed down</td><td><i class="st open">missing</i></td><td class="a">approvals are a spike with no slice</td></tr>
+    <tr><td class="q">On, ask or off per action, handed down</td><td><i class="st open">missing</i></td><td class="a">"ask first" exists as a fixed mark on an operation. A setting kept as data, with a yes that waits in an inbox, does not</td></tr>
     <tr><td class="q">A workspace's own model key</td><td><i class="st open">missing</i></td><td class="a">a model is set per environment</td></tr>
     <tr><td class="q">The transcript, and a live line while it writes</td><td><i class="st open">missing</i></td><td class="a">no live read anywhere in the framework</td></tr>
     <tr class="grp"><td colspan="3">The outside</td></tr>
@@ -231,11 +275,123 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
     <tr><td class="q">A vault per workspace</td><td><i class="st open">missing</i></td><td class="a">secrets are per environment</td></tr>
     <tr><td class="q">MCP servers, billing, files, search</td><td><i class="st open">missing</i></td><td class="a">none is needed for a manager to close its loop</td></tr>
     <tr class="grp"><td colspan="3">Screens</td></tr>
-    <tr><td class="q">Generated screens</td><td><i class="st dec">decided</i></td><td class="a">spiked only; no generator</td></tr>
+    <tr><td class="q">A generated action per operation</td><td><i class="st run">runs today</i></td><td class="a">with a typed refusal and "ask once"; the status page still says spiked</td></tr>
+    <tr><td class="q">Generated forms and buttons; an example with screens</td><td><i class="st dec">decided</i></td><td class="a">no generator; no example has screens</td></tr>
     <tr><td class="q">A kanban board</td><td><i class="st open">missing</i></td><td class="a">two spikes on the library being phased out</td></tr>
     <tr><td class="q">Staging on Cloudflare</td><td><i class="st run">runs today</i></td><td class="a">as a plan with no credential; a live run is being built</td></tr>
   </table></div>
   <p>The full map, with every row and its evidence, is <code>map.md</code>.</p>
+
+  <h2>The agents</h2>
+  <div class="verdict">
+    <p class="big">Build them right, don't port them. And build them first.</p>
+    <p>The target is nested durable managers that control worker agents, on Pi Durable, each one an actor. Nothing in this list is a new idea for Orthograph: it is the parked superagent's unfinished agent work, with its one fixed pair replaced by a rule that works at any depth.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>In Coworker today</th><th>Wired, stubbed or faked</th><th>What that means</th></tr>
+    <tr><td class="q">Pi Durable as the engine</td><td><i class="st run">wired</i></td><td class="a">a harness on the object's own storage, resumed on restart</td></tr>
+    <tr><td class="q">A manager, a worker</td><td><i class="st run">wired, thin</i></td><td class="a">the same four sentences for every manager, without its mission</td></tr>
+    <tr><td class="q">A manager starts a worker</td><td><i class="st run">wired</i></td><td class="a">it submits a brief</td></tr>
+    <tr><td class="q">A worker reports back</td><td><i class="st new">stubbed</i></td><td class="a">it writes a field and wakes nobody</td></tr>
+    <tr><td class="q">A manager above a manager</td><td><i class="st open">absent</i></td><td class="a">no parent, and mail between managers is dropped</td></tr>
+    <tr><td class="q">A manager's tools</td><td><i class="st new">30 of 76</i></td><td class="a">the rest are rows in a list</td></tr>
+    <tr><td class="q">Asking a person</td><td><i class="st run">wired, the wrong way</i></td><td class="a">the tool call sleeps inside Pi, and probably blocks the whole conversation</td></tr>
+    <tr><td class="q">Memory, dates, reminders</td><td><i class="st open">absent</i></td><td class="a">the module named "brain" is the model provider</td></tr>
+    <tr><td class="q">The model, in every test</td><td><i class="st new">faked</i></td><td class="a">three scripted stand-ins. Nothing has shown what a real model does with these tools</td></tr>
+  </table></div>
+
+  <h3>Agents as actors</h3>
+  <div class="cols">
+    <div>
+      <p><b>The Agent is already an actor in Orthograph, and the Pi conversation sits inside the same Durable Object.</b> That is the design on main and the code in the draft. It is also where Coworker keeps a conversation today.</p>
+      <p>What an actor costs, from the canon:</p>
+      <ul>
+        <li><b>It can't be listed.</b> The compiler refuses. The answer it gives is "declare a view", and views are not built.</li>
+        <li><b>It can't hold a rule across records.</b> So "one root manager per workspace" can't be a rule on the agent.</li>
+        <li><b>A request key on its operation dies.</b> For telling an agent this is covered: the tell carries its own request id, and Pi takes it once.</li>
+      </ul>
+    </div>
+    <div>
+      <p><b>So the lists come from rows the actors report to.</b></p>
+      <div class="chain">
+        <div><b>Manager</b><span>a row: name, job, the manager above, its agent</span></div>
+        <div><b>Run</b><span>a row: its task, its manager, its last report, its agent</span></div>
+        <div><b>Agent</b><span>an actor: the conversation, and nothing else</span></div>
+      </div>
+      <p>The sidebar's tree, search, "agents on this task" and the page of everything running all read the rows. When an agent starts a turn, goes idle or stops, an event updates its row. This is one more thing than "the manager is the actor", and it is the price of a list today.</p>
+    </div>
+  </div>
+
+  <h3>Does Pi Durable fit "things last"?</h3>
+  <p>Mostly, and well. A Pi conversation is a thing that lasts for years. Telling an agent is one short call. The turn runs inside the actor, and when it ends that is an event. Nothing is held open. It pulls against your call in four places.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Pi wants</th><th>"Things last" wants</th><th>Take whose side</th></tr>
+    <tr><td class="q">to hold waits itself: sleeping tool calls, signals, background subagents</td><td class="a">a wait is a thing's state</td><td class="a"><b>Yours.</b> An agent's tool never sleeps. To wait for a person it raises an ask and its turn ends. The answer comes back as a tell</td></tr>
+    <tr><td class="q">to be the database: Coworker keeps its board in Pi documents</td><td class="a">every fact is a thing in a store</td><td class="a"><b>Orthograph's.</b> Pi keeps the conversation only</td></tr>
+    <tr><td class="q">one commit: the tool call and the turn together</td><td class="a">two places, two commits, joined</td><td class="a"><b>Yours</b>, with a request key per tool call so a replay is taken once</td></tr>
+    <tr><td class="q">the order of work in the model's head</td><td class="a">the order of anything that spans a wait is declared</td><td class="a"><b>Both.</b> The plan stays the agent's. What the task is waiting for is declared on the task, which your next model already asks for</td></tr>
+  </table></div>
+
+  <h3>What nesting needs</h3>
+  <div class="tablewrap"><table>
+    <tr><th>The call</th><th>Between actors today</th><th>What is missing</th></tr>
+    <tr><td class="q">Start an agent</td><td><i class="st run">on main</i></td><td class="a">the caller: a manager acting as itself, which is in the draft</td></tr>
+    <tr><td class="q">Tell it</td><td><i class="st new">declared, no handler</i></td><td class="a">the runtime draft; the outbox draft, for retry and order</td></tr>
+    <tr><td class="q">Wait on it</td><td><i class="st dec">not a call</i></td><td class="a">it is the run's state, and "the agent went idle" as an event that wakes the manager</td></tr>
+    <tr><td class="q">Stop it</td><td><i class="st new">declared, no handler</i></td><td class="a">the runtime draft</td></tr>
+    <tr><td class="q">A manager above</td><td><i class="st open">missing</i></td><td class="a">no new call. The same four, one level higher</td></tr>
+    <tr><td class="q">Limits and authority down the tree</td><td><i class="st open">missing</i></td><td class="a">how many at once, how deep, a budget, and what each may do</td></tr>
+  </table></div>
+
+  <h2>The front end</h2>
+  <p>No example in Orthograph has screens of its own today. One thing is further on than the status page says: <b>a generated action per operation is on main</b>, with a typed refusal and "ask once" built in. The generated form or button is not.</p>
+  <div class="opts">
+    <div class="opt">
+      <span class="num">A · keep, new data layer</span>
+      <h3>Your screens, the generated SDK</h3>
+      <p>The screens move as they are. Their seven server interfaces are written again over the SDK. Refusals and "waiting for an Owner" stay hand-written.</p>
+    </div>
+    <div class="opt">
+      <span class="num">B · rebuild on the generated layer</span>
+      <h3>Generated pieces, as they land</h3>
+      <p>Every form and button is generated on UI SDK, and pages come from a declared map. It waits on a generator, a browser runtime, pages, a table and a kanban board. None exists.</p>
+    </div>
+    <div class="opt">
+      <span class="num">C · a staged mix</span>
+      <h3>Your screens, generated actions</h3>
+      <p><b>Recommended.</b> As A, and every button that changes something calls a generated action, which exists today. A screen moves to generated pieces only if you marked it New or Redo, and only once the generator exists.</p>
+    </div>
+  </div>
+  <div class="tablewrap"><table class="rubric">
+    <tr><th>Test</th><th>A · keep</th><th>B · rebuild</th><th>C · mix</th></tr>
+    <tr><td class="q">How soon it replaces what works</td><td class="a"><i class="g hi">A</i>as fast as the back end</td><td class="a"><i class="g lo">F</i>months</td><td class="a"><i class="g hi">A</i>as fast as the back end</td></tr>
+    <tr><td class="q">Keeps the interface you want</td><td class="a"><i class="g hi">A</i></td><td class="a"><i class="g lo">D</i>all redrawn</td><td class="a"><i class="g hi">A</i></td></tr>
+    <tr><td class="q">Uses what Orthograph generates</td><td class="a"><i class="g lo">D</i>the SDK only</td><td class="a"><i class="g hi">A</i>all of it</td><td class="a"><i class="g mid">B</i>the SDK and the actions</td></tr>
+    <tr><td class="q">Refusals and "ask first"</td><td class="a"><i class="g mid">C</i>by hand</td><td class="a"><i class="g hi">A</i>generated</td><td class="a"><i class="g hi">A</i>from the action</td></tr>
+    <tr><td class="q">An agent can drive the page</td><td class="a"><i class="g lo">D</i>no</td><td class="a"><i class="g hi">A</i>yes</td><td class="a"><i class="g mid">C</i>not the page, but each action is also a tool</td></tr>
+    <tr><td class="q">Work thrown away later</td><td class="a"><i class="g mid">C</i>seven adapters</td><td class="a"><i class="g hi">A</i>none</td><td class="a"><i class="g mid">B</i>less</td></tr>
+    <tr><td class="q">Whose paths in the framework</td><td class="a"><i class="g hi">A</i>the app's own</td><td class="a"><i class="g lo">D</i>two parked goals</td><td class="a"><i class="g hi">A</i>the app's own</td></tr>
+    <tr class="tot"><td>Overall</td><td><b>B</b></td><td><b>D now, A in the end</b></td><td><b>A</b></td></tr>
+  </table></div>
+
+  <div class="cols">
+    <div>
+      <h3>The folder, with the front end in it</h3>
+      <figure class="file"><figcaption><span>examples/coworker/</span><span>one folder, two projects</span></figcaption><pre class="code"><span class="ln">blueprint/        things, agents, features, adapters</span><span class="ln">journeys/         the loop, an ask, mail in, an issue in</span><span class="ln">src/              handlers: Effect, the repo's rules</span><span class="ln">plugins/          written here first: email, vault</span><span class="ln">generated/        sdk, actions, server, mcp, cli, docs</span><span class="ln isnew">web/              the front end, its own project</span><span class="ln isnew">  src/routes/     your routes, kept</span><span class="ln isnew">  src/modules/    your screens and components, as they are</span><span class="ln isnew">  .../api.ts      the seven adapters, written again</span><span class="ln"> </span><span class="ln">e2e/coworker/          the journeys' gate</span><span class="ln">e2e/coworker-parity/   your browser tests, ported</span></pre></figure>
+      <p>Handlers are Effect code under this repository's rules. Screens are React. One project would put both under one set of lint rules, so it is two. That needs a tag for an app's web project: the first framework change the front end asks for. It does not change where the app lives.</p>
+    </div>
+    <div>
+      <h3>How "it replaces everything" is proved</h3>
+      <p>Your own tests become the acceptance suite, kept as a list of what is still red that may only shrink. Three changes to that idea:</p>
+      <ul>
+        <li><b>Three lists, not one suite.</b> What works must match. What you found broken must not be copied, and each finding gets a check. The agents are outside it.</li>
+        <li><b>Two suites.</b> The 36 flow files become journeys, where behaviour is proved. The 20 browser tests are ported, to prove a person can get there on a screen. Routes are kept, so most should run nearly unchanged.</li>
+        <li><b>This repository's ratchet.</b> One file per red check. A builder may only delete one. Someone other than the builder ports them.</li>
+      </ul>
+      <p>And at the end of every front-end slice, the old screen and the new one side by side on one page for you. Your suite already takes the pictures.</p>
+      <p><b>Done:</b> both lists are empty, every finding has a passing check, and that page holds nothing you haven't seen.</p>
+    </div>
+  </div>
 
   <h2>A first blueprint</h2>
   <p>Thirty-two files for Coworker's core: manager, lane, task, run, ask, grant and page. <b>It does not compile, and nobody has tried.</b> An amber line is a blank: one only you can fill, or one the framework can't hold yet.</p>
@@ -283,7 +439,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   <p>It moves out when two things are true: the packages install from npm, and the plugins it mounts are packages. One thing I did not check: whether this repository's lint rules reach an example's own screens. If they do, scoping them away is the first framework change.</p>
 
   <h3>2 · What happens to the interface?</h3>
-  <p><b>Keep the screens and point them at the generated SDK.</b> They come apart cleanly, and the generated UI layer is only spiked, so waiting for it means no screen for months. Port a screen only if your page says Keep or Adapt. The eighteen marked New or Redo are drawn first, as real screens you can look at. Astryx stays as the app's look, and UI SDK is used only for what Orthograph generates. That leaves two component libraries in the repository, which is decision 4.</p>
+  <p><b>Your screens and components stay, and every write goes through a generated action.</b> That is option C under "The front end", where the three ways are graded. Astryx stays as the look, which leaves two component libraries in the repository for a while. That is decision 4.</p>
 
   <h3>3 · Which parts of its Pi Durable use carry over?</h3>
   <div class="tablewrap"><table>
@@ -303,17 +459,35 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   <p>Coworker runs Pi Durable 1.6. The draft pins 1.5. The newer one has the signal that closes the worker's loop, so the draft moves up as it lands.</p>
 
   <h3>4 · What is the first slice?</h3>
-  <p><b>The board and the inbox, with no agent in it.</b> Manager, lane, task and ask, in the database. Seven operations: make a manager, add a lane, add a task, move it, finish it, raise an ask, answer it. It ends green on one named check, <code>e2e/coworker/01-board-and-inbox.test.ts</code>, which proves six journeys. Everything it needs runs today, and the moment it is green an agent can already drive the board through the generated tools.</p>
+  <p><b>One manager running one worker on one task, proved by a journey.</b> The first pass put a board with no agent first. Your point changes that. It is too big for one slice that ends green, so it is two, and they share one journey.</p>
   <ol class="steps">
-    <li>The board and the inbox.<span>No agent. Needs nothing new from the framework.</span></li>
-    <li>A workspace and its people.<span>Owner, Builder, Member. Someone from another workspace is refused.</span></li>
-    <li>The first screens, re-pointed.<span>Board, task, inbox, a question as a page. Coworker's own browser tests, ported.</span></li>
-    <li>A manager that answers.<span>The agent runtime lands in pieces. "A chat becomes a task", and it survives a restart. First framework change.</span></li>
-    <li>The loop closes.<span>A worker reports and its manager acts on it. The old app never did this.</span></li>
-    <li>It asks first.<span>An action set to ask raises an ask; your answer is the manager's next turn.</span></li>
-    <li>It hears the world.<span>The superagent's intake and GitHub adapter, mounted. An email adapter, written in the app.</span></li>
-    <li>The tree.<span>A root manager, managers made by managers, permissions handed down and taken back.</span></li>
+    <li>The loop by hand.<span>Manager, task and run, and five operations. People play the manager and the worker. Needs nothing new from the framework. Check: <code>e2e/coworker/01-the-loop-by-hand.test.ts</code>.</span></li>
+    <li>The loop by agents.<span>The same journey with the people taken out, on a scripted model. A person asks, the manager adds a task and starts a run, the worker reports, the manager is woken and finishes the task. Then a restart in the middle, and a worker that goes silent. Check: <code>e2e/coworker/02-one-manager-one-worker.test.ts</code>.</span></li>
   </ol>
+  <p>After those, two tracks side by side.</p>
+  <div class="cols">
+    <div>
+      <h3>The agents, built right</h3>
+      <ol class="steps" start="3">
+        <li>It asks first.<span>An action set to ask raises an ask. Your answer is the manager's next turn.</span></li>
+        <li>A manager above a manager.<span>A root per workspace. Managers made by managers.</span></li>
+        <li>Authority handed down.<span>Narrower at each level, taken back from above.</span></li>
+        <li>A real model, once, on staging.<span>A scripted model proves the plumbing and nothing about judgement. Needs your yes for the credential.</span></li>
+      </ol>
+    </div>
+    <div>
+      <h3>Everything that works, replaced</h3>
+      <ol class="steps">
+        <li>Getting in.<span>Sign-in, workspaces, joining, roles, and their screens.</span></li>
+        <li>Settings and people.</li>
+        <li>The inbox.<span>It shares the ask with the agents' third slice.</span></li>
+        <li>Hearing the world.<span>The gate and GitHub from the superagent's plugins. Email written in the app.</span></li>
+        <li>Keys and the vault.</li>
+        <li>The board and the task page, drawn again.</li>
+        <li>Sandboxes, usage and billing.</li>
+      </ol>
+    </div>
+  </div>
 
   <h2>The gaps, and who would fix them</h2>
   <div class="tablewrap"><table>
@@ -331,17 +505,19 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
     <tr><td class="q">Deadlines, reminders, a silent run</td><td class="a">a timer fires an event</td><td class="a">timers are Capxul's by rank; the keeper is unclaimed</td></tr>
     <tr><td class="q">A workspace's own keys and vault</td><td class="a">one model per environment at first; then lift Coworker's vault as a plugin</td><td class="a">the vault goal is parked</td></tr>
     <tr><td class="q">Live updates</td><td class="a">poll, as today</td><td class="a">nobody's: a question for the framework goal</td></tr>
-    <tr><td class="q">No generated screens, no kanban</td><td class="a">keep Coworker's screens</td><td class="a">both screen goals are parked</td></tr>
+    <tr><td class="q">No generated screens, no kanban</td><td class="a">keep your screens; writes through generated actions</td><td class="a">both screen goals are parked, and nothing of theirs has to move</td></tr>
+    <tr><td class="q">No example has screens of its own</td><td class="a">a tag for an app's web project</td><td class="a">unclaimed; small</td></tr>
+    <tr><td class="q">A store per workspace</td><td class="a">rows with a workspace id, kept apart by roles</td><td class="a">unclaimed; later</td></tr>
   </table></div>
   <p>I claimed nothing, opened no framework pull request, added no row and made no goal. If you accept this, the framework goal makes the goal.</p>
 
   <h2>Decisions for you</h2>
   <p>Each has my recommendation. A line each is enough.</p>
   <ol class="ask">
-    <li><b>Which screens are the authority?</b><span>The ones built, or the ones your page of 25 November agrees, with the next model behind them. I recommend the agreed ones.</span></li>
+    <li><b>Which screens are the authority?</b><span>I recommend the built ones for everything that works, and the ones your page of 25 November agrees for the board, the task, the manager tree and the agents. And tell me whether "the canvas" your findings mention is the real authority.</span></li>
     <li><b>Is Coworker a third thing being built?</b><span>You said on 25 November that two things are built now, the alpha and Capxul, and parked the superagent. Coworker needs the superagent's unfinished agent work. I recommend yes: Coworker becomes the app that pulls agents, takes those open pieces, and the superagent stays parked.</span></li>
     <li><b>Where does it live?</b><span>I recommend inside this repository, beside Capxul, until the packages are on npm.</span></li>
-    <li><b>Do the Astryx screens stay?</b><span>I recommend yes, re-pointed at the generated SDK, with UI SDK only for what Orthograph generates.</span></li>
+    <li><b>Do the Astryx screens stay?</b><span>I recommend yes: your screens and components kept, every write through a generated action, and UI SDK only for what Orthograph generates.</span></li>
     <li><b>"On, ask or off, handed down": Coworker's own, or the framework's?</b><span>I recommend Coworker's own guard first, lifted into the framework once it works. Every app with agents will want it.</span></li>
     <li><b>Four blanks in the model.</b><span>I recommend: a task keeps both its lane and "what happens next"; a worker is a saved agent with versions; a person's own permission changes stay; a connector's own view waits until pages exist.</span></li>
   </ol>

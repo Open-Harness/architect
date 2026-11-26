@@ -4,10 +4,11 @@ Read on 26 November 2026 from `Open-Harness/Coworker` at `58f1f0e` (25 November 
 by the `app-audit` skill's eight passes, six of them in subagents that reported facts with paths. Paths below are in
 that repository unless they start `packages/`, `examples/` or `design/`.
 
-**What was not run.** Nothing. The app was not installed, built, tested or opened in a browser: every statement here
-comes from reading files. Its own score says 81 of 81 evals pass; that was not reproduced. No screen was seen
-rendered, so "what a screen shows" is what its components and strings say it shows. Pi Durable's source was not read
-(`node_modules` is absent): its use is described from imports and the app's own docs.
+**What was run.** The eight passes below only read. A second pass then installed and ran Coworker with every outside
+thing faked: it typechecks, builds, and all 616 fast tests pass; its browser tier ran too. `inventory.md` has the
+table, what "works" means given Coworker's own finding that a green score proved little, and every module on a line.
+Not run: real mail, a real GitHub App, real containers, any real model, staging. Pi Durable's source was not read
+(its use is described from imports and the app's own docs).
 
 ## What Coworker is
 

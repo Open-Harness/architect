@@ -22,7 +22,8 @@ repository's own records and ratchet lists say so.
   is parked (K44), so its open slices are free for an app goal to take (`design/goals/map.md`, collision rule 1).
 - **The agent runtime is the hinge.** `@orthograph/agents` on `main` is a thing and three operations, two with blank
   handlers. The Pi Durable runtime is draft pull request #781, on Pi 1.5.0, unmerged, with seven checks red.
-- **Nothing generated draws a screen.** The UI layer is spiked.
+- **Nothing generated draws a screen.** A generated action per operation is on `main`; the generated form or button
+  is not, and no example has screens of its own.
 
 ## The map
 
@@ -68,7 +69,8 @@ repository's own records and ratchet lists say so.
 | Managers above managers, to any depth | missing | no generic parent among agents; `Manager.above` is a plain field, and a manager telling a manager is one more event hop |
 | Work reaches an agent as an event, retried in order | being built | row `outbox`, provisional; draft #905 |
 | An agent asks a person and carries on | decided | K46 call 2: the wait is a thing's state. In use as data in `tickets` (`Attention`, `ticket.waiting`) |
-| On, ask or off per action, handed down | missing | `gap-approval-declaration` and `approvals-once` are spiked, no slice; a role decided by rows of data does not exist |
+| Ask first, as a fixed mark on an operation | runs today, for a page | `needsApproval: true` on an operation, and a generated action that asks once before anything is sent: `e2e/ui-layer` checks 02 and 12, green by their ratchet. The status page still calls `actions` and `gap-approval-declaration` spiked |
+| On, ask or off per action and per manager, handed down | missing | the mark is fixed in the blueprint, and the yes comes from whoever is at the page. A setting kept as data, and a yes that waits in a person's inbox, do not exist |
 | A fake model for tests | being built | `@orthograph/stand-in-model` in #781 |
 | A workspace's own model key, never held by the agent | missing | a model is an environment setting (`MODELS_BASE_URL`); `secrets` are per environment only |
 | A sandbox to run commands in | being built | row `sandbox`; `@orthograph/sandbox` over pi-env in #781; E2B spiked |
@@ -96,7 +98,9 @@ repository's own records and ratchet lists say so.
 
 | Coworker needs | Standing | Where |
 |---|---|---|
-| A generated piece per operation | decided | K29; row `ui-pieces`, spiked (`spikes/ui-sdk-real-world`) |
+| A generated action per operation, for a page and an agent | runs today | `generated/actions/`; `e2e/ui-layer` checks 01 to 03 and 09 to 13; Goal 5, parked |
+| A generated piece per operation (the form, the button) | decided | K29; row `ui-pieces`; `e2e/ui-layer` checks 04 to 08 are on the red list; no generator |
+| An example with screens of its own | missing | row `plugged-in-screens`, provisional; `packages/web` does not exist |
 | A reference per thing: state, what this caller may do, what it waits for | decided | K46 call 9; no row |
 | Pages, routes and a shell from a declared map | being built | row `pages`; `packages/shell`, #584; Goal 6, parked |
 | A kanban board | missing | UI SDK has none (K24); `spikes/kanban-components` and `spikes/mission-board` show one on HeroUI Pro |
@@ -121,7 +125,7 @@ Ids are the ones the blueprint sketch's `GAP` blanks use.
 | `durable-agent-run`: the agent runtime is a draft on Pi 1.5.0 | **Fix.** Land #781's `resident` module in pieces, moved to Pi 1.6.0, which Coworker already runs on and whose `SubmissionSettled` closes the worker-reports loop | `packages/agents`, `packages/host-cloudflare/src/modules/actors` | unclaimed (lane none); Goal 17 parked. Coworker's goal takes it, told to Goal 18 |
 | `outbox`: an event's hop to an agent is not retried or ordered | **Fix.** Land #905 | `packages/host-cloudflare` | unclaimed; Coworker's goal |
 | `agent-tools`: an agent has no tools from operations | **Fix.** This is the heart of "tools are actions", and every agent app needs it | `packages/agents`, `packages/projections` | unclaimed; Coworker's goal |
-| `grants`: on, ask or off per action, handed down the tree | **Work round first, then fix.** A guard in the handler reads Grant rows and raises an Ask. The fix is two framework pieces: a role decided by data, and ask as an outcome of a call (`gap-approval-declaration`, `approvals-once`) | `packages/orthograph/src/modules/roles`, `packages/language-effect/src/modules/access`, `packages/projections` | unclaimed; touches `access`, where Goal 16 landed company roles: an Ask to Goal 18 before starting |
+| `grants`: on, ask or off per action, handed down the tree | **Work round first, then fix.** A guard in the handler reads Grant rows and raises an Ask. The fix is two framework pieces: a role decided by data, and `needsApproval` (on `main` as a fixed mark) made a setting whose yes can wait in an inbox | `packages/orthograph/src/modules/roles`, `packages/language-effect/src/modules/access`, `packages/projections` | unclaimed; touches `access`, where Goal 16 landed company roles: an Ask to Goal 18 before starting |
 | `roles-who-holds`: Owner, Builder, Member | **Work round.** Use the company-role form Capxul landed. The fix is Capxul's by rank (beta, books) | `packages/orthograph/src/modules/roles` | lane none; pulled by Capxul. Wait for it or take the landed part |
 | `teams`: no organisations package | **Work round.** Copy the starter's things, as the starter does | `examples/starter`, `packages/organizations` | row `companies` is lane goal-16 and shares `packages/organizations`: settle through Goal 18 before any extraction |
 | `person-not-agent`: an answer must come from a person | **Fix**, with #781's agent caller | `packages/orthograph/src/modules/roles` | row `principals`: Goal 18 "brings what the alpha needs to `main`, starting with #446". Goal 18 |
@@ -139,9 +143,14 @@ Ids are the ones the blueprint sketch's `GAP` blanks use.
 | `waiting-list`: the Inbox | **Work round.** A plain read over Ask. K46 leaves the general form open | — | Coworker's own; a Decision issue when the general form is wanted |
 | no generated screens, no kanban | **Work round.** Keep Coworker's screens (see `README.md`, question 2) | — | Goal 5 and Goal 6 are parked |
 | sandboxes | **Wait for #781's `@orthograph/sandbox`**, or keep Coworker's Cloudflare Containers module behind the same adapter | `packages/sandbox` | unclaimed |
+| A store per tenant: Coworker gives each workspace its own Durable Object | **Work round.** Rows with a workspace id, kept apart by roles. The fix is a store per instance of a root thing, which K46 call 5 decides for a chain | `packages/host-cloudflare/src/modules/store` | unclaimed |
+| An app's own web project: no example has screens | **Fix**, small: a tag for an app's web project and its allowed imports | `.oxlintrc.json`, `examples/coworker/web` | unclaimed; Goal 5 planned `src/web/` for Plugged In and is parked |
 | MCP servers, billing, files, search, a region per workspace | **Later.** None is needed for a manager to close its loop | — | `design/later.md`, when Aaron accepts |
 
-## Two things found on the way
+## Three things found on the way
+
+- The status page lags the code on the UI layer: `actions` and `gap-approval-declaration` read "spiked", and a
+  generated action per operation with `needsApproval` is on `main`, green by `e2e/ui-layer`'s ratchet. For Goal 18.
 
 - `docs/canon/plugins.mdx` still says "None of this is built yet"; `status.md` and the code say plugins and mounts are
   building, and doors are on `main`. For the canon's owner.
