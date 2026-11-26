@@ -21,7 +21,8 @@ change where the rule lives, in the blueprint, and nowhere else.
 -});
 ```
 
-Six lines are gone, and nothing else has been touched yet. This diff is the part of the change you read.
+The rule's six lines are gone, with the import only it used, and no other file has been touched yet. This diff is the
+part of the change you read.
 
 ## Ask what went stale
 
@@ -42,7 +43,7 @@ app this small, one rule on the handle unproved the lot.
 
 ## The check finds what leaned on the rule
 
-Next we want to know what no longer fits. The check answers in three parts.
+Next we want to know what no longer fits. Three of the check's parts answer.
 
 ```sh capture=change-check.txt
 $ ortho check
@@ -112,7 +113,7 @@ has ever had a person with two names.
 ## When it goes wrong
 
 A builder will sometimes make the red journey green by changing the journey. It may not, and here you can see why:
-the two failing steps are the only place the old rule was still written down in your words.
+the two failing steps are the old rule, still written down in your words and still checked.
 
 The record forgets after a failed proof. We asked for the impact again once the full run had failed.
 
@@ -126,9 +127,9 @@ unproven handle.claim, handle.release, handle.resolve, link.add, link.order, lin
 The lines that named the change are gone, and every operation is called unproven, though each one's own evals passed
 in that run. So ask what went stale before you prove again.
 
-The line that counts the change as major shows only between the edit and `ortho generate`. The check we ran afterwards
-ended `check ✔` and did not print it. And the refusal's own declaration is still in the blueprint, used by no rule;
-nothing we ran pointed at it.
+The line that counts the change as major shows only between the edit and `ortho generate`. The check we ran later,
+with the stand-in handler in place, ended `check ✔` and did not print it. And the refusal's own declaration is still
+in the blueprint, used by no rule; nothing we ran pointed at it.
 
 We could not get the next version on a laptop. `ortho version --next` works from the last production release, and
 asked for a logbook we did not have.
@@ -147,6 +148,6 @@ let the last proof run is a stand-in written into the recording (`docs/manual/re
 work and not a decision. No author changed a journey and no builder rebuilt the handler, so the chapter stops at red.
 
 Asking what went stale, the check, generating and proving all run today. Narrowing the proof runs, and for a change to
-the blueprint it chose every journey. Working out the next version needs a logbook and a production release, and we
-recorded neither. That the designer changes the blueprint, the author the journeys and the builder one handler is how
-we work in this repository. Nothing in Orthograph enforces it for you yet.
+the blueprint it chose every journey. Working out the next version needs a logbook, and we had none, so no next
+version was recorded. That the designer changes the blueprint, the author the journeys and the builder one handler is
+how we work in this repository. Nothing in Orthograph enforces it for you yet.

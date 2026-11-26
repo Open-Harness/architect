@@ -44,7 +44,7 @@
     },
     {
      "id": "a4",
-     "text": "Then the designer takes the rule out of the blueprint. Six lines, and nothing else. This is the part you read."
+     "text": "Then the designer takes the rule out of the blueprint. Six lines, and no other file. This is the part you read."
     }
    ]
   },
@@ -82,7 +82,7 @@
    "lines": [
     {
      "id": "c1",
-     "text": "Now the check. It fails, in three parts."
+     "text": "Now the check. It fails, in three of its parts."
     },
     {
      "id": "c2",
