@@ -65,17 +65,53 @@ So:
   how we already run many agents on Orthograph itself: a router for *this* repository. The guide is the same idea for an
   app built with Orthograph.
 
+## The state (decided with Aaron, 26 November 2026)
+
+"the state must allow for loops of spikes and working but i agree i dont want to hold this up make it and show me"
+
+Stored in the app's own repository, in `.orthograph/guide/`, committed, so it works in every harness and moves with the
+project. Three files:
+
+- `log.jsonl`: one event per line, append-only, never rewritten. Each has `n` (its number), `at`, `type`, `stage` and
+  `visit`. Types: `goal.set`, `stage.entered`, `stage.done`, `stage.reopened` (with `from` and `because`), `decision`
+  (`q`, `a`, who decided), `open` (a question, who it waits on, what it blocks), `thread.started` (role, stage, task,
+  contract), `thread.returned` (the hand-back, below), `check.ran` (`cmd`, `printed`, `pass`), `blocker`, `replan`
+  (old plan, new plan, why), `note`.
+- `state.json`: the snapshot, rewritten every turn from the log, so the agent reads where it is in one look: `goal` in
+  the owner's words, the project's `done_when`, the `stage` and `visit` it is in, the `roadmap`, `decided`, `open`,
+  running `threads`, and `next` (what it does next, and why).
+- `GUIDE.md`: made from `state.json`, for the person: the roadmap with ticks, the loops so far, what is next, and what it
+  needs from them.
+
+**Loops are first-class.** Work is not a line. A spike can send the plan back for another pass; a review finding sends
+a change back to the builder; a red journey sends the author or the builder back; a change months later reopens
+describe, done and build. So the roadmap is the stages in their usual order, and each stage holds its `visits`: every
+time it is entered there is a new visit with why it was entered (`first`, or the event that reopened it), what was done,
+its checks and their evidence, and how it ended. A stage is `done` only when its latest visit's checks pass. `stage.reopened`
+is how a loop is recorded, and the main agent replans after it. GUIDE.md shows the loops, so the person sees that going
+back was the plan working, not failing.
+
+**One writer.** Only the main agent writes the state. A thread never touches it: it hands back one result in a fixed
+shape, which the main agent checks against the stage's done checks and then logs:
+`{ "thread", "role", "stage", "visit", "outcome": "done" | "blocked" | "partial", "did": [], "evidence": [{ "cmd", "printed" }],
+"touched": [paths], "open": [questions], "suggest": "what it would do next" }`.
+
+**Done is checked, not claimed.** Each stage's `done_when` is a list of checks, each a real command where one exists
+(`ortho check` with no blanks left, `ortho prove --empty` red with only steps proved by the description green, the full
+`ortho prove` green, `ortho impact` showing nothing stale), or a named reader's yes (the owner agreed the plan page). The
+evidence is what the command printed, kept in the log.
+
 ## The decisions to make first, with Aaron (batch them, `threads` skill, "Talking to Aaron")
 
-1. **Where state lives.** A file in the app (for example `.orthograph/guide.json` with a readable `GUIDE.md` beside it),
-   so it moves with the repository and works in every harness; the harness's own project memory as a cache at most.
+1. **Where state lives.** Decided, above.
 2. **Which harnesses first.** Claude Code (a plugin: skills, a hook that loads the state at the start of every turn,
    subagents or cloud sessions for threads) and Amp. Check what Amp offers for project state and for starting threads
    today; do not assume it.
 3. **How threads are run** in each harness, and what the router does when a harness cannot start one (it writes the
    brief for the person to hand over).
-4. **Whether this is the parked agent kit.** `design/milestones.md` parks the kit (M3.12) until after 1.0. Building
-   the guide un-parks it. That is Aaron's call, and the conductor's board must show it.
+4. **The parked agent kit.** `design/milestones.md` parks the kit (M3.12) until after 1.0. Aaron said to make the guide
+   now ("make it and show me", 26 November 2026): tell the conductor (Goal 18) so the board shows it, and do not edit
+   `design/milestones.md` yourself.
 
 ## Done when
 
