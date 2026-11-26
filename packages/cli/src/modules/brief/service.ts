@@ -39,7 +39,7 @@ const of: BriefApi["of"] = (model, name, journeys): Briefed => {
       ...(op.move ? [`  make the move with move(${op.move.to.length > 1 ? op.move.to.map((t) => `"${t}"`).join(" | ") : ""}): ${op.move.key}, emitting ${op.move.emits}`] : []),
       ...(declared.length ? [`  refuse with ${declared.join(", ")}, each after an Effect.logInfo saying why`] : []),
       ...(runtime.length ? [`  never refuse ${runtime.join(" or ")} yourself: the runtime does, before the handler runs`] : []),
-      ...(ruled.length ? [`  never refuse ${ruled.join(" or ")} yourself: ${ruled.length === 1 ? "it belongs to a rule" : "each belongs to a rule"} (${[...new Set(ruled.map((r) => op.invariants![r]!))].join(", ")}), which the runtime checks after your handler has run and made its move, and before the commit. Your handler runs as if the call will succeed; when the rule is broken the call is refused and nothing is written`] : []),
+      ...(ruled.length ? [`  never refuse ${ruled.join(" or ")} yourself: ${ruled.length === 1 ? "it belongs to a rule" : "each belongs to a rule"} (${[...new Set(ruled.map((r) => op.invariants![r]!))].join(", ")}), which the runtime checks after your handler has run${op.move ? " and made its move" : ""}, and before the commit. Your handler runs as if the call will succeed; when the rule is broken the call is refused and nothing is committed`] : []),
       "",
       "Don't touch",
       ...forbidden.map((f) => `  ${f}`),

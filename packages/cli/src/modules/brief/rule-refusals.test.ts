@@ -16,8 +16,14 @@ describe("ortho brief on an operation a rule can refuse", () => {
     const lines = run.stdout.split("\n").filter((l) => l.includes("never refuse"));
     expect(lines).toEqual([
       "  never refuse NotAllowed yourself: the runtime does, before the handler runs",
-      "  never refuse HandleTaken or HandleAlreadyOwned yourself: each belongs to a rule (handle.oneHolderPerName, handle.oneNamePerPerson), which the runtime checks after your handler has run and made its move, and before the commit. Your handler runs as if the call will succeed; when the rule is broken the call is refused and nothing is written",
+      "  never refuse HandleTaken or HandleAlreadyOwned yourself: each belongs to a rule (handle.oneHolderPerName, handle.oneNamePerPerson), which the runtime checks after your handler has run and made its move, and before the commit. Your handler runs as if the call will succeed; when the rule is broken the call is refused and nothing is committed",
     ]);
+  });
+
+  it("says it of one rule in the singular, and names no move for an operation that makes none", { timeout: 60_000 }, () => {
+    const lines = brief("superagent", "thread.follow").stdout.split("\n").filter((l) => l.includes("belongs to a rule"));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/yourself: it belongs to a rule \(subscription\.oneFollowPerThread\), which the runtime checks after your handler has run, and before the commit\./);
   });
 
   it("leaves an operation no rule can refuse as it was", { timeout: 60_000 }, () => {
