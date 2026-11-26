@@ -2,7 +2,7 @@
 // Slice 0 of the US payroll tax lane (design/goals/16-lane-payroll-tax.md): the piece's footing. It needs no rows: it
 // proves the piece is mounted, that `us-withholding.compute` judges its figures by name, and that a line of nothing is
 // left out, never shown as zero (CX-payroll's accrual does the same). It imports only `@capxul/payroll-tax-us` and
-// `orthograph`, nothing of the app's, until the pieces move lands.
+// `orthograph`, nothing of the app's, until Capxul's own parts move into plugins (CX-composable-pieces, section 6).
 //
 // The contract the builder declares, in `examples/capxul/plugins/payroll-tax-us/blueprint/things/us-withholding/`:
 // - `verbs/compute.ts`, the operation `us-withholding.compute`, which any signed-in person may call. Its payload has
