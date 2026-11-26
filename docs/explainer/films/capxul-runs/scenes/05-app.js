@@ -10,7 +10,7 @@ Film.scene("app", {
       #scene-app .btns { position: relative; height: 62px; margin-top: 20px; } #scene-app .btns span { position: absolute; left: 0; top: 0; font-size: 26px; font-weight: 600; padding: 12px 30px; background: var(--paper); color: var(--bg); }
       #scene-app .from { left: 1150px; top: 716px; width: 620px; font-size: 25px; color: var(--text2); }
       #scene-app .need { margin-top: 16px; padding: 14px 18px; border: 1px solid var(--rule2); background: rgba(8,17,31,.5); } #scene-app .need b { display: block; font-size: 28px; font-weight: 500; color: var(--paper); line-height: 1.3; }
-      #scene-app .asks { left: 1150px; top: 760px; width: 620px; font-size: 25px; color: var(--text2); }
+      #scene-app .asks { left: 1150px; top: 792px; width: 620px; font-size: 25px; color: var(--text2); }
     </style>
     <div class="head"><div class="eyebrow">Falls out · for the app</div><div class="hl">Each thing gives you a reference to it.</div></div>
     ${Kit.ed(D, { id: "e-ref", file: "falls-out/panel.tsx", from: 1, x: 96, y: 262, w: 1010, tag: '<span class="tag am">proposed</span>' })}

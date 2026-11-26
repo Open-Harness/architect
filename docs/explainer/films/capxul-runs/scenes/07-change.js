@@ -32,14 +32,14 @@ Film.scene("change", {
     s.focus(body, [n, n], c("c1", "rule changes")); s.to(".swap .mo", { opacity: 0, duration: 0.25 }, c("c1", "every week")); s.to(".swap .wk", { opacity: 1, duration: 0.3 }, c("c1", "every week") + 0.1);
     s.fromTo(".swap", { backgroundColor: "rgba(84,216,152,0)" }, { backgroundColor: "rgba(84,216,152,.22)", duration: 0.3 }, c("c1", "every week"));
     // What the model says, a line at a time.
-    s.in("#imp", c("c2") - 0.3, { y: 14 }); Loc.type(s, s.$("#imp"), c("c2") + 0.1, 0.5); Loc.row(s, out[0], c("c2", "model says"));
+    s.in("#imp", c("c1", "every week") + 0.5, { y: 14 }); Loc.type(s, s.$("#imp"), c("c2") + 0.1, 0.5, c("c1", "every week") + 0.7); Loc.row(s, out[0], c("c2", "model says"));
     ["contract", "client", "app", "docs", "two journeys"].forEach((w, k) => Loc.row(s, out[k + 1], c("c2", w)));
     // Live, with money in it: a new version beside the old, and nothing moves until its owners say so.
     s.tl.set(s.$$(".vb, .sb, .still, .take"), { autoAlpha: 0 }, 0); s.tl.set(s.$$(".fresh .vb, .fresh .sb"), { autoAlpha: 1 }, 0);
     const live = c("c3", "live");
     s.in(".vers .lbl", live - 0.2); s.in(".v3", live, { y: 8, dur: 0.3 }); s.in(".firm0, .firm1, .firm2", live + 0.15, { y: 8, dur: 0.3, stagger: 0.18 }); Loc.row(s, out[6], c("c3", "money")); s.to(out[6], { color: "#e9f0fa", duration: 0.3 }, c("c3", "money") + 0.2);
     s.in(".v4", c("c3", "new version") - 0.1, { x: -16, y: 0, dur: 0.4 }); s.to(".still", { autoAlpha: 1, duration: 0.3 }, c("c3", "nothing"));
-    s.in(".fresh", c("c4", "New companies"), { y: 8, dur: 0.35 }); s.to(".take", { autoAlpha: 1, duration: 0.3 }, c("c4", "owners"));
+    s.in(".fresh", c("c4", "New companies"), { y: 8, dur: 0.35 }); s.to(".still", { autoAlpha: 0, duration: 0.25 }, c("c4", "owners") - 0.2); s.to(".take", { autoAlpha: 1, duration: 0.3 }, c("c4", "owners"));
     const flip = (k, t) => { s.to(`.firm${k} .va, .firm${k} .sa`, { autoAlpha: 0, duration: 0.2 }, t); s.to(`.firm${k} .vb, .firm${k} .sb`, { autoAlpha: 1, duration: 0.25 }, t + 0.15); s.to(".firm" + k, { borderColor: "#62c6ff", duration: 0.3 }, t); };
     flip(1, c("c4", "In place"));
     const move = c("c4", "moving"); s.to(".firm2", { x: 366, y: -88, duration: 0.7, ease: "power2.inOut" }, move); flip(2, move + 0.5);

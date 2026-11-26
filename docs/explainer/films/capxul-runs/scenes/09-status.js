@@ -1,9 +1,10 @@
-// Sheet 15. Where this stands: what runs today, what is decided and being built, and what this film proposes.
+// Sheet 9. Where this stands: what runs today, what is decided and being built, and what these two films propose.
 Film.scene("status", {
+  step: "all",
   html: () => {
-    const cols = [["Runs today", "gr", ["the blueprint, and its check", "the API, SDK, CLI, agent tools, docs", "handlers, scaffolded once", "journeys, and ortho prove"]],
-      ["Decided, being built", "cy", ["the chain store", "accounts, and roles on chain", "the signed entry", "the relayer and the follower", "moves made by time"]],
-      ["Proposed in this film", "am", ["the reference to a thing", "the next step", "owners together", "rules as data"]]];
+    const cols = [["Runs today", "gr", ["the blueprint, and its check", "the API, SDK, CLI, agent tools, docs", "handlers, scaffolded once", "journeys, and ortho prove", "staging, for the server"]],
+      ["Decided, being built", "cy", ["the chain store", "accounts, and roles on chain", "the signed entry", "the relayer and the indexer", "moves made by time"]],
+      ["Proposed in these films", "am", ["sealing", "a thing that says what it needs", "the reference to a thing", "rules as data", "versions of a contract"]]];
     return `<style>
       #scene-status .scol { position: absolute; top: 290px; width: 560px; } #scene-status .scol .lbl { font-size: 26px; margin-bottom: 14px; } #scene-status .scol div.item { padding: 14px 20px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); margin-top: 10px; font-size: 28px; color: var(--paper); }
       #scene-status .scol.gr .lbl { color: var(--green); } #scene-status .scol.cy .lbl { color: var(--cyan); } #scene-status .scol.am .lbl { color: var(--amber); }
@@ -15,7 +16,7 @@ Film.scene("status", {
   build(s) {
     const c = s.cue;
     s.in(".head", s.start + 0.3);
-    [["h2", ["blueprint", "generated", "handlers", "proof"]], ["h3", ["chain store", "accounts", "signed entry", "relayer"]], ["h4", ["reference", "next step", "owners together", "rules as data"]]].forEach(([line, words], k) => {
+    [["t2", ["blueprint", "generated", "handlers", "proof", "staging"]], ["t3", ["chain store", "accounts", "signed entry", "relayer"]], ["t4", ["Sealing", "thing that says", "reference", "rules as data", "versions"]]].forEach(([line, words], k) => {
       s.in(`.sc${k} .lbl`, c(line) - 0.1); const items = s.$$(`.sc${k} .item`); words.forEach((w, n) => s.in(items[n], c(line, w), { y: 10, dur: 0.35 })); if (items.length > words.length) s.in(items.slice(words.length), c(line, "$") - 0.2, { y: 10, dur: 0.35 });
     });
   },

@@ -9,12 +9,12 @@ Film.scene("server", {
       #scene-server .tree { left: 96px; top: 262px; width: 1000px; } #scene-server .fr { display: grid; grid-template-columns: 290px 1fr; gap: 18px; padding: 11px 22px; border-top: 1px solid var(--rule); align-items: baseline; } #scene-server .fr:first-child { border-top: 0; }
       #scene-server .fr b { font-family: var(--mono); font-size: 22px; font-weight: 400; color: var(--cyan); white-space: nowrap; } #scene-server .fr span { font-size: 22px; line-height: 1.3; color: var(--text2); }
       #scene-server .rel { left: 1120px; top: 262px; width: 704px; height: 324px; } #scene-server .flow { display: flex; align-items: center; gap: 10px; margin: 10px 0 20px; } #scene-server .flow .kpill { font-family: var(--sans); font-size: 22px; color: var(--paper); padding: 6px 12px; } #scene-server .flow .me { border-color: var(--cyan); color: var(--cyan); }
-      #scene-server .fact { font-size: 26px; line-height: 1.25; margin-top: 12px; color: var(--paper); } #scene-server .fact em { display: block; font: 400 19px var(--mono); font-style: normal; color: var(--text2); margin-top: 4px; }
+      #scene-server .fact { font-size: 26px; line-height: 1.25; margin-top: 12px; color: var(--paper); } #scene-server .fact em { display: block; font: 400 21px var(--mono); font-style: normal; color: var(--text2); margin-top: 4px; }
       #scene-server .idx { left: 96px; top: 608px; width: 1728px; height: 362px; }
-      #scene-server .raw { left: 1056px; top: 56px; width: 330px; } #scene-server .raw .hex { font-family: var(--mono); font-size: 19px; line-height: 28px; color: var(--muted); white-space: pre; margin-top: 6px; }
+      #scene-server .raw { left: 1052px; top: 56px; width: 330px; } #scene-server .raw .hex { font-family: var(--mono); font-size: 20px; line-height: 28px; color: var(--muted); white-space: pre; margin-top: 6px; }
       #scene-server .raw .down { margin: 10px 0 8px; color: var(--cyan); font-size: 22px; display: flex; gap: 10px; align-items: center; } #scene-server .raw .down .lnote { color: var(--cyan); font-size: 19px; }
       #scene-server .dec { border: 1px solid var(--cyan); padding: 8px 14px; font-family: var(--mono); font-size: 19px; line-height: 28px; color: var(--text2); } #scene-server .dec b { display: block; color: var(--cyan); font-weight: 500; font-size: 22px; }
-      #scene-server .lst { left: 1410px; top: 56px; width: 296px; } #scene-server .bud { display: flex; justify-content: space-between; padding: 8px 14px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); margin-top: 8px; font-family: var(--mono); font-size: 20px; color: var(--paper); } #scene-server .bud i { font-style: normal; color: var(--text2); }
+      #scene-server .lst { left: 1402px; top: 56px; width: 304px; } #scene-server .bud { display: flex; justify-content: space-between; padding: 8px 14px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); margin-top: 8px; font-family: var(--mono); font-size: 20px; color: var(--paper); } #scene-server .bud i { font: 400 19px var(--sans); font-style: normal; color: var(--text2); white-space: nowrap; }
       #scene-server .nolist { margin-top: 14px; font-size: 22px; color: var(--text2); }
     </style>
     <div class="head"><div class="eyebrow">Falls out · on our side</div><div class="hl">A server, and two actors.</div></div>
@@ -36,7 +36,7 @@ Film.scene("server", {
     const c = s.cue, D = s.D, ev = "blueprint/things/budget/events.ts", eb = s.$("#e-ev .code"), first = Kit.line(D, ev, /export const BudgetSpent/);
     s.in(".head", s.start + 0.3); s.in(".tree", c("v1", "server") - 0.2, { y: 14 }); s.tl.set(s.$$(".fr"), { autoAlpha: 0 }, 0);
     s.in(".fr0", c("v1", "route"), { y: 6, dur: 0.3 }); s.in(".fr1", c("v1", "enforcer"), { y: 6, dur: 0.3 }); s.in(".fr2", c("v1", "tables"), { y: 6, dur: 0.3 });
-    s.in(".rel", c("v2", "two actors") - 0.1, { y: 14 }); s.in(".idx", c("v2", "two actors") + 0.15, { y: 14 }); s.in(".fr3, .fr4", c("v2", "two actors") + 0.2, { y: 6, dur: 0.3, stagger: 0.15 });
+    s.in(".rel", c("v2", "two actors") - 0.1, { y: 14 }); s.in(".idx", c("v3") - 0.35, { y: 14 }); s.in(".fr3, .fr4", c("v2", "two actors") + 0.2, { y: 6, dur: 0.3, stagger: 0.15 });
     s.tl.set(s.$$(".flow > *, .fact, #e-ev, .raw > *, .lst > *"), { autoAlpha: 0 }, 0);
     s.in(".flow > *", c("v2", "relayer"), { x: -10, y: 0, stagger: 0.12, dur: 0.3 });
     s.in(".f0", c("v2", "signed"), { y: 8, dur: 0.3 }); s.in(".f1", c("v2", "reason"), { y: 8, dur: 0.3 }); s.in(".f2", c("v2", "gas"), { y: 8, dur: 0.3 });

@@ -12,13 +12,13 @@ Film.scene("run", {
       #scene-run .cell { position: absolute; width: 552px; height: 46px; display: flex; align-items: center; gap: 14px; padding: 0 16px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); font-size: 24px; color: var(--paper); white-space: nowrap; } #scene-run .cell .lbl { width: 84px; font-size: 19px; }
       #scene-run #up { left: 96px; top: 548px; width: 1000px; } #scene-run #up .screen { font-size: 21px; line-height: 32px; }
       #scene-run .side { left: 1130px; top: 548px; width: 694px; font-size: 26px; line-height: 1.35; color: var(--text2); } #scene-run .side b { color: var(--paper); font-weight: 500; }
-      #scene-run .portal { left: 96px; top: 262px; width: 1728px; height: 690px; } #scene-run .pcols { position: absolute; left: 0; right: 0; top: 46px; bottom: 0; display: grid; grid-template-columns: 290px 1fr 600px; }
-      #scene-run .pcol { padding: 20px 24px; border-right: 1px solid var(--rule); } #scene-run .pcol:last-child { border-right: 0; } #scene-run .pcol .lbl { margin-bottom: 12px; }
-      #scene-run .thing { font-size: 26px; padding: 9px 14px; color: var(--text2); border-left: 3px solid transparent; } #scene-run .thing.on { color: var(--paper); border-left-color: var(--cyan); background: rgba(98,198,255,.08); }
-      #scene-run .mach { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; font-family: var(--mono); font-size: 22px; } #scene-run .mach span { padding: 8px 16px; border: 2px solid var(--paper); color: var(--paper); } #scene-run .mach i { font-style: normal; font-family: var(--label); text-transform: uppercase; letter-spacing: .12em; font-size: 18px; color: var(--muted); }
-      #scene-run .mnote { font-size: 22px; color: var(--text2); margin-bottom: 26px; }
-      #scene-run .may { display: grid; grid-template-columns: 190px 1fr; padding: 9px 0; border-top: 1px solid var(--rule); font-size: 24px; color: var(--text2); } #scene-run .may b { font-weight: 400; color: var(--paper); } #scene-run .may span { font-family: var(--mono); font-size: 21px; }
-      #scene-run .wait { padding: 12px 16px; border: 1px solid var(--rule2); background: rgba(8,17,31,.5); margin-bottom: 12px; } #scene-run .wait b { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 21px; font-weight: 400; color: var(--paper); } #scene-run .wait b em { font-style: normal; color: var(--muted); } #scene-run .wait span { display: block; font-size: 24px; color: var(--cyan); margin-top: 2px; }
+      #scene-run .portal { left: 96px; top: 262px; width: 1728px; height: 640px; } #scene-run .pcols { position: absolute; left: 0; right: 0; top: 46px; bottom: 0; display: grid; grid-template-columns: 300px 1fr 620px; }
+      #scene-run .pcol { padding: 24px 26px; border-right: 1px solid var(--rule); } #scene-run .pcol:last-child { border-right: 0; } #scene-run .pcol .lbl { margin-bottom: 12px; }
+      #scene-run .thing { font-size: 30px; padding: 12px 16px; color: var(--text2); border-left: 3px solid transparent; } #scene-run .thing.on { color: var(--paper); border-left-color: var(--cyan); background: rgba(98,198,255,.08); }
+      #scene-run .mach { display: flex; align-items: center; gap: 12px; margin: 8px 0 14px; font-family: var(--mono); font-size: 26px; } #scene-run .mach span { padding: 10px 18px; border: 2px solid var(--paper); color: var(--paper); } #scene-run .mach i { font-style: normal; font-family: var(--label); text-transform: uppercase; letter-spacing: .12em; font-size: 18px; color: var(--muted); }
+      #scene-run .mnote { font-size: 25px; color: var(--text2); margin-bottom: 34px; }
+      #scene-run .may { display: grid; grid-template-columns: 210px 1fr; padding: 13px 0; border-top: 1px solid var(--rule); font-size: 27px; color: var(--text2); } #scene-run .may b { font-weight: 400; color: var(--paper); } #scene-run .may span { font-family: var(--mono); font-size: 23px; }
+      #scene-run .wait { padding: 16px 18px; border: 1px solid var(--rule2); background: rgba(8,17,31,.5); margin-bottom: 12px; } #scene-run .wait b { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 23px; font-weight: 400; color: var(--paper); } #scene-run .wait b em { font-style: normal; color: var(--muted); } #scene-run .wait span { display: block; font-size: 27px; color: var(--cyan); margin-top: 4px; }
     </style>
     <div class="head"><div class="eyebrow">Run</div><div class="hl">An environment is a file. So is everything it runs on.</div></div>
     ${envs.map(([name], k) => { const file = `blueprint/environments/${name}.ts`; return Kit.ed(D, { id: "e-" + name, file, ...inner(file), x: x(k), y: 262, w: 552, size: "small nog", cls: "pa", tag: "" }); }).join("")}
@@ -47,11 +47,11 @@ Film.scene("run", {
     const t4 = c("n4") - 0.45, ib = s.$("#e-infra .code"), I = (re) => Kit.line(D, "falls-out/infra.ts", re), out = s.$$("#up .o");
     s.out(".pa", t4, { dur: 0.3 }); s.in("#e-infra", t4 + 0.35, { y: 14 });
     [["server", /const server/, /const server/], ["database", /const db/, /const db/], ["two actors", /const relayer/, /const indexer/], ["factory", /const factory/, /const factory/]].forEach(([w, a, b]) => s.focus(ib, [I(a), I(b)], c("n4", w), 0.3));
-    s.focus(ib, null, c("n5") - 0.1); s.in("#up", c("n5") - 0.35, { y: 14 }); const done = Loc.type(s, s.$("#up"), c("n5", "One command") - 0.1, 0.6);
+    s.focus(ib, null, c("n5") - 0.1); s.in("#up", t4 + 0.6, { y: 14 }); const done = Loc.type(s, s.$("#up"), c("n5", "One command") - 0.1, 0.6, t4 + 0.8);
     out.forEach((o, k) => Loc.row(s, o, done + 0.2 + k * 0.22)); s.to(out[5], { color: "#54d898", duration: 0.3 }, Math.max(c("n5", "journeys"), done + 0.2 + 5 * 0.22 + 0.1)); s.in(".side", c("n5", "brings it up"), { y: 10 });
     // The portal: the running system, the way it was described.
-    const t6 = c("n6") - 0.45; s.out(".pb, #up", t6, { dur: 0.3 }); s.in(".portal", t6 + 0.35, { y: 14 });
-    s.in(".pc0 > *", c("n6", "things") - 0.1, { y: 6, dur: 0.3, stagger: 0.06 }); s.in(".pc1 .lbl:first-child, .mm", c("n6", "machines") - 0.1, { y: 6, dur: 0.3, stagger: 0.1 });
+    const t6 = c("n6") - 0.45; s.out(".pb, #up, .klegend", t6, { dur: 0.3 }); s.in(".portal", t6 + 0.35, { y: 14 });
+    s.in(".pc0 > *", c("n6", "system") - 0.1, { y: 6, dur: 0.3, stagger: 0.06 }); s.in(".pc1 .lbl:first-child, .mm", c("n6", "machines") - 0.1, { y: 6, dur: 0.3, stagger: 0.1 });
     s.in(".who", c("n6", "who may") - 0.1, { y: 6, dur: 0.3, stagger: 0.08 }); s.in(".pc2 > *", c("n6", "waiting") - 0.1, { y: 6, dur: 0.3, stagger: 0.15 });
   },
 });

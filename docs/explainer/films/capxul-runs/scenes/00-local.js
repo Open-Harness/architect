@@ -9,10 +9,10 @@ const Loc = {
     const rows = text.replace(/\n$/, "").split("\n"), command = rows[0].replace(/^\$\s*/, "");
     return `<div class="panel term lterm" id="${id}" style="left:${x}px;top:${y}px;width:${w}px"><div class="bar"><span class="dots"></span><span>${title}</span>${tag}</div><div class="screen">${Film.term(command, rows.slice(1).join("\n"))}</div></div>`;
   },
-  /** Type a terminal's command; returns when the typing ends. */
-  type(s, el, t, dur = 0.7) {
+  /** Type a terminal's command; returns when the typing ends. The prompt can be shown earlier, at `promptAt`. */
+  type(s, el, t, dur = 0.7, promptAt = t - 0.1) {
     const typed = el.querySelector(".typed"), n = typed.textContent.length;
-    s.tl.fromTo(el.querySelector(".cmd"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, t - 0.1);
+    s.tl.fromTo(el.querySelector(".cmd"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, promptAt);
     s.tl.fromTo(typed, { width: "0ch" }, { width: n + "ch", duration: dur, ease: `steps(${n})` }, t);
     return t + dur;
   },

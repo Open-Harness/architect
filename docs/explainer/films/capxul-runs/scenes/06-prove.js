@@ -9,16 +9,16 @@ Film.scene("prove", {
     const steps = run.filter((l) => l.startsWith("✔")).map((l) => { const m = /^✔ (.+?)\s{2,}(.+)$/.exec(l); if (!m) throw new Error("prove.txt: " + l); return [m[1], m[2].split(" · ")]; });
     return `<style>
       #scene-prove .world { left: 1020px; top: 262px; width: 804px; } #scene-prove .wbs { display: flex; gap: 14px; margin-top: 4px; } #scene-prove .wb { flex: 1; min-height: 124px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); padding: 12px 16px; }
-      #scene-prove .wb b { display: block; font-size: 24px; font-weight: 500; color: var(--paper); } #scene-prove .wb span { display: block; font-size: 20px; line-height: 1.3; color: var(--text2); margin-top: 4px; }
-      #scene-prove .bk { display: block; font: 400 18px var(--mono); font-style: normal; padding: 2px 8px; margin-top: 6px; border: 1px solid var(--green); color: var(--green); white-space: nowrap; } #scene-prove .bk.un { border-color: var(--red); color: var(--red); }
+      #scene-prove .wb b { display: block; font-size: 24px; font-weight: 500; color: var(--paper); } #scene-prove .wb span { display: block; font-size: 21px; line-height: 1.3; color: var(--text2); margin-top: 4px; }
+      #scene-prove .bk { display: block; font: 400 20px var(--sans); font-style: normal; padding: 2px 8px; margin-top: 6px; border: 1px solid var(--green); color: var(--green); white-space: nowrap; } #scene-prove .bk.un { border-color: var(--red); color: var(--red); }
       #scene-prove .clock { left: 1020px; top: 438px; width: 804px; height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 16px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); }
       #scene-prove .date { position: relative; width: 150px; height: 34px; font-family: var(--mono); font-size: 24px; } #scene-prove .date b { position: absolute; left: 0; top: 0; font-weight: 500; color: var(--paper); white-space: nowrap; } #scene-prove .date .d1 { color: var(--cyan); }
       #scene-prove .jump { font-size: 22px; color: var(--cyan); }
       #scene-prove #run { left: 1020px; top: 506px; width: 804px; } #scene-prove #run .screen { font-size: 20px; line-height: 30px; padding: 14px 20px 16px; }
       #scene-prove .stp { display: grid; grid-template-columns: 34px 1fr; margin-top: 10px; } #scene-prove .mk { position: relative; font-size: 22px; } #scene-prove .mk i { position: absolute; left: 0; top: 0; font-style: normal; } #scene-prove .mk .pend { color: var(--dim); } #scene-prove .mk .okk { color: var(--green); }
-      #scene-prove .stp b { display: block; font-family: var(--sans); font-size: 23px; font-weight: 400; color: var(--muted); } #scene-prove .evd { min-height: 30px; font-size: 19px; color: var(--green); } #scene-prove .evd span { margin-right: 18px; white-space: nowrap; }
+      #scene-prove .stp b { display: block; font-family: var(--sans); font-size: 23px; font-weight: 400; color: var(--muted); } #scene-prove .evd { min-height: 30px; font-size: 20px; color: var(--green); } #scene-prove .evd span { margin-right: 18px; white-space: nowrap; }
       #scene-prove .sum { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule); font-size: 22px; color: var(--green); }
-      #scene-prove .hand { top: 700px; width: 440px; height: 108px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); padding: 14px 18px; font-size: 25px; line-height: 1.25; color: var(--paper); } #scene-prove .hand .lbl { display: block; margin-bottom: 4px; }
+      #scene-prove .hand { top: 700px; width: 440px; min-height: 128px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); padding: 14px 18px; font-size: 25px; line-height: 1.25; color: var(--paper); } #scene-prove .hand .lbl { display: block; margin-bottom: 4px; }
       #scene-prove .hand.h0 { left: 96px; } #scene-prove .hand.h1 { left: 556px; border-color: var(--green); } #scene-prove .hand.h1 .lbl { color: var(--green); }
     </style>
     <div class="head"><div class="eyebrow">Proof</div><div class="hl">A journey, run in a world with a chain in it.</div></div>
@@ -61,7 +61,6 @@ Film.scene("prove", {
     next(3, c("q6") - 0.2); lit(3, c("q6", "pays around")); s.focus(ed(3), [L(/s\.ada\.wallet\.call/) - 1, L(/s\.ada\.wallet\.call/)], c("q6", "pays around"), 0.3);
     show(evd(3)[0], c("q6", "money moves")); line(3, /receipts\(\{ sent: 1, reverted: 0 \}\)/, c("q6", "money moves"));
     show(evd(3)[1], c("q6", "ask why")); line(3, /recorded\(Spend, \{ amount: 150n/, c("q6", "ask why")); s.in(".bk1", c("q6", "ask why"), { y: 6, dur: 0.3 }); pass(3, c("q6", "$") - 0.1);
-    s.to(evd(3)[1], { color: "#ff7373", duration: 0.2 }, c("q6", "ask why") + 0.1);
     s.focus(ed(3), null, c("q7") - 0.1); s.in(".h0", c("q7", "different agent") - 0.2, { y: 12 }); s.in(".h1", c("q7", "builder climbs") - 0.2, { y: 12 }); show(".sum", c("q7", "green") - 0.2);
   },
 });
