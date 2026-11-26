@@ -13,7 +13,7 @@
 //   "yearToDate"), and `WorkStateUnknown`, with `workState`.
 import { Blueprint, expect, noEvents, refuses } from "orthograph";
 import compute from "@capxul/payroll-tax-us/blueprint/things/us-withholding/verbs/compute.ts";
-import { AmountFractional, AmountNegative, WorkStateUnknown } from "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.ts";
+import { AmountFractional, AmountNegative, AmountNotANumber, WorkStateUnknown } from "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.ts";
 
 // A single filer's 2020-and-later W-4 with nothing in Steps 2 to 4: no extra withholding in Step 4(c).
 const plainW4 = {
@@ -26,7 +26,7 @@ const plainW4 = {
 } as const;
 
 // One biweekly pay in Texas, dated 2026-12-04, with no wages paid before it this year. Amounts are USDC base units.
-const pay = (changes: { readonly wage?: string; readonly workState?: string }) => ({
+const pay = (changes: { readonly wage?: string; readonly yearToDate?: string; readonly workState?: string }) => ({
   wage: "0",
   frequency: "biweekly" as const,
   payDate: "2026-12-04",
@@ -52,6 +52,31 @@ export default Blueprint.journey("tax-us: the piece's footing", {
       noEvents(),
     ),
     s.step(
+      "a wage that isn't a number is refused, naming the wage",
+      s.ada.run(compute, pay({ wage: "abc" })),
+      refuses(AmountNotANumber, { figure: "wage" }),
+      noEvents(),
+    ),
+    // The year to date is judged as the wage is, each refusal naming it, behind a wage that is fine.
+    s.step(
+      "a negative year to date is refused, naming the year to date",
+      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "-1" })),
+      refuses(AmountNegative, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    s.step(
+      "a year to date that isn't whole base units is refused, naming the year to date",
+      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "3000000000.25" })),
+      refuses(AmountFractional, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    s.step(
+      "a year to date that isn't a number is refused, naming the year to date",
+      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "ten" })),
+      refuses(AmountNotANumber, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    s.step(
       "a work state that isn't one of the fifty or DC is refused, naming it",
       // Puerto Rico has its own withholding, outside this piece (CX-payroll-tax: the United States only).
       s.ada.run(compute, pay({ wage: "1500000000", workState: "PR" })),
@@ -61,6 +86,11 @@ export default Blueprint.journey("tax-us: the piece's footing", {
     s.step(
       "a wage of nothing, with no Step 4(c) extra withholding, gives no lines: a line of nothing is left out",
       s.ada.run(compute, pay({ wage: "0" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    s.step(
+      "DC is a work state as the fifty are",
+      s.ada.run(compute, pay({ wage: "0", workState: "DC" })),
       expect((a) => a.lines).toEqual([]),
     ),
   ],
