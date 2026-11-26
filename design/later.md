@@ -245,3 +245,7 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
   stand-ins too, and `Warm.reset` would restart them so a reused world starts with fresh stand-in state; prove could then
   reuse a warm world for a model with stand-ins. **Trigger:** a developer needs a generated call to answer under `ortho dev`.
   Check 10's world-of-its-own test counts stand-in starts assuming dev starts none; its author changes that count then.
+- **Crediting a bank payout's buffer back to its budget automatically** (CX-bridge-rails, Goal 16 slice 10). When a
+  payout settles, its buffer excess is refunded to the Safe, but the Org Budget's allowance stays spent, because only an
+  owner-signed `setAllowance` raises it. Waits until a crediting path exists that needs no owner signature for each
+  payout.
