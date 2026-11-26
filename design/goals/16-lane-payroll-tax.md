@@ -77,8 +77,8 @@ Nothing else is needed.
 3. `design/decisions/CX-payroll-tax.md`: payroll's core holds no tax rule; one module per jurisdiction; rates are dated
    data, never code; journeys from the publications' worked examples; the United States only, in dollars; a payroll
    professional reviews the numbers before real wages (point 8).
-4. `spikes/us-payroll-tax-data/README.md` and its `calc/` (PR #1119; on `origin/spike/us-payroll-tax-data` until it
-   merges). The importer's design, the settled disagreements, the publications and their sha256s, and the licence
+4. `spikes/us-payroll-tax-data/README.md` and its `calc/` (PR #1119, on `main` since
+   `bda98519`, and on `goal/capxul` once `main` is merged in). The importer's design, the settled disagreements, the publications and their sha256s, and the licence
    conditions all come from it. Its calculator is throwaway: read it, never import it.
 5. `design/decisions/CX-payroll.md`: the payroll that is built (9a): components, structures, assignments, periods,
    entries and slips. Its "Known limits" name what this lane fills (tax, 9b).
@@ -318,5 +318,5 @@ Done when the front matter's `done_check` holds on `goal/capxul`. The lane then:
 
 ## Where it stands
 
-26 November 2026. Scoped; not started. The spike (#1119), CX-composable-pieces (#1123) and CX-money-global-payroll
-(#1121) are open pull requests. Gap 3 is filed as #1133.
+26 November 2026. Scoped; not started. The spike is on `main` (#1119, `bda98519`). CX-composable-pieces (#1123) and
+CX-money-global-payroll (#1121) are open pull requests. Gap 3 is filed as #1133.
