@@ -339,7 +339,8 @@ base units; Bridge's reports spoken by the system until the door lands.
 ### What is lifted, and what is not
 
 Nothing is copied: the implementation is Convex and TypeScript, and Orthograph is Effect everywhere with declared
-names. The design and the rules are lifted, from Aaron's own code, so licence and ownership allow it. Each slice names
+names. (Superseded by CX-safe, 26 November 2026: "Nothing is copied, except CapxulPayments V3's Solidity
+source, copied unchanged so it deploys byte for byte".) The design and the rules are lifted, from Aaron's own code, so licence and ownership allow it. Each slice names
 the `infrastructure:` file it lifts from.
 
 | Lifted (as design and rules) | In Orthograph |

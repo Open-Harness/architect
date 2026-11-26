@@ -136,10 +136,16 @@ describe("`serve`: a Worker's route", () => {
     expect((await serve("/portal/assets/app.map", { PORTAL_ASSETS: files })).status, "a file of the client's namespace that is not there is a 404").toBe(404);
   });
 
-  it("a Worker with no assets says the client is not installed, and still answers the data", async () => {
+  it("a Worker with no assets says the screens are not in this release, as a page or as JSON, and still answers the data", async () => {
     const response = await serve("/portal", {});
-    expect(response.status).toBe(404);
-    expect(await response.text()).toContain("not installed");
+    expect(response.status).toBe(501);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    expect(await response.text()).toContain("not in this release (Preview)");
+    const api = await serve("/portal/things/allowance", {}, { headers: { accept: "application/json" } });
+    expect(api.status).toBe(501);
+    expect(await api.json()).toMatchObject({ _tag: "NotInThisRelease" });
+    expect((await serve("/portal", {}, { method: "HEAD" })).status).toBe(501);
     expect((await serve("/_portal/v1/blueprint", {})).status).toBe(200);
   });
 
