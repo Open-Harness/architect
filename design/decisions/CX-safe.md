@@ -403,7 +403,7 @@ word in the blueprint yet (`CX-composable-pieces.md:520-521`); S4 meets it first
 - design/decisions/M7-capxul.md: "and the Safe is deployed on its first pay-out, in the second feature" → "and the Safe is deployed when it is claimed (CX-safe)"
 - design/decisions/M7-capxul.md: "the `safe` adapter (ST3.04), which waits on the budgets decision (ST3.02) and so on Goals 7, 4 and 8" → "the `safe` adapter, which Goal 16 builds as its own unit, with no wait on the budgets decision or other goals"
 - design/goals/16-capxul.md: "later with the chain (after 7, 10)" → "in units (CX-safe); only its pay link waits on 7"
-- design/goals/16-capxul.md: slice 2's After cell "7, 10" → "7, for S5's pay link only"
+- design/goals/16-capxul.md: "| 7, 10 |" → "| 7, for S5's pay link only |"
 - design/goals/16-capxul.md: "The Safe and getting paid on chain, later with the chain (K44, section 3)" → "The Safe and getting paid on chain, in units (CX-safe)"
 - design/decisions/CX-bridge-rails.md: "Nothing is copied" → "Nothing is copied, except CapxulPayments V3's Solidity source, copied unchanged so it deploys byte for byte (CX-safe)"
 
