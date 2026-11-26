@@ -10,7 +10,7 @@
 //  - an existing empty folder is filled; an existing folder with anything in it is refused, untouched; a name that is not lower
 //    case words is refused before anything is written. A refusal exits 2 and its message names the folder or the name.
 //  - `npm create orthograph <name>` runs the package `create-orthograph` (`packages/create-orthograph`, bin `create-orthograph`),
-//    which makes the same app and refuses the same things, and refuses a missing name.
+//    which makes the same app and refuses the same things, and refuses a missing name, an extra argument, a folder with anything in it (a hidden file too) and a reserved name (`orthograph`, `effect`).
 // Expected files come from `examples/starter`, the preset's own version and the generator (`Render.files`), never from what the
 // command wrote.
 import { spawnSync } from "node:child_process";
@@ -19,6 +19,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { Effect } from "effect";
 import { Render } from "@orthograph/generators/render";
+import { IGNORES, TSCONFIG, WORKSPACE, mergeWorkspace, packageJson } from "../../packages/preset/src/modules/starter/internal/project.ts";
 import { afterEach, describe, expect, it } from "vitest";
 import { cli, repo } from "../layer1/support.ts";
 
@@ -75,7 +76,7 @@ describe("08 ortho new app: controls", () => {
 });
 
 describe("08 ortho new app: what it makes", () => {
-  for (const name of ["bakery", "pastry-shop"]) {
+  for (const name of ["bakery", "pastry-shop", "tickets"]) {
     it(`${name}: the starter's blueprint, handlers and journeys unchanged, exit 0, nothing outside ${name}/`, () => {
       const { outer, cwd } = sandbox();
       const r = newApp(cwd, name);
@@ -107,20 +108,33 @@ describe("08 ortho new app: what it makes", () => {
     });
   }
 
-  it("the project files: package.json at the preset's version with an `ortho` script, tsconfig, ignores, pnpm settings; no workspace: link", () => {
+  it("the project files equal the preset's own, whole: package.json, tsconfig.json, .gitignore, pnpm-workspace.yaml", () => {
     const { cwd } = sandbox();
     expect(newApp(cwd, "bakery").status).toBe(0);
     const made = treeOf(join(cwd, "bakery"));
-    const pkg = JSON.parse(made.get("package.json") ?? "null") as Record<string, Record<string, string>>;
-    expect(pkg, "package.json").not.toBeNull();
-    expect(pkg["scripts"]?.["ortho"]).toBe("ortho");
-    expect(pkg["bin"]).toEqual({ bakery: "./generated/cli/src/main.ts" });
-    expect(pkg["devDependencies"]?.["@orthograph/cli"]).toBe(presetVersion);
-    for (const dep of ["orthograph", "@orthograph/host-cloudflare", "@orthograph/portal", "@orthograph/language-effect"]) expect(pkg["dependencies"]?.[dep], dep).toBe(presetVersion);
+    // package.json: the preset's `packageJson`, whole (type, packageManager, scripts, bin, every dependency and dev tool). The preset
+    // sets no name or version of its own (create-nx-workspace does), so the command may set `name`, and only as the app's name.
+    const { name: named, version: versioned, ...pkg } = JSON.parse(made.get("package.json") ?? "null") as Record<string, unknown>;
+    expect(pkg, "package.json").toEqual(packageJson({}, "bakery", presetVersion));
+    expect([undefined, "bakery"]).toContain(named);
+    expect([undefined, "0.0.0"]).toContain(versioned);
     expect(made.get("package.json")).not.toContain("workspace:");
-    expect(JSON.parse(made.get("tsconfig.json") ?? "null"), "tsconfig.json").toHaveProperty("compilerOptions.strict", true);
-    for (const ignored of [".ortho/", ".wrangler/", "node_modules/"]) expect(made.get(".gitignore") ?? "", ".gitignore").toContain(ignored);
-    expect(made.get("pnpm-workspace.yaml") ?? "", "pnpm-workspace.yaml").toMatch(/allowBuilds:\n  esbuild: true\n  nx: true\n  workerd: true/);
+    expect(JSON.parse(made.get("tsconfig.json") ?? "null"), "tsconfig.json").toEqual(TSCONFIG);
+    expect(made.get(".gitignore"), ".gitignore").toBe(IGNORES.join("\n") + "\n");
+    expect(made.get("pnpm-workspace.yaml"), "pnpm-workspace.yaml").toBe(mergeWorkspace("", WORKSPACE));
+    expect(made.get("pnpm-workspace.yaml")).toContain("kysely");
+  });
+
+  it("the app's whole file set is the starter's parts, generated/ and the four project files: nothing else at any level", () => {
+    const { cwd } = sandbox();
+    expect(newApp(cwd, "bakery").status).toBe(0);
+    const model = JSON.parse(readFileSync(join(starter, "generated/model/model.json"), "utf8")) as Parameters<typeof Render.files>[0]["model"];
+    const expected = [
+      ...["blueprint", "src", "journeys"].flatMap((p) => [...treeOf(join(starter, p)).keys()].map((k) => `${p}/${k}`)),
+      ...Effect.runSync(Render.files({ name: "bakery", model })).filter((f) => !f.scaffold).map((f) => f.path),
+      "package.json", "tsconfig.json", ".gitignore", "pnpm-workspace.yaml",
+    ].sort();
+    expect([...treeOf(join(cwd, "bakery")).keys()].sort()).toEqual(expected);
   });
 
   it("installs nothing: no node_modules, no lockfile", () => {
@@ -176,6 +190,45 @@ for (const { way, run } of ways) {
       expect(readFileSync(join(cwd, "bakery"), "utf8")).toBe("a file\n");
     });
 
+    it("refuses a folder holding only a hidden file as not empty: exit 2, the hidden file untouched", () => {
+      const { cwd } = sandbox();
+      const target = join(cwd, "bakery");
+      mkdirSync(target);
+      writeFileSync(join(target, ".env"), "k=v\n");
+      const r = run(cwd, "bakery");
+      expect(r.status, r.out).toBe(2);
+      expect(r.stderr).toContain("bakery");
+      expect(r.stderr).toMatch(/not empty|already exists/i);
+      expect([...treeOf(target)]).toEqual([[".env", "k=v\n"]]);
+    });
+
+    it("refuses no name: exit 2, the message says a name is needed; nothing is written", () => {
+      const { cwd } = sandbox();
+      const r = run(cwd);
+      expect(r.status, r.out).toBe(2);
+      expect(r.stderr).toMatch(/\bname\b/i);
+      expect(readdirSync(cwd)).toEqual([]);
+    });
+
+    it("refuses an extra argument: exit 2, the message names it; nothing is written", () => {
+      const { cwd } = sandbox();
+      const r = run(cwd, "bakery", "surplus");
+      expect(r.status, r.out).toBe(2);
+      expect(r.stderr).toContain("surplus");
+      expect(readdirSync(cwd)).toEqual([]);
+    });
+
+    for (const reserved of ["orthograph", "effect"]) {
+      it(`refuses the reserved name ${reserved} (a package that would depend on itself): exit 2, the message names it and says reserved`, () => {
+        const { cwd } = sandbox();
+        const r = run(cwd, reserved);
+        expect(r.status, r.out).toBe(2);
+        expect(r.stderr).toContain(reserved);
+        expect(r.stderr).toMatch(/reserved/i);
+        expect(readdirSync(cwd)).toEqual([]);
+      });
+    }
+
     for (const bad of BAD_NAMES) {
       it(`refuses the name ${JSON.stringify(bad)} before writing anything: exit 2, the message names it and says lower case words`, () => {
         const { outer, cwd } = sandbox();
@@ -217,13 +270,5 @@ describe("08 npm create orthograph", () => {
     expect([...got.keys()].sort()).toEqual([...expected.keys()].sort());
     for (const [p, c] of expected) expect(got.get(p), p).toBe(c);
     for (const step of ["cd bakery", "pnpm install", "pnpm ortho check"]) expect(r.stdout, step).toContain(step);
-  });
-
-  it("with no name: exit 2, and the message says a name is needed; nothing is written", () => {
-    const { cwd } = sandbox();
-    const r = create(cwd);
-    expect(r.status, r.out).toBe(2);
-    expect(r.stderr).toMatch(/\bname\b/i);
-    expect(readdirSync(cwd)).toEqual([]);
   });
 });
