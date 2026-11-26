@@ -535,17 +535,58 @@ CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten o
 - **S3b · A company's Safe set up** (#1196): `company-safe`'s `prepare`, `authorize`, `send`, `observe`, `recover`
   and `resume`, and a director added after `ready`. Needs C1, S3a's send and fence, and K1. CX-safe's S4 (the budget)
   now needs S3b, under Supersedes.
-- **S2** (#1169) keeps its shape; its money arrives at a claimed person's Safe not yet deployed, or at a begun company
+- **S2** (#1169) keeps its shape, and needs E2 as well as E1; its money arrives at a claimed person's Safe not yet deployed, or at a begun company
   Safe, not at "a counterfactual Safe" (under Supersedes; #1169 rewritten).
 - **S4, S5 and P1** keep their words, except that S4 needs S3b, not S3.
-- **K1 · time-fired moves run (the keeper)** (#1200): the keeper that fires a move declared `by:
-  Blueprint.time.after(field, span)` or `.every(span)`, once per due instant, as counted work, and fires an `after` move
-  again when a self-move writes its field anew. No package has it: `docs/canon/status.md:182` has
-  `world-clock-keeper` spiked and claimed by none, "the rest is M8's", and no Capxul machine uses `by` today. The moves
-  stay declared by time, which is the right model. Who builds it, Goal 16 or M8, the lead is settling with the
-  conductor. S3a and S3b need it.
+- **K1 · time-fired moves run (the keeper)** (#1199): the keeper that fires a move declared `by:
+  Blueprint.time.after(field, span)` or `.every(span)`, once per due instant, as counted work. Goal 16 claims it (the
+  conductor, 26 November 2026; `docs/canon/status.md:182` had `world-clock-keeper` spiked and claimed by none). Every
+  time-fired move here runs on that keeper, over M8.07's durable timers, and needs no workflow (the conductor's call).
+  Each one names a field re-armed on each self-move, for example `nextCheckAt`, so that an `after` move fires again when
+  its field is written anew; the exact rule is K1's decision's, and these words follow it once it lands. S3a and S3b need
+  it.
+- **E2 · events in, wired** (#1201): the durable D1 store for the inbox, `FOLLOWER_SINK` bound to `Inboxes.sink` in the
+  generated world, and an Anvil run end to end with a reorg. It needs E1. S2 needs E1 and E2. E1's own paths gain
+  `packages/host-cloudflare/src/modules/events/` (CX-events-in, #1178), under Supersedes.
 - **J1 · a journey's actor signs** (#1190): `s.<actor>.signs(template)`, a framework gap Goal 16 claims (K42: no running
   goal holds it). S1's claim journeys and S3a's need it.
+
+**The order now.** This graph replaces CX-safe's (`CX-safe.md:306-330`) for the Safe's units; the rest of that graph
+stands.
+
+```mermaid
+graph LR
+  A1["A1 --from-abi"] -. regenerates .-> A2
+  A1 -. regenerates .-> A3
+  A1 -. regenerates .-> A4
+  A2["A2 erc20"] --> S2
+  A3["A3 safe"] --> S1
+  A3 --> C1
+  A3 --> S2
+  A3 --> S3a
+  A4["A4 zodiac-roles"] --> S4
+  E1["E1 events-in"] --> E2["E2 events in, wired"]
+  E1 --> S2
+  E2 --> S2
+  J1["J1 a journey signs"] --> S1
+  J1 --> S3a
+  S1["S1 a person's Safe"] --> C1["C1 a company's Safe begun"]
+  S1 --> S2
+  C1 -. unblocks .-> R1["Bridge R1"]
+  S2["S2 incoming transfers"] --> S3a
+  S2 --> S5
+  K1["K1 the keeper"] --> S3a
+  K1 --> S3b
+  SIGN["G18-sign"] --> S3a
+  CLIENT["G18-client"] -.if needed.-> S3a
+  S3a["S3a a person's Safe on chain"] --> S3b["S3b a company's Safe set up"]
+  C1 --> S3b
+  S3b --> S4["S4 the budget"]
+  INV["slice 7 invoices<br/>(#1079, #1132)"] --> S5["S5 paid by a link"]
+  S3b --> P1["P1 sponsored path"]
+  S4 --> P1
+  P1 --> STG["Capxul staging"]
+```
 
 ## For Aaron
 
@@ -583,3 +624,4 @@ CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten o
 - design/decisions/CX-safe.md: "the address formula, the bootstrap owner" → "the address formula, the claim lane's states and its fence, but not its bootstrap owner (CX-safe-machines)"
 - design/decisions/CX-safe.md: "USDC sent to a counterfactual Safe's address is recorded once on that Safe," → "USDC sent to a claimed person's Safe not yet deployed, or to a begun company Safe, is recorded once on that Safe,"
 - design/decisions/CX-safe.md: "journeys | S3, A4 |" → "journeys | S3b, A4 |"
+- design/decisions/CX-safe.md: "new files in `packages/orthograph/src/modules/{events,plugins}/` and its wiring" → "new files in `packages/orthograph/src/modules/{events,plugins}/` and `packages/host-cloudflare/src/modules/events/`, and its wiring (CX-events-in)"
