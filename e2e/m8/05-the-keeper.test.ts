@@ -9,7 +9,8 @@
 //   2. leaving the state first: a desk released at half past nine does not expire;
 //   3. `every` re-arms from the due it fired: a ping at ten, a person's self-move at half past that keeps the row on the hour, two
 //      pings in one step at eleven and twelve (each run at its own instant), none after dousing; and an `after` self-move that
-//      leaves its field alone fires once, never again for a due that fired;
+//      leaves its field alone fires once, never again for a due that fired; and a refused `every` firing still re-arms from its
+//      due, so a jammed meter's ten o'clock reading is refused and its eleven o'clock one runs;
 //   4. a keeper move refused by a G5 rule writes nothing, keeps its state, is not tried again, and has its deciding log: eval 9
 //      (explainability) on `booking.seat` passes with the keeper's refused run as its evidence, which eval 8 (coverage) shows is
 //      there, since only a keeper firing can refuse `TableTaken` in this club;
@@ -41,6 +42,7 @@ const JOURNEYS = {
   left: { club: "keeper", file: "a-released-desk-does-not-expire", name: "a desk released before the hour does not expire", steps: 4 },
   every: { club: "keeper", file: "a-beacon-pings-every-hour", name: "a beacon pings every hour until it is doused", steps: 8 },
   refused: { club: "keeper", file: "a-taken-table-refuses-the-keeper", name: "the keeper is refused a taken table", steps: 6 },
+  cadence: { club: "keeper", file: "a-jammed-meter-reads-again-next-hour", name: "a jammed meter is read again the next hour", steps: 5 },
   once: { club: "keeper", file: "a-bell-chimes-once", name: "a bell set for an hour chimes once", steps: 2 },
   armed: { club: "keeper", file: "a-desk-left-held", name: "a desk left held when the journey ends", steps: 1 },
   fenced: { club: "keeper", file: "a-fresh-world-fires-nothing-old", name: "a fresh world fires nothing armed in another", steps: 3 },
@@ -69,6 +71,10 @@ const PLANTED: ReadonlyArray<readonly [Half, string, string, ReadonlyArray<reado
   ["every", "counted-twice", "read back, three pings, the last at twelve", [['[3n, "2027-01-10T12:00:00.000Z", "lit"]', '[4n, "2027-01-10T12:00:00.000Z", "lit"]']]],
   ["every", "last-ran-late", "read back, three pings, the last at twelve", [['[3n, "2027-01-10T12:00:00.000Z", "lit"]', '[3n, "2027-01-10T12:30:00.000Z", "lit"]']]],
   ["every", "pings-in-the-dark", "two more hours: no ping after it was doused", [['expect(fired).toEqual([]),\n      noEvents(),\n      machine.isIn(s.world.beacon, "dark"),', 'expect(fired).toEqual(["beacon.ping due 2027-01-10T13:00:00.000Z", "beacon.ping due 2027-01-10T14:00:00.000Z"]),\n      noEvents(),\n      machine.isIn(s.world.beacon, "dark"),']]],
+  ["cadence", "not-refused", "at half past ten: the ten o'clock reading was refused, and nothing was written", [['"meter.tick due 2027-01-10T10:00:00.000Z refused MeterJammed"', '"meter.tick due 2027-01-10T10:00:00.000Z"']]],
+  ["cadence", "stops-for-good", "at eleven it is read again, on the hour", [['["meter.tick due 2027-01-10T11:00:00.000Z"]', "[]"]]],
+  ["cadence", "retried-at-once", "at eleven it is read again, on the hour", [['["meter.tick due 2027-01-10T11:00:00.000Z"]', '["meter.tick due 2027-01-10T10:00:00.000Z", "meter.tick due 2027-01-10T11:00:00.000Z"]']]],
+  ["cadence", "refusal-written", "read back: one reading", [["[0n, 1n, \"running\"]", "[0n, 2n, \"running\"]"]]],
   ["once", "chimes-again", "three hours pass: it chimed at ten, once", [['["bell.chime due 2027-01-10T10:00:00.000Z"]', '["bell.chime due 2027-01-10T10:00:00.000Z", "bell.chime due 2027-01-10T10:00:00.000Z"]']]],
   ["once", "never-chimes", "three hours pass: it chimed at ten, once", [['["bell.chime due 2027-01-10T10:00:00.000Z"]', "[]"]]],
   ["once", "chimed-twice", "read back, one chime", [['1n, "ringing"]', '2n, "ringing"]']]],
@@ -138,7 +144,7 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
     // The keeper may call it, and only the keeper (K23 section 3): judged on the same runs.
     expect(evals("booking.seat", "who may call"), run.out).toEqual(["booking.seat who may call ✔"]);
     // Every move made by time was made by some journey, so each keeper operation was judged on its runs.
-    for (const op of ["desk.expire", "beacon.ping", "booking.seat"]) expect(evals(op, "coverage"), run.out).toEqual([`${op} coverage ✔`]);
+    for (const op of ["desk.expire", "beacon.ping", "booking.seat", "bell.chime", "meter.tick"]) expect(evals(op, "coverage"), run.out).toEqual([`${op} coverage ✔`]);
   });
 
   it("backoff: watch.observe was made, and judged on the keeper's runs", () => {

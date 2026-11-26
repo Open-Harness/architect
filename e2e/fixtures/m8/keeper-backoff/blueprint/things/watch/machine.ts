@@ -2,7 +2,8 @@ import { Blueprint } from "orthograph";
 import { Watch } from "./thing.ts";
 import * as Events from "./events.ts";
 
-// The Safe machines' shape (CX-safe-machines, #1194): a move made by time at a field the machine's own moves rewrite.
+// Like the Safe machines (CX-safe-machines, #1194), a move made by time at a field the machine's own moves rewrite; unlike them,
+// this watch parks by leaving `watching`, where the Safe parks by clearing `nextCheckAt` (that case is `hush`).
 export const machine = Blueprint.machine(Watch, {
   states: ["watching", "parked"],
   moves: {

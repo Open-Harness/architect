@@ -3,7 +3,8 @@
 **Status: decided, 26 November 2026,** by Goal 16's ✍️ author for issue #1199 (K1), under AGENTS.md "Who decides". It
 fixes the keeper's surface for the builder of M8.10 before the build starts. The Safe machines
 (`CX-safe-machines.md`, #1194) declare three moves made by time (the personal Safe's `recover`, the company setup's
-`observe` on a backoff to a one-day park, and its `recover` every minute), and S3a (#1170) and S3b (#1196) wait on them.
+`observe` on a backoff to a one-day park, and its `recover` ninety seconds after `nextCheckAt`, all `after` moves on
+`nextCheckAt`), and S3a (#1170) and S3b (#1196) wait on them.
 
 **Settled before this, and not reopened:** K23 section 3 (the keeper is a built-in principal that calls only moves made
 by time; entering a state sets the thing's timer, leaving clears it, no scans; the request key is the thing, the move
@@ -34,9 +35,11 @@ because every journey shares one world's clock.
 
 ## The calls
 
-1. **The wake kind is `keeper`.** The generated `World` registers it in `WorldWakes` (`{ keeper: ... }`) for a
-   blueprint with a stepped or scaled clock, and the generated Worker's `WorldEntry.work(env, wakes)` gets the same map.
-   A real world's alarm fires the same kind. The wake runs the move in the world's own isolate, counted under the row's
+1. **The wake kind is `keeper`.** The generated `World` registers it in `WorldWakes` (`{ keeper: ... }`) for every
+   blueprint that declares a move made by time, whatever its environments' clocks, and the generated Worker's
+   `WorldEntry.work(env, wakes)` gets the same map. A real world fires the kind from the Durable Object's alarm (M8.07
+   call 7), a stepped or scaled one from the clock controller. The builder adds a unit test that the real alarm routes
+   the keeper kind, beside `timers/timers.test.ts`. The wake runs the move in the world's own isolate, counted under the row's
    owner (M8.07 call 10), and returns once the operation's run holds its own token.
 
 2. **The arming key is (thing, move, generation).** A row's owner is the move's operation name
@@ -60,7 +63,9 @@ because every journey shares one world's clock.
    thing's field, or on the calendar in its zone). After the keeper's own firing of that move commits and the thing
    stays in a `from` state, the next due is the first instant strictly after **the due just fired**, never after the
    firing's instant: a late keeper (`ORTHO_KEEPER_DELAY`) does not push the dates. Any other move that keeps the thing in
-   a `from` state keeps the row as it is. A firing whose due is already past when it is set fires where the world stands
+   a `from` state keeps the row as it is. **A refused `every` firing still re-arms from its due**: the cadence goes on,
+   so a refused period never stops the move for good (the one exception to "a refused call changes no row" in call 3,
+   and it is the keeper's own row, not the call's). A firing whose due is already past when it is set fires where the world stands
    (M8.07 call 4), one due at a time, in order.
 
 5. **How an `after` re-arms on a self-move.** `after(field, span)` is due at the committed record's `field` plus `span`.
@@ -80,7 +85,8 @@ because every journey shares one world's clock.
    the commit, each as for any caller. Nothing is bypassed, and the keeper may call nothing else (K23 section 3,
    `keeper.ts`). A refusal is an answer, not a failure: it writes nothing, its deciding log is written as for any caller
    (G5 section 5, eval 9), the clock step still answers 200, and the due counts as fired (call 3), so a refused move is
-   not retried in a loop; the thing waits for its next committed move. A defect in the handler fails the step as
+   not retried in a loop; an `after` move waits for the thing's next committed move, and an `every` move for its next
+   period (call 4). A defect in the handler fails the step as
    `WakeFailed` (M8.07 call 5) and the row goes back.
 
 7. **What a clock step reports.** Each `fired` entry is `{ thing, move, due }`, plus `refused: "<refusal name>"` when
@@ -97,6 +103,9 @@ because every journey shares one world's clock.
    A journey that moves time gets a world of its own from the environment's `starts` (`M8-checks` call 3, which M8.07
    left to this slice), so nothing one journey arms fires in another.
 
+   M8.12's on-time eval judges a keeper call by its due and when it ran; it skips a replayed call (`s.keeper.run` with a
+   due that has fired answers the first run's answer), or a journey's replay step an hour after the due goes red.
+
 9. **Time-fired moves need only durable timers, not workflows** (the conductor, 26 November 2026). The keeper is the
    table, the wake and an ordinary call; nothing waits across steps. Signature collection is what needs workflows
    (`gap-signature-collection`). So `world-clock-keeper` needs `timers` only.
@@ -111,7 +120,7 @@ the keeper also turns.
 |---|---|---|
 | 1 | a desk held at nine expires at ten, when the clock steps past the hour, and not a minute before | `a-held-desk-expires-after-an-hour` |
 | 2 | a desk released at half past nine does not expire | `a-released-desk-does-not-expire` |
-| 3 | a beacon lit at nine pings at ten; a person's self-move at half past keeps the row on the hour; it pings at eleven and twelve in one step, each run at its own instant, and stops when doused. A bell whose `after` self-move leaves its field alone chimes once, never again for a due that fired | `a-beacon-pings-every-hour`, `a-bell-chimes-once` |
+| 3 | a beacon lit at nine pings at ten; a person's self-move at half past keeps the row on the hour; it pings at eleven and twelve in one step, each run at its own instant, and stops when doused. A bell whose `after` self-move leaves its field alone chimes once, never again for a due that fired. A meter's `every` reading refused at ten runs again at eleven | `a-beacon-pings-every-hour`, `a-bell-chimes-once`, `a-jammed-meter-reads-again-next-hour` |
 | 4 | a booking the keeper would seat at a taken table is refused `TableTaken`, writes nothing, keeps its state, is not retried, and has its deciding log | `a-taken-table-refuses-the-keeper` |
 | 5 | a row armed in one journey's world never fires in another's; after a warm reset, a row from before it does not fire | `a-desk-left-held`, `a-fresh-world-fires-nothing-old`, and the front-door half |
 | 6 | a watch's `observe`, `after("nextCheckAt", "0 seconds")`, re-arms on each self-move that writes `nextCheckAt` forward: a snooze moves the first check from ten to ten past, then the observes back off two and four hours, park on the third, and nothing fires after | `a-watch-backs-off-and-parks` |
@@ -121,5 +130,5 @@ the keeper also turns.
 
 - `docs/canon/status.md` (`gap-signature-collection`): "stage 3's signature collection and the keeper rest on workflows" → "stage 3's signature collection rests on workflows; the keeper does not (CX-keeper)"
 - `docs/canon/status.md` (open items, 5): "Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike" → "Stage 3's signature collection rests on workflows, which have no decision or spike; the keeper needs only timers (CX-keeper)"
-- `docs/canon/status.md` (`world-clock-keeper`): "| spiked | framework | — | — | none |" → "| building | Capxul | 1.0 | getting paid | goal-16 |"
-- `design/history/artifacts-2026-11-21/scope.html` and `design/history/retired-2026-11-23/scope.md` (dated records, words kept): "Stage 3's signature collection and the keeper rest on workflows" gains "Superseded by CX-keeper, 26 November 2026"
+- design/history/artifacts-2026-11-21/scope.html: "Stage 3's signature collection and the keeper rest on workflows" → "Stage 3's signature collection and the keeper rest on workflows (Superseded by CX-keeper, 26 November 2026: the keeper needs only timers.)"
+- design/history/retired-2026-11-23/scope.md: "Stage 3's signature collection and the keeper rest on workflows" → "Stage 3's signature collection and the keeper rest on workflows (Superseded by CX-keeper, 26 November 2026: the keeper needs only timers.)"
