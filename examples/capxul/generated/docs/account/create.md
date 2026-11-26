@@ -52,6 +52,13 @@ Add an account to a company's chart, under a group or as a root.
 
 ## Worked examples
 
+### assign salary structures
+
+Starts from the world `a payroll outsider`.
+
+- **Ada starts Acme Logistics' chart with a root group.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Expenses`, isGroup true, rootType `Expense`, and is answered.
+- **and a ledger under it.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Wages`, parentAccount the last call's account, isGroup false, and is answered.
+
 ### draft a journal entry
 
 Starts from the world `a fiscal year`.
@@ -64,6 +71,13 @@ Starts from the world `a fiscal year`.
 Starts from the world `a chart`.
 
 - **Ada adds a second ledger under Assets, beside Bank.** `ada` (role company.owner) calls and sends company the world's company, accountName `Float`, parentAccount the world's assets, isGroup false, and gets back an answer matching `^acc_[0-9a-z]+$`.
+
+### run a payroll
+
+Starts from the world `an outside cost center`.
+
+- **Ada adds another ledger under Liabilities, typed as owed to suppliers.** `ada` (role company.owner) calls and sends company the world's company, accountName `Trade Creditors`, parentAccount the world's liabilities, isGroup false, accountType `Payable`, and is answered.
+- **Ada adds a group under Liabilities, typed as owed to suppliers.** `ada` (role company.owner) calls and sends company the world's company, accountName `Accrued Liabilities`, parentAccount the world's liabilities, isGroup true, accountType `Payable`, and is answered.
 
 ### set up a chart of accounts
 
@@ -91,6 +105,20 @@ Starts from the world `a chart`.
 - **Acme Logistics adds its own Bank under it.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Bank`, parentAccount the last call's account, isGroup false, accountType `Bank`, and gets back `Asset`.
 - **an Acme Trading account under that ledger, naming another root type, is refused for the company first.** `ada` (role company.owner) calls and sends company the world's company, accountName `Float`, parentAccount the last call's account, isGroup false, rootType `Income`, and is refused with ParentAccountNotInCompany, AC-001.
 - **Ada adds an empty group under Assets.** `ada` (role company.owner) calls and sends company the world's company, accountName `Prepayments`, parentAccount the world's assets, isGroup true, and is answered.
+
+### set up salary components
+
+Starts from the world `a salaries ledger`.
+
+- **Ada starts Acme Logistics' chart with a root group.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Expenses`, isGroup true, rootType `Expense`, and is answered.
+- **and a ledger under it.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Wages`, parentAccount the last call's account, isGroup false, and is answered.
+
+### set up salary structures
+
+Starts from the world `a pension component`.
+
+- **Ada starts Acme Logistics' chart with a root group.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Expenses`, isGroup true, rootType `Expense`, and is answered.
+- **and a ledger under it.** `ada` (role company.owner) calls and sends company the world's otherCompany, accountName `Wages`, parentAccount the last call's account, isGroup false, and is answered.
 
 ## How to call
 
