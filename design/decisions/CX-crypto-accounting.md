@@ -3,8 +3,8 @@
 **Status: draft, 26 November 2026.** Proposed by Goal 16's 📐 designer thread, started by Goal 16's lead
 (session_01S8RF7ASqmdxbN37WdpZMcB), to answer Aaron's two questions of 26 November 2026 (kept as heard: "the value can
 change ... How is that supposed to be accounted for?" and "crypto assets ... as a treasury asset. So how does that
-work?"). It builds on CX-money-global-payroll (on `origin/goal-16/money-global-payroll-design`) and
-CX-composable-pieces. Nothing is superseded until Aaron answers section 7; section 8 lists what would change.
+work?"). It builds on CX-money-global-payroll (#1121, on `goal/capxul` once it lands; until then on
+`origin/goal-16/money-global-payroll-design`) and CX-composable-pieces. Nothing is superseded until Aaron answers section 7; section 8 lists what would change.
 
 This is research and a recommendation, not accounting advice. Capxul's books are production and hold real money, so
 question 1 asks for a qualified accountant's review before any customer relies on it.
@@ -12,12 +12,13 @@ question 1 asks for a qualified accountant's review before any customer relies o
 ## In short
 
 USDC is not cash and is not a crypto asset like bitcoin. It is a promise that Circle will pay one dollar for each
-coin, so it is a claim on Circle. If the company can redeem directly with Circle, it carries USDC at one dollar and
-watches for a real depeg. A tiny dip, like 99.85 cents, is not booked; it is reported. A real break is booked as a
-credit loss. If the company cannot redeem directly, the coin is carried at its market price instead, and every small
-wobble goes through profit and loss. So the first advice to customers is to hold USDC with a direct redemption right.
+coin, so it is a claim on Circle. If the company can redeem directly with Circle, or could readily arrange to, it
+carries USDC at one dollar and watches for a real depeg. A tiny dip, like 99.85 cents, is not booked; it is reported. A
+real break is booked as a credit loss. If the company has no such right, the coin is probably carried at its market
+price instead, and every small wobble goes through profit and loss. So the first advice to customers is to hold USDC
+with a direct redemption right.
 
-Bitcoin and ether are different. Since this year's rule, a company marks them to market every month end, the gain or
+Bitcoin and ether are different. Since 2025, a company marks them to market every month end, the gain or
 loss goes into profit, and it keeps every purchase as a separate lot for tax. That is a new optional piece, `treasury`.
 
 What waits on Aaron: an accountant's review, and five choices, each with a recommendation.
@@ -26,12 +27,16 @@ What waits on Aaron: an accountant's review, and five choices, each with a recom
 
 ### (a) USDC
 
-1. **Classify by the redemption right, per account.** A USDC account whose holder can redeem directly with the issuer
-   (a Circle Mint account; Bridge's terms to be confirmed, question 3) is a **financial asset**: a receivable from
+1. **Classify by the redemption right, per account.** A USDC account whose holder has, or can readily obtain, a
+   direct redemption right with the issuer ("the ability to obtain such right without facing significant barriers",
+   KPMG Q8.4.10: a Circle Mint account, or eligibility for one; Bridge's terms to be confirmed, question 3) is a
+   **financial asset**: a receivable from
    Circle carried at its redemption value, one dollar a coin, less any expected credit loss (ASC 310 and 326; KPMG
-   Q8.4.10, PwC 2.1.2, Coinbase's 10-Ks through 2024). A USDC account with no such right (a Safe held by a company with
-   no Circle Mint account is "User Type B" in Circle's terms, which may not redeem) is measured at **fair value**
-   through net income, as a crypto asset, unless the accountant concludes otherwise (question 2).
+   Q8.4.10, PwC 2.1.2, Coinbase's 10-Ks through 2024). A USDC account with no such right, and no ready way to
+   one (Circle's terms call a holder with no Circle Mint account "User Type B", which may not redeem), is measured at
+   **fair value** through net income, as a crypto asset, unless the accountant concludes otherwise (question 2).
+   Whether a company eligible for Circle Mint but not yet onboarded "can readily obtain" the right is the accountant's
+   call (question 2).
 2. **The rate.** Every movement books at its own realised rate, as CX-money-global-payroll already says. At period end,
    a redemption-value account takes a **policy rate of 1.000000000** (a `rates` row whose source is *policy*) and posts
    nothing. Beside it, `rates` keeps the **market price** at the company's cut-off (source *market*, its venue named),
@@ -54,7 +59,8 @@ at the cut-off is 0.9985.
 | No redemption right, fair value | Debit *Gain or loss on remeasurement* $150; credit *USDC (Safe)* $150, 0 USDC | Stablecoins $99,850. At 1.0000 in December, the reverse: $150 gain |
 | Redemption right, real break (market 0.97, Circle's reserves impaired, the accountant expects 2% loss) | Debit *Stablecoin credit loss* $2,000; credit *Allowance* $2,000 | Stablecoins $100,000 less allowance $2,000. A later recovery reverses the allowance |
 
-Movements: paying a contractor's $1,000 bill with 1,000 USDC books no difference. Redeeming 10,000 USDC at Bridge for
+Movements, for a redemption-value account: paying a contractor's $1,000 bill with 1,000 USDC books no difference (a
+fair-value account books the gap between its carrying amount and $1,000). Redeeming 10,000 USDC at Bridge for
 $9,990 books $10 to *fees*, not to a gain or loss. For tax, each of those is still a disposal of property with a gain
 of about nothing (section 4).
 
@@ -63,10 +69,11 @@ of about nothing (section 4).
 1. **Fair value every period, gain or loss in net income** (ASC 350-60, from ASU 2023-08, required for fiscal years
    beginning after 15 December 2024). Price: one **principal market** per asset, the one the company can reach and
    normally trades in (ASC 820; PwC 4.1), taken at a fixed **cut-off**, the last trade before midnight in the company's
-   time zone (PwC), price times units, with no discount for size. Strategy uses Coinbase as its principal market.
+   time zone (PwC), price times units, with no discount for size.
 2. **Lots.** Every acquisition is a lot (units, date, cost including fees, wallet). Disposals take lots by a method the
-   company records: **FIFO per wallet by default**, specific identification by a standing order (Treas. Reg.
-   1.1012-1(j); Block uses FIFO, Tesla specific identification). Lots give the cost basis the disclosure needs, the
+   company records: **FIFO per wallet by default**, or specific identification: for units at a broker, told to the
+   broker, where a standing order counts; for the company's own wallet, recorded on its books no later than the sale
+   (Treas. Reg. 1.1012-1(j); Block uses FIFO, Tesla specific identification). Lots give the cost basis the disclosure needs, the
    realised gain against cost, and the tax basis, which is cost and never the mark.
 3. **The period-end mark** posts, per asset account, the difference between the units at the market price and the
    lots' carrying amount, to *Gain or loss on remeasurement of digital assets*; there is no reversal next period (the
@@ -95,14 +102,16 @@ $60, closing $1,980.
   venue and the cut-off instant. A crypto price is just a rate between two assets; nothing new is needed beyond that.
 - **`ledger`** (core) gains a **measurement** on each account whose asset is not the company's: *exchange* (ERPNext's
   revaluation, for pounds and euros, the default), *redemption* (a policy rate, no revaluation, the depeg check at
-  close) or *fair value*. Each measurement names its own gain-or-loss account rather than the company's one unrealised
-  exchange account. `ledger` declares an optional contract, *remeasure an account at period end*. With no filler, a
-  *fair value* account is a `check` error.
-- **`treasury`** (new, optional) fills that contract. It holds the lots, the lot method, buy, sell and transfer between
+  close). The measurement is an **open set**, like *party type* (CX-composable-pieces gap 2, #1132): `ledger` holds
+  *exchange* and *redemption*, and a later piece adds members. Each measurement names its own gain-or-loss account
+  rather than the company's one unrealised exchange account.
+- **`treasury`** (new, optional) adds *fair value* to that set, so without it no account can be fair-valued. That
+  covers USDC with no redemption right too, so a first release where customers hold redeemable USDC needs only T1 and
+  T2. It holds the lots, the lot method, buy, sell and transfer between
   wallets (each posting through `ledger`'s `post`), the mark, and four reports: holdings, the annual roll-forward,
   realised gains against cost, and tax lots with the book-tax difference. A company that holds only USDC with a
   redemption right never mounts it. It is chosen at build time like every optional piece and is not in the *Capxul core*
-  preset.
+  preset, the standard set.
 
 ### (d) What the framework lacks
 
@@ -113,11 +122,10 @@ $60, closing $1,980.
    currency, #882) must be exact for 18 decimals against 2, with a rate per whole unit of up to 9 places. 1 ETH at
    $3,400 is 10¹⁸ base units times 3,400 rounded to cents; a per-base-unit rate would be 3.4 × 10⁻¹⁵ and must never be
    stored. This is a requirement on an existing gap, not a new one. The 128-bit amount holds any realistic wei balance.
-3. **A month-end schedule in the company's zone.** `Blueprint.time.every` takes a calendar anchor and a zone; whether
-   it can say "the last day of each month" is unconfirmed. If not, a gap. The close may also stay a person's or an
-   agent's call, as payroll's pay run is today.
-4. **An optional build-time contract** (CX-composable-pieces gap 3) is reused for *remeasure an account*; nothing new.
-5. **A price feed** is an outside dependency, Aaron's call, after typing prices by hand starts to hurt; not needed to
+3. **Open value sets** (CX-composable-pieces gap 2, #1132) are reused for the measurement; nothing new. A month-end
+   close needs nothing new either: `Blueprint.time.every("1 month", { on: { day: "last" }, zone })` already exists
+   (`packages/orthograph/src/modules/time/types.ts`).
+4. **A price feed** is an outside dependency, Aaron's call, after typing prices by hand starts to hurt; not needed to
    build any slice here.
 
 ### (e) Slices
@@ -127,31 +135,35 @@ All come after CX-money-global-payroll's currency slice (accounts in several ass
 | # | Slice | Done when |
 |---|---|---|
 | T1 | `rates`: a source on every row, venue and cut-off on a *market* row | A journey types USDC→USD 1.000000000 *policy* and 0.998500000 *market* for 30 November; reading "the rate for a redemption account" returns 1, "the market price" returns 0.9985 with its venue |
-| T2 | `ledger`: measurement per account; *redemption* with the depeg check at close | Example (a): closing November with 100,000 USDC at market 0.9985 posts nothing and reports fair value $99,850; at 0.97 the close is refused until an allowance entry or a recorded acknowledgement exists |
+| T2 | `ledger`: measurement per account; *redemption* with the depeg check at close | Example (a): closing November with 100,000 USDC at market 0.9985 posts nothing and reports fair value $99,850; at 0.97 the close is refused until an allowance entry for the period exists (an allowance of nil, entered on purpose, counts) |
 | T3 | Framework: the non-contract asset | `ETH` declared with 18 decimals compiles; 1 ETH round-trips as 10¹⁸ base units on the wire; a money field of it converts to $3,400.00 at a rate of 3400 |
 | T4 | `treasury`: lots, buy and sell by FIFO or specific identification | Example (b): after the 15 December sale, the one lot left holds 0.6 ETH at cost $1,803; with a standing specific-identification order on two lots, the named lot is used |
-| T5 | `treasury`: the mark, filling `ledger`'s contract | Example (b): marks post $395 and −$60, the sale posts $37; the ETH account's dollar balance equals the sum of its lots' carrying amounts after every step; without `treasury`, a *fair value* account fails `check` |
+| T5 | `treasury`: *fair value* added to `ledger`'s measurement, and the mark | Example (b): marks post $395 and −$60, the sale posts $37; the ETH account's dollar balance equals the sum of its lots' carrying amounts after every step |
 | T6 | `treasury`: the four reports | Example (b): roll-forward 3,005 / 395 / 1,360 / 60 / 1,980; cumulative realised gain $195; the tax-lot report shows 0.4 ETH, basis $1,202, proceeds $1,397; book-tax difference $177 |
 
 T1 and T2 are what USDC needs and can go first. T3 to T6 wait on question 4.
 
 ### (f) Questions for Aaron
 
-1. **An accountant's review.** Recommended: yes. Before any customer's books rely on T2 or `treasury`, a certified
+1. **An accountant's review.** Recommended: yes. Before any customer's books rely on the USDC month-end check or on
+   `treasury`, a certified
    public accountant with digital-asset experience reads this record and the worked examples. This is production and
    money, and the answers to questions 2 and 3 are judgments only an accountant (and the customer's auditor) can sign.
    It is an outside spend, so it's your call.
 2. **Customers hold USDC with a direct redemption right.** Recommended: yes, Capxul's setup guides each company to a
-   Circle Mint account (or confirms Bridge's own redemption terms). It decides whether USDC sits still at a dollar or
-   wobbles through profit every month.
+   Circle Mint account (or confirms Bridge's own redemption terms). Circle Mint is institutional onboarding, with a
+   business check (KYB), not a switch a small customer flips, so the accountant also says whether a company that is
+   eligible but not yet onboarded counts as able to redeem. It decides whether USDC sits still at a dollar or wobbles
+   through profit every month.
 3. **USDC at Bridge.** Recommended: treat a Bridge balance as a claim on Bridge, measured like a redeemable stablecoin,
    and ask the accountant whether the company or Bridge holds the asset, and whose credit risk it is. CX-bridge reads
    Bridge as holding USDC in custody.
-4. **`treasury` as an optional piece, built after the USDC slices.** Recommended: yes, optional, not in *Capxul core*,
-   built when a customer wants to hold bitcoin or ether. The other choice: in core, so every company can.
-5. **The defaults.** Recommended: FIFO per wallet, with specific identification by standing order; one principal market
-   per asset chosen by the company; midnight in the company's zone as the cut-off; a 0.5% depeg threshold; prices
-   typed by hand until a feed is its own call. Each is a setting, so a company's accountant can change it.
+4. **`treasury` as an optional piece, built after the USDC slices.** Recommended: yes, optional, not in the standard
+   set of pieces every company gets, built when a customer wants to hold bitcoin or ether. The other choice: in the
+   standard set, so every company can.
+5. **The defaults.** Recommended: accept these defaults; each is a setting the accountant can change. FIFO per
+   wallet, with specific identification allowed; one principal market per asset chosen by the company; midnight in the
+   company's zone as the cut-off; a 0.5% depeg threshold; prices typed by hand until a feed is its own call.
 6. **USDC lots for tax.** Recommended: when `treasury` is mounted, USDC accounts may keep lots too; without it, Capxul
    reports each USDC disposal at a basis of one dollar. Whether that is acceptable for a company's tax return is the
    accountant's call.
@@ -250,23 +262,17 @@ price with no reversal. This reading of the standards is ours, not quoted.
 - **Character:** capital; a corporation's capital losses offset only capital gains, carried back 3 and forward 5 years
   (Pub. 542). The wash-sale rule covers "stock or securities"; we read it as not reaching crypto, but no IRS text says
   so.
-- **Book and tax differ:** fair value for books, cost for tax, so a deferred tax line (section 1(b)). The corporate
-  minimum tax (over $1 billion of average income) can ignore unrealised fair-value gains by election (Notice 2025-49,
-  s. 5.03); irrelevant to small customers.
-- **States:** Delaware's franchise tax under the assumed par value method uses "total gross assets" from Form 1120
-  Schedule L, so fair-value marks move it ($400 per million, minimum $400, cap $200,000). State income tax conformity
-  varies and is not researched here.
+- **Book and tax differ:** fair value for books, cost for tax, so a deferred tax line (section 1(b)).
+- **Corporate minimum tax:** only above $1 billion of average income, with an election to ignore unrealised gains
+  (Notice 2025-49, s. 5.03); not a small customer's concern.
+- **States:** Delaware's franchise tax uses gross assets from the book balance sheet, so marks move it; state income tax
+  is not researched here.
 
 ## 5. IFRS, briefly (noted, not designed)
 
-The IFRS Interpretations Committee (June 2019): a cryptocurrency holding is an intangible asset under IAS 38, or
-inventory under IAS 2 when held for sale in the ordinary course (broker-traders at fair value less costs to sell). So
-there is no fair value through profit as US GAAP now requires; IAS 38 allows cost, or revaluation through other
-comprehensive income where an active market exists (IAS 38 para. 72, not fetched). The decision covers only holdings
-that create no contract, so USDC needs its own analysis, likely IFRS 9. On 19 November 2026 the IASB added a project on
-cryptocurrencies and stablecoins, to explore fair value through profit or loss and whether some stablecoins are cash
-equivalents under IAS 7. A non-US company would need a second measurement per account; `ledger`'s measurement setting
-is where it would go.
+Under IFRS, crypto is an intangible (IAS 38) or inventory (IAS 2), not fair value through profit (IFRIC, June 2019);
+USDC needs its own analysis, and the IASB opened a project on both on 19 November 2026; `ledger`'s measurement is where
+a non-US company's would go.
 
 ## 6. ERPNext's own handling, and where it falls short (`a6f54f9c`)
 
@@ -315,8 +321,8 @@ Nothing is applied in this pull request. If questions 2, 4 and 5 are answered as
   a rate says otherwise" would become "USDC to US dollars is a policy row of one for an account with a redemption
   right, checked against the market price at each close (CX-crypto-accounting)". Item 8 would add that revaluation
   applies to *exchange* accounts only.
-- **CX-composable-pieces**: `treasury` added to the optional pieces; `ledger`'s row adds the *remeasure an account*
-  contract; `rates`' row adds the source.
+- **CX-composable-pieces**: `treasury` added to the optional pieces; `ledger`'s row adds the *measurement* open set
+  (gap 2) and `treasury`'s adds *fair value* to it; `rates`' row adds the source.
 - **`examples/capxul/blueprint/assets/usdc.ts`**: its comment, already proposed by CX-money-global-payroll, would add
   that its measurement follows the account's redemption right.
 
@@ -400,6 +406,5 @@ refused the ASU's own page to our fetcher (the PDF at `storage.fasb.org` was rea
 - Whether Bridge's terms give a Capxul customer a direct redemption right, or whose asset a Bridge balance is.
 - Whether costs to sell are excluded at remeasurement, stated in those words by any guide (our reading of ASC 820).
 - That the wash-sale rule doesn't reach digital assets (no IRS statement found).
-- Whether `Blueprint.time.every` can anchor to the last day of a month.
 - Any state's corporate income tax treatment of digital assets.
 - Whether FASB has redeliberated the cash-equivalents proposal since comments closed on 19 November 2026.
