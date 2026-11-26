@@ -43,11 +43,24 @@ Starts from the world `an attendance request`.
 - **its last day, 10 May, is marked working from home.** `ada` (role company.owner) calls and sends employee the world's employee, attendanceDate `2027-05-10`, and gets back [[`2027-05-10`, `Work From Home`, `marked`]].
 - **Saturday 12 December is marked present.** `ada` (role company.owner) calls and sends employee the world's employee, attendanceDate `2026-12-12`, and gets back [[`2026-12-12`, `Present`, `marked`]].
 
+### attendance requests and leave
+
+Starts from the world `a leave application`.
+
+- **Olga's days read as both left them.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2027-02-26`, `Work From Home`], [`2027-02-27`, `Work From Home`], [`2027-02-28`, `Work From Home`], [`2027-03-01`, `On Leave`], [`2027-03-02`, `On Leave`], [`2027-03-03`, `On Leave`], [`2027-03-04`, `Work From Home`], [`2027-03-08`, `Work From Home`], [`2027-03-09`, `Work From Home`], [`2027-03-10`, `Work From Home`]].
+
 ### attendance stays in its company
 
 Starts from the world `an attendance request`.
 
 - **every day it marked is Olga's, in Ada's company.** `ada` (role company.owner) calls and sends employee the world's employee, and gets back [[the world's company, the world's employee, `2026-11-23`, `Work From Home`], [the world's company, the world's employee, `2026-11-24`, `Work From Home`], [the world's company, the world's employee, `2026-11-25`, `Work From Home`], [the world's company, the world's employee, `2026-11-26`, `Work From Home`], [the world's company, the world's employee, `2026-11-27`, `Work From Home`]].
+
+### leave days
+
+Starts from the world `a leave allocation`.
+
+- **Olga's March reads On Leave from Monday to Thursday, and nothing on the Friday.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2027-03-01`, `On Leave`], [`2027-03-02`, `On Leave`], [`2027-03-03`, `On Leave`], [`2027-03-04`, `On Leave`]].
+- **Olga's July reads as Ada marked it.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2027-07-05`, `Present`], [`2027-07-06`, `Work From Home`], [`2027-07-08`, `Present`], [`2027-07-12`, `Absent`], [`2027-07-13`, `Half Day`], [`2027-07-14`, `Present`]].
 
 ### mark attendance
 
@@ -68,6 +81,13 @@ Starts from the world `an attendance request`.
 Starts from the world `an employee`.
 
 - **a request in draft marks no day.** `olga` (signed in) calls and sends employee the world's employee, and gets back 0.
+
+### take leave
+
+Starts from the world `a leave allocation`.
+
+- **Olga's days read On Leave, and the Friday before as it was.** `olga` (signed in) calls and sends employee the world's employee, and gets back [[`2027-02-26`, `Present`, the world's company, the world's employee, `marked`], [`2027-03-01`, `On Leave`, the world's company, the world's employee, `marked`], [`2027-03-02`, `On Leave`, the world's company, the world's employee, `marked`], [`2027-03-03`, `On Leave`, the world's company, the world's employee, `marked`], [`2027-03-04`, `On Leave`, the world's company, the world's employee, `marked`]].
+- **Olga's attendance reads every day as marked, the leave days On Leave.** `ada` (role company.owner) calls and sends employee the world's employee, and gets back [[`2027-02-26`, `Present`, the world's company, the world's employee, `marked`], [`2027-03-01`, `On Leave`, the world's company, the world's employee, `marked`], [`2027-03-02`, `On Leave`, the world's company, the world's employee, `marked`], [`2027-03-03`, `On Leave`, the world's company, the world's employee, `marked`], [`2027-03-04`, `On Leave`, the world's company, the world's employee, `marked`], [`2027-03-05`, `Present`, the world's company, the world's employee, `marked`], [`2027-03-08`, `Absent`, the world's company, the world's employee, `marked`], [`2027-03-09`, `Present`, the world's company, the world's employee, `marked`], [`2027-03-10`, `Present`, the world's company, the world's employee, `marked`]].
 
 ## How to call
 

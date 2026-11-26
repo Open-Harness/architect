@@ -20,9 +20,10 @@ move with the account. The repository does, so everything needed is here or link
 ## The releases (K28, Aaron, 21 November)
 
 - **Preview:** Gate M1 on `main`, and `@orthograph/*`, `orthograph` and the preset on npm under `next` (M1.51; Aaron
-  runs `npm publish`). Goal 3's branch lands on `main` mid-goal once Gate M1's slices are green.
-- **Beta:** the framework with every piece the superagent pulled, extracted and published, the superagent running on it (K42).
-- **1.0:** the same for every piece Capxul core pulled (K43), and the release slices (K42).
+  runs `npm publish`). K44 calls it the alpha and adds an outsider's install, `ortho new app`, the chain basics and an
+  acceptance check (Goal 18's slices 4 to 12). Goal 3's branch lands on `main` mid-goal once Gate M1's slices are green.
+- **Beta:** the framework with every piece Capxul's books, HR and payroll pulled, extracted and published, Capxul running on it (K44).
+- **1.0:** the same for every piece the rest of Capxul core pulled (K43, K44), and the release slices (K42).
 
 Aaron's aim (21 November): in about 72 hours, be ready to rebuild Capxul from the ground up on Orthograph, in
 composable pieces (plugins) that another app (Plugged In, the link-in-bio app) also uses. So: parallelise wherever the
@@ -30,9 +31,13 @@ code allows. Narrowed on 22 November: see "The lanes".
 
 ## The lanes
 
+**25 November 2026: narrowed by K44.** Two things are built: the Orthograph alpha, by Goal 18 (the framework goal, its
+slices 4 to 12), and Capxul, by Goal 16 (books, HR and payroll first). The lander keeps running; Goal 17, the
+superagent, is parked (`design/decisions/K44-two-builds.md`).
+
 **23 November 2026: replaced by K42.** A goal is one long-running agent. Goal 18 (the framework) always runs and is
 the conductor; Goal 19 (the lander) always runs and brings app work into `main`; Goal 17 (the superagent) goes first
-and Goal 16 (Capxul core) second, as the app goals; every other goal lands what it has in review and stops
+and Goal 16 (Capxul core) second, as the app goals (superseded by K44, 25 November 2026: the superagent is parked); every other goal lands what it has in review and stops
 (`design/decisions/K42-goals-are-agents.md`, section 7). The table below is the 22 November index.
 
 **22 November 2026: narrowed to the critical path** (Aaron: "Narrow to the path"). The Beta path and the two long

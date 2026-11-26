@@ -104,6 +104,8 @@ export interface Spec { readonly dir: string; readonly name: string; readonly ve
 const PLANTED: Readonly<Record<string, string>> = {
   "dist/index.js": "export {};\n", "dist/index.d.ts": "export {};\n", "src/index.ts": "export {};\n", "src/index.test.ts": "export {};\n", "test/t.ts": "export {};\n",
   "expected-failing/a.txt": "x\n", ".env": "SECRET=planted\n", "README.md": "# x\n", "generators.json": "{}\n",
+  // The starter a preset carries (Goal 18 slice 5, check 47): planted everywhere, shipped only by a package whose `files` names `files`.
+  "files/blueprint/app.ts": "export {};\n", "files/src/handler.ts": "export {};\n", "files/journeys/first.ts": "export {};\n", "files/generated/model/model.json": "{}\n",
 };
 export const workspace = (specs: ReadonlyArray<Spec>): string => {
   const root = mkdtempSync(join(parent, "ws-"));
@@ -118,7 +120,7 @@ export const workspace = (specs: ReadonlyArray<Spec>): string => {
 /** The four packages of a good preview: the front door, the preset, one more, and a private one with no licence. Every public one has a licence. */
 export const GOOD: ReadonlyArray<Spec> = [
   { dir: "orthograph", name: "orthograph", version: "0.3.0", license: "Apache-2.0" },
-  { dir: "preset", name: "@orthograph/preset", version: "0.4.0-next.1", license: "Apache-2.0", files: ["dist", "generators.json"] },
+  { dir: "preset", name: "@orthograph/preset", version: "0.4.0-next.1", license: "Apache-2.0", files: ["dist", "generators.json", "files"] },
   { dir: "alpha", name: "@orthograph/alpha", version: "1.2.3", license: "Apache-2.0", files: ["dist", "src/index.ts"] },
   { dir: "hidden", name: "@orthograph/hidden", version: "9.9.9", private: true },
 ];

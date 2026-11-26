@@ -9,7 +9,9 @@ import { DayCount } from "../../../values/attendance.ts";
 // that reason and Present for On Duty, in the request's company. A day already marked with another status is changed
 // to it, and one already marked with it is left (`create_or_update_attendance`). `marked` counts the new attendances,
 // `changed` the ones whose status changed. HRMS's refusal when no day would change (`validate_no_attendance_to_create`)
-// is left for later; holidays and leave, which HRMS skips, come with a holiday list per employee and leave (8b).
+// is left for later. A day an approved leave application covers is skipped, holidays inside it too (HRMS's
+// `should_mark_attendance` and `has_leave_record`), found with `Records.list`. Holidays, which HRMS skips too, wait on
+// `include_holidays` and an employee's holiday list (#967).
 export default Blueprint.operation(AttendanceRequest, {
   description: "Approve a request, marking each of its days.",
   payload: { attendanceRequest: AttendanceRequest.fields.id },
