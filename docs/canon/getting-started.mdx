@@ -18,15 +18,15 @@ links: [orthograph, blueprint, journeys, proof, doors, environments]
 
 This page takes you from an empty folder to an app that is proved and running, and that you can call. You install the
 `ortho` command, create an app, check its blueprint, prove it against its journeys, run it on your machine, and call
-it through the tools Orthograph generated for it. Each step is one command, and every command here is one that
-`ortho --help` lists.
+it through the tools Orthograph generated for it. Each step is one command. Every `ortho` command here is one that
+`ortho --help` lists today, except `ortho new app`, which it will list once Goal 18's slice 6 lands.
 
 You need Node 24 or later, and pnpm. The app runs on your machine with no cloud account: `ortho dev` and
 `ortho prove` start everything they need locally.
 
 ## The smallest example
 
-Install the command. Orthograph's alpha is published under the `next` tag.
+Install the command. Orthograph's alpha will be published to npm under the `next` tag (M1.51).
 
 ```sh planned=M1.51
 npm install --global @orthograph/cli@next
@@ -56,10 +56,11 @@ Run it. `ortho dev` serves the app on port 8787 until you stop it.
 ortho dev --port 8787
 ```
 
-In a second terminal, call it through its generated CLI. The CLI is named after the app, so here it is `my-links`.
+In a second terminal, from the app's folder, call it through its generated CLI. The CLI is named after the app, so here
+it is `my-links`, and Node runs it from its generated source.
 
 ```sh planned=M2.09
-MY_LINKS_URL=http://127.0.0.1:8787 pnpm exec my-links --help
+MY_LINKS_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts --help
 ```
 
 An operation that needs a signed-in caller also needs a session token: set `MY_LINKS_TOKEN` to the token a sign-in gave
@@ -70,9 +71,9 @@ you, beside `MY_LINKS_URL`.
 `ortho generate` writes the generated code from the blueprint, and `ortho new app` has already run it once, so a new
 app comes with all of it in its `generated/` folder. Three of the generated tools are for calling the app.
 
-- The generated CLI has one command per thing and one subcommand per operation, as `my-links <thing> <operation>`.
+- The generated CLI has one command per thing and one subcommand per operation, as `<thing> <operation>` after `node generated/cli/src/main.ts`.
 - The generated SDK is a typed client: you give its `layer` the app's address and, when you have one, a session token.
-- The generated MCP serves one tool per operation, at the app's `/mcp` path, for an agent to call.
+- The generated MCP serves one tool per operation an agent may call, at the app's `/mcp` path.
 
 The generated CLI reads two variables, `<APP>_URL` and `<APP>_TOKEN`. `<APP>_URL` is the address of the running app, and
 `<APP>_TOKEN` is the session token it signs in with when it is set. The prefix is the app's name in upper case, with each
