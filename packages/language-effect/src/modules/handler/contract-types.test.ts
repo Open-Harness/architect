@@ -53,7 +53,7 @@ describe("#1133: a handler runs its contracts with their types, and a fill's han
     expect(refusals).toEqual([
       "code-no-such-output.ts", "fill-contract-error-not-its-own.ts", "fill-no-such-input.ts", "fill-no-such-step.ts", "fill-other-contract-error.ts", "fill-output-missing.ts", "fill-own-output-missing.ts",
       "fill-undeclared-error.ts", "fill-wrong-output.ts", "no-such-contract-step.ts", "quick-other-contract-error.ts", "runner-other-contract.ts",
-      "runner-stranger.ts", "submit-stranger.ts", "tax-maybe-undefined.ts", "tax-missing-input.ts", "tax-wrong-input.ts",
+      "runner-stranger.ts", "submit-stranger.ts", "tax-extra-input.ts", "tax-maybe-undefined.ts", "tax-missing-input.ts", "tax-wrong-input.ts",
     ]);
   });
   for (const file of refusals) {

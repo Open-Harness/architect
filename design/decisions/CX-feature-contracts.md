@@ -95,7 +95,9 @@ spend (#1133).
 7. **One filler per contract per app.** Two, from two features or two fill files of one, are refused. Choosing among
    several by a row's data, such as each employee's place of work, is a later decision of its own
    (`CX-composable-pieces.md`, section 2).
-8. **What the compiler refuses**, each naming the files it is about, and so both features:
+8. **What the compiler refuses**, each naming the files it is about, and so both features. A fill refused for who fills
+   it, or for what it holds or writes, still fills its contract: no "required contract unfilled" refusal is added on top
+   of its own, so a project hears once what is wrong with its filler.
    - a contract step in an operation of the app whose owner isn't mounted, word for word:
      `<operation file>: step <key> runs a contract of <owner package>, which isn't mounted: mount it (ortho add feature <owner package>)`;
    - a `call`, `contract` or `wait` step in a fill, word for word:
@@ -172,6 +174,10 @@ acme's own files don't move (the checks build their own copies), so G12's paired
   by the model's errors, so leaving the contract's errors out of the runtime's refusal set shows only in metrics.
 - A fill whose writes live in another store than the operation that runs it can't commit with it (K3 item 5). The
   compiler should refuse it; no check plants one, since the scratch features have one store.
+- A fill handler that answers an extra output field compiles: TypeScript checks no excess property on an output it
+  infers (an operation's handler is the same), and the runtime drops the field when it checks the output against the
+  contract (call 5). A missing or wrongly typed output field is a type error, and is judged. An extra field given to a
+  contract's runner is a type error (an object literal argument), and is judged.
 - A defect from a wrong input or output (call 5) isn't planted at the door: a handler that sends a wrong shape is the
   same defect an operation's wrong answer is, judged for operations in `language-effect`.
 
@@ -181,5 +187,8 @@ Nothing. Gap 3's draft in `CX-composable-pieces.md` (section 2, "contracts fille
 stands; this record says how it is spelt (`Blueprint.contract`, `Blueprint.fill`, `Blueprint.step.contract`) and what
 the model, the compiler and the runtime do.
 
-Once #1193 (CX-feature-ownership) is on `main`, this record's pull request merges it in and adds "a fill's steps" to
-CX-feature-ownership call 2's list of what writes a thing, with a line here for each phrase that changes.
+Once #1193 (CX-feature-ownership) is on `main`, this record's pull request merges it in and moves three things into
+CX-feature-ownership, the one owner of who may write what: "a fill's steps" joins its call 2's list of what writes a
+thing; the sentence for a fill writing the app's thing, and the leaving out of a way out that would run the fill's own
+contract again, join its call 6. Call 2 here then points at those calls instead of saying them, and a line here names
+each phrase that changes.

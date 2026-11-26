@@ -390,8 +390,7 @@ describe("15 a contract one feature declares and another fills runs in the calle
     expect(rowsOf(root, name, "tax-line"), "nothing wrote a tax line").toEqual([]);
     expect(readdirSync(join(root, "generated"), { recursive: true }).map(String).filter((p) => /tax-line|payroll-tax-us/.test(p)), "nothing generated is the unmounted filler's").toEqual([]);
 
-    // The same app with the contract required: check refuses it, naming the contract.
-    // The same app with the contract required: generate refuses it and makes nothing, then check refuses it too, each with the line that
+    // The same app with the contract required: generate refuses it and changes no model, then check refuses it too, each with the line that
     // names the contract and its file and says to mount a feature that fills it.
     const required = app(["payroll"], true);
     for (const command of ["generate", "check"] as const) {
