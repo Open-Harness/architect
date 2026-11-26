@@ -1,0 +1,9 @@
+$ ortho watch --env test
+watch test  last 1h  from files .ortho/environments/test/telemetry
+handle.claim p95 41ms (budget 150ms) ✔
+profile.get p95 27ms (budget 150ms) ✔
+calls: handle.claim 2  profile.get 28
+refusals: HandleAlreadyOwned 1 (HN-002)
+defects: none
+evals: answer shape ✔  declared errors ✔  steps ✔  explainability ✔  (judged by prove only: who may call, machine path, events, coverage)
+drift none

@@ -1,0 +1,3 @@
+$ ortho watch --env test
+watch couldn't run: test has recorded no telemetry (.ortho/environments/test/telemetry is not there): `ortho env up test`, send it some traffic, then watch
+exit 2

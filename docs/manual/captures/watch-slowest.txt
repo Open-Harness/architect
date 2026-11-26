@@ -1,0 +1,18 @@
+$ ortho telemetry trace 2f5966e72cc1720abe1e268d6d983fd6 --env test
+trace 2f5966e72cc1720abe1e268d6d983fd6  9 spans
+profile.get  36 ms
+  profile.get.load  28 ms  step database
+    · profile.get.load start
+    · profile.get.load end
+    sqlite  3.0 ms
+    sqlite  4.0 ms
+  profile.get.load  7.0 ms  step database
+    · profile.get.load start
+    · profile.get.load end
+    sqlite  4.0 ms
+    sqlite  2.0 ms
+  profile.get.load  1.0 ms  step database
+    · profile.get.load start
+    · profile.get.load end
+  profile.get.commit  0.0 ms  step commit
+· Sent HTTP response

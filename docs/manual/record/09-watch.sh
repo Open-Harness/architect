@@ -5,11 +5,18 @@
 tool() { (cd "$app" && node "$repo/packages/cli/src/main.ts" "$@"); }
 forget_test() { rm -rf "$app/.ortho/environments/test" "$app/.ortho/tasks"; }
 trap 'tool env down test > /dev/null 2>&1 || true; forget_test; finish' EXIT
-read_page() { curl -fs -o /dev/null -X POST "$url/profile/get" -H content-type:application/json -d '{"handle":"firstpage"}'; }
+read_page() { curl -s -o /dev/null -X POST "$url/profile/get" -H content-type:application/json -d '{"handle":"firstpage"}'; }
 forget_test
 # The budgets as a full prove judges them, and what watch makes of the traces that run left.
 ortho watch-prove.txt prove
+# Three calls to the app as `ortho dev` runs it. They are real calls, and the next watch does not count them.
+start_app
+for _ in 1 2 3; do read_page; done
+sleep 5 # the Collector writes its files a moment after the call
+stop
+rm "$out/dev.txt" # chapter 7's recording, which this section does not replace
 ortho watch-local.txt watch --env local
+ortho watch-local-up.txt env up local
 # An environment that has recorded nothing, then the same one started.
 ortho watch-nothing.txt watch --env test
 # An environment runs a committed revision, so it is refused while anything is uncommitted: here, one stray file.
