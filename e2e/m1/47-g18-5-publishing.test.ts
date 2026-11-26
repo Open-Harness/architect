@@ -311,7 +311,7 @@ describe("47 (e) the preset's workspace exempts orthograph and @orthograph/* fro
   // The preset is run as `create-nx-workspace` runs it: `Starter.write` into a tree that already holds what Nx wrote.
   const written = async (existing: string | undefined): Promise<string> => {
     const { createTreeWithEmptyWorkspace } = await import("nx/src/generators/testing-utils/create-tree-with-empty-workspace.js");
-    const { Starter } = await import("../../packages/preset/src/index.ts");
+    const { Starter } = (await import(/* @vite-ignore */ join(repo, "packages/preset/src/index.ts"))) as typeof import("../../packages/preset/src/index.ts");
     const tree = createTreeWithEmptyWorkspace();
     if (existing !== undefined) tree.write("pnpm-workspace.yaml", existing);
     Starter.write(tree, { name: "bakery" }, Starter.read(join(repo, "examples/starter"), "0.1.0-next.1"));
