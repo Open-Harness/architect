@@ -274,6 +274,8 @@ Live docs:
 - `examples/capxul/blueprint/assets/usdc.ts`: "The one dollar asset every Capxul company keeps its books in, for now" → "USDC, held in a Safe or at Bridge, its own asset beside US dollars (CX-money-global-payroll)"
 - `docs/canon/status.md`: "| books | none | `packages/orthograph/src/modules/values`" → "| books | goal-16 | `packages/orthograph/src/modules/values`"
 - `docs/canon/status.md`: "deferred by Aaron's call of 24 November 2026: every Capxul amount is USDC for now (`CX-grill.md`, section 3, #926); unclaimed while parked, its checks draft #923; `M6-money.md` leaves a per-row currency for later; 35 doctypes carry exchange rates; base units stand, and a mismatch is Orthograph's money-units question (`CX-grill.md`, section 3); after M6.10" → "unparked and claimed by CX-money-global-payroll; its checks draft #923, rewritten to it; `M6-money.md`'s per-row currency is to be built here; 35 doctypes carry exchange rates; after M6.10"
+- `design/later.md`: "a currency taken from a field on the row, and the portal's formatting, are later" → "a currency taken from a field on the row is built for Capxul (#882, CX-money-global-payroll); the portal's formatting is later"
+- `docs/canon/status.md`: "signed money waits while every amount is USDC" → "signed money comes with the currency slice (CX-money-global-payroll)"
 
 Dated records, each gaining "(Superseded by CX-money-global-payroll, <date>)" beside the words:
 

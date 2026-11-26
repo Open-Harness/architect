@@ -59,7 +59,7 @@ belongs to, and why it waits.
 - **An intent key on actors** (K21): `idempotent: { by }` for things that `lives: "actor"` waits with idempotency by
   request on actors, below.
 - **Money, what is left** (ledger THI-07, `design/decisions/M6-money.md`): an amount that knows its asset is decided in
-  M6-money, 21 November 2026; a currency taken from a field on the row, and the portal's formatting, are later.
+  M6-money, 21 November 2026; a currency taken from a field on the row is built for Capxul (#882, CX-money-global-payroll); the portal's formatting is later.
 - **Named value kinds** (ledger THI-08, K24): a web address, a pattern, a choice, yes or no, carried into the model so
   every output can tell them apart and a form picks the right input. Waits for a design pass, beside THI-02.
 - **Approval on an operation** (ledger OPS-15, K24): a declared mark that the action asks once and the page's agent
