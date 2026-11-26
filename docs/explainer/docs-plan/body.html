@@ -1,0 +1,156 @@
+<div class="wrap">
+  <div class="eyebrow">Orthograph · a plan, before anything is written</div>
+  <h1>The docs, and a film series to go with them</h1>
+  <p class="lede">Real docs for someone who directs agents and does not write the code. They need three things: the primitives and how each works, how to read a blueprint, and how to manage a system while agents build it over months. Every important step gets a film.</p>
+  <div class="legend">
+    <span><i class="st run">real</i> runs today, so it can be recorded</span>
+    <span><i class="st dec">decided</i> can be explained, shown as design</span>
+    <span><i class="st new">practice</i> how this repo works, not yet a product feature</span>
+    <span><i class="st open">missing</i> does not exist yet</span>
+  </div>
+
+  <h2>Do I have enough to do this?</h2>
+  <div class="verdict">
+    <p class="big">Enough for most of it. One hole sits exactly where you care most.</p>
+    <p>The repo has a real command for nearly every step of running a system: describing, checking, proving, debugging with a trace, staging, promoting, watching, and working out what a change touches. Those can be filmed from real runs, the way the first film was.</p>
+    <p><b>The hole is "working with your agents".</b> A new Orthograph app is given nothing for an agent: no instructions file, no skills, no roles. The repo plans one, the agent kit, and it is parked until after 1.0. What exists is this repository's own way of working, which is good and is proved every day, but it is our practice and not something an app developer is handed.</p>
+    <p>So the docs would have to write that part down for the first time. I think that is the right thing to do, and the same words can serve both readers: a manual page for you, and a skill file for your agent.</p>
+  </div>
+  <div class="board">
+    <div class="card"><div class="top"><i class="st run">real</i></div><blockquote>Can be recorded today</blockquote>
+      <p>Adding things, operations and journeys. Check, generate, the model. A brief for a builder. Prove, including an empty run that fails, one journey alone, and only what changed. Running locally. Printing one trace. Evals over recorded telemetry. Environments, secrets, bringing staging up, promoting, taking it down. Impact, version, publish.</p>
+      <p>Examples that really prove: Plugged In with seven journeys, the starter, and Capxul with eighty-three.</p></div>
+    <div class="card"><div class="top"><i class="st dec">decided</i> <i class="st new">practice</i></div><blockquote>Can be explained, and shown as design or as our own practice</blockquote>
+      <p>Journeys written first by a different agent. The builder, the reviewer and the spike as roles. Ratchets that only shrink. The climb. Lanes, claims and the board. The chain side. Everything in K46.</p>
+      <p>The canon has 15 of its 33 pages. Journeys, proof, roles, environments, the portal, secrets and sign-in are among the missing ones, and the manual needs all of them.</p></div>
+    <div class="card"><div class="top"><i class="st open">missing</i></div><blockquote>Does not exist</blockquote>
+      <p>Anything that hands a new app's agent its instructions. One command that makes a new app. The factory, where many agents build from a board. A step in the product for planning before code. A site the docs are served from.</p>
+      <p>The docs can say plainly that these are not there. They should not pretend.</p></div>
+  </div>
+
+  <h2>The shape: three parts, and one of them is the centre</h2>
+  <p>Not the full Diátaxis split. You said it: the reader needs the primitives, how to read a blueprint, and how to manage the thing. So that is the whole table of contents.</p>
+  <div class="opts">
+    <div class="opt"><span class="num">Part one · the centre</span><h3>The manual</h3>
+      <p><b>How to build a real thing over time, with your agents.</b> It follows the life of a system, from an idea to a change made months after launch. Each chapter says what you do, what your agent does, what you read, and what goes wrong. Each has a film.</p></div>
+    <div class="opt"><span class="num">Part two · short</span><h3>Reading a blueprint</h3>
+      <p><b>One guided read of a real one.</b> What each kind of line promises, and what to look for when an agent hands you a change. First Plugged In, which is small. Then a slice of Capxul, which is not.</p></div>
+    <div class="opt"><span class="num">Part three · look things up</span><h3>The primitives</h3>
+      <p><b>One card for each, with many examples.</b> What it is, the smallest example, the variants, what falls out of it, how it refuses, and whether it runs today. This is the canon, finished, with its commands and its API pages generated from the code.</p></div>
+  </div>
+
+  <h2>The manual, chapter by chapter</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Chapter</th><th>You</th><th>Your agent</th><th>What you read</th><th>On film</th><th></th></tr>
+    <tr><td class="q">1 · Plan it, before any code</td><td class="a">say the system on one page: the things, who may do what, what must stay true, where the joins are</td><td class="a">draws it as a board you can argue with, and grades the options</td><td class="a">the board</td><td class="a">this session's own board, start to finish</td><td><i class="st new">practice</i></td></tr>
+    <tr><td class="q">2 · Describe it</td><td class="a">decide, one question at a time</td><td class="a">adds things and operations, leaving marked blanks where you haven't decided</td><td class="a">the blueprint, and the list of blanks</td><td class="a">an empty folder becomes a checked description</td><td><i class="st run">real</i></td></tr>
+    <tr><td class="q">3 · Spike what you doubt</td><td class="a">name the one question</td><td class="a">answers it in throwaway code, and writes up what it found</td><td class="a">one page: the question, the answer, the risks</td><td class="a">a real spike from this repo, read aloud</td><td><i class="st new">practice</i></td></tr>
+    <tr><td class="q">4 · Say what done means</td><td class="a">agree the stories</td><td class="a">a different agent from the builder writes the journeys, and shows they fail on empty handlers</td><td class="a">the journeys, as stories</td><td class="a">the stubs appear, and the first run is red on purpose</td><td><i class="st run">real</i></td></tr>
+    <tr><td class="q">5 · Build until green</td><td class="a">hand over one brief at a time</td><td class="a">writes the handler, proves, fixes, proves again</td><td class="a">which steps are green, and the list of what is still red</td><td class="a">a real climb from red to green</td><td><i class="st run">real</i></td></tr>
+    <tr><td class="q">6 · Review without reading the code</td><td class="a">ask what changed in the description, and what it touched</td><td class="a">a reviewer that wrote none of it checks the change against its brief</td><td class="a">the change to the blueprint, the impact, the verdicts</td><td class="a">one change, reviewed in five minutes</td><td><i class="st run">real</i> <i class="st new">practice</i></td></tr>
+    <tr><td class="q">7 · Run it, and debug it</td><td class="a">try it, and say what looks wrong</td><td class="a">finds the call's trace and reads it back to you</td><td class="a">one trace: who called, each step, the refusal and its code</td><td class="a">a refusal followed from the screen to the line that gave it</td><td><i class="st run">real</i></td></tr>
+    <tr><td class="q">8 · Stage it</td><td class="a">say where it runs and how people sign in</td><td class="a">brings staging up, runs the journeys against it, promotes, takes it down</td><td class="a">the environment file, and the run's result</td><td class="a">one command up, the journeys green on a real address</td><td><i class="st run">real, with your yes</i></td></tr>
+    <tr><td class="q">9 · Watch it</td><td class="a">decide what "healthy" means: how fast, how often refused</td><td class="a">runs the evals over what was recorded, and tells you what moved</td><td class="a">each operation against its own time budget</td><td class="a">a slow operation found from telemetry alone</td><td><i class="st run">real</i> <i class="st dec">portal later</i></td></tr>
+    <tr><td class="q">10 · Change it, months later</td><td class="a">change one rule in the description</td><td class="a">says what went stale, rebuilds it, and proves only that</td><td class="a">the impact: stale, live, still proven</td><td class="a">a rule change on a running app</td><td><i class="st run">real</i></td></tr>
+    <tr><td class="q">11 · More than one agent</td><td class="a">rank the work, and settle collisions</td><td class="a">each takes a lane, claims its paths, and lands slices that end green</td><td class="a">the board, and a list of red checks that may only shrink</td><td class="a">this repo as the worked example. The factory shown as design</td><td><i class="st new">practice</i> <i class="st open">factory</i></td></tr>
+  </table></div>
+
+  <h2>Working with your agents</h2>
+  <div class="cols">
+    <div>
+      <p>This runs through every chapter, and it also gets a page of its own. It is the part nobody has written.</p>
+      <div class="tablewrap"><table class="tight">
+        <tr><th>Role</th><th>What it may touch</th><th>What you hand it</th><th>How you check it</th></tr>
+        <tr><td class="q">Designer</td><td class="a">the plan, and the blueprint</td><td class="a">the problem, in your words</td><td class="a">you read the blueprint</td></tr>
+        <tr><td class="q">Author</td><td class="a">journeys and checks only</td><td class="a">the blueprint</td><td class="a">its checks fail on empty handlers</td></tr>
+        <tr><td class="q">Builder</td><td class="a">handlers only, never journeys</td><td class="a">one brief</td><td class="a">the journeys go green</td></tr>
+        <tr><td class="q">Reviewer</td><td class="a">nothing. It reads</td><td class="a">the change and its brief</td><td class="a">it wrote none of what it reviews</td></tr>
+        <tr><td class="q">Spike</td><td class="a">throwaway code</td><td class="a">one question</td><td class="a">a page with the answer</td></tr>
+      </table></div>
+    </div>
+    <div>
+      <h3>What I would add to make this real</h3>
+      <ul>
+        <li><b>Write it once, in two forms.</b> Each role is a manual page for you and a skill file for your agent, made from the same words. The page tells you what to expect. The skill tells the agent what to do.</li>
+        <li><b>Give a new app its instructions file.</b> Today it gets none. This is the agent kit the repo parked, and the docs can't honestly teach "work with your agent" without at least a small one.</li>
+        <li><b>Be plain about what is ours.</b> Ratchets, lanes and the board are how this repo builds Orthograph. The docs should teach them as a method, and say they are not yet commands.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>The primitives</h2>
+  <p>One card each. Green ones have a canon page already. The rest have to be written, and seven of them the manual can't do without.</p>
+  <div class="out">
+    <div><b>Thing</b><span class="d">a noun, its fields, where it lives</span><i class="st run">page exists</i></div>
+    <div><b>Machine</b><span class="d">its states and moves, and what makes each move</span><i class="st run">page exists</i></div>
+    <div><b>Operation</b><span class="d">one call, one commit, who may make it</span><i class="st run">page exists</i></div>
+    <div><b>Rule</b><span class="d">what must stay true, refused before the commit</span><i class="st run">page exists</i></div>
+    <div><b>Handler</b><span class="d">the only freehand code, and its frame</span><i class="st run">page exists</i></div>
+    <div><b>Store, and where data lives</b><span class="d">database, actor, chain</span><i class="st run">page exists</i></div>
+    <div><b>Door</b><span class="d">every way in to an operation</span><i class="st run">page exists</i></div>
+    <div><b>Trace</b><span class="d">what one call did, step by step</span><i class="st run">page exists</i></div>
+    <div><b>Plugin</b><span class="d">the five kinds, and what comes free</span><i class="st run">page exists</i></div>
+    <div><b>Role</b><span class="d">who may call, said as data</span><i class="st open">to write · needed</i></div>
+    <div><b>Journey</b><span class="d">proof, written as a story</span><i class="st open">to write · needed</i></div>
+    <div><b>Proof</b><span class="d">worlds, evidence, verdicts</span><i class="st open">to write · needed</i></div>
+    <div><b>Environment</b><span class="d">where it runs, and how it gets there</span><i class="st open">to write · needed</i></div>
+    <div><b>Secret</b><span class="d">declared, per environment</span><i class="st open">to write · needed</i></div>
+    <div><b>Sign-in</b><span class="d">who a caller is</span><i class="st open">to write · needed</i></div>
+    <div><b>Portal</b><span class="d">the system as you described it, live</span><i class="st open">to write · needed</i></div>
+    <div><b>Event, and what reacts to it</b><span class="d">the only thing that crosses places</span><i class="st open">to write</i></div>
+    <div><b>Time</b><span class="d">one clock a world can move</span><i class="st open">to write</i></div>
+    <div><b>Stand-in, adapter, view</b><span class="d">the outside world, and lists across stores</span><i class="st open">to write</i></div>
+    <div><b>Commands, the API, the glossary</b><span class="d">generated from the code, never typed</span><i class="st open">to generate</i></div>
+  </div>
+
+  <h2>The film series</h2>
+  <p>One app is built across the whole series, so each film starts where the last one stopped. Each is four to seven minutes. Real runs are recorded and replayed, as in the first film. Design is labelled as design.</p>
+  <div class="out">
+    <div><b>0 · Why this exists</b><span class="d">The morning after. Already made, as the opening of the Capxul Lite film.</span><i class="st run">made</i></div>
+    <div><b>1 · Plan before code</b><span class="d">An idea becomes a one-page system on a board, with the hard choices graded.</span><i class="st new">practice</i></div>
+    <div><b>2 · From plan to blueprint</b><span class="d">An empty folder. Things and operations are added. Blanks are marked, and the check lists them.</span><i class="st run">real</i></div>
+    <div><b>3 · Read a blueprint in ten minutes</b><span class="d">What each line promises, on a real one.</span><i class="st run">real</i></div>
+    <div><b>4 · Spike what you doubt</b><span class="d">One question, throwaway code, a page with the answer.</span><i class="st new">practice</i></div>
+    <div><b>5 · Journeys first</b><span class="d">A second agent writes the stories. The first run is red on purpose.</span><i class="st run">real</i></div>
+    <div><b>6 · The builder climbs</b><span class="d">One brief, one handler, red to green.</span><i class="st run">real</i></div>
+    <div><b>7 · Review without reading the code</b><span class="d">The description's change, its impact, the verdicts.</span><i class="st run">real</i></div>
+    <div><b>8 · Run it, break it, read the trace</b><span class="d">A refusal followed from the screen to its cause.</span><i class="st run">real</i></div>
+    <div><b>9 · Staging</b><span class="d">One command up. The journeys run against a real address. Promote. Take it down.</span><i class="st run">real, with your yes</i></div>
+    <div><b>10 · Watching a live system</b><span class="d">Telemetry, each operation against its budget, what moved this week.</span><i class="st run">real</i></div>
+    <div><b>11 · A change, months later</b><span class="d">One rule changes. What went stale, what is live, what is still proven.</span><i class="st run">real</i></div>
+    <div><b>12 · Many agents at once</b><span class="d">Lanes, claims, the board, a red list that only shrinks.</span><i class="st new">practice</i></div>
+    <div><b>13 and 14 · On a chain</b><span class="d">The two Capxul Lite films, as the advanced pair.</span><i class="st dec">made, as design</i></div>
+  </div>
+
+  <h2>How I would build it</h2>
+  <div class="cols">
+    <div>
+      <h3>A pilot first, then the workflow</h3>
+      <ul>
+        <li><b>Pilot.</b> Three chapters with their films, to fix the format before anything is multiplied: journeys first, the builder climbs, and run it and read the trace. All three are real, and together they are the heart of the method.</li>
+        <li><b>Then fan out.</b> You suggested a workflow, and this is the right shape for one. A writer for each chapter and each card, working at once. A second agent that checks every page against the code, the way the canon's check already does for quotes. One agent per film for the pictures, as I did today.</li>
+        <li><b>What stays with me.</b> The outline, every narration script, and the last look at every film.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>The rules I would hold it to</h3>
+      <ul>
+        <li><b>The canon stays the one place a word is explained.</b> The manual links to it and never explains a primitive again.</li>
+        <li><b>Nothing is typed that can be read.</b> Code is quoted from the repo and checked. Output is recorded from a real run. Commands and the API are generated.</li>
+        <li><b>Every page says how it stands</b>: runs today, decided, practice, or missing.</li>
+        <li><b>No filler.</b> A chapter has what you do, what your agent does, what you read, what goes wrong, and a film. Nothing else.</li>
+      </ul>
+      <p>It is a large job: about twelve chapters, twenty cards and twelve films. Roughly thirty agents over several hours, and about ten minutes of rendering for each film.</p>
+    </div>
+  </div>
+
+  <h2>Six decisions for you</h2>
+  <ol class="ask">
+    <li><b>Which app is built across the series?</b><span>I would use Plugged In. It is the canon's own example, it is small, and it really proves. The other choice is a new small app started from nothing on camera.</span></li>
+    <li><b>Which agent is on screen?</b><span>Claude Code only, or kept neutral so it reads the same for Codex and the others. The repo itself says any harness.</span></li>
+    <li><b>Do we write the agent kit now, as docs first?</b><span>A new app gets no instructions for an agent today, and the repo has parked the kit until after 1.0. I think "working with your agents" needs at least a small one.</span></li>
+    <li><b>Where do the docs live?</b><span>I would finish the canon as the one source, add the manual beside it, and publish it as a page you can open now. A real site can come later.</span></li>
+    <li><b>May the staging film use a real deployment?</b><span>It needs a cloud credential and a little money, inside your ten dollars a day. Without your yes, I film the plan-only run, which needs neither.</span></li>
+    <li><b>Pilot first, then the workflow?</b><span>Three chapters and three films to fix the format, then the rest in parallel.</span></li>
+  </ol>
+</div>
