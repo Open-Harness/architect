@@ -12,6 +12,7 @@ type Hex = `0x${string}`;
 export const SafeContracts = {
   factory: "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67",
   singleton: "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762",
+  multiSend: "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526",
   moduleSetup: "0x2dd68b007B46fBe91B9A7c3EDa5A7a1063cB5b47",
   module4337: "0x75cf11467937ce3F2f357CE24ffc3DBF8fD5c226",
 } as const;
@@ -40,20 +41,26 @@ export const checksummed = (address: string): Hex => {
   return `0x${[...lower].map((c, i) => (parseInt(hash[i]!, 16) >= 8 ? c.toUpperCase() : c)).join("")}`;
 };
 
-/** The address in a CAIP-10 account, `eip155:<chain>:0x…`. */
-const addressOf = (account: string): Hex => account.split(":")[2] as Hex;
+
+/** Bytes given as hex, padded on the right to a whole number of words. */
+const padded = (h: string): string => h.padEnd(Math.ceil(h.length / 64) * 64, "0");
+/** `bytes` as the ABI writes it in a call's tail: its length, then its bytes padded to a whole word. */
+const bytesTail = (h: string): string => word(BigInt(h.length / 2)) + padded(h);
 
 /**
- * `setup([owner], 1, SafeModuleSetup, enableModules([Safe4337Module]), Safe4337Module, 0, 0, 0)`: one owner, the 4337
- * module on, no payment. ABI-encoded by hand for this one shape: the head's eight words (the two dynamic arguments as
- * offsets, 0x100 and 0x140), then the owners array and the `enableModules` call as bytes padded to a whole word.
+ * `setup([owner], 1, MultiSend, multiSend(<one packed delegatecall>), Safe4337Module, 0, 0, 0)`: one owner, threshold 1,
+ * and at setup one delegatecall, through MultiSend, of `SafeModuleSetup.enableModules([Safe4337Module])`, with the 4337
+ * module as the fallback handler and no payment (CX-safe, "The address before deploy", as confirmed on #1161). The
+ * packed transaction is MultiSend's: operation (1 byte, 1 = delegatecall) ‖ to (20) ‖ value (32) ‖ data length (32) ‖
+ * data. ABI-encoded by hand for this one shape; tests/safe-address.test.ts holds it to the factory's own answers.
  */
 export const initializer = (owner: string): Hex => {
   const enable = selector("enableModules(address[])") + word(0x20n) + word(1n) + word(SafeContracts.module4337);
-  const enableBytes = word(BigInt(enable.length / 2)) + enable.padEnd(Math.ceil(enable.length / 64) * 64, "0");
+  const packed = "01" + SafeContracts.moduleSetup.slice(2).toLowerCase() + word(0n) + word(BigInt(enable.length / 2)) + enable;
+  const multiSend = selector("multiSend(bytes)") + word(0x20n) + bytesTail(packed);
   return `0x${selector("setup(address[],uint256,address,bytes,address,address,uint256,address)")}${[
-    word(0x100n), word(1n), word(SafeContracts.moduleSetup), word(0x140n), word(SafeContracts.module4337), word(ZERO), word(0n), word(ZERO),
-    word(1n), word(owner), enableBytes,
+    word(0x100n), word(1n), word(SafeContracts.multiSend), word(0x140n), word(SafeContracts.module4337), word(ZERO), word(0n), word(ZERO),
+    word(1n), word(owner), bytesTail(multiSend),
   ].join("")}`;
 };
 
@@ -69,20 +76,26 @@ export const saltNonceOf = (namespace: string, id: string): bigint => BigInt(`0x
 
 const local = SafeSettings.local;
 
-/** The local environment's bootstrap address, as the CAIP-10 account a personal Safe's first owner is. */
-export const localBootstrap = `${local.chain}:${checksummed(local.bootstrap)}`;
+type SafeRecord = { readonly person?: unknown; readonly saltNonce?: unknown; readonly signer?: unknown; readonly firstOwner?: unknown; readonly account?: unknown; readonly state?: unknown };
+
+/** What is wrong with a Safe's salt nonce as `personal-safe.get` answers it in the local environment, or `""`: it is worked out from its own person's id. */
+export const saltProblem = (safe: SafeRecord): string => {
+  if (typeof safe.person !== "string") return `no person to work the salt from, but ${String(safe.person)}`;
+  const saltNonce = saltNonceOf(local.namespace, safe.person);
+  return safe.saltNonce === saltNonce ? "" : `salt nonce ${String(safe.saltNonce)}, but keccak256("${local.namespace}:${safe.person}") is ${saltNonce}`;
+};
 
 /**
- * What is wrong with a Safe's record as `safe.get` answers it in the local environment, or `""` when nothing is: its
- * salt nonce is worked out from its own person's or company's id, and its account is the factory's address for its
- * first owner and that salt nonce, on the local chain. A journey checks `""`, so a failure names what it expected.
+ * What is wrong with a claimed Safe, or `""`: its salt nonce is its person's, its signer is checksummed, its first
+ * owner is that signer on the local chain, and its account is the factory's address for that one owner and the salt
+ * nonce, on the local chain. A journey checks `""`, so a failure names what it expected.
  */
-export const addressProblem = (safe: { readonly kind?: unknown; readonly person?: unknown; readonly company?: unknown; readonly account?: unknown; readonly firstOwner?: unknown; readonly saltNonce?: unknown }): string => {
-  const id = safe.kind === "personal" ? safe.person : safe.kind === "company" ? safe.company : undefined;
-  if (typeof id !== "string") return `kind ${String(safe.kind)} with no id of its own to work the salt from`;
-  if (typeof safe.firstOwner !== "string" || !safe.firstOwner.startsWith(`${local.chain}:0x`)) return `first owner ${String(safe.firstOwner)} is not an account on ${local.chain}`;
-  const saltNonce = saltNonceOf(local.namespace, id);
-  if (safe.saltNonce !== saltNonce) return `salt nonce ${String(safe.saltNonce)}, but keccak256("${local.namespace}:${id}") is ${saltNonce}`;
-  const expected = `${local.chain}:${predictAddress(addressOf(safe.firstOwner), saltNonce)}`;
-  return safe.account === expected ? "" : `account ${String(safe.account)}, but the factory gives ${expected} for owner ${safe.firstOwner} and salt nonce ${saltNonce}`;
+export const claimProblem = (safe: SafeRecord): string => {
+  const salt = saltProblem(safe);
+  if (salt !== "") return salt;
+  if (typeof safe.signer !== "string" || safe.signer !== checksummed(safe.signer)) return `signer ${String(safe.signer)} is not a checksummed address`;
+  const owner = `${local.chain}:${safe.signer}`;
+  if (safe.firstOwner !== owner) return `first owner ${String(safe.firstOwner)}, but the signer on ${local.chain} is ${owner}`;
+  const expected = `${local.chain}:${predictAddress(safe.signer, safe.saltNonce as bigint)}`;
+  return safe.account === expected ? "" : `account ${String(safe.account)}, but the factory gives ${expected} for owner ${safe.signer} and salt nonce ${String(safe.saltNonce)}`;
 };

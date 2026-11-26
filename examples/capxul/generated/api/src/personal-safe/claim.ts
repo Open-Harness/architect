@@ -1,0 +1,14 @@
+// Generated from blueprint/things/personal-safe/verbs/claim.ts. Do not edit.
+import { HttpApiEndpoint } from "effect/http-api";
+import { wireStruct } from "orthograph/server";
+import declaration from "../../../../blueprint/things/personal-safe/verbs/claim.ts";
+import { SignerNotProven, SafeAlreadyOpen, PersonalSafeNotUnclaimed, NotAllowed, IdempotencyConflict } from "../errors.ts";
+
+export { declaration };
+export const endpoint = HttpApiEndpoint.post("claim", "/personal-safe/claim", {
+  payload: declaration.payloadSchema,
+  // What the wire carries: the declared answer, the fields not every caller is shown optional. The server cuts each answer by who is asking.
+  // Typed as the declaration types it: the schema is built from fields known only at run time, which TypeScript cannot follow.
+  success: wireStruct(declaration.answer, { issuing: true }) as unknown as typeof declaration.answerSchema,
+  error: [SignerNotProven, SafeAlreadyOpen, PersonalSafeNotUnclaimed, NotAllowed, IdempotencyConflict],
+});

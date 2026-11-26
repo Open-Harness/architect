@@ -440,11 +440,6 @@
     "kind": "refers"
   },
   {
-    "from": "safe.company",
-    "to": "company.id",
-    "kind": "refers"
-  },
-  {
     "from": "salary-component.company",
     "to": "company.id",
     "kind": "refers"
@@ -2540,54 +2535,39 @@
     "kind": "allowed-by"
   },
   {
-    "from": "safe.get",
-    "to": "safe",
-    "kind": "reads"
-  },
-  {
-    "from": "safe.get",
-    "to": "safe.holder",
-    "kind": "allowed-by"
-  },
-  {
-    "from": "safe.get",
-    "to": "company.owner",
-    "kind": "allowed-by"
-  },
-  {
-    "from": "safe.list",
-    "to": "safe",
-    "kind": "reads"
-  },
-  {
-    "from": "safe.list",
-    "to": "company.owner",
-    "kind": "allowed-by"
-  },
-  {
-    "from": "safe.record",
-    "to": "safe",
+    "from": "personal-safe.claim",
+    "to": "personal-safe",
     "kind": "acts-on"
   },
   {
-    "from": "safe.record",
-    "to": "safe.PersonalSafeRecorded",
+    "from": "personal-safe.claim",
+    "to": "personal-safe.PersonalSafeClaimed",
     "kind": "emits"
   },
   {
-    "from": "safe.record-company",
-    "to": "safe",
+    "from": "personal-safe.claim",
+    "to": "personal-safe.holder",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "personal-safe.get",
+    "to": "personal-safe",
+    "kind": "reads"
+  },
+  {
+    "from": "personal-safe.get",
+    "to": "personal-safe.holder",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "personal-safe.open",
+    "to": "personal-safe",
     "kind": "acts-on"
   },
   {
-    "from": "safe.record-company",
-    "to": "safe.CompanySafeRecorded",
+    "from": "personal-safe.open",
+    "to": "personal-safe.PersonalSafeOpened",
     "kind": "emits"
-  },
-  {
-    "from": "safe.record-company",
-    "to": "company.owner",
-    "kind": "allowed-by"
   },
   {
     "from": "salary-component.create",

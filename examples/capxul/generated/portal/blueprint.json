@@ -121,7 +121,6 @@
       "FiscalYearNotActive": "FY-900",
       "FiscalYearOverlaps": "FY-003",
       "FiscalYearWrongLength": "FY-002",
-      "FounderHasNoSafe": "SF-002",
       "GoalCycleCompleted": "GO-001",
       "GoalEmployeeNotInCompany": "GO-002",
       "GoalIsGroup": "GO-007",
@@ -210,6 +209,7 @@
       "PayrollPeriodNameTaken": "PP-003",
       "PayrollPeriodNotActive": "PP-900",
       "PayrollPeriodOverlaps": "PP-002",
+      "PersonalSafeNotUnclaimed": "SF-900",
       "PostingDateOutsideFiscalYear": "JE-009",
       "ProgressOutOfRange": "GO-006",
       "PromotedEmployeeHasLeft": "PM-002",
@@ -230,8 +230,7 @@
       "RoundInterviewerNotInCompany": "IR-002",
       "RoundNameTaken": "IR-001",
       "RoundNotInCompany": "IV-002",
-      "SafeAlreadyRecorded": "SF-001",
-      "SafeNotCounterfactual": "SF-900",
+      "SafeAlreadyOpen": "SF-001",
       "SalaryComponentNotActive": "SC-900",
       "SalaryComponentTaken": "SC-003",
       "SalarySlipExists": "PE-008",
@@ -248,6 +247,7 @@
       "ShiftStartsWhenItEnds": "SH-002",
       "ShiftTypeNameTaken": "SH-001",
       "ShiftTypeNotActive": "SH-900",
+      "SignerNotProven": "SF-002",
       "StructureComponentNotInCompany": "SS-002",
       "StructureComponentRepeated": "SS-005",
       "StructureComponentWrongType": "SS-003",
@@ -383,6 +383,9 @@
           "Manual Rating"
         ]
       },
+      "EvmAddress": {
+        "type": "schema"
+      },
       "ExpenseTypeName": {
         "type": "text",
         "max": 140
@@ -466,6 +469,9 @@
         "type": "text",
         "max": 140
       },
+      "PersonalSignature": {
+        "type": "schema"
+      },
       "Progress": {
         "type": "decimal",
         "places": 2
@@ -505,14 +511,6 @@
           "Expense"
         ]
       },
-      "SafeKind": {
-        "type": "schema",
-        "format": "choice",
-        "options": [
-          "personal",
-          "company"
-        ]
-      },
       "SaltNonce": {
         "type": "uint",
         "bits": 256
@@ -542,10 +540,6 @@
       "TemplateTitle": {
         "type": "text",
         "max": 140
-      },
-      "Threshold": {
-        "type": "uint",
-        "bits": 8
       },
       "TimeOfDay": {
         "type": "schema"
@@ -8130,11 +8124,11 @@
         },
         "hash": "915bdb337038ba38"
       },
-      "safe": {
-        "name": "safe",
-        "identifier": "Safe",
+      "personal-safe": {
+        "name": "personal-safe",
+        "identifier": "PersonalSafe",
         "code": "SF",
-        "description": "A Safe: a person's own on-chain account, or a company's, at the address it has before it is deployed.",
+        "description": "A person's own Safe: opened first, then claimed with the key they sign with, which gives its address.",
         "fields": {
           "id": {
             "value": {
@@ -8142,61 +8136,12 @@
               "prefix": "saf"
             }
           },
-          "kind": {
-            "value": {
-              "type": "schema",
-              "format": "choice",
-              "options": [
-                "personal",
-                "company"
-              ]
-            },
-            "named": "SafeKind",
-            "description": "Whose it is: a person's own, or a company's."
-          },
           "person": {
             "value": {
               "type": "id",
               "prefix": "per"
             },
-            "optional": true,
-            "description": "Whose Safe it is, when it is a person's."
-          },
-          "company": {
-            "value": {
-              "type": "id",
-              "prefix": "com"
-            },
-            "optional": true,
-            "ref": "company.id",
-            "description": "The company it is for, when it is a company's."
-          },
-          "account": {
-            "value": {
-              "type": "account"
-            },
-            "description": "Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55)."
-          },
-          "firstOwner": {
-            "value": {
-              "type": "account"
-            },
-            "description": "The one owner it is set up with, checksummed: the bootstrap key for a person's, the founder's own Safe for a company's."
-          },
-          "owners": {
-            "value": {
-              "type": "schema",
-              "format": "list"
-            },
-            "description": "Who owns it today: its first owner until the chain says otherwise."
-          },
-          "threshold": {
-            "value": {
-              "type": "uint",
-              "bits": 8
-            },
-            "named": "Threshold",
-            "description": "How many owners must approve a transaction: 1 at setup."
+            "description": "Whose Safe it is."
           },
           "saltNonce": {
             "value": {
@@ -8204,121 +8149,143 @@
               "bits": 256
             },
             "named": "SaltNonce",
-            "description": "The salt nonce its address is worked out from, kept so the address can be checked again."
+            "description": "The salt nonce its address is worked out from, kept at open so the address can be checked again."
+          },
+          "signer": {
+            "value": {
+              "type": "schema"
+            },
+            "optional": true,
+            "description": "The key the person proved they hold, set at claim."
+          },
+          "firstOwner": {
+            "value": {
+              "type": "account"
+            },
+            "optional": true,
+            "description": "The one owner it is set up with, set at claim: the signer, on the environment's chain."
+          },
+          "account": {
+            "value": {
+              "type": "account"
+            },
+            "optional": true,
+            "description": "Its address once claimed, worked out before it is deployed, checksummed (EIP-55)."
           }
         },
         "lives": "database",
         "invariants": {
-          "oneSafeEach": {
+          "oneSafePerPerson": {
             "kind": "unique",
             "fields": [
-              "saltNonce"
+              "person"
             ],
-            "refuse": "SafeAlreadyRecorded"
+            "refuse": "SafeAlreadyOpen"
           }
         },
         "machine": {
           "states": [
-            "counterfactual"
+            "unclaimed",
+            "claimed"
           ],
           "moves": {
-            "record": {
+            "open": {
               "from": [],
               "to": [
-                "counterfactual"
+                "unclaimed"
               ],
-              "emits": "PersonalSafeRecorded"
+              "emits": "PersonalSafeOpened"
             },
-            "recordCompany": {
-              "from": [],
-              "to": [
-                "counterfactual"
+            "claim": {
+              "from": [
+                "unclaimed"
               ],
-              "emits": "CompanySafeRecorded"
+              "to": [
+                "claimed"
+              ],
+              "emits": "PersonalSafeClaimed"
             }
           },
           "notFrom": {
-            "error": "SafeNotCounterfactual",
+            "error": "PersonalSafeNotUnclaimed",
             "exit": 40,
             "code": "SF-900"
           }
         },
         "events": {
-          "CompanySafeRecorded": {
+          "PersonalSafeClaimed": {
             "safe": {
               "value": {
                 "type": "id",
                 "prefix": "saf"
               },
-              "ref": "safe.id"
-            },
-            "company": {
-              "value": {
-                "type": "id",
-                "prefix": "com"
-              },
-              "optional": true,
-              "ref": "safe.company",
-              "description": "The company it is for, when it is a company's."
-            },
-            "account": {
-              "value": {
-                "type": "account"
-              },
-              "ref": "safe.account",
-              "description": "Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55)."
-            }
-          },
-          "PersonalSafeRecorded": {
-            "safe": {
-              "value": {
-                "type": "id",
-                "prefix": "saf"
-              },
-              "ref": "safe.id"
+              "ref": "personal-safe.id"
             },
             "person": {
               "value": {
                 "type": "id",
                 "prefix": "per"
               },
+              "ref": "personal-safe.person",
+              "description": "Whose Safe it is."
+            },
+            "signer": {
+              "value": {
+                "type": "schema"
+              },
               "optional": true,
-              "ref": "safe.person",
-              "description": "Whose Safe it is, when it is a person's."
+              "ref": "personal-safe.signer",
+              "description": "The key the person proved they hold, set at claim."
             },
             "account": {
               "value": {
                 "type": "account"
               },
-              "ref": "safe.account",
-              "description": "Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55)."
+              "optional": true,
+              "ref": "personal-safe.account",
+              "description": "Its address once claimed, worked out before it is deployed, checksummed (EIP-55)."
+            }
+          },
+          "PersonalSafeOpened": {
+            "safe": {
+              "value": {
+                "type": "id",
+                "prefix": "saf"
+              },
+              "ref": "personal-safe.id"
+            },
+            "person": {
+              "value": {
+                "type": "id",
+                "prefix": "per"
+              },
+              "ref": "personal-safe.person",
+              "description": "Whose Safe it is."
             }
           }
         },
         "errors": {
-          "SafeAlreadyRecorded": {
+          "SafeAlreadyOpen": {
             "fields": {
-              "saltNonce": {
+              "person": {
                 "value": {
-                  "type": "uint",
-                  "bits": 256
+                  "type": "id",
+                  "prefix": "per"
                 },
-                "named": "SaltNonce",
-                "ref": "safe.saltNonce",
-                "description": "The salt nonce its address is worked out from, kept so the address can be checked again."
+                "ref": "personal-safe.person",
+                "description": "Whose Safe it is."
               }
             },
             "exit": 41,
             "code": "SF-001"
           },
-          "FounderHasNoSafe": {
+          "SignerNotProven": {
             "fields": {
-              "company": {
+              "signer": {
                 "value": {
-                  "type": "id",
-                  "prefix": "com"
+                  "type": "schema"
                 },
-                "ref": "company.id"
+                "named": "EvmAddress"
               }
             },
             "exit": 42,
@@ -8329,12 +8296,12 @@
           "holder"
         ],
         "roleRules": {
-          "holder": "(safe, caller) => safe.person !== undefined && safe.person === caller.person"
+          "holder": "(safe, caller) => safe.person === caller.person"
         },
         "from": {
           "kind": "app"
         },
-        "hash": "eaa71ce143534782"
+        "hash": "4e0806a2c50ef54e"
       },
       "salary-component": {
         "name": "salary-component",
@@ -23321,88 +23288,132 @@
         },
         "hash": "887a4d7c548840dc"
       },
-      "safe.get": {
-        "kind": "read",
-        "name": "safe.get",
-        "thing": "safe",
-        "verb": "get",
-        "identifier": "get",
-        "file": "blueprint/things/safe/verbs/get.ts",
+      "personal-safe.claim": {
+        "kind": "operation",
+        "name": "personal-safe.claim",
+        "thing": "personal-safe",
+        "verb": "claim",
+        "identifier": "claim",
+        "file": "blueprint/things/personal-safe/verbs/claim.ts",
         "from": {
           "kind": "app"
         },
-        "description": "Read one safe by its id: kind, person, company, account, firstOwner, owners, threshold, saltNonce, state.",
+        "description": "Claim your Safe with the key you sign with, proving you hold it. This works out its address; nothing is sent to the chain.",
+        "payload": {
+          "safe": {
+            "value": {
+              "type": "id",
+              "prefix": "saf"
+            },
+            "ref": "personal-safe.id"
+          },
+          "signer": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "EvmAddress",
+            "description": "The key you sign with, which becomes the Safe's one owner."
+          },
+          "proof": {
+            "value": {
+              "type": "schema"
+            },
+            "named": "PersonalSignature",
+            "description": "Your signer's personal_sign of \"Capxul: claim Safe <safe> for <you>\"."
+          }
+        },
+        "answer": {
+          "safe": {
+            "value": {
+              "type": "id",
+              "prefix": "saf"
+            },
+            "ref": "personal-safe.id"
+          },
+          "account": {
+            "value": {
+              "type": "account"
+            }
+          }
+        },
+        "move": {
+          "key": "claim",
+          "from": [
+            "unclaimed"
+          ],
+          "to": [
+            "claimed"
+          ],
+          "emits": "PersonalSafeClaimed"
+        },
+        "errors": [
+          "SignerNotProven"
+        ],
+        "invariants": {
+          "SafeAlreadyOpen": "personal-safe.oneSafePerPerson"
+        },
+        "breaks": [
+          "personal-safe.oneSafePerPerson"
+        ],
+        "refusals": [
+          "SignerNotProven",
+          "SafeAlreadyOpen",
+          "PersonalSafeNotUnclaimed",
+          "NotAllowed",
+          "IdempotencyConflict"
+        ],
+        "allowed": [
+          {
+            "kind": "role",
+            "role": "personal-safe.holder"
+          }
+        ],
+        "agentTool": true,
+        "refs": {
+          "safe": "personal-safe"
+        },
+        "steps": {
+          "update": {
+            "name": "personal-safe.claim.update",
+            "type": "database"
+          }
+        },
+        "idempotent": "request",
+        "runs": "server",
+        "test": "unit",
+        "budget": {
+          "p95Ms": 150
+        },
+        "hash": "f0b727849c0fe5fc"
+      },
+      "personal-safe.get": {
+        "kind": "read",
+        "name": "personal-safe.get",
+        "thing": "personal-safe",
+        "verb": "get",
+        "identifier": "get",
+        "file": "blueprint/things/personal-safe/verbs/get.ts",
+        "from": {
+          "kind": "app"
+        },
+        "description": "Read one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.",
         "payload": {
           "id": {
             "value": {
               "type": "id",
               "prefix": "saf"
             },
-            "ref": "safe.id"
+            "ref": "personal-safe.id"
           }
         },
         "answer": {
-          "kind": {
-            "value": {
-              "type": "schema",
-              "format": "choice",
-              "options": [
-                "personal",
-                "company"
-              ]
-            },
-            "named": "SafeKind",
-            "ref": "safe.kind",
-            "description": "Whose it is: a person's own, or a company's."
-          },
           "person": {
             "value": {
               "type": "id",
               "prefix": "per"
             },
-            "optional": true,
-            "ref": "safe.person",
-            "description": "Whose Safe it is, when it is a person's."
-          },
-          "company": {
-            "value": {
-              "type": "id",
-              "prefix": "com"
-            },
-            "optional": true,
-            "ref": "safe.company",
-            "description": "The company it is for, when it is a company's."
-          },
-          "account": {
-            "value": {
-              "type": "account"
-            },
-            "ref": "safe.account",
-            "description": "Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55)."
-          },
-          "firstOwner": {
-            "value": {
-              "type": "account"
-            },
-            "ref": "safe.firstOwner",
-            "description": "The one owner it is set up with, checksummed: the bootstrap key for a person's, the founder's own Safe for a company's."
-          },
-          "owners": {
-            "value": {
-              "type": "schema",
-              "format": "list"
-            },
-            "ref": "safe.owners",
-            "description": "Who owns it today: its first owner until the chain says otherwise."
-          },
-          "threshold": {
-            "value": {
-              "type": "uint",
-              "bits": 8
-            },
-            "named": "Threshold",
-            "ref": "safe.threshold",
-            "description": "How many owners must approve a transaction: 1 at setup."
+            "ref": "personal-safe.person",
+            "description": "Whose Safe it is."
           },
           "saltNonce": {
             "value": {
@@ -23410,8 +23421,32 @@
               "bits": 256
             },
             "named": "SaltNonce",
-            "ref": "safe.saltNonce",
-            "description": "The salt nonce its address is worked out from, kept so the address can be checked again."
+            "ref": "personal-safe.saltNonce",
+            "description": "The salt nonce its address is worked out from, kept at open so the address can be checked again."
+          },
+          "signer": {
+            "value": {
+              "type": "schema"
+            },
+            "optional": true,
+            "ref": "personal-safe.signer",
+            "description": "The key the person proved they hold, set at claim."
+          },
+          "firstOwner": {
+            "value": {
+              "type": "account"
+            },
+            "optional": true,
+            "ref": "personal-safe.firstOwner",
+            "description": "The one owner it is set up with, set at claim: the signer, on the environment's chain."
+          },
+          "account": {
+            "value": {
+              "type": "account"
+            },
+            "optional": true,
+            "ref": "personal-safe.account",
+            "description": "Its address once claimed, worked out before it is deployed, checksummed (EIP-55)."
           },
           "state": {
             "value": {
@@ -23429,12 +23464,7 @@
         "allowed": [
           {
             "kind": "role",
-            "role": "safe.holder"
-          },
-          {
-            "kind": "role-of",
-            "role": "company.owner",
-            "path": "company"
+            "role": "personal-safe.holder"
           }
         ],
         "agentTool": true,
@@ -23445,90 +23475,19 @@
         "budget": {
           "p95Ms": 50
         },
-        "hash": "f8e290004c57413a"
+        "hash": "3f3d6979d74a0a9c"
       },
-      "safe.list": {
-        "kind": "read",
-        "name": "safe.list",
-        "thing": "safe",
-        "verb": "list",
-        "identifier": "list",
-        "file": "blueprint/things/safe/verbs/list.ts",
-        "from": {
-          "kind": "app"
-        },
-        "description": "List safes, oldest first, 50 to a page, filtered by company.",
-        "payload": {
-          "company": {
-            "value": {
-              "type": "id",
-              "prefix": "com"
-            },
-            "optional": true,
-            "ref": "safe.company",
-            "description": "The company it is for, when it is a company's."
-          },
-          "cursor": {
-            "value": {
-              "type": "text",
-              "max": 64
-            },
-            "optional": true
-          }
-        },
-        "answer": {
-          "items": {
-            "value": {
-              "type": "schema"
-            }
-          },
-          "next": {
-            "value": {
-              "type": "schema"
-            }
-          }
-        },
-        "move": null,
-        "errors": [],
-        "breaks": [],
-        "refusals": [
-          "NotAllowed"
-        ],
-        "allowed": [
-          {
-            "kind": "role-of",
-            "role": "company.owner",
-            "path": "company"
-          }
-        ],
-        "agentTool": true,
-        "steps": {},
-        "idempotent": null,
-        "runs": "server",
-        "test": "unit",
-        "budget": {
-          "p95Ms": 80
-        },
-        "list": {
-          "where": [
-            "company"
-          ],
-          "order": "oldest",
-          "page": 50
-        },
-        "hash": "74076c9884fb804f"
-      },
-      "safe.record": {
+      "personal-safe.open": {
         "kind": "operation",
-        "name": "safe.record",
-        "thing": "safe",
-        "verb": "record",
-        "identifier": "record",
-        "file": "blueprint/things/safe/verbs/record.ts",
+        "name": "personal-safe.open",
+        "thing": "personal-safe",
+        "verb": "open",
+        "identifier": "open",
+        "file": "blueprint/things/personal-safe/verbs/open.ts",
         "from": {
           "kind": "app"
         },
-        "description": "Record your own Safe, at the address it will have once deployed. Nothing is sent to the chain.",
+        "description": "Open your own Safe. It has no address until you claim it with the key you sign with.",
         "payload": {},
         "answer": {
           "safe": {
@@ -23536,33 +23495,26 @@
               "type": "id",
               "prefix": "saf"
             },
-            "ref": "safe.id"
-          },
-          "account": {
-            "value": {
-              "type": "account"
-            },
-            "ref": "safe.account",
-            "description": "Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55)."
+            "ref": "personal-safe.id"
           }
         },
         "move": {
-          "key": "record",
+          "key": "open",
           "from": [],
           "to": [
-            "counterfactual"
+            "unclaimed"
           ],
-          "emits": "PersonalSafeRecorded"
+          "emits": "PersonalSafeOpened"
         },
         "errors": [],
         "invariants": {
-          "SafeAlreadyRecorded": "safe.oneSafeEach"
+          "SafeAlreadyOpen": "personal-safe.oneSafePerPerson"
         },
         "breaks": [
-          "safe.oneSafeEach"
+          "personal-safe.oneSafePerPerson"
         ],
         "refusals": [
-          "SafeAlreadyRecorded",
+          "SafeAlreadyOpen",
           "NotAllowed",
           "IdempotencyConflict"
         ],
@@ -23575,7 +23527,7 @@
         "mints": "safe",
         "steps": {
           "insert": {
-            "name": "safe.record.insert",
+            "name": "personal-safe.open.insert",
             "type": "database"
           }
         },
@@ -23585,98 +23537,7 @@
         "budget": {
           "p95Ms": 150
         },
-        "hash": "3d7fa5666f71c858"
-      },
-      "safe.record-company": {
-        "kind": "operation",
-        "name": "safe.record-company",
-        "thing": "safe",
-        "verb": "record-company",
-        "identifier": "recordCompany",
-        "file": "blueprint/things/safe/verbs/record-company.ts",
-        "from": {
-          "kind": "app"
-        },
-        "description": "Record a company's Safe, owned by its founder's own Safe, at the address it will have once deployed.",
-        "payload": {
-          "company": {
-            "value": {
-              "type": "id",
-              "prefix": "com"
-            },
-            "ref": "company.id",
-            "description": "The company whose Safe it is."
-          }
-        },
-        "answer": {
-          "safe": {
-            "value": {
-              "type": "id",
-              "prefix": "saf"
-            },
-            "ref": "safe.id"
-          },
-          "account": {
-            "value": {
-              "type": "account"
-            },
-            "ref": "safe.account",
-            "description": "Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55)."
-          }
-        },
-        "move": {
-          "key": "recordCompany",
-          "from": [],
-          "to": [
-            "counterfactual"
-          ],
-          "emits": "CompanySafeRecorded"
-        },
-        "errors": [
-          "FounderHasNoSafe"
-        ],
-        "invariants": {
-          "SafeAlreadyRecorded": "safe.oneSafeEach"
-        },
-        "breaks": [
-          "safe.oneSafeEach"
-        ],
-        "refusals": [
-          "FounderHasNoSafe",
-          "SafeAlreadyRecorded",
-          "NotAllowed",
-          "IdempotencyConflict"
-        ],
-        "allowed": [
-          {
-            "kind": "role-of",
-            "role": "company.owner",
-            "path": "company"
-          }
-        ],
-        "agentTool": true,
-        "refs": {
-          "company": "company"
-        },
-        "mints": "safe",
-        "steps": {
-          "load": {
-            "name": "safe.record-company.load",
-            "type": "database",
-            "writes": []
-          },
-          "insert": {
-            "name": "safe.record-company.insert",
-            "type": "database"
-          }
-        },
-        "idempotent": "request",
-        "runs": "server",
-        "test": "unit",
-        "budget": {
-          "p95Ms": 150
-        },
-        "hash": "dce2b1324c5912db"
+        "hash": "824883db79fd01ba"
       },
       "salary-component.create": {
         "kind": "operation",
@@ -81732,986 +81593,9 @@
         ],
         "sourceHash": "919567fef614b853e4f34897bd27485feb04452bf144bb0a02c1341901b52429"
       },
-      "journeys/safe-a-company-records-its-safe.ts": {
-        "name": "safe: a company records its safe",
-        "file": "journeys/safe-a-company-records-its-safe.ts",
-        "cast": {
-          "ada": {
-            "kind": "signed-in"
-          },
-          "bo": {
-            "kind": "signed-in"
-          }
-        },
-        "starts": "three company safes",
-        "steps": [
-          {
-            "title": "Ada's first request again, by her key, is the same call: her one Safe, and nothing new",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.record",
-              "payload": {},
-              "request": "ada-safe",
-              "via": "key"
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  {
-                    "ref": [
-                      "world",
-                      "adaSafe"
-                    ]
-                  },
-                  {
-                    "ref": [
-                      "world",
-                      "adaAccount"
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Ada's Safe holds the address her key was answered, the factory's for her id",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "world",
-                    "adaSafe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  "personal",
-                  {
-                    "ref": [
-                      "cast",
-                      "ada",
-                      "person"
-                    ]
-                  },
-                  "none",
-                  {
-                    "ref": [
-                      "world",
-                      "adaAccount"
-                    ]
-                  },
-                  "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-                  [
-                    "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-                  ],
-                  "1",
-                  "counterfactual"
-                ]
-              },
-              {
-                "kind": "expect-equal",
-                "value": ""
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo's Safe holds the address his agent was answered",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "world",
-                    "boSafe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  "personal",
-                  {
-                    "ref": [
-                      "cast",
-                      "bo",
-                      "person"
-                    ]
-                  },
-                  "none",
-                  {
-                    "ref": [
-                      "world",
-                      "boAccount"
-                    ]
-                  },
-                  "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-                  [
-                    "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-                  ],
-                  "1",
-                  "counterfactual"
-                ]
-              },
-              {
-                "kind": "expect-equal",
-                "value": ""
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo can't record a Safe for Ada's company",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "NotAllowed",
-                "fields": {}
-              },
-              {
-                "kind": "no-events"
-              },
-              {
-                "kind": "spans",
-                "present": [
-                  "safe.record-company.refused"
-                ],
-                "absent": [
-                  "safe.record-company"
-                ]
-              }
-            ]
-          },
-          {
-            "title": "nor can Bo's agent",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              },
-              "via": "agent"
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "NotAllowed",
-                "fields": {}
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo can't read Acme Trading's Safe",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "world",
-                    "tradingSafe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "NotAllowed",
-                "fields": {}
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "nor list Acme Trading's Safes",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.list",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "NotAllowed",
-                "fields": {}
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Acme Trading's Safe holds what Ada's agent was answered: owned by her own Safe alone, at the factory's address for that owner and the company's id",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "world",
-                    "tradingSafe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  "company",
-                  {
-                    "ref": [
-                      "world",
-                      "company"
-                    ]
-                  },
-                  "none",
-                  {
-                    "ref": [
-                      "world",
-                      "tradingAccount"
-                    ]
-                  },
-                  {
-                    "ref": [
-                      "world",
-                      "adaAccount"
-                    ]
-                  },
-                  [
-                    {
-                      "ref": [
-                        "world",
-                        "adaAccount"
-                      ]
-                    }
-                  ],
-                  "1",
-                  "counterfactual"
-                ]
-              },
-              {
-                "kind": "expect-equal",
-                "value": ""
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Acme Trading has that one Safe and no other",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.list",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  [
-                    {
-                      "ref": [
-                        "world",
-                        "tradingSafe"
-                      ]
-                    },
-                    "company",
-                    {
-                      "ref": [
-                        "world",
-                        "company"
-                      ]
-                    },
-                    {
-                      "ref": [
-                        "world",
-                        "tradingAccount"
-                      ]
-                    }
-                  ]
-                ]
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Ada's agent's request again is the same call, and nothing new",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              },
-              "request": "acme-trading-safe",
-              "via": "agent"
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  {
-                    "ref": [
-                      "world",
-                      "tradingSafe"
-                    ]
-                  },
-                  {
-                    "ref": [
-                      "world",
-                      "tradingAccount"
-                    ]
-                  }
-                ]
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Ada reads Acme Trading's Safe again, for its salt nonce",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "world",
-                    "tradingSafe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": {
-                  "ref": [
-                    "world",
-                    "tradingAccount"
-                  ]
-                }
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "a second Safe for Acme Trading, a new request, is refused, naming that salt nonce",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                }
-              },
-              "via": "key"
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "SafeAlreadyRecorded",
-                "fields": {
-                  "saltNonce": {
-                    "ref": [
-                      "last",
-                      "saltNonce"
-                    ]
-                  }
-                }
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Acme Logistics' Safe holds what Ada's key was answered: the same owner, Ada's Safe, and an address of its own",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "world",
-                    "logisticsSafe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  "company",
-                  {
-                    "ref": [
-                      "world",
-                      "otherCompany"
-                    ]
-                  },
-                  "none",
-                  {
-                    "ref": [
-                      "world",
-                      "logisticsAccount"
-                    ]
-                  },
-                  {
-                    "ref": [
-                      "world",
-                      "adaAccount"
-                    ]
-                  },
-                  [
-                    {
-                      "ref": [
-                        "world",
-                        "adaAccount"
-                      ]
-                    }
-                  ],
-                  "1",
-                  "counterfactual"
-                ]
-              },
-              {
-                "kind": "expect-equal",
-                "value": ""
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Acme Logistics has that one Safe and no other",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.list",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  [
-                    {
-                      "ref": [
-                        "world",
-                        "logisticsSafe"
-                      ]
-                    },
-                    "company",
-                    {
-                      "ref": [
-                        "world",
-                        "otherCompany"
-                      ]
-                    },
-                    {
-                      "ref": [
-                        "world",
-                        "logisticsAccount"
-                      ]
-                    }
-                  ]
-                ]
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo Ltd's Safe holds what Bo was answered: owned by Bo's own Safe, not Ada's, and its address follows",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "world",
-                    "boLtdSafe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  "company",
-                  {
-                    "ref": [
-                      "world",
-                      "boCompany"
-                    ]
-                  },
-                  "none",
-                  {
-                    "ref": [
-                      "world",
-                      "boLtdAccount"
-                    ]
-                  },
-                  {
-                    "ref": [
-                      "world",
-                      "boAccount"
-                    ]
-                  },
-                  [
-                    {
-                      "ref": [
-                        "world",
-                        "boAccount"
-                      ]
-                    }
-                  ],
-                  "1",
-                  "counterfactual"
-                ]
-              },
-              {
-                "kind": "expect-equal",
-                "value": ""
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo Ltd has that one Safe and no other",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.list",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "boCompany"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  [
-                    {
-                      "ref": [
-                        "world",
-                        "boLtdSafe"
-                      ]
-                    },
-                    "company",
-                    {
-                      "ref": [
-                        "world",
-                        "boCompany"
-                      ]
-                    },
-                    {
-                      "ref": [
-                        "world",
-                        "boLtdAccount"
-                      ]
-                    }
-                  ]
-                ]
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          }
-        ],
-        "sourceHash": "b4dc921e5d5215a7c3ef1d7ed404c0aa0088ede2506eb41f55e503c91d9deb0f"
-      },
-      "journeys/safe-a-founder-without-a-safe-is-refused.ts": {
-        "name": "safe: a founder without a safe is refused",
-        "file": "journeys/safe-a-founder-without-a-safe-is-refused.ts",
-        "cast": {
-          "ada": {
-            "kind": "signed-in"
-          },
-          "bo": {
-            "kind": "signed-in"
-          }
-        },
-        "starts": "ada has a safe",
-        "steps": [
-          {
-            "title": "Bo can't record Bo Ltd's Safe before he has one of his own",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "boCompany"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "FounderHasNoSafe",
-                "fields": {
-                  "company": {
-                    "ref": [
-                      "world",
-                      "boCompany"
-                    ]
-                  }
-                }
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "nor can his agent",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "boCompany"
-                  ]
-                }
-              },
-              "via": "agent"
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "FounderHasNoSafe",
-                "fields": {
-                  "company": {
-                    "ref": [
-                      "world",
-                      "boCompany"
-                    ]
-                  }
-                }
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Ada has a Safe, but Bo Ltd isn't hers to record one for",
-            "call": {
-              "actor": "ada",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "boCompany"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "refuses",
-                "error": "NotAllowed",
-                "fields": {}
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo records his own Safe from the command line",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.record",
-              "payload": {},
-              "via": "key"
-            },
-            "checks": [
-              {
-                "kind": "emits",
-                "event": "PersonalSafeRecorded",
-                "fields": {
-                  "safe": {
-                    "ref": [
-                      "last",
-                      "safe"
-                    ]
-                  },
-                  "person": {
-                    "ref": [
-                      "cast",
-                      "bo",
-                      "person"
-                    ]
-                  },
-                  "account": {
-                    "ref": [
-                      "last",
-                      "account"
-                    ]
-                  }
-                }
-              },
-              {
-                "kind": "is-in",
-                "thing": "safe",
-                "id": {
-                  "ref": [
-                    "last",
-                    "safe"
-                  ]
-                },
-                "state": "counterfactual"
-              }
-            ]
-          },
-          {
-            "title": "now Bo Ltd's Safe can be recorded",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.record-company",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "boCompany"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect",
-                "match": "^saf_[0-9a-z]+$",
-                "flags": ""
-              },
-              {
-                "kind": "expect",
-                "match": "^eip155:31337:0x[0-9a-fA-F]{40}$",
-                "flags": ""
-              },
-              {
-                "kind": "emits",
-                "event": "CompanySafeRecorded",
-                "fields": {
-                  "safe": {
-                    "ref": [
-                      "last",
-                      "safe"
-                    ]
-                  },
-                  "company": {
-                    "ref": [
-                      "world",
-                      "boCompany"
-                    ]
-                  },
-                  "account": {
-                    "ref": [
-                      "last",
-                      "account"
-                    ]
-                  }
-                }
-              },
-              {
-                "kind": "is-in",
-                "thing": "safe",
-                "id": {
-                  "ref": [
-                    "last",
-                    "safe"
-                  ]
-                },
-                "state": "counterfactual"
-              },
-              {
-                "kind": "spans",
-                "present": [
-                  "safe.record-company",
-                  "safe.record-company.load",
-                  "safe.record-company.insert"
-                ],
-                "absent": []
-              }
-            ]
-          },
-          {
-            "title": "it is Bo Ltd's, owned by one Safe, not the bootstrap key, at the factory's address for it",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.get",
-              "payload": {
-                "id": {
-                  "ref": [
-                    "last",
-                    "safe"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": [
-                  "company",
-                  {
-                    "ref": [
-                      "world",
-                      "boCompany"
-                    ]
-                  },
-                  "none",
-                  "1",
-                  [
-                    {
-                      "ref": [
-                        "last",
-                        "firstOwner"
-                      ]
-                    }
-                  ],
-                  "counterfactual"
-                ]
-              },
-              {
-                "kind": "expect-equal",
-                "value": false
-              },
-              {
-                "kind": "expect-equal",
-                "value": ""
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          },
-          {
-            "title": "Bo Ltd has that one Safe and no other",
-            "call": {
-              "actor": "bo",
-              "operation": "safe.list",
-              "payload": {
-                "company": {
-                  "ref": [
-                    "world",
-                    "boCompany"
-                  ]
-                }
-              }
-            },
-            "checks": [
-              {
-                "kind": "expect-equal",
-                "value": 1
-              },
-              {
-                "kind": "expect-equal",
-                "value": "company"
-              },
-              {
-                "kind": "no-events"
-              }
-            ]
-          }
-        ],
-        "sourceHash": "3f6f1f929efeb55367d0835e33e0cbfd5e40aae3b6334a7aeff9340b11accbbe"
-      },
-      "journeys/safe-a-person-records-their-safe.ts": {
-        "name": "safe: a person records their safe",
-        "file": "journeys/safe-a-person-records-their-safe.ts",
+      "journeys/safe-a-person-opens-their-safe.ts": {
+        "name": "safe: a person opens their safe",
+        "file": "journeys/safe-a-person-opens-their-safe.ts",
         "cast": {
           "ada": {
             "kind": "signed-in"
@@ -82726,10 +81610,10 @@
         "starts": null,
         "steps": [
           {
-            "title": "the system can't record a Safe: it is nobody, so it has none",
+            "title": "the system can't open a Safe: it is nobody",
             "call": {
               "actor": "nobody",
-              "operation": "safe.record",
+              "operation": "personal-safe.open",
               "payload": {}
             },
             "checks": [
@@ -82744,19 +81628,19 @@
               {
                 "kind": "spans",
                 "present": [
-                  "safe.record.refused"
+                  "personal-safe.open.refused"
                 ],
                 "absent": [
-                  "safe.record"
+                  "personal-safe.open"
                 ]
               }
             ]
           },
           {
-            "title": "Ada records her own Safe from the command line",
+            "title": "Ada opens her own Safe from the command line",
             "call": {
               "actor": "ada",
-              "operation": "safe.record",
+              "operation": "personal-safe.open",
               "payload": {},
               "request": "ada-safe",
               "via": "key"
@@ -82768,13 +81652,8 @@
                 "flags": ""
               },
               {
-                "kind": "expect",
-                "match": "^eip155:31337:0x[0-9a-fA-F]{40}$",
-                "flags": ""
-              },
-              {
                 "kind": "emits",
-                "event": "PersonalSafeRecorded",
+                "event": "PersonalSafeOpened",
                 "fields": {
                   "safe": {
                     "ref": [
@@ -82788,31 +81667,25 @@
                       "ada",
                       "person"
                     ]
-                  },
-                  "account": {
-                    "ref": [
-                      "last",
-                      "account"
-                    ]
                   }
                 }
               },
               {
                 "kind": "is-in",
-                "thing": "safe",
+                "thing": "personal-safe",
                 "id": {
                   "ref": [
                     "last",
                     "safe"
                   ]
                 },
-                "state": "counterfactual"
+                "state": "unclaimed"
               },
               {
                 "kind": "spans",
                 "present": [
-                  "safe.record",
-                  "safe.record.insert"
+                  "personal-safe.open",
+                  "personal-safe.open.insert"
                 ],
                 "absent": []
               }
@@ -82822,7 +81695,7 @@
             "title": "Bo can't read Ada's Safe",
             "call": {
               "actor": "bo",
-              "operation": "safe.get",
+              "operation": "personal-safe.get",
               "payload": {
                 "id": {
                   "ref": [
@@ -82844,10 +81717,10 @@
             ]
           },
           {
-            "title": "Ada reads it back: hers, owned by the bootstrap key alone, at the factory's address for her id",
+            "title": "Ada reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet",
             "call": {
               "actor": "ada",
-              "operation": "safe.get",
+              "operation": "personal-safe.get",
               "payload": {
                 "id": {
                   "ref": [
@@ -82861,7 +81734,6 @@
               {
                 "kind": "expect-equal",
                 "value": [
-                  "personal",
                   {
                     "ref": [
                       "cast",
@@ -82870,12 +81742,9 @@
                     ]
                   },
                   "none",
-                  "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-                  [
-                    "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-                  ],
-                  "1",
-                  "counterfactual"
+                  "none",
+                  "none",
+                  "unclaimed"
                 ]
               },
               {
@@ -82888,22 +81757,22 @@
             ]
           },
           {
-            "title": "a second record, a new request, is refused: a person has one Safe",
+            "title": "a second open, a new request, is refused: a person has one Safe",
             "call": {
               "actor": "ada",
-              "operation": "safe.record",
-              "payload": {},
-              "via": "key"
+              "operation": "personal-safe.open",
+              "payload": {}
             },
             "checks": [
               {
                 "kind": "refuses",
-                "error": "SafeAlreadyRecorded",
+                "error": "SafeAlreadyOpen",
                 "fields": {
-                  "saltNonce": {
+                  "person": {
                     "ref": [
-                      "last",
-                      "saltNonce"
+                      "cast",
+                      "ada",
+                      "person"
                     ]
                   }
                 }
@@ -82914,10 +81783,37 @@
             ]
           },
           {
-            "title": "Bo's agent records Bo's own Safe through MCP: his, not Ada's",
+            "title": "nor through her agent",
+            "call": {
+              "actor": "ada",
+              "operation": "personal-safe.open",
+              "payload": {},
+              "via": "agent"
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SafeAlreadyOpen",
+                "fields": {
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "Bo's agent opens Bo's own Safe through MCP: his, not Ada's",
             "call": {
               "actor": "bo",
-              "operation": "safe.record",
+              "operation": "personal-safe.open",
               "payload": {},
               "via": "agent"
             },
@@ -82928,13 +81824,8 @@
                 "flags": ""
               },
               {
-                "kind": "expect",
-                "match": "^eip155:31337:0x[0-9a-fA-F]{40}$",
-                "flags": ""
-              },
-              {
                 "kind": "emits",
-                "event": "PersonalSafeRecorded",
+                "event": "PersonalSafeOpened",
                 "fields": {
                   "safe": {
                     "ref": [
@@ -82948,33 +81839,19 @@
                       "bo",
                       "person"
                     ]
-                  },
-                  "account": {
-                    "ref": [
-                      "last",
-                      "account"
-                    ]
                   }
                 }
               },
               {
                 "kind": "is-in",
-                "thing": "safe",
+                "thing": "personal-safe",
                 "id": {
                   "ref": [
                     "last",
                     "safe"
                   ]
                 },
-                "state": "counterfactual"
-              },
-              {
-                "kind": "spans",
-                "present": [
-                  "safe.record",
-                  "safe.record.insert"
-                ],
-                "absent": []
+                "state": "unclaimed"
               }
             ]
           },
@@ -82982,7 +81859,7 @@
             "title": "Ada can't read Bo's",
             "call": {
               "actor": "ada",
-              "operation": "safe.get",
+              "operation": "personal-safe.get",
               "payload": {
                 "id": {
                   "ref": [
@@ -83004,10 +81881,10 @@
             ]
           },
           {
-            "title": "Bo's agent reads it back: Bo's, at the factory's address for his id, not Ada's",
+            "title": "Bo's agent reads it back: Bo's, unclaimed, with his own salt nonce",
             "call": {
               "actor": "bo",
-              "operation": "safe.get",
+              "operation": "personal-safe.get",
               "payload": {
                 "id": {
                   "ref": [
@@ -83022,7 +81899,6 @@
               {
                 "kind": "expect-equal",
                 "value": [
-                  "personal",
                   {
                     "ref": [
                       "cast",
@@ -83031,12 +81907,9 @@
                     ]
                   },
                   "none",
-                  "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-                  [
-                    "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-                  ],
-                  "1",
-                  "counterfactual"
+                  "none",
+                  "none",
+                  "unclaimed"
                 ]
               },
               {
@@ -83049,11 +81922,203 @@
             ]
           },
           {
-            "title": "an agent's MCP tools hold the Safe's three operations",
+            "title": "a second open from Bo, in his own session, is refused too",
+            "call": {
+              "actor": "bo",
+              "operation": "personal-safe.open",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SafeAlreadyOpen",
+                "fields": {
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "bo",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "an agent's MCP tools hold opening, claiming and reading a Safe",
             "skipped": "the tools list is not an operation"
           }
         ],
-        "sourceHash": "8b016402239fd122612fec30c3fa759858e1055e3d21125ee99f26b1f0285b6f"
+        "sourceHash": "12aee52229ca011eb44171f7b57dcdc04880ba8695d15dd99d6a259219047597"
+      },
+      "journeys/safe-opening-again-is-the-same-safe.ts": {
+        "name": "safe: opening again is the same safe",
+        "file": "journeys/safe-opening-again-is-the-same-safe.ts",
+        "cast": {
+          "ada": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": "ada has opened her safe",
+        "steps": [
+          {
+            "title": "her first request again, by her key, is the same call: the Safe she was answered, and nothing new",
+            "call": {
+              "actor": "ada",
+              "operation": "personal-safe.open",
+              "payload": {},
+              "request": "ada-safe",
+              "via": "key"
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": {
+                  "ref": [
+                    "world",
+                    "adaSafe"
+                  ]
+                }
+              },
+              {
+                "kind": "no-events"
+              },
+              {
+                "kind": "is-in",
+                "thing": "personal-safe",
+                "id": {
+                  "ref": [
+                    "world",
+                    "adaSafe"
+                  ]
+                },
+                "state": "unclaimed"
+              }
+            ]
+          },
+          {
+            "title": "that Safe is hers, unclaimed, with her salt nonce",
+            "call": {
+              "actor": "ada",
+              "operation": "personal-safe.get",
+              "payload": {
+                "id": {
+                  "ref": [
+                    "world",
+                    "adaSafe"
+                  ]
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": [
+                  {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  },
+                  "none",
+                  "unclaimed"
+                ]
+              },
+              {
+                "kind": "expect-equal",
+                "value": ""
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a new request by her key is refused",
+            "call": {
+              "actor": "ada",
+              "operation": "personal-safe.open",
+              "payload": {},
+              "via": "key"
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SafeAlreadyOpen",
+                "fields": {
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "and in her own session",
+            "call": {
+              "actor": "ada",
+              "operation": "personal-safe.open",
+              "payload": {}
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SafeAlreadyOpen",
+                "fields": {
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "and through her agent",
+            "call": {
+              "actor": "ada",
+              "operation": "personal-safe.open",
+              "payload": {},
+              "via": "agent"
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "SafeAlreadyOpen",
+                "fields": {
+                  "person": {
+                    "ref": [
+                      "cast",
+                      "ada",
+                      "person"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          }
+        ],
+        "sourceHash": "76f090c85f5460bcf02294fa921049ced6b77d93216580152b00d57a354e633c"
       },
       "journeys/schedule-an-interview.ts": {
         "name": "schedule an interview",
@@ -110489,297 +109554,30 @@
           }
         }
       },
-      "acme logistics has a safe": {
-        "name": "acme logistics has a safe",
-        "file": "blueprint/starting-worlds/acme-logistics-has-a-safe.ts",
-        "from": "acme trading has a safe",
-        "cast": {
-          "ada": {
-            "kind": "role",
-            "role": "company.owner"
-          }
-        },
-        "sourceHash": "81d4c6153682086827261ff1390d5c3b31c7bfc8fd7dd7067867b084970e9db4",
-        "makes": [
-          {
-            "actor": "ada",
-            "operation": "safe.record-company",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "otherCompany"
-                ]
-              }
-            },
-            "via": "key"
-          }
-        ],
-        "gives": {
-          "company": {
-            "ref": [
-              "world",
-              "company"
-            ]
-          },
-          "otherCompany": {
-            "ref": [
-              "world",
-              "otherCompany"
-            ]
-          },
-          "boCompany": {
-            "ref": [
-              "world",
-              "boCompany"
-            ]
-          },
-          "adaSafe": {
-            "ref": [
-              "world",
-              "adaSafe"
-            ]
-          },
-          "adaAccount": {
-            "ref": [
-              "world",
-              "adaAccount"
-            ]
-          },
-          "boSafe": {
-            "ref": [
-              "world",
-              "boSafe"
-            ]
-          },
-          "boAccount": {
-            "ref": [
-              "world",
-              "boAccount"
-            ]
-          },
-          "tradingSafe": {
-            "ref": [
-              "world",
-              "tradingSafe"
-            ]
-          },
-          "tradingAccount": {
-            "ref": [
-              "world",
-              "tradingAccount"
-            ]
-          },
-          "logisticsSafe": {
-            "ref": [
-              "last",
-              "safe"
-            ]
-          },
-          "logisticsAccount": {
-            "ref": [
-              "last",
-              "account"
-            ]
-          }
-        }
-      },
-      "acme trading has a safe": {
-        "name": "acme trading has a safe",
-        "file": "blueprint/starting-worlds/acme-trading-has-a-safe.ts",
-        "from": "ada and bo have safes",
-        "cast": {
-          "ada": {
-            "kind": "role",
-            "role": "company.owner"
-          }
-        },
-        "sourceHash": "0b35ef2f4468563a543c76072011d0b269a3c373f3a2d5e6a30f850850973135",
-        "makes": [
-          {
-            "actor": "ada",
-            "operation": "safe.record-company",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "company"
-                ]
-              }
-            },
-            "request": "acme-trading-safe",
-            "via": "agent"
-          }
-        ],
-        "gives": {
-          "company": {
-            "ref": [
-              "world",
-              "company"
-            ]
-          },
-          "otherCompany": {
-            "ref": [
-              "world",
-              "otherCompany"
-            ]
-          },
-          "boCompany": {
-            "ref": [
-              "world",
-              "boCompany"
-            ]
-          },
-          "adaSafe": {
-            "ref": [
-              "world",
-              "adaSafe"
-            ]
-          },
-          "adaAccount": {
-            "ref": [
-              "world",
-              "adaAccount"
-            ]
-          },
-          "boSafe": {
-            "ref": [
-              "world",
-              "boSafe"
-            ]
-          },
-          "boAccount": {
-            "ref": [
-              "world",
-              "boAccount"
-            ]
-          },
-          "tradingSafe": {
-            "ref": [
-              "last",
-              "safe"
-            ]
-          },
-          "tradingAccount": {
-            "ref": [
-              "last",
-              "account"
-            ]
-          }
-        }
-      },
-      "ada and bo have safes": {
-        "name": "ada and bo have safes",
-        "file": "blueprint/starting-worlds/ada-and-bo-have-safes.ts",
-        "from": "ada has a safe",
-        "cast": {
-          "bo": {
-            "kind": "signed-in"
-          }
-        },
-        "sourceHash": "cfaea2e3116fa3c38007e4fd12a37787eb8f447fc77fa3c831ff0d3841ddaa41",
-        "makes": [
-          {
-            "actor": "bo",
-            "operation": "safe.record",
-            "payload": {},
-            "request": "bo-safe",
-            "via": "agent"
-          }
-        ],
-        "gives": {
-          "company": {
-            "ref": [
-              "world",
-              "company"
-            ]
-          },
-          "otherCompany": {
-            "ref": [
-              "world",
-              "otherCompany"
-            ]
-          },
-          "boCompany": {
-            "ref": [
-              "world",
-              "boCompany"
-            ]
-          },
-          "adaSafe": {
-            "ref": [
-              "world",
-              "adaSafe"
-            ]
-          },
-          "adaAccount": {
-            "ref": [
-              "world",
-              "adaAccount"
-            ]
-          },
-          "boSafe": {
-            "ref": [
-              "last",
-              "safe"
-            ]
-          },
-          "boAccount": {
-            "ref": [
-              "last",
-              "account"
-            ]
-          }
-        }
-      },
-      "ada has a safe": {
-        "name": "ada has a safe",
-        "file": "blueprint/starting-worlds/ada-has-a-safe.ts",
-        "from": "three companies",
+      "ada has opened her safe": {
+        "name": "ada has opened her safe",
+        "file": "blueprint/starting-worlds/ada-has-opened-her-safe.ts",
+        "from": null,
         "cast": {
           "ada": {
             "kind": "signed-in"
           }
         },
-        "sourceHash": "6aceddd8877da5ee6bde45a2d3114ed2da26233295d9a04066f2e911f3ae4d6b",
+        "sourceHash": "2259fbaf0f9a33337e12be35aa4198de93f8f74078f1be41f2da9df8f144c6a8",
         "makes": [
           {
             "actor": "ada",
-            "operation": "safe.record",
+            "operation": "personal-safe.open",
             "payload": {},
             "request": "ada-safe",
             "via": "key"
           }
         ],
         "gives": {
-          "company": {
-            "ref": [
-              "world",
-              "company"
-            ]
-          },
-          "otherCompany": {
-            "ref": [
-              "world",
-              "otherCompany"
-            ]
-          },
-          "boCompany": {
-            "ref": [
-              "world",
-              "boCompany"
-            ]
-          },
           "adaSafe": {
             "ref": [
               "last",
               "safe"
-            ]
-          },
-          "adaAccount": {
-            "ref": [
-              "last",
-              "account"
             ]
           }
         }
@@ -112576,112 +111374,6 @@
             "ref": [
               "last",
               "company"
-            ]
-          }
-        }
-      },
-      "three company safes": {
-        "name": "three company safes",
-        "file": "blueprint/starting-worlds/three-company-safes.ts",
-        "from": "acme logistics has a safe",
-        "cast": {
-          "bo": {
-            "kind": "role",
-            "role": "company.owner"
-          }
-        },
-        "sourceHash": "4421bb54b5869d0d2c8e1974bbcd05b3166707f66a2839379ebed132517dd6fb",
-        "makes": [
-          {
-            "actor": "bo",
-            "operation": "safe.record-company",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "boCompany"
-                ]
-              }
-            }
-          }
-        ],
-        "gives": {
-          "company": {
-            "ref": [
-              "world",
-              "company"
-            ]
-          },
-          "otherCompany": {
-            "ref": [
-              "world",
-              "otherCompany"
-            ]
-          },
-          "boCompany": {
-            "ref": [
-              "world",
-              "boCompany"
-            ]
-          },
-          "adaSafe": {
-            "ref": [
-              "world",
-              "adaSafe"
-            ]
-          },
-          "adaAccount": {
-            "ref": [
-              "world",
-              "adaAccount"
-            ]
-          },
-          "boSafe": {
-            "ref": [
-              "world",
-              "boSafe"
-            ]
-          },
-          "boAccount": {
-            "ref": [
-              "world",
-              "boAccount"
-            ]
-          },
-          "tradingSafe": {
-            "ref": [
-              "world",
-              "tradingSafe"
-            ]
-          },
-          "tradingAccount": {
-            "ref": [
-              "world",
-              "tradingAccount"
-            ]
-          },
-          "logisticsSafe": {
-            "ref": [
-              "world",
-              "logisticsSafe"
-            ]
-          },
-          "logisticsAccount": {
-            "ref": [
-              "world",
-              "logisticsAccount"
-            ]
-          },
-          "boLtdSafe": {
-            "ref": [
-              "last",
-              "safe"
-            ]
-          },
-          "boLtdAccount": {
-            "ref": [
-              "last",
-              "account"
             ]
           }
         }
@@ -115475,7 +114167,7 @@
           "environment": "*",
           "code": "SF-001",
           "severity": "ticket",
-          "owner": "blueprint/things/safe/errors.ts"
+          "owner": "blueprint/things/personal-safe/errors.ts"
         }
       },
       {
@@ -115485,7 +114177,7 @@
           "environment": "*",
           "code": "SF-002",
           "severity": "ticket",
-          "owner": "blueprint/things/safe/errors.ts"
+          "owner": "blueprint/things/personal-safe/errors.ts"
         }
       },
       {
@@ -121971,13 +120663,13 @@
         ]
       },
       {
-        "id": "defect:safe.get",
+        "id": "defect:personal-safe.claim",
         "kind": "defect",
         "labels": {
           "environment": "*",
-          "operation": "safe.get",
+          "operation": "personal-safe.claim",
           "severity": "page",
-          "owner": "blueprint/things/safe/verbs/get.ts"
+          "owner": "blueprint/things/personal-safe/verbs/claim.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -122013,13 +120705,13 @@
         ]
       },
       {
-        "id": "defect:safe.list",
+        "id": "defect:personal-safe.get",
         "kind": "defect",
         "labels": {
           "environment": "*",
-          "operation": "safe.list",
+          "operation": "personal-safe.get",
           "severity": "page",
-          "owner": "blueprint/things/safe/verbs/list.ts"
+          "owner": "blueprint/things/personal-safe/verbs/get.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -122055,55 +120747,13 @@
         ]
       },
       {
-        "id": "defect:safe.record",
+        "id": "defect:personal-safe.open",
         "kind": "defect",
         "labels": {
           "environment": "*",
-          "operation": "safe.record",
+          "operation": "personal-safe.open",
           "severity": "page",
-          "owner": "blueprint/things/safe/verbs/record.ts"
-        },
-        "target": 0.999,
-        "windowDays": 28,
-        "minCalls": 20,
-        "alerts": [
-          {
-            "name": "fast",
-            "burn": 14.4,
-            "windowsMs": [
-              3600000,
-              300000
-            ],
-            "severity": "page"
-          },
-          {
-            "name": "slow",
-            "burn": 6,
-            "windowsMs": [
-              21600000,
-              1800000
-            ],
-            "severity": "page"
-          },
-          {
-            "name": "ticket",
-            "burn": 1,
-            "windowsMs": [
-              259200000,
-              21600000
-            ],
-            "severity": "ticket"
-          }
-        ]
-      },
-      {
-        "id": "defect:safe.record-company",
-        "kind": "defect",
-        "labels": {
-          "environment": "*",
-          "operation": "safe.record-company",
-          "severity": "page",
-          "owner": "blueprint/things/safe/verbs/record-company.ts"
+          "owner": "blueprint/things/personal-safe/verbs/open.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -129131,99 +127781,13 @@
         ]
       },
       {
-        "id": "latency:safe.get",
+        "id": "latency:personal-safe.claim",
         "kind": "latency",
         "labels": {
           "environment": "*",
-          "operation": "safe.get",
+          "operation": "personal-safe.claim",
           "severity": "page",
-          "owner": "blueprint/things/safe/verbs/get.ts"
-        },
-        "target": 0.95,
-        "windowDays": 28,
-        "thresholdMs": 50,
-        "minCalls": 20,
-        "alerts": [
-          {
-            "name": "fast",
-            "burn": 14.4,
-            "windowsMs": [
-              3600000,
-              300000
-            ],
-            "severity": "page"
-          },
-          {
-            "name": "slow",
-            "burn": 6,
-            "windowsMs": [
-              21600000,
-              1800000
-            ],
-            "severity": "page"
-          },
-          {
-            "name": "ticket",
-            "burn": 1,
-            "windowsMs": [
-              259200000,
-              21600000
-            ],
-            "severity": "ticket"
-          }
-        ]
-      },
-      {
-        "id": "latency:safe.list",
-        "kind": "latency",
-        "labels": {
-          "environment": "*",
-          "operation": "safe.list",
-          "severity": "page",
-          "owner": "blueprint/things/safe/verbs/list.ts"
-        },
-        "target": 0.95,
-        "windowDays": 28,
-        "thresholdMs": 80,
-        "minCalls": 20,
-        "alerts": [
-          {
-            "name": "fast",
-            "burn": 14.4,
-            "windowsMs": [
-              3600000,
-              300000
-            ],
-            "severity": "page"
-          },
-          {
-            "name": "slow",
-            "burn": 6,
-            "windowsMs": [
-              21600000,
-              1800000
-            ],
-            "severity": "page"
-          },
-          {
-            "name": "ticket",
-            "burn": 1,
-            "windowsMs": [
-              259200000,
-              21600000
-            ],
-            "severity": "ticket"
-          }
-        ]
-      },
-      {
-        "id": "latency:safe.record",
-        "kind": "latency",
-        "labels": {
-          "environment": "*",
-          "operation": "safe.record",
-          "severity": "page",
-          "owner": "blueprint/things/safe/verbs/record.ts"
+          "owner": "blueprint/things/personal-safe/verbs/claim.ts"
         },
         "target": 0.95,
         "windowDays": 28,
@@ -129260,13 +127824,56 @@
         ]
       },
       {
-        "id": "latency:safe.record-company",
+        "id": "latency:personal-safe.get",
         "kind": "latency",
         "labels": {
           "environment": "*",
-          "operation": "safe.record-company",
+          "operation": "personal-safe.get",
           "severity": "page",
-          "owner": "blueprint/things/safe/verbs/record-company.ts"
+          "owner": "blueprint/things/personal-safe/verbs/get.ts"
+        },
+        "target": 0.95,
+        "windowDays": 28,
+        "thresholdMs": 50,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "latency:personal-safe.open",
+        "kind": "latency",
+        "labels": {
+          "environment": "*",
+          "operation": "personal-safe.open",
+          "severity": "page",
+          "owner": "blueprint/things/personal-safe/verbs/open.ts"
         },
         "target": 0.95,
         "windowDays": 28,
@@ -131174,63 +129781,43 @@
         }
       },
       {
-        "id": "verdict:safe: a company records its safe:local",
+        "id": "verdict:safe: a person opens their safe:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
-          "journey": "safe: a company records its safe",
+          "journey": "safe: a person opens their safe",
           "severity": "page",
-          "owner": "journeys/safe-a-company-records-its-safe.ts"
+          "owner": "journeys/safe-a-person-opens-their-safe.ts"
         }
       },
       {
-        "id": "verdict:safe: a company records its safe:staging",
+        "id": "verdict:safe: a person opens their safe:staging",
         "kind": "verdict",
         "labels": {
           "environment": "staging",
-          "journey": "safe: a company records its safe",
+          "journey": "safe: a person opens their safe",
           "severity": "page",
-          "owner": "journeys/safe-a-company-records-its-safe.ts"
+          "owner": "journeys/safe-a-person-opens-their-safe.ts"
         }
       },
       {
-        "id": "verdict:safe: a founder without a safe is refused:local",
+        "id": "verdict:safe: opening again is the same safe:local",
         "kind": "verdict",
         "labels": {
           "environment": "local",
-          "journey": "safe: a founder without a safe is refused",
+          "journey": "safe: opening again is the same safe",
           "severity": "page",
-          "owner": "journeys/safe-a-founder-without-a-safe-is-refused.ts"
+          "owner": "journeys/safe-opening-again-is-the-same-safe.ts"
         }
       },
       {
-        "id": "verdict:safe: a founder without a safe is refused:staging",
+        "id": "verdict:safe: opening again is the same safe:staging",
         "kind": "verdict",
         "labels": {
           "environment": "staging",
-          "journey": "safe: a founder without a safe is refused",
+          "journey": "safe: opening again is the same safe",
           "severity": "page",
-          "owner": "journeys/safe-a-founder-without-a-safe-is-refused.ts"
-        }
-      },
-      {
-        "id": "verdict:safe: a person records their safe:local",
-        "kind": "verdict",
-        "labels": {
-          "environment": "local",
-          "journey": "safe: a person records their safe",
-          "severity": "page",
-          "owner": "journeys/safe-a-person-records-their-safe.ts"
-        }
-      },
-      {
-        "id": "verdict:safe: a person records their safe:staging",
-        "kind": "verdict",
-        "labels": {
-          "environment": "staging",
-          "journey": "safe: a person records their safe",
-          "severity": "page",
-          "owner": "journeys/safe-a-person-records-their-safe.ts"
+          "owner": "journeys/safe-opening-again-is-the-same-safe.ts"
         }
       },
       {
@@ -132593,25 +131180,17 @@
       "thing:company": "bf9b5c8f8591f130",
       "thing:payroll-period": "915bdb337038ba38"
     },
-    "safe.get": {
-      "operation:safe.get": "f8e290004c57413a",
-      "thing:company": "bf9b5c8f8591f130",
-      "thing:safe": "eaa71ce143534782"
+    "personal-safe.claim": {
+      "operation:personal-safe.claim": "f0b727849c0fe5fc",
+      "thing:personal-safe": "4e0806a2c50ef54e"
     },
-    "safe.list": {
-      "operation:safe.list": "74076c9884fb804f",
-      "thing:company": "bf9b5c8f8591f130",
-      "thing:safe": "eaa71ce143534782"
+    "personal-safe.get": {
+      "operation:personal-safe.get": "3f3d6979d74a0a9c",
+      "thing:personal-safe": "4e0806a2c50ef54e"
     },
-    "safe.record": {
-      "operation:safe.record": "3d7fa5666f71c858",
-      "thing:company": "bf9b5c8f8591f130",
-      "thing:safe": "eaa71ce143534782"
-    },
-    "safe.record-company": {
-      "operation:safe.record-company": "dce2b1324c5912db",
-      "thing:company": "bf9b5c8f8591f130",
-      "thing:safe": "eaa71ce143534782"
+    "personal-safe.open": {
+      "operation:personal-safe.open": "824883db79fd01ba",
+      "thing:personal-safe": "4e0806a2c50ef54e"
     },
     "salary-component.create": {
       "operation:salary-component.create": "6c81a3b2969e143e",
@@ -132917,11 +131496,10 @@
     "payroll-period/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# payroll-period.create\n\nSet up a company's payroll period.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| company | payroll-period.company |\n| payrollPeriodName | payroll-period.payrollPeriodName |\n| startDate | payroll-period.startDate |\n| endDate | payroll-period.endDate |\n\n## Answer\n\n| field | value |\n|---|---|\n| payrollPeriod | payroll-period.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting PayrollPeriodCreated.\n\n## Steps\n\n- `payroll-period.create.load` (database)\n- `payroll-period.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| PayrollPeriodEndsBeforeStart | 41 | PP-001 | declared in errors.ts, carrying startDate |\n| PayrollPeriodOverlaps | 42 | PP-002 | declared in errors.ts, carrying payrollPeriod |\n| PayrollPeriodNameTaken | 43 | PP-003 | another payroll period holds this company and payroll period name; by the rule payroll-period.oneNamePerCompany |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### pay a month\n\nStarts from the world `a pension component`.\n\n- **Ada sets up the payroll period 2026.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-01-01`, endDate `2026-12-31`, and is answered.\n\n### set up payroll periods\n\nStarts from the world `two companies`.\n\n- **Bo can't set up a period for Acme Trading.** `bo` (signed in) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-01-01`, endDate `2026-12-31`, and is refused with NotAllowed, AR-001.\n- **a period ending before it starts is refused, naming its first day.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Backwards`, startDate `2026-12-31`, endDate `2026-12-30`, and is refused with PayrollPeriodEndsBeforeStart, PP-001, carrying startDate `2026-12-31`.\n- **Ada sets up 2026, from April 2026 to March 2027.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-04-01`, endDate `2027-03-31`, and is answered.\n- **a one-day period is allowed.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Audit day`, startDate `2027-04-01`, endDate `2027-04-01`, and is answered.\n- **a period sharing only 2026's last day is refused.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Overlap end`, startDate `2027-03-31`, endDate `2027-03-31`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **one ending on 2026's first day too.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Overlap start`, startDate `2026-03-01`, endDate `2026-04-01`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **one inside it too.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Inside`, startDate `2026-06-01`, endDate `2026-06-30`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **but one ending the day before it is allowed.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2025`, startDate `2025-04-01`, endDate `2026-03-31`, and is answered.\n- **one holding 2025, 2026 and the audit day names 2025, which starts first.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Everything`, startDate `2025-01-01`, endDate `2027-12-31`, and is refused with PayrollPeriodOverlaps, PP-002, carrying payrollPeriod the last call's payrollPeriod.\n- **a period ending before it starts is judged before an overlap.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `Backwards`, startDate `2026-06-30`, endDate `2026-06-01`, and is refused with PayrollPeriodEndsBeforeStart, PP-001, carrying startDate `2026-06-30`.\n- **a name already used is refused.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2030-01-01`, endDate `2030-12-31`, and is refused with PayrollPeriodNameTaken, PP-003.\n- **an overlap is judged before a name.** `ada` (role company.owner) calls and sends company the world's company, payrollPeriodName `2026`, startDate `2026-05-01`, endDate `2026-05-31`, and is refused with PayrollPeriodOverlaps, PP-002.\n- **Acme Logistics may have its own 2026 over the same days: each company's periods are its own.** `ada` (role company.owner) calls and sends company the world's otherCompany, payrollPeriodName `2026`, startDate `2026-04-01`, endDate `2027-03-31`, and is answered.\n\n## How to call\n\n```sh\ncapxul payroll-period create --company <company> --payrollPeriodName <payrollPeriodName> --startDate <startDate> --endDate <endDate>\n```\n\nHTTP: `POST /payroll-period/create` with the payload as JSON. SDK: `Sdk.payroll-period.create(payload)`.\n",
     "payroll-period/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# payroll-period.get\n\nRead one payroll-period by its id: company, payrollPeriodName, startDate, endDate, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | payroll-period.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | payroll-period.company |\n| payrollPeriodName | payroll-period.payrollPeriodName |\n| startDate | payroll-period.startDate |\n| endDate | payroll-period.endDate |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up payroll periods\n\nStarts from the world `two companies`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's payrollPeriod, and is refused with NotAllowed, AR-001.\n- **it reads back as set up.** `ada` (role company.owner) calls and sends id the last call's payrollPeriod, and gets back [the world's company, `2026`, `2026-04-01`, `2027-03-31`, `active`].\n- **it reads back Acme Logistics'.** `ada` (role company.owner) calls and sends id the last call's payrollPeriod, and gets back [the world's otherCompany, `2026`].\n\n## How to call\n\n```sh\ncapxul payroll-period get --id <id>\n```\n\nHTTP: `POST /payroll-period/get` with the payload as JSON. SDK: `Sdk.payroll-period.get(payload)`.\n",
     "payroll-period/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# payroll-period\n\nA company's payroll year, the span its tax is worked out over.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| payrollPeriodName | PeriodName |\n| startDate | Day |\n| endDate | Day |\n\n## Machine\n\nStates: active. A move from the wrong state is refused PayrollPeriodNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | PayrollPeriodCreated |\n\n## Invariants\n\n- `payroll-period.oneNamePerCompany`: another payroll period holds this company and payroll period name. Unique on company, payrollPeriodName, in every state; refused PayrollPeriodNameTaken.\n\n## Events\n\n- `PayrollPeriodCreated`: carries payrollPeriod (payroll-period.id), company (payroll-period.company), startDate (payroll-period.startDate), endDate (payroll-period.endDate); emitted by the move create\n\n## Operations\n\n- [payroll-period.create](create.md): Set up a company's payroll period.\n- [payroll-period.get](get.md): Read one payroll-period by its id: company, payrollPeriodName, startDate, endDate, state.\n",
-    "safe/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# safe.get\n\nRead one safe by its id: kind, person, company, account, firstOwner, owners, threshold, saltNonce, state.\n\n**Who may call:** the holder of the safe, or the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | safe.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| kind | safe.kind | Whose it is: a person's own, or a company's. |\n| person (optional) | safe.person | Whose Safe it is, when it is a person's. |\n| company (optional) | safe.company | The company it is for, when it is a company's. |\n| account | safe.account | Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55). |\n| firstOwner | safe.firstOwner | The one owner it is set up with, checksummed: the bootstrap key for a person's, the founder's own Safe for a company's. |\n| owners | safe.owners | Who owns it today: its first owner until the chain says otherwise. |\n| threshold | safe.threshold | How many owners must approve a transaction: 1 at setup. |\n| saltNonce | safe.saltNonce | The salt nonce its address is worked out from, kept so the address can be checked again. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the holder of the safe, or the owner of its company; the handler never runs |\n\n## Worked examples\n\n### safe: a company records its safe\n\nStarts from the world `three company safes`.\n\n- **Ada's Safe holds the address her key was answered, the factory's for her id.** `ada` (signed in) calls and sends id the world's adaSafe, and gets back [`personal`, the cast's ada person, `none`, the world's adaAccount, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`, [`eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`], `1`, `counterfactual`] and gets back ``.\n- **Bo's Safe holds the address his agent was answered.** `bo` (signed in) calls and sends id the world's boSafe, and gets back [`personal`, the cast's bo person, `none`, the world's boAccount, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`, [`eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`], `1`, `counterfactual`] and gets back ``.\n- **Bo can't read Acme Trading's Safe.** `bo` (signed in) calls and sends id the world's tradingSafe, and is refused with NotAllowed, AR-001.\n- **Acme Trading's Safe holds what Ada's agent was answered: owned by her own Safe alone, at the factory's address for that owner and the company's id.** `ada` (signed in) calls and sends id the world's tradingSafe, and gets back [`company`, the world's company, `none`, the world's tradingAccount, the world's adaAccount, [the world's adaAccount], `1`, `counterfactual`] and gets back ``.\n- **Ada reads Acme Trading's Safe again, for its salt nonce.** `ada` (signed in) calls and sends id the world's tradingSafe, and gets back the world's tradingAccount.\n- **Acme Logistics' Safe holds what Ada's key was answered: the same owner, Ada's Safe, and an address of its own.** `ada` (signed in) calls and sends id the world's logisticsSafe, and gets back [`company`, the world's otherCompany, `none`, the world's logisticsAccount, the world's adaAccount, [the world's adaAccount], `1`, `counterfactual`] and gets back ``.\n- **Bo Ltd's Safe holds what Bo was answered: owned by Bo's own Safe, not Ada's, and its address follows.** `bo` (signed in) calls and sends id the world's boLtdSafe, and gets back [`company`, the world's boCompany, `none`, the world's boLtdAccount, the world's boAccount, [the world's boAccount], `1`, `counterfactual`] and gets back ``.\n\n### safe: a founder without a safe is refused\n\nStarts from the world `ada has a safe`.\n\n- **it is Bo Ltd's, owned by one Safe, not the bootstrap key, at the factory's address for it.** `bo` (signed in) calls and sends id the last call's safe, and gets back [`company`, the world's boCompany, `none`, `1`, [the last call's firstOwner], `counterfactual`] and gets back false and gets back ``.\n\n### safe: a person records their safe\n\nStarts from an empty world.\n\n- **Bo can't read Ada's Safe.** `bo` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Ada reads it back: hers, owned by the bootstrap key alone, at the factory's address for her id.** `ada` (signed in) calls and sends id the last call's safe, and gets back [`personal`, the cast's ada person, `none`, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`, [`eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`], `1`, `counterfactual`] and gets back ``.\n- **Ada can't read Bo's.** `ada` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Bo's agent reads it back: Bo's, at the factory's address for his id, not Ada's.** `bo` (signed in) calls and sends id the last call's safe, and gets back [`personal`, the cast's bo person, `none`, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`, [`eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`], `1`, `counterfactual`] and gets back ``.\n\n## How to call\n\n```sh\ncapxul safe get --id <id>\n```\n\nHTTP: `POST /safe/get` with the payload as JSON. SDK: `Sdk.safe.get(payload)`.\n",
-    "safe/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# safe\n\nA Safe: a person's own on-chain account, or a company's, at the address it has before it is deployed.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| kind | SafeKind | Whose it is: a person's own, or a company's. |\n| person (optional) | id | Whose Safe it is, when it is a person's. |\n| company (optional) | company.id | The company it is for, when it is a company's. |\n| account | account | Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55). |\n| firstOwner | account | The one owner it is set up with, checksummed: the bootstrap key for a person's, the founder's own Safe for a company's. |\n| owners | schema | Who owns it today: its first owner until the chain says otherwise. |\n| threshold | Threshold | How many owners must approve a transaction: 1 at setup. |\n| saltNonce | SaltNonce | The salt nonce its address is worked out from, kept so the address can be checked again. |\n\n## Machine\n\nStates: counterfactual. A move from the wrong state is refused SafeNotCounterfactual (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| record | (creates) | counterfactual | PersonalSafeRecorded |\n| recordCompany | (creates) | counterfactual | CompanySafeRecorded |\n\n## Invariants\n\n- `safe.oneSafeEach`: another safe holds this salt nonce. Unique on saltNonce, in every state; refused SafeAlreadyRecorded.\n\n## Events\n\n- `CompanySafeRecorded`: carries safe (safe.id), company (safe.company: The company it is for, when it is a company's.), account (safe.account: Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55).); emitted by the move recordCompany\n- `PersonalSafeRecorded`: carries safe (safe.id), person (safe.person: Whose Safe it is, when it is a person's.), account (safe.account: Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55).); emitted by the move record\n\n## Roles\n\n- holder\n\n## Operations\n\n- [safe.get](get.md): Read one safe by its id: kind, person, company, account, firstOwner, owners, threshold, saltNonce, state.\n- [safe.list](list.md): List safes, oldest first, 50 to a page, filtered by company.\n- [safe.record](record.md): Record your own Safe, at the address it will have once deployed. Nothing is sent to the chain.\n- [safe.record-company](record-company.md): Record a company's Safe, owned by its founder's own Safe, at the address it will have once deployed.\n",
-    "safe/list.md": "<!-- Generated from the blueprint. Do not edit. -->\n# safe.list\n\nList safes, oldest first, 50 to a page, filtered by company.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler. A page of 50 at a time, oldest first, narrowed by company; pass the answer's `next` as `cursor` for the page after it.\n\n**Budget:** p95 80ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company (optional) | safe.company | The company it is for, when it is a company's. |\n| cursor (optional) | text |  |\n\n## Answer\n\n| field | value |\n|---|---|\n| items | schema |\n| next | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### safe: a company records its safe\n\nStarts from the world `three company safes`.\n\n- **nor list Acme Trading's Safes.** `bo` (signed in) calls and sends company the world's company, and is refused with NotAllowed, AR-001.\n- **Acme Trading has that one Safe and no other.** `ada` (signed in) calls and sends company the world's company, and gets back [[the world's tradingSafe, `company`, the world's company, the world's tradingAccount]].\n- **Acme Logistics has that one Safe and no other.** `ada` (signed in) calls and sends company the world's otherCompany, and gets back [[the world's logisticsSafe, `company`, the world's otherCompany, the world's logisticsAccount]].\n- **Bo Ltd has that one Safe and no other.** `bo` (signed in) calls and sends company the world's boCompany, and gets back [[the world's boLtdSafe, `company`, the world's boCompany, the world's boLtdAccount]].\n\n### safe: a founder without a safe is refused\n\nStarts from the world `ada has a safe`.\n\n- **Bo Ltd has that one Safe and no other.** `bo` (signed in) calls and sends company the world's boCompany, and gets back 1 and gets back `company`.\n\n## How to call\n\n```sh\ncapxul safe list [--company <company>] [--cursor <cursor>]\n```\n\nHTTP: `POST /safe/list` with the payload as JSON. SDK: `Sdk.safe.list(payload)`.\n",
-    "safe/record-company.md": "<!-- Generated from the blueprint. Do not edit. -->\n# safe.record-company\n\nRecord a company's Safe, owned by its founder's own Safe, at the address it will have once deployed.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | company.id | The company whose Safe it is. |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| safe | safe.id |  |\n| account | safe.account | Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55). |\n\n## Move\n\n`recordCompany`: from nothing (it creates) to counterfactual, emitting CompanySafeRecorded.\n\n## Steps\n\n- `safe.record-company.load` (database)\n- `safe.record-company.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| FounderHasNoSafe | 42 | SF-002 | declared in errors.ts, carrying company |\n| SafeAlreadyRecorded | 41 | SF-001 | another safe holds this salt nonce; by the rule safe.oneSafeEach, carrying saltNonce |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### safe: a company records its safe\n\nStarts from the world `three company safes`.\n\n- **Bo can't record a Safe for Ada's company.** `bo` (signed in) calls and sends company the world's company, and is refused with NotAllowed, AR-001.\n- **nor can Bo's agent.** `bo` (signed in) calls and sends company the world's company, and is refused with NotAllowed, AR-001.\n- **Ada's agent's request again is the same call, and nothing new.** `ada` (signed in) calls and sends company the world's company, with the request key `acme-trading-safe`, and gets back [the world's tradingSafe, the world's tradingAccount].\n- **a second Safe for Acme Trading, a new request, is refused, naming that salt nonce.** `ada` (signed in) calls and sends company the world's company, and is refused with SafeAlreadyRecorded, SF-001, carrying saltNonce the last call's saltNonce.\n\n### safe: a founder without a safe is refused\n\nStarts from the world `ada has a safe`.\n\n- **Bo can't record Bo Ltd's Safe before he has one of his own.** `bo` (signed in) calls and sends company the world's boCompany, and is refused with FounderHasNoSafe, SF-002, carrying company the world's boCompany.\n- **nor can his agent.** `bo` (signed in) calls and sends company the world's boCompany, and is refused with FounderHasNoSafe, SF-002, carrying company the world's boCompany.\n- **Ada has a Safe, but Bo Ltd isn't hers to record one for.** `ada` (signed in) calls and sends company the world's boCompany, and is refused with NotAllowed, AR-001.\n- **now Bo Ltd's Safe can be recorded.** `bo` (signed in) calls and sends company the world's boCompany, and gets back an answer matching `^saf_[0-9a-z]+$` and gets back an answer matching `^eip155:31337:0x[0-9a-fA-F]{40}$`.\n\n## How to call\n\n```sh\ncapxul safe record-company --company <company>\n```\n\nHTTP: `POST /safe/record-company` with the payload as JSON. SDK: `Sdk.safe.record-company(payload)`.\n",
-    "safe/record.md": "<!-- Generated from the blueprint. Do not edit. -->\n# safe.record\n\nRecord your own Safe, at the address it will have once deployed. Nothing is sent to the chain.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| safe | safe.id |  |\n| account | safe.account | Its address, worked out before it is deployed, as a CAIP-10 account with the address checksummed (EIP-55). |\n\n## Move\n\n`record`: from nothing (it creates) to counterfactual, emitting PersonalSafeRecorded.\n\n## Steps\n\n- `safe.record.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SafeAlreadyRecorded | 41 | SF-001 | another safe holds this salt nonce; by the rule safe.oneSafeEach, carrying saltNonce |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### safe: a company records its safe\n\nStarts from the world `three company safes`.\n\n- **Ada's first request again, by her key, is the same call: her one Safe, and nothing new.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back [the world's adaSafe, the world's adaAccount].\n\n### safe: a founder without a safe is refused\n\nStarts from the world `ada has a safe`.\n\n- **Bo records his own Safe from the command line.** `bo` (signed in) calls and sends nothing, and is answered.\n\n### safe: a person records their safe\n\nStarts from an empty world.\n\n- **the system can't record a Safe: it is nobody, so it has none.** `nobody` (system) calls and sends nothing, and is refused with NotAllowed, AR-001.\n- **Ada records her own Safe from the command line.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back an answer matching `^saf_[0-9a-z]+$` and gets back an answer matching `^eip155:31337:0x[0-9a-fA-F]{40}$`.\n- **a second record, a new request, is refused: a person has one Safe.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyRecorded, SF-001, carrying saltNonce the last call's saltNonce.\n- **Bo's agent records Bo's own Safe through MCP: his, not Ada's.** `bo` (signed in) calls and sends nothing, and gets back an answer matching `^saf_[0-9a-z]+$` and gets back an answer matching `^eip155:31337:0x[0-9a-fA-F]{40}$`.\n\n## How to call\n\n```sh\ncapxul safe record\n```\n\nHTTP: `POST /safe/record` with the payload as JSON. SDK: `Sdk.safe.record(payload)`.\n",
+    "personal-safe/claim.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.claim\n\nClaim your Safe with the key you sign with, proving you hold it. This works out its address; nothing is sent to the chain.\n\n**Who may call:** the holder of the personal-safe.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| safe | personal-safe.id |  |\n| signer | EvmAddress | The key you sign with, which becomes the Safe's one owner. |\n| proof | PersonalSignature | Your signer's personal_sign of \"Capxul: claim Safe <safe> for <you>\". |\n\n## Answer\n\n| field | value |\n|---|---|\n| safe | personal-safe.id |\n| account | account |\n\n## Move\n\n`claim`: from unclaimed to claimed, emitting PersonalSafeClaimed.\n\n## Steps\n\n- `personal-safe.claim.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SignerNotProven | 42 | SF-002 | declared in errors.ts, carrying signer |\n| SafeAlreadyOpen | 41 | SF-001 | another personal safe holds this person; by the rule personal-safe.oneSafePerPerson, carrying person |\n| PersonalSafeNotUnclaimed | 40 | SF-900 | the personal-safe is in a state claim can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the holder of the personal-safe; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## How to call\n\n```sh\ncapxul personal-safe claim --safe <safe> --signer <signer> --proof <proof>\n```\n\nHTTP: `POST /personal-safe/claim` with the payload as JSON. SDK: `Sdk.personal-safe.claim(payload)`.\n",
+    "personal-safe/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.get\n\nRead one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.\n\n**Who may call:** the holder of the personal-safe.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | personal-safe.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| person | personal-safe.person | Whose Safe it is. |\n| saltNonce | personal-safe.saltNonce | The salt nonce its address is worked out from, kept at open so the address can be checked again. |\n| signer (optional) | personal-safe.signer | The key the person proved they hold, set at claim. |\n| firstOwner (optional) | personal-safe.firstOwner | The one owner it is set up with, set at claim: the signer, on the environment's chain. |\n| account (optional) | personal-safe.account | Its address once claimed, worked out before it is deployed, checksummed (EIP-55). |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the holder of the personal-safe; the handler never runs |\n\n## Worked examples\n\n### safe: a person opens their safe\n\nStarts from an empty world.\n\n- **Bo can't read Ada's Safe.** `bo` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Ada reads it back: hers, unclaimed, with her salt nonce, and no signer, owner or address yet.** `ada` (signed in) calls and sends id the last call's safe, and gets back [the cast's ada person, `none`, `none`, `none`, `unclaimed`] and gets back ``.\n- **Ada can't read Bo's.** `ada` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.\n- **Bo's agent reads it back: Bo's, unclaimed, with his own salt nonce.** `bo` (signed in) calls and sends id the last call's safe, and gets back [the cast's bo person, `none`, `none`, `none`, `unclaimed`] and gets back ``.\n\n### safe: opening again is the same safe\n\nStarts from the world `ada has opened her safe`.\n\n- **that Safe is hers, unclaimed, with her salt nonce.** `ada` (signed in) calls and sends id the world's adaSafe, and gets back [the cast's ada person, `none`, `unclaimed`] and gets back ``.\n\n## How to call\n\n```sh\ncapxul personal-safe get --id <id>\n```\n\nHTTP: `POST /personal-safe/get` with the payload as JSON. SDK: `Sdk.personal-safe.get(payload)`.\n",
+    "personal-safe/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe\n\nA person's own Safe: opened first, then claimed with the key they sign with, which gives its address.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| person | id | Whose Safe it is. |\n| saltNonce | SaltNonce | The salt nonce its address is worked out from, kept at open so the address can be checked again. |\n| signer (optional) | schema | The key the person proved they hold, set at claim. |\n| firstOwner (optional) | account | The one owner it is set up with, set at claim: the signer, on the environment's chain. |\n| account (optional) | account | Its address once claimed, worked out before it is deployed, checksummed (EIP-55). |\n\n## Machine\n\nStates: unclaimed, claimed. A move from the wrong state is refused PersonalSafeNotUnclaimed (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| open | (creates) | unclaimed | PersonalSafeOpened |\n| claim | unclaimed | claimed | PersonalSafeClaimed |\n\n## Invariants\n\n- `personal-safe.oneSafePerPerson`: another personal safe holds this person. Unique on person, in every state; refused SafeAlreadyOpen.\n\n## Events\n\n- `PersonalSafeClaimed`: carries safe (personal-safe.id), person (personal-safe.person: Whose Safe it is.), signer (personal-safe.signer: The key the person proved they hold, set at claim.), account (personal-safe.account: Its address once claimed, worked out before it is deployed, checksummed (EIP-55).); emitted by the move claim\n- `PersonalSafeOpened`: carries safe (personal-safe.id), person (personal-safe.person: Whose Safe it is.); emitted by the move open\n\n## Roles\n\n- holder\n\n## Operations\n\n- [personal-safe.claim](claim.md): Claim your Safe with the key you sign with, proving you hold it. This works out its address; nothing is sent to the chain.\n- [personal-safe.get](get.md): Read one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.\n- [personal-safe.open](open.md): Open your own Safe. It has no address until you claim it with the key you sign with.\n",
+    "personal-safe/open.md": "<!-- Generated from the blueprint. Do not edit. -->\n# personal-safe.open\n\nOpen your own Safe. It has no address until you claim it with the key you sign with.\n\n**Who may call:** anyone signed in.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n(none)\n\n## Answer\n\n| field | value |\n|---|---|\n| safe | personal-safe.id |\n\n## Move\n\n`open`: from nothing (it creates) to unclaimed, emitting PersonalSafeOpened.\n\n## Steps\n\n- `personal-safe.open.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SafeAlreadyOpen | 41 | SF-001 | another personal safe holds this person; by the rule personal-safe.oneSafePerPerson, carrying person |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### safe: a person opens their safe\n\nStarts from an empty world.\n\n- **the system can't open a Safe: it is nobody.** `nobody` (system) calls and sends nothing, and is refused with NotAllowed, AR-001.\n- **Ada opens her own Safe from the command line.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back an answer matching `^saf_[0-9a-z]+$`.\n- **a second open, a new request, is refused: a person has one Safe.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **nor through her agent.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **Bo's agent opens Bo's own Safe through MCP: his, not Ada's.** `bo` (signed in) calls and sends nothing, and gets back an answer matching `^saf_[0-9a-z]+$`.\n- **a second open from Bo, in his own session, is refused too.** `bo` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's bo person.\n\n### safe: opening again is the same safe\n\nStarts from the world `ada has opened her safe`.\n\n- **her first request again, by her key, is the same call: the Safe she was answered, and nothing new.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back the world's adaSafe.\n- **a new request by her key is refused.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **and in her own session.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n- **and through her agent.** `ada` (signed in) calls and sends nothing, and is refused with SafeAlreadyOpen, SF-001, carrying person the cast's ada person.\n\n## How to call\n\n```sh\ncapxul personal-safe open\n```\n\nHTTP: `POST /personal-safe/open` with the payload as JSON. SDK: `Sdk.personal-safe.open(payload)`.\n",
     "salary-component/create.md": "<!-- Generated from the blueprint. Do not edit. -->\n# salary-component.create\n\nAdd a part of pay, an earning or a deduction, with its default amount and the ledger it is booked to.\n\n**Who may call:** the owner of its company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 150ms.\n\n## Payload\n\n| field | value | description |\n|---|---|---|\n| company | salary-component.company |  |\n| salaryComponent | salary-component.salaryComponent |  |\n| type | salary-component.type |  |\n| amount | salary-component.amount | What a structure line pays when it names no amount of its own, in USDC base units. 0 for none. |\n| account | salary-component.account | The company's ledger its pay is booked to: debited for an earning, credited for a deduction. |\n\n## Answer\n\n| field | value |\n|---|---|\n| salaryComponent | salary-component.id |\n\n## Move\n\n`create`: from nothing (it creates) to active, emitting SalaryComponentCreated.\n\n## Steps\n\n- `salary-component.create.load` (database)\n- `salary-component.create.insert` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| ComponentAccountNotInCompany | 41 | SC-001 | declared in errors.ts |\n| ComponentAccountIsGroup | 42 | SC-002 | declared in errors.ts |\n| SalaryComponentTaken | 43 | SC-003 | another salary component holds this company and salary component; by the rule salary-component.oneNamePerCompany |\n| AccountNotFound | 4 | AC-901 | nothing has the id in account; the handler never runs; carries `id` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### assign salary structures\n\nStarts from the world `a payroll outsider`.\n\n- **and Basic for Acme Logistics.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Basic`, type `Earning`, amount `1000000000`, account the last call's account, and is answered.\n\n### run a payroll\n\nStarts from the world `an outside cost center`.\n\n- **Ada adds a deduction for meals of 50 USDC, booked to Salaries.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Cafeteria`, type `Deduction`, amount `50000000`, account the world's salaries, and is answered.\n- **Ada adds an earning of 100 USDC booked to Rent.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Night shift`, type `Earning`, amount `100000000`, account the world's rent, and is answered.\n\n### set up salary components\n\nStarts from the world `a salaries ledger`.\n\n- **Bo can't add a component to Acme Trading.** `bo` (signed in) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `3000000000`, account the world's salaries, and is refused with NotAllowed, AR-001.\n- **Ada adds Basic, an earning of 3,000 USDC by default, booked to Salaries.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `3000000000`, account the world's salaries, and is answered.\n- **Pension, a deduction of 150 USDC, is booked to Pension Payable.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Pension`, type `Deduction`, amount `150000000`, account the world's pension, and is answered.\n- **Housing may have no default amount.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Housing`, type `Earning`, amount `0`, account the world's salaries, and is answered.\n- **a component booked to a group is refused.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Bonus`, type `Earning`, amount `0`, account the world's operating, and is refused with ComponentAccountIsGroup, SC-002.\n- **so is one booked to Liabilities, the group above Payroll Payable.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Tax`, type `Deduction`, amount `10000000`, account the world's liabilities, and is refused with ComponentAccountIsGroup, SC-002.\n- **a name already used in the company is refused, whatever its type.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Deduction`, amount `5000000`, account the world's pension, and is refused with SalaryComponentTaken, SC-003.\n- **Acme Trading's component booked to that group is refused for the company, before the group.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Overtime`, type `Earning`, amount `0`, account the last call's account, and is refused with ComponentAccountNotInCompany, SC-001.\n- **Acme Trading's component can't be booked to Acme Logistics' ledger.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Overtime`, type `Earning`, amount `0`, account the last call's account, and is refused with ComponentAccountNotInCompany, SC-001.\n- **another company's account is refused before a name already taken.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `0`, account the last call's account, and is refused with ComponentAccountNotInCompany, SC-001.\n- **and a group before a name already taken.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Basic`, type `Earning`, amount `0`, account the world's operating, and is refused with ComponentAccountIsGroup, SC-002.\n- **Acme Logistics may have its own Basic, booked to its own ledger.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Basic`, type `Earning`, amount `1000000000`, account the last call's account, and is answered.\n- **but not booked to Acme Trading's Salaries.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Housing`, type `Earning`, amount `0`, account the world's salaries, and is refused with ComponentAccountNotInCompany, SC-001.\n\n### set up salary structures\n\nStarts from the world `a pension component`.\n\n- **and gives Acme Logistics its own Basic.** `ada` (role company.owner) calls and sends company the world's otherCompany, salaryComponent `Basic`, type `Earning`, amount `1000000000`, account the last call's account, and is answered.\n- **Ada adds an earning with no default.** `ada` (role company.owner) calls and sends company the world's company, salaryComponent `Overtime`, type `Earning`, amount `0`, account the world's salaries, and is answered.\n\n## How to call\n\n```sh\ncapxul salary-component create --company <company> --salaryComponent <salaryComponent> --type <type> --amount <amount> --account <account>\n```\n\nHTTP: `POST /salary-component/create` with the payload as JSON. SDK: `Sdk.salary-component.create(payload)`.\n",
     "salary-component/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# salary-component.get\n\nRead one salary-component by its id: company, salaryComponent, type, amount, account, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | salary-component.id |\n\n## Answer\n\n| field | value | description |\n|---|---|---|\n| company | salary-component.company |  |\n| salaryComponent | salary-component.salaryComponent |  |\n| type | salary-component.type |  |\n| amount | salary-component.amount | What a structure line pays when it names no amount of its own, in USDC base units. 0 for none. |\n| account | salary-component.account | The company's ledger its pay is booked to: debited for an earning, credited for a deduction. |\n| state | text |  |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### set up salary components\n\nStarts from the world `a salaries ledger`.\n\n- **Bo can't read it.** `bo` (signed in) calls and sends id the last call's salaryComponent, and is refused with NotAllowed, AR-001.\n- **it reads back as added.** `ada` (role company.owner) calls and sends id the last call's salaryComponent, and gets back [the world's company, `Basic`, `Earning`, `3000000000`, the world's salaries, `active`].\n- **and reads back a deduction.** `ada` (role company.owner) calls and sends id the last call's salaryComponent, and gets back [`Pension`, `Deduction`, `150000000`, the world's pension].\n- **and reads back 0.** `ada` (role company.owner) calls and sends id the last call's salaryComponent, and gets back [`Housing`, `0`].\n\n## How to call\n\n```sh\ncapxul salary-component get --id <id>\n```\n\nHTTP: `POST /salary-component/get` with the payload as JSON. SDK: `Sdk.salary-component.get(payload)`.\n",
     "salary-component/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# salary-component\n\nA part of an employee's pay: an earning, such as basic pay, or a deduction, such as a pension contribution.\n\nLives in the database.\n\n## Fields\n\n| field | value | description |\n|---|---|---|\n| id | id |  |\n| company | company.id |  |\n| salaryComponent | ComponentName |  |\n| type | ComponentType |  |\n| amount | Amount | What a structure line pays when it names no amount of its own, in USDC base units. 0 for none. |\n| account | account.id | The company's ledger its pay is booked to: debited for an earning, credited for a deduction. |\n\n## Machine\n\nStates: active. A move from the wrong state is refused SalaryComponentNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | SalaryComponentCreated |\n\n## Invariants\n\n- `salary-component.oneNamePerCompany`: another salary component holds this company and salary component. Unique on company, salaryComponent, in every state; refused SalaryComponentTaken.\n\n## Events\n\n- `SalaryComponentCreated`: carries salaryComponent (salary-component.id), company (salary-component.company), type (salary-component.type); emitted by the move create\n\n## Operations\n\n- [salary-component.create](create.md): Add a part of pay, an earning or a deduction, with its default amount and the ledger it is booked to.\n- [salary-component.get](get.md): Read one salary-component by its id: company, salaryComponent, type, amount, account, state.\n",
@@ -132961,5 +131539,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "861185683c5127193170f48213a2ea917377f82f1ea48ca1908211e9ddd151ad"
+  "digest": "8058ee77a18165f991dce9808dbb2b55f57b42d32b0dcd0c1bdbcb24c426c2e2"
 }

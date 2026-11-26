@@ -3194,42 +3194,41 @@
       "earlier": []
     },
     "SF-001": {
-      "name": "SafeAlreadyRecorded",
-      "owner": "safe",
-      "from": "blueprint/things/safe/errors.ts",
+      "name": "SafeAlreadyOpen",
+      "owner": "personal-safe",
+      "from": "blueprint/things/personal-safe/errors.ts",
       "fields": {
-        "saltNonce": {
-          "value": "uint",
-          "bits": 256
+        "person": {
+          "value": "id",
+          "prefix": "per"
         }
       },
       "wire": {
         "effect": {
-          "tag": "SafeAlreadyRecorded"
+          "tag": "SafeAlreadyOpen"
         }
       },
       "earlier": []
     },
     "SF-002": {
-      "name": "FounderHasNoSafe",
-      "owner": "safe",
-      "from": "blueprint/things/safe/errors.ts",
+      "name": "SignerNotProven",
+      "owner": "personal-safe",
+      "from": "blueprint/things/personal-safe/errors.ts",
       "fields": {
-        "company": {
-          "value": "id",
-          "prefix": "com"
+        "signer": {
+          "value": "schema"
         }
       },
       "wire": {
         "effect": {
-          "tag": "FounderHasNoSafe"
+          "tag": "SignerNotProven"
         }
       },
       "earlier": []
     },
     "SF-900": {
-      "name": "SafeNotCounterfactual",
-      "owner": "safe",
+      "name": "PersonalSafeNotUnclaimed",
+      "owner": "personal-safe",
       "fields": {
         "state": {
           "value": "text",
@@ -3238,7 +3237,7 @@
       },
       "wire": {
         "effect": {
-          "tag": "SafeNotCounterfactual"
+          "tag": "PersonalSafeNotUnclaimed"
         }
       },
       "earlier": []
