@@ -13,6 +13,9 @@
     "AllocationOverlaps": "LL-005",
     "AllocationTypeNotInCompany": "LL-003",
     "AlreadyRecorded": "BT-004",
+    "AmountFractional": "UW-002",
+    "AmountNegative": "UW-001",
+    "AmountNotANumber": "UW-003",
     "ApplicantHasLeft": "LP-002",
     "ApplicantNotInCompany": "LP-001",
     "ApplicantRejected": "IV-001",
@@ -256,7 +259,8 @@
     "TemplateWithoutKras": "TP-001",
     "TransferNotYetDue": "TR-005",
     "TransferredEmployeeHasLeft": "TR-002",
-    "TransferredEmployeeNotInCompany": "TR-001"
+    "TransferredEmployeeNotInCompany": "TR-001",
+    "WorkStateUnknown": "UW-004"
   },
   "values": {
     "Abbr": {
@@ -9063,6 +9067,95 @@
         "kind": "app"
       },
       "hash": "0e9393ef148be64d"
+    },
+    "us-withholding": {
+      "name": "us-withholding",
+      "identifier": "UsWithholding",
+      "code": "UW",
+      "description": "One pay's US tax lines: federal and state, each employee's and employer's share.",
+      "fields": {
+        "id": {
+          "value": {
+            "type": "id",
+            "prefix": "uwh"
+          }
+        }
+      },
+      "lives": "database",
+      "machine": null,
+      "events": {},
+      "errors": {
+        "AmountNegative": {
+          "fields": {
+            "figure": {
+              "value": {
+                "type": "schema",
+                "format": "choice",
+                "options": [
+                  "wage",
+                  "yearToDate"
+                ]
+              }
+            }
+          },
+          "exit": 41,
+          "code": "UW-001"
+        },
+        "AmountFractional": {
+          "fields": {
+            "figure": {
+              "value": {
+                "type": "schema",
+                "format": "choice",
+                "options": [
+                  "wage",
+                  "yearToDate"
+                ]
+              }
+            }
+          },
+          "exit": 42,
+          "code": "UW-002"
+        },
+        "AmountNotANumber": {
+          "fields": {
+            "figure": {
+              "value": {
+                "type": "schema",
+                "format": "choice",
+                "options": [
+                  "wage",
+                  "yearToDate"
+                ]
+              }
+            }
+          },
+          "exit": 43,
+          "code": "UW-003"
+        },
+        "WorkStateUnknown": {
+          "fields": {
+            "workState": {
+              "value": {
+                "type": "text",
+                "max": 40
+              }
+            }
+          },
+          "exit": 44,
+          "code": "UW-004"
+        }
+      },
+      "roles": [],
+      "roleRules": {},
+      "from": {
+        "kind": "feature",
+        "mount": "payroll-tax-us",
+        "package": "@capxul/payroll-tax-us",
+        "version": "0.0.0",
+        "thing": "us-withholding"
+      },
+      "hash": "3e15fcd393b001f6"
     }
   },
   "operations": {
@@ -24749,6 +24842,101 @@
         "p95Ms": 50
       },
       "hash": "7aa4df7c88e52f1d"
+    },
+    "us-withholding.compute": {
+      "kind": "operation",
+      "name": "us-withholding.compute",
+      "thing": "us-withholding",
+      "verb": "compute",
+      "identifier": "compute",
+      "file": "@capxul/payroll-tax-us/blueprint/things/us-withholding/verbs/compute.ts",
+      "from": {
+        "kind": "feature",
+        "mount": "payroll-tax-us",
+        "package": "@capxul/payroll-tax-us",
+        "version": "0.0.0",
+        "thing": "us-withholding"
+      },
+      "description": "Work out one pay's US tax lines from its wage, frequency, pay date, work state, wages so far this year and W-4.",
+      "payload": {
+        "wage": {
+          "value": {
+            "type": "text",
+            "max": 40
+          }
+        },
+        "frequency": {
+          "value": {
+            "type": "schema",
+            "format": "choice",
+            "options": [
+              "weekly",
+              "biweekly",
+              "semimonthly",
+              "monthly",
+              "quarterly",
+              "semiannual",
+              "annual",
+              "daily"
+            ]
+          }
+        },
+        "payDate": {
+          "value": {
+            "type": "day"
+          }
+        },
+        "workState": {
+          "value": {
+            "type": "text",
+            "max": 40
+          }
+        },
+        "yearToDate": {
+          "value": {
+            "type": "text",
+            "max": 40
+          }
+        },
+        "w4": {
+          "value": {
+            "type": "schema"
+          },
+          "json": "object"
+        }
+      },
+      "answer": {
+        "lines": {
+          "value": {
+            "type": "schema",
+            "format": "list",
+            "fields": [
+              "jurisdiction",
+              "tax",
+              "share",
+              "amount"
+            ]
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "signed-in"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": null,
+      "hash": "08bef7d83e0ea556"
     }
   },
   "journeys": {
@@ -103315,6 +103503,149 @@
       ],
       "sourceHash": "ef0fb68bccf7ab72f8a744980385af09494c164e0c28ba8fbd6ef2d6374799a7"
     },
+    "journeys/tax-us-footing.ts": {
+      "name": "tax-us: the piece's footing",
+      "file": "journeys/tax-us-footing.ts",
+      "cast": {
+        "ada": {
+          "kind": "signed-in"
+        }
+      },
+      "starts": null,
+      "steps": [
+        {
+          "title": "a negative wage is refused, naming the wage",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "-1",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNegative",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a wage that isn't whole base units is refused, naming the wage",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "1500000000.5",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountFractional",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a work state that isn't one of the fifty or DC is refused, naming it",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "1500000000",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "PR",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "WorkStateUnknown",
+              "fields": {
+                "workState": "PR"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a wage of nothing, with no Step 4(c) extra withholding, gives no lines: a line of nothing is left out",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        }
+      ],
+      "sourceHash": "e838568b60673ed5b3ce771b7054555246453fc227b695837ab52c80eaa19318"
+    },
     "journeys/transfer-an-employee.ts": {
       "name": "transfer an employee",
       "file": "journeys/transfer-an-employee.ts",
@@ -113499,6 +113830,46 @@
       }
     },
     {
+      "id": "anomaly:UW-001",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "UW-001",
+        "severity": "ticket",
+        "owner": "blueprint/things/us-withholding/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:UW-002",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "UW-002",
+        "severity": "ticket",
+        "owner": "blueprint/things/us-withholding/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:UW-003",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "UW-003",
+        "severity": "ticket",
+        "owner": "blueprint/things/us-withholding/errors.ts"
+      }
+    },
+    {
+      "id": "anomaly:UW-004",
+      "kind": "anomaly",
+      "labels": {
+        "environment": "*",
+        "code": "UW-004",
+        "severity": "ticket",
+        "owner": "blueprint/things/us-withholding/errors.ts"
+      }
+    },
+    {
       "id": "defect:account.balance",
       "kind": "defect",
       "labels": {
@@ -120310,6 +120681,48 @@
         "operation": "shift-type.get",
         "severity": "page",
         "owner": "blueprint/things/shift-type/verbs/get.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "defect:us-withholding.compute",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "us-withholding.compute",
+        "severity": "page",
+        "owner": "@capxul/payroll-tax-us/blueprint/things/us-withholding/verbs/compute.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -128914,6 +129327,26 @@
       }
     },
     {
+      "id": "verdict:tax-us: the piece's footing:local",
+      "kind": "verdict",
+      "labels": {
+        "environment": "local",
+        "journey": "tax-us: the piece's footing",
+        "severity": "page",
+        "owner": "journeys/tax-us-footing.ts"
+      }
+    },
+    {
+      "id": "verdict:tax-us: the piece's footing:staging",
+      "kind": "verdict",
+      "labels": {
+        "environment": "staging",
+        "journey": "tax-us: the piece's footing",
+        "severity": "page",
+        "owner": "journeys/tax-us-footing.ts"
+      }
+    },
+    {
       "id": "verdict:transfer an employee:local",
       "kind": "verdict",
       "labels": {
@@ -128953,5 +129386,16 @@
         "owner": "journeys/weekly-offs.ts"
       }
     }
-  ]
+  ],
+  "mounts": {
+    "payroll-tax-us": {
+      "kind": "feature",
+      "file": "blueprint/features/payroll-tax-us.ts",
+      "package": "@capxul/payroll-tax-us",
+      "version": "0.0.0",
+      "integrity": "sha256-ECIOZDNuO0J+fIsT3o5hJ72+4jb7DeUcz/Xx9U7t6oA=",
+      "chosen": {},
+      "hash": "43c0ff8216852206"
+    }
+  }
 }

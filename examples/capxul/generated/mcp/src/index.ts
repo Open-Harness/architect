@@ -163,6 +163,7 @@ import { declaration as salaryStructureAssignmentList } from "../../api/src/sala
 import { declaration as salaryStructureAssignmentSubmit } from "../../api/src/salary-structure-assignment/submit.ts";
 import { declaration as shiftTypeCreate } from "../../api/src/shift-type/create.ts";
 import { declaration as shiftTypeGet } from "../../api/src/shift-type/get.ts";
+import { declaration as usWithholdingCompute } from "../../api/src/us-withholding/compute.ts";
 
 /** One tool per operation and read, named as the operation is. */
 export const catalog = {
@@ -329,4 +330,5 @@ export const catalog = {
   "salary-structure-assignment.submit": { description: "Submit an assignment, so payroll pays the employee by its structure from its day on.", operation: salaryStructureAssignmentSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"SalaryStructureAssignmentSubmitted"} },
   "shift-type.create": { description: "Add a working shift to a company, from its start time to its end time. Refuses ShiftTypeNameTaken when another shift type holds this company and shift type name.", operation: shiftTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ShiftTypeCreated"} },
   "shift-type.get": { description: "Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.", operation: shiftTypeGet, states: ["active"] },
+  "us-withholding.compute": { description: "Work out one pay's US tax lines from its wage, frequency, pay date, work state, wages so far this year and W-4.", operation: usWithholdingCompute },
 } as const satisfies { readonly [name: string]: McpEntry };

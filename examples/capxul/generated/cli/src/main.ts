@@ -169,6 +169,7 @@ import { list as salaryStructureAssignmentList } from "./salary-structure-assign
 import { submit as salaryStructureAssignmentSubmit } from "./salary-structure-assignment/submit.ts";
 import { create as shiftTypeCreate } from "./shift-type/create.ts";
 import { get as shiftTypeGet } from "./shift-type/get.ts";
+import { compute as usWithholdingCompute } from "./us-withholding/compute.ts";
 
 // The release version is stamped in when the CLI is published (`ortho publish`); run from source, it says 0.0.0.
 declare const ORTHO_VERSION: string | undefined;
@@ -226,9 +227,10 @@ const salarySlipDetail = Command.make("salary-slip-detail").pipe(Command.withSub
 const salaryStructure = Command.make("salary-structure").pipe(Command.withSubcommands([salaryStructureCancel, salaryStructureCreate, salaryStructureGet, salaryStructureSubmit]));
 const salaryStructureAssignment = Command.make("salary-structure-assignment").pipe(Command.withSubcommands([salaryStructureAssignmentCancel, salaryStructureAssignmentCreate, salaryStructureAssignmentGet, salaryStructureAssignmentList, salaryStructureAssignmentSubmit]));
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
+const usWithholding = Command.make("us-withholding").pipe(Command.withSubcommands([usWithholdingCompute]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, payrollEmployeeDetail, payrollEntry, payrollPeriod, salaryComponent, salaryDetail, salarySlip, salarySlipDetail, salaryStructure, salaryStructureAssignment, shiftType]),
+  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, payrollEmployeeDetail, payrollEntry, payrollPeriod, salaryComponent, salaryDetail, salarySlip, salarySlipDetail, salaryStructure, salaryStructureAssignment, shiftType, usWithholding]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

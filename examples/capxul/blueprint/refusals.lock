@@ -3680,6 +3680,71 @@
         }
       },
       "earlier": []
+    },
+    "UW-001": {
+      "name": "AmountNegative",
+      "owner": "us-withholding",
+      "from": "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.js",
+      "fields": {
+        "figure": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AmountNegative"
+        }
+      },
+      "earlier": []
+    },
+    "UW-002": {
+      "name": "AmountFractional",
+      "owner": "us-withholding",
+      "from": "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.js",
+      "fields": {
+        "figure": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AmountFractional"
+        }
+      },
+      "earlier": []
+    },
+    "UW-003": {
+      "name": "AmountNotANumber",
+      "owner": "us-withholding",
+      "from": "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.js",
+      "fields": {
+        "figure": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AmountNotANumber"
+        }
+      },
+      "earlier": []
+    },
+    "UW-004": {
+      "name": "WorkStateUnknown",
+      "owner": "us-withholding",
+      "from": "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.js",
+      "fields": {
+        "workState": {
+          "value": "text",
+          "max": 40
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "WorkStateUnknown"
+        }
+      },
+      "earlier": []
     }
   },
   "retired": {}

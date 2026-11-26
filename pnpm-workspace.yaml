@@ -2,6 +2,7 @@ packages:
   - packages/*
   - examples/*
   - examples/superagent/plugins/*
+  - examples/capxul/plugins/payroll-tax-us
   - e2e
   - docs/canon
 allowBuilds:
