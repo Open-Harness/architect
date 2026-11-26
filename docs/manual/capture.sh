@@ -93,7 +93,7 @@ if wants trace; then
   ortho trace-refused.txt telemetry trace "$refused"
   ortho trace-answered.txt telemetry trace "$answered"
   stop
-  if grep -rqF "$token" "$out"; then echo "a token reached the recordings: nothing is kept" >&2; exit 1; fi
+  for file in "$out"/*; do case "$(< "$file")" in *"$token"*) echo "a token reached the recordings: nothing is kept" >&2; exit 1 ;; esac; done
   unset PLUGGED_IN_TOKEN token
 fi
 
