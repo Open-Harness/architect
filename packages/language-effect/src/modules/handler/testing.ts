@@ -98,6 +98,12 @@ export const runPeek = Blueprint.operation(Run, {
   description: "Peek at a book.", payload: { book: Book.fields.id }, answer: { book: Book.fields.id }, allowed: [Blueprint.anyone],
   steps: { check: operationStep(bookCheck) },
 });
+// Split a run into two entries: one step run twice in one call.
+export const runSplit = Blueprint.operation(Run, {
+  description: "Post a run as two entries.",
+  payload: { run: Run.fields.id }, answer: { run: Run.fields.id }, allowed: [Blueprint.signedIn],
+  steps: { draft: operationStep(entryDraft) },
+});
 // Close a run by paying it: an inner operation that runs inner operations of its own.
 export const runClose = Blueprint.operation(Run, {
   description: "Close a run by paying it.",
@@ -128,6 +134,8 @@ export interface Hooks {
   between?: (attempt: number) => Effect.Effect<void, never, any>;
   /** What `run.repost` was handed under `steps.draft`, a step it never declared. */
   undeclared?: unknown;
+  /** `run.pay` closes its book before the draft: the outer's own write, which the inner must see. */
+  closeFirst?: boolean;
   /** `entry.draft` answers this instead of its entry (an answer outside its declaration). */
   draftAnswer?: unknown;
 }
@@ -159,6 +167,7 @@ export const payHandler = (hooks: Hooks) => (_payload: any, context: any) => Eff
   hooks.ran.push("run.pay");
   const run = context.subject;
   const records = yield* Records;
+  if (hooks.closeFirst === true) yield* context.steps.load(records.update(Book, run.book, { closed: true }));
   const drafted: any = yield* inner(context, "draft", { book: run.book, amount: run.amount, ref: run.ref });
   hooks.ran.push("run.pay after draft");
   const afterDraft = yield* records.find(Entry, drafted.entry);
@@ -186,7 +195,7 @@ export const closeHandler = (hooks: Hooks) => ({ run }: any, context: any) => Ef
 });
 
 /** The five operations served as the generated server serves them: each inner one on its own, and handed to the outer by its step's key. */
-export const serve = (hooks: Hooks): Record<"draft" | "submit" | "pay" | "repost" | "close" | "peek", any> => {
+export const serve = (hooks: Hooks): Record<"draft" | "submit" | "pay" | "repost" | "close" | "peek" | "split", any> => {
   const draft = Handlers.serve({ name: "entry.draft", operation: entryDraft, handler: draftHandler(hooks), invariants: { EntryRefTaken: "entry.oneRefPerBook" } } as never);
   const submit = Handlers.serve({ name: "entry.submit", operation: entrySubmit, handler: submitHandler(hooks), notFrom: "EntryNotDraft" } as never);
   const pay = Handlers.serve({ name: "run.pay", operation: runPay, handler: payHandler(hooks), notFrom: "RunNotOpen", operations: { draft, submit } } as never);
@@ -195,7 +204,13 @@ export const serve = (hooks: Hooks): Record<"draft" | "submit" | "pay" | "repost
   const close = Handlers.serve({ name: "run.close", operation: runClose, handler: closeHandler(hooks), operations: { pay } } as never);
   const check = Handlers.serve({ name: "book.check", operation: bookCheck, handler: (({ book }: any) => Effect.succeed({ book })) as never, notFound: { book: "BookNotFound" } } as never);
   const peek = Handlers.serve({ name: "run.peek", operation: runPeek, handler: ((payload: any, context: any) => inner(context, "check", payload)) as never, operations: { check } } as never);
-  return { draft, submit, pay, repost, close, peek };
+  const split = Handlers.serve({ name: "run.split", operation: runSplit, operations: { draft }, handler: ((_payload: any, context: any) => Effect.gen(function* () {
+    const run = context.subject;
+    yield* inner(context, "draft", { book: run.book, amount: run.amount / 2n, ref: `${run.ref}a` });
+    yield* inner(context, "draft", { book: run.book, amount: run.amount / 2n, ref: `${run.ref}b` });
+    return { run: run.id };
+  })) as never } as never);
+  return { draft, submit, pay, repost, close, peek, split };
 };
 
 // ---- the world ----

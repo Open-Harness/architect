@@ -23,29 +23,40 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
    its declared errors to `errors`, and all of them (its `<Thing>Not<State>`, `<Thing>NotFound`, NotAllowed and G5
    refusals) to `refusals`, its rules to `invariants`, through any depth of inner operations. The SDK, docs and wire then
    list them, and the runtime counts them as refusals, never defects. A handler may still catch one and map it to its
-   own error. **Addition (Goal 16's lead):** when the outer and an inner declare one error name with two shapes or exits,
+   own error. An idempotent inner's `IdempotencyConflict` stays its own: run inside another operation, it keeps no
+   request key, so the outer never refuses with it. **Addition (Goal 16's lead):** when the outer and an inner declare one error name with two shapes or exits,
    the compiler refuses it, naming both operations; it never merges them.
 3. **The whole inner pipeline runs, for the same caller, inside the outer's one commit.** Its access rule (judged for the
    caller, never as system), what its payload names and `<Thing>NotFound`, its from-check, its handler, its answer's
    declaration, its move and event, and its G5 rules. It never commits on its own: its writes and journal entries join
    the outer's commit, so a conflict runs the whole call again and a refusal anywhere writes nothing. What it wrote is
-   visible to the outer handler afterwards, and to a later inner step. It keeps no request key of its own. The inner runs
+   visible to the outer handler afterwards, and to a later inner step; what the outer wrote before it is visible to it.
+   The outer's own move is applied as it always is, once the outer handler answers, so an inner sees the outer's subject
+   in the state the call found it. A step runs as often as the handler calls it, each run its own move and event, all
+   in the one commit. It keeps no request key of its own. The inner runs
    in its own span, named after it, inside the outer's step span (`step.kind: operation`), and its events name it as
    their operation. The generated server wires it as `Handlers.serve({ ..., operations: { draft: entryDraftServed } })`.
    **Addition:** an outer the caller may run never widens what the inner admits. A refused inner access is the outer's
    `NotAllowed`, and nothing is written.
 4. **What the compiler refuses.** An inner operation whose thing lives in another store (K3 item 5's rule, as for
    `writes`), an inner operation that is no verb of the app, and a cycle anywhere in the step graph: an operation running
-   itself, and A running B running A (**addition**).
-5. **#972 folds in.** `job-offer.accept` declares `applicant: Blueprint.step.operation(jobApplicantAccept)`, so the second
-   thing moves by its own declared operation, with its from-check and its event, and a move its state doesn't allow is
-   refused with that thing's own `NotFrom`. #972 closes when #1079's build lands. CX-appraisals' `goal.roll-up` and
+   itself, and A running B running A (**addition**). It also refuses an operation step where today's gates refuse a
+   `database` step or a `call` step: on an operation of a chain-stored thing (a contract reaches only its own store and
+   the account adapter) and on an operation that runs on the caller's device (no store, no journal), as outer or inner.
+5. **#972 folds in.** `job-offer.accept` declares a step that runs a job applicant's operation, so the second thing moves by
+   its own declared operation, with its from-check and its event, and a move its state doesn't allow is refused with that
+   thing's own `NotFrom`. Because the offer's own move lands only after its handler answers (call 3), the applicant's
+   operation it runs can't ask whether the offer is accepted: today's `job-applicant.accept`, which refuses
+   `OfferNotAccepted` unless it is, stays the separate call. The fold gives the applicant an operation judged on its own
+   state alone, which the offer's accept runs once its handler has decided. #972 closes when #1079's build lands. CX-appraisals' `goal.roll-up` and
    CX-recruitment's second call can fold into the child's own moves later; that is an app change, not this slice.
 
 ## The checks
 
-- `packages/language-effect/src/modules/handler/inner-operation.test.ts`: the runtime over `storeMemory`.
-- `packages/compiler/src/modules/model/inner-operations.test.ts`: the model and the compiler's refusals.
+- `packages/language-effect/src/modules/handler/inner-operation.test.ts`: the runtime over `storeMemory`, the commit;
+  `inner-operation-rules.test.ts`: the inner operation's own rules and its span. The scratch ledger is `handler/testing.ts`.
+- `packages/compiler/src/modules/model/inner-operations.test.ts`: what the model records;
+  `inner-operations-refused.test.ts`: what the compiler refuses. The scratch ledger is `model/testing.ts`.
 - `e2e/m2/13-inner-operations.test.ts` (m2 check 13): the generated server over local D1, through HTTP, read back from the D1 file.
 
 acme's generated files don't move (the checks build their own scratch ledger), so G12's paired landing doesn't apply.
@@ -57,6 +68,7 @@ acme's generated files don't move (the checks build their own scratch ledger), s
   judged for operations in `handler/internal/decided*.test.ts`.
 - An inner operation's access judged without the app's `mounts` passes: no inner operation in the checks is allowed to a
   `service` role.
+- No inner operation runs on the caller's device: the device gate (call 4) is stated, but only the chain gate is judged.
 - A clash between two inner operations' error names (rather than the outer's and an inner's) isn't judged on its own.
   Today the compiler already refuses two error classes of one name anywhere in a project ("declared twice"), so it can't
   arise.

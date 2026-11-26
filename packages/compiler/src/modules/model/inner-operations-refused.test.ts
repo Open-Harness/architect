@@ -35,6 +35,24 @@ describe("#1079: what the compiler refuses of an inner operation", () => {
     expect(problems.some((p) => p.includes("entry.draft"))).toBe(true);
   });
 
+  it("refuses an operation step on an operation of a chain-stored thing, which reaches only its own store and the account adapter", async () => {
+    // Every thing in one chain store, so no store is crossed: the operation step itself is what a contract can't take.
+    const vault = `import vault from "../../stores/vault.ts";\n`;
+    const inVault = (text: string) => text.replace(/^(import \{ Blueprint \} from "orthograph";\n)/, `$1${vault}`).replace(/(code: "[A-Z]+") \}\);/, "$1, lives: vault });");
+    const exit = await modelOf({
+      ...LEDGER,
+      "stores/vault.ts": `import { Blueprint } from "orthograph";\nexport default Blueprint.store.chain.evm();\n`,
+      "things/book/thing.ts": inVault(LEDGER["things/book/thing.ts"]),
+      "things/entry/thing.ts": inVault(LEDGER["things/entry/thing.ts"]),
+      "things/run/thing.ts": inVault(LEDGER["things/run/thing.ts"]),
+    });
+    const all = problemsOf(exit);
+    // The rewrite took: each of the three things lives in the vault.
+    for (const t of ["book", "entry", "run"]) expect(inVault(LEDGER[`things/${t}/thing.ts` as keyof typeof LEDGER]), t).toContain("lives: vault });");
+    const named = all.filter((p) => p.startsWith("blueprint/things/run/verbs/pay.ts: ") && /\bdraft\b/.test(p) && p.includes("chain"));
+    expect(named.length, all.join("\n")).toBeGreaterThanOrEqual(1);
+  });
+
   it("refuses an operation that runs itself through its steps", async () => {
     // The step names the operation object itself, filled in once the operation is made.
     const self = `import { Blueprint } from "orthograph";
@@ -79,9 +97,7 @@ export default two;
     const exit = await modelOf({ ...LEDGER, "things/run/verbs/one.ts": one, "things/run/verbs/two.ts": two });
     const problems = problemsOf(exit);
     expect(problems).toHaveLength(1);
-    expect(problems[0]).toMatch(/run\.(one|two) → run\.(one|two) → run\.(one|two)/);
-    expect(problems[0]).toContain("run.one");
-    expect(problems[0]).toContain("run.two");
+    expect(problems[0]).toMatch(/run\.one → run\.two → run\.one|run\.two → run\.one → run\.two/);
   });
 
   it("refuses an inner operation that is no verb of the app", async () => {

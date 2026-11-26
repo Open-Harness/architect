@@ -103,6 +103,28 @@ describe("#1079: a handler runs another operation of the same app inside its own
     expect(h.ran).toEqual(["run.close", "run.pay", "entry.draft", "run.pay after draft", "entry.submit"]);
   });
 
+  it("an inner operation sees what the outer wrote before it: the outer closes the book, so the draft refuses, and nothing is written", async () => {
+    const w = world();
+    const h = hooks();
+    h.closeFirst = true;
+    const exit = await call(w, serve(h).pay, { run: "run_1" });
+    expect(deathOf(exit)).toBe("no defect");
+    expect(refusalOf(exit)).toMatchObject({ _tag: "BookClosed", book: "bok_open" });
+    expect(w.memory.rows).toEqual(untouched());
+    expect(w.memory.entries).toEqual([]);
+  });
+
+  it("one step runs as often as the handler calls it, each run its own entry and event, all in one commit", async () => {
+    const w = world();
+    const exit = await call(w, serve(hooks()).split, { run: "run_1" });
+    expect(deathOf(exit)).toBe("no defect");
+    expect(Exit.isSuccess(exit) ? exit.value : refusalOf(exit)).toEqual({ run: "run_1" });
+    const made = rowsOf(w, Entry).filter((r) => r.instance["id"] !== "ent_done").map((r) => r.instance);
+    expect(made.map((e) => [e["ref"], e["amount"], e["state"]])).toEqual([["R-1a", 250n, "draft"], ["R-1b", 250n, "draft"]]);
+    expect(new Set(made.map((e) => e["id"])).size, "two entries, two ids").toBe(2);
+    expect(w.memory.entries.map((e) => [e.operation, e.event, e.subject])).toEqual(made.map((e) => ["entry.draft", "EntryDrafted", e["id"]]));
+  });
+
   it("a refusal from the second inner operation undoes what the first one wrote: no entry, no line, no event", async () => {
     const w = world();
     const h = hooks();

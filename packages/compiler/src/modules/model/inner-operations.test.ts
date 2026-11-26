@@ -89,6 +89,15 @@ export default Blueprint.operation(Run, {
     expect([...exit.value.operations["run.peek"]!.refusals].sort()).toEqual(["BookNotFound", "NotAllowed"]);
   });
 
+  it("an idempotent inner operation's IdempotencyConflict stays its own: run inside another, it keeps no request key", async () => {
+    const exit = await modelOf({ ...LEDGER, "things/entry/verbs/draft.ts": LEDGER["things/entry/verbs/draft.ts"].replace("allowed: [keeper.of(\"book\")],", "allowed: [keeper.of(\"book\")],\n  idempotent: \"request\",") });
+    expect(problemsOf(exit)).toEqual([]);
+    if (!Exit.isSuccess(exit)) return;
+    expect(exit.value.operations["entry.draft"]?.refusals, "the control: the draft is idempotent").toContain("IdempotencyConflict");
+    expect(exit.value.operations["run.pay"]?.refusals).not.toContain("IdempotencyConflict");
+    expect([...exit.value.operations["run.pay"]!.refusals].sort()).toEqual(["BookClosed", "EntryHasNoLines", "EntryNotDraft", "EntryRefTaken", "NotAllowed", "RunNotFound", "RunNotOpen", "RunTooLarge"]);
+  });
+
   it("the outer's hash moves when only its inner operation changes", async () => {
     // pay.ts is the same file both times; only entry.draft declares another error.
     const before = await modelOf(LEDGER);
