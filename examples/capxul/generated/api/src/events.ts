@@ -13,6 +13,8 @@ import * as BridgeBusiness from "../../../blueprint/things/bridge-business/event
 import * as BridgeIndividual from "../../../blueprint/things/bridge-individual/events.ts";
 import * as Company from "../../../blueprint/things/company/events.ts";
 import * as CostCenter from "../../../blueprint/things/cost-center/events.ts";
+import * as Customer from "../../../blueprint/things/customer/events.ts";
+import * as CustomerGroup from "../../../blueprint/things/customer-group/events.ts";
 import * as Department from "../../../blueprint/things/department/events.ts";
 import * as Designation from "../../../blueprint/things/designation/events.ts";
 import * as Employee from "../../../blueprint/things/employee/events.ts";
@@ -41,6 +43,7 @@ import * as Kra from "../../../blueprint/things/kra/events.ts";
 import * as LeaveAllocation from "../../../blueprint/things/leave-allocation/events.ts";
 import * as LeaveApplication from "../../../blueprint/things/leave-application/events.ts";
 import * as LeaveType from "../../../blueprint/things/leave-type/events.ts";
+import * as PaymentEntry from "../../../blueprint/things/payment-entry/events.ts";
 import * as PayrollEntry from "../../../blueprint/things/payroll-entry/events.ts";
 import * as PayrollPeriod from "../../../blueprint/things/payroll-period/events.ts";
 import * as PersonalSafe from "../../../blueprint/things/personal-safe/events.ts";
@@ -48,6 +51,8 @@ import * as SalaryComponent from "../../../blueprint/things/salary-component/eve
 import * as SalaryStructure from "../../../blueprint/things/salary-structure/events.ts";
 import * as SalaryStructureAssignment from "../../../blueprint/things/salary-structure-assignment/events.ts";
 import * as ShiftType from "../../../blueprint/things/shift-type/events.ts";
+import * as Supplier from "../../../blueprint/things/supplier/events.ts";
+import * as SupplierGroup from "../../../blueprint/things/supplier-group/events.ts";
 
 EventNames.name(Account.AccountCreated, "AccountCreated");
 EventNames.name(Account.AccountMadeLedger, "AccountMadeLedger");
@@ -79,6 +84,10 @@ EventNames.name(BridgeIndividual.KycRejected, "KycRejected");
 EventNames.name(BridgeIndividual.KycStarted, "KycStarted");
 EventNames.name(Company.CompanyCreated, "CompanyCreated");
 EventNames.name(CostCenter.CostCenterCreated, "CostCenterCreated");
+EventNames.name(Customer.CustomerCreated, "CustomerCreated");
+EventNames.name(Customer.CustomerDisabled, "CustomerDisabled");
+EventNames.name(Customer.CustomerEnabled, "CustomerEnabled");
+EventNames.name(CustomerGroup.CustomerGroupCreated, "CustomerGroupCreated");
 EventNames.name(Department.DepartmentCreated, "DepartmentCreated");
 EventNames.name(Designation.DesignationCreated, "DesignationCreated");
 EventNames.name(Employee.EmployeeHired, "EmployeeHired");
@@ -139,6 +148,9 @@ EventNames.name(LeaveApplication.LeaveApplicationCancelled, "LeaveApplicationCan
 EventNames.name(LeaveApplication.LeaveApplicationRejected, "LeaveApplicationRejected");
 EventNames.name(LeaveApplication.LeaveApplied, "LeaveApplied");
 EventNames.name(LeaveType.LeaveTypeCreated, "LeaveTypeCreated");
+EventNames.name(PaymentEntry.PaymentEntryCancelled, "PaymentEntryCancelled");
+EventNames.name(PaymentEntry.PaymentEntryDrafted, "PaymentEntryDrafted");
+EventNames.name(PaymentEntry.PaymentEntrySubmitted, "PaymentEntrySubmitted");
 EventNames.name(PayrollEntry.PayrollEntryDrafted, "PayrollEntryDrafted");
 EventNames.name(PayrollEntry.PayrollEntrySubmitted, "PayrollEntrySubmitted");
 EventNames.name(PayrollEntry.SalarySlipsSubmitted, "SalarySlipsSubmitted");
@@ -152,5 +164,9 @@ EventNames.name(SalaryStructureAssignment.SalaryStructureAssigned, "SalaryStruct
 EventNames.name(SalaryStructureAssignment.SalaryStructureAssignmentCancelled, "SalaryStructureAssignmentCancelled");
 EventNames.name(SalaryStructureAssignment.SalaryStructureAssignmentSubmitted, "SalaryStructureAssignmentSubmitted");
 EventNames.name(ShiftType.ShiftTypeCreated, "ShiftTypeCreated");
+EventNames.name(Supplier.SupplierCreated, "SupplierCreated");
+EventNames.name(Supplier.SupplierDisabled, "SupplierDisabled");
+EventNames.name(Supplier.SupplierEnabled, "SupplierEnabled");
+EventNames.name(SupplierGroup.SupplierGroupCreated, "SupplierGroupCreated");
 
-export const names = ["AccountCreated", "AccountMadeLedger", "AppraisalCreated", "AppraisalRated", "AppraisalSelfRated", "AppraisalSubmitted", "AppraisalCycleCompleted", "AppraisalCycleCreated", "AppraisalCycleReopened", "AppraisalCycleStarted", "AppraisalTemplateCreated", "AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "DepositLanded", "TransferFailed", "TransferSent", "TransferSettled", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "CostCenterCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "FeedbackCriteriaCreated", "EmployeeGradeCreated", "PerformanceFeedbackDrafted", "PerformanceFeedbackSubmitted", "EmployeePromoted", "EmployeePromotionCancelled", "EmployeePromotionDrafted", "EmployeeSeparationBegun", "EmployeeSeparationCompleted", "EmployeeSeparationStarted", "EmployeeTransferCancelled", "EmployeeTransferDrafted", "EmployeeTransferred", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "FiscalYearCreated", "GoalArchived", "GoalClosed", "GoalCompleted", "GoalCreated", "GoalProgressUpdated", "GoalReopened", "GoalRolledUp", "GoalUnarchived", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "InterviewCleared", "InterviewRejected", "InterviewScheduled", "InterviewFeedbackGiven", "InterviewRoundCreated", "JobApplicantAccepted", "JobApplicantCreated", "JobApplicantHeld", "JobApplicantRejected", "JobOfferAccepted", "JobOfferMade", "JobOfferRejected", "JobOpeningClosed", "JobOpeningCreated", "JournalEntryCancelled", "JournalEntryDrafted", "JournalEntrySubmitted", "KraCreated", "LeaveAllocationCreated", "LeaveAllocationSubmitted", "LeaveApplicationApproved", "LeaveApplicationCancelled", "LeaveApplicationRejected", "LeaveApplied", "LeaveTypeCreated", "PayrollEntryDrafted", "PayrollEntrySubmitted", "SalarySlipsSubmitted", "PayrollPeriodCreated", "PersonalSafeOpened", "SalaryComponentCreated", "SalaryStructureCancelled", "SalaryStructureDrafted", "SalaryStructureSubmitted", "SalaryStructureAssigned", "SalaryStructureAssignmentCancelled", "SalaryStructureAssignmentSubmitted", "ShiftTypeCreated"] as const;
+export const names = ["AccountCreated", "AccountMadeLedger", "AppraisalCreated", "AppraisalRated", "AppraisalSelfRated", "AppraisalSubmitted", "AppraisalCycleCompleted", "AppraisalCycleCreated", "AppraisalCycleReopened", "AppraisalCycleStarted", "AppraisalTemplateCreated", "AttendanceMarked", "AttendanceRequestApproved", "AttendanceRequestRejected", "AttendanceRequested", "BankAccountClosed", "BankAccountOpened", "DepositLanded", "TransferFailed", "TransferSent", "TransferSettled", "BranchCreated", "KybApproved", "KybRejected", "KybStarted", "KycApproved", "KycRejected", "KycStarted", "CompanyCreated", "CostCenterCreated", "CustomerCreated", "CustomerDisabled", "CustomerEnabled", "CustomerGroupCreated", "DepartmentCreated", "DesignationCreated", "EmployeeHired", "EmployeeRelieved", "FeedbackCriteriaCreated", "EmployeeGradeCreated", "PerformanceFeedbackDrafted", "PerformanceFeedbackSubmitted", "EmployeePromoted", "EmployeePromotionCancelled", "EmployeePromotionDrafted", "EmployeeSeparationBegun", "EmployeeSeparationCompleted", "EmployeeSeparationStarted", "EmployeeTransferCancelled", "EmployeeTransferDrafted", "EmployeeTransferred", "EmploymentTypeCreated", "ExpenseAdded", "ExpenseClaimApproved", "ExpenseClaimCreated", "ExpenseClaimRejected", "ExpenseClaimTypeCreated", "FiscalYearCreated", "GoalArchived", "GoalClosed", "GoalCompleted", "GoalCreated", "GoalProgressUpdated", "GoalReopened", "GoalRolledUp", "GoalUnarchived", "HolidayAdded", "HolidayListCreated", "WeeklyOffAdded", "InterviewCleared", "InterviewRejected", "InterviewScheduled", "InterviewFeedbackGiven", "InterviewRoundCreated", "JobApplicantAccepted", "JobApplicantCreated", "JobApplicantHeld", "JobApplicantRejected", "JobOfferAccepted", "JobOfferMade", "JobOfferRejected", "JobOpeningClosed", "JobOpeningCreated", "JournalEntryCancelled", "JournalEntryDrafted", "JournalEntrySubmitted", "KraCreated", "LeaveAllocationCreated", "LeaveAllocationSubmitted", "LeaveApplicationApproved", "LeaveApplicationCancelled", "LeaveApplicationRejected", "LeaveApplied", "LeaveTypeCreated", "PaymentEntryCancelled", "PaymentEntryDrafted", "PaymentEntrySubmitted", "PayrollEntryDrafted", "PayrollEntrySubmitted", "SalarySlipsSubmitted", "PayrollPeriodCreated", "PersonalSafeOpened", "SalaryComponentCreated", "SalaryStructureCancelled", "SalaryStructureDrafted", "SalaryStructureSubmitted", "SalaryStructureAssigned", "SalaryStructureAssignmentCancelled", "SalaryStructureAssignmentSubmitted", "ShiftTypeCreated", "SupplierCreated", "SupplierDisabled", "SupplierEnabled", "SupplierGroupCreated"] as const;

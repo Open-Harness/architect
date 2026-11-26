@@ -25,11 +25,11 @@ export const LineCount = Blueprint.value(Blueprint.uint(16));
 /** A note on a journal entry (ERPNext's `user_remark`, Small Text). */
 export const Remark = Blueprint.value(Blueprint.text({ max: 1000 }));
 /**
- * The kind of record a ledger line was posted by (ERPNext's GL Entry `voucher_type`). Journal Entry for now; Sales
- * Invoice, Payment Entry, Expense Claim and Salary Slip join as each is built.
+ * The kind of record a ledger line was posted by (ERPNext's GL Entry `voucher_type`). Journal Entry and Payment Entry
+ * for now; Sales Invoice, Expense Claim and Salary Slip join as each is built.
  */
-export const VoucherType = Blueprint.value(Blueprint.oneOf(["Journal Entry"]));
-/** The id of the record a ledger line was posted by (ERPNext's `voucher_no`, a Dynamic Link): a `jen_` id for now. */
+export const VoucherType = Blueprint.value(Blueprint.oneOf(["Journal Entry", "Payment Entry"]));
+/** The id of the record a ledger line was posted by (ERPNext's `voucher_no`, a Dynamic Link): a `jen_` or `pen_` id for now. */
 export const VoucherId = Blueprint.value(Blueprint.text({ max: 64 }));
 /**
  * An account's balance in USDC base units: its debits less its credits, so negative when credits are more (ERPNext's
