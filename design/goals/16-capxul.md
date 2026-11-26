@@ -247,3 +247,39 @@ the G12 pair per feature (`goal-16/features-<feature>-check` and `-build`) are i
 
 **Then the split.** Two proposals, each written as a decision first: each feature's generated output in its own folder,
 and CI that runs only what a change can reach. Not started.
+
+### Money lane, 26 November (handoff)
+
+Wound down at 21:30 UTC for the week's usage, so that any harness can resume from this entry. Every open PR below is
+ready, not draft, with its branch pushed. Its next action is the one to take.
+
+**The plan.** `decisions/CX-safe.md` cuts the lane into units, one issue each. `decisions/CX-safe-machines.md` gives a
+person's Safe and a company's Safe as two state machines, with no bootstrap owner. The slices run in this order:
+- the Safe: S1, then S1b (the claim, after J1), S3a #1170, S3b #1196, C1 #1195, E2 #1201;
+- the keeper: K1, #1199;
+- Bridge: slice 10, per `CX-bridge-rails.md`;
+- contractors: `CX-money-global-payroll`.
+
+**Open PRs.** All of them are into `goal/capxul` unless marked.
+
+| PR | What | State | Next action |
+|---|---|---|---|
+| #1194 | CX-safe-machines decision | 🔍 passed | merge when CI is green |
+| #1182 | A3 checks: the Safe adapter, address prediction | 🔍 passed | merge when green, then start the A3 builder |
+| #1184 | A2 checks: `@orthograph/erc20` | 🔍 passed | merge when green, then start the A2 builder |
+| #1204 | A4 checks: `@orthograph/zodiac-roles` 2.1.1 | 🔍 passed | merge when green, then start the A4 builder (with LICENSE-zodiac) |
+| #1178 | E1 checks: events in from the chain (M5-reach-out option A) | 🔍 passed | merge when green, then start the E1 builder: a row that ends delivered, refused or failed gets back the `due` it had before its claim |
+| #1198 | A1 checks: `ortho new adapter --from-abi` | 🔍 passed | merge when green. If check-static fails again on the `host-cloudflare` fence.test.ts wall-clock assertion, file a Snag naming Goal 18. Start the A1 builder only after #1087 and #1153 land on `main` |
+| #1206 | S1 checks: a person's Safe recorded (G12 pair) | 🔍 passed | merge #1214 first, then this when green |
+| #1214 | S1 build, into `goal-16/safes-recorded-check` | 🔍 passed | merge when green. Advice: move `@noble/hashes` to dependencies; the salt formula needs one shared owner; take the namespace from environment settings once Snag #1213 lands |
+| #1209 | K1 checks: the keeper (CX-keeper widens M8-06's entry row) | 🔍 passed at 5e5cc3bc | merge when green, then start the K1 builder from `goal-16/keeper-check`. Notes are in #1209's last 🔍 comment. Three suite-05 tests wait on #1205 |
+| #1208 | J1 checks: `s.<name>.signs` (G12 pair) | 🔍 passed | merge #1215 first, then this when green |
+| #1215 | J1 build, into `goal-16/journey-signs-check` | 🔍 not finished | 🔍 it (prove loads wallets' server lazily, and its tests depend on `wallets:build`), then merge |
+
+#1155 (Snag #1001, Amp's builder) and #1180 (US payroll tax, red on purpose) carry the lane's label. They belong to
+other threads.
+
+**Waiting on Aaron.**
+- **Custody.** Safe refuses a setup with no owner, so a person's Safe has no address until they claim it. I recommend
+  no placeholder owner: Capxul holds no key over anyone's Safe.
+- **Gas on Base.** I recommend the relayer pays.
