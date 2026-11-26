@@ -21,8 +21,9 @@ All on 26 November 2026, in the designer's session unless marked. These are his 
    they should follow the same pattern from pi durable and its examples in the repo."
 3. **Headless, not our UI library's look.** "i dont want the whole ui library i only want headless componnets that work
    with any library like astryx." Then: "we need to do this on what we have. we have pieces on ui sdk. can that
-   compose with astryx? can we get headless from ui sdk with the agent driving but wrap them with astryx". So the
-   headless layer is UI SDK's pieces, which the agent drives, and Coworker's Astryx components draw them (step 8).
+   compose with astryx? can we get headless from ui sdk with the agent driving but wrap them with astryx". Then,
+   agreeing: our own headless hooks generated over the actions, Astryx draws everything, agents work through the
+   actions as tools, and UI SDK waits (step 8).
 4. **A fast experiment on a fork branch.** He asked: "can this be done on its own fork like a faster experiment fixing
    the things in the framework as its going not waiting on ci for merging and sprinting to the end", then "give me a
    proper handoff ill do it in codex instead". So: one branch, framework fixed inline as you go, no CI wait between
@@ -59,8 +60,8 @@ pass. Its own finding F23: "81 of 81 passed with all of the above true", so its 
 
 ## The goal, and the one check that says it is done
 
-Every screen and flow that works in Coworker today works in the rebuild, drawn by Astryx over UI SDK pieces bound to
-Orthograph's generated actions; managers run workers as actors on Pi Durable; and a worker's report wakes its manager, which Coworker never did.
+Every screen and flow that works in Coworker today works in the rebuild, drawn by Astryx over hooks generated from
+Orthograph's actions; managers run workers as actors on Pi Durable; and a worker's report wakes its manager, which Coworker never did.
 
 **Done when** both ratchet folders are empty: `e2e/coworker/expected-failing/` (Coworker's 36 flow files as journeys,
 plus the agent journeys below) and `e2e/coworker-parity/expected-failing/` (its 20 Playwright specs, ported), and each
@@ -136,43 +137,38 @@ busy") and K46: **a tool never waits for another agent or a person.** It writes 
 worker's model goes silent and its run ends, not "running for ever". Journey:
 `e2e/coworker/02-one-manager-one-worker`.
 
-**8. Headless on UI SDK, drawn by Astryx.** Aaron, later the same day: "we need to do this on what we have. we have
-pieces on ui sdk. can that compose with astryx? can we get headless from ui sdk with the agent driving but wrap them
-with astryx". So the headless layer is UI SDK, which the agent drives, and Astryx draws it.
+**8. Headless hooks, generated over the actions; Astryx draws; agents use the actions as tools.** Aaron, later the
+same day, agreed: "generate our own headless hooks over the actions, let Astryx draw everything, and let agents work
+through the actions as tools. Keep UI SDK for later, only if you want an agent driving the live screen." UI SDK is
+not used in this rebuild.
 
-- **What exists:**
-  - A generated action per operation, on `main`: `generated/actions/`, with typed refusals and `needsApproval`.
-  - UI SDK, pinned at 0.1.0-beta.10 in `packages/shell`.
-  - Hand-written pieces in `spikes/ui-sdk-real-world` and `spikes/ui-sdk-verb-primitive`.
-  - **The piece generator does not exist**: `e2e/ui-layer` checks 04 to 08 are red. Write pieces by hand on the
-    spikes' pattern first. Generate them once the shape holds.
-- **How they compose:**
-  - A UI SDK part takes `render`. The component it renders "must forward its props and ref"
-    (`.agents/skills/ui-sdk/references/build-interface.md`).
-  - Astryx's components keep event handlers, `aria-*`, `role`, `id` and `data-*` (`BaseProps`). `Button` takes `ref`
-    and spreads the rest.
-  - So a piece's submit part can be `render={<Button … />}`.
-  - The agent never sees Astryx. `createAgent` lists only UI SDK components and calls their actions. The look can be
-    anything, as long as each control an agent uses is a UI SDK part.
-- **Where it is not simple:**
-  - Astryx's `TextInput` puts its ref on the inner `<input>`, but it splits its other props between the input and a
-    wrapper, and it keeps its own value with its own `onChange`. A UI SDK field rendered through it may lose
-    attributes or fight over state.
-  - Astryx's own stateful components (Table, Chat, a kanban) cannot be a single part. Each needs a primitive of the
-    app's own (`definePrimitive`, with `controlled: ["value"]` and its actions for the agent), with Astryx drawing
-    inside it. That is K36's "composite" with Astryx as the look.
-- **Prove it first, in one spike** (`spikes/astryx-pieces/`, the `spike` skill): the question page's `ask.answer` form
-  and the inbox list. Both built from a generated action, UI SDK parts, and Astryx through `render`. Done when:
-  - an agent through `createAgent` fills and sends the form;
-  - a refusal shows under the field;
-  - "ask first" asks once;
-  - the inbox list is driven by the agent;
-  - the page looks like Coworker's screenshot.
-  If `TextInput` fights, wrap it in a small adapter that forwards to the inner input, or use UI SDK's `Input` styled
-  with Astryx's tokens.
-- **The per-thing reference** (`useTask(id)`: state, fields, `can`, `needs`; K46 call 9) is a read on top of this. It
-  can be a plain hook over the generated SDK; it holds no control, so the agent does not need it to be a part.
-- **Reads reload** after a write on a thing they show. Poll for now.
+- **What exists:** a generated action per operation, on `main` (`generated/actions/<thing>/<verb>.ts`). Each carries a
+  name, a description, the payload's JSON schema, `readOnly`, `needsApproval`, `agentTool`, its refusal codes, and a
+  `run` that calls the generated SDK. `Actions.registry` lists them with their schemas
+  (`packages/orthograph/src/modules/actions/`).
+- **Generate per operation** `use<Operation>()`, React, over the action:
+  - what it returns: `run(payload)`, `pending`, `refusal` (the declared refusal's name and code, typed), `error`,
+    `answer`, `needsApproval`;
+  - one request key per open, kept across retries;
+  - approval asked once, through a host-given approver.
+- **Generate per thing** `use<Thing>(id)`, K46 call 9's reference: its state, the fields this caller may see, the
+  moves open now (`can`), and what it waits for (`needs`). It reloads after any write on a thing it shows; poll for now.
+- **Where they live:**
+  - The hooks go in `generated/web/`, importing only `react`, `orthograph`, the generated SDK and actions, and a small
+    runtime: the host, which holds the client, the caller and the approver, plus the shared pending and refusal state.
+  - The runtime goes in `packages/web` (`@orthograph/web`), smaller than K29 planned: no UI SDK `dispatch` and `settle`
+    adapter.
+- **Astryx draws everything.** A screen uses the hooks and Coworker's own Astryx components. Astryx's Table, Chat and
+  board are used as they are, fed by hooks.
+- **Agents act through the actions as tools.** For a Pi agent in an actor, add a thin adapter that turns each action
+  into a Pi tool, made with the agent's own key (step 4). An action marked `needsApproval` must not hold the turn: its
+  approver raises an `Ask` and returns at once (step 5's rule).
+- **Not built here:**
+  - an agent driving the live screen (UI SDK's bridge and marks);
+  - generated UI SDK pieces;
+  - Goal 5's `e2e/ui-layer` checks 04 to 08, which assume that contract.
+- **Write first:** one screen through the whole stack, the question page (`use<Ask>`, `useAskAnswer`, Astryx), and
+  compare it with Coworker's screenshot.
 
 **9. Port the screens.**
 - Coworker's screens already come apart. Each `team-*` module talks to the server through one
