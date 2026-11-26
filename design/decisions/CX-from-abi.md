@@ -55,6 +55,13 @@ The whole shape is `packages/generators/src/modules/abi/README.md`; in short:
    `packages/zodiac-roles` from their own `abi/` and compares the generated files byte for byte. It is on the ratchet list
    until each package exists and A1's builder has regenerated it.
 
+8. **Two exceptions to AGENTS.md's code rules,** for an adapter package of this shape. Its `src/` has `src/index.ts` as its
+   entry, the descriptor a plugin's `package.json` points to as every generated adapter's does (`--from-openapi`'s too), and
+   `src/generated/` beside its six-slot modules; `main.ts` is not its entry. And until A1 is built, A2, A3 and A4 write
+   their `src/generated/` and `abi/` by hand to this shape, under the generated header: the generator's first run
+   overwrites them, and `regenerate.test.ts` fails on any byte that differs, so a hand edit cannot outlive the build. Once
+   A1 is built, those files are never edited again (A2's 🔍, through the lead, 26 November 2026).
+
 Not taken from Goal 12: the separate `adapters-abi` package (A1 owns modules, and the runtime is chain-evm's now); generating
 `erc20` in A1 (A2 hand-writes it in parallel); a conformance report against a cloud contract (no network now; the Anvil check is
 the conformance); refusing `payable` (the Safe's `execTransaction` is payable). Taken, and credited in the files: the names, the
@@ -68,5 +75,8 @@ calls, events, typed reverts, the nonce after a refusal, and an app mounting the
 throwaway is not committed; the pull request gives the runs.
 
 ## Supersedes
+
+- AGENTS.md, design/briefs/codex-handoff.md: "and are never edited. Scaffolds start" → "and are never edited, except an ABI adapter's `src/generated/` written by hand to `--from-abi`'s shape until its first run overwrites it (CX-from-abi). Scaffolds start"
+- AGENTS.md: "<name>.test.ts}`), no source file over about 250 lines." → "<name>.test.ts}`), no source file over about 250 lines; an adapter generated from an ABI has `src/index.ts` as its entry and `src/generated/` beside its modules (CX-from-abi)."
 
 - docs/canon/status.md: "Adapters from an ABI: `ortho new adapter --from-abi`, a CLI module over `adapters-abi`" → "Adapters from an ABI: `ortho new adapter --from-abi`, a CLI module over `@orthograph/generators/abi` (CX-from-abi)"
