@@ -8,6 +8,10 @@ own CLI does not (#1151).
 
 `Handoff.target({ from, own })` looks for `node_modules/@orthograph/cli` from `from` (the `--root` given, else the working
 directory) up to the filesystem's root. It answers that package's `ortho` entry, read from its `package.json` `bin`, when
-the package is not this CLI itself (compared by real path), and nothing otherwise. `Handoff.from(args, cwd)` reads `--root`
-the way the parser does. `main.ts` runs the entry with the same arguments and exits with its status. It sets
-`ORTHO_HANDED_OFF` on the child, so a hand-off happens at most once. Test: `handoff.test.ts`.
+the package is not this CLI itself (compared by real path); `broken` when such a package is installed but its entry can't
+be read (a missing bin, a corrupt `package.json`), and `main.ts` then says so in one line and runs itself; and nothing
+otherwise. `Handoff.from(args, cwd)` reads `--root`
+the way the parser does. `main.ts` runs the entry with the same arguments, passes on
+SIGINT, SIGTERM and SIGHUP, and ends as the child ends: its exit code, or the same signal. It sets `ORTHO_HANDED_OFF` on
+the child, which takes it out of its own environment once read, so a hand-off happens at most once and nothing the child
+starts inherits the mark. Test: `handoff.test.ts`.

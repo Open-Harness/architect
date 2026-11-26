@@ -23,7 +23,7 @@ describe("a global ortho hands off to the app's own CLI", () => {
     const local = cli(join(app, "node_modules/@orthograph/cli"));
     const own = cli(join(root, "global/lib/node_modules/@orthograph/cli"));
     mkdirSync(join(app, "blueprint/things"), { recursive: true });
-    expect(Handoff.target({ from: join(app, "blueprint/things"), own })).toBe(join(local, "dist/main.js"));
+    expect(Handoff.target({ from: join(app, "blueprint/things"), own })).toEqual({ run: join(local, "dist/main.js") });
   });
 
   it("answers nothing outside an app with the CLI installed", () => {
@@ -41,13 +41,16 @@ describe("a global ortho hands off to the app's own CLI", () => {
     expect(Handoff.target({ from: join(root, "app"), own })).toBeUndefined();
   });
 
-  it("answers nothing for a package that is not the CLI, or whose bin is missing", () => {
+  it("answers broken for an installed CLI it can't run: another package in its place, a missing bin, a corrupt package.json", () => {
     const root = scratch();
     const own = cli(join(root, "global/cli"));
-    cli(join(root, "a/node_modules/@orthograph/cli"), "something-else");
-    cli(join(root, "b/node_modules/@orthograph/cli"), "@orthograph/cli", "dist/gone.js");
-    expect(Handoff.target({ from: join(root, "a"), own })).toBeUndefined();
-    expect(Handoff.target({ from: join(root, "b"), own })).toBeUndefined();
+    const a = cli(join(root, "a/node_modules/@orthograph/cli"), "something-else");
+    const b = cli(join(root, "b/node_modules/@orthograph/cli"), "@orthograph/cli", "dist/gone.js");
+    const c = cli(join(root, "c/node_modules/@orthograph/cli"));
+    writeFileSync(join(c, "package.json"), "{ not json");
+    expect(Handoff.target({ from: join(root, "a"), own })).toEqual({ broken: a });
+    expect(Handoff.target({ from: join(root, "b"), own })).toEqual({ broken: b });
+    expect(Handoff.target({ from: join(root, "c"), own })).toEqual({ broken: c });
   });
 
   it("reads --root as the parser does, else the working directory", () => {

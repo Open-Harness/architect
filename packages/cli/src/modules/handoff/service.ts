@@ -10,6 +10,8 @@ export const Handoff: HandoffApi = {
   },
   target: ({ from, own }) => {
     const dir = installedCli(from);
-    return dir === undefined || same(dir, own) ? undefined : binOf(dir);
+    if (dir === undefined || same(dir, own)) return undefined;
+    const run = binOf(dir);
+    return run === undefined ? { broken: dir } : { run };
   },
 };
