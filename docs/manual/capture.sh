@@ -25,6 +25,8 @@ rec() { local file="$1" shown="$2"; shift 3; { echo "\$ $shown"; (cd "$app" && "
 shown() { local said="$1" word; shift; for word in "$@"; do case "$word" in *" "*) said+=" \"$word\"" ;; *) said+=" $word" ;; esac; done; echo "$said"; }
 ortho() { rec "$1" "$(shown ortho "${@:2}")" -- node "$repo/packages/cli/src/main.ts" "${@:2}"; }
 copy() { { echo "# $2"; cat "$app/$2"; } > "$out/$1"; }
+# copy_repo <file> <path from the repository's root>: record a file outside the example, as it stands.
+copy_repo() { { echo "# $2"; cat "$repo/$2"; } > "$out/$1"; }
 
 # For a section that runs the app: start_app, sign_in <test person>, then cli (the generated tool) and post (a signed call
 # over HTTP), then stop and forget_token. The app runs in a process group of its own, so stopping it stops what it started.

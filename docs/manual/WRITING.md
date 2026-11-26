@@ -45,8 +45,8 @@ repository's practice and not a command, and what is missing. If a recording was
 ## The recording
 
 Each chapter records on `examples/plugged-in` through one file, `record/NN-<section>.sh`, sourced by `capture.sh`,
-which gives it a shell function named after the tool, taking a file name and then the command's own words (it runs the command and records it), `rec`, `copy <file> <path>` (record a file as it
-stands), `restore`, and for a running app `start_app`, `sign_in <person>`, `cli`, `post`, `stop`, `forget_token`. A
+which gives it a shell function named after the tool, taking a file name and then the command's own words (it runs the command and records it), `rec`, `copy <file> <path>` (record a file of the
+example as it stands), `copy_repo` (the same for any file of the repository), `restore`, and for a running app `start_app`, `sign_in <person>`, `cli`, `post`, `stop`, `forget_token`. A
 section starts from a clean example and leaves it clean. It changes the example only to record, never to make an
 output look better. Run one section with `docs/manual/capture.sh <section>`. Never print, write or pass on a command
 line a token, key or connection string.
@@ -59,7 +59,9 @@ order, and it quotes the same recordings.
 **The script** (`docs/explainer/films/<film>/script.json`) is written for the ear: short sentences, one idea each, no
 symbols, numbers as words, a `say` where a word would be mispronounced (`handle.claim` is said "handle dot claim";
 `ortho` at the start of a sentence is capitalised in `say`). `steps` is five one-word steps, one per scene. `about`
-says in one sentence where everything on screen comes from. The first scene opens on the reader's situation. The last
+says in one sentence where everything on screen comes from. `pictures` gives one
+sentence per scene id on what its sheet shows and which recording it replays, and `pictures.carries` names the one
+picture that carries the film; the build ignores it, and whoever draws the scenes follows it. The first scene opens on the reader's situation. The last
 scene says what goes wrong, says plainly what is practice or missing or replayed, and ends by naming the next chapter.
 Never say "first" or "last" of a line of output unless it is.
 

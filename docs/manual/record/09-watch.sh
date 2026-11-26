@@ -2,6 +2,9 @@
 # ---- Watch it --------------------------------------------------------------------------------------------------------
 # `ortho dev` records where watch does not read, so the calls are made to the test environment, which keeps a Collector of
 # its own. If the section fails half way the environment is still stopped: the trap is capture.sh's own, with that put first.
+# Its recordings show this port, so it is fixed here rather than taken from MANUAL_PORT. The test environment also needs
+# the whole repository committed, not only the example: `ortho env up test` refuses otherwise.
+port=4629; url="http://127.0.0.1:$port"
 tool() { (cd "$app" && node "$repo/packages/cli/src/main.ts" "$@"); }
 forget_test() { rm -rf "$app/.ortho/environments/test" "$app/.ortho/tasks"; }
 trap 'tool env down test > /dev/null 2>&1 || true; forget_test; finish' EXIT
