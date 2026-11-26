@@ -89,7 +89,7 @@
    "lines": [
     {
      "id": "c1",
-     "text": "The spike tries three things the app could do, and holds each to rules copied from the plan page."
+     "text": "The spike tries three things the app could do, and holds each to rules taken from the plan page."
     },
     {
      "id": "c2",
@@ -122,7 +122,7 @@
     },
     {
      "id": "d2",
-     "text": "Not with the rules as the plan page has them. A late reversal breaks one of three rules, and the app only chooses which."
+     "text": "Not with the rules as the plan page has them. Once the holder has withdrawn, a late reversal breaks one of three rules, and the app only chooses which."
     },
     {
      "id": "d3",
@@ -130,7 +130,7 @@
     },
     {
      "id": "d4",
-     "text": "It decides nothing. It says what you now have to decide. Either a settled payment is final, or the plan gains a new thing."
+     "text": "It decides nothing. It says what you have to decide. Either a settled payment is final, or the plan gains a new thing."
     },
     {
      "id": "d5",
@@ -158,7 +158,7 @@
     },
     {
      "id": "e4",
-     "text": "One honest note. Spiking is how we work in this repository. No command runs one. An agent ran this spike for this chapter. It is small, it called no provider, and nobody has agreed the design it tests.",
+     "text": "Spiking is how we work in this repository. No command runs one. An agent ran this spike for this chapter. It is small, it called no provider, and nobody has agreed the design it tests.",
      "gap": 0.6
     },
     {

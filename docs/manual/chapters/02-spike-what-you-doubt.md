@@ -39,7 +39,7 @@ the other 840, and inside those, in the 225 where the holder has already taken m
 
 ## Each way of mirroring breaks a different rule
 
-The spike then tries three things the app could do with a late reversal, and holds each to rules copied from the
+The spike then tries three things the app could do with a late reversal, and holds each to rules taken from the
 plan page. The plain one is to take the money out of the balance.
 
 ```sh part capture=spike-run.txt
@@ -79,7 +79,7 @@ The spike ends by writing one page, and the page opens with the question and the
 **Answer.** Not with the rules as the plan page has them. Once the holder has withdrawn, a late reversal breaks one of three rules, and the app only chooses which. A balance can be kept at zero or above if a new thing, a shortfall, carries the rest and two rules are reworded to count it.
 ```
 
-Below that it says what was tried, what was found with the count beside each finding, and what was not tried. It
+Below that it says what was tried, what was found, with the counts, and what was not tried. It
 decides nothing. It says what you now have to decide, before the [blueprint](../../canon/blueprint.mdx) is written.
 
 ```md part capture=spike-readme.txt
@@ -112,8 +112,8 @@ would have printed nothing broken. Ask what it did to break the idea, and send i
 The code gets kept. It works, so someone copies the ledger into the app. It was written to answer a question and was
 never proved against a journey, and it should be written again from the blueprint.
 
-The answer gets read as a decision. This page says a shortfall would work. It does not say the app should have one.
-That is still yours to say.
+The answer gets read as a decision. This page says a shortfall would keep the balance at zero or above. It does not
+say the app should have one. That is still yours to say.
 
 And a spike can be too small to trust. This one played one wallet and one reversal, with no provider. Its page says
 so, under open risks, and the plan should carry those risks forward and not the comfort.
