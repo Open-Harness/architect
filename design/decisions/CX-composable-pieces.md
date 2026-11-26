@@ -33,7 +33,7 @@ adapter call (Bridge). No Capxul thing is an actor; two narrow places will be (s
 
 ## 1. The pieces
 
-28 pieces take all 485 record types in `examples/capxul/doctypes.md`; a 29th comes later with the chain. Fifteen are
+28 pieces take all 485 record types in `examples/capxul/doctypes.md`; a 29th comes later with the chain. (Superseded by CX-tax-us-rows, 26 November 2026: "28 pieces take 479 of the 485 record types in `examples/capxul/doctypes.md`, and the other 6, India's income-tax exemption types and their lines, stay listed and are not taken (CX-payroll-tax)".) Fifteen are
 **core** (every Capxul has them: the books, HR and payroll Aaron named as the offering, plus Bridge, K43) and thirteen
 are **optional** (a business leaves them out and its app has none of their tables, screens, commands or tools).
 Counts are record types from the catalogue, with child tables (`line`) in brackets. "Today" names the things already
@@ -120,7 +120,12 @@ built in `examples/capxul/blueprint/things/`.
 
 16. **`payroll-tax-us`** (optional, one per jurisdiction; payroll runs with none, and then a slip has no tax lines). United States
     payroll tax as dated rows (CX-payroll-tax). 9 (4): Income Tax Slab (and Other Charges, Taxable Salary Slab),
-    Employee Tax Exemption Category, Sub Category, Declaration and Proof Submission, with their lines.
+    Employee Tax Exemption Category, Sub Category, Declaration and Proof Submission, with their lines. (Superseded by
+    CX-tax-us-rows, 26 November 2026: "Its published figures are generated dated rows in Income Tax Slab's shape, shipped
+    in the piece and not stored (CX-tax-us-rows); a company's SUTA rates and each employee's withholding certificates are
+    its things. 3 (2): Income Tax Slab (and Other Charges, Taxable Salary Slab), taken as the rows' shape. India's four
+    exemption record types and their two lines stay listed and are not taken (CX-payroll-tax, "What this changes in the
+    catalogue").")
 17. **`selling`**. Quotes and orders before an invoice. 26 (13): Quotation, Sales Order, Sales Person, Sales Partner,
     Sales Team, targets, Installation Note, Shipping Rule, Coupon Code, Loyalty Program, Incoterm, Selling Settings.
 18. **`buying`**. Orders and quotes from suppliers. 19 (10): Purchase Order, Request for Quotation, Supplier Quotation,
