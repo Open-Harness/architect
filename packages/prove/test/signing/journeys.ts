@@ -3,7 +3,7 @@
 // J1's checks author; a builder never edits it.
 //
 // The surface (`s.<name>.signs`, `s.<name>.signer`) is reached through `Signing`, so this compiles before the builder adds it.
-import { Effect, type Redacted, References } from "effect";
+import { Effect, Redacted, References } from "effect";
 import { afterAll, beforeAll, expect } from "vitest";
 import { Blueprint, expect as check, Via } from "orthograph";
 import { Keys } from "@orthograph/chain-evm/device";
@@ -154,6 +154,20 @@ export const signing = () => {
     }
     return state.runs;
   };
+  /**
+   * The runs as the behaviour checks read them: every form of every key made replaced by `<key>`, so a failure, which prints
+   * what it was given, never prints a key. A leaked key is `signs-keys.test.ts`'s to find; here it can only read as `<key>`.
+   */
+  const seen = async () => {
+    const runs = await ran();
+    const forms = made.flatMap((secret) => {
+      const hex = Redacted.value(secret).replace(/^0x/, "");
+      const bytes = Buffer.from(hex, "hex");
+      return [hex, bytes.toString("base64").replace(/=+$/, ""), bytes.toString("base64url"), [...bytes].join(","), BigInt(`0x${hex}`).toString()];
+    });
+    const text = forms.reduce((t, form) => t.replace(new RegExp(form.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "<key>"), JSON.stringify(runs, wire));
+    return JSON.parse(text) as ReadonlyArray<JourneyRun>;
+  };
   const world = () => state.world!;
   /** The person id the world gave each name in a run, from the world's own cast. */
   const personsIn = (index: number) => ({ ada: world().castAs.get(`j${index}.ada`), bo: world().castAs.get(`j${index}.bo`) });
@@ -161,7 +175,7 @@ export const signing = () => {
   const safeOf = (index: number) => [...world().safes].find(([, owner]) => owner === personsIn(index).ada)?.[0];
   /** What the runs left on `globalThis`: every property it did not have before them. */
   const addedGlobals = () => Reflect.ownKeys(globalThis).filter((k) => !state.globals.has(k)).map((k) => (globalThis as Record<string | symbol, unknown>)[k]);
-  return { made, said, ran, world, personsIn, safeOf, addedGlobals, claimTextOf: (index: number, who: "ada" | "bo" = "ada") => claimText(safeOf(index), personsIn(index)[who]), started: () => state.started };
+  return { made, said, ran, seen, world, personsIn, safeOf, addedGlobals, claimTextOf: (index: number, who: "ada" | "bo" = "ada") => claimText(safeOf(index), personsIn(index)[who]), started: () => state.started };
 };
 
 /** A step's own call, by its title: the record of what it did. */
@@ -170,7 +184,8 @@ export const recordOf = (run: JourneyRun, step: string): CallRecord | undefined 
 export const answerOf = (run: JourneyRun, step: string) => {
   const record = recordOf(run, step);
   expect(record, `journey "${run.name}" step "${step}": no call recorded for it; calls: ${run.calls.map((c) => `${c.step} (${c.operation} ${c.status})`).join(", ")}`).toBeDefined();
-  expect(record!.status, `journey "${run.name}" step "${step}": expected a signature, recorded ${record!.status} ${JSON.stringify(record!.body)}`).toBe(200);
+  const fields = typeof record!.body === "object" && record!.body !== null ? Object.keys(record!.body).join(", ") : typeof record!.body;
+  expect(record!.status, `journey "${run.name}" step "${step}": expected a signature, recorded ${record!.status} with ${fields}`).toBe(200);
   return record!.body as { readonly message: string; readonly signature: string; readonly signer: string };
 };
 export const stepOf = (run: JourneyRun, title: string) => run.steps.find((s) => s.title === title);

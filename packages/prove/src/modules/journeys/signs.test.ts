@@ -11,7 +11,9 @@ import { journeyLines } from "#modules/prove/internal/report.js";
 import { addressesIn, answerOf, recordOf, RUN, signing, SIGNS, stepOf, wire } from "../../../test/signing/journeys.ts";
 import { checksum, recover, reference } from "../../../test/signing/world.ts";
 
-const { made, ran, world, personsIn, safeOf, claimTextOf } = signing();
+const { made, seen, world, personsIn, safeOf, claimTextOf } = signing();
+// The runs with every key scrubbed (`seen`): a failure here prints what it was given, and must never print a key.
+const ran = seen;
 const runAt = async (index: number) => (await ran())[index]!;
 const NO_SIGNATURE = /0x[0-9a-fA-F]{130}/;
 

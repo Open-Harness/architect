@@ -5,6 +5,9 @@
 // printed lines and structured details (what reaches the logbook), every request the world got, everything printed or
 // logged, the process's environment, and every file written meanwhile in the repository, the home folder and the system's
 // temporary folder.
+//
+// A check never hands a matched text to `expect`: a failure prints what it was given, into CI's output and the JSON report,
+// and a caught key would be printed. Each says only how many and where (a source's name, a variable's name, a file's path).
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -69,6 +72,12 @@ const keys = async () => {
   expect(made.length, "keys made with Keys.generate during the runs").toBeGreaterThan(0);
   return made.flatMap(formsOf);
 };
+/** Each key's 32 raw bytes, for what is written as bytes and not as text. */
+const rawKeys = () => made.map((secret) => Buffer.from(Redacted.value(secret).replace(/^0x/, ""), "hex"));
+/** Where a key was found, by each source's name and how many of its texts: never the text itself. */
+const whereHeld = (sources: ReadonlyArray<readonly [string, ReadonlyArray<string>]>, test: (text: string) => boolean) =>
+  sources.map(([where, texts]) => [where, texts.filter(test).length] as const).filter(([, n]) => n > 0).map(([where, n]) => `${n} in ${where}`);
+const SIXTY_FOUR = /(?<![0-9a-fA-F])(0x)?[0-9a-fA-F]{64}(?![0-9a-fA-F])/;
 
 describe("no key is ever shown (CX-journey-signs, call 5)", () => {
   it("prove made a key for each person who signed", async () => {
@@ -81,15 +90,18 @@ describe("no key is ever shown (CX-journey-signs, call 5)", () => {
     const forms = await keys();
     const all = await ran();
     const printed = journeyLines(all, new Map());
-    const texts = [JSON.stringify(all, wire), ...textsIn(all), printed.lines.join("\n"), ...textsIn(printed.details), ...world().requests.map((r) => `${r.path} ${r.headers} ${r.body}`)];
-    expect(texts.filter((t) => holds(t, forms)).map((t) => t.slice(0, 120)), "texts that hold a key").toEqual([]);
+    const sources = [
+      ["the runs as JSON", [JSON.stringify(all, wire)]], ["the runs, walked", textsIn(all)], ["prove's printed lines", printed.lines],
+      ["prove's structured details", textsIn(printed.details)], ["the requests the world got", world().requests.map((r) => `${r.path} ${r.headers} ${r.body}`)],
+    ] as const;
+    expect(whereHeld(sources, (t) => holds(t, forms)), "where a key was found").toEqual([]);
     // A key is 64 hex digits; nothing in a run is that long but a signature (130) and nothing that short is a key's (traces are 32).
-    expect([JSON.stringify(all, wire), printed.lines.join("\n")].flatMap((t) => t.match(/(?<![0-9a-fA-F])(0x)?[0-9a-fA-F]{64}(?![0-9a-fA-F])/g) ?? []), "runs of exactly 64 hex digits").toEqual([]);
+    expect(whereHeld([sources[0], sources[2]], (t) => SIXTY_FOUR.test(t)), "where a run of exactly 64 hex digits was found").toEqual([]);
   });
 
   it("no key was printed or logged, at any log level", async () => {
     const forms = await keys();
-    expect(said.filter((t) => holds(t, forms)).map((t) => t.slice(0, 120)), "lines printed or logged that hold a key").toEqual([]);
+    expect(whereHeld([["what was printed or logged", said]], (t) => holds(t, forms)), "where a key was found").toEqual([]);
   });
 
   it("no key is in the process's environment, where a child process would inherit it, nor on anything the runs left on globalThis", async () => {
@@ -101,7 +113,14 @@ describe("no key is ever shown (CX-journey-signs, call 5)", () => {
   it("no key was written to a file, in the repository (node_modules too), the home folder or any temporary folder", async () => {
     const forms = await keys();
     const files = [...new Set(ROOTS.flatMap((root) => writtenSince(root, started())))];
-    const holding = files.filter((file) => { try { return holds(readFileSync(file, "latin1"), forms); } catch { return false; } });
+    const raw = rawKeys();
+    // As text in any of its forms, or as its 32 raw bytes.
+    const holding = files.filter((file) => {
+      try {
+        const bytes = readFileSync(file);
+        return raw.some((key) => bytes.includes(key)) || holds(bytes.toString("latin1"), forms);
+      } catch { return false; }
+    });
     expect(holding, "files written during the runs that hold a key").toEqual([]);
   });
 });
