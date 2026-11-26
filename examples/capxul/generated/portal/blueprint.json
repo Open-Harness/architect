@@ -9910,6 +9910,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "GivenScores"
           }
         },
@@ -9998,7 +9999,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "dbfb61a88c7ad4f5"
+        "hash": "e97f08504cdf4a31"
       },
       "appraisal.self-rate": {
         "kind": "operation",
@@ -10023,6 +10024,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "GivenRatings"
           }
         },
@@ -10109,7 +10111,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "23fce24e084e48ac"
+        "hash": "d54f09c96b7bdfac"
       },
       "appraisal.submit": {
         "kind": "operation",
@@ -10351,6 +10353,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "Appraisees",
             "ref": "appraisal-cycle.appraisees"
           }
@@ -10424,7 +10427,7 @@
         "budget": {
           "p95Ms": 300
         },
-        "hash": "cd4becd0fda51b78"
+        "hash": "dbe245590f87f4bd"
       },
       "appraisal-cycle.get": {
         "kind": "read",
@@ -10731,6 +10734,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "TemplateKras",
             "ref": "appraisal-template.kras"
           },
@@ -10738,6 +10742,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "TemplateCriteria",
             "ref": "appraisal-template.criteria"
           }
@@ -10815,7 +10820,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "b5bbdc51c9d0ed83"
+        "hash": "8fb4f8a5eb2adba7"
       },
       "appraisal-template.get": {
         "kind": "read",
@@ -14704,6 +14709,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "named": "GivenRatings"
           }
         },
@@ -14786,7 +14792,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "5746ed27e78b9a47"
+        "hash": "e0656fbd9879a27b"
       },
       "employee-performance-feedback.get": {
         "kind": "read",
@@ -20788,6 +20794,7 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "description": "Its lines, in order: each an account, a cost center, and a debit or a credit. At most 50."
           }
         },
@@ -20886,7 +20893,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "59d395645c1a1382"
+        "hash": "cd6f129d697f9430"
       },
       "journal-entry.get": {
         "kind": "read",
@@ -23821,12 +23828,14 @@
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "description": "Its earnings, in order: each a component and its amount, 0 for the component's own. At most 50."
           },
           "deductions": {
             "value": {
               "type": "schema"
             },
+            "json": "list",
             "description": "Its deductions, in order: each a component and its amount, 0 for the component's own. At most 50."
           }
         },
@@ -23940,7 +23949,7 @@
         "budget": {
           "p95Ms": 200
         },
-        "hash": "3b0578ef51bd94bf"
+        "hash": "fc5cc2b809e3ee76"
       },
       "salary-structure.get": {
         "kind": "read",
@@ -128155,7 +128164,7 @@
       "thing:company": "bf9b5c8f8591f130"
     },
     "appraisal-cycle.create": {
-      "operation:appraisal-cycle.create": "cd4becd0fda51b78",
+      "operation:appraisal-cycle.create": "dbe245590f87f4bd",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130"
     },
@@ -128175,7 +128184,7 @@
       "thing:company": "bf9b5c8f8591f130"
     },
     "appraisal-template.create": {
-      "operation:appraisal-template.create": "b5bbdc51c9d0ed83",
+      "operation:appraisal-template.create": "8fb4f8a5eb2adba7",
       "thing:appraisal-template": "247c2bef2dd04a89",
       "thing:company": "bf9b5c8f8591f130"
     },
@@ -128209,7 +128218,7 @@
       "thing:employee": "a123a6ad8b10e9b8"
     },
     "appraisal.rate": {
-      "operation:appraisal.rate": "dbfb61a88c7ad4f5",
+      "operation:appraisal.rate": "e97f08504cdf4a31",
       "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:appraisal-template": "247c2bef2dd04a89",
@@ -128217,7 +128226,7 @@
       "thing:employee": "a123a6ad8b10e9b8"
     },
     "appraisal.self-rate": {
-      "operation:appraisal.self-rate": "23fce24e084e48ac",
+      "operation:appraisal.self-rate": "d54f09c96b7bdfac",
       "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:appraisal-template": "247c2bef2dd04a89",
@@ -128433,7 +128442,7 @@
       "thing:employee-grade": "a09fa37da72df7db"
     },
     "employee-performance-feedback.create": {
-      "operation:employee-performance-feedback.create": "5746ed27e78b9a47",
+      "operation:employee-performance-feedback.create": "e0656fbd9879a27b",
       "thing:appraisal": "8bb3d8978bb593bb",
       "thing:appraisal-cycle": "681fd95c76a14b5e",
       "thing:company": "bf9b5c8f8591f130",
@@ -128883,7 +128892,7 @@
       "thing:journal-entry": "3c557b50bfd78e9a"
     },
     "journal-entry.create": {
-      "operation:journal-entry.create": "59d395645c1a1382",
+      "operation:journal-entry.create": "cd6f129d697f9430",
       "thing:company": "bf9b5c8f8591f130",
       "thing:journal-entry": "3c557b50bfd78e9a"
     },
@@ -129112,7 +129121,7 @@
       "thing:salary-structure": "0d7ab978db145f65"
     },
     "salary-structure.create": {
-      "operation:salary-structure.create": "3b0578ef51bd94bf",
+      "operation:salary-structure.create": "fc5cc2b809e3ee76",
       "thing:company": "bf9b5c8f8591f130",
       "thing:salary-structure": "0d7ab978db145f65"
     },
@@ -129369,5 +129378,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "0c1ca163b321aacea2ade867a404be22b4326419ed87833a65cfb875d8f7136f"
+  "digest": "4697212ad529c0c03c153fe84e47de56d2d328c46710f3151c249d448b624146"
 }
