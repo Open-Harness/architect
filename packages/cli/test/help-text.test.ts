@@ -49,6 +49,13 @@ const INVENTORY: Readonly<Record<string, { readonly flags: ReadonlyArray<string>
   watch: { flags: ["env", "source", "since", "root"], args: [] },
 };
 const PATHS = Object.keys(INVENTORY);
+/** The aliases and the choice flags main.ts declares today: a narrowed choice or a dropped alias is a command that changed. */
+const ALIASES: Readonly<Record<string, ReadonlyArray<string>>> = { model: ["describe"] };
+const CHOICES: Readonly<Record<string, Readonly<Record<string, ReadonlyArray<string>>>>> = {
+  prove: { "--env": ["local", "test", "staging"] },
+  promote: { "--to": ["staging", "production"] },
+  watch: { "--source": ["file", "axiom"] },
+};
 const WITH_ROWS = PATHS.filter((p) => (INVENTORY[p]?.flags.length ?? 0) + (INVENTORY[p]?.args.length ?? 0) > 0);
 
 let tree: ReadonlyMap<string, Page>;
@@ -66,7 +73,9 @@ const parentOf = (path: string): Page | undefined => tree.get(path.split(" ").sl
 const nameOf = (path: string) => path.split(" ").slice(-1)[0] ?? path;
 const bareName = (r: Row) => (r.names[0] ?? "").replace(/^--/, "");
 /** A page printed by a formatter wraps and pads: compare its words, not its spacing. */
-const flat = (text: string) => text.replace(/\s+/g, " ");
+const flat = (text: string) => text.replace(/\s+/g, " ").trim();
+/** Two descriptions are twins when they read the same: case, punctuation and spacing aside ("Checks the blueprint." and "checks the blueprint!"). */
+const gist = (text: string, _name: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const commands = () => [...tree.keys()].filter((k) => k !== "");
 
 describe("ortho --help reaches every command", () => {
@@ -84,22 +93,24 @@ describe("every command says what it does", () => {
     const row = rowIn(path);
     expect(row, `\`ortho ${path}\` is not in its parent's subcommands`).toBeDefined();
     expect(says(row?.text ?? "", nameOf(path)), `the list shows \`${nameOf(path)}\` with the description: "${row?.text ?? ""}"`).toBe(true);
-    expect(flat(parentOf(path)?.printed ?? ""), "the parent's printed help shows that description").toContain(flat(row?.text ?? "") || "\u0000");
+    expect(flat(row?.printed ?? ""), `the parent's printed SUBCOMMANDS row for \`${nameOf(path)}\` shows that description`).toContain(flat(row?.text ?? "") || "\u0000");
+    expect(row?.names ?? [], "its aliases").toEqual(expect.arrayContaining([...(ALIASES[path] ?? [])]));
   });
 
   it.each(PATHS)("`ortho %s --help` says what it does on its own page", (path) => {
     const page = tree.get(path);
     expect(says(page?.description ?? "", nameOf(path)), `ortho ${path} --help has no description, or it says nothing: "${page?.description ?? ""}"`).toBe(true);
-    expect(flat(page?.printed ?? ""), "the printed page shows it").toContain(flat(page?.description ?? "") || "\u0000");
+    expect(flat(page?.printedDescription ?? ""), "the printed page's DESCRIPTION is that description").toBe(flat(page?.description ?? "") || "\u0000");
   });
 
-  it("gives no two commands the same description, in the lists or on their pages", () => {
+  it("gives no two commands the same description, in the lists or on their pages, nor two that differ only by case or punctuation", () => {
     const twins = (texts: ReadonlyArray<readonly [string, string]>) => {
       const seen = new Map<string, string>();
       const out: string[] = [];
       for (const [p, text] of texts) {
-        if (text !== "" && seen.has(text)) out.push(`ortho ${seen.get(text)} and ortho ${p}: "${text}"`);
-        seen.set(text, p);
+        const key = gist(text, nameOf(p));
+        if (key !== "" && seen.has(key)) out.push(`ortho ${seen.get(key)} and ortho ${p}: "${text}"`);
+        seen.set(key, p);
       }
       return out;
     };
@@ -119,6 +130,7 @@ describe("every flag and argument says what it is for", () => {
     const have = (rows: ReadonlyArray<Row> | undefined) => (rows ?? []).flatMap((r) => r.names);
     expect(have(page?.flags), `flags of ortho ${path}`).toEqual(expect.arrayContaining(INVENTORY[path]?.flags.map((f) => `--${f}`) ?? []));
     expect(have(page?.args), `arguments of ortho ${path}`).toEqual(expect.arrayContaining([...(INVENTORY[path]?.args ?? [])]));
+    for (const [flag, choices] of Object.entries(CHOICES[path] ?? {})) expect(page?.flags.find((f) => f.names.includes(flag))?.choices, `the choices of ortho ${path} ${flag}`).toEqual(choices);
   });
 
   it.each(WITH_ROWS)("`ortho %s` describes each of its flags and arguments, on the page a person reads", (path) => {
@@ -126,12 +138,12 @@ describe("every flag and argument says what it is for", () => {
     const rows = [...(page?.flags ?? []), ...(page?.args ?? [])];
     expect(rows.length, `ortho ${path} --help shows no flags or arguments`).toBeGreaterThan(0);
     expect(rows.filter((r) => !says(r.text, bareName(r))).map((r) => `${r.names[0]}: "${r.text}"`)).toEqual([]);
-    expect(rows.filter((r) => !flat(page?.printed ?? "").includes(flat(r.text))).map((r) => `${r.names[0]}: "${r.text}" is not on the printed page`)).toEqual([]);
+    expect(rows.filter((r) => !flat(r.printed).includes(flat(r.text) || "\u0000")).map((r) => `${r.names[0]}: "${r.text}" is not on its own row of the printed page: "${r.printed}"`)).toEqual([]);
   });
 
   it.each(WITH_ROWS.filter((p) => (INVENTORY[p]?.flags.length ?? 0) + (INVENTORY[p]?.args.length ?? 0) > 1))("`ortho %s` gives no two of its flags and arguments the same words", (path) => {
     const page = tree.get(path);
-    const texts = [...(page?.flags ?? []), ...(page?.args ?? [])].map((r) => r.text).filter((t) => t !== "");
+    const texts = [...(page?.flags ?? []), ...(page?.args ?? [])].map((r) => gist(r.text, bareName(r))).filter((t) => t !== "");
     expect(texts.filter((t, i) => texts.indexOf(t) !== i)).toEqual([]);
   });
 

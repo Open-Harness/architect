@@ -29,19 +29,32 @@ describe("the CLI's README says what the CLI does", () => {
     const top = tree.get("")?.subcommands.map((s) => s.names[0] ?? "") ?? [];
     expect(top.length, "ortho --help lists commands").toBeGreaterThan(10);
     expect(top.filter((c) => !new RegExp(`ortho ${c}\\b`).test(readme))).toEqual([]);
-    // Each mention: `ortho` and the words after it up to the end of the code span or line. The longest known path wins.
+    // Each mention, anywhere (prose, bold, quotes, code): `ortho` as a word of its own and the words after it, up to the end of
+    // the code span, the emphasis, the quote, the bracket or the line. The longest known command path wins; what follows it may
+    // be its arguments (as many as it declares, `<placeholders>` aside) and its flags, long or short.
     const wrong: string[] = [];
-    for (const m of readme.matchAll(/(?:^|[`\s])ortho((?: [^`\n]*)?)/gm)) {
-      const words = (m[1] ?? "").trim().split(/\s+/).filter((w) => w !== "" && !/^[<[(]/.test(w));
-      const plainWords = words.filter((w) => !w.startsWith("-"));
+    for (const m of readme.matchAll(/(?<![\w/@.-])ortho((?:[ \t]+[^`*"'()[\]\n;|]*)?)/g)) {
+      const words = (m[1] ?? "").trim().split(/\s+/).filter((w) => w !== "" && !/^[<[{]/.test(w)).map((w) => w.replace(/[.,:]+$/, ""));
+      // The command path: the longest run of leading words that is a command.
       let path = "";
-      for (let n = Math.min(plainWords.length, 3); n >= 1; n--) if (tree.has(plainWords.slice(0, n).join(" "))) { path = plainWords.slice(0, n).join(" "); break; }
-      if (plainWords.length > 0 && path === "" && !(plainWords[0] === "new" && plainWords[1] === "app")) { wrong.push(`ortho ${words.join(" ")} (no such command)`); continue; }
-      const flags = tree.get(path)?.flags.flatMap((f) => f.names) ?? [];
-      for (const w of words.filter((x) => x.startsWith("--"))) {
-        const f = (w.split("=")[0] ?? w).replace(/[\]),.;:]+$/, "");
-        if (!["--help", "--version", "--log-level", "--completions", "--wizard"].includes(f) && path !== "" && !flags.includes(f)) wrong.push(`ortho ${words.join(" ")} (${f})`);
+      for (let n = Math.min(words.length, 3); n >= 1; n--) if (tree.has(words.slice(0, n).join(" "))) { path = words.slice(0, n).join(" "); break; }
+      if (words[0] === "new" && words[1] === "app" && !tree.has("new app")) continue; // slice 6's, judged by its own check
+      if (words.length > 0 && !words[0]?.startsWith("-") && path === "") { wrong.push(`ortho ${words.join(" ")} (no such command)`); continue; }
+      const page = tree.get(path);
+      const flags = page?.flags ?? [];
+      const global = ["--help", "-h", "--version", "-v", "--wizard"];
+      let positional = 0;
+      const rest = words.slice(path === "" ? 0 : path.split(" ").length);
+      for (let i = 0; i < rest.length; i++) {
+        const w = rest[i] ?? "";
+        if (!w.startsWith("-")) { positional++; continue; }
+        const f = w.split("=")[0] ?? w;
+        if (["--log-level", "--completions"].includes(f)) { if (!w.includes("=")) i++; continue; }
+        const flag = flags.find((x) => x.names.includes(f));
+        if (flag === undefined && !global.includes(f)) wrong.push(`ortho ${words.join(" ")} (${f})`);
+        if (flag?.takesValue && !w.includes("=")) i++;
       }
+      if (positional > (page?.args.length ?? 0)) wrong.push(`ortho ${words.join(" ")} (\`ortho ${path}\` takes ${page?.args.length ?? 0} argument(s))`);
     }
     expect(wrong).toEqual([]);
   }, 300_000);
@@ -55,7 +68,15 @@ describe("the CLI's README says what the CLI does", () => {
   it("points to --help for each command's flags", () => {
     expect(read("packages/cli/README.md")).toContain("ortho --help");
   });
+
+  it("links the getting-started page by a link that resolves from the README's own folder", () => {
+    const links = [...read("packages/cli/README.md").matchAll(/\]\(([^)\s#]+)(?:#[^)]*)?\)/g)].map((m) => resolve(repo, "packages/cli", m[1] ?? ""));
+    expect(links, "a markdown link to docs/canon/getting-started.mdx").toContain(resolve(repo, "docs/canon/getting-started.mdx"));
+  });
 });
+
+/** The built packages whose README said "Arrives in layer" on 26 November 2026, and the CLI's. */
+const STALE = ["cli", "generators", "host-cloudflare", "language-effect", "lint", "orthograph", "preset", "prove"];
 
 describe("a package whose code is built does not say it is still to arrive", () => {
   const packages = readdirSync(resolve(repo, "packages")).filter((p) => statSync(resolve(repo, "packages", p)).isDirectory());
@@ -72,7 +93,11 @@ describe("a package whose code is built does not say it is still to arrive", () 
   });
 
   it.each(built)("packages/%s/README.md has no \"Arrives in layer\" placeholder", (p) => {
-    expect(read(`packages/${p}/README.md`)).not.toMatch(/Arrives in layer/i);
+    const text = read(`packages/${p}/README.md`).replace(/\s+/g, " ");
+    // The READMEs this slice rewrites must stay (a deleted one reads as "" and would pass); a package that never had one is not this slice's.
+    if (STALE.includes(p)) expect(text, `packages/${p}/README.md exists and says something`).not.toBe("");
+    // The placeholder in any wording: "Arrives in layer 1", "Coming in layer 2", "lands with layer 1", "layer 1: to come".
+    expect(text).not.toMatch(/\b(?:arriv|com|land)\w*\s+(?:in|with)\s+layer\b|\blayer\s*\d+\W{0,3}\s*(?:to come|not yet|later)\b/i);
   });
 
   it("language-solidity, with one empty file of source, may still say it is to come", () => {

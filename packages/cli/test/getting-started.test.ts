@@ -31,14 +31,15 @@ const fenceLines = (text: string): ReadonlyArray<string> => {
   let inside = false;
   for (const line of text.split("\n")) {
     if (/^\s*```/.test(line)) inside = !inside;
+    // A line is cut at `&&`, `||`, `;` and `|`, so `true || ortho frobnicate` is judged as `ortho frobnicate` too.
     else if (inside)
-      out.push(
-        line
-          .trim()
-          .replace(/^\$\s+/, "")
-          .replace(/^(?:[A-Z][A-Z0-9_]*=\S+\s+)+/, "")
-          .replace(/^(?:(?:pnpm|yarn|bun)(?:\s+exec)?\s+|npx\s+(?:--yes\s+)?|npm\s+exec\s+(?:--\s+)?)(?=ortho\s)/, ""),
-      );
+      for (const part of line.trim().replace(/^\$\s+/, "").split(/&&|\|\||;|\|/))
+        out.push(
+          part
+            .trim()
+            .replace(/^(?:[A-Z][A-Z0-9_]*=\S+\s+)+/, "")
+            .replace(/^(?:(?:pnpm|yarn|bun)(?:\s+exec)?\s+|npx\s+(?:--yes\s+)?|npm\s+exec\s+(?:--\s+)?)(?=ortho\s)/, ""),
+        );
   }
   return out;
 };
@@ -78,7 +79,10 @@ describe("it says what a reader needs first", () => {
   it("names the Node version the repository requires", () => {
     const engines = (JSON.parse(read("package.json")) as { readonly engines: { readonly node: string } }).engines.node;
     const major = /\d+/.exec(engines)?.[0] ?? "?";
-    expect(prose, "a Node requirement, with the major version from package.json engines").toMatch(new RegExp(`Node(?:\\.js)?[^.\\n]{0,40}\\b${major}\\b`));
+    const near = [...prose.matchAll(/\bNode(?:\.js)?\b([^\n]{0,40})/g)].map((m) => m[1] ?? "");
+    expect(near.some((t) => new RegExp(`\\b${major}\\b`).test(t)), "a Node requirement, with the major version from package.json engines").toBe(true);
+    const others = near.flatMap((t) => [...t.matchAll(/\b(\d{2})\b/g)].map((m) => m[1])).filter((n) => n !== major);
+    expect(others, "no other Node version beside it (\"Node 22 or so; 24 …\")").toEqual([]);
   });
 
 });

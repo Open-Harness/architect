@@ -19,6 +19,12 @@ export interface Row {
   readonly names: ReadonlyArray<string>;
   /** The description, with the parser's own "(choices: …)" or "(default: …)" tail taken off: only what the author wrote. */
   readonly text: string;
+  /** The choices the parser lists for it (`--env`: local, test, staging), `[]` when it lists none. */
+  readonly choices: ReadonlyArray<string>;
+  /** Whether it is a flag that takes a value (`--env local`), not a switch (`--json`). */
+  readonly takesValue: boolean;
+  /** Its row on the page a person reads (no hook, no colour), its wrapped lines joined: `""` when the page has no row for it. */
+  readonly printed: string;
 }
 
 export interface Page {
@@ -32,6 +38,8 @@ export interface Page {
   readonly usage: string;
   /** What this command says about itself on its own page, `""` when nothing. */
   readonly description: string;
+  /** The DESCRIPTION section of the page a person reads, its lines joined. */
+  readonly printedDescription: string;
   /** Each subcommand as its parent lists it: the short description when it has one, else its description. */
   readonly subcommands: ReadonlyArray<Row>;
   readonly flags: ReadonlyArray<Row>;
@@ -41,7 +49,7 @@ export interface Page {
 interface Doc {
   readonly usage: string;
   readonly description: string;
-  readonly flags: ReadonlyArray<{ readonly name: string; readonly aliases: ReadonlyArray<string>; readonly description: string }>;
+  readonly flags: ReadonlyArray<{ readonly name: string; readonly aliases: ReadonlyArray<string>; readonly type: string; readonly description: string }>;
   readonly args: ReadonlyArray<{ readonly name: string; readonly description: string }>;
   readonly subcommands: ReadonlyArray<{ readonly name: string; readonly alias?: string; readonly shortDescription?: string; readonly description: string }>;
 }
@@ -58,12 +66,30 @@ const run = (args: ReadonlyArray<string>) =>
 
 const tail = /\s*\((?:choices|default)[^)]*\)\s*$/;
 const own = (text: string | undefined): string => (text ?? "").replace(tail, "").trim();
+const choicesOf = (text: string | undefined): ReadonlyArray<string> =>
+  (/\(choices: ([^)]*)\)/.exec(text ?? "")?.[1] ?? "").split(",").map((c) => c.trim()).filter((c) => c !== "");
+
+/** The sections of a printed page: a line of capitals opens one; each row starts two spaces in, and deeper lines continue it. */
+const printedRows = (stdout: string): ReadonlyMap<string, ReadonlyArray<string>> => {
+  const out = new Map<string, string[]>();
+  let open: string[] | undefined;
+  for (const line of stdout.split("\n")) {
+    if (/^[A-Z][A-Z ]+$/.test(line)) out.set(line, (open = []));
+    else if (open && /^ {2}\S/.test(line)) open.push(line.trim());
+    else if (open && /^ {3,}\S/.test(line) && open.length > 0) open[open.length - 1] += ` ${line.trim()}`;
+  }
+  return out;
+};
+/** The printed row in `section` whose names (before the gap) include `name`. */
+const rowFor = (rows: ReadonlyMap<string, ReadonlyArray<string>>, section: string, name: string): string =>
+  (rows.get(section) ?? []).find((r) => (r.split(/ {2,}/)[0] ?? "").split(/[,\s]+/).includes(name)) ?? "";
 
 export const helpOf = async (path: ReadonlyArray<string>): Promise<Page> => {
   const entry = resolve(root, "src/main.ts");
   const [data, person] = await Promise.all([run(["--import", hook, entry, ...path, "--help"]), run([entry, ...path, "--help"])]);
   const line = data.stdout.split("\n").find((l) => l.startsWith("HELPDOC "));
   const doc: Doc = line ? (JSON.parse(line.slice("HELPDOC ".length)) as Doc) : { usage: "", description: "", flags: [], args: [], subcommands: [] };
+  const rows = printedRows(person.stdout);
   return {
     path,
     status: person.status,
@@ -72,9 +98,10 @@ export const helpOf = async (path: ReadonlyArray<string>): Promise<Page> => {
     found: line !== undefined,
     usage: doc.usage,
     description: own(doc.description),
-    subcommands: doc.subcommands.map((s) => ({ names: s.alias ? [s.name, s.alias] : [s.name], text: own(s.shortDescription ?? s.description) })),
-    flags: doc.flags.map((f) => ({ names: [`--${f.name}`, ...f.aliases.map((a) => (a.length === 1 ? `-${a}` : `--${a}`))], text: own(f.description) })),
-    args: doc.args.map((a) => ({ names: [a.name], text: own(a.description) })),
+    printedDescription: (rows.get("DESCRIPTION") ?? []).join(" "),
+    subcommands: doc.subcommands.map((s) => ({ names: s.alias ? [s.name, s.alias] : [s.name], text: own(s.shortDescription ?? s.description), choices: [], takesValue: false, printed: rowFor(rows, "SUBCOMMANDS", s.name) })),
+    flags: doc.flags.map((f) => ({ names: [`--${f.name}`, ...f.aliases.map((a) => (a.length === 1 ? `-${a}` : `--${a}`))], text: own(f.description), choices: choicesOf(f.description), takesValue: f.type !== "boolean", printed: rowFor(rows, "FLAGS", `--${f.name}`) })),
+    args: doc.args.map((a) => ({ names: [a.name], text: own(a.description), choices: choicesOf(a.description), takesValue: false, printed: rowFor(rows, "ARGUMENTS", a.name) })),
   };
 };
 
