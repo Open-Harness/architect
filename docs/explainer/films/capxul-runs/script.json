@@ -2,6 +2,7 @@
   "title": "Capxul Lite: What Falls Out",
   "source": "a design · part two of two",
   "steps": ["Contract", "Server", "Ways in", "App", "Prove", "Change", "Run"],
+  "about": "This film shows a design. Its code is written as if all of Orthograph existed, and nothing in it is compiled or run. Output marked as designed was not recorded. A line with an amber edge is proposed by the design.",
   "uses": ["../capxul-lite/kit.js"],
   "voice": "af_heart",
   "speed": 1.0,

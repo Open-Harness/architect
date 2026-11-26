@@ -2,6 +2,7 @@
   "title": "Capxul Lite: Describe It",
   "source": "a design · part one of two",
   "steps": ["Problem", "System", "Where", "Who", "Rules", "Join", "Needs"],
+  "about": "This film shows a design. Its code is written as if all of Orthograph existed, and nothing in it is compiled or run. A line with an amber edge is proposed by the design.",
   "uses": ["../capxul-lite/kit.js"],
   "voice": "af_heart",
   "speed": 1.0,

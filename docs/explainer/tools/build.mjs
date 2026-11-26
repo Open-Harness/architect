@@ -13,7 +13,7 @@ const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (
 const filesUnder = (dir) => Object.fromEntries(walk(dir).sort().map((f) => [relative(dir, f), read(f)]));
 
 const script = JSON.parse(read(join(home, "script.json")));
-const meta = { title: script.title, source: script.source, steps: script.steps };
+const meta = { title: script.title, source: script.source, steps: script.steps, about: script.about };
 const load = (await import(pathToFileURL(join(home, "data.mjs")).href)).default;
 const timing = JSON.parse(read(join(out, "timing.json")));
 

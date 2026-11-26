@@ -122,7 +122,7 @@ const Film = (() => {
   // ---- what follows the clock but isn't a tween: the sheet's lettering, the cursor, the caption --------------------------
   const STEPS = D.meta.steps.map((s) => s.toLowerCase());
   document.getElementById("steps").innerHTML = D.meta.steps.map((s) => `<b>${s}</b>`).join("<u></u>");
-  document.getElementById("railsrc").textContent = D.meta.source; document.getElementById("filmtitle").textContent = D.meta.title;
+  document.getElementById("railsrc").textContent = D.meta.source; document.getElementById("filmtitle").textContent = D.meta.title; document.getElementById("about").textContent = D.meta.about ?? "";
   let last = -1;
   function chrome(t) {
     const cur = built.find((s) => t < s.end) ?? built[built.length - 1];

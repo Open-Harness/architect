@@ -10,6 +10,7 @@
     "Prove",
     "Change"
   ],
+  "about": "Every line of code and every line of terminal output in this film is read from examples/plugged-in and from recorded runs of ortho.",
   "voice": "af_heart",
   "speed": 1.0,
   "gap": 0.38,

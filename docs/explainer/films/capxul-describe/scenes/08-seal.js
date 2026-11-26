@@ -2,7 +2,7 @@
 Film.scene("seal", {
   step: "join",
   html: (D) => `${Kit.css}<style>
-      #scene-seal .intent { left: 1030px; top: 262px; right: 96px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } #scene-seal .intent .kpill { font-family: var(--sans); font-size: 26px; color: var(--paper); padding: 8px 18px; }
+      #scene-seal .intent { left: 1030px; top: 262px; right: 96px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } #scene-seal .intent .kpill { font-family: var(--sans); font-size: 23px; color: var(--paper); padding: 6px 13px; }
       #scene-seal .two { top: 372px; width: 385px; height: 132px; } #scene-seal .two b { display: block; font-size: 30px; font-weight: 500; color: var(--paper); } #scene-seal .two .no { font-size: 22px; color: var(--red); margin-top: 4px; }
       #scene-seal .sig { left: 1030px; top: 560px; width: 794px; height: 150px; border: 2px solid var(--paper); padding: 14px 20px; } #scene-seal .sig .lbl { color: var(--paper); margin-bottom: 12px; }
       #scene-seal .sig .chip { font-size: 23px; color: var(--paper); margin-right: 10px; } #scene-seal .sig .sealc { border-color: var(--amber); color: var(--amber); }
@@ -27,7 +27,7 @@ Film.scene("seal", {
     s.in(".head", s.start + 0.3); s.in("#e-spend", s.start + 0.5, { y: 14 }); s.in(".klegend", s.start + 0.9);
     s.in(".intent .lbl", c("o1", "means") - 0.3, { y: 6, dur: 0.3 }); ["pay this", "budget", "reason"].forEach((w, k) => s.in(".i" + k, c("o1", w), { y: 8, dur: 0.35 }));
     s.in(".tw0", c("o2", "chain moves") - 0.2, { y: 12, dur: 0.4 }); s.in(".tw1", c("o2", "reason") - 0.2, { y: 12, dur: 0.4 }); s.tl.set(s.$(".tw1 .no"), { autoAlpha: 0 }, 0); s.in(".tw1 .no", c("o2", "public chain") - 0.3, { y: 4, dur: 0.3 });
-    s.focus(body, [n, n], c("o3", "sealed")); s.in(Kit.call(s, body, n, "one word", "am"), c("o3", "one word"), { x: 16, y: 0 });
+    s.focus(body, [n, n], c("o3", "sealed"));
     s.in(".words", c("o4", "reason travels") - 0.2, { y: 10, dur: 0.35 }); s.draw(".keep", c("o4", "our server") - 0.3, 0.4); s.in(".keeph, .kept", c("o4", "our server"), { y: 0, dur: 0.3 });
     s.tl.set(s.$$(".sig .m0, .sig .lbl"), { autoAlpha: 0 }, 0); s.fromTo(".sig", { autoAlpha: 0, borderColor: "rgba(233,240,250,0)" }, { autoAlpha: 1, duration: 0.3 }, c("o4", "seal") - 0.5);
     s.draw(".hash", c("o4", "seal") - 0.4, 0.5); s.in(".hashh, .hasht", c("o4", "seal"), { y: 0, dur: 0.25 }); s.in(".sealc", c("o4", "seal"), { y: 8, dur: 0.35 }); s.in(".carry", c("o4", "hash") - 0.2, { y: 8, dur: 0.35 });
