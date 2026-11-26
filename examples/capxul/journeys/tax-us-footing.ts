@@ -88,6 +88,58 @@ export default Blueprint.journey("tax-us: the piece's footing", {
       s.ada.run(compute, pay({ wage: "0" })),
       expect((a) => a.lines).toEqual([]),
     ),
+    // Text is judged as a whole: nothing a lenient parse would take is a number of base units (the hostile pass).
+    ...([" ", "12abc", "-"] as const).map((wage) =>
+      s.step(
+        `a wage of ${JSON.stringify(wage)} isn't a number, and is refused, naming the wage`,
+        s.ada.run(compute, pay({ wage })),
+        refuses(AmountNotANumber, { figure: "wage" }),
+        noEvents(),
+      ),
+    ),
+    s.step(
+      "any wage below nothing is refused, not only one base unit below",
+      s.ada.run(compute, pay({ wage: "-5" })),
+      refuses(AmountNegative, { figure: "wage" }),
+      noEvents(),
+    ),
+    s.step(
+      "any fraction of a base unit is refused",
+      s.ada.run(compute, pay({ wage: "1.75" })),
+      refuses(AmountFractional, { figure: "wage" }),
+      noEvents(),
+    ),
+    s.step(
+      "the year to date is read whole, as the wage is",
+      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "12abc" })),
+      refuses(AmountNotANumber, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    // Until slice 3 brings federal's rows, every tax is nothing, so a pay of something gives no lines either. Slice 3's
+    // author changes these two steps when the rows arrive.
+    s.step(
+      "a pay of 1,500 dollars gives no lines yet: no rows, so every tax is nothing and left out",
+      s.ada.run(compute, pay({ wage: "1500000000" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    s.step(
+      "a wage past 2^53 base units is taken, not refused or rounded",
+      s.ada.run(compute, pay({ wage: "9007199254740993", yearToDate: "9007199254740993" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    s.step(
+      "California is a work state as Texas is",
+      s.ada.run(compute, pay({ workState: "CA" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    // Every frequency the declaration names is taken.
+    ...(["weekly", "semimonthly", "monthly", "quarterly", "semiannual", "annual", "daily"] as const).map((frequency) =>
+      s.step(
+        `a ${frequency} pay is taken`,
+        s.ada.run(compute, { ...pay({}), frequency }),
+        expect((a) => a.lines).toEqual([]),
+      ),
+    ),
     s.step(
       "DC is a work state as the fifty are",
       s.ada.run(compute, pay({ wage: "0", workState: "DC" })),
