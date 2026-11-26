@@ -9,6 +9,11 @@
 // - `secondSource.sha256` is the hex sha256 of the UTF-8 bytes of JSON.stringify of the array of the values at those
 //   pointers, with every object's keys sorted at every depth, and no spaces. A pointer that resolves to nothing stops
 //   the importer, as a changed hash does.
+// - `covers` names each disagreement the entry settles: the second source's pointer, and open-withholding's figure there
+//   as its decimal string. A disagreement at a pointer no entry covers, or where open-withholding's figure is no longer
+//   the one written here, stops the importer. Most entries cover nothing: the second source leaves a figure out (New
+//   York's top rates, Illinois' Line 2) or models it differently, so no shared figure differs, and the hash alone
+//   stops the import when the second source changes what the ruling read.
 //
 // `open` entries are disagreements no person has settled from the agency's own text yet (none today; the type keeps the
 // status for the next refresh). The importer lets them pass
@@ -31,6 +36,7 @@ export interface Settled {
   readonly ruling: string;
   readonly evidence: ReadonlyArray<Evidence>;
   readonly secondSource: { readonly file: string; readonly figures: ReadonlyArray<string>; readonly sha256: string };
+  readonly covers: ReadonlyArray<{ readonly pointer: string; readonly first: string }>;
   /** On the payroll professional's list (CX-payroll-tax point 8). */
   readonly review: boolean;
 }
@@ -58,6 +64,7 @@ export const settled: ReadonlyArray<Settled> = [
       { document: "NYS-50-T-NYS (1/26), New York State Withholding Tax Tables and Methods", url: "https://www.tax.ny.gov/pdf/publications/withholding/nys50_t_nys.pdf", at: "page 22, Method III", sha256: "e1c2b3440572a10019efe8d8e4d727474c55afb37dd5d18a6a73b94463baf3e8", read: "2026-11-26" },
     ],
     secondSource: { file: income, figures: ["/states/NY/0/flatRateAbove"], sha256: "c503ae27f05f2c189d3fdc8c9106266e1366804eef45845520fb3f969743bdef" },
+    covers: [],
     review: false,
   },
   {
@@ -69,6 +76,7 @@ export const settled: ReadonlyArray<Settled> = [
       { document: "Booklet IL-700-T (R-12/25), Illinois Withholding Income Tax Tables", url: "https://tax.illinois.gov/content/dam/soi/en/web/tax/forms/withholding/documents/currentyear/il-700-t.pdf", at: "page 4, Automated payroll method", sha256: "f8f05eda8025bc8b80b7dee5fa9a69af04e2c32b3320386ace7027b5fc6d635e", read: "2026-11-26" },
     ],
     secondSource: { file: income, figures: ["/states/IL/0/exemptionPerAllowance"], sha256: "923d241db72f80b3cc2602e334133e8ea74cdcb8bad7b180717fd2594f36ea41" },
+    covers: [],
     review: false,
   },
   {
@@ -84,6 +92,7 @@ export const settled: ReadonlyArray<Settled> = [
       figures: ["/states/CA/0/brackets", "/states/CA/0/annualStandardDeduction", "/states/CA/0/creditPerAllowance", "/states/CA/0/lowIncomeExemption"],
       sha256: "0bd53d6e8e1950e1b253fe2fb9f3cf8078ed6ec97adf774022ed3692ec083d96",
     },
+    covers: [],
     review: false,
   },
   {
@@ -99,6 +108,7 @@ export const settled: ReadonlyArray<Settled> = [
       figures: ["/states/MA/0/employerElectsShare", "/states/MA/0/periods/0/maxRate", "/states/MA/0/periods/0/annualWageBase"],
       sha256: "f317e5535a81d83cda0ce00896c6dae4dfb8899bc397ec7f0f7e248d5da85d64",
     },
+    covers: [],
     review: true,
   },
   {
@@ -114,6 +124,7 @@ export const settled: ReadonlyArray<Settled> = [
       figures: ["/states/DE/0/employerElectsShare", "/states/DE/0/periods/0/employerSizeTiers", "/states/DE/0/periods/0/annualWageBase"],
       sha256: "aebba28abe7ba76b09df1deb6f494b9bbdc0118cee0d9b1ae65d767ffebae1d2",
     },
+    covers: [],
     review: true,
   },
   {
@@ -129,6 +140,7 @@ export const settled: ReadonlyArray<Settled> = [
       figures: ["/states/GA/0/effectiveFrom", "/states/GA/0/sourceUrl", "/states/GA/1/effectiveFrom", "/states/GA/1/sourceUrl"],
       sha256: "a42c1e0dbb2f063368930855b664786b14fed51c7ad27989fa2bcf35e5657315",
     },
+    covers: [],
     review: false,
   },
   {
@@ -144,6 +156,7 @@ export const settled: ReadonlyArray<Settled> = [
       figures: ["/states/WA/1/key", "/states/WA/1/periods/0/rate", "/states/WA/1/periods/0/effectiveFrom"],
       sha256: "51974eff3fb4427b7dce217dd1151f946514dffaa15a9a792a22d511149e7511",
     },
+    covers: [],
     review: true,
   },
   {
@@ -160,6 +173,7 @@ export const settled: ReadonlyArray<Settled> = [
       figures: ["/states/MA/0/exemptionPerAllowance", "/states/MA/0/firstAllowanceAmount", "/states/MA/0/firstAllowanceCount"],
       sha256: "0fcd441de13eabdab977f3f7fe4ac5641d159fc7a4ab2de31364e39999d2abf4",
     },
+    covers: [],
     review: true,
   },
   {
@@ -171,6 +185,7 @@ export const settled: ReadonlyArray<Settled> = [
       { document: "Circular M, Massachusetts Income Tax Withholding Tables at 5.0% (Rev. 12/25), effective 1 January 2026", url: "https://web.archive.org/web/20260312193631/https://www.mass.gov/doc/massachusetts-circular-m-income-tax-withholding-tables-at-50-effective-january-1-2026/download", at: "page 12, Percentage Methods, step 7", sha256: "d3f12716311bb9977c9597de25c89a79523d50a5bdc293ab7e68368a453f79a8", read: "2026-11-26" },
     ],
     secondSource: { file: income, figures: ["/states/MA/0/note"], sha256: "1733e4ab121e0b4f152cc21a0425dfd982eaa5141aa2c9af60e29b2a66840aa6" },
+    covers: [],
     review: false,
   },
 ];

@@ -3,12 +3,17 @@
   "commit": "4a0e67e9976384bbea712673b93f464dfcca5542",
   "committed": "2026-11-03",
   "licence": "CC0-1.0 (data/LICENSE, copied beside this file)",
-  "note": "Five of open-withholding's parameter files, byte for byte at the commit, under their own paths. They are the importer check's small fixture: two federal files, Illinois (Line 1 and Line 2 allowances), and Georgia's two 2026 windows (effective_to on the first).",
+  "note": "Ten of open-withholding's parameter files, byte for byte at the commit, under their own paths: the importer check's small fixture. Federal FICA and FUTA; Illinois (Line 1 and Line 2 allowances); Georgia's two 2026 windows (effective_to on the first) and its SUI (schema 0.2, a second tax in one file); Florida's SUI (schema 0.2, two documents under sources:); Ohio's 2025 tables, still in force in 2026 (three brackets with printed bases); Louisiana's (brackets nested by pay frequency); and Detroit's city tax, under locals/, which the importer leaves out.",
   "files": {
     "data/us/federal/2026/fica.yaml": "6bc48619ac4e95c0ad2997b1a1cc78412c80fd3f25f370c5d948032a8e523179",
     "data/us/federal/2026/futa.yaml": "cf48bf984893b59d60be0833ce148d6b2bbe4b74b48c57e67ad8e50df589eafb",
+    "data/us/fl/2026/sui.yaml": "c77ae503d274f7438ad62e4d6f32d7a3fa1601b67ff41393eb4b432279009ada",
+    "data/us/ga/2026/sui.yaml": "817e46e686656679f722e573f1ae07bda13a4de39a952e6192c15309fba139f1",
     "data/us/ga/2026/withholding-2026-01-01.yaml": "81240b6153e20cf6749d5da553fadcc4bc4cf1469d23dbef871cd26dac5d3e91",
     "data/us/ga/2026/withholding.yaml": "22c768fbcef3cea377fac2c9882f9ffd5c420d99b775882cbb23af4cbbe915f7",
-    "data/us/il/2026/withholding.yaml": "f5da81fa754506452a24bd324de431eac91df7da76b7586c00b8d1f6c361e12b"
+    "data/us/il/2026/withholding.yaml": "f5da81fa754506452a24bd324de431eac91df7da76b7586c00b8d1f6c361e12b",
+    "data/us/la/2026/withholding.yaml": "4e6a05d92bb5790902c425c8ebac8aef596759dfb20344e1add1f7cd127261d7",
+    "data/us/mi/2026/locals/detroit.yaml": "62c70fa4636cee2492ebe285ddfd63e70b229321452baf01f39d213ab74528c1",
+    "data/us/oh/2025/withholding.yaml": "201bc6f407369aca914e83ba0040cd75a2fb52e0ffe32c7ae88cb30fa1b75a59"
   }
 }

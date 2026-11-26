@@ -1,8 +1,8 @@
 {
   "year": 2026,
-  "source": "Synthetic. Not us-payroll-tax-tables' data: its file shape only, with the figures taken from the open-withholding fixture beside it.",
+  "source": "Synthetic. Not us-payroll-tax-tables' data: its file shape only, with the figures taken from the open-withholding fixture beside it, except the additional Medicare rate, 0.0091, which is invented and fixtures/settled.ts settles.",
   "sourceUrl": "https://example.test/synthetic/fica",
   "verified": true,
   "socialSecurity": { "rate": 0.062, "wageBase": 184500 },
-  "medicare": { "rate": 0.0145, "additionalRate": 0.009, "additionalThreshold": 200000 }
+  "medicare": { "rate": 0.0145, "additionalRate": 0.0091, "additionalThreshold": 200000 }
 }
