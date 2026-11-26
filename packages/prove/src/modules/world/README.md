@@ -19,6 +19,16 @@ and its secrets in an env file. Migrations are applied first, a taken socket sta
 `@orthograph/chain-evm`, wired by the composition root). It is acquired in the world's scope before the Worker and
 released after it, and `Running.chain` carries its `rpcUrl` and `chainId`, so the chain is gone when the world ends.
 
+`stands` (G16-adapter-mounts call 3): the mounts' stand-ins, which the caller starts once the world's state is wiped, so
+`.ortho/<name>/stands/<mount>` survives. prove's `standIns` runs `node <orthograph.standIn> --port 0 --dir
+<state>/stands/<mount>` in the package's folder for each mount whose model says `standIn.how === "process"`, never for
+`none` or `vendor`, in a process group of its own. It reads the whole `stand-in listening on <url>` line and keeps draining
+both pipes after it. An exit before the line, or 60 s without one, fails the world naming the mount. What it answers,
+`ORTHO_STAND_<MOUNT>` and `<MOUNT>_API_KEY` = `world-<mount>`, joins `secretEnv`. Like the chain, the stand-ins are
+acquired before the Worker and released after it: SIGTERM to each group, then SIGKILL to the group once the stand-in has
+gone or 5 s have passed, all of them together, so whatever a stand-in started goes with it. A model with a process
+stand-in never reuses `ortho dev`'s warm world, which has none (`design/later.md`).
+
 Test: `world.test.ts`.
 
 L2.O: `environment` (default `local`) is the `ORTHO_ENVIRONMENT` var, written on every span as `deployment.environment`. `secretEnv` (from

@@ -1,0 +1,19 @@
+# #1045, in D1: a row a call read isn't checked again at its commit, so a note filed in a folder closed before its commit commits. Clears with the #1045 build.
+src/modules/store/read-guard.test.ts > in D1, a create that reads its folder races the folder's close (#1045) > the close lands between the add's read and its commit: the add runs again, sees the folder closed, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the folder it was handed in refs, closed: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > a folder its handler found, closed: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the second folder it was handed, closed: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the third folder it read, closed: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the first of three folders it read, closed: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the middle of three folders it read, closed: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > a shelf it found, which has no machine, labelled shut: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > another note it found, of the thing it writes, labelled shut: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > a folder found by an id another row holds, closed: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the folder in refs closed, the call listing notes too: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the folder in refs closed, the call only moving a note: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the folder in refs changed before its first commit, then closed before its second: the call runs again, sees it, and is refused
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the folder it was handed in refs, given another owner: the call runs again, then commits
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > a folder its handler found, given another owner: the call runs again, then commits
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the folder in refs given another owner and then its own back: the call runs again, then commits
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > a shelf it found, given another label: the call runs again, then commits
+src/modules/store/read-guard.test.ts > in D1, a row the call read, changed before its commit (#1045) > the folder in refs given another owner, the call only moving a note: the call runs again, then commits

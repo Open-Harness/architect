@@ -4,6 +4,7 @@
 // that lets a step be a no-op, a dry run or an `echo` would pass a workflow that deploys nothing, or one that never destroys. The lead changes a step by asking the author. Written by the checks author;
 // a builder never edits it.
 import { parse } from "yaml";
+import { RUNS } from "./runs.mjs";
 
 const TOKEN = "${{ secrets.CLOUDFLARE_API_TOKEN }}";
 const ACCOUNT = "${{ vars.CLOUDFLARE_ACCOUNT_ID }}";
@@ -13,13 +14,13 @@ const REFUSED = "!startsWith(github.ref, 'refs/heads/goal/')";
 const REFUSE_RUN = 'echo "::error::staging runs only from a goal branch (refs/heads/goal/...); this dispatch is on $REF"\nexit 1';
 const SUBDOMAIN = "${{ steps.subdomain.outputs.subdomain }}";
 /** Every `${{ }}` in the file, comments included, is one of these: there is no way to reach another secret, `toJSON(secrets)`, a token or an input. */
-const EXPRESSIONS = new Set(["github.run_id", "github.run_attempt", "steps.plan.outputs.prefix", "steps.up.outcome", "steps.story.outcome", "secrets.CLOUDFLARE_API_TOKEN", "vars.CLOUDFLARE_ACCOUNT_ID", "steps.subdomain.outputs.subdomain", "github.ref"]);
+const EXPRESSIONS = new Set(["inputs.app", "github.run_id", "github.run_attempt", "steps.plan.outputs.prefix", "steps.up.outcome", "steps.story.outcome", "secrets.CLOUDFLARE_API_TOKEN", "vars.CLOUDFLARE_ACCOUNT_ID", "steps.subdomain.outputs.subdomain", "github.ref"]);
 const USES = /^(actions\/checkout|pnpm\/action-setup|actions\/setup-node|actions\/upload-artifact)@v\d+\.\d+\.\d+$/;
 /**
  * The only files the evidence upload may name (the repository is public, so anyone can download them): the plan, the story, the verdict, and the listings cut to the run's prefix. The whole-account
  * listings (`tmp/staging/private/`) hold every Worker, database, namespace and bucket of the account, other apps' included, and are never uploaded.
  */
-const EVIDENCE = new Set(["tmp/staging/plan.json", "tmp/staging/story.txt", "tmp/staging/verdict.txt", "tmp/staging/during-run.json", "tmp/staging/after-run.json"]);
+const EVIDENCE = new Set(["tmp/staging/journeys.txt", "tmp/staging/plan.json", "tmp/staging/story.json", "tmp/staging/story.txt", "tmp/staging/verdict.txt", "tmp/staging/during-run.json", "tmp/staging/after-run.json"]);
 const UPLOAD_WITH = ["name", "path", "if-no-files-found", "retention-days"];
 /** An `if`, with its `${{ }}` taken off. */
 const cond = (step) => (step.if === undefined ? undefined : String(step.if).replace(/^\s*\$\{\{\s*|\s*\}\}\s*$/g, "").trim());
@@ -29,13 +30,17 @@ const UPSTREAM = "steps.up.outcome == 'success'";
 
 /** What each named step must be: its `if`, whether it continues on error, whether it holds the credentials, and its script (exactly, or a pattern for the story and the judge). */
 const STEPS = [
-  { id: "plan", run: /^mkdir -p "\$EVIDENCE\/private"\n\$ORTHO env up staging --plan --run "\$RUN" --root examples\/plugged-in > "\$EVIDENCE\/plan\.json"\necho "prefix=\$\(jq -r \.prefix "\$EVIDENCE\/plan\.json"\)" >> "\$GITHUB_OUTPUT"$/ },
+  // The run the dispatch chose (CX-staging): its root into $GITHUB_ENV as ROOT, its journeys into a file. The only step that writes $GITHUB_ENV, and only what runs.mjs prints.
+  { id: "select", env: { APP: "${{ inputs.app }}" }, run: 'mkdir -p "$EVIDENCE/private"\nnode e2e/staging/runs.mjs select "$APP" "$EVIDENCE/journeys.txt" >> "$GITHUB_ENV"' },
+  { id: "plan", run: /^\$ORTHO env up staging --plan --run "\$RUN" --root "\$ROOT" > "\$EVIDENCE\/plan\.json"\necho "prefix=\$\(jq -r \.prefix "\$EVIDENCE\/plan\.json"\)" >> "\$GITHUB_OUTPUT"$/ },
   { id: "before", run: SNAPSHOT("before"), credentials: true },
-  { id: "up", run: '$ORTHO env up staging --run "$RUN" --root examples/plugged-in', credentials: true, continues: true },
+  { id: "up", run: '$ORTHO env up staging --run "$RUN" --root "$ROOT"', credentials: true, continues: true },
   { id: "during", run: SNAPSHOT("during"), credentials: true, if: UPSTREAM },
   { id: "subdomain", run: 'node e2e/staging/subdomain.mjs "$GITHUB_OUTPUT"', credentials: true, if: UPSTREAM },
-  { id: "story", run: /^\$ORTHO prove --env staging --run "\$RUN" --root examples\/plugged-in [^\n|;&]* 2>&1 \| tee "\$EVIDENCE\/story\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/, continues: true, if: UPSTREAM, env: { ORTHO_STAGING_SUBDOMAIN: SUBDOMAIN, ...CREDENTIALS } },
-  { id: "destroy", run: '$ORTHO env destroy staging --run "$RUN" --root examples/plugged-in', credentials: true, if: "always()" },
+  { id: "story", run: 'only=(); while IFS= read -r name; do only+=(--only "$name"); done < "$EVIDENCE/journeys.txt"\ntest "${#only[@]}" -gt 0\n$ORTHO prove --env staging --run "$RUN" --root "$ROOT" "${only[@]}" --report "$EVIDENCE/story.json" 2>&1 | tee "$EVIDENCE/story.txt"; exit "${PIPESTATUS[0]}"', continues: true, if: UPSTREAM, env: { ORTHO_STAGING_SUBDOMAIN: SUBDOMAIN, ...CREDENTIALS } },
+  // CX-staging: the story's report judged exactly the run's list. Whenever the story ran, pass or fail; it fails the job itself (no continue-on-error), and destroy still runs after it.
+  { id: "judged", if: "always() && steps.story.outcome != 'skipped'", run: 'node e2e/staging/runs.mjs judged "$EVIDENCE/journeys.txt" "$EVIDENCE/story.json"' },
+  { id: "destroy", run: '$ORTHO env destroy staging --run "$RUN" --root "$ROOT"', credentials: true, if: "always()" },
   { id: "after", run: SNAPSHOT("after"), credentials: true, if: "always()" },
   { id: "judge", if: "always()", env: { PREFIX: "${{ steps.plan.outputs.prefix }}", UP: "${{ steps.up.outcome }}" },
     run: /^args=\(--prefix "\$PREFIX" --after "\$EVIDENCE\/private\/after\.json" --before "\$EVIDENCE\/private\/before\.json"\)\nif \[ "\$UP" = success \]; then args\+=\(--during "\$EVIDENCE\/private\/during\.json" --plan "\$EVIDENCE\/plan\.json"\); fi\nnode e2e\/staging\/leftovers\.mjs judge "\$\{args\[@\]\}" 2>&1 \| tee "\$EVIDENCE\/verdict\.txt"; exit "\$\{PIPESTATUS\[0\]\}"$/ },
@@ -50,7 +55,17 @@ export const problems = (source) => {
   const out = [];
   const triggers = typeof doc?.on === "string" ? [doc.on] : Array.isArray(doc?.on) ? doc.on : Object.keys(doc?.on ?? {});
   if (triggers.length !== 1 || triggers[0] !== "workflow_dispatch") out.push(`it starts on ${JSON.stringify(triggers)}, and must start on workflow_dispatch alone (a deploy never starts itself)`);
-  if (doc?.on && typeof doc.on === "object" && !Array.isArray(doc.on) && doc.on.workflow_dispatch?.inputs !== undefined) out.push("workflow_dispatch takes no inputs: the run is named by its id");
+  // One input, `app`: a choice of exactly the runs in runs.mjs, the first (Plugged In's story) by default. A choice, never free text: nothing typed at dispatch reaches a script (CX-staging).
+  const inputs = doc?.on && typeof doc.on === "object" && !Array.isArray(doc.on) ? doc.on.workflow_dispatch?.inputs : undefined;
+  const app = inputs?.app;
+  const names = Object.keys(RUNS);
+  if (inputs === undefined || inputs === null || Object.keys(inputs).length !== 1 || app === undefined) out.push(`workflow_dispatch takes exactly one input, app; it has ${JSON.stringify(Object.keys(inputs ?? {}))}`);
+  else {
+    if (app.type !== "choice" || JSON.stringify(app.options) !== JSON.stringify(names)) out.push(`the app input is not a choice of exactly ${names.join(", ")} (the runs in e2e/staging/runs.mjs), in that order`);
+    if (app.default !== names[0] || app.required !== true) out.push(`the app input's default is ${JSON.stringify(app.default)} and it must be ${JSON.stringify(names[0])}, required: a dispatch with nothing chosen runs Plugged In's story, as before`);
+    const extra = Object.keys(app).filter((k) => !["description", "type", "options", "default", "required"].includes(k));
+    if (extra.length > 0) out.push(`the app input has ${extra.join(", ")}`);
+  }
   const extra = Object.keys(doc ?? {}).filter((k) => !["name", "on", "permissions", "concurrency", "jobs"].includes(k));
   if (extra.length > 0) out.push(`the workflow has ${extra.join(", ")} at its top level: only name, on, permissions, concurrency and jobs (no env, defaults)`);
   if (JSON.stringify(doc?.permissions) !== JSON.stringify({ contents: "read" })) out.push("permissions are not exactly contents: read");
@@ -110,8 +125,88 @@ export const problems = (source) => {
   steps.forEach((s, i) => {
     const label = s.id ?? s.name ?? `step ${i}`;
     if (s.shell !== undefined || s["working-directory"] !== undefined) out.push(`${label} sets a shell or a directory`);
+    if (s.id !== "select" && /GITHUB_ENV|GITHUB_PATH/.test(String(s.run ?? ""))) out.push(`${label} writes $GITHUB_ENV or $GITHUB_PATH: only select sets the job's environment, and only to ROOT`);
     if (/\bCLOUDFLARE_|\bsecrets\b|\bvars\b|\bset -[a-z]*x|\bset [-+]o\b|\bset \+e|\bprintenv\b|(^|[\s;|&])env\s*($|[|;&>])|\bexport\b|\bcompgen\b|\bdeclare\b|process\.env|\/proc\/|\bbash -|\bsh -|\|\| *(true|:)|\bexit 0\b|\btoJSON\b/m.test(s.run ?? "")) out.push(`${label}'s script touches a credential, can print the environment or hides a failure`);
   });
   for (const s of steps) if (/ortho-[a-z0-9]+-[a-z]+-|\bstg\b/.test(s.run ?? "")) out.push(`${s.id ?? s.name ?? "a step"} types a prefix: it must come from the plan's prefix`);
+  return [...out, ...shape(source)];
+};
+
+// ---- the run's shape when a step fails (CX-staging, check 5): one up, one destroy, whatever fails ----
+
+/**
+ * A step's `if`, evaluated as GitHub does for the expressions this workflow may hold: `always()`, `success()`, `failure()`, `cancelled()`, `steps.<id>.outcome`, quoted strings, `==`, `!=`, `!`,
+ * `&&`, `||` and parentheses. An `if` with no status function is `success() && (<if>)`, and no `if` is `success()`. Anything else throws: a condition the walk cannot read is not a pass.
+ */
+export const evaluate = (text, { failed, outcomes }) => {
+  const source = text === undefined ? "success()" : text;
+  const tokens = source.match(/\s*(\|\||&&|==|!=|!|\(|\)|'[^']*'|[A-Za-z_][\w.-]*\(\)|[A-Za-z_][\w.-]*)/gy)?.map((t) => t.trim()) ?? [];
+  if (tokens.join("").length !== source.replace(/\s/g, "").length) throw new Error(`cannot read the condition ${JSON.stringify(source)}`);
+  let at = 0;
+  const peek = () => tokens[at];
+  const take = (want) => { if (want !== undefined && tokens[at] !== want) throw new Error(`expected ${want} in ${JSON.stringify(source)}`); return tokens[at++]; };
+  const value = () => {
+    const t = take();
+    if (t === "(") { const v = or(); take(")"); return v; }
+    if (t === "!") return !truthy(value());
+    if (t === "always()") return true;
+    if (t === "success()") return !failed;
+    if (t === "failure()") return failed;
+    if (t === "cancelled()") return false;
+    if (t === "true" || t === "false") return t === "true";
+    if (t?.startsWith("'")) return t.slice(1, -1);
+    const m = /^steps\.([\w-]+)\.outcome$/.exec(t ?? "");
+    if (m) return outcomes.get(m[1]) ?? null;
+    throw new Error(`cannot read ${JSON.stringify(t)} in ${JSON.stringify(source)}`);
+  };
+  const truthy = (v) => v !== false && v !== null && v !== "" && v !== 0;
+  const compare = () => {
+    let v = value();
+    while (peek() === "==" || peek() === "!=") { const op = take(); const w = value(); v = op === "==" ? v === w : v !== w; }
+    return v;
+  };
+  const and = () => { let v = compare(); while (peek() === "&&") { take(); const w = compare(); v = truthy(v) && truthy(w); } return v; };
+  const or = () => { let v = and(); while (peek() === "||") { take(); const w = and(); v = truthy(v) || truthy(w); } return v; };
+  const result = or();
+  if (at !== tokens.length) throw new Error(`cannot read the condition ${JSON.stringify(source)}`);
+  return /\b(always|success|failure|cancelled)\(\)/.test(source) ? truthy(result) : !failed && truthy(result);
+};
+
+/** The staging job's steps as GitHub would take them when the steps in `failing` (by id) fail: which ran, which made or deleted cloud resources, and whether the job failed. */
+export const walk = (source, failing = new Set()) => {
+  const job = parse(source)?.jobs?.staging;
+  const outcomes = new Map();
+  const ran = [], taken = [];
+  let failed = false;
+  for (const step of job?.steps ?? []) {
+    if (!evaluate(cond(step), { failed, outcomes })) { if (step.id) outcomes.set(step.id, "skipped"); continue; }
+    const run = String(step.run ?? "");
+    const fails = failing.has(step.id) || /(^|\n)\s*exit 1\s*$/.test(run.trim());
+    ran.push(step.id ?? step.name ?? step.uses ?? run.trim());
+    taken.push(step);
+    if (step.id) outcomes.set(step.id, fails ? "failure" : "success");
+    if (fails && step["continue-on-error"] !== true) failed = true;
+  }
+  const count = (re) => taken.filter((s) => re.test(String(s.run ?? ""))).length;
+  return { ran, failed, ups: count(/\benv up staging (?![^\n]*--plan)/), destroys: count(/\benv destroy staging\b/), proves: count(/\bprove --env staging\b/) };
+};
+
+/** The steps a run can fail at: every step before the upload. */
+const FAIL_AT = ["select", "plan", "before", "up", "during", "subdomain", "story", "judged", "destroy", "after", "judge", "evidence"];
+
+/** Everything wrong with the run's shape: whatever one step fails, up runs at most once (and never after the plan or the first listing failed), destroy runs exactly once, and the job fails. */
+export const shape = (source) => {
+  const out = [];
+  try {
+    const clean = walk(source);
+    if (clean.failed || clean.ups !== 1 || clean.destroys !== 1 || clean.proves !== 1) out.push(`a run where nothing fails must pass with one up, one story and one destroy; it ${clean.failed ? "failed" : "passed"} with ${clean.ups} up, ${clean.proves} story, ${clean.destroys} destroy`);
+    for (const at of FAIL_AT) {
+      const w = walk(source, new Set([at]));
+      if (w.destroys !== 1) out.push(`when ${at} fails, destroy runs ${w.destroys} times: it must run once, so a run that fails part way still destroys`);
+      if (w.ups > 1) out.push(`when ${at} fails, up runs ${w.ups} times: one up per run`);
+      if (["select", "plan", "before"].includes(at) && w.ups !== 0) out.push(`when ${at} fails, up still runs: nothing is made before the plan and the first listing are in hand`);
+      if (!w.failed) out.push(`when ${at} fails, the job passes: a failure anywhere fails the run`);
+    }
+  } catch (error) { out.push(`the run's shape cannot be read: ${error.message}`); }
   return out;
 };
