@@ -150,7 +150,7 @@ Party, Invoice, Payment, Ledger entry"), cut to its floor:
 1. A person runs Capxul and brings their own key. Their personal account is an ordinary Safe owned by that key, at the
    address it will have once deployed. (Superseded by CX-safe, 26 November 2026: "an ordinary Safe at the address it will have
    once deployed; until they claim it, its only owner is Capxul's bootstrap key, and claiming deploys it with their key
-   in its place".)
+   in its place (Superseded by CX-safe-machines, 26 November 2026.)".)
 2. They add a client as a party.
 3. They raise an invoice, which carries a pay link.
 4. The client opens the link and pays it from any wallet, without signing in. The token lands at the account's
@@ -177,7 +177,7 @@ changes two things. Aaron hears both in this goal's next report.
   was written beside the ERC-7702 design, where the key's own address is the account; Aaron's later call the same day
   is that personal accounts are ordinary deployed Safes (`design/foreman/test-drive-capxul.md:437`). A Safe's address is known before it is deployed (the board, "Safe and
   ERC-7702, side by side", element `e208`, says so of a company's Safe; a one-owner Safe is made by the same factory), so money can arrive there first, and the Safe is deployed on its first
-  pay-out, in the second feature. (Superseded by CX-safe, 26 November 2026: "and the Safe is deployed when it is claimed".) Using the key's own address instead was not chosen: the money would have to move
+  pay-out, in the second feature. (Superseded by CX-safe, 26 November 2026: "and the Safe is deployed when it is claimed (Superseded by CX-safe-machines, 26 November 2026.)".) Using the key's own address instead was not chosen: the money would have to move
   once the Safe exists, and Aaron's call would be broken for the first feature.
 
 Test drive call 2 ("No Safe in this slice", `design/foreman/test-drive-capxul.md:437`) was about the company's Safe
