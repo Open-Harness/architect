@@ -472,7 +472,7 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 | Employee Benefit Claim | thing | SUB | 13 | `hrms/hrms/payroll/doctype/employee_benefit_claim/employee_benefit_claim.json` |  |
 | Employee Incentive | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_incentive/employee_incentive.json` |  |
 | Employee Other Income | thing | SUB | 7 | `hrms/hrms/payroll/doctype/employee_other_income/employee_other_income.json` |  |
-| Employee Tax Exemption Category | thing |  | 2 | `hrms/hrms/payroll/doctype/employee_tax_exemption_category/employee_tax_exemption_category.json` | India's income-tax exemption shape; slice 9 decides how to generalise it |
+| Employee Tax Exemption Category | thing |  | 2 | `hrms/hrms/payroll/doctype/employee_tax_exemption_category/employee_tax_exemption_category.json` | India's income-tax exemption shape: not taken until a jurisdiction needs it (CX-payroll-tax) |
 | Employee Tax Exemption Declaration | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration/employee_tax_exemption_declaration.json` | as above |
 | Employee Tax Exemption Proof Submission | thing | SUB | 11 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission/employee_tax_exemption_proof_submission.json` | as above |
 | Employee Tax Exemption Sub Category | thing |  | 3 | `hrms/hrms/payroll/doctype/employee_tax_exemption_sub_category/employee_tax_exemption_sub_category.json` | as above |
