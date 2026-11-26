@@ -179,8 +179,8 @@ once planned.
 | agent-tools | Agent tools: tools from operations; the Run thing | building | framework | — | — | none | `packages/agents` | durable-agent-run | slices M4.07, M4.10; `@orthograph/agents` is built on `goal/superagent` (slice 5), its runtime in slice 9 (#758) |
 | agent-writes-handler | Agent writes a handler: an agent writes a handler from a brief | building | framework | preview | alpha | none | `packages/cli` | — | `ortho brief`, layer 1 check 04; Gate 1; not yet proved by an app's journeys: proved on `acme` only (layer 1 check 04) |
 | timers | No wall clock; `Timers`; counted work: in-memory timers and the lint rule, with no world timer table | building | Capxul | beta | people and payroll | none | `packages/host-cloudflare/src/modules/timers`, `packages/lint` | — | slices M8.06, M8.07; #696 (timers across processes) |
-| world-clock-keeper | World clock and keeper: world clock, moves made by time, the keeper | spiked | framework | — | — | none | `packages/host-cloudflare/src/modules/clock` | timers | `design/spikes/world-clock.md`; the rest is M8's |
-| gap-signature-collection | Signature collection: stage 3's signature collection and the keeper rest on workflows | provisional | framework | — | — | none | `packages/orthograph` | workflows, safe-hats-budgets | no decision, no spike |
+| world-clock-keeper | World clock and keeper: world clock, moves made by time, the keeper | building | Capxul | 1.0 | getting paid | goal-16 | `packages/host-cloudflare/src/modules/clock`, `packages/host-cloudflare/src/modules/timers`, `packages/projections` | timers | `design/spikes/world-clock.md`; `design/decisions/CX-keeper.md` (workflows: not needed for time-fired moves); slice M8.10; checks `e2e/m8/05-the-keeper`; #1199 |
+| gap-signature-collection | Signature collection: stage 3's signature collection rests on workflows; the keeper does not (CX-keeper) | provisional | framework | — | — | none | `packages/orthograph` | workflows, safe-hats-budgets | no decision, no spike |
 
 ### Beyond the map above: pieces K42 and K40 added (re-sorted by K45)
 
@@ -272,8 +272,8 @@ items.
    `gap-approval-declaration`.
 4. Stage 2 needs webhooks (M5.01, M5.03) and SIWE linking (M2.13); neither is in any goal: `webhook-doors` and
    `events-in` (Capxul's banking pulls them now, K45) and `siwe-linking` (still in no goal).
-5. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike:
-   `gap-signature-collection`, `workflows` and `world-clock-keeper`.
+5. Stage 3's signature collection rests on workflows, which have no decision or spike; the keeper needs only timers (CX-keeper):
+   `gap-signature-collection` and `workflows`.
 6. The journey language's open problems: one world per journey, comparing one answer with the last, and sending
    malformed payloads: `gap-journey-language`.
 
