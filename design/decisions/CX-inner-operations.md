@@ -43,13 +43,17 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
    itself, and A running B running A (**addition**). It also refuses an operation step where today's gates refuse a
    `database` step or a `call` step: on an operation of a chain-stored thing (a contract reaches only its own store and
    the account adapter) and on an operation that runs on the caller's device (no store, no journal), as outer or inner.
-5. **#972 folds in.** `job-offer.accept` declares a step that runs a job applicant's operation, so the second thing moves by
-   its own declared operation, with its from-check and its event, and a move its state doesn't allow is refused with that
-   thing's own `NotFrom`. Because the offer's own move lands only after its handler answers (call 3), the applicant's
-   operation it runs can't ask whether the offer is accepted: today's `job-applicant.accept`, which refuses
-   `OfferNotAccepted` unless it is, stays the separate call. The fold gives the applicant an operation judged on its own
-   state alone, which the offer's accept runs once its handler has decided. #972 closes when #1079's build lands. CX-appraisals' `goal.roll-up` and
-   CX-recruitment's second call can fold into the child's own moves later; that is an app change, not this slice.
+5. **#972 folds in, the other way round.** The applicant's own operation runs the offer's: `job-applicant.accept`
+   declares `offer: Blueprint.step.operation(jobOfferAccept)`. Its handler runs `steps.offer(...)`, which moves the
+   offer by the offer's own rules, refusals and event; the offer's move is visible to it afterwards (call 3), so it
+   still finds the offer through `job-offer.oneOfferPerApplicant` and refuses `OfferNotAccepted` unless the offer is
+   accepted; then it makes its own move, judged by the applicant's machine (a move its state doesn't allow is refused
+   with the applicant's own `NotFrom`). Both moves and both events land in one commit, or neither. No operation that
+   moves the applicant skips the offer rule, whoever calls it. `job-applicant.reject` runs `job-offer.reject` the same
+   way when the applicant has an offer, and moves alone when it has none. The two-call flow and the journey steps that
+   make it go. The offer's operations stay callable on their own. #972 closes when #1079's build lands; the recruitment
+   change is the app's, not this slice. CX-appraisals' `goal.roll-up` can fold into the child's own operations the same
+   way later.
 
 ## The checks
 
@@ -61,6 +65,10 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
 
 acme's generated files don't move (the checks build their own scratch ledger), so G12's paired landing doesn't apply.
 
+## Supersedes
+
+- CX-recruitment: "When #972 lands, the second call folds into the offer's moves" → "When #972 lands, the applicant's own accept and reject run the offer's (CX-inner-operations, call 5)"
+
 ## Known limits of the checks
 
 - An inner handler given the call's records without the log watcher (`logs.watching`) passes: no field the scratch ledger
@@ -69,6 +77,8 @@ acme's generated files don't move (the checks build their own scratch ledger), s
 - An inner operation's access judged without the app's `mounts` passes: no inner operation in the checks is allowed to a
   `service` role.
 - No inner operation runs on the caller's device: the device gate (call 4) is stated, but only the chain gate is judged.
+  A device operation exists only when a mounted plugin supplies it (`internal/device.ts`, `RUNS_NEEDS.client`), so a
+  scratch ledger can't make one.
 - A clash between two inner operations' error names (rather than the outer's and an inner's) isn't judged on its own.
   Today the compiler already refuses two error classes of one name anywhere in a project ("declared twice"), so it can't
   arise.

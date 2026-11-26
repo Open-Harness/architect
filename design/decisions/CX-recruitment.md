@@ -61,7 +61,7 @@ Until #972 lands, `job-offer.accept` and `job-offer.reject` move only the offer 
 applicant's own `job-applicant.accept` follows as a second call. It finds the applicant's offer through
 `job-offer.oneOfferPerApplicant` with `findBy`, and refuses `OfferNotAccepted` when there's none or it isn't accepted.
 `job-applicant.reject` needs no offer, since an applicant may be turned down after an interview without one. When #972
-lands, the second call folds into the offer's moves, and the journeys that make it lose that step.
+lands, the second call folds into the offer's moves, and the journeys that make it lose that step. (_Superseded by CX-inner-operations, 26 November 2026: when #972 lands, the applicant's own accept and reject run the offer's._)
 
 ## Time
 

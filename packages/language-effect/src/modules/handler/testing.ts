@@ -80,7 +80,7 @@ export const runPay = Blueprint.operation(Run, {
   move: runMachine.moves.pay,
   errors: [RunTooLarge],
   allowed: [Blueprint.signedIn],
-  steps: { load: Blueprint.step.database({ writes: [Run] }), draft: operationStep(entryDraft), submit: operationStep(entrySubmit) },
+  steps: { load: Blueprint.step.database({ writes: [Run, Book] }), draft: operationStep(entryDraft), submit: operationStep(entrySubmit) },
 });
 // Submit an entry already made, with no move of its own: where the entry's own machine refuses.
 export const runRepost = Blueprint.operation(Run, {
