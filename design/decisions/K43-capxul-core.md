@@ -45,7 +45,8 @@ meetups, mixers and workshops, "a really undecided thing". (Answered by CX-grill
      the Bridge adapter.
    - **Capxul modules,** also free, each a plugin a running Capxul mounts when someone switches it on, starting with the
      CRM. Orthograph hasn't proved it can mount a plugin into an app that already holds data. Capxul pulls that
-     capability (K42).
+     capability (K42). (Superseded by CX-composable-pieces, 26 November 2026: each module is an optional piece a
+     business picks when its Capxul is built, and adding one to a deployed Capxul is a rebuild with a forward migration.)
    - **Capxul's paid services,** hosted by Capxul and reached from any Capxul through an adapter unlocked by a key:
      KYC and KYB; bank accounts through Bridge, both opening them and keeping them open; and help with incorporation.
    - **The network:** undecided. It becomes a grill when Capxul reaches the CRM. (Superseded by CX-grill, 23 November
