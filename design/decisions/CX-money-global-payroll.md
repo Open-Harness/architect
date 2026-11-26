@@ -228,7 +228,7 @@ each dated record, and `git grep` finds each old phrase only in dated records an
 
 Live docs:
 
-- `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)" → "contractors worldwide first, then tax from a piece per jurisdiction (CX-money-global-payroll)"
+- `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)" → "tax from a piece per jurisdiction, later; contractors are their own piece (CX-money-global-payroll)"
 - `design/goals/16-capxul.md`: "in USDC, the one dollar asset every Capxul company uses for now" → "in USDC, the reporting currency of today's companies (CX-money-global-payroll)"
 - `design/goals/16-capxul.md`: "parked by Aaron's one-dollar-asset call and unclaimed while parked" → "unparked by CX-money-global-payroll and claimed by Goal 16"
 - `design/goals/16-capxul.md`: "payslips, the pay run and taxes, each run posting" → "payslips, the pay run and later taxes, contractors beside it, each run posting"
