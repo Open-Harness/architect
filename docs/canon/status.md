@@ -416,8 +416,8 @@ plugged-in/
 ## 6. Rough edges that block the loops
 
 - **Starting an app.** Orthograph is not on public npm, so a new app needs a local registry and a publish first (the
-  preview fixes this, M1.51). Every local publish is version 0.0.0, so caches must be kept per run. The preset's
-  starter folder is filled only by a test. Creating an app needs `--trustThirdPartyPreset`, or Nx stops to ask.
+  preview fixes this, M1.51). Every package is at 0.1.0-next.1, so a local registry's caches must be kept per run. The preset's
+  starter is copied into it when it is packed (`prepack`). Creating an app needs `--trustThirdPartyPreset`, or Nx stops to ask.
 - **Writing journeys** (`design/goals/03-snags.md`): a starting world serves one journey and gives back only the last
   answer; a step can't compare with the answer before it; no journey can send a malformed payload; and a handler or
   journey can name a machine state only as a string.
