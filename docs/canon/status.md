@@ -179,8 +179,8 @@ once planned.
 | agent-tools | Agent tools: tools from operations; the Run thing | building | framework | — | — | none | `packages/agents` | durable-agent-run | slices M4.07, M4.10; `@orthograph/agents` is built on `goal/superagent` (slice 5), its runtime in slice 9 (#758) |
 | agent-writes-handler | Agent writes a handler: an agent writes a handler from a brief | building | framework | preview | alpha | none | `packages/cli` | — | `ortho brief`, layer 1 check 04; Gate 1; not yet proved by an app's journeys: proved on `acme` only (layer 1 check 04) |
 | timers | No wall clock; `Timers`; counted work: in-memory timers and the lint rule, with no world timer table | building | Capxul | beta | people and payroll | none | `packages/host-cloudflare/src/modules/timers`, `packages/lint` | — | slices M8.06, M8.07; #696 (timers across processes) |
-| world-clock-keeper | World clock and keeper: world clock, moves made by time, the keeper | spiked | framework | — | — | none | `packages/host-cloudflare/src/modules/clock` | timers | `design/spikes/world-clock.md`; the rest is M8's |
-| gap-signature-collection | Signature collection: stage 3's signature collection and the keeper rest on workflows | provisional | framework | — | — | none | `packages/orthograph` | workflows, safe-hats-budgets | no decision, no spike |
+| world-clock-keeper | World clock and keeper: world clock, moves made by time, the keeper | building | Capxul | 1.0 | getting paid | goal-16 | `packages/host-cloudflare/src/modules/clock`, `packages/host-cloudflare/src/modules/timers`, `packages/projections`, `packages/prove`, `packages/compiler/src/modules/time`, `packages/language-effect/src/modules/records`, `packages/host-cloudflare/src/modules/store` | timers | `design/spikes/world-clock.md`; `design/decisions/CX-keeper.md` (workflows: not needed for time-fired moves); slice M8.10; checks `e2e/m8/05-the-keeper`; #1199 |
+| gap-signature-collection | Signature collection: stage 3's signature collection rests on workflows; the keeper does not (CX-keeper) | provisional | framework | — | — | none | `packages/orthograph` | workflows, safe-hats-budgets | no decision, no spike |
 
 ### Beyond the map above: pieces K42 and K40 added (re-sorted by K45)
 
@@ -257,7 +257,7 @@ spiked; the rest is provisional.
 | docs-portal-projections | Docs and portal projections: the docs and the portal as standard projections (K30), built in today | building | framework | — | — | none | `packages/portal`, `packages/projections` | portal-next | K30, K31 |
 | gap-core-alone | The core alone: no check proves an app with only the core; the generators import the portal, prove imports the EVM chain port for wallet worlds, and the command depends on the whole projections package | provisional | framework | — | — | none | `packages/generators`, `packages/prove`, `packages/cli` | — | K30, section 1 |
 | gap-scheduled-prove | Scheduled prove: proving against a deployed address on a schedule has no slice beyond the staging workflow | provisional | framework | — | — | none | `.github/workflows/staging.yml` | staging-run | no slice |
-| gap-journey-language | The journey language's open problems: one world per journey, comparing one answer with the last, and sending malformed payloads | provisional | framework | — | — | none | `packages/prove`, `packages/orthograph/src/modules/journeys` | prove-evals | `design/goals/03-snags.md` |
+| gap-journey-language | The journey language's open problems: one world per journey, comparing one answer with the last, and sending malformed payloads | provisional | framework | — | — | none | `packages/prove`, `packages/orthograph/src/modules/journeys` | prove-evals | `design/goals/03-snags.md`; one world per journey that moves time: `design/decisions/CX-keeper.md` call 8 (#1199) |
 | gap-slow-m1-checks | Slow M1 checks: two checks are a quarter of M1 test time | provisional | framework | — | — | none | `e2e/m1/29-st1-23-prove-changed.test.ts`, `e2e/m1/30-st1-24-warm-world.test.ts` | — | `issue #623`; 6.7 and 3.1 minutes (`design/decisions/CI-m1-shards.md`); ranks as keeping CI fast |
 | gap-portal-ratchet | Portal ratchet: a builder can shrink the new portal's parity lists | provisional | framework | — | — | none | `tools/ci/builder-paths.sh`, `e2e/portal-next` | portal-next | `issue #662`; `e2e/portal-next/expected-failing.txt` and `grid-expected-red.json` are on `main`, and `builder-paths.sh` still lists `e2e/grid/expected-red.json` alone |
 
@@ -272,8 +272,8 @@ items.
    `gap-approval-declaration`.
 4. Stage 2 needs webhooks (M5.01, M5.03) and SIWE linking (M2.13); neither is in any goal: `webhook-doors` and
    `events-in` (Capxul's banking pulls them now, K45) and `siwe-linking` (still in no goal).
-5. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike:
-   `gap-signature-collection`, `workflows` and `world-clock-keeper`.
+5. Stage 3's signature collection rests on workflows, which have no decision or spike; the keeper needs only timers (CX-keeper):
+   `gap-signature-collection` and `workflows`.
 6. The journey language's open problems: one world per journey, comparing one answer with the last, and sending
    malformed payloads: `gap-journey-language`.
 
