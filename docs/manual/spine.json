@@ -104,7 +104,7 @@
           "n": 11,
           "title": "More than one agent",
           "question": "How do several agents work at once without stepping on each other?",
-          "planned": "chapters/11-more-than-one-agent.md",
+          "file": "chapters/11-more-than-one-agent.md",
           "film": "agents",
           "section": "agents"
         }
