@@ -103789,6 +103789,490 @@
           ]
         },
         {
+          "title": "a wage of \" \" isn't a number, and is refused, naming the wage",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": " ",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNotANumber",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a wage of \"12abc\" isn't a number, and is refused, naming the wage",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "12abc",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNotANumber",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a wage of \"-\" isn't a number, and is refused, naming the wage",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "-",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNotANumber",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "any wage below nothing is refused, not only one base unit below",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "-5",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNegative",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "any fraction of a base unit is refused",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "1.75",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountFractional",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "the year to date is read whole, as the wage is",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "1500000000",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "12abc",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNotANumber",
+              "fields": {
+                "figure": "yearToDate"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a pay of 1,500 dollars gives no lines yet: no rows, so every tax is nothing and left out",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "1500000000",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a wage past 2^53 base units is taken, not refused or rounded",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "9007199254740993",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "9007199254740993",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "California is a work state as Texas is",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "CA",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a weekly pay is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "weekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a semimonthly pay is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "semimonthly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a monthly pay is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "monthly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a quarterly pay is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "quarterly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a semiannual pay is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "semiannual",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a annual pay is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "annual",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
+          "title": "a daily pay is taken",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "daily",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
+        },
+        {
           "title": "DC is a work state as the fifty are",
           "call": {
             "actor": "ada",
@@ -103817,7 +104301,7 @@
           ]
         }
       ],
-      "sourceHash": "9fe3aab78cc46c50a2a9644f9232e196df14ff7dd73ec3d83179a2e9c8ac78de"
+      "sourceHash": "0d38ba0b392ff18144ad0a2401bf3e4993e315fa5995016f02e764bcd1ee830a"
     },
     "journeys/transfer-an-employee.ts": {
       "name": "transfer an employee",
