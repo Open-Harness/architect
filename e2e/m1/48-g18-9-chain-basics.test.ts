@@ -409,9 +409,9 @@ describe("(a) the exact judge is fair: today's workflow with an approved SKIP, a
     ["a matrix on the job", (w: Json) => { w.jobs[JOB].strategy = { matrix: { shard: [1, 2, 3] } }; }],
     ["the ratchet with || true", (w: Json) => { step(w, /e2e:on-chain-ratchet/).run = "pnpm nx run e2e:on-chain-ratchet --outputStyle=static || true"; }],
     ["Anvil off on the ratchet step", (w: Json) => { step(w, /e2e:on-chain-ratchet/).env = { ORTHO_CHAIN_EVM_ANVIL: "0" }; }],
-    ["W1 the aff step says affected_e2e=false", (w: Json) => { (w.jobs.changes.steps as Json[]).find((x) => x.id === "aff").run = 'echo affected_e2e=false >> "$GITHUB_OUTPUT"'; }],
-    ["W2 the diff step says docs_only=true", (w: Json) => { const d = (w.jobs.changes.steps as Json[]).find((x) => x.id === "diff"); d.run = 'echo docs_only=true >> "$GITHUB_OUTPUT"'; }],
-    ["the aff step's if made to always run", (w: Json) => { (w.jobs.changes.steps as Json[]).find((x) => x.id === "aff").if = "true"; }],
+    ["W1 the aff step says affected_e2e=false", (w: Json) => { ((w.jobs.changes.steps as Json[]).find((x) => x.id === "aff") as Json).run = 'echo affected_e2e=false >> "$GITHUB_OUTPUT"'; }],
+    ["W2 the diff step says docs_only=true", (w: Json) => { const d = (w.jobs.changes.steps as Json[]).find((x) => x.id === "diff") as Json; d.run = 'echo docs_only=true >> "$GITHUB_OUTPUT"'; }],
+    ["the aff step's if made to always run", (w: Json) => { ((w.jobs.changes.steps as Json[]).find((x) => x.id === "aff") as Json).if = "true"; }],
     ["a SKIP gated on affected_prove", (w: Json) => { w.jobs[JOB].env.SKIP = SKIPS[1]?.replace("affected_e2e", "affected_prove"); }],
   ] as const)("catches %s", (_, edit) => {
     const [w, p] = planted(SKIPS[0] ?? "", edit as (w: Json, p: Json) => void);
