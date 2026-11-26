@@ -14,7 +14,9 @@
 //   5. a stale row is fenced off: a row armed in one journey's world never fires in another's, and after a warm reset of a world
 //      (`POST /_world/reset`) the row armed before it is gone and fires nothing, while one armed after it fires once;
 //   6. a self-move that writes the field forward re-arms `after`: a person's snooze moves the check, each observe backs off one,
-//      two and four hours, and parking drops the row.
+//      two and four hours, and parking drops the row;
+//   7. a move that clears the field drops the row: a hushed watch stays watching and nothing fires. It also needs a handler to
+//      be able to clear an optional field, which it can't today (snag #1205).
 // `e2e/m8/03` is M8.04's wider check, which the keeper also turns; this file is the slice's own.
 //
 // Un-gameable: each journey must report `✔ n/n steps` exactly; and planted copies, each wrong in one place (an expiry a minute
@@ -23,7 +25,7 @@
 // move the check, no backoff, a parked watch observed again), must each fail at exactly that step (support.ts `failedAt`).
 //
 // Red today on the missing keeper only: no row is armed and nothing fires, every journey shares one world's clock, and the
-// compiler refuses `after(field, "0 seconds")`.
+// compiler refuses `after(field, "0 seconds")`; the hush handler also dies clearing `nextCheckAt` (#1205).
 import { rmSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
@@ -38,6 +40,7 @@ const JOURNEYS = {
   armed: { club: "keeper", file: "a-desk-left-held", name: "a desk left held when the journey ends", steps: 1 },
   fenced: { club: "keeper", file: "a-fresh-world-fires-nothing-old", name: "a fresh world fires nothing armed in another", steps: 3 },
   backoff: { club: "keeper-backoff", file: "a-watch-backs-off-and-parks", name: "a watch backs off and parks", steps: 6 },
+  cleared: { club: "keeper-backoff", file: "a-hushed-watch-fires-nothing", name: "a hushed watch fires nothing", steps: 3 },
 } as const;
 type Half = keyof typeof JOURNEYS;
 type Club = (typeof JOURNEYS)[Half]["club"];
@@ -73,6 +76,9 @@ const PLANTED: ReadonlyArray<readonly [Half, string, string, ReadonlyArray<reado
   ["backoff", "still-watching", "to the next morning in one step: checks at ten past ten, ten past twelve and ten past four, then it parks", [['machine.isIn(s.world.watch, "parked"),\n    ),\n    s.step(\n      "two days on', 'machine.isIn(s.world.watch, "watching"),\n    ),\n    s.step(\n      "two days on']]],
   ["backoff", "observed-when-parked", "two days on, past the parked check's own instant: nothing fires", [['s.clock.advance("2 days"),\n      expect(fired).toEqual([]),', 's.clock.advance("2 days"),\n      expect(fired).toEqual(["watch.observe due 2027-01-11T16:10:00.000Z"]),']]],
   ["backoff", "four-checks", "read back: three checks, parked", [['[3n, "2027-01-11T16:10:00.000Z", "parked"]', '[4n, "2027-01-11T16:10:00.000Z", "parked"]']]],
+  ["cleared", "fires-anyway", "a day passes, ten o'clock among it: nothing fires, and it is still watching", [["expect(fired).toEqual([]),", 'expect(fired).toEqual(["watch.observe due 2027-01-10T10:00:00.000Z"]),']]],
+  ["cleared", "not-cleared", "read back: watching, with no next check", [['["none", 0n, "watching"]', '["2027-01-10T10:00:00.000Z", 0n, "watching"]']]],
+  ["cleared", "observed", "a day passes, ten o'clock among it: nothing fires, and it is still watching", [['machine.isIn(s.world.watch, "watching"),\n    ),\n  ],', 'machine.isIn(s.world.watch, "parked"),\n    ),\n  ],']]],
 ];
 
 const clubs = { keeper: { good: club("keeper"), bad: club("keeper") }, "keeper-backoff": { good: club("keeper-backoff"), bad: club("keeper-backoff") } } as const;

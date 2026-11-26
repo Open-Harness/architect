@@ -68,7 +68,8 @@ because every journey shares one world's clock.
    included, so **a self-move that writes the field forward re-arms the move** at the new instant, and one that leaves it
    as it was arms nothing, because that due has fired (call 3). That is how the Safe machines back off: `observe` is
    `after("nextCheckAt", "0 seconds")`, and each stay in its state writes `nextCheckAt` further out, until a move
-   leaves the state and drops the row. A field with no value arms nothing. A span may be `"0 seconds"` for `after`
+   leaves the state and drops the row. A field with no value arms nothing, so **a move that clears the field drops the
+   row** (the Safe machines' park and halt clear `nextCheckAt`), and there is one row for the field's newest value. A span may be `"0 seconds"` for `after`
    (due at the field's own instant), which the compiler refuses today (`time` module: "a whole number ... like
    \"14 days\"" requires one or more); it allows zero for `after` and still refuses it for `every`. A row due at or
    before the world's instant fires at the next step of a stepped clock, where the world stands.
@@ -112,6 +113,7 @@ the keeper also turns.
 | 4 | a booking the keeper would seat at a taken table is refused `TableTaken`, writes nothing, keeps its state, is not retried, and has its deciding log | `a-taken-table-refuses-the-keeper` |
 | 5 | a row armed in one journey's world never fires in another's; after a warm reset, a row from before it does not fire | `a-desk-left-held`, `a-fresh-world-fires-nothing-old`, and the front-door half |
 | 6 | a watch's `observe`, `after("nextCheckAt", "0 seconds")`, re-arms on each self-move that writes `nextCheckAt` forward (one, two, four hours), parks on the third, and fires nothing after | `a-watch-backs-off-and-parks` |
+| 7 | a watch hushed at nine, a self-move that clears `nextCheckAt`, stays watching and fires nothing across ten o'clock; it also needs a handler to clear an optional field (snag #1205) | `a-hushed-watch-fires-nothing` |
 
 ## Supersedes
 
