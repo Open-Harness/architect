@@ -52,6 +52,14 @@ export const refusal = (step: string): string | undefined => {
   // GOAL18-getting-started-acceptance: the page may not move the reader's npm or pnpm settings, their PATH or their home.
   const moved = /^export\s+([A-Za-z_][A-Za-z0-9_]*)=/.exec(step)?.[1];
   if (moved !== undefined && (/^(?:npm|pnpm)_config_/i.test(moved) || moved === "PATH" || moved === "HOME")) return `it exports ${moved}, which a reader's own npm, pnpm, PATH or home would lose`;
+  // The hostile pass (slice 11): a `cd` stays inside the folder the steps start in; a variable set before a command is held to the
+  // same names as an export; and no flag may point npm or pnpm at another registry, config, prefix or folder.
+  if (/^cd\s+/.test(step) && (/^cd\s+(?:\/|~)/.test(step) || /(?:^|\/)\.\.(?:\/|$)/.test(step.slice(3).trim()))) return "it leaves the folder the steps start in";
+  const prefixed = [...step.matchAll(/(?:^|\s)([A-Za-z_][A-Za-z0-9_]*)=/g)].map((m) => m[1] ?? "");
+  const banned = prefixed.find((n) => /^(?:npm|pnpm)_config_/i.test(n) || ["PATH", "HOME", "NODE_OPTIONS", "NODE_PATH"].includes(n));
+  if (banned !== undefined && !/^export\s/.test(step)) return `it sets ${banned}, which a reader's own npm, pnpm, PATH, home or Node would lose`;
+  if (moved === "NODE_OPTIONS" || moved === "NODE_PATH") return `it exports ${moved}, which a reader's own npm, pnpm, PATH, home or Node would lose`;
+  if (/(?:^|\s)--(?:registry|userconfig|globalconfig|prefix|dir|store-dir|cache|cache-dir|config\.[\w-]+)(?:=|\s|$)/.test(step)) return "it points npm or pnpm at another registry, config or folder";
   if (/^cd\s+\S+$/.test(step) || /^export\s+[A-Za-z_][A-Za-z0-9_]*=\S*$/.test(step)) return undefined;
   const words = step.replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, "").split(/\s+/);
   if (words.some((w) => /^[A-Za-z_][A-Za-z0-9_]*=/.test(w) && words.indexOf(w) === 0)) return "it only sets a variable";

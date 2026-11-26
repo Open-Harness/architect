@@ -38,6 +38,7 @@
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { randomBytes } from "node:crypto";
 import { join, relative, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { freePorts } from "../ports.ts";
@@ -150,15 +151,18 @@ const document = <T>(text: string): T | undefined => {
 
 const APP = "bakery";
 const ENV = APP.toUpperCase().replace(/-/g, "_");
-const hello = (name: string) => `Hello, ${name}.`;
+/** A word made fresh for each run, in the handler this check writes: an answer can only carry it if that handler ran. */
+const NONCE = randomBytes(6).toString("hex");
+const hello = (name: string) => `Hello, ${name}. ${NONCE}`;
 const JOURNEY = "a greeting says hello";
+const WRONG = "a greeting says the wrong hello";
 const DECLARED: Readonly<Record<string, string>> = {
   "blueprint/things/greeting/thing.ts": `import { Blueprint } from "orthograph";\n\nexport const Greeting = Blueprint.thing({\n  description: "A hello, said to someone by name.",\n  fields: { id: Blueprint.id("grt") },\n});\n`,
   "blueprint/things/greeting/verbs/say.ts": `import { Blueprint } from "orthograph";\nimport { Greeting } from "../thing.ts";\n\nexport default Blueprint.operation(Greeting, {\n  description: "Say hello to someone by name.",\n  payload: { name: Blueprint.text({ max: 64 }) },\n  answer: { text: Blueprint.text({ max: 128 }) },\n  allowed: [Blueprint.anyone],\n  budget: { p95: "50 millis" },\n});\n`,
 };
 const WRITTEN: Readonly<Record<string, string>> = {
-  "src/greeting/say.ts": `// Scaffolded from blueprint/things/greeting/verbs/say.ts. Yours from now on.\nimport { Effect } from "effect";\nimport type { Handler } from "../../generated/api/src/greeting/say.handler.ts";\n\n/** Say hello to someone by name. */\nconst say: Handler = ({ name }) => Effect.succeed({ text: \`Hello, \${name}.\` });\n\nexport default say;\n`,
-  "journeys/a-greeting-says-hello.ts": `import { Blueprint, expect, noEvents, spans } from "orthograph";\nimport say from "../blueprint/things/greeting/verbs/say.ts";\n\nexport default Blueprint.journey("${JOURNEY}", {\n  cast: { visitor: Blueprint.anyone },\n  steps: (s) => [\n    s.step(\n      "anyone is greeted by name",\n      s.visitor.run(say, { name: "Ada" }),\n      expect((a) => a.text).toBe("Hello, Ada."),\n      noEvents(),\n      spans({ present: ["greeting.say"] }),\n    ),\n  ],\n});\n`,
+  "src/greeting/say.ts": `// Scaffolded from blueprint/things/greeting/verbs/say.ts. Yours from now on.\nimport { Effect } from "effect";\nimport type { Handler } from "../../generated/api/src/greeting/say.handler.ts";\n\n/** Say hello to someone by name. */\nconst say: Handler = ({ name }) => Effect.succeed({ text: \`Hello, \${name}. ${NONCE}\` });\n\nexport default say;\n`,
+  "journeys/a-greeting-says-hello.ts": `import { Blueprint, expect, noEvents, spans } from "orthograph";\nimport say from "../blueprint/things/greeting/verbs/say.ts";\n\nexport default Blueprint.journey("${JOURNEY}", {\n  cast: { visitor: Blueprint.anyone },\n  steps: (s) => [\n    s.step(\n      "anyone is greeted by name",\n      s.visitor.run(say, { name: "Ada" }),\n      expect((a) => a.text).toBe("Hello, Ada. ${NONCE}"),\n      noEvents(),\n      spans({ present: ["greeting.say"] }),\n    ),\n  ],\n});\n`,
   // The SDK as a reader uses it: one call, its answer or its refusal's name and message printed as JSON.
   "sdk-call.ts": `import { Effect } from "effect";\nimport * as Sdk from "./generated/sdk/src/index.ts";\n\nconst [url = "", payload = "{}"] = process.argv.slice(2);\nconst program = Sdk.greeting.say(JSON.parse(payload)).pipe(\n  Effect.map((answer) => ({ answer })),\n  Effect.catch((e: { readonly _tag?: string; readonly message?: string }) => Effect.succeed({ refused: e._tag ?? "unknown", message: e.message ?? "" })),\n  Effect.provide(Sdk.layer(url)),\n);\nEffect.runPromiseExit(program).then((exit) => {\n  process.stdout.write(JSON.stringify(exit._tag === "Success" ? exit.value : { died: true }) + "\\n");\n  if (exit._tag !== "Success" || !("answer" in exit.value)) process.exitCode = 1;\n});\n`,
 };
@@ -229,7 +233,11 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
     expect(steps["install"].status, shown(steps["install"])).toBe(0);
     const own = installedCli(made);
     expect(own?.version, "bakery/node_modules/@orthograph/cli").toBe(VERSION("cli"));
-    expect(own?.dir ?? "", "installed into pnpm's store, not linked from the repository").toMatch(/node_modules\/\.pnpm\/@orthograph\+cli@/);
+    expect(own?.dir ?? "", "installed into pnpm's store at the repository's version, not linked from the repository").toMatch(new RegExp(`node_modules/\\.pnpm/@orthograph\\+cli@${VERSION("cli").replace(/\./g, "\\.")}[/_]`));
+    const lock = existsSync(join(made, "pnpm-lock.yaml")) ? readFileSync(join(made, "pnpm-lock.yaml"), "utf8") : "";
+    expect(lock, "bakery/pnpm-lock.yaml").not.toBe("");
+    expect(lock.match(/^.*(?:file:|link:|\/home\/|\/tmp\/).*$/gm) ?? [], "nothing is installed from a folder: every package came from the registry").toEqual([]);
+    for (const p of publicPackages()) for (const v of [...lock.matchAll(new RegExp(`^  '?${p.name.replace(/[/.]/g, "\\$&")}@([^:'(]+)`, "gm"))].map((m) => m[1])) expect(v, `${p.name} in the lockfile`).toBe(p.version);
   });
 
   it("declaring `greeting` with `greeting.say` and running `ortho generate` writes its api, CLI, SDK and MCP entry, and scaffolds its handler", { timeout: 6 * MIN }, () => {
@@ -267,10 +275,25 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
     expect(verdict?.passed, shown(steps["prove"])).toBe(true);
     expect(steps["prove"].status, shown(steps["prove"])).toBe(0);
     expect((verdict?.journeys ?? []).map((j) => j.name).sort(), "the journeys proved").toEqual([...starterJourneys(), JOURNEY].sort());
-    expect((verdict?.journeys ?? []).filter((j) => j.verdict !== "pass").map((j) => j.name), "journeys that did not pass").toEqual([]);
+    expect((verdict?.journeys ?? []).filter((j) => j.verdict !== "pass" || j.steps.length === 0 || j.steps.some((s) => s.verdict !== "pass")).map((j) => j.name), "journeys that did not pass every step, or have none").toEqual([]);
     expect(verdict?.totals?.journeysPassed).toBe(starterJourneys().length + 1);
     const mine = verdict?.journeys?.find((j) => j.name === JOURNEY);
     expect(mine?.steps.map((s) => [s.verdict, s.operation, s.handlerFile]), "the new journey's step").toEqual([["pass", "greeting.say", "src/greeting/say.ts"]]);
+  });
+
+  it("the prove judges: in a copy with a journey that expects the wrong hello, that journey fails, the run fails, and the others still pass", { timeout: 15 * MIN }, () => {
+    expect(steps["prove"]?.status, shown(steps["prove"])).toBe(0);
+    const copy = join(mkdtempSync(join(work, "wrong-")), APP);
+    mkdirSync(copy);
+    for (const e of readdirSync(made)) if (e !== "node_modules") cpSync(join(made, e), join(copy, e), { recursive: true });
+    symlinkSync(join(made, "node_modules"), join(copy, "node_modules"));
+    writeFileSync(join(copy, "journeys/a-greeting-says-the-wrong-hello.ts"), WRITTEN["journeys/a-greeting-says-hello.ts"]!.replace(`"${JOURNEY}"`, `"${WRONG}"`).replace(`Hello, Ada. ${NONCE}`, `Hello, Bob. ${NONCE}`));
+    const r = run("pnpm ortho prove --env local --json (with a wrong journey)", "pnpm", ["ortho", "prove", "--env", "local", "--json"], copy, 14 * MIN);
+    const verdict = document<Verdict>(r.out);
+    expect(verdict?.passed, shown(r)).toBe(false);
+    expect(r.status, shown(r)).not.toBe(0);
+    expect(verdict?.journeys?.find((j) => j.name === WRONG)?.verdict, shown(r)).toBe("fail");
+    expect((verdict?.journeys ?? []).filter((j) => j.name !== WRONG && j.verdict !== "pass").map((j) => j.name), "the other journeys").toEqual([]);
   });
 
   it("`ortho dev` runs the app: it answers on the port it is given", { timeout: 6 * MIN }, async () => {
@@ -290,13 +313,14 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
     }
     const missing = cli(["greeting", "say", "--json"], url);
     expect(missing.status, shown(missing)).not.toBe(0);
-    expect(`${missing.out}${missing.err}`, "the refusal names the missing flag").toMatch(/\bname\b/);
+    expect(`${missing.out}${missing.err}`, "the refusal names the missing flag").toMatch(/--name\b|\bname\b/);
+    expect(`${missing.out}${missing.err}`, "a refusal, not a crash").not.toMatch(/TypeError|ReferenceError|\n\s+at \S+ \(/);
     const away = cli(["greeting", "say", "--name", "Ada", "--json"], closed);
     expect(away.status, shown(away)).not.toBe(0);
     expect(away.out, "nothing answered at a closed port").not.toContain(hello("Ada"));
   });
 
-  it("the generated SDK, imported by a script, calls greeting.say; given `{}` it fails InvalidPayload naming `name`, and at a closed port it fails", { timeout: 6 * MIN }, () => {
+  it("the generated SDK, imported by a script, calls greeting.say; given `{}` it fails InvalidPayload naming `name`, the server itself refuses `{}` and a name too long, and at a closed port it fails", { timeout: 6 * MIN }, async () => {
     expect(steps["dev"]?.status, shown(steps["dev"])).toBe(0);
     for (const name of ["Lin", "Mae"]) {
       const r = sdk(url, { name });
@@ -308,6 +332,11 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
     expect(refusedEmpty?.refused, shown(empty)).toBe("InvalidPayload");
     expect(refusedEmpty?.message ?? "", shown(empty)).toMatch(/\bname\b/);
     expect(empty.status, shown(empty)).not.toBe(0);
+    for (const body of [{}, { name: "x".repeat(65) }]) {
+      const raw = await fetch(`${url}/greeting/say`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(60_000) });
+      const text = await raw.text();
+      expect([raw.status >= 400 && raw.status < 500, text.includes("Hello,")], `the server, sent ${JSON.stringify(body).slice(0, 40)} directly: ${raw.status} ${text.slice(0, 300)}`).toEqual([true, false]);
+    }
     const away = sdk(closed, { name: "Lin" });
     expect(away.status, shown(away)).not.toBe(0);
     expect(json<{ answer?: unknown }>(away.out)?.answer, shown(away)).toBeUndefined();
@@ -334,9 +363,11 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
       const said = (result?.structuredContent as { text?: unknown } | undefined)?.text ?? json<{ text?: unknown }>(result?.content?.[0]?.text ?? "")?.text;
       expect(said, JSON.stringify(called).slice(0, 600)).toBe(hello(name));
     }
-    const nobody = await rpc("tools/list", {});
-    expect([nobody.status, (nobody.body as { error?: unknown }).error], "no credential").toEqual([401, "unauthorized"]);
-    const wrong = await rpc("tools/list", {}, `Bearer ${token.split("").reverse().join("")}x`);
+    for (const [method, params] of [["tools/list", {}], ["tools/call", { name: "greeting.say", arguments: { name: "Ola" } }]] as const) {
+      const nobody = await rpc(method, params);
+      expect([nobody.status, (nobody.body as { error?: unknown }).error], `${method} with no credential`).toEqual([401, "unauthorized"]);
+    }
+    const wrong = await rpc("tools/call", { name: "greeting.say", arguments: { name: "Ola" } }, `Bearer ${token.split("").reverse().join("")}x`);
     expect([wrong.status, (wrong.body as { error?: unknown }).error], "a wrong credential").toEqual([401, "invalid_token"]);
     const bad = await rpc("tools/call", { name: "greeting.say", arguments: {} }, bearer);
     const badResult = (bad.body as { result?: { isError?: boolean; content?: ReadonlyArray<{ text?: string }> }; error?: unknown });
@@ -347,6 +378,7 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
   it("stopping `ortho dev` leaves nothing of bakery running", { timeout: 2 * MIN }, async () => {
     expect(steps["dev"]?.status, shown(steps["dev"])).toBe(0);
     await stopGroup(dev);
+    expect(await answers(url), "nothing answers on the dev port once it is stopped").toBe(false);
     expect(spawnSync("pgrep", ["-fl", made], { encoding: "utf8" }).stdout.trim()).toBe("");
   });
 });
@@ -397,7 +429,13 @@ describe("09 the getting-started page, run as written: its steps are one input o
     for (const moved of ["npm_config_registry=http://127.0.0.1:4873/", "pnpm_config_store_dir=/tmp/s", "NPM_CONFIG_PREFIX=/tmp/p", "PATH=/usr/bin", "HOME=/tmp/h"]) {
       expect(refusal(`export ${moved}`), moved).toMatch(new RegExp(`exports ${moved.split("=")[0]}\\b`));
     }
+    for (const moved of ["NODE_OPTIONS=--require=/tmp/x.js", "NODE_PATH=/home/user/orthograph/node_modules"]) expect(refusal(`export ${moved}`), moved).toMatch(new RegExp(`exports ${moved.split("=")[0]}\\b`));
+    for (const set of ["npm_config_registry=https://registry.npmjs.org/ ortho prove", "NODE_PATH=/repo/node_modules pnpm ortho prove", "PATH=/usr/bin ortho dev"]) expect(refusal(set), set).toMatch(/it sets /);
+    for (const away of ["cd /home/user/orthograph/examples/starter", "cd ../..", "cd bakery/../../x", "cd ~"]) expect(refusal(away), away).toMatch(/leaves the folder/);
+    for (const flag of ["npm install -g @orthograph/cli --registry=https://registry.npmjs.org", "pnpm install --registry https://registry.npmjs.org", "npm install -g @orthograph/cli --prefix /tmp/p", "pnpm install --store-dir /tmp/s"]) expect(refusal(flag), flag).toMatch(/another registry, config or folder/);
     expect(refusal("export BAKERY_URL=http://127.0.0.1:8787")).toBeUndefined();
+    expect(refusal("BAKERY_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health")).toBeUndefined();
+    expect(refusal("npm install -g @orthograph/cli@next")).toBeUndefined();
     expect(refusal("cd bakery")).toBeUndefined();
   });
 
