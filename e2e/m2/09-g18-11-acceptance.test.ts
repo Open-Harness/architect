@@ -163,7 +163,6 @@ const WRITTEN: Readonly<Record<string, string>> = {
 const apps = join(work, "apps");
 const made = join(apps, APP);
 const steps: Record<string, Ran | undefined> = {};
-const ok = (key: string) => steps[key]?.status === 0;
 let dev: ChildProcess | undefined;
 const url = `http://127.0.0.1:${PORTS.dev}`;
 const closed = `http://127.0.0.1:${PORTS.closed}`;
@@ -205,7 +204,7 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
   it("publishes every public package to the local registry at the repository's version", { timeout: 5 * MIN }, async () => {
     expect(setup, "building and publishing Orthograph to the local registry").toBe("");
     if (registry === undefined) return;
-    for (const p of publicPackages()) expect(await versionsOn(registry, p.name), `${p.name} on the local registry`).toContain(p.version);
+    for (const p of publicPackages()) { const held = await versionsOn(registry, p.name); expect(held, `${p.name} on the local registry`).toContain(p.version); }
   });
 
   it("`ortho new app bakery`, from @orthograph/cli as published, makes the starter under that name in an empty folder", { timeout: 8 * MIN }, () => {

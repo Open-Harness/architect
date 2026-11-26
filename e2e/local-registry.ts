@@ -96,9 +96,15 @@ export const publishAll = (registry: Registry, timeouts: { readonly build: numbe
   return "";
 };
 
-/** What the registry holds for a name: its versions, or [] when it has none. */
-export const versionsOn = async (registry: Registry, name: string): Promise<ReadonlyArray<string>> => {
-  const r = await fetch(`${registry.url}${name.replace("/", "%2f")}`, { signal: AbortSignal.timeout(30_000) }).catch(() => undefined);
-  if (r === undefined || !r.ok) return [];
-  return Object.keys(((await r.json()) as { versions?: Record<string, unknown> }).versions ?? {});
+/** What the registry holds for a name: its versions, or the sentence that says why it could not tell. Tried three times: a socket kept
+ * alive across a long synchronous publish may have been closed by Verdaccio ("other side closed"). */
+export const versionsOn = async (registry: Registry, name: string): Promise<ReadonlyArray<string> | string> => {
+  let why = "";
+  for (let i = 0; i < 3; i++) {
+    const r = await fetch(`${registry.url}${name.replace("/", "%2f")}`, { signal: AbortSignal.timeout(30_000) }).catch((e: unknown) => `${String(e)} (${String((e as { cause?: unknown }).cause)})`);
+    if (typeof r === "string") { why = `${name}: ${r}`; continue; }
+    if (!r.ok) return `${name}: ${r.status} ${(await r.text()).slice(0, 200)}`;
+    return Object.keys(((await r.json()) as { versions?: Record<string, unknown> }).versions ?? {});
+  }
+  return why;
 };
