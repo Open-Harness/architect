@@ -46,6 +46,9 @@ export const PREFIX = NAME?.toUpperCase().replace(/-/g, "_");
 export const proveAt = at(orthoRun("prove"));
 export const devAt = at(orthoRun("dev"));
 
+/** The only flags a step of npm, npx, pnpm, yarn, bun or ortho may pass (the 🔍 re-review of #1145). */
+const FLAGS = ["-g", "--global", "-y", "--yes", "--json", "--env", "--port", "--name", "--"];
+
 /** Why a step is not a plain command a reader types (the contract above), or undefined when it is. `app` is the app's name (the page's own), or null for none. */
 export const refusal = (step: string, app: string | null = NAME ?? null): string | undefined => {
   const name = app ?? undefined;
@@ -63,8 +66,18 @@ export const refusal = (step: string, app: string | null = NAME ?? null): string
   if (exported === undefined && set !== undefined) return `it sets ${set}: a page sets ${only}`;
   // A `cd` stays inside the folder the steps start in, and no flag points npm or pnpm at another registry (a scope's or a host's too),
   // a token, a config, a prefix or a folder.
-  if (/^cd\s+/.test(step) && (/^cd\s+(?:\/|~)/.test(step) || /(?:^|\/)\.\.(?:\/|$)/.test(step.slice(3).trim()))) return "it leaves the folder the steps start in";
+  if (/^cd\s+/.test(step) && (/^cd\s+(?:\/|~)/.test(step) || /\$/.test(step) || /(?:^|\/)\.\.(?:\/|$)/.test(step.slice(3).trim()))) return "it leaves the folder the steps start in";
   if (/(?:^|\s)--(?:(?:@[\w.-]+:)?registry|\/\/|userconfig|globalconfig|prefix|dir|store-dir|cache|cache-dir|config\.[\w-]+)/.test(step)) return "it points npm or pnpm at another registry, token, config or folder";
+  // The 🔍 re-review of #1145: npm expands any unambiguous prefix of a flag (`--reg=` is `--registry=`, `--userc=` is `--userconfig=`),
+  // so on a step of npm, npx, pnpm, yarn, bun or ortho every flag outside a short list is refused. That also closes `--proxy`,
+  // `--https-proxy`, `--cafile` and `--strict-ssl`. The list is what a page needs: a global install (`-g`), npx's `-y`, `--json`, prove's
+  // `--env <name>`, dev's `--port <n>`, a call's `--name <v>`, and `--` itself. The app's own command and its generated CLI take their
+  // operations' flags, and are not npm.
+  const tool = step.replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, "").split(/\s+/)[0] ?? "";
+  if (["npm", "npx", "pnpm", "yarn", "bun", "ortho"].includes(tool)) {
+    const flag = step.split(/\s+/).filter((w) => w.startsWith("-")).map((w) => w.split("=")[0] ?? w).find((f) => !FLAGS.includes(f));
+    if (flag !== undefined) return `it passes ${flag}, which a page may not: only ${FLAGS.join(", ")}`;
+  }
   if (/^cd\s+\S+$/.test(step) || /^export\s+[A-Za-z_][A-Za-z0-9_]*=\S*$/.test(step)) return undefined;
   const words = step.replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, "").split(/\s+/);
   if (words.some((w) => /^[A-Za-z_][A-Za-z0-9_]*=/.test(w) && words.indexOf(w) === 0)) return "it only sets a variable";

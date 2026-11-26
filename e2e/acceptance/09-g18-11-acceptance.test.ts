@@ -435,14 +435,23 @@ describe("09 the getting-started page, run as written: its steps are one input o
       expect(as(`${v} pnpm ortho prove`), `${v} before a command`).toMatch(new RegExp(`^it sets ${named}: a page sets only BAKERY_URL and BAKERY_TOKEN$`));
       expect(as(`BAKERY_URL=http://127.0.0.1:8787 ${v} node generated/cli/src/main.ts system health`), `${v} second before a command`).toMatch(new RegExp(`^it sets ${named}:`));
     }
-    for (const away of ["cd /home/user/orthograph/examples/starter", "cd ../..", "cd bakery/../../x", "cd ~"]) expect(as(away), away).toMatch(/leaves the folder/);
+    for (const away of ["cd /home/user/orthograph/examples/starter", "cd ../..", "cd bakery/../../x", "cd ~", "cd $HOME", "cd bakery$X"]) expect(as(away), away).toMatch(/leaves the folder/);
     for (const flag of ["npm install -g @orthograph/cli --registry=https://registry.npmjs.org", "pnpm install --registry https://registry.npmjs.org", "npm install -g @orthograph/cli --prefix /tmp/p",
       "pnpm install --store-dir /tmp/s", "npm install -g @orthograph/cli --@orthograph:registry=https://registry.npmjs.org/", "pnpm install --@orthograph:registry=https://registry.npmjs.org/",
       "pnpm install --//registry.npmjs.org/:_authToken=x", "npm install -g @orthograph/cli --userconfig /tmp/rc", "pnpm install --config.registry=https://registry.npmjs.org/"]) {
       expect(as(flag), flag).toMatch(/another registry, token, config or folder/);
     }
+    // npm's abbreviations, and the flags a page has no use for, by the allow-list.
+    for (const [step, flag] of [["npm i -g @orthograph/cli --reg=https://registry.npmjs.org/", "--reg"], ["npm install -g @orthograph/cli --regis=https://a.invalid/", "--regis"],
+      ["npm install -g @orthograph/cli --registr https://a.invalid/", "--registr"], ["npm install -g @orthograph/cli --userc=/tmp/rc", "--userc"],
+      ["npm install -g @orthograph/cli --https-proxy=http://127.0.0.1:9", "--https-proxy"], ["npm install -g @orthograph/cli --proxy=http://127.0.0.1:9", "--proxy"],
+      ["npm install -g @orthograph/cli --cafile=/tmp/ca.pem", "--cafile"], ["npm install -g @orthograph/cli --strict-ssl=false", "--strict-ssl"],
+      ["pnpm ortho prove --only health", "--only"], ["ortho prove --skip-failing", "--skip-failing"], ["npx -y --package=@orthograph/cli ortho new app bakery", "--package"]] as const) {
+      expect(as(step), step).toBe(`it passes ${flag}, which a page may not: only -g, --global, -y, --yes, --json, --env, --port, --name, --`);
+    }
     for (const fine of ["export BAKERY_URL=http://127.0.0.1:8787", "export BAKERY_TOKEN=abc", "BAKERY_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health",
-      "BAKERY_URL=http://127.0.0.1:8787 BAKERY_TOKEN=abc bakery system health", "npm install -g @orthograph/cli@next", "cd bakery", "pnpm install", "pnpm ortho dev"]) expect(as(fine), fine).toBeUndefined();
+      "BAKERY_URL=http://127.0.0.1:8787 BAKERY_TOKEN=abc bakery system health", "npm install -g @orthograph/cli@next", "npm install --global @orthograph/cli", "cd bakery", "pnpm install",
+      "pnpm ortho dev", "pnpm ortho dev --port 8787", "pnpm ortho prove --env local --json", "npx -y create-orthograph bakery", "node generated/cli/src/main.ts greeting say --name Ada --json"]) expect(as(fine), fine).toBeUndefined();
     // With no app named, no variable at all is the page's to set.
     expect(refusal("export BAKERY_URL=http://127.0.0.1:8787", null)).toMatch(/^it exports BAKERY_URL: a page sets no variable/);
   });
