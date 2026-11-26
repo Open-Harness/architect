@@ -122,7 +122,9 @@ describe("#1132: an open set holds the members of the features that add to it", 
   it("a set held anywhere a value can hold a value holds the mounted union there: every position, every wrapper, the set and a reference", async () => {
     // Expected shapes come from WRAPPERS in testing.ts and the members the fixtures declare; never from the model judged.
     const withInvoicing = ["Journal Entry", "Contra Entry", "Expense Claim", "Payment Entry", "Salary Slip", "Sales Invoice"];
-    for (const [mounts, vouchers] of [[MOUNTED, VOUCHERS], [{ ...MOUNTED, invoicing: "invoicing" }, withInvoicing]] as const) {
+    // With features that add, with one more, and with only the owner (nothing adds).
+    const runs = [[MOUNTED, VOUCHERS], [{ ...MOUNTED, invoicing: "invoicing" }, withInvoicing], [{ ledger: "ledger" }, ["Journal Entry", "Contra Entry"]]] as const;
+    for (const [mounts, vouchers] of runs) {
       const m = await modelOf(books(), { mounts });
       const valueOf = (f: unknown) => (f as { readonly value?: unknown } | undefined)?.value;
       const positions: Readonly<Record<string, (n: string) => unknown>> = {

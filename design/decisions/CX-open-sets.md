@@ -45,7 +45,7 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
    default sort, by UTF-16 code unit, never by locale). So renaming a mount moves nothing. **A set held anywhere a value can hold a value,
    optional or not, holds the union there** (the features lead, on the 🔍's findings, 26 November 2026). The places are
    every position a value sits in (a thing's field, an operation's payload and answer, an event) and, inside each, every
-   wrapper: bare, optional, a list, a struct's field, an optional struct field (`Schema.optionalKey`), a list in a
+   wrapper: bare, optional, a list, a struct's field (alone, or beside plain keys), an optional struct field (`Schema.optionalKey`), a list in a
    struct (`Schema.Array`), a struct in a list, and structs nested to any depth. Each holds the set or a reference to
    one. The compiler finds the set by its schema, through `optionalKey` and `Array` and struct fields. The models:
    - a list: `{ type: "schema", format: "list", item: <the inner model> }`, keeping the `fields` a list of structs names
@@ -56,7 +56,7 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
      `{ type: "schema" }`), so nothing generated today changes.
 
    The matrix in the compiler's checks is this list: every position by every wrapper by both leaves, judged against
-   the shapes in `mounts/testing.ts` (`WRAPPERS`), with and without a feature that adds.
+   the shapes in `mounts/testing.ts` (`WRAPPERS`), with features that add, with one more, and with only the owner.
 
    An installed feature that isn't mounted is never read: what it would add is absent from the model and from everything generated from it, and a
    wrong addition in it refuses nothing. Because the members are in every field's model, an operation's and a thing's
@@ -111,7 +111,10 @@ that declared it, and a re-export adds nothing; no fixture re-exports a set yet.
   them mounted (the crm's `PartyType` beside the ledger's), and the app's own `Channel` and `Tag` sets, made with the
   real `ortho generate` and run in a world over local D1, plus the generated SDK on its own. Its `posting.probe`
   takes the matrix's cells (every wrapper, the set and a reference): the API and the SDK judge every cell, MCP's
-  schema every cell, and MCP's and the CLI's calls one cell per wrapper. It also sends a reference whose id is a number, a member in another case or padded, and any value of `Tag` (no member), and
+  schema every cell (a reference an object of exactly a required `kind` and a non-empty `id`, each struct an object),
+  and MCP's and the CLI's calls every cell. Each cell must refuse a member of an unmounted feature, of another set, in
+  another case, padded or in no set, and a reference's empty or number id; an accepted SDK call fails only for want
+  of a server. It also sends a reference whose id is a number, a member in another case or padded, and any value of `Tag` (no member), and
   MCP's `enum` must sit where it constrains the field, in the model's order, with nothing beside it that loosens it.
 
 ## Supersedes

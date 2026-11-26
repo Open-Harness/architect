@@ -96,6 +96,7 @@ const wrappers = {
   optional: (l: any) => Blueprint.optional(l),
   list: (l: any) => Blueprint.list(l),
   structField: (l: any) => Blueprint.value(Schema.Struct({ x: l.schema })),
+  mixedStruct: (l: any) => Blueprint.value(Schema.Struct({ x: l.schema, note: Schema.String })),
   optionalStructField: (l: any) => Blueprint.value(Schema.Struct({ x: Schema.optionalKey(l.schema) })),
   listInStruct: (l: any) => Blueprint.value(Schema.Struct({ xs: Schema.Array(l.schema) })),
   structInList: (l: any) => Blueprint.list(Blueprint.value(Schema.Struct({ x: l.schema }))),
@@ -204,6 +205,13 @@ const resolved = (s: unknown, root: unknown): Record<string, unknown> | undefine
  */
 const membersAt = (property: unknown, root: unknown, shape: boolean | "list"): unknown => {
   const outer = resolved(property, root);
+  // A reference is an object of exactly a kind and an id, both required, the id text and never empty.
+  if (shape === true) {
+    const id = resolved((outer?.["properties"] as Record<string, unknown> | undefined)?.["id"], root);
+    const required = outer?.["required"];
+    if (outer?.["type"] !== "object" || outer["additionalProperties"] !== false || !Array.isArray(required) || !["kind", "id"].every((k) => (required as ReadonlyArray<unknown>).includes(k))
+      || id?.["type"] !== "string" || typeof id["minLength"] !== "number" || (id["minLength"] as number) < 1) return `the reference is loosened: ${JSON.stringify(outer)}`;
+  }
   // A list is an array and nothing else, its every item judged by `items`.
   if (shape === "list" && (outer?.["type"] !== "array" || ["prefixItems", "additionalItems", "contains", "anyOf", "oneOf", "allOf", "not"].some((k) => outer !== undefined && k in outer))) return `the list is loosened: ${JSON.stringify(outer)}`;
   const at = resolved(shape === "list" ? outer?.["items"] : shape ? (outer?.["properties"] as Record<string, unknown> | undefined)?.["kind"] : property, root);
@@ -266,18 +274,26 @@ const WRAP: Readonly<Record<string, { readonly send: (leaf: unknown) => unknown;
   optional: { send: (v) => v, path: [], optional: true },
   list: { send: (v) => [v], path: ["items"] },
   structField: { send: (v) => ({ x: v }), path: ["properties", "x"] },
+  mixedStruct: { send: (v) => ({ x: v, note: "n" }), path: ["properties", "x"] },
   optionalStructField: { send: (v) => ({ x: v }), path: ["properties", "x"] },
   listInStruct: { send: (v) => ({ xs: [v] }), path: ["properties", "xs", "items"] },
   structInList: { send: (v) => [{ x: v }], path: ["items", "properties", "x"] },
   threeDeep: { send: (v) => ({ a: { b: { x: v } } }), path: ["properties", "a", "properties", "b", "properties", "x"] },
 };
 const CELLS = Object.keys(WRAP).flatMap((w) => (["set", "ref"] as const).map((leaf) => ({ name: `${w}${leaf === "set" ? "Set" : "Ref"}`, wrapper: w, leaf })));
-/** A probe payload: every cell holding `member`, but `bad` holding `instead`. */
-const probePayload = (posting: string, member: string, bad?: string, instead = "Sales Invoice") =>
+/** A probe payload: every cell holding `member`, but `bad` holding `instead` (and, for a reference, the id `id`). */
+const probePayload = (posting: string, member: string, bad?: string, instead = "Sales Invoice", id: unknown = "v_1") =>
   Object.fromEntries([["posting", posting], ...CELLS.map((c) => {
     const m = c.name === bad ? instead : member;
-    return [c.name, WRAP[c.wrapper]!.send(c.leaf === "set" ? m : { kind: m, id: "v_1" })];
+    return [c.name, WRAP[c.wrapper]!.send(c.leaf === "set" ? m : { kind: m, id: c.name === bad ? id : "v_1" })];
   })]);
+/** What each cell must refuse: a member of an unmounted feature, of another set, in another case, padded, in no set; for a reference, an empty and a number id. */
+const WRONG: ReadonlyArray<{ readonly why: string; readonly instead: string; readonly id?: unknown; readonly refOnly?: true }> = [
+  { why: "unmounted", instead: "Sales Invoice" }, { why: "other set", instead: "Customer" }, { why: "case", instead: "payment entry" },
+  { why: "padded", instead: " Payment Entry" }, { why: "no set", instead: "Nonsense" },
+  { why: "empty id", instead: "Payment Entry", id: "", refOnly: true }, { why: "number id", instead: "Payment Entry", id: 5, refOnly: true },
+];
+const WRONG_CASES = CELLS.flatMap((c) => WRONG.filter((w) => !w.refOnly || c.leaf === "ref").map((w) => ({ key: `${c.name} ${w.why}`, cell: c.name, ...w })));
 /** Following a path through MCP's schema, every step resolved and nothing beside it that loosens it; then the leaf's members. */
 const LOOSE = ["anyOf", "oneOf", "allOf", "not", "const", "prefixItems", "additionalItems", "contains"];
 const leafMembers = (property: unknown, root: unknown, path: ReadonlyArray<string>, leaf: "set" | "ref"): unknown => {
@@ -286,6 +302,7 @@ const leafMembers = (property: unknown, root: unknown, path: ReadonlyArray<strin
     const loose = LOOSE.filter((k) => at !== undefined && k in at);
     if (loose.length > 0) return `loosened by ${loose.join(", ")} at ${path.slice(0, i).join(".") || "the field"}`;
     if (path[i] === "items" && at?.["type"] !== "array") return `not an array at ${path.slice(0, i).join(".") || "the field"}`;
+    if (path[i] === "properties" && at?.["type"] !== "object") return `not an object at ${path.slice(0, i).join(".") || "the field"}`;
     at = resolved((at as Record<string, unknown> | undefined)?.[path[i]!], root);
   }
   return membersAt(at, root, leaf === "ref");
@@ -376,8 +393,9 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         // and the CLI (the set's leaf for half the wrappers, the reference's for the rest).
         const probeTool = (await rpc("tools/list", {})).result?.tools?.find((t) => t.name === "posting.probe");
         const apiRefused: Record<string, Answer> = {};
-        for (const c of CELLS) apiRefused[c.name] = await post("posting/probe", probePayload(next(), "Payment Entry", c.name));
-        const picked = Object.keys(WRAP).map((w, i) => CELLS.find((c) => c.wrapper === w && c.leaf === (i % 2 === 0 ? "set" : "ref"))!);
+        for (const w of WRONG_CASES) apiRefused[w.key] = await post("posting/probe", probePayload(next(), "Payment Entry", w.cell, w.instead, w.id));
+        // MCP and the CLI call every cell with the unmounted member.
+        const picked = CELLS;
         const mcpProbe = async (bad?: string) => (await rpc("tools/call", { name: "posting.probe", arguments: probePayload(next(), "Payment Entry", bad) })).result;
         const mcpRefused: Record<string, unknown> = {};
         for (const c of picked) mcpRefused[c.name] = await mcpProbe(c.name);
@@ -400,7 +418,7 @@ const tag = (over: object) => Effect.runPromiseExit(Sdk.posting.record({ ...base
 const cells = ${JSON.stringify(CELLS.map((c) => c.name))};
 const probe = (body: object) => Effect.runPromiseExit(Sdk.posting.probe(body as never).pipe(Effect.provide(Sdk.layer("http://127.0.0.1:9", "t"))))
   .then((exit) => Exit.isSuccess(exit) ? "sent and answered" : String((Cause.squash(exit.cause) as { _tag?: unknown })?._tag ?? Cause.pretty(exit.cause)));
-const bodies = ${JSON.stringify(Object.fromEntries([["accepted", probePayload("pst_98", "Payment Entry")], ...CELLS.map((c) => [c.name, probePayload("pst_98", "Payment Entry", c.name)])]))};
+const bodies = ${JSON.stringify(Object.fromEntries([["accepted", probePayload("pst_98", "Payment Entry")], ...WRONG_CASES.map((w) => [w.key, probePayload("pst_98", "Payment Entry", w.cell, w.instead, w.id)])]))};
 Promise.all(Object.entries(bodies).map(([k, b]) => probe(b).then((t) => [k, t]))).then((pairs) => console.log("MATRIX " + JSON.stringify(Object.fromEntries(pairs))));
 void cells;
 Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" }), tag({ voucher: { kind: "Sales Invoice", id: "v_1" } }), tag({ kinds: ["Sales Invoice"] })])
@@ -410,15 +428,14 @@ Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: 
     const lines = probe.stdout.trim().split("\n");
     const sdk = JSON.parse(lines.filter((l) => l.startsWith("{")).pop() || "{}") as Record<string, string>;
     const sdkMatrix = JSON.parse(lines.find((l) => l.startsWith("MATRIX "))?.slice(7) || "{}") as Record<string, string>;
-    expect(sdkMatrix["accepted"], `the SDK sends every cell with a mounted member: ${probe.stdout}${probe.stderr}`).not.toBe("InvalidPayload");
-    expect(sdkMatrix["accepted"]).not.toBe(undefined);
-    expect(CELLS.filter((c) => sdkMatrix[c.name] !== "InvalidPayload").map((c) => `${c.name}: ${sdkMatrix[c.name]}`), "the SDK refuses an unmounted member in every cell, before sending").toEqual([]);
+    // Sent, and failed only for want of a server: the transport's own error, nothing else.
+    expect(sdkMatrix["accepted"], `the SDK sends every cell with a mounted member: ${probe.stdout}${probe.stderr}`).toBe("HttpClientError");
+    expect(WRONG_CASES.filter((w) => sdkMatrix[w.key] !== "InvalidPayload").map((w) => `${w.key}: ${sdkMatrix[w.key]}`), "the SDK refuses every wrong member in every cell, before sending").toEqual([]);
     expect(sdk["unmounted"], `the SDK refuses Sales Invoice before sending: ${probe.stdout}${probe.stderr}`).toBe("InvalidPayload");
     expect(sdk["otherSameName"], "the SDK refuses the ledger's Customer as the crm's party type").toBe("InvalidPayload");
     expect(sdk["unmountedKind"], "the SDK refuses Sales Invoice as a reference's kind").toBe("InvalidPayload");
     expect(sdk["unmountedInList"], "the SDK refuses Sales Invoice in a list").toBe("InvalidPayload");
-    expect(sdk["accepted"], "the SDK sends Payment Entry (and finds no server)").not.toBe("InvalidPayload");
-    expect(sdk["accepted"]).not.toBe(undefined);
+    expect(sdk["accepted"], "the SDK sends Payment Entry, and fails only for want of a server").toBe("HttpClientError");
 
     // The API: a member of the set, the owner's or a mounted feature's, is taken; anything else is refused before the handler runs.
     expect(got.api.payment.status, JSON.stringify(got.api.payment.body)).toBe(200);
@@ -429,7 +446,7 @@ Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: 
 
     // The matrix at the API: every cell takes a mounted member and refuses an unmounted one.
     expect(got.matrix.apiAccepted.status, JSON.stringify(got.matrix.apiAccepted.body)).toBe(200);
-    expect(CELLS.filter((c) => got.matrix.apiRefused[c.name]?.status !== 400 || got.matrix.apiRefused[c.name]?.body["_tag"] !== "InvalidPayload").map((c) => `${c.name}: ${JSON.stringify(got.matrix.apiRefused[c.name])}`), "the API refuses Sales Invoice in every cell").toEqual([]);
+    expect(WRONG_CASES.filter((w) => got.matrix.apiRefused[w.key]?.status !== 400 || got.matrix.apiRefused[w.key]?.body["_tag"] !== "InvalidPayload").map((w) => `${w.key}: ${JSON.stringify(got.matrix.apiRefused[w.key])}`), "the API refuses every wrong member in every cell").toEqual([]);
     // The matrix at MCP: every cell's members where they constrain it, each struct key required as declared; one refused call per wrapper.
     expect(got.matrix.probeTool, "MCP lists posting.probe").toBeDefined();
     const probeInput = got.matrix.probeTool!.inputSchema as { properties?: Record<string, unknown>; required?: ReadonlyArray<string> };

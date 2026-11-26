@@ -258,6 +258,8 @@ export const WRAPPERS: Readonly<Record<string, Wrapper>> = {
   optional: { build: (l) => Blueprint.optional(l), model: (m) => m },
   list: { build: (l) => Blueprint.list(l), model: (m, which) => listOf(m, which === "ref" ? ["kind", "id"] : undefined) },
   structField: { build: (l) => Blueprint.value(Schema.Struct({ x: l.schema })), model: (m) => struct({ x: m }) },
+  // A plain key beside the set's: only the key that holds it is named.
+  mixedStruct: { build: (l) => Blueprint.value(Schema.Struct({ x: l.schema, note: Schema.String })), model: (m) => struct({ x: m }) },
   optionalStructField: { build: (l) => Blueprint.value(Schema.Struct({ x: Schema.optionalKey(l.schema) })), model: (m) => struct({ x: m }) },
   listInStruct: { build: (l) => Blueprint.value(Schema.Struct({ xs: Schema.Array(l.schema) })), model: (m) => struct({ xs: listOf(m) }) },
   structInList: { build: (l) => Blueprint.list(Blueprint.value(Schema.Struct({ x: l.schema }))), model: (m) => listOf(struct({ x: m }), ["x"]) },
