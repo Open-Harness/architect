@@ -8,17 +8,16 @@ Film.scene("green", {
     if (!/^prove ✔$/.test(full[full.length - 1])) throw new Error("green: the full run does not end with prove ✔");
     const steps = journeys.reduce((n, j) => n + j.steps, 0);
     return `${Kit.css}${Loc.css("green")}<style>
-      #scene-green .reach { left: 1010px; top: 150px; width: 660px; }
       #scene-green .counts { left: 1140px; top: 262px; width: 684px; } #scene-green .count { display: flex; align-items: baseline; gap: 18px; height: 88px; border-bottom: 1px solid var(--rule); }
       #scene-green .count b { font-size: 64px; font-weight: 500; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; min-width: 150px; } #scene-green .count span { font-size: 24px; }
-      #scene-green .verdict { left: 640px; top: 716px; font: 600 62px var(--mono); color: var(--green); border: 4px solid var(--green); padding: 6px 30px; transform: rotate(-5deg); background: rgba(8,17,31,.92); }
+      #scene-green .verdict { left: 600px; top: 862px; font: 600 62px var(--mono); color: var(--green); border: 4px solid var(--green); padding: 6px 30px; transform: rotate(-5deg); background: rgba(8,17,31,.92); }
     </style>
     <div class="head"><div class="eyebrow">Rung two</div><div class="hl">Green on one journey is not done.</div></div>
     <div class="who">${Kit.who("builder", "the builder")}</div>${Loc.ladder(D, 2)}
     ${Kit.ed(D, { id: "gr-ed", text: h.text, path: h.path, x: 96, y: 262, w: 1728, from: move - 3, to: ret, cls: "one", tag: '<span class="tag">rung 2 · the move</span>' })}
     ${Kit.term(D, { id: "gr-term", cap: "climb-2-prove", x: 96, y: 600, w: 1728, h: 372, size: 19, cls: "hidden0 one", tag: '<span class="tag">rung 2 · the move</span>', keep: (l) => l.startsWith("journey ") || / coverage ✘ /.test(l) || /^prove /.test(l) })}
     ${Kit.term(D, { id: "gr-full", cap: "prove", x: 96, y: 262, w: 1000, h: 580, size: 19, cls: "hidden0", tag: '<span class="tag">the whole proof</span>', keep: (l) => l.startsWith("journey ") || /^\S+ \d+ evals ✔/.test(l) || /^prove /.test(l) })}
-    <div class="abs counts"><div class="count c1 hidden0"><b>${journeys.length}</b><span class="lbl">journeys</span></div><div class="count c2 hidden0"><b>${steps}</b><span class="lbl">steps</span></div><div class="count c3 hidden0"><b>${evals[0][1]} × ${ops}</b><span class="lbl">evals for each operation</span></div></div>
+    <div class="abs counts"><div class="count c1 hidden0"><b>${journeys.length}</b><span class="lbl">journeys</span></div><div class="count c2 hidden0"><b>${steps}</b><span class="lbl">steps</span></div><div class="count c3 hidden0"><b>${evals[0][1]} × ${ops}</b><span class="lbl">evals × operations</span></div></div>
     ${Kit.term(D, { id: "gr-check", cap: "check", x: 1140, y: 566, w: 684, h: 300, size: 19, cls: "hidden0" })}
     <div class="abs verdict hidden0">${Film.esc(full[full.length - 1])}</div>`;
   },
@@ -47,10 +46,10 @@ Film.scene("green", {
     // g5: seven journeys, fifty-six steps, nine evals for each of seven operations.
     Loc.print(s, js, c("g5") - 0.1, 0.07); s.in(".c1", c("g5", "Seven"), { x: 14, y: 0, dur: 0.35 }); s.in(".c2", c("g5", "56"), { x: 14, y: 0, dur: 0.35 });
     Loc.print(s, ev, c("g5", "Nine") - 0.1, 0.07); s.in(".c3", c("g5", "Nine"), { x: 14, y: 0, dur: 0.35 });
-    Loc.print(s, [end], c("g5", "Prove")); Loc.lit(s, "#gr-full", [end], c("g5", "Prove") + 0.1);
+    Loc.print(s, [end], c("g5", "Prove")); s.to(end, { color: "#e9f0fa", backgroundColor: "rgba(98,198,255,.13)", duration: 0.3 }, c("g5", "Prove") + 0.1);
     s.fromTo(".verdict", { autoAlpha: 0, scale: 1.7, rotate: -5 }, { autoAlpha: 1, scale: 1, rotate: -5, duration: 0.35, ease: "back.out(2)" }, c("g5", "Prove") + 0.15);
     const tc = c("g5", "then"), chk = s.$$("#gr-check .o");
     s.in("#gr-check", tc - 0.3, { y: 12, dur: 0.3 }); Loc.type(s, s.$("#gr-check"), tc - 0.1, 0.3); Loc.print(s, chk, tc + 0.3, 0.05);
-    Loc.lit(s, "#gr-check", Loc.rows(s, "#gr-check", /^check ✔$/), c("g5", "check passes") + 0.35);
+    s.to(Loc.rows(s, "#gr-check", /^check ✔$/), { color: "#e9f0fa", backgroundColor: "rgba(98,198,255,.13)", duration: 0.3 }, c("g5", "check passes") + 0.35);
   },
 });

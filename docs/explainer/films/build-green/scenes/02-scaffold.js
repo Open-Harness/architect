@@ -30,7 +30,7 @@ Film.scene("scaffold", {
     const c = s.cue, h = Loc.handler(s.D, 0), blank = Kit.line(h.text, /Handlers\.blank\(/), body = s.$("#sc-ed .code");
     s.in(".head", s.start + 0.3); s.in(".who, .ladder", s.start + 0.4, { y: 0 });
     // c1: generate has already written it.
-    s.in("#sc-gen", c("c1", "Generate") - 0.5, { y: 14 }); Loc.type(s, s.$("#sc-gen"), c("c1", "Generate") - 0.3, 0.5); Loc.print(s, s.$$("#sc-gen .o"), c("c1", "written"));
+    s.in("#sc-gen", c("c1") - 0.1, { y: 14 }); Loc.type(s, s.$("#sc-gen"), c("c1", "Generate") - 0.3, 0.5); Loc.print(s, s.$$("#sc-gen .o"), c("c1", "written"));
     s.in("#sc-ed", c("c1", "scaffold"), { y: 16 });
     s.focus(body, [blank - 1, blank], c("c1", "blank")); s.in(Kit.call(s, body, blank - 1, "the blank"), c("c1", "blank") + 0.05, { x: 14, y: 0, dur: 0.35 });
     // c2: the first run, of the one journey.
