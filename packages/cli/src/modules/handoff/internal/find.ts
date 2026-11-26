@@ -24,7 +24,9 @@ const manifestOf = (dir: string): Manifest | undefined =>
 export const binOf = (dir: string): string | undefined => {
   const manifest = manifestOf(dir);
   if (manifest === undefined || manifest === null || typeof manifest !== "object") return undefined;
-  const bin = typeof manifest.bin === "string" ? manifest.bin : manifest.bin?.["ortho"];
+  const named: unknown = typeof manifest.bin === "string" ? manifest.bin : typeof manifest.bin === "object" && manifest.bin !== null ? manifest.bin["ortho"] : undefined;
+  // A `bin.ortho` that is not a string (a number, an object) is a package that can't be run, not a crash at startup.
+  const bin = typeof named === "string" ? named : undefined;
   return manifest.name === CLI && bin !== undefined && existsSync(join(dir, bin)) ? join(dir, bin) : undefined;
 };
 

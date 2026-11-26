@@ -1,0 +1,8 @@
+# #1079 (CX-inner-operations): no inner operation runs yet, so none of its own rules (access, what its payload names, machine, G5, answer) is judged,
+# and it has no span. Clears with #1079's build.
+src/modules/handler/inner-operation-rules.test.ts > #1079: an inner operation is judged by its own rules, for the caller > the other thing's own machine refuses a move it can't make from its state, with that thing's NotFrom (#972)
+src/modules/handler/inner-operation-rules.test.ts > #1079: an inner operation is judged by its own rules, for the caller > the inner operation's access rule is judged for the caller: the outer admits bob, the entry's keeper rule doesn't, so NotAllowed and nothing is written
+src/modules/handler/inner-operation-rules.test.ts > #1079: an inner operation is judged by its own rules, for the caller > what the inner operation's payload names is read in this call, and a missing one is refused with its <Thing>NotFound
+src/modules/handler/inner-operation-rules.test.ts > #1079: an inner operation is judged by its own rules, for the caller > the inner operation's G5 rule refuses with the inner operation's own refusal, filled from its row, and nothing is written
+src/modules/handler/inner-operation-rules.test.ts > #1079: an inner operation is judged by its own rules, for the caller > an inner operation's answer outside its declaration is a defect that names it, and nothing is written
+src/modules/handler/inner-operation-rules.test.ts > #1079: an inner operation is judged by its own rules, for the caller > each inner operation runs in its own span, named after it, inside the outer's step span, and its refusal is on it

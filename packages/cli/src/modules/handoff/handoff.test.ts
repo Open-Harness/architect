@@ -41,16 +41,19 @@ describe("a global ortho hands off to the app's own CLI", () => {
     expect(Handoff.target({ from: join(root, "app"), own })).toBeUndefined();
   });
 
-  it("answers broken for an installed CLI it can't run: another package in its place, a missing bin, a corrupt package.json", () => {
+  it("answers broken for an installed CLI it can't run: another package in its place, a missing bin, a corrupt package.json, a bin that is not a string", () => {
     const root = scratch();
     const own = cli(join(root, "global/cli"));
     const a = cli(join(root, "a/node_modules/@orthograph/cli"), "something-else");
     const b = cli(join(root, "b/node_modules/@orthograph/cli"), "@orthograph/cli", "dist/gone.js");
     const c = cli(join(root, "c/node_modules/@orthograph/cli"));
     writeFileSync(join(c, "package.json"), "{ not json");
+    const d = cli(join(root, "d/node_modules/@orthograph/cli"));
+    writeFileSync(join(d, "package.json"), JSON.stringify({ name: "@orthograph/cli", bin: { ortho: 7 } }));
     expect(Handoff.target({ from: join(root, "a"), own })).toEqual({ broken: a });
     expect(Handoff.target({ from: join(root, "b"), own })).toEqual({ broken: b });
     expect(Handoff.target({ from: join(root, "c"), own })).toEqual({ broken: c });
+    expect(Handoff.target({ from: join(root, "d"), own })).toEqual({ broken: d });
   });
 
   it("reads --root as the parser does, else the working directory", () => {
