@@ -9,12 +9,13 @@
 // `e2e/m1/deny-network.mjs` (checks 44 and 45's guard): a connection to any host that is not loopback ends it, so nothing it sends can
 // reach npmjs. The agents' network goes through a proxy that adds auth headers for npmjs; nothing here sends to npmjs at all, and every
 // `npm_config_*` and `pnpm_config_*` of the caller (the proxy's included) is dropped from the environments this helper makes.
-import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const repo = join(import.meta.dirname, "..");
+/** The repository root. */
+export const repo = join(import.meta.dirname, "..");
 /** Checks 44 and 45's guard: loaded first in every process of the publish, it ends any connection to a host that is not loopback. */
 export const GUARD = join(repo, "e2e/m1/deny-network.mjs");
 
@@ -31,7 +32,7 @@ export const publicPackages = (): ReadonlyArray<PublicPackage> =>
 /** The caller's environment without its npm and pnpm settings (a proxy's, a token's, a registry's) or NODE_OPTIONS. */
 export const bare = (): NodeJS.ProcessEnv => {
   const env: NodeJS.ProcessEnv = { ...process.env };
-  for (const k of Object.keys(env)) if (/^(npm|pnpm)_/i.test(k) || k === "NODE_OPTIONS" || k === "INIT_CWD") delete env[k];
+  for (const k of Object.keys(env)) if (/^(npm|pnpm)_/i.test(k) || k === "NODE_OPTIONS" || k === "NODE_PATH" || k === "INIT_CWD") delete env[k];
   return env;
 };
 
@@ -52,6 +53,26 @@ export const stopGroup = async (child: ChildProcess | undefined): Promise<void> 
     try { process.kill(-child.pid, "SIGKILL"); } catch { /* already gone */ }
   }
 };
+
+export interface Ran { readonly what: string; readonly status: number | null; readonly out: string; readonly err: string }
+/** Run a command in a process group of its own and wait for it; past `timeout` the whole group is stopped (TERM, then KILL), not just
+ * the direct child, so nothing a step started (a build's workers, prove's servers) outlives it. */
+export const runGroup = (what: string, command: string, args: ReadonlyArray<string>, cwd: string, timeout: number, env: NodeJS.ProcessEnv): Promise<Ran> =>
+  new Promise((done) => {
+    const child = spawn(command, args, { cwd, env, detached: true, stdio: ["ignore", "pipe", "pipe"] });
+    const out: string[] = []; const err: string[] = [];
+    child.stdout?.on("data", (d: Buffer) => out.push(d.toString()));
+    child.stderr?.on("data", (d: Buffer) => err.push(d.toString()));
+    let late = "";
+    const timer = setTimeout(() => { late = `\n(stopped: the group ran past ${timeout / 1000}s)`; void stopGroup(child); }, timeout);
+    child.on("error", (e) => { clearTimeout(timer); done({ what, status: null, out: out.join(""), err: `${err.join("")}\n(could not start: ${String(e)})` }); });
+    child.on("close", (status) => {
+      clearTimeout(timer);
+      // The step is over: anything it left in its group goes too.
+      if (child.pid !== undefined) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* the group is empty */ } }
+      done({ what, status: late === "" ? status : null, out: out.join(""), err: `${err.join("")}${late}` });
+    });
+  });
 
 export interface Registry {
   /** `http://127.0.0.1:<port>/`. */
@@ -85,13 +106,13 @@ export const startRegistry = async (work: string, port: number): Promise<Registr
 };
 
 /** Build the packages (`nx run-many -t build`), then `pnpm publish --tag next` each public one to the registry, under the guard. Returns what failed, or "". */
-export const publishAll = (registry: Registry, timeouts: { readonly build: number; readonly each: number }): string => {
-  const built = spawnSync("pnpm", ["nx", "run-many", "-t", "build", "--outputStyle=static"], { cwd: repo, encoding: "utf8", env: { ...bare(), NX_DAEMON: "false" }, timeout: timeouts.build, maxBuffer: 256 * 1024 * 1024 });
-  if (built.status !== 0) return `nx run-many -t build ${built.error ? `stopped: ${String(built.error)}` : "failed"}: ${`${built.stdout}${built.stderr}`.slice(-2000)}`;
+export const publishAll = async (registry: Registry, timeouts: { readonly build: number; readonly each: number }): Promise<string> => {
+  const built = await runGroup("nx run-many -t build", "pnpm", ["nx", "run-many", "-t", "build", "--outputStyle=static"], repo, timeouts.build, { ...bare(), NX_DAEMON: "false" });
+  if (built.status !== 0) return `nx run-many -t build failed: ${`${built.out}${built.err}`.slice(-2000)}`;
   const env = { ...bare(), NPM_CONFIG_USERCONFIG: registry.publishRc, npm_config_update_notifier: "false", NODE_OPTIONS: `--import ${GUARD}` };
   for (const p of publicPackages()) {
-    const done = spawnSync("pnpm", ["publish", "--registry", registry.url, "--tag", "next", "--no-git-checks"], { cwd: join(repo, "packages", p.dir), encoding: "utf8", env, timeout: timeouts.each, maxBuffer: 64 * 1024 * 1024 });
-    if (done.status !== 0) return `pnpm publish of packages/${p.dir} ${done.error ? `stopped: ${String(done.error)}` : "failed"}: ${`${done.stdout}${done.stderr}`.slice(-1500)}`;
+    const done = await runGroup(`pnpm publish (packages/${p.dir})`, "pnpm", ["publish", "--registry", registry.url, "--tag", "next", "--no-git-checks"], join(repo, "packages", p.dir), timeouts.each, env);
+    if (done.status !== 0) return `pnpm publish of packages/${p.dir} failed: ${`${done.out}${done.err}`.slice(-1500)}`;
   }
   return "";
 };
