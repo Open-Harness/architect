@@ -126,11 +126,12 @@ Each round:
 ## Where it stands
 
 **26 November 2026, about 21:40 UTC: the handoff.** The week's usage is nearly spent, so the goal pauses here and can be
-resumed in any harness with the start line above. What it leaves:
+resumed in any harness with the start line in this brief's header. What it leaves:
 
 - **Landed on `main`:** slices 1, 2 and 4 to 10. Slice 5, publishing (#1083, #1086, #1090). Slice 6, `ortho new app` and
   `npm create orthograph` (#1082, #1108, #1087). Slice 7, getting started (#1111, #1139, #1152, #1153, #1189). Slice 8, the
-  portal without its screens (#1098, #1114). Slice 9, the chain basics (#1095, #1104). Slice 10, the starter's sign-in
+  portal without its screens (#1098, with #1114 through its check branch). Slice 9, the chain basics (#1095, with #1104
+  through its check branch). Slice 10, the starter's sign-in
   fixes (#1081, #1084). Also the CI speed-up (#1092), the stale-test fix (#910) and the attribution rule (#1191).
 - **Slice 11, the acceptance check:** #1145 (checks). Its author is merging `main` in and marking it ready. Next: a 🔍
   on the delta, then merge when CI is green. Whatever its `expected-failing/` list still names after that is the slice's

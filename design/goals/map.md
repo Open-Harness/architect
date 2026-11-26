@@ -22,12 +22,13 @@ rewrote "Where it stands", set `status: parked` and stopped; the superagent's pu
 
 The week's usage was nearly spent on 26 November, so every lane landed what was green and wrote down where it stands.
 Any harness (Claude Code, Codex, Amp, OpenCode, another account) resumes a goal from the repository alone, with the
-line in "Starting a goal" below. Read the brief's "Where it stands" first: its newest entry is that lane's handoff.
+line in "Starting a goal" below. Read the brief's "Where it stands" first: its newest entry is that lane's handoff. Capxul's
+entries are on `goal/capxul` (they reach `main` through the lander), so read `16-capxul.md` there.
 
 | What | Branch | Brief, and its newest entry | How it reaches `main` |
 |---|---|---|---|
 | Goal 18, the framework: the alpha, then publishing under `next` | `main`, `goal-18/*` | `18-framework.md`: slices 1 to 10 landed; 11 in review (#1145); 12 waits on Aaron's npm names and token | its own pull requests |
-| Goal 16, Capxul: the books, HR and payroll, then the Safe, the keeper, Bridge and contractors | `goal/capxul`, `goal-16/*` | `16-capxul.md`, the money lane's and the features lane's handoff entries | the lander, Goal 19 |
+| Goal 16, Capxul: the books, HR and payroll, then the Safe, the keeper, Bridge and contractors | `goal/capxul`, `goal-16/*` | `16-capxul.md` on `goal/capxul`: the money lane's handoff entry (#1216) and the features lane's (in #1157); until they merge, read them in those pull requests | the lander, Goal 19 |
 | Goal 16's framework gaps (1 to 7: #1079, #1132, #1133, #1134, #1135, #882, #1136) | `main`, `goal-16/snag-*` | `16-capxul.md`, the features lane's entry. Gap 1's build (#1176) and the snag queue belong to the Goal 16 lead run in Amp | their own pull requests into `main` |
 | Goal 16's US payroll tax lane, run in Amp | `goal/capxul`, `goal-16/tax-us-*` | its lane brief (#1131) and #1180 | the lander |
 | Goal 19, the lander | `goal-19/*` | `19-lander.md`; #1156 brings `goal/capxul` into `main` | itself |
