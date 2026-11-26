@@ -6,7 +6,7 @@
 // this file and only removes lines from `expected-failing/contracts.txt`.
 import { describe, expect, it } from "vitest";
 import { Blueprint } from "orthograph";
-import { MOUNTED, at, contractsOf, features, modelOf } from "./fixtures/contracts/testing.ts";
+import { MOUNTED, RIGHT, at, contractsOf, features, modelOf, operationStep, type Change } from "./fixtures/contracts/testing.ts";
 
 describe("#1133: a contract one feature declares and another fills", () => {
   it("holds each mounted feature's contracts, by owner mount and file name, with the shape of the fields they are declared from", async () => {
@@ -126,5 +126,26 @@ describe("#1133: a contract one feature declares and another fills", () => {
     expect(contractsOf(m)?.["payroll.slip-tax"]?.filler?.mount).toBe("payroll-tax-us");
     const text = JSON.stringify(m);
     for (const word of ["payroll-tax-gb", "@fixture/rogue", "@fixture/reports", "@fixture/calendar"]) expect(text, word).not.toContain(word);
+  });
+
+  it("brings an inner operation's contract errors up to its outer, and lets a fill run its owner's operation as a step, writing nothing itself (needs #1079's build)", async () => {
+    // payroll's batch runs slip.submit inside its commit; slip.submit runs the tax contract, so the batch can refuse with its error.
+    const batch: Change = {
+      extra: {
+        payroll: (_s, o) => [{
+          path: "things/slip/verbs/batch.js",
+          exports: { default: Blueprint.operation(o.Slip, { description: "Submit a slip in a batch.", payload: { slip: o.Slip.fields.id, gross: o.Slip.fields.gross, country: o.Slip.fields.country }, answer: {}, allowed: [Blueprint.signedIn], steps: { one: operationStep(o.slipSubmit) } }) },
+        }],
+        // payments' own way to write a payment, which runs no contract.
+        payments: (_s, o) => [{ path: "things/payment/verbs/note.js", exports: { default: o.paymentNote } }],
+      },
+      // Budgets' fill runs it as a step: the way out a fill has (call 2). The step writes nothing of budgets' own.
+      fills: { budgets: (s, o) => ({ ...RIGHT.budgets(s, o), steps: { note: operationStep(o.paymentNote) } }) },
+    };
+    const f = features(batch);
+    const m = await modelOf(f, { mounts: MOUNTED });
+    expect(m.operations["slip.batch"]?.errors, "the inner operation's contract error is the outer's").toContain("TaxTableMissing");
+    expect(m.operations["slip.batch"]?.errors.filter((e) => e === "TaxTableMissing")).toHaveLength(1);
+    expect(contractsOf(m)?.["ledger.posting-check"]?.filler, "an operation step writes nothing itself").toEqual({ mount: "budgets", file: at("budgets", "fills/posting-check.js"), writes: [] });
   });
 });

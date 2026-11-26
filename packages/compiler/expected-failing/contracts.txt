@@ -1,8 +1,9 @@
 # #1133 (CX-feature-contracts): `Blueprint.contract`, `Blueprint.fill` and `Blueprint.step.contract` don't exist, so no feature declares or fills a contract
-# and the model holds none. Clears with #1133's build.
+# and the model holds none. Clears with #1133's build; the line naming #1079 needs #1079's build (`Blueprint.step.operation`) too.
 src/modules/mounts/contracts.test.ts > #1133: a contract one feature declares and another fills > holds each mounted feature's contracts, by owner mount and file name, with the shape of the fields they are declared from
 src/modules/mounts/contracts.test.ts > #1133: a contract one feature declares and another fills > records an operation's contract step, and lists the contract's errors among the operation's, for the owner and for a feature that depends on it
 src/modules/mounts/contracts.test.ts > #1133: a contract one feature declares and another fills > with no feature filling an optional contract, the app builds, the contract has no filler, and its operation still runs the step and lists its errors
 src/modules/mounts/contracts.test.ts > #1133: a contract one feature declares and another fills > names a contract by its owner's mount and its filler by the filler's: a feature mounted under another name renames both, and what the fill writes
 src/modules/mounts/contracts.test.ts > #1133: a contract one feature declares and another fills > lets the app's own operation run a mounted feature's contract: the app depends on every feature it mounts
 src/modules/mounts/contracts.test.ts > #1133: a contract one feature declares and another fills > never reads a fill in an installed feature that isn't mounted, wrong or not: the mounted filler is the only one
+src/modules/mounts/contracts.test.ts > #1133: a contract one feature declares and another fills > brings an inner operation's contract errors up to its outer, and lets a fill run its owner's operation as a step, writing nothing itself (needs #1079's build)

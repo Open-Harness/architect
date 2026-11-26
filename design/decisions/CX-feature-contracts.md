@@ -33,13 +33,34 @@ spend (#1133).
    the app may install another; the compiler holds the two shapes side by side and refuses a difference, so a contract
    that changed under its filler stops the build instead of failing in a running app. A fill has no `allowed`, no move,
    no event and no request key: it is never at a door (no route, no MCP tool, no CLI command), and only an operation
-   that runs its contract reaches it. A fill may write its own feature's things through its `database` steps.
+   that runs its contract reaches it.
+
+   **A fill's steps** are `database` steps and gap 1's `operation` steps (`Blueprint.step.operation`, CX-inner-operations)
+   only. A `call`, `contract` or `wait` step in a fill is refused (call 8): a fill computes inside its caller's commit,
+   and an outside call, a wait or a contract of its own would make that commit hang on something no caller declared.
+
+   **A fill's steps are writes by the filler feature**, judged by CX-feature-ownership's rule (its calls 2, 3 and 6), as
+   an operation's steps are: a `database` step writes the things its `writes` names (a fill has no subject, so a
+   `database` step naming none writes nothing), and an `operation` step writes nothing itself. So a fill writes only its
+   own feature's things. Writing the contract owner's things, or the calling feature's, is refused with
+   CX-feature-ownership call 6's sentence, word for word, where `<operation>` is `the fill <filler mount>.<file>` (as
+   `the fill payroll-tax-us.slip-tax`). The way out it offers is the owner's operation, run as the fill's `operation`
+   step. One owner says who may write what: CX-feature-ownership, not this record.
+
+   **Its handler's type** is `FillHandler<typeof fill, R>`, exported from `@orthograph/language-effect` beside `Handler`:
+   `(input: InputOf<F>, context: { readonly steps: StepRunners<…> }) => Effect<OutputOf<F>, ErrorOf<F>, R>`, typed from
+   the fill's own declaration. So a fill handler that fails with an error its fill doesn't declare, answers another
+   shape or runs a step its fill doesn't declare is a type error.
 3. **Only the owner and the features that depend on it touch a contract.** A feature may run a contract from its
    operations when it is the owner or depends on the owner, and may fill one only when it depends on the owner: it lists
-   the owner in `needs`, or needs a feature that does, through any depth (CX-open-sets call 2's rule). Depending runs one
-   way: a feature the owner needs does not depend on the owner. The owner never fills its own contract, since it can run
+   the owner in `needs`, or needs a feature that does, through any depth (CX-open-sets call 2's rule). The graph is the
+   model's: each mount's `needs` (`mounts.<name>.needs`), which holds a conditional need (`Blueprint.need(owner, { when })`)
+   only when the mount picked its option. Depending runs one way: a feature the owner needs does not depend on the
+   owner. Siblings don't count: two features that need one feature don't depend on each other (budgets and payroll both
+   need payments, and budgets may neither run nor fill payroll's contract). The owner never fills its own contract, since it can run
    its own code. A required contract is filled whether or not any operation runs it. The app depends on every feature it mounts,
-   so its own operations may run a mounted feature's contract. The app does not fill one: a business with its own tax
+   so its own operations may run a mounted feature's contract, and none whose owner isn't mounted (an unmounted feature
+   declares no contract the app has). The app does not fill one: a business with its own tax
    rule writes it as a small feature of its own. A feature that is installed but not mounted is never read, so what it
    would fill fills nothing and refuses nothing.
 4. **An operation runs a contract through a step:** `steps: { tax: Blueprint.step.contract(slipTax) }`. Its handler
@@ -47,7 +68,13 @@ spend (#1133).
    mounted feature fills it (then nothing runs: no tax feature, no tax lines; no budgets, no check). The model records
    the step as `{ name: "slip.submit.tax", type: "contract", contract: "payroll.slip-tax" }`, and adds the contract's
    errors to the operation's `errors`, filled or not, so the operation's wire and SDK list them whichever feature fills
-   it.
+   it. An operation run as an inner step (CX-inner-operations) brings its contracts' errors up to its outer, as it brings
+   every refusal it can make (CX-inner-operations call 2): they are its errors.
+
+   **The handler's type.** In `Handler<typeof op>`, `steps.tax(input)` takes the contract's input and answers its output
+   for a required contract, and its output or `undefined` for an optional one. Its failure is the contract's errors, and
+   those errors pass through the handler's own error channel (they are the operation's). An error no contract it runs and
+   no declaration of its own names is still a type error.
 5. **The filler runs inside the caller's commit.** The input is checked against the contract's input (a wrong one is the
    caller's bug, a defect), the fill's handler runs with the caller's records, its writes join the caller's, and its
    output is checked against the contract's output (a wrong one is the filler's bug, a defect). One commit lands the
@@ -63,6 +90,11 @@ spend (#1133).
    several by a row's data, such as each employee's place of work, is a later decision of its own
    (`CX-composable-pieces.md`, section 2).
 8. **What the compiler refuses**, each naming the files it is about, and so both features:
+   - a contract step in an operation of the app whose owner isn't mounted, word for word:
+     `<operation file>: step <key> runs a contract of <owner package>, which isn't mounted: mount it (ortho add feature <owner package>)`;
+   - a `call`, `contract` or `wait` step in a fill, word for word:
+     `<fill file>: the fill <name> declares the <type> step <key>: a fill holds only database and operation steps`;
+   - a fill's write of another feature's thing, with CX-feature-ownership call 6's sentence (call 2 above);
    - a required contract no mounted feature fills, naming the contract, its file and that a feature filling it must be
      mounted;
    - two fills of one contract, naming the contract and both fill files;
@@ -78,6 +110,18 @@ spend (#1133).
      file and the owner's package;
    - a `contracts/` or `fills/` folder in the app's own blueprint, naming the file (today's "not a place the blueprint
      reads" refusal stands).
+9. **Where a contract can't run.** A filler joins its caller's commit, so a contract runs only where there is one, as an
+   inner operation does (CX-inner-operations call 4). Each is refused word for word:
+   - on an operation that runs on the caller's device (`runs: "client"`, which only a plugin supplies):
+     `<operation file>: a client operation can't run a contract: it has no store and no commit for a filler to join`;
+   - on an operation of a chain-stored thing, today's sentence for a step a chain operation can't take:
+     `<operation file>: <operation> declares the contract step <key>: an operation of a chain-stored thing reaches only its own store and the account adapter, so it has no contract step`;
+   - a fill writing a thing that lives in a chain store:
+     `<fill file>: the fill <name> writes <thing>, which lives in a chain store: a fill runs inside its caller's commit, so it writes only things in a database`;
+   - a cycle: a contract whose fill runs, through its `operation` steps and their operations' steps at any depth, an
+     operation that runs the same contract. It is refused at the fill's file, naming the contract and the path:
+     `<fill file>: the fill <name> runs <contract> again, through <step path>: a contract never runs itself`, where the
+     path is each operation and contract it passes, joined by ` → `.
 
 ## Why these and not others
 
@@ -100,9 +144,15 @@ Capxul's payroll slice declares `contracts/slip-tax.ts` (optional), `payroll-tax
 
 ## Checks
 
-- `packages/compiler/src/modules/mounts/contracts.test.ts` (6) and `contracts-refused.test.ts` (8), with the scratch
-  features in `mounts/fixtures/contracts/testing.ts`: the model (calls 1, 3, 4, 6, 7) and the refusals (calls 3 and 8), over an
-  in-memory source with ten installed feature packages. It is not `mounts/testing.ts`, which #1175 adds.
+- `packages/compiler/src/modules/mounts/contracts.test.ts`, `contracts-refused.test.ts` and `contracts-touch.test.ts`
+  (who may run and fill what, judged pair by pair against the model's needs graph), with the scratch features in
+  `mounts/fixtures/contracts/testing.ts`: the model (calls 1, 3, 4, 6, 7) and the refusals (calls 2, 3, 8 and 9), over
+  an in-memory source of installed feature packages. It is not `mounts/testing.ts`, which #1175 adds. The cases that run
+  an `operation` step (an inner operation's errors, a cycle, the way out of a fill's foreign write) need #1079's build
+  too, and their ratchet lines say so.
+- `packages/language-effect/src/modules/handler/contract-types.test.ts`: the handler's and the fill handler's types (calls 2
+  and 4), one tsc run over `test/fixtures/contract-types/` (`accepts.ts` and one-fault `refuses/` files, no cast), as
+  #1079's `inner-operation-types.test.ts` does.
 - `e2e/m2/15-feature-contracts.test.ts` (m2 check 15): the runtime and the doors (calls 2, 4 and 5), in copies of acme
   with two installed feature packages, made with the real `ortho generate` and run in a world over local D1. One copy
   mounts the filler, one leaves it installed and unmounted, and one makes the contract required with no filler.
@@ -116,9 +166,6 @@ acme's own files don't move (the checks build their own copies), so G12's paired
   by the model's errors, so leaving the contract's errors out of the runtime's refusal set shows only in metrics.
 - A fill whose writes live in another store than the operation that runs it can't commit with it (K3 item 5). The
   compiler should refuse it; no check plants one, since the scratch features have one store.
-- A need on the owner that is conditional (`Blueprint.need(owner, { when })`) and not picked isn't planted.
-- A filler that refuses at run time with an error its contract doesn't declare isn't planted: its declared errors are
-  refused at build, and its handler's type should not let it fail with another.
 - A defect from a wrong input or output (call 5) isn't planted at the door: a handler that sends a wrong shape is the
   same defect an operation's wrong answer is, judged for operations in `language-effect`.
 
@@ -127,3 +174,6 @@ acme's own files don't move (the checks build their own copies), so G12's paired
 Nothing. Gap 3's draft in `CX-composable-pieces.md` (section 2, "contracts filled at build time"; section 5, gap 3)
 stands; this record says how it is spelt (`Blueprint.contract`, `Blueprint.fill`, `Blueprint.step.contract`) and what
 the model, the compiler and the runtime do.
+
+Once #1193 (CX-feature-ownership) is on `main`, this record's pull request merges it in and adds "a fill's steps" to
+CX-feature-ownership call 2's list of what writes a thing, with a line here for each phrase that changes.

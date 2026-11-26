@@ -10,7 +10,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect, Exit, Layer } from "effect";
 import { expect } from "vitest";
-import { Blueprint, type Feature } from "orthograph";
+import { Blueprint, type Feature, type Thing } from "orthograph";
 import { BlueprintSource, type LoadedFile, type PluginPackage } from "#modules/source/types.js";
 import { BlueprintInvalid, type Model } from "#modules/model/types.js";
 import { Compiler } from "#modules/model/service.js";
@@ -31,7 +31,7 @@ export const surface = (): Contracts => {
 };
 
 /** Every feature package the checks install, by its own name (`@fixture/<name>`). */
-export type Name = "ledger" | "payments" | "budgets" | "chart-us" | "payroll" | "payroll-tax-us" | "payroll-tax-gb" | "calendar" | "rogue" | "reports";
+export type Name = "ledger" | "payments" | "budgets" | "chart-us" | "payroll" | "payroll-tax-us" | "payroll-tax-gb" | "calendar" | "rogue" | "reports" | "payroll-plus" | "leave";
 
 /** What one installed package is: its descriptor, and its blueprint files by path under its blueprint folder. */
 interface Pkg {
@@ -47,7 +47,18 @@ export type FillSpec = (s: Contracts, o: Owners) => { readonly input: object; re
 export interface Change {
   readonly fills?: Partial<Record<"payroll-tax-us" | "budgets" | "chart-us", FillSpec>>;
   readonly extra?: Partial<Record<Name, (s: Contracts, o: Owners) => ReadonlyArray<LoadedFile>>>;
+  /** Files left out of a package, by path: a probe that fills a contract takes the place of its usual filler. */
+  readonly drop?: Partial<Record<Name, ReadonlyArray<string>>>;
 }
+
+/**
+ * `Blueprint.step.operation(op)`, gap 1's step that runs another operation inside the commit (#1079, CX-inner-operations): its literal until it
+ * exists, so this file loads on `main`. A check that uses it needs #1079's build as well as #1133's, and its ratchet line says so.
+ */
+export const operationStep = (op: unknown): any => {
+  const make = (Blueprint.step as { readonly operation?: (o: unknown) => unknown }).operation;
+  return make === undefined ? { kind: "step", type: "operation", operation: op } : make(op);
+};
 
 /** The owners' declarations a filler imports: the contracts, and the values and fields their shapes are made of. */
 export const owners = () => {
@@ -99,7 +110,23 @@ export const owners = () => {
     allowed: [Blueprint.signedIn],
     steps: { save: Blueprint.step.database(), tax: s.step(slipTax) },
   });
-  return { s, Amount, Country, Code, Account, BudgetExceeded, CodeTaken, postingCheck, accountCode, closePeriod, accountOpen, Slip, TaxTableMissing, slipTax, slipSubmit, RateMissing };
+  // Payments' own thing, here so a check can plant a fill that writes it (budgets' fill runs for payment.post, so it is its caller's thing).
+  const Payment = Blueprint.thing({ description: "A payment.", fields: { id: Blueprint.id("pay"), account: Account.fields.id, amount: Amount }, code: "PY" });
+  // A vault on a chain, one per feature that a check gives one (payroll, payroll-tax-us): a store of its own, a thing in it, and its opening.
+  const vault = () => {
+    const store = Blueprint.store.chain.evm();
+    const Vault = Blueprint.thing({ description: "Money held on a chain.", fields: { id: Blueprint.id("vlt"), safe: Blueprint.account() }, lives: store } as never) as unknown as Thing<{ readonly id: any; readonly safe: any }>;
+    const VaultOpened = Blueprint.event({ id: Vault.fields.id, safe: Vault.fields.safe });
+    const machine = Blueprint.machine(Vault, { states: ["open"], moves: { open: { from: [], to: "open", emits: VaultOpened } }, notFrom: { exit: 75 } });
+    const holder = Blueprint.role(Vault, { who: Vault.fields.safe });
+    return { store, Vault, VaultOpened, machine, holder };
+  };
+  const vaults = { payroll: vault(), "payroll-tax-us": vault() };
+  // payments' own way to write a payment, which runs no contract: exported only when a check adds `things/payment/verbs/note.js`.
+  const paymentNote = Blueprint.operation(Payment, { description: "Note a payment.", payload: { account: Account.fields.id, amount: Amount }, answer: {}, allowed: [Blueprint.signedIn], steps: { save: Blueprint.step.database() } });
+  // The leave feature's contract: installed, never mounted, so it is in no app's model.
+  const leaveDays = s.contract({ description: "Days of leave a request takes.", input: { days: Amount }, output: {}, optional: true });
+  return { s, Payment, paymentNote, vaults, leaveDays, Amount, Country, Code, Account, BudgetExceeded, CodeTaken, postingCheck, accountCode, closePeriod, accountOpen, Slip, TaxTableMissing, slipTax, slipSubmit, RateMissing };
 };
 export type Owners = ReturnType<typeof owners>;
 
@@ -114,9 +141,10 @@ export const RIGHT: Required<NonNullable<Change["fills"]>> = {
 export const features = (change: Change = {}) => {
   const o = owners();
   const { s } = o;
-  const fillOf = (name: keyof typeof RIGHT, description: string, more: object = {}) => s.fill(name === "payroll-tax-us" ? o.slipTax : name === "budgets" ? o.postingCheck : o.accountCode, { description, ...(change.fills?.[name] ?? RIGHT[name])(s, o), ...more });
+  const fillOf = (name: keyof typeof RIGHT, description: string, more: object = {}) => s.fill(name === "payroll-tax-us" ? o.slipTax : name === "budgets" ? o.postingCheck : o.accountCode, { description, ...more, ...(change.fills?.[name] ?? RIGHT[name])(s, o) });
   const feature = (description: string, needs: ReadonlyArray<Feature<any>> = []) => Blueprint.feature({ description, ...(needs.length > 0 ? { needs } : {}) });
   const extra = (name: Name) => change.extra?.[name]?.(s, o) ?? [];
+  const kept = (name: Name, files: ReadonlyArray<LoadedFile>) => files.filter((f) => !(change.drop?.[name] ?? []).includes(f.path));
 
   const ledger = feature("The books.");
   const payments = feature("Payments.", [ledger]);
@@ -153,7 +181,7 @@ export const features = (change: Change = {}) => {
 
   // A payment runs the ledger's check: payments depends on the ledger, so it may. It declares the check's error itself too (it maps it to its own
   // refusal), so the operation lists it once whether it declares it or the contract brings it.
-  const Payment = Blueprint.thing({ description: "A payment.", fields: { id: Blueprint.id("pay"), account: o.Account.fields.id, amount: o.Amount }, code: "PY" });
+  const { Payment } = o;
   const paymentPost = Blueprint.operation(Payment, {
     description: "Post a payment, checked before it lands.",
     payload: { account: o.Account.fields.id, amount: o.Amount },
@@ -162,6 +190,10 @@ export const features = (change: Change = {}) => {
     allowed: [Blueprint.signedIn],
     steps: { check: s.step(o.postingCheck), save: Blueprint.step.database() },
   });
+
+  // Payroll's add-on needs payroll only when its mount picks `link.on`: a conditional need (Blueprint.need(payroll, { when })).
+  const link = Blueprint.choice({ off: "Stands alone.", on: "Pays through payroll." });
+  const payrollPlus = Blueprint.feature({ description: "Extras for payroll.", choices: { link }, needs: [Blueprint.need(payroll, { when: link.on })] });
 
   const pkgs: Record<Name, Pkg> = {
     ledger: {
@@ -215,9 +247,13 @@ export const features = (change: Change = {}) => {
     calendar: { descriptor: calendar, files: [...extra("calendar")] },
     // Fills payroll's contract, right in shape, though it needs only the calendar: it doesn't depend on the contract's owner.
     rogue: { descriptor: feature("Needs the calendar only.", [calendar]), files: [file("fills/slip-tax.js", { default: s.fill(o.slipTax, { description: "Tax from nowhere.", ...RIGHT["payroll-tax-us"](s, o) }) }), ...extra("rogue")] },
+    "payroll-plus": { descriptor: payrollPlus, files: [...extra("payroll-plus")] },
+    // Declares a contract, and is never mounted: its contract is in no model.
+    leave: { descriptor: feature("Leave."), files: [file("contracts/leave-days.js", { default: o.leaveDays }), ...extra("leave")] },
     reports: { descriptor: feature("Reports.", [calendar]), files: [file("things/report/thing.js", { Report }), file("things/report/verbs/run.js", { default: reportRun }), file("things/report/verbs/code.js", { default: reportCode }), ...extra("reports")] },
   };
-  return { o, pkgs, TaxLine };
+  for (const name of Object.keys(pkgs) as ReadonlyArray<Name>) pkgs[name] = { ...pkgs[name], files: kept(name, pkgs[name].files) };
+  return { o, pkgs, TaxLine, link };
 };
 export type Features = ReturnType<typeof features>;
 
@@ -226,12 +262,14 @@ export interface AppSpec {
   readonly mounts: Readonly<Record<string, Name>>;
   /** The app's own files besides its mounts, under `blueprint/`. */
   readonly files?: ReadonlyArray<LoadedFile>;
+  /** What a mount picks, by the mount's name: `(p) => [p.choose(p.choices.link.on)]`. */
+  readonly verbs?: Readonly<Record<string, (view: any) => ReadonlyArray<any>>>;
 }
 
 /** The app's model: every package installed, only `mounts` mounted. */
 export const modelExit = (f: Features, app: AppSpec) => {
   const appFiles = [
-    ...Object.entries(app.mounts).map(([mount, name]) => file(`features/${mount}.ts`, { default: Blueprint.use(f.pkgs[name].descriptor) })),
+    ...Object.entries(app.mounts).map(([mount, name]) => file(`features/${mount}.ts`, { default: Blueprint.use(f.pkgs[name].descriptor, app.verbs?.[mount]) })),
     ...(app.files ?? []),
   ];
   const installed: ReadonlyArray<PluginPackage> = (Object.keys(f.pkgs) as ReadonlyArray<Name>).map((name) => ({ name: `@fixture/${name}`, version: "1.0.0", kind: "feature", descriptor: f.pkgs[name].descriptor }));
@@ -274,3 +312,21 @@ export const MOUNTED: AppSpec["mounts"] = { ledger: "ledger", payments: "payment
 
 /** Each fixture file's specifier, as a refusal names it. */
 export const at = (pkg: Name, path: string) => `@fixture/${pkg}/blueprint/${path}`;
+
+/**
+ * A feature's chain vault as files: its store, the thing in it, its event, machine and role, and, when `steps` is given, `vault.open`, an
+ * operation on the chain holding those steps. For a check's `extra`.
+ */
+export const vaultFiles = (o: Owners, who: keyof Owners["vaults"], steps?: Readonly<Record<string, unknown>>): ReadonlyArray<LoadedFile> => {
+  const v = o.vaults[who];
+  return [
+    file("stores/vault.js", { default: v.store }),
+    file("things/vault/thing.js", { Vault: v.Vault }),
+    file("things/vault/events.js", { VaultOpened: v.VaultOpened }),
+    file("things/vault/machine.js", { machine: v.machine }),
+    file("things/vault/roles.js", { holder: v.holder }),
+    ...(steps === undefined ? [] : [file("things/vault/verbs/open.js", {
+      default: Blueprint.operation(v.Vault, { description: "Open a vault.", payload: { id: v.Vault.fields.id, safe: v.Vault.fields.safe }, answer: {}, move: v.machine.moves.open, allowed: [v.holder], steps: steps as never } as never),
+    })]),
+  ];
+};

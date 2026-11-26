@@ -1,0 +1,4 @@
+# #1133 (CX-feature-contracts, call 3): no feature declares a contract, so no pair of feature and contract is judged. Clears with #1133's build.
+src/modules/mounts/contracts-touch.test.ts > #1133: who may run a contract and who may fill one, every pair > judges every mounted feature and the app, running and filling every contract, against the model's needs graph (payroll-plus needs payroll)
+src/modules/mounts/contracts-touch.test.ts > #1133: who may run a contract and who may fill one, every pair > judges every mounted feature and the app, running and filling every contract, against the model's needs graph (payroll-plus doesn't need payroll)
+src/modules/mounts/contracts-touch.test.ts > #1133: who may run a contract and who may fill one, every pair > holds no contract of a feature that isn't mounted, and refuses the app running one, word for word

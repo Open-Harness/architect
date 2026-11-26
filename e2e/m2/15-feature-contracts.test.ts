@@ -23,6 +23,7 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, readFileSync, readdirSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Effect } from "effect";
+import { Blueprint } from "orthograph";
 import { Worlds } from "@orthograph/prove";
 import { afterEach, describe, expect, it } from "vitest";
 import { acme, copyOf, nothingRunning } from "../layer1/support.ts";
@@ -128,12 +129,12 @@ export default Blueprint.fill(slipTax, {
 `,
   // A US slip gets its line; a ZZ slip gets its line written and is then refused; anything else is refused before it writes.
   "src/fills/slip-tax.ts": `import { Effect } from "effect";
-import { Records } from "@orthograph/language-effect";
+import { Records, type FillHandler } from "@orthograph/language-effect";
 import { TaxTableMissing } from "@fixture/payroll/blueprint/things/slip/errors.js";
+import type fill from "../../blueprint/fills/slip-tax.ts";
 import { TaxLine } from "../../blueprint/things/tax-line/thing.ts";
-type Input = { readonly slip: string; readonly gross: bigint; readonly country: string };
-type Steps = { readonly save: <A, E, R>(work: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R> };
-const slipTax = (input: Input, { steps }: { readonly steps: Steps }) => Effect.gen(function* () {
+// Typed from its fill declaration (CX-feature-contracts call 2): its input, its steps, its output and its errors.
+const slipTax: FillHandler<typeof fill, Records> = (input, { steps }) => Effect.gen(function* () {
   if (input.country !== "US" && input.country !== "ZZ") return yield* new TaxTableMissing({ country: input.country });
   const records = yield* Records;
   const tax = input.gross / 10n;
@@ -149,7 +150,9 @@ import { Amount } from "@fixture/payroll/blueprint/values/pay.js";
 export default Blueprint.fill(slipRound, { description: "Pay out in whole hundreds.", input: { gross: Amount }, output: { rounded: Amount } });
 `,
   "src/fills/round.ts": `import { Effect } from "effect";
-const round = (input: { readonly gross: bigint }) => Effect.succeed({ rounded: input.gross - (input.gross % 100n) });
+import type { FillHandler } from "@orthograph/language-effect";
+import type fill from "../../blueprint/fills/round.ts";
+const round: FillHandler<typeof fill> = (input) => Effect.succeed({ rounded: input.gross - (input.gross % 100n) });
 export default round;
 `,
 };
@@ -279,8 +282,17 @@ const numberIn = (result: any, key: string): number => {
 };
 const slipIds = (rows: ReadonlyArray<Record<string, unknown>>) => rows.map((r) => r["id"]);
 
+/** The surface #1133 adds, checked before any app is made, so a run on `main` names what is missing rather than a load error deep in generate. */
+const built = () => {
+  const bp = Blueprint as unknown as { readonly contract?: unknown; readonly fill?: unknown; readonly step: { readonly contract?: unknown } };
+  if (typeof bp.contract !== "function") expect.fail("Blueprint.contract is not built: a feature can't declare a contract (#1133)");
+  if (typeof bp.fill !== "function") expect.fail("Blueprint.fill is not built: a feature can't fill another's contract (#1133)");
+  if (typeof bp.step.contract !== "function") expect.fail("Blueprint.step.contract is not built: an operation can't run a contract (#1133)");
+};
+
 describe("15 a contract one feature declares and another fills runs in the caller's commit, at every door, on D1", () => {
   it("filled, every door answers the filler's output and the slip and its tax line land together; the filler's refusal is the operation's and writes nothing", { timeout: 600_000 }, async () => {
+    built();
     const { root } = app(["payroll", "payroll-tax-us"]);
     ortho(root, "generate");
     // It compiles: check passes the app, the contract, its fill and their handlers.
@@ -352,6 +364,7 @@ describe("15 a contract one feature declares and another fills runs in the calle
   });
 
   it("with the filler installed and not mounted, the app builds and a slip has no tax and no tax line; with the contract required, check refuses the app", { timeout: 600_000 }, async () => {
+    built();
     const { root } = app(["payroll"]);
     ortho(root, "generate");
     const model = JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")) as { contracts?: Record<string, { filler?: unknown }> };
@@ -378,9 +391,18 @@ describe("15 a contract one feature declares and another fills runs in the calle
     expect(readdirSync(join(root, "generated"), { recursive: true }).map(String).filter((p) => /tax-line|payroll-tax-us/.test(p)), "nothing generated is the unmounted filler's").toEqual([]);
 
     // The same app with the contract required: check refuses it, naming the contract.
+    // The same app with the contract required: generate refuses it and makes nothing, then check refuses it too, each with the line that
+    // names the contract and its file and says to mount a feature that fills it.
     const required = app(["payroll"], true);
-    const said = run(required.root, "check");
-    expect(said.status, said.out).not.toBe(0);
-    expect(said.out).toContain("payroll.slip-tax");
+    for (const command of ["generate", "check"] as const) {
+      const said = run(required.root, command);
+      expect(said.status, `ortho ${command}:\n${said.out}`).not.toBe(0);
+      const line = said.out.split("\n").find((l) => l.includes("payroll.slip-tax"));
+      expect(line, `ortho ${command} names the contract:\n${said.out}`).toBeDefined();
+      expect(line, "the line names the contract's file").toContain("@fixture/payroll/blueprint/contracts/slip-tax.");
+      expect(line, "the line says to mount a feature that fills it").toMatch(/\bmount\b/i);
+    }
+    // The copy keeps acme's own generated files; a refused generate wrote nothing of payroll's into them.
+    expect(readFileSync(join(required.root, "generated/model/model.json"), "utf8"), "a refused generate changes no model").not.toContain("slip-tax");
   });
 });
