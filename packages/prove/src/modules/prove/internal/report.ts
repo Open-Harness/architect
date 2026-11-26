@@ -14,8 +14,8 @@ export const refusedBeforeSpan = (call: CallRecord | undefined): boolean =>
   call?.mayCall === false && call.status === 403 &&
   typeof call.body === "object" && call.body !== null && "_tag" in call.body && call.body._tag === "NotAllowed";
 
-/** A call that has no span of its own to wait for: a refusal the world's facts predicted, the MCP door's tools list (`.tools()`) or a step that moves the world's clock, which run no operation. */
-export const noSpanExpected = (call: CallRecord | undefined): boolean => call?.tools === true || call?.clock === true || refusedBeforeSpan(call);
+/** A call that has no span of its own to wait for: a refusal the world's facts predicted, the MCP door's tools list (`.tools()`), a step that moves the world's clock or a command to a stand-in, which run no operation. */
+export const noSpanExpected = (call: CallRecord | undefined): boolean => call?.tools === true || call?.clock === true || call?.stand === true || refusedBeforeSpan(call);
 
 /** The distinct spans a call's trace held, by name: what a missing span is read against. Sorted, since start times of concurrent spans differ between runs. */
 const spansCame = (trace: Trace | undefined): string =>
