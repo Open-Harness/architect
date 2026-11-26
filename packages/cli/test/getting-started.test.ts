@@ -1,7 +1,7 @@
 // Slice 7 of Goal 18 (#1065): the getting-started page, `docs/canon/getting-started.mdx`: one page from install to a proved,
 // running app and its generated tools (the `<APP>_URL` and `<APP>_TOKEN` they read).
-// The page's steps are RUN by e2e/m2/09-g18-7-getting-started.test.ts, in an empty folder against a local registry: that is
-// where "it works" is judged. This file is the fast half: it holds the page to the code, without installing anything.
+// Running the page's steps (in an empty folder, against a local registry) is slice 11's acceptance check
+// (design/decisions/GOAL18-getting-started-acceptance.md). This file holds the page to the code, without installing anything.
 //
 // What the page must say is checked against the code, not against itself: the commands and flags it shows are looked up in
 // `ortho --help` (test/help-tree.ts), the variable names are derived the way the generated CLI derives them
@@ -11,14 +11,18 @@
 // may name it, and this file does not check what it does.
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { walk, type Page } from "./help-tree.ts";
 
 const repo = resolve(import.meta.dirname, "../../..");
+// What a reader sees: the file without its HTML comments (`<!-- ... -->`) and MDX comments (an open brace, slash, star ... star,
+// slash, close brace), which render as nothing.
+const visible = (text: string): string => text.replace(/<!--[\s\S]*?-->/g, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+/** A file as a reader sees it (comments are not read), `""` when it does not exist. */
 const read = (path: string): string => {
   try {
-    return readFileSync(resolve(repo, path), "utf8");
+    return visible(readFileSync(resolve(repo, path), "utf8"));
   } catch {
     return "";
   }
@@ -70,8 +74,11 @@ describe("the getting-started page exists and is a canon page", () => {
   });
 
   it("is linked from the repository's README and from the CLI's README", () => {
-    expect(read("README.md")).toContain("docs/canon/getting-started.mdx");
-    expect(read("packages/cli/README.md")).toContain("getting-started");
+    const target = resolve(repo, "docs/canon/getting-started.mdx");
+    /** The targets of a file's markdown links, resolved from the file's own folder. */
+    const links = (file: string) => [...read(file).matchAll(/\]\(([^)\s#]+)(?:#[^)]*)?\)/g)].map((m) => resolve(repo, dirname(file), m[1] ?? ""));
+    expect(links("README.md"), "README.md links the page").toContain(target);
+    expect(links("packages/cli/README.md"), "packages/cli/README.md links the page").toContain(target);
   });
 });
 

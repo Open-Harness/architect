@@ -3,6 +3,8 @@
 // exactly as `src/main.ts` declared them (effect/cli's HelpDoc, its Option descriptions written as strings, `""` for none).
 // So the help-text checks judge the command tree, not the coloured text a formatter makes of it. Every other event (an
 // error, a version) is presented as usual. Slice 7 of Goal 18 (#1065).
+// It replaces only the default Presenter. A build that provides its own Presenter layer (CliOutput.layerPresenter) blinds
+// the hook: no `HELPDOC` line is printed, every page reads as found: false, and the help-text tests fail rather than pass.
 import { Console, Option } from "effect";
 import { CliOutput } from "effect/cli";
 

@@ -1,4 +1,4 @@
-# Goal 18, slice 7 (#1065): the getting-started page, held to the code. Red until docs/canon/getting-started.mdx exists, passes the canon check, is linked from README.md and the CLI README, and names Node, the generated CLI, SDK and MCP, `<APP>_URL`/`<APP>_TOKEN` for the app it creates, and the generated CLI's fallback address. Its steps are run by e2e/m2/09.
+# Goal 18, slice 7 (#1065): the getting-started page, held to the code. Red until docs/canon/getting-started.mdx exists, passes the canon check, is linked from README.md and the CLI README, and names Node, the generated CLI, SDK and MCP, `<APP>_URL`/`<APP>_TOKEN` for the app it creates, and the generated CLI's fallback address. Running its steps is slice 11's check.
 test/getting-started.test.ts > every command and flag it shows exists > each `--flag` after it is one that command has, or a global one
 test/getting-started.test.ts > every command and flag it shows exists > each `ortho <command>` is a command `ortho --help` lists
 test/getting-started.test.ts > every command and flag it shows exists > shows at least one `ortho` command

@@ -7,10 +7,13 @@ import { describe, expect, it } from "vitest";
 import { walk } from "./help-tree.ts";
 
 const repo = resolve(import.meta.dirname, "../../..");
-/** A missing README is not a stale one: it reads as "" (the packages with none are not this slice's). */
+// What a reader sees: the file without its HTML comments (`<!-- ... -->`) and MDX comments (an open brace, slash, star ... star,
+// slash, close brace), which render as nothing.
+const visible = (text: string): string => text.replace(/<!--[\s\S]*?-->/g, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+/** A missing README is not a stale one: it reads as "" (the packages with none are not this slice's). Comments are not read. */
 const read = (path: string): string => {
   try {
-    return readFileSync(resolve(repo, path), "utf8");
+    return visible(readFileSync(resolve(repo, path), "utf8"));
   } catch {
     return "";
   }

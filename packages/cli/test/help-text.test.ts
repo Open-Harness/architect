@@ -73,8 +73,15 @@ const nameOf = (path: string) => path.split(" ").slice(-1)[0] ?? path;
 const bareName = (r: Row) => (r.names[0] ?? "").replace(/^--/, "");
 /** A page printed by a formatter wraps and pads: compare its words, not its spacing. */
 const flat = (text: string) => text.replace(/\s+/g, " ").trim();
-/** Two descriptions are twins when they read the same: case, punctuation and spacing aside ("Checks the blueprint." and "checks the blueprint!"). */
-const gist = (text: string, _name: string): string => text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+/**
+ * Two descriptions are twins when they read the same once each thing's own name is taken out, case, punctuation and spacing
+ * aside, as `says()` reads them: "Checks the blueprint." and "checks the blueprint!", and a template filled with each name
+ * ("Runs the brief command for you." beside "Runs the impact command for you.") are twins.
+ */
+const gist = (text: string, name: string): string => {
+  const named = new Set(name.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w !== ""));
+  return text.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w !== "" && !named.has(w)).join(" ");
+};
 const commands = () => [...tree.keys()].filter((k) => k !== "");
 
 describe("ortho --help reaches every command", () => {
@@ -102,7 +109,7 @@ describe("every command says what it does", () => {
     expect(flat(page?.printedDescription ?? ""), "the printed page's DESCRIPTION is that description").toBe(flat(page?.description ?? "") || "\u0000");
   });
 
-  it("gives no two commands the same description, in the lists or on their pages, nor two that differ only by case or punctuation", () => {
+  it("gives no two commands the same description, in the lists or on their pages, nor two that differ only by their own names, case or punctuation", () => {
     const twins = (texts: ReadonlyArray<readonly [string, string]>) => {
       const seen = new Map<string, string>();
       const out: string[] = [];
