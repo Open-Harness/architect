@@ -37,7 +37,7 @@ export const storeMemory = (initial: ReadonlyArray<readonly [Thing, Instance]> =
     }),
     place: (thing, id) => Effect.sync(() => (at(thing, id) === -1 ? undefined : at(thing, id))),
     answered: (key) => Effect.sync(() => requests.get(key)),
-    commit: ({ writes, entries: events, request, lists = [] }) =>
+    commit: ({ writes, entries: events, request, lists = [], reads = [] }) =>
       Effect.sync(() => {
         if (request && requests.has(request.key)) return "conflict" as const;
         // A commit that changes nothing commits, guarding nothing, as D1's does.
@@ -49,6 +49,8 @@ export const storeMemory = (initial: ReadonlyArray<readonly [Thing, Instance]> =
           return now.length !== was.size || now.some((r) => was.get(String(r.instance["id"])) !== r.version);
         });
         if (moved) return "conflict" as const;
+        // #1045: so does each row it found, at the version it found it.
+        if (reads.some(({ thing, id, version }) => rows[at(thing, id)]?.version !== version)) return "conflict" as const;
         // One write at a time, checked after each, as D1 checks its index statement by statement: on a copy, so a refusal writes none of it.
         const next = rows.map((r) => ({ ...r }));
         const index = (thing: Thing, id: unknown) => next.findIndex((r) => r.thing === thing && r.instance["id"] === id);

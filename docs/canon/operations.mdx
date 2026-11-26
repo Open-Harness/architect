@@ -208,7 +208,7 @@ Three rules decide what a step is (K5, seam 3):
   and all, up to a fixed number of times. The call is named once, before its first attempt, and each attempt's span carries that name
   as `call.id`:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=175-183
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=177-185
 const loop = (number: number, callId: string): Effect.Effect<object, unknown, unknown> =>
   attempt(payload, principal, key, key === undefined ? undefined : request, number, callId).pipe(
     Effect.catch((e) =>
@@ -227,7 +227,7 @@ what does the work. `database` is the store's, `wait` is a timer's. The kinds ar
 
 **Every required step must run, in order.** Eval 6 checks it on every answered call; an `optional` step may be absent:
 
-```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=139-152
+```ts file=packages/prove/src/modules/evals/internal/calls.ts name=steps lines=141-154
 /** 6. Every required step of an answered call ran in its own span; all observed steps ran in declared order. */
 export const steps: PerOperation = (op, evidence) =>
   verdict("steps", op.name, evidence.flatMap((e) => {
@@ -319,7 +319,7 @@ answers what it answered the first time and changes nothing. No step runs, no ev
 
 The key is the operation, the caller and the request together, so one caller's key never answers another's call:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=169-172
+```ts file=packages/language-effect/src/modules/handler/service.ts name=serve lines=171-174
 // Keyed by operation and caller as well, so one caller's key never answers another's call.
 // Each kind is its own: an agent's retries never answer its person's call (M2-auth, "Smaller calls" 1).
 const who = "person" in principal ? `${principal.kind}:${principal.person}` : principal.kind === "service" ? `service:${principal.mount}` : principal.kind;
