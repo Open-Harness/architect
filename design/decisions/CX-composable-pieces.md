@@ -345,8 +345,9 @@ and #1136 (Gap issues, milestone Goal 16, `lane:goal-16`).
    declares a contract (an input and output schema, run in the caller's commit); another feature fills it; `check`
    refuses a required contract with no filler or two, and an optional one with none is skipped. Checks: a required contract with no filler, or with two, is refused; payroll with no
    tax piece compiles and its slips have no tax lines; with `payroll-tax-us` a United States employee's slip carries its
-   tax lines; with no budgets a posting is not checked." Interim: payroll runs with no tax piece mounted, while
-   `payroll-tax-us` is built in its own lane (Aaron, 26 November 2026).
+   tax lines; with no budgets a posting is not checked." Interim: no tax piece fills payroll's contract, so slips have
+   no tax lines. `payroll-tax-us` is mounted from its first slice, filling nothing, so its own journeys run in
+   `examples/capxul` (Aaron, 26 November 2026: the lane is not parked).
 4. **`check` enforces that a piece writes only its own things** (#1134). *Doesn't block*; makes section 2's rule real. Draft:
    "A step's `writes` may name only things of its own plugin or the app's; another plugin's thing is a compile error
    naming the owner's in-commit operation to call." After gap 1.
@@ -450,7 +451,7 @@ its piece's folder and, at most, one mount file.
 | Banking | `banking`, `bridge-accounts` | `ledger` moved and the bank-account flip |
 | HR | `people`, `time`, `expenses` | the move's step 2 |
 | Payroll | `payroll` | `time` moved |
-| United States payroll tax | `payroll-tax-us`, a lane of its own (Aaron, 26 November 2026; brief `design/goals/16-lane-payroll-tax.md`) | its rates rows, its W-4 and its calculator are built now in its own folder; its link to `payroll` and its mount wait for move 7 (`payroll` moved) and gap 3 |
+| United States payroll tax | `payroll-tax-us`, a lane of its own (Aaron, 26 November 2026; brief `design/goals/16-lane-payroll-tax.md`) | its rates rows, its W-4 and its calculator are built now in its own folder; it is mounted from its first slice, filling nothing; its link to `payroll` and filling payroll's contract wait for move 7 (`payroll` moved) and gap 3 |
 | Optional books | `selling`, `buying`, `pos`, `subscriptions`, `assets`, `equity`, `projects`, `budgets` | `invoicing` built |
 | Optional HR | `performance`, `recruitment`, `workplace` | `people` moved |
 | CRM | `crm` | `parties` built |
@@ -474,7 +475,7 @@ haven't really looked at everything yet". So both decisions below are yes, as re
 On the tax lane he said: "I don't want to park the tax lane. I want to do that in a separate, what I want to do is I
 want to like scope it out. And then what we're going to do is we're going to fire it off in AMP. So it's going to be a
 separate thing and just like stay up to date with what we're doing." So contractors come first on the main path, and `payroll-tax-us` is built alongside as its own piece. It plugs into payroll's *tax on a
-slip* contract when gap 3 lands; until then a Capxul's payroll runs with no tax piece mounted.
+slip* contract when gap 3 lands; until then it is mounted but fills nothing, and slips have no tax lines.
 
 1. **Yes (Aaron, 26 November 2026).** **Is a business allowed to leave out selling, buying, the till, subscriptions, assets, equity, projects and the rest
    of section 1's optional list?** I recommend yes: the core is the books, HR, payroll and Bridge, and the rest are
