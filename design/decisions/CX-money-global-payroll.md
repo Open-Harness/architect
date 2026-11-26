@@ -123,7 +123,7 @@ payroll entries, slips) stays as it is and holds no tax rule (CX-payroll-tax poi
 2. **Contractors, worldwide.** A contractor is ERPNext's **Supplier** (#1116), with two more things: a **tax form**
    on file (W-9, W-8BEN or W-8BEN-E: kind, received day, the form's file, its expiry) and a **payout method** (a wallet
    address for USDC, or a Bridge external account in the contractor's currency). Paying one is a **Payment Entry** of
-   type Pay to the supplier (#1116's shape, which needs no invoice), from the Safe's USDC account or from Bridge. Paying
+   type Pay to the supplier (#1116's shape, which needs no invoice, in the `payments` piece), from the Safe's USDC account or from Bridge. Paying
    many at once is one operation making one Payment Entry each; batching on chain comes with the Safe (slice 2).
    Contractor invoices (Purchase Invoice) come when invoices do (#742 item 4).
 3. **The year-end for US contractors:** a read totalling each W-9 contractor's payments in a calendar year, and the
@@ -301,21 +301,33 @@ records, as `AGENTS.md` says:
 ## The pieces, agreed with the composable-pieces thread
 
 The composable-pieces record (#1123, `CX-composable-pieces.md`, session_01S8RF7CccTeLkaVUQpKSExm) splits Capxul into
-pieces chosen when its app is built. This record's work lands inside those pieces. Proposed to that thread on
-26 November 2026; its answer is recorded here when it comes.
+pieces chosen when its app is built. This record's work lands inside those pieces, as the two threads agreed on
+26 November 2026:
 
-- **`company`:** the asset files, a company's reporting currency, Currency Exchange and Pegged Currencies (that record
-  already puts the currency records here).
+- **Money** is Orthograph's value, not a piece.
+- **`company`:** the asset files and a company's reporting currency.
+- **`rates`, core:** Currency Exchange, its settings and Pegged Currencies. `ledger` reads it and never fetches; a feed
+  is an adapter mounted on it later.
 - **`ledger`:** an account's currency, the account-currency pair on every line, the two gain-or-loss accounts, rounding
-  remainders and revaluation. `ledger.post` takes lines that carry both amounts.
-- **`invoicing`:** Payment Entry between currencies (#1116's Payment Entry is born here).
-- **`contractors`, a new core piece:** a supplier from `parties` with a tax form and a payout method; paying many; the
-  1099 year-end. It pays through `invoicing`'s Payment Entry. Payroll stays employees only.
-- **`bridge`:** external accounts in a payee's currency and transfers out; their receipts go to `banking` and are
-  booked as a Payment Entry at the realised rate.
-- **`payroll-tax-us`:** optional, as that record says, and later by decision 1.
-- **An employer of record** is no piece: it is a supplier.
+  remainders and revaluation, and each party's outstanding (ERPNext's Payment Ledger Entry).
+- **`payments`, core, below `invoicing`:** Payment Entry, including between currencies, and settling a party's
+  outstanding by the voucher's kind and id. The rails (Bridge, a bank, later the Safe) fill a contract `payments`
+  declares.
+- **What is owed is the ledger's party outstanding,** not a new record. In both records: payroll calculates and posts
+  its accrual through `ledger.post` in its own commit, crediting payroll payable with the worker as party; it never
+  writes ledger lines itself and never moves money. `payments` moves money and settles outstandings. `ledger` owns the
+  lines, both amounts and revaluation.
+- **`contractors`, core (proposed here, pending the other thread):** a contractor is a `parties` Supplier, as ERPNext
+  and #1116 model one. The piece adds the tax form, the payout method, paying many through `payments`, and the 1099
+  year-end. The forms are the US payer's, needed whether or not the company runs US payroll, so they can't live in
+  `payroll-tax-us`. The other thread proposed contractors as a kind of worker in `people`; this record keeps them as
+  suppliers, because a contractor abroad has no salary structure, slip or leave.
+- **`bridge`:** external accounts in a payee's currency and transfers out, filling `payments`' rail contract; their
+  receipts go to `banking` and are booked at the realised rate.
+- **`payroll-tax-us`:** optional, and later by decision 1.
+- **`eor`, optional and later:** an employer of record's adapter. Until then the employer of record is a supplier and
+  its invoice a bill.
 
-**Order.** That record's move of `company` and `ledger` into pieces comes first, then the currency slice inside them,
-then invoices (slice 7b). The rest of the move runs alongside. Contractors come once `invoicing` holds Payment Entry, and
-before `payroll-tax-us`.
+**Order.** That record's move of `company` and `ledger` into pieces comes first. Then the currency slice inside
+`company`, `rates`, `ledger` and `payments`, then invoices (slice 7b). The rest of the move runs alongside.
+`contractors` comes once `payments` holds Payment Entry, and before `payroll-tax-us`.
