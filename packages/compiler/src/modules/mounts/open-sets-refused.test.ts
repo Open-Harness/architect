@@ -71,4 +71,27 @@ describe("#1132: what the compiler refuses about open sets", () => {
     // And the same wrong additions, mounted, are refused: the control that says the plants are wrong.
     expect(problemsOf(await modelExit(b, { mounts: { ...MOUNTED, invoicing: "invoicing" } })).length).toBeGreaterThan(0);
   });
+
+  it("refuses a feature that needs another feature, but not the set's owner, adding to it: having a need is not depending on the owner", async () => {
+    // Leads needs the crm only. Its addition to the crm's set stands; its addition to the ledger's is refused.
+    const b = books({ leads: (s, l) => ({ prospect: s.add(l.CrmPartyType, ["Prospect"]), stray: s.add(l.VoucherType, ["Lead Entry"]) }) });
+    const said = await refusedAt(modelExit(b, { mounts: { ...MOUNTED, crm: "crm", leads: "leads" } }), "@fixture/leads/blueprint/values/leads.js");
+    expect(said).toContain("@fixture/ledger");
+    expect(said).toContain("Lead Entry");
+    expect(said, "the refusal is about the ledger's set, not the crm's").not.toContain("Prospect");
+  });
+
+  it("refuses a feature adding to the app's own open set: no feature depends on the app; it names the adder, the app's file and the member", async () => {
+    const b = books({ payments: (s, l) => ({ paymentEntry: s.add(l.VoucherType, ["Payment Entry"]), fax: s.add(l.Channel, ["Fax"]) }) });
+    const said = await refusedAt(modelExit(b, { mounts: MOUNTED }), "@fixture/payments/blueprint/values/vouchers.js");
+    expect(said).toContain("blueprint/values/channels.ts");
+    expect(said).toContain("Fax");
+  });
+
+  it("refuses a feature adding to the other owner's set of the same name: adding to the crm's PartyType needs the crm, not the ledger", async () => {
+    const b = books({ parties: (s, l) => ({ parties: s.add(l.PartyType, ["Supplier", "Customer"]), wrong: s.add(l.CrmPartyType, ["Vendor"]) }) });
+    const said = await refusedAt(modelExit(b, { mounts: { ...MOUNTED, crm: "crm", leads: "leads" } }), "@fixture/parties/blueprint/values/parties.js");
+    expect(said).toContain("@fixture/crm");
+    expect(said).toContain("Vendor");
+  });
 });

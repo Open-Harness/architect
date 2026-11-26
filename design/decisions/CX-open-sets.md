@@ -19,11 +19,19 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
    is named by its export from a `values/<file>.ts` (`export const VoucherType = Blueprint.value(Blueprint.oneOf.open([…]))`),
    and a field, a payload, an event or an answer holds it as it holds any value. The feature (or app) whose blueprint
    declares it is its **owner**. In code it is a `string`. `Blueprint.oneOf(…)` stays closed and is unchanged.
+   **What identifies a set is its owner and its export name** (decided 26 November 2026, on review of #1175): the owner's
+   package (`@fixture/ledger`), or the app, and the name it is exported as (`VoucherType`). The name alone does not, and
+   neither does the file's path under `blueprint/` with the name: two features may each export a `PartyType` from a
+   `values/ledger.ts`, and they are two sets, each with its own members and its own adders, in the model and at every door.
+   An addition is to the value it imports, so it reaches one set only. Within one owner, a value's export name is
+   already unique, so the pair names one set. The app may own an open set too (`blueprint/values/<file>.ts`); then only
+   the app adds to it, since no feature depends on the app.
 2. **A feature adds members with `Blueprint.oneOf.add(set, members)`**, exported from one of its own `values/<file>.ts`
    files: `export const paymentEntry = Blueprint.oneOf.add(VoucherType, ["Payment Entry"])`. A member is a plain name,
    as ERPNext names a DocType. Only a feature that depends on the owner may add: one that lists the owner in its `needs`,
-   or needs a feature that does, through any depth (payroll adds Salary Slip through payments). The app may add to any
-   open set of a feature it mounts, since it depends on all of them.
+   or needs a feature that does, through any depth (payroll adds Salary Slip through payments). Having needs is not
+   enough: a feature that needs only another feature (leads needs the crm) may add to the crm's sets and never to the
+   ledger's. The app may add to any open set of a feature it mounts, since it depends on all of them.
 3. **The compiled model holds the union.** Every field that holds the set has
    `{ type: "schema", format: "choice", options: [...], open: true }`, where `options` is the owner's members in the
    owner's order, then each member a **mounted** feature (or the app) adds, sorted by plain string order (JavaScript's
@@ -36,14 +44,16 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
    is `{ type: "schema", format: "ref-any", options: [...] }`, with the same union as the set. `Blueprint.refAny()` keeps
    its `{ declaration, id }` shape and model, with no options. A reference to one set never takes a member of another.
 5. **Every door judges a kind by the model's union, never by the declaration's own list.** The API refuses a member of
-   an unmounted feature, a name in no set, a member of another set, and a reference of `refAny()`'s shape, as a plain
-   value or as a reference's kind, with `400 InvalidPayload` before any handler runs. MCP's tool input lists exactly the
+   an unmounted feature, a name in no set, a member of another set (another owner's set of the same name included), a
+   reference of `refAny()`'s shape, and a reference with an empty id, as a plain value or as a reference's kind, with
+   `400 InvalidPayload` before any handler runs. MCP's tool input lists exactly the
    union for each such field (as a JSON Schema `enum`) and refuses the same calls. The generated CLI's help names, for
    each such flag, every member it takes and no other, and the CLI's call with anything else fails. How the doors learn
    the union (a generated table from the model, handed to the runtime) is the builder's.
 6. **What the compiler refuses**, each naming the file that declared it: an addition to a value that isn't open (naming
    the value and `Blueprint.oneOf.open`), by a feature or by the app; an addition by a feature that doesn't depend on the
-   set's owner (naming the owner's package and the member); a member two features add (naming both files and the
+   set's owner (naming the owner's package, or the app's file that declares the set, and the member), including any feature
+   adding to a set the app owns; a member two features add (naming both files and the
    member); a member the owner already has (naming the owner's file); a member repeated in one feature's additions; and
    an empty member.
 
@@ -56,11 +66,13 @@ section 5, gap 2), so the Books lane doesn't wait on this. Once it lands, Capxul
 
 ## Checks
 
-- `packages/compiler/src/modules/mounts/open-sets.test.ts` (7) and `open-sets-refused.test.ts` (7), with the scratch
-  books in `mounts/testing.ts`: the model (calls 1 to 4) and the refusals (call 6), over an in-memory source with seven
-  installed feature packages.
-- `e2e/m2/14-open-sets.test.ts`: the doors (call 5), in a copy of acme with four installed feature packages, three of
-  them mounted, made with the real `ortho generate` and run in a world over local D1.
+- `packages/compiler/src/modules/mounts/open-sets.test.ts` (9) and `open-sets-refused.test.ts` (10), with the scratch
+  books in `mounts/testing.ts`: the model (calls 1 to 4) and the refusals (call 6), over an in-memory source with nine
+  installed feature packages (among them a crm with its own `PartyType` and a leads feature that needs only the crm)
+  and an app that owns a `Channel` set.
+- `e2e/m2/14-open-sets.test.ts`: the doors (call 5), in a copy of acme with five installed feature packages, four of
+  them mounted (the crm's `PartyType` beside the ledger's), and the app's own `Channel` set, made with the real
+  `ortho generate` and run in a world over local D1.
 
 ## Supersedes
 

@@ -7,7 +7,7 @@
 import { describe, expect, it } from "vitest";
 import { Blueprint } from "orthograph";
 import type { FieldModel, Model } from "#modules/model/types.js";
-import { MOUNTED, books, modelOf, optionsOf, surface } from "./testing.ts";
+import { MOUNTED, OWN_CHANNELS, books, modelOf, optionsOf, surface } from "./testing.ts";
 
 // What the fixtures declare, so what every field holding the set must hold: the ledger's own, then the four the mounted features add, by name.
 const VOUCHERS = ["Journal Entry", "Expense Claim", "Payment Entry", "Salary Slip"];
@@ -89,5 +89,22 @@ describe("#1132: an open set holds the members of the features that add to it", 
     const s = surface();
     expect(s.open(["Journal Entry"]).meta).toMatchObject({ type: "schema", format: "choice", options: ["Journal Entry"], open: true });
     expect(Blueprint.oneOf(["Journal Entry"]).meta).not.toHaveProperty("open");
+  });
+
+  it("a set is its owner's and its export's: the crm's PartyType and the ledger's are two sets, though both are `PartyType` in `values/ledger.js`", async () => {
+    const m = await modelOf(books(), { mounts: { ...MOUNTED, crm: "crm", leads: "leads" } });
+    // Leads needs the crm and adds to the crm's set; parties needs the ledger and adds to the ledger's. Neither member crosses.
+    expect(m.things["contact"]?.fields["partyType"]?.value, "the crm's set").toMatchObject(choice(["Lead", "Prospect"]));
+    expect(optionsOf(m.things["contact"]?.fields["partyType"]), "the crm's set holds only its own and its adders'").toEqual(["Lead", "Prospect"]);
+    for (const f of referenceFields(m).party) expect(optionsOf(f), "the ledger's party set holds only its own adders'").toEqual(PARTIES);
+    for (const [where, field] of Object.entries(voucherFields(m))) expect(field?.value, where).toMatchObject(choice(VOUCHERS));
+  });
+
+  it("an open set the app declares is owned by the app: it holds the app's members in the app's order, and no feature's", async () => {
+    for (const mounts of [MOUNTED, { ledger: "ledger" as const }, { ...MOUNTED, crm: "crm" as const, leads: "leads" as const }]) {
+      const m = await modelOf(books(), { mounts });
+      expect(m.things["posting"]?.fields["channel"]?.value, Object.keys(mounts).join(", ")).toMatchObject(choice(OWN_CHANNELS));
+      expect(optionsOf(m.things["posting"]?.fields["channel"])).toEqual(OWN_CHANNELS);
+    }
   });
 });

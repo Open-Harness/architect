@@ -29,7 +29,7 @@ export const surface = (): OpenSets => {
 };
 
 /** Every feature package the checks install, by its own name (`@fixture/<name>`). */
-export type Name = "ledger" | "payments" | "expenses" | "parties" | "payroll" | "invoicing" | "rogue";
+export type Name = "ledger" | "payments" | "expenses" | "parties" | "payroll" | "invoicing" | "rogue" | "crm" | "leads";
 
 /** What one installed package is: its descriptor, and its blueprint files by path under its blueprint folder. */
 interface Pkg {
@@ -41,19 +41,28 @@ const file = (path: string, exports: Readonly<Record<string, unknown>>): LoadedF
 
 /** What the members of each set are, as the fixtures declare them: the values the checks expect, never read from the model they judge. */
 export const OWN_VOUCHERS = ["Journal Entry"] as const;
+/** The members of the app's own open set, `Channel`: no feature depends on the app, so no feature adds to it. */
+export const OWN_CHANNELS = ["Web", "Phone"] as const;
+/** The members of the crm's own `PartyType`, a set apart from the ledger's though it has the same export name in a file of the same path. */
+export const OWN_CONTACTS = ["Lead"] as const;
 
 /**
  * The books, built fresh: the ledger's sets, a closed value beside them, its thing with an event and an operation, and each feature that adds.
  * `change` swaps one package's additions, so a refusal check plants exactly one wrong declaration.
  */
-export const books = (change: Partial<Record<Exclude<Name, "ledger">, (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>>> = {}) => {
+export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>>> = {}) => {
   const s = surface();
   const VoucherType = Blueprint.value(s.open(OWN_VOUCHERS));
   const PartyType = Blueprint.value(s.open([]));
   const AccountType = Blueprint.value(Blueprint.oneOf(["Bank", "Cash"]));
   const Voucher = Blueprint.value(s.refOf(VoucherType));
   const Party = Blueprint.value(s.refOf(PartyType));
-  const ledger: Ledger = { VoucherType, PartyType, AccountType, Voucher, Party };
+  // The crm owns an open set of its own, also exported as `PartyType` and from a file of the same path as the ledger's (`values/ledger.js`):
+  // a set is its owner's and its export's, so the two are two sets, and what is added to one is never in the other.
+  const CrmPartyType = Blueprint.value(s.open(OWN_CONTACTS));
+  // The app's own open set: its owner is the app.
+  const Channel = Blueprint.value(s.open(OWN_CHANNELS));
+  const ledger: Ledger = { VoucherType, PartyType, AccountType, Voucher, Party, CrmPartyType, Channel };
 
   const GlEntry = Blueprint.thing({
     description: "One line of the general ledger, posted by a voucher.",
@@ -71,7 +80,9 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger">, (s: OpenSe
   const ledgerFeature = Blueprint.feature({ description: "The books." });
   const feature = (description: string, needs: ReadonlyArray<Feature<any>>) => Blueprint.feature({ description, needs });
   const payments = feature("Payments.", [ledgerFeature]);
-  const adds = (name: Exclude<Name, "ledger">, values: (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>) => (change[name] ?? values)(s, ledger);
+  const crmFeature = Blueprint.feature({ description: "Contacts. Needs nothing, and is not the ledger." });
+  const Contact = Blueprint.thing({ description: "Someone the crm keeps.", fields: { id: Blueprint.id("con"), partyType: CrmPartyType }, code: "CO" });
+  const adds = (name: Exclude<Name, "ledger" | "crm">, values: (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>) => (change[name] ?? values)(s, ledger);
 
   const pkgs: Record<Name, Pkg> = {
     ledger: {
@@ -94,10 +105,16 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger">, (s: OpenSe
     invoicing: { descriptor: feature("Invoices.", [ledgerFeature]), files: [file("values/vouchers.js", adds("invoicing", (x, l) => ({ salesInvoice: x.add(l.VoucherType, ["Sales Invoice"]) })))] },
     // Adds to the ledger's set though it needs nothing: it doesn't depend on the set's owner.
     rogue: { descriptor: Blueprint.feature({ description: "Needs nothing." }), files: [file("values/rogue.js", adds("rogue", (x, l) => ({ rogue: x.add(l.VoucherType, ["Rogue Entry"]) })))] },
+    crm: {
+      descriptor: crmFeature,
+      files: [file("values/ledger.js", { PartyType: CrmPartyType }), file("things/contact/thing.js", { Contact })],
+    },
+    // Leads needs the crm, not the ledger: it may add to the crm's set, and a refusal check plants it adding to the ledger's.
+    leads: { descriptor: feature("Leads.", [crmFeature]), files: [file("values/leads.js", adds("leads", (x, l) => ({ prospect: x.add(l.CrmPartyType, ["Prospect"]) })))] },
   };
 
   // An app thing of its own that holds the ledger's sets, as an app that depends on the ledger may.
-  const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, party: Party }, code: "PS" });
+  const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, party: Party, channel: Channel }, code: "PS" });
   return { s, ledger, pkgs, Posting };
 };
 export interface Ledger {
@@ -106,6 +123,10 @@ export interface Ledger {
   readonly AccountType: Value;
   readonly Voucher: Value;
   readonly Party: Value;
+  /** The crm's own `PartyType`: another owner's set with the same export name. */
+  readonly CrmPartyType: Value;
+  /** The app's own open set, declared in the app's `blueprint/values/channels.ts`. */
+  readonly Channel: Value;
 }
 export type Books = ReturnType<typeof books>;
 
@@ -120,6 +141,7 @@ export interface AppSpec {
 export const modelExit = (b: Books, app: AppSpec) => {
   const appFiles = [
     ...Object.entries(app.mounts).map(([mount, name]) => file(`features/${mount}.ts`, { default: Blueprint.use(b.pkgs[name].descriptor) })),
+    file("values/channels.ts", { Channel: b.ledger.Channel }),
     file("things/posting/thing.ts", { Posting: b.Posting }),
     ...(app.files ?? []),
   ];

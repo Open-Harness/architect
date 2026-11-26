@@ -7,3 +7,6 @@ src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses 
 src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a feature adding a member the owner already has, naming the adder, the owner's file and the member
 src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a member repeated in one feature's additions, and an empty member, each naming the adder's file
 src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > never reads a feature that is installed but not mounted: what it would add wrongly refuses nothing
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a feature that needs another feature, but not the set's owner, adding to it: having a need is not depending on the owner
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a feature adding to the app's own open set: no feature depends on the app; it names the adder, the app's file and the member
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a feature adding to the other owner's set of the same name: adding to the crm's PartyType needs the crm, not the ledger

@@ -2,15 +2,18 @@
 //
 // Four feature packages are installed into a copy of acme, as a workspace installs them (a folder of TypeScript, linked into node_modules):
 // `@fixture/ledger` owns two open sets, VoucherType (its own member: Journal Entry) and PartyType (none of its own), and a reference to each;
-// `@fixture/payments` adds Payment Entry, `@fixture/parties` adds Customer and Supplier, and `@fixture/invoicing` adds Sales Invoice. The app
-// mounts the ledger, payments and parties; invoicing is installed and never mounted. The app's own `posting` thing holds a voucher type and a
-// reference to a voucher and to a party, and `posting.record` takes all three. The real command generates the app; a world runs it over local
+// `@fixture/payments` adds Payment Entry, `@fixture/parties` adds Customer and Supplier, and `@fixture/invoicing` adds Sales Invoice.
+// `@fixture/crm` needs nothing and owns an open set of its own that is also exported as `PartyType` from `blueprint/values/ledger.ts` (its
+// own member: Lead): a set is its owner's and its export's, so the two never share a member. The app owns one open set itself, `Channel`
+// (Web, Phone). The app mounts the ledger, payments, parties and the crm; invoicing is installed and never mounted. The app's own `posting`
+// thing holds a voucher type, a reference to a voucher and to a party, the crm's party type and a channel, and `posting.record` takes all five. The real command generates the app; a world runs it over local
 // D1, and ada calls it through the API, MCP and the generated CLI. Once the world has stopped, its D1 file is read.
 //
 // The contract judged, the same as the compiler's mounts/open-sets*.test.ts on the model:
 //  - nothing generated names the unmounted feature's member;
 //  - the API takes a member of the set, from the owner or a mounted feature, and refuses with 400 InvalidPayload a member of an unmounted
-//    feature, a name in no set, and a member of the other set, as a plain value and as a reference's kind;
+//    feature, a name in no set, and a member of another set (the ledger's other set, or the crm's set of the same name), as a plain value
+//    and as a reference's kind, and a reference with an empty id;
 //  - MCP lists exactly the mounted members for each field of the tool, and refuses a call with the unmounted member;
 //  - the CLI's help names each mounted member and not the unmounted one, and the CLI's call is refused with it;
 //  - only the accepted calls wrote a row.
@@ -57,22 +60,38 @@ export const Party = Blueprint.value(Blueprint.refAny.of(PartyType));
   payments: { "package.json": manifest("payments", ["ledger"]), "index.ts": descriptor("Payments.", ["ledger"]), "blueprint/values/vouchers.ts": adds("VoucherType", ["Payment Entry"]) },
   parties: { "package.json": manifest("parties", ["ledger"]), "index.ts": descriptor("Customers and suppliers.", ["ledger"]), "blueprint/values/parties.ts": adds("PartyType", ["Supplier", "Customer"]) },
   invoicing: { "package.json": manifest("invoicing", ["ledger"]), "index.ts": descriptor("Invoices.", ["ledger"]), "blueprint/values/vouchers.ts": adds("VoucherType", ["Sales Invoice"]) },
+  // Needs nothing; its set has the ledger's export name and file path, and is another set.
+  crm: {
+    "package.json": manifest("crm", []),
+    "index.ts": descriptor("Contacts.", []),
+    "blueprint/values/ledger.ts": `import { Blueprint } from "orthograph";
+/** The kind of contact the crm keeps: the crm's own set, not the ledger's, though it has the same name. */
+export const PartyType = Blueprint.value(Blueprint.oneOf.open(["Lead"]));
+`,
+  },
 };
-const MOUNTED = ["ledger", "payments", "parties"] as const;
+const MOUNTED = ["ledger", "payments", "parties", "crm"] as const;
 
 // ---- the app's own posting ----
 
 const FILES: Readonly<Record<string, string>> = {
   ...Object.fromEntries(MOUNTED.map((n) => [`blueprint/features/${n}.ts`, `import { Blueprint } from "orthograph";\nimport plugin from "@fixture/${n}";\n\nexport default Blueprint.use(plugin, (_p) => []);\n`])),
+  // The app's own open set: its owner is the app, and no feature depends on the app.
+  "blueprint/values/channels.ts": `import { Blueprint } from "orthograph";
+/** How a posting came in. */
+export const Channel = Blueprint.value(Blueprint.oneOf.open(["Web", "Phone"]));
+`,
   "blueprint/things/posting/thing.ts": `import { Blueprint } from "orthograph";
 import { Party, Voucher, VoucherType } from "@fixture/ledger/blueprint/values/ledger.js";
-export const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, voucher: Voucher, party: Party } });
+import { PartyType as ContactType } from "@fixture/crm/blueprint/values/ledger.js";
+import { Channel } from "../../values/channels.ts";
+export const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, voucher: Voucher, party: Party, contactType: ContactType, channel: Channel } });
 `,
   "blueprint/things/posting/verbs/record.ts": `import { Blueprint } from "orthograph";
 import { Posting } from "../thing.ts";
 export default Blueprint.operation(Posting, {
   description: "Record a posting.",
-  payload: { posting: Blueprint.id("pst"), voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party },
+  payload: { posting: Blueprint.id("pst"), voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party, contactType: Posting.fields.contactType, channel: Posting.fields.channel },
   answer: { posting: Posting.fields.id },
   allowed: [Blueprint.signedIn],
   steps: { save: Blueprint.step.database() },
@@ -85,7 +104,7 @@ import { Records } from "@orthograph/language-effect";
 import { Posting } from "../../blueprint/things/posting/thing.ts";
 export default ((payload: any, context: any) => Effect.gen(function* () {
   const records = yield* Records;
-  yield* context.steps.save(records.insert(Posting, { id: payload.posting, voucherType: payload.voucherType, voucher: payload.voucher, party: payload.party } as never));
+  yield* context.steps.save(records.insert(Posting, { id: payload.posting, voucherType: payload.voucherType, voucher: payload.voucher, party: payload.party, contactType: payload.contactType, channel: payload.channel } as never));
   return { posting: payload.posting };
 })) as never;
 `,
@@ -106,7 +125,7 @@ const ortho = (root: string, ...args: ReadonlyArray<string>) => {
   expect(said.status, `ortho ${args.join(" ")}:\n${said.out}`).toBe(0);
   return said;
 };
-/** A copy of acme with the four packages installed, three of them mounted, generated, its handler written, and generated again. */
+/** A copy of acme with the five packages installed, four of them mounted, generated, its handler written, and generated again. */
 const app = (): App => {
   const copy = copyOf(acme);
   apps.push(copy);
@@ -183,6 +202,8 @@ const flagsOf = (help: string): ReadonlyMap<string, string> => {
 
 const VOUCHERS = ["Journal Entry", "Payment Entry"];
 const PARTIES = ["Customer", "Supplier"];
+const CONTACTS = ["Lead"];
+const CHANNELS = ["Phone", "Web"];
 const voucher = (kind: string, id = "v_1") => ({ kind, id });
 
 describe("14 an open set holds the mounted features' members, at every door, on D1", () => {
@@ -193,7 +214,7 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     const files = generated(root);
     expect(files.filter(([, text]) => text.includes("Sales Invoice")).map(([path]) => path), "no generated file names Sales Invoice").toEqual([]);
     const model = files.find(([path]) => path === "generated/model/model.json")?.[1] ?? "";
-    for (const kind of [...VOUCHERS, ...PARTIES]) expect(model, `the model names ${kind}`).toContain(JSON.stringify(kind));
+    for (const kind of [...VOUCHERS, ...PARTIES, ...CONTACTS, ...CHANNELS]) expect(model, `the model names ${kind}`).toContain(JSON.stringify(kind));
 
     const name = "m2-14-open-sets";
     const got = await Effect.runPromise(Effect.scoped(Effect.gen(function* () {
@@ -206,10 +227,11 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         const post = sender(url, ada);
         let n = 0;
         const next = () => `pst_${String(++n)}`;
-        const record = (kind: string, v: unknown, party: unknown) => post("posting/record", { posting: next(), voucherType: kind, voucher: v, party });
+        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string } = {}) =>
+          post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", ...more });
         const api = {
           payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
-          journal: await record("Journal Entry", voucher("Journal Entry", "j_1"), { kind: "Supplier", id: "s_1" }),
+          journal: await record("Journal Entry", voucher("Journal Entry", "j_1"), { kind: "Supplier", id: "s_1" }, { channel: "Phone" }),
           unmountedKind: await record("Sales Invoice", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
           unmountedRef: await record("Payment Entry", voucher("Sales Invoice"), { kind: "Customer", id: "c_1" }),
           noSuchKind: await record("Nonsense", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
@@ -217,6 +239,11 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           otherSetKind: await record("Customer", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
           otherSetRef: await record("Payment Entry", voucher("Payment Entry"), { kind: "Journal Entry", id: "j_1" }),
           declarationShape: await record("Payment Entry", { declaration: "payment-entry", id: "v_1" }, { kind: "Customer", id: "c_1" }),
+          emptyId: await record("Payment Entry", voucher("Payment Entry", ""), { kind: "Customer", id: "c_1" }),
+          // The crm's PartyType and the ledger's are two sets: neither takes the other's member.
+          ledgerPartyAsContact: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { contactType: "Customer" }),
+          contactAsParty: await record("Payment Entry", voucher("Payment Entry"), { kind: "Lead", id: "c_1" }),
+          noSuchChannel: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { channel: "Fax" }),
         };
         const rpc = async (method: string, params: object) => {
           const response = await fetch(`${url}/mcp`, {
@@ -227,11 +254,12 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           return JSON.parse(text.replace(/^data: /m, "").split("\n")[0]!) as { result?: { tools?: ReadonlyArray<{ name: string; inputSchema: unknown }>; isError?: boolean } };
         };
         const tool = (await rpc("tools/list", {})).result?.tools?.find((t) => t.name === "posting.record");
-        const mcpCall = async (kind: string) => (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" } } })).result;
+        const mcpCall = async (kind: string) => (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web" } })).result;
         const mcp = { tool, accepted: await mcpCall("Payment Entry"), refused: await mcpCall("Sales Invoice") };
-        const cli = (kind: string) => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }));
+        const cli = (kind: string) => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }), "--contactType", "Lead", "--channel", "Web");
         const help = acmeCli(root, url, ada, "posting", "record", "--help");
-        return { api, mcp, cli: { help, accepted: cli("Journal Entry"), refused: cli("Sales Invoice") } };
+        // The accepted call is a mounted feature's member: a CLI that knows only the owner's own members would refuse it.
+        return { api, mcp, cli: { help, accepted: cli("Payment Entry"), refused: cli("Sales Invoice") } };
       });
     })));
     nothingRunning(root);
@@ -239,7 +267,7 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     // The API: a member of the set, the owner's or a mounted feature's, is taken; anything else is refused before the handler runs.
     expect(got.api.payment.status, JSON.stringify(got.api.payment.body)).toBe(200);
     expect(got.api.journal.status, JSON.stringify(got.api.journal.body)).toBe(200);
-    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape"] as const) {
+    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "noSuchChannel"] as const) {
       expect(got.api[key], `${key}: ${JSON.stringify(got.api[key].body)}`).toMatchObject({ status: 400, body: { _tag: "InvalidPayload" } });
     }
 
@@ -249,6 +277,8 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     expect(kindsIn(input.properties?.["voucherType"], input), "the voucher type field's members").toEqual(VOUCHERS);
     expect(kindsIn(input.properties?.["voucher"], input), "the voucher reference's kinds").toEqual(VOUCHERS);
     expect(kindsIn(input.properties?.["party"], input), "the party reference's kinds").toEqual(PARTIES);
+    expect(kindsIn(input.properties?.["contactType"], input), "the crm's party type: its own set, not the ledger's").toEqual(CONTACTS);
+    expect(kindsIn(input.properties?.["channel"], input), "the app's own set").toEqual(CHANNELS);
     expect(got.mcp.accepted?.isError, JSON.stringify(got.mcp.accepted)).not.toBe(true);
     expect(got.mcp.refused?.isError, JSON.stringify(got.mcp.refused)).toBe(true);
     expect(JSON.stringify(got.mcp.refused)).toContain("InvalidPayload");
@@ -256,11 +286,11 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     // The CLI: its help names each member a caller may pass, and never the unmounted one; its call with that one is refused.
     expect(got.cli.help.status, got.cli.help.stderr).toBe(0);
     const flags = flagsOf(got.cli.help.stdout);
-    for (const [flag, kinds] of [["voucherType", VOUCHERS], ["voucher", VOUCHERS], ["party", PARTIES]] as const) {
+    for (const [flag, kinds] of [["voucherType", VOUCHERS], ["voucher", VOUCHERS], ["party", PARTIES], ["contactType", CONTACTS], ["channel", CHANNELS]] as const) {
       expect(flags.get(flag), `the help has --${flag}`).toBeDefined();
       for (const kind of kinds) expect(flags.get(flag), `--${flag}'s help names ${kind}`).toContain(kind);
       // Each flag names only its own set's members: the other set's, and the unmounted feature's, are not a value it takes.
-      for (const kind of [...VOUCHERS, ...PARTIES, "Sales Invoice"].filter((k) => !kinds.includes(k))) expect(flags.get(flag), `--${flag}'s help doesn't name ${kind}`).not.toContain(kind);
+      for (const kind of [...VOUCHERS, ...PARTIES, ...CONTACTS, ...CHANNELS, "Sales Invoice"].filter((k) => !kinds.includes(k))) expect(flags.get(flag), `--${flag}'s help doesn't name ${kind}`).not.toContain(kind);
     }
     expect(got.cli.help.stdout).not.toContain("Sales Invoice");
     expect(got.cli.accepted.status, got.cli.accepted.stderr).toBe(0);
@@ -269,7 +299,8 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     // Only the accepted calls wrote: the API's two, MCP's one and the CLI's one.
     const rows = postingsOf(root, name);
     expect(rows, JSON.stringify(rows)).toHaveLength(4);
-    expect(rows.map((r) => Object.entries(r).find(([k]) => /^voucher_?type$/i.test(k))?.[1])).toEqual(["Payment Entry", "Journal Entry", "Payment Entry", "Journal Entry"]);
+    expect(rows.map((r) => Object.entries(r).find(([k]) => /^voucher_?type$/i.test(k))?.[1])).toEqual(["Payment Entry", "Journal Entry", "Payment Entry", "Payment Entry"]);
+    expect(rows.map((r) => Object.entries(r).find(([k]) => /^channel$/i.test(k))?.[1])).toEqual(["Web", "Phone", "Web", "Web"]);
     expect(JSON.stringify(rows)).not.toContain("Sales Invoice");
   });
 });
