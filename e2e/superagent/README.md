@@ -220,7 +220,7 @@ changed stops and asks its author.
 
 ## Outside this folder, for whoever lands this
 
-- `.github/workflows/ci.yml` needs an `e2e-superagent` job like `e2e-m8`'s, running `e2e:superagent-ratchet`.
+- `.github/workflows/parked.yml` runs `e2e:superagent-ratchet` as the job `e2e-superagent`, beside `e2e-m8` (`design/decisions/CI-parked-suites-nightly.md`).
 - `tools/ci/builder-paths.sh` lets a `-build` branch shrink only M1's and M2's lists: add `e2e/superagent/expected-failing/`,
   or slice 4's builder cannot take its lines off the list.
 - `e2e/project.json` and `e2e/vitest.superagent*.config.ts` register the checks, as M8's are.
