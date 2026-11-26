@@ -167,7 +167,7 @@ once planned.
 | plugin-kinds-language-host | Language and host plugin kinds: design only | provisional | framework | — | — | none | `packages/orthograph/src/modules/plugins` | plugins-mounts | K27; Goal 4 slice 1 |
 | chain-solidity | Solidity: chain store, Solidity output, Foundry tests and fuzz; `language-solidity` is empty | spiked | framework | — | — | none | `packages/language-solidity` | plugin-kinds-language-host | `spikes/chain-languages`; slices M6.10 to M6.13 |
 | contract-client | Contract client: contract client and signing | spiked | Capxul | 1.0 | getting paid | none | `packages/chain-evm` | chain-evm | slices M6.01, M6.14, M6.15; #475; #475 |
-| safe-hats-budgets | Safe, Hats and budgets: Safe, Hats and the budgets module; Capxul takes the Safe and Zodiac Roles, not Hats (CX-safe) | spiked | Capxul | 1.0 | getting paid | goal-16 | `packages/safe`, `packages/zodiac-roles` | — | `spikes/safe-hats-module` (#294); `design/decisions/ST3-budgets.md`; `design/decisions/CX-safe.md`; slices ST3.01 to ST3.08, M6.16; `issue #484`; #1161, #1163 |
+| safe-hats-budgets | Safe, Hats and budgets: Safe, Hats and the budgets module; Capxul takes the Safe and Zodiac Roles, not Hats (CX-safe) | spiked | Capxul | 1.0 | getting paid | goal-16 | `packages/safe`, `packages/zodiac-roles` | chain-evm | `spikes/safe-hats-module` (#294); `design/decisions/ST3-budgets.md`; `design/decisions/CX-safe.md`; slices ST3.01 to ST3.08, M6.16; `issue #484`; #1161, #1163 |
 
 ### Workflows, agents, time
 
