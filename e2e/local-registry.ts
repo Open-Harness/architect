@@ -48,12 +48,19 @@ const until = async (ok: () => Promise<boolean>, seconds: number): Promise<boole
   return false;
 };
 
-/** Stop a process group started detached, by its PID: TERM, then KILL after ten seconds. */
+/** Whether any process is still in the group led by `pid` (signal 0 only asks; ESRCH means the group is empty). */
+const groupAlive = (pid: number): boolean => {
+  try { process.kill(-pid, 0); return true; } catch { return false; }
+};
+/** Stop a process group started detached, by its PID: TERM, then KILL after ten seconds. It judges by the group, not the leader,
+ * so a descendant that outlives its leader or ignores TERM is still stopped (Codex on #1145). */
 export const stopGroup = async (child: ChildProcess | undefined): Promise<void> => {
-  if (child?.pid === undefined || child.exitCode !== null || child.signalCode !== null) return;
-  try { process.kill(-child.pid, "SIGTERM"); } catch { /* already gone */ }
-  if (!(await until(async () => child.exitCode !== null || child.signalCode !== null, 10))) {
-    try { process.kill(-child.pid, "SIGKILL"); } catch { /* already gone */ }
+  const pid = child?.pid;
+  if (pid === undefined || !groupAlive(pid)) return;
+  try { process.kill(-pid, "SIGTERM"); } catch { /* already gone */ }
+  if (!(await until(async () => !groupAlive(pid), 10))) {
+    try { process.kill(-pid, "SIGKILL"); } catch { /* already gone */ }
+    await until(async () => !groupAlive(pid), 5);
   }
 };
 
