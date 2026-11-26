@@ -84,7 +84,12 @@ export interface ProveApi {
     readonly url: string;
     /** What the address is called in a refusal, e.g. `run r4417`. */
     readonly label: string;
-    readonly only?: string;
+    /**
+     * The journeys to judge, by name (`--only`, any number of times): each once, in file order, every one run even after one fails, and
+     * `passed` is all of theirs. The first name that is no journey is a `ProveFailed` naming it, before the address is asked anything.
+     * Empty or absent, every journey (CX-staging).
+     */
+    readonly only?: ReadonlyArray<string>;
     /** The deployed environment's database, read through Cloudflare's API with the operator's credential. Without it the journeys' facts come from the Worker's own `/_world`, which only a local world has. */
     readonly d1?: D1Access;
   }) => Effect.Effect<Report, ProveFailed>;
