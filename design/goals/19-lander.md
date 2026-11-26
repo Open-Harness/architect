@@ -85,7 +85,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-25 November 2026, about 10:40 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
+26 November 2026, about 15:00 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
 minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
 said no Claude-led goal is running now.
 
@@ -100,8 +100,9 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Thirteen Capxul rounds have landed, and `goal/capxul` is 0 commits ahead of
-  `main`:
+- **Slice 3, the landing loop, is running.** Fifteen Capxul rounds have landed. `goal/capxul` is ahead of `main`
+  by payroll, slice 9a: #1078's checks with #1102's build, and #1105 (CX-payroll-tax: the United States only)
+  between them, which the next round lands together:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -135,18 +136,28 @@ said no Claude-led goal is running now.
     #1055. #1051's last fix (`7a55e9bb`) sat on #1026's merge, so the two landed as one. The 🔍 passed it: `prove`
     gives 91/91 moves, 84/84 outcomes and 174/174 refusals; on blank handlers exactly the 15 new journeys fail, and
     each of 12 planted wrong builds fails a named step. #1026 had no posted 🔍, and Goal 16 was asked to post it.
+  - #1097 brought two docs slices, at `a03ef322`: #1050 (CX-ledger's balance and P&L with no fiscal year, and
+    CX-appraisals: a submitted appraisal still rescores) and #1088 (CX-payroll-tax: a tax module per jurisdiction,
+    the United States first). The 🔍 checked every cited ERPNext and HRMS line and passed it; its one nit, a
+    132-column line in CX-ledger, is Goal 16's to rewrap (#426).
+  - #1107 brought #1091, Capxul's journeys in CI (the `e2e-capxul` job), at `8d40dfdc`, cut at `d697e8ee` so #1078
+    stayed out. Merging `main` conflicted in `ci.yml`, where #1092 had moved `e2e-portal-next` and `e2e-ui-layer` into
+    the `parked` workflow; the lander kept `main`'s layout and added only the new job. #1091 had no 🔍 of its own, so
+    the lander's 🔍 reviewed its three files too and passed them, and Goal 16 was asked to post a 🔍 on every slice.
 
-  Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
+  Capxul has no ratchet, so a checks slice lands only with its build. Since #1107, `e2e-capxul` runs `prove` on
+  `examples/capxul` for pull requests into `goal/capxul` and `main`; it is not required, and it skips on push (noted for
+  Goal 18 on #718), on docs-only pull requests and on those that can't change what `prove` does. A 🔍 failed #919 while
   it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
   #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
   `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
   way: #939 (`check` refuses a role path that walks to nothing, and a `Blueprint.todo` in `allowed` is a blank), #943
-  (exact decimals and two-way links, the build) and #928 (CX-takeover). #928's board rows turned the `goals` sync red
-  on `main` at `2cdfa9b3`: `webhook-doors` and Goal 16's rows overlapped in
-  `packages/host-cloudflare/src/modules/store`. #948 narrowed `webhook-doors`' Touches to `inbound/`, as CX-takeover
-  says ("inbound/ stays Goal 17's"), and the sync is green again at `f72338b2`. The row
-  still leaves out the doors' other homes from #747 (`projections/src/modules/server`, compiler mounts and the
-  generators' adapter); a complete row would overlap Goal 16's gap-optional-columns, which is noted for Goal 18 on #718.
+  (exact decimals and two-way links, the build) and #928 (CX-takeover). #928's board rows turned the `goals` sync red on
+  `main` at `2cdfa9b3`: `webhook-doors` and Goal 16's rows overlapped in `packages/host-cloudflare/src/modules/store`.
+  #948 narrowed `webhook-doors`' Touches to `inbound/`, as CX-takeover says ("inbound/ stays Goal 17's"), and the sync
+  is green again at `f72338b2`. The row still leaves out the doors' other homes from #747
+  (`projections/src/modules/server`, compiler mounts and the generators' adapter); a complete row would overlap Goal
+  16's gap-optional-columns, which is noted for Goal 18 on #718.
 
   #887 landed `goal/superagent` through `4123b1cb` in `main`, at `dbbdee56`, and the branch is 0 commits ahead of it.
   Goal 16 has run Goal 17's lane since CX-takeover. A reviewer thread that wrote none of them recorded the 18 🔍
@@ -170,7 +181,8 @@ said no Claude-led goal is running now.
   `receipts`, which `orthograph` does not export), #898 (the board sync takes over closed Asks),
   #908 (`e2e-layer1` check 4 fails at random; it turned `main` red at `06877509` and #919 red at `3822d439`,
   and a rerun passed each time) and #944 (host-cloudflare `entry.test.ts` "a spawn has a token of its own" fails at
-  random). Two tests in that file fail at random: "a spawn has a token of its own" (at `4068d588`, on `main` at
+  random; #1073 made both tests wait for the token to go back, at `2a8e4d56`).
+  Two tests in that file fail at random: "a spawn has a token of its own" (at `4068d588`, on `main` at
   `6f77a26a` and on #993 at `e5087506`) and "is counted from arrival …" (at `9a8601a6`, on #993's rerun at
   `e5087506`, and on `main` at `85ee3707` and `765ee8dd`). Reruns passed at `4068d588`, `9a8601a6`, `765ee8dd` and, on
   the second rerun, `e5087506`; `main` went green again on its next commit after `6f77a26a` and after
@@ -179,6 +191,8 @@ said no Claude-led goal is running now.
   acme, failed on one that had gone, on `main` at `765ee8dd`. `logbook`'s `local/routes.test.ts` failed once on #948
   and passed on rerun. #1035: `e2e-layer2` check 3 fails at random with "world's address was taken" (on `main` at
   `67605c1e`; a rerun passed). #1058: `prove`'s `promote/staging.test.ts` fails at random when its issuer's port is
-  taken (on `main` at `f8a20825`; `main` was green on its next commit, `c819ed27`).
+  taken (on `main` at `f8a20825`; `main` was green on its next commit, `c819ed27`). #1071's `parked` label
+  description was over GitHub's 100 characters, so the `goals` sync was red on `main` from `4424c0a5` until #1073
+  shortened it (`2a8e4d56`).
 - **Next:** each round lands what the app branches have merged since, and tells every running goal after each
   landing.

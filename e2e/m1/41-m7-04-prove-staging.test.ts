@@ -43,6 +43,8 @@ import { freePorts } from "../ports.ts";
 import { repo } from "./support.ts";
 import { expected, prefixOf, project as planProject, type PlanModel } from "./staging-plan.ts";
 import { modelOf } from "./staging-plan.ts";
+// @ts-expect-error: a plain module of the staging workflow's, with no types
+import { RUNS } from "../staging/runs.mjs";
 import { DENIED, STORY, SUBDOMAIN, guarded, hostOf, problems, recorder, startDev, staged, stopDev, storyOf, type Ran, type Recorder, type Story } from "./prove-staging.ts";
 
 const PORTS = freePorts("good", "text", "bad", "goodProxy", "textProxy", "badProxy", "dead", "silent", "refuse");
@@ -226,7 +228,9 @@ describe("41: ortho prove --env staging --run <id> (M7.04), with no cloud", () =
     it("the workflow's story step judges a journey that exists, gets the subdomain from an earlier step's output, and holds exactly up's two credentials", () => {
       const text = flow;
       const step = storyStep(text);
-      expect(/--only "([^"]+)"/.exec(step)?.[1], step).toBe(STORY);
+      // The step proves the chosen run's journeys, each with its own --only (CX-staging); the default run, Plugged In's, is the story alone.
+      expect(step, step).toContain('only+=(--only "$name"); done < "$EVIDENCE/journeys.txt"');
+      expect(RUNS["plugged-in"]).toEqual({ root: "examples/plugged-in", journeys: [STORY] });
       expect(storyOf(judged.root).names).toContain(STORY);
       expect(step).toContain("ORTHO_STAGING_SUBDOMAIN: ${{ steps.subdomain.outputs.subdomain }}");
       expect(text, "a step that runs before the story reads the account's subdomain").toMatch(/- name: subdomain\n[\s\S]*?subdomain\.mjs[\s\S]*?- name: the story/);
