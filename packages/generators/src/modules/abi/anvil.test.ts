@@ -28,6 +28,7 @@ interface ProbeModule {
   readonly deploy: (port: ChainPort, signer: Signer, args: { readonly start: bigint }) => Fx<Address>;
   readonly TooBig: new (fields: { x: bigint; limit: bigint }) => { readonly _tag: "TooBig" };
   readonly Empty: new () => { readonly _tag: "Empty" };
+  readonly Spent: new (fields: { arg0: string }) => { readonly _tag: "Spent" };
 }
 
 // Generated and loaded once, by the first test that runs, so each test fails on its own when the generator can't make it.
@@ -142,6 +143,25 @@ describe("a generated adapter against its stand-in on Anvil", () => {
       expect(["ChainFault", "ChainRefusal"]).toContain(refused._tag);
       expect(refused).not.toBeInstanceOf(Probe.TooBig);
       expect(refused).not.toBeInstanceOf(Probe.Empty);
+    })));
+
+  anvil("an unnamed input, named by its position, is sent and decoded by that name: a mapping's getter, an event and an error", { timeout: 60_000 }, () =>
+    onAnvil(({ port, signer }) => Effect.gen(function* () {
+      const address = yield* Probe.deploy(port, signer, { start: 7n });
+      const c = Probe.at({ port, address });
+      const h = `0x${"cd".repeat(32)}`;
+      expect(yield* c["marks"]!({ arg0: h })).toBe(0n);
+      const marked = (yield* c["mark"]!({ h }, signer)) as Submission;
+      const receipt = yield* included(port, marked);
+      expect(yield* c["marks"]!({ arg0: h })).toBe(receipt.blockNumber);
+      expect(yield* c["marks"]!({ arg0: `0x${"00".repeat(32)}` })).toBe(0n);
+      expect(yield* seen(port, Probe.events["Marked"]!(address, marked.fromBlock))).toEqual([
+        { eventName: "Marked", args: { arg0: h }, address: lower(address) },
+      ]);
+      const spent = yield* Effect.flip(c["mark"]!({ h }, signer));
+      expect(spent).toBeInstanceOf(Probe.Spent);
+      expect({ _tag: spent._tag, arg0: (spent as unknown as { arg0: string }).arg0 }).toEqual({ _tag: "Spent", arg0: h });
+      expect(fieldsOf(spent)).toEqual(["arg0"]);
     })));
 
   anvil("a payable write sends its value, an overload each its own function, and a write is its signer's", { timeout: 60_000 }, () =>

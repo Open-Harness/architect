@@ -49,9 +49,9 @@ describe("FromAbi.adapter", () => {
   it("says what it made on its last line: the contracts, calls, events and errors", async () => {
     const p = project();
     const r = await run(p.root, "probe-kit", [p.probe, p.quiet]);
-    expect(r._tag === "Success" ? r.success.at(-1) : says(r)).toBe("generated adapter probe-kit: 2 contracts, 15 calls, 4 events, 2 errors");
+    expect(r._tag === "Success" ? r.success.at(-1) : says(r)).toBe("generated adapter probe-kit: 2 contracts, 17 calls, 5 events, 3 errors");
     const one = await run(p.root, "solo", [p.probe]);
-    expect(one._tag === "Success" ? one.success.at(-1) : says(one)).toBe("generated adapter solo: 1 contracts, 13 calls, 3 events, 2 errors");
+    expect(one._tag === "Success" ? one.success.at(-1) : says(one)).toBe("generated adapter solo: 1 contracts, 15 calls, 4 events, 3 errors");
   });
 
   it("puts every generated file back when run again, and leaves the scaffolds as the user changed them", async () => {

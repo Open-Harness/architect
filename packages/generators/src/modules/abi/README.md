@@ -64,6 +64,7 @@ A call of `at(chain)`, for a function `f` (an overload is `f_1`, `f_2`, … ever
 |---|---|
 | a tuple `p` inside a generated type `T` (an `Args`, an `Answer`, an `EventArgs`, a `Fields`, `ConstructorArgs`, or another tuple's) | `T` + `Pascal(p)`: `BoxedArgsB` for `boxed(Box b)`, inside it `BoxedArgsBInner`; `BoxedAnswerOut` for its output `out` |
 | a lone unnamed tuple output of `f` | `Pascal(f)` + `Answer` itself: an interface of its components |
+| an unnamed input of a function, event, error or constructor (a public mapping's key, `marks(bytes32)`) | `arg` + its position from 0: `MarksArgs { readonly arg0: Hex }`, as typechain names it |
 | an overloaded name (two or more functions, events or errors of one name) | each is `<name>_<n>`, `n` counted from 1 in ABI order; a name with one member is left as it is |
 
 ## The mapping
@@ -97,12 +98,12 @@ contracts with bytecode, or `{ kind: "stand-in", how: "none" }` when none has an
   identifier starting with a capital letter (`Probe`, `ERC20`)
 - a file that is not an ABI (an array of objects) or an artifact holding one; an item with no known `type`; a function, event or error with no name
 - a contract with no function and no event (a constructor, a `fallback` and a `receive` are read past: they are not calls)
-- an unnamed input of a function, event, error or constructor; an unnamed tuple component; an unnamed output of a function
-  with several
-- two inputs, two outputs or two components of one name
+- an unnamed tuple component; an unnamed output of a function with several (an unnamed input is named by its position, above)
+- two inputs, two outputs or two components of one name, an unnamed input's `arg<n>` among them
 - a type with no mapping (`fixed<M>x<N>`, `ufixed…`, `function`)
 - an anonymous event
-- bytecode that isn't `0x` and an even number of hex digits
+- bytecode that isn't `0x` and an even number of hex digits; bytecode still holding a library's `__$…$__` placeholder, with its own
+  message: link it first, or leave the bytecode out and stand the contract in by hand
 - two generated names that collide (`function transferEvent` and `event Transfer` both make `TransferEventArgs`)
 
 Tests: `abi.test.ts` (the files and the names), `types.test.ts` (the types, through `tsc`), `anvil.test.ts` (the calls against the

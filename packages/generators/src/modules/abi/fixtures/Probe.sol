@@ -17,15 +17,19 @@ contract Probe {
 
     error TooBig(uint256 x, uint256 limit);
     error Empty();
+    error Spent(bytes32);
 
     event Poked(address indexed who, uint256 x, string note);
     event Funded(address indexed from, uint256 amount);
     event Sent(address indexed to, uint256 value);
+    event Marked(bytes32);
 
     uint256 public constant LIMIT = 100;
     uint256 private stored;
     uint256 public funded;
     address public owner;
+    // A public mapping: its getter's input has no name, as Safe's `approvedHashes` and Roles' `allowances` have none.
+    mapping(bytes32 => uint256) public marks;
 
     constructor(uint256 start) {
         stored = start;
@@ -60,6 +64,12 @@ contract Probe {
     function drain() external {
         if (stored == 0) revert Empty();
         stored = 0;
+    }
+
+    function mark(bytes32 h) external {
+        if (marks[h] != 0) revert Spent(h);
+        marks[h] = block.number;
+        emit Marked(h);
     }
 
     function refuse() external pure {

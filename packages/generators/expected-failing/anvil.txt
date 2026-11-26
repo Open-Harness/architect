@@ -3,4 +3,5 @@ src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvi
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a revert that is not one of the contract's errors stays the chain's own error
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a revert with one of the contract's errors fails as its class with its fields, and nothing is sent
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a write prepares, simulates, signs and submits, answering the Submission; its event decodes typed
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > an unnamed input, named by its position, is sent and decoded by that name: a mapping's getter, an event and an error
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > deploy puts the stand-in on the chain with its constructor's arguments, and a read answers typed

@@ -13,9 +13,9 @@ const ADDRESS = "0x00000000000000000000000000000000000000aa";
 /** A port that is never called: `at` and `events` only build what they answer. */
 const idle = new Proxy({}, { get: (_t, key) => () => { throw new Error(`the port's ${String(key)} was called while only building calls`); } });
 
-const PROBE_CALLS = ["LIMIT", "boxed", "drain", "fund", "funded", "label", "owner", "pair", "peek", "poke", "refuse", "send_1", "send_2"];
-const PROBE_EVENTS = ["Funded", "Poked", "Sent"];
-const PROBE_ERRORS = ["Empty", "TooBig"];
+const PROBE_CALLS = ["LIMIT", "boxed", "drain", "fund", "funded", "label", "mark", "marks", "owner", "pair", "peek", "poke", "refuse", "send_1", "send_2"];
+const PROBE_EVENTS = ["Funded", "Marked", "Poked", "Sent"];
+const PROBE_ERRORS = ["Empty", "Spent", "TooBig"];
 
 describe("the files", () => {
   it("makes abi/, src/generated/ per contract and its index, the descriptor, blueprint/ and package.json, sorted by path", async () => {

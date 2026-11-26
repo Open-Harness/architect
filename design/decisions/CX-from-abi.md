@@ -31,7 +31,12 @@ The whole shape is `packages/generators/src/modules/abi/README.md`; in short:
 3. **Explicit types,** Goal 12's names and mapping (`<Fn>Args`, `<Fn>Answer`, `<Event>EventArgs`, `<Error>Fields`; `uint` and
    `int` to `bigint`, `address` to `Address`, `bytes` to `Hex`, arrays to `ReadonlyArray`, tuples to interfaces, an indexed
    dynamic event input to the `Hex` of its topic; overloads `<name>_<n>`). One change: a tuple is named by the type that holds
-   it plus its own name (`BoxedArgsB`, `BoxedAnswerOut`), so an input's and an output's tuples never meet.
+   it plus its own name (`BoxedArgsB`, `BoxedAnswerOut`), so an input's and an output's tuples never meet. Two more: an
+   unnamed input is named by its position, `arg0`, as typechain names it, where Goal 12 refused it: Safe 1.4.1's
+   `approvedHashes` and `signedMessages` and Roles 2.1.1's `allowances`, `HashAlreadyConsumed`, `HashExecuted` and
+   `HashInvalidated` have one (public mappings), and refusing them would make A3 and A4 hand-edit the published ABIs (their
+   authors, 26 November 2026). And bytecode still holding a library's `__$…$__` placeholder (Roles' mastercopy) is refused
+   with its own message: link it first, or leave it out and stand the contract in by hand, as A4's world starter does.
 4. **The calls run on chain-evm, untyped below and typed above.** `at({ port, address, from? })` holds one call per function: a
    `view` or `pure` one reads (`ChainPort.read`, decoded); any other writes (`prepare`, `simulate`, `sign`, `submit`, answering
    the `Submission`), a `payable` one taking `{ value }`. The generated module imports only `effect` and

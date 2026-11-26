@@ -53,7 +53,13 @@ same<Probe.PokedEventArgs, { readonly who: Address; readonly x: bigint; readonly
 same<Probe.FundedEventArgs, { readonly from: Address; readonly amount: bigint }>(true);
 same<Probe.SentEventArgs, { readonly to: Address; readonly value: bigint }>(true);
 same<Probe.TooBigFields, { readonly x: bigint; readonly limit: bigint }>(true);
-same<Probe.Refusal, Probe.TooBig | Probe.Empty>(true);
+same<Probe.Refusal, Probe.TooBig | Probe.Empty | Probe.Spent>(true);
+// An unnamed input is named by its position.
+same<Probe.MarksArgs, { readonly arg0: Hex }>(true);
+same<Probe.MarksAnswer, bigint>(true);
+same<Probe.MarkArgs, { readonly h: Hex }>(true);
+same<Probe.MarkedEventArgs, { readonly arg0: Hex }>(true);
+same<Probe.SpentFields, { readonly arg0: Hex }>(true);
 same<Quiet.PingAnswer, string>(true);
 same<Quiet.PairAnswer, { readonly a: bigint; readonly b: Address }>(true);
 // An indexed string, bytes, array or tuple is the Hex of its topic; an indexed address is still an Address.
@@ -85,6 +91,8 @@ c.fund(signer);
 c.fund(signer, { value: 1n });
 c.send_1({ to: address }, signer);
 c.send_2({ to: address, value: 9n }, signer);
+c.marks({ arg0: "0x00" });
+c.mark({ h: "0x00" }, signer);
 // @ts-expect-error a read with no inputs takes no argument
 c.peek({});
 // @ts-expect-error a uint is a bigint, never a number

@@ -3,16 +3,15 @@ src/modules/abi/refusals.test.ts > the file > refuses JSON that is neither an AB
 src/modules/abi/refusals.test.ts > the file > refuses a contract with no function and no event, and takes one with only an event
 src/modules/abi/refusals.test.ts > the file > refuses a function, an event or an error with no name
 src/modules/abi/refusals.test.ts > the file > refuses an item with no known type, naming the type
+src/modules/abi/refusals.test.ts > the file > refuses bytecode still holding a library's placeholder, saying it must be linked first
 src/modules/abi/refusals.test.ts > the file > refuses bytecode that isn't 0x and an even number of hex digits, naming the contract
 src/modules/abi/refusals.test.ts > the items > refuses a fixed-point type, naming it (Probe: function m)
 src/modules/abi/refusals.test.ts > the items > refuses a function type, naming it (Probe: function n)
 src/modules/abi/refusals.test.ts > the items > refuses an anonymous event, naming it (Probe: event Quiet)
 src/modules/abi/refusals.test.ts > the items > refuses an overload whose suffixed name another item already has (send, send and send_1)
 src/modules/abi/refusals.test.ts > the items > refuses an unmapped type inside an array, naming it (Probe: function n2)
-src/modules/abi/refusals.test.ts > the items > refuses an unnamed input of a function, naming it (Probe: function f)
-src/modules/abi/refusals.test.ts > the items > refuses an unnamed input of an error, naming it (Probe: error Oops)
-src/modules/abi/refusals.test.ts > the items > refuses an unnamed input of an event, naming it (Probe: event E)
-src/modules/abi/refusals.test.ts > the items > refuses an unnamed input of the constructor, naming it (Probe: constructor)
+src/modules/abi/refusals.test.ts > the items > refuses an unnamed input of an event whose position's name another has, naming it (Probe: event E2)
+src/modules/abi/refusals.test.ts > the items > refuses an unnamed input whose position's name another input has, naming it (Probe: function k4)
 src/modules/abi/refusals.test.ts > the items > refuses an unnamed output of a function with several, naming it (Probe: function h)
 src/modules/abi/refusals.test.ts > the items > refuses an unnamed tuple component of an output, naming it (Probe: function g2)
 src/modules/abi/refusals.test.ts > the items > refuses an unnamed tuple component, naming it (Probe: function g)
@@ -22,6 +21,7 @@ src/modules/abi/refusals.test.ts > the items > refuses two generated names that 
 src/modules/abi/refusals.test.ts > the items > refuses two inputs of one name, naming it (Probe: function k)
 src/modules/abi/refusals.test.ts > the items > refuses two outputs of one name, naming it (Probe: function k2)
 src/modules/abi/refusals.test.ts > the items > takes a lone unnamed output, of a plain type or a tuple
+src/modules/abi/refusals.test.ts > the items > takes unnamed inputs of a function, an event, an error and the constructor: each is named by its position
 src/modules/abi/refusals.test.ts > the name and the contracts > refuses a contract name that isn't an identifier starting with a capital letter, naming it
 src/modules/abi/refusals.test.ts > the name and the contracts > refuses an adapter name that isn't lower case words joined by dashes, naming it
 src/modules/abi/refusals.test.ts > the name and the contracts > refuses no contract at all

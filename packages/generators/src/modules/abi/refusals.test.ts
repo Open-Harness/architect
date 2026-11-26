@@ -69,6 +69,14 @@ describe("the file", () => {
     }
   });
 
+  it("refuses bytecode still holding a library's placeholder, saying it must be linked first", async () => {
+    const linked = `0x6080${"__$2cd9b773a3c3e0b461f7ad54b09f46e6ae$__"}6080`;
+    const message = await refusal([{ contract: "Probe", json: { abi: [ok], bytecode: linked } }]);
+    expect(message).toContain("Probe");
+    expect(message).toMatch(/link/i);
+    expect(await refusal([{ contract: "Probe", json: { abi: [ok], bytecode: { object: linked } } }])).toMatch(/link/i);
+  });
+
   it("refuses a contract with no function and no event, and takes one with only an event", async () => {
     const onlyError = await refusal([{ contract: "Probe", json: [{ type: "error", name: "Oops", inputs: [] }, { type: "constructor", inputs: [], stateMutability: "nonpayable" }] }]);
     expect(onlyError).toContain("Probe");
@@ -80,15 +88,13 @@ describe("the file", () => {
 
 describe("the items", () => {
   const cases: ReadonlyArray<readonly [string, Item, string]> = [
-    ["an unnamed input of a function", fn("f", [p("uint256", "")]), "Probe: function f"],
-    ["an unnamed input of an event", { type: "event", name: "E", anonymous: false, inputs: [p("uint256", "")] }, "Probe: event E"],
-    ["an unnamed input of an error", { type: "error", name: "Oops", inputs: [p("uint256", "")] }, "Probe: error Oops"],
-    ["an unnamed input of the constructor", { type: "constructor", stateMutability: "nonpayable", inputs: [p("uint256", "")] }, "Probe: constructor"],
     ["an unnamed tuple component", fn("g", [p("tuple", "t", { components: [p("uint256", "a"), p("bool", "")] })]), "Probe: function g"],
     ["an unnamed tuple component of an output", fn("g2", [], [p("tuple", "", { components: [p("uint256", "")] })]), "Probe: function g2"],
     ["an unnamed output of a function with several", fn("h", [], [p("uint256", "a"), p("bool", "")]), "Probe: function h"],
     ["two inputs of one name", fn("k", [p("uint256", "x"), p("bool", "x")]), "Probe: function k"],
     ["two outputs of one name", fn("k2", [], [p("uint256", "x"), p("bool", "x")]), "Probe: function k2"],
+    ["an unnamed input whose position's name another input has", fn("k4", [p("uint256", ""), p("bool", "arg0")]), "Probe: function k4"],
+    ["an unnamed input of an event whose position's name another has", { type: "event", name: "E2", anonymous: false, inputs: [p("uint256", "arg1"), p("bool", "")] }, "Probe: event E2"],
     ["two components of one name", fn("k3", [p("tuple", "t", { components: [p("uint256", "a"), p("bool", "a")] })]), "Probe: function k3"],
     ["a fixed-point type", fn("m", [p("fixed128x18", "x")]), "Probe: function m"],
     ["an unsigned fixed-point type", fn("m2", [p("ufixed", "x")]), "Probe: function m2"],
@@ -101,6 +107,16 @@ describe("the items", () => {
       expect(await refusal([contract([item])])).toContain(named);
     });
   }
+
+  it("takes unnamed inputs of a function, an event, an error and the constructor: each is named by its position", async () => {
+    const taken = await made([contract([
+      fn("f", [p("address", ""), p("bytes32", "")]),
+      { type: "event", name: "E", anonymous: false, inputs: [p("bytes32", "")] },
+      { type: "error", name: "Oops", inputs: [p("bytes32", "")] },
+      { type: "constructor", stateMutability: "nonpayable", inputs: [p("uint256", "")] },
+    ])]);
+    expect(taken.contracts).toEqual([{ contract: "Probe", calls: 2, events: 1, errors: 1, deployable: false }]);
+  });
 
   it("takes a lone unnamed output, of a plain type or a tuple", async () => {
     const lone = await made([contract([fn("one", [], [p("uint256", "")]), fn("two", [], [p("tuple", "", { components: [p("uint256", "a")] })])])]);
