@@ -28,7 +28,7 @@ const plainW4 = {
 // One biweekly pay in Texas, dated 2026-12-04, with no wages paid before it this year. Amounts are USDC base units.
 const pay = (changes: { readonly wage?: string; readonly workState?: string }) => ({
   wage: "0",
-  frequency: "biweekly",
+  frequency: "biweekly" as const,
   payDate: "2026-12-04",
   workState: "TX",
   yearToDate: "0",
