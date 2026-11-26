@@ -15,6 +15,9 @@
 // retired goal/stage-1: listed in e2e/on-chain/expected-failing/ under Snag #1096. 04-m6-10-values-refused's fixture named an id prefix no thing owns: the author fixed the fixture, and it is green.
 // Two lines of 05's list pass now and are the builder's to remove. The job may skip a pull request that affected.sh says leaves the
 // e2e project alone, so it need not be a bottleneck (Aaron, 26 November); every push to main runs it whole. Each red line here names a file a -build branch may edit.
+// Some bans here are whole-file: TOPIC and ASCII in the relayer README and its doc comment, `hidden`, `<details>` and `~~` on the canon page, `on-chain` in the
+// climb dashboard's README, "run on main" in climb.mjs. They hold while #784 is open; once it closes, its author narrows TOPIC to the paragraph beside each mark,
+// or these turn m1 red on unrelated edits.
 // The marking is the slice's only claim about #784. A builder who instead fixes the four bugs has to change this check's author first (they are the same slice: the author then pins each bug with
 // a failing check, as #784's Fix says, and drops (b)); nothing here stops a fix.
 import { readFileSync } from "node:fs";
@@ -258,11 +261,12 @@ const project = (): Json => JSON.parse(read("e2e/project.json")) as Json;
 
 // The evaluator above judges what the job's own conditions mean. Two hostile passes showed it can't judge what the job trusts (the jobs that feed it, the
 // nx target it names, the triggers, every other step's script), so the job and those parts are also held to approved shapes, word for word:
-// e2e/m1/48-g18-9-chain-basics.approved.json, which holds today's job without its env, the `ready` step's script, `changes`'s outputs, the
+// e2e/m1/48-g18-9-chain-basics.approved.json, which holds today's job without its env, the `ready` step's script, the whole `changes` job (its outputs and the steps that compute them), the
 // pull request trigger's types and the nx target. SKIP is one of two approved expressions; the evaluator, on planted copies below, shows each means
 // what the rule says. Sharding is not offered here: a matrix on this required job would rename its check, and the target cannot pass vitest a shard
-// (nx adds the flag to every command, so `rm` gets it). The e2e-m1 shape (a shard job, a gate, the reports merged) is its own slice.
-const APPROVED = JSON.parse(read("e2e/m1/48-g18-9-chain-basics.approved.json")) as { job: Json; readyRun: string; changes: Json; prTypes: ReadonlyArray<string>; target: Json };
+// (nx adds the flag to every command, so `rm` gets it). The e2e-m1 shape (a shard job, a gate, the reports merged) is its own slice, and that slice's author
+// owns approved.json and rewrites it. The scripts the `changes` steps call (tools/ci/docs-only.sh, scope.sh, affected.sh) are judged by tools/ci/ci.test.sh, not here.
+const APPROVED = JSON.parse(read("e2e/m1/48-g18-9-chain-basics.approved.json")) as { job: Json; readyRun: string; changesJob: Json; prTypes: ReadonlyArray<string>; target: Json };
 export const SKIP_RUN =
   "!((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/on-chain')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')";
 export const SKIP_GATED = `${SKIP_RUN} || (github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_e2e == 'false')`;
@@ -287,7 +291,8 @@ export const exactProblems = (workflow: Json, proj: Json): ReadonlyArray<string>
   if (canon(workflow.on?.pull_request) !== canon({ types: APPROVED.prTypes })) out.push(`the pull request trigger is ${JSON.stringify(workflow.on?.pull_request)}, not ${JSON.stringify({ types: APPROVED.prTypes })}`);
   const ready = workflow.jobs?.ready;
   if (canon(ready?.outputs) !== canon({ draft: "${{ steps.live.outputs.draft }}" }) || ready?.steps?.[0]?.id !== "live" || ready?.steps?.[0]?.run !== APPROVED.readyRun) out.push("the ready job, which says whether a run is a draft, is not the approved one");
-  if (canon(workflow.jobs?.changes?.outputs) !== canon(APPROVED.changes)) out.push("the changes job's outputs are not the approved ones");
+  const changesOff = differs(workflow.jobs?.changes, APPROVED.changesJob);
+  if (changesOff.length > 0) out.push(`the changes job, whose outputs decide a skip, is not the approved one: its ${changesOff.join(", ")} differ (its steps compute docs_only and affected_e2e)`);
   if (canon(proj.targets?.["on-chain-ratchet"]) !== canon(APPROVED.target)) out.push("e2e/project.json's target on-chain-ratchet is not the approved one");
   return out;
 };
@@ -404,6 +409,9 @@ describe("(a) the exact judge is fair: today's workflow with an approved SKIP, a
     ["a matrix on the job", (w: Json) => { w.jobs[JOB].strategy = { matrix: { shard: [1, 2, 3] } }; }],
     ["the ratchet with || true", (w: Json) => { step(w, /e2e:on-chain-ratchet/).run = "pnpm nx run e2e:on-chain-ratchet --outputStyle=static || true"; }],
     ["Anvil off on the ratchet step", (w: Json) => { step(w, /e2e:on-chain-ratchet/).env = { ORTHO_CHAIN_EVM_ANVIL: "0" }; }],
+    ["W1 the aff step says affected_e2e=false", (w: Json) => { (w.jobs.changes.steps as Json[]).find((x) => x.id === "aff").run = 'echo affected_e2e=false >> "$GITHUB_OUTPUT"'; }],
+    ["W2 the diff step says docs_only=true", (w: Json) => { const d = (w.jobs.changes.steps as Json[]).find((x) => x.id === "diff"); d.run = 'echo docs_only=true >> "$GITHUB_OUTPUT"'; }],
+    ["the aff step's if made to always run", (w: Json) => { (w.jobs.changes.steps as Json[]).find((x) => x.id === "aff").if = "true"; }],
     ["a SKIP gated on affected_prove", (w: Json) => { w.jobs[JOB].env.SKIP = SKIPS[1]?.replace("affected_e2e", "affected_prove"); }],
   ] as const)("catches %s", (_, edit) => {
     const [w, p] = planted(SKIPS[0] ?? "", edit as (w: Json, p: Json) => void);

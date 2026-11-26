@@ -70,12 +70,6 @@
     ]
   },
   "readyRun": "if [[ \"$EVENT\" == pull_request ]]; then\n  # Three tries: should the API fail, every job skips and the pull request waits for a rerun.\n  for try in 1 2 3; do\n    draft=$(gh api \"repos/$REPO/pulls/$PR\" --jq .draft) && break\n    [[ \"$try\" == 3 ]] && exit 1\n    sleep 5\n  done\nelse\n  draft=false\nfi\necho \"draft=$draft\" >> \"$GITHUB_OUTPUT\"\necho \"payload draft: $PAYLOAD_DRAFT; live draft: $draft\"\n",
-  "changes": {
-    "docs_only": "${{ steps.diff.outputs.docs_only }}",
-    "fast": "${{ steps.diff.outputs.fast }}",
-    "affected_e2e": "${{ steps.aff.outputs.affected_e2e || 'true' }}",
-    "affected_prove": "${{ steps.aff.outputs.affected_prove || 'true' }}"
-  },
   "prTypes": [
     "opened",
     "synchronize",
@@ -92,5 +86,57 @@
       ]
     },
     "cache": false
+  },
+  "changesJob": {
+    "needs": "ready",
+    "if": "needs.ready.outputs.draft == 'false'",
+    "runs-on": "ubuntu-latest",
+    "timeout-minutes": 5,
+    "outputs": {
+      "docs_only": "${{ steps.diff.outputs.docs_only }}",
+      "fast": "${{ steps.diff.outputs.fast }}",
+      "affected_e2e": "${{ steps.aff.outputs.affected_e2e || 'true' }}",
+      "affected_prove": "${{ steps.aff.outputs.affected_prove || 'true' }}"
+    },
+    "steps": [
+      {
+        "uses": "actions/checkout@v7.0.1",
+        "with": {
+          "fetch-depth": 0
+        }
+      },
+      {
+        "id": "diff",
+        "run": "if [[ \"$EVENT\" == pull_request ]]; then\n  tools/ci/docs-only.sh \"origin/$BASE_REF\" HEAD >> \"$GITHUB_OUTPUT\"\nelse\n  echo docs_only=false >> \"$GITHUB_OUTPUT\"\nfi\n# A pull request into a goal branch other than goal/stage-1 runs the fast gate only (CI-integration.md, B1).\ntools/ci/scope.sh \"$EVENT\" \"$BASE_REF\" >> \"$GITHUB_OUTPUT\"\ncat \"$GITHUB_OUTPUT\"\n",
+        "env": {
+          "EVENT": "${{ github.event_name }}",
+          "BASE_REF": "${{ github.base_ref }}"
+        }
+      },
+      {
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "uses": "pnpm/action-setup@v6.1.0"
+      },
+      {
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "uses": "actions/setup-node@v7.1.0",
+        "with": {
+          "node-version": 24,
+          "cache": "pnpm"
+        }
+      },
+      {
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "run": "pnpm install --frozen-lockfile"
+      },
+      {
+        "id": "aff",
+        "if": "github.event_name == 'pull_request' && steps.diff.outputs.docs_only != 'true' && steps.diff.outputs.fast != 'true'",
+        "run": "tools/ci/affected.sh \"origin/$BASE_REF\" HEAD e2e prove | tee -a \"$GITHUB_OUTPUT\"\n",
+        "env": {
+          "BASE_REF": "${{ github.base_ref }}"
+        }
+      }
+    ]
   }
 }
