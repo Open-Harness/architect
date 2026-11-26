@@ -1,0 +1,3 @@
+# #1132 (CX-open-sets): `ortho generate` can't load a feature that declares `Blueprint.oneOf.open`, and no door judges a kind by the mounted features'
+# members. Clears with #1132's build.
+m2/14-open-sets.test.ts > 14 an open set holds the mounted features' members, at every door, on D1 > takes a mounted member, refuses an unmounted feature's member and any name outside the set, through the API, MCP and the CLI

@@ -1,0 +1,9 @@
+# #1132 (CX-open-sets): `Blueprint.oneOf.open`, `Blueprint.oneOf.add` and `Blueprint.refAny.of` don't exist, so no value can be declared open and the model
+# holds no feature's members. Clears with #1132's build.
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > every field holding an open set holds the owner's members, then each mounted feature's, by name; payroll adds through payments
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > a reference to an open set holds a kind from the same union, wherever it is used
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > a feature that is installed but not mounted adds nothing anywhere in the model; mounted, it adds its member and moves the hashes
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > the order is the owner's members, then the added ones by name: never the mounts' order, so renaming a mount moves nothing
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > with only the owner mounted, an open set holds the owner's members, and one with none of its own holds none
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > the app may add to a feature's open set: it depends on every feature it mounts; its members sort with the rest, by code unit, never by locale
+src/modules/mounts/open-sets.test.ts > #1132: an open set holds the members of the features that add to it > leaves closed values as they were: a oneOf is not open, and a refAny() still names a declaration

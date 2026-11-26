@@ -1,0 +1,9 @@
+# #1132 (CX-open-sets): `Blueprint.oneOf.add` doesn't exist, so nothing adds to an open set and the compiler refuses none of what an addition can get wrong.
+# Clears with #1132's build.
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a feature adding to a value that isn't open, naming the adder's file, the value and how to open it
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses the app adding to a value that isn't open, naming the app's file
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a feature that doesn't depend on the set's owner adding to it, naming the adder, the owner and the member
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses two features adding one member, naming both files and the member
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a feature adding a member the owner already has, naming the adder, the owner's file and the member
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > refuses a member repeated in one feature's additions, and an empty member, each naming the adder's file
+src/modules/mounts/open-sets-refused.test.ts > #1132: what the compiler refuses about open sets > never reads a feature that is installed but not mounted: what it would add wrongly refuses nothing

@@ -1,0 +1,154 @@
+// The scratch books the #1132 compiler checks build (CX-open-sets): a `ledger` feature that owns two open sets, the kinds of voucher that
+// post to it and the kinds of party a line is against, and the features that add to them, each an installed package the app may or may not
+// mount. Read by open-sets.test.ts and open-sets-refused.test.ts. Written by the checks author for Goal 16; the builder never edits it.
+//
+// The open-set surface doesn't exist on `main`, so it is reached here through `surface()`, which says what is missing instead of failing to
+// load: `Blueprint.oneOf.open(members)` declares a set, `Blueprint.oneOf.add(set, members)` adds to one, and `Blueprint.refAny.of(set)` is a
+// reference holding a kind from a set and an id.
+import { Effect, Exit, Layer } from "effect";
+import { expect } from "vitest";
+import { Blueprint, type Feature, type Value } from "orthograph";
+import { BlueprintSource, type LoadedFile, type PluginPackage } from "#modules/source/types.js";
+import { BlueprintInvalid, type Model } from "#modules/model/types.js";
+import { Compiler } from "#modules/model/service.js";
+
+export interface OpenSets {
+  readonly open: (members: ReadonlyArray<string>) => Value;
+  readonly add: (set: Value, members: ReadonlyArray<string>) => unknown;
+  readonly refOf: (set: Value) => Value;
+}
+
+/** The surface #1132 adds, or a failure naming the part that isn't built. */
+export const surface = (): OpenSets => {
+  const oneOf = Blueprint.oneOf as unknown as { readonly open?: unknown; readonly add?: unknown };
+  const refAny = Blueprint.refAny as unknown as { readonly of?: unknown };
+  if (typeof oneOf.open !== "function") expect.fail("Blueprint.oneOf.open is not built: a value can't be declared open (#1132)");
+  if (typeof oneOf.add !== "function") expect.fail("Blueprint.oneOf.add is not built: a feature can't add members to an open set (#1132)");
+  if (typeof refAny.of !== "function") expect.fail("Blueprint.refAny.of is not built: a reference can't hold a kind from an open set (#1132)");
+  return { open: oneOf.open as OpenSets["open"], add: oneOf.add as OpenSets["add"], refOf: refAny.of as OpenSets["refOf"] };
+};
+
+/** Every feature package the checks install, by its own name (`@fixture/<name>`). */
+export type Name = "ledger" | "payments" | "expenses" | "parties" | "payroll" | "invoicing" | "rogue";
+
+/** What one installed package is: its descriptor, and its blueprint files by path under its blueprint folder. */
+interface Pkg {
+  readonly descriptor: Feature<any>;
+  readonly files: ReadonlyArray<LoadedFile>;
+}
+
+const file = (path: string, exports: Readonly<Record<string, unknown>>): LoadedFile => ({ path, exports });
+
+/** What the members of each set are, as the fixtures declare them: the values the checks expect, never read from the model they judge. */
+export const OWN_VOUCHERS = ["Journal Entry"] as const;
+
+/**
+ * The books, built fresh: the ledger's sets, a closed value beside them, its thing with an event and an operation, and each feature that adds.
+ * `change` swaps one package's additions, so a refusal check plants exactly one wrong declaration.
+ */
+export const books = (change: Partial<Record<Exclude<Name, "ledger">, (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>>> = {}) => {
+  const s = surface();
+  const VoucherType = Blueprint.value(s.open(OWN_VOUCHERS));
+  const PartyType = Blueprint.value(s.open([]));
+  const AccountType = Blueprint.value(Blueprint.oneOf(["Bank", "Cash"]));
+  const Voucher = Blueprint.value(s.refOf(VoucherType));
+  const Party = Blueprint.value(s.refOf(PartyType));
+  const ledger: Ledger = { VoucherType, PartyType, AccountType, Voucher, Party };
+
+  const GlEntry = Blueprint.thing({
+    description: "One line of the general ledger, posted by a voucher.",
+    fields: { id: Blueprint.id("gle"), voucherType: VoucherType, voucher: Voucher, party: Party, account: AccountType, source: Blueprint.refAny() },
+    code: "GL",
+  });
+  const Posted = Blueprint.event({ entry: GlEntry.fields.id, voucherType: GlEntry.fields.voucherType, voucher: GlEntry.fields.voucher });
+  const post = Blueprint.operation(GlEntry, {
+    description: "Post a line.",
+    payload: { voucherType: GlEntry.fields.voucherType, voucher: GlEntry.fields.voucher, party: GlEntry.fields.party, account: GlEntry.fields.account },
+    answer: { entry: GlEntry.fields.id },
+    allowed: [Blueprint.signedIn],
+  });
+
+  const ledgerFeature = Blueprint.feature({ description: "The books." });
+  const feature = (description: string, needs: ReadonlyArray<Feature<any>>) => Blueprint.feature({ description, needs });
+  const payments = feature("Payments.", [ledgerFeature]);
+  const adds = (name: Exclude<Name, "ledger">, values: (s: OpenSets, l: Ledger) => Readonly<Record<string, unknown>>) => (change[name] ?? values)(s, ledger);
+
+  const pkgs: Record<Name, Pkg> = {
+    ledger: {
+      descriptor: ledgerFeature,
+      files: [
+        file("values/ledger.js", { VoucherType, PartyType, AccountType, Voucher, Party }),
+        file("things/gl-entry/thing.js", { GlEntry }),
+        file("things/gl-entry/events.js", { Posted }),
+        file("things/gl-entry/verbs/post.js", { default: post }),
+      ],
+    },
+    payments: { descriptor: payments, files: [file("values/vouchers.js", adds("payments", (x, l) => ({ paymentEntry: x.add(l.VoucherType, ["Payment Entry"]) })))] },
+    expenses: { descriptor: feature("Expense claims.", [ledgerFeature]), files: [file("values/vouchers.js", adds("expenses", (x, l) => ({ expenseClaim: x.add(l.VoucherType, ["Expense Claim"]) })))] },
+    parties: { descriptor: feature("Customers and suppliers.", [ledgerFeature]), files: [file("values/parties.js", adds("parties", (x, l) => ({ parties: x.add(l.PartyType, ["Supplier", "Customer"]) })))] },
+    // Payroll needs payments, not the ledger itself: it depends on the ledger through payments.
+    payroll: {
+      descriptor: feature("Payroll.", [payments]),
+      files: [file("values/payroll.js", adds("payroll", (x, l) => ({ salarySlip: x.add(l.VoucherType, ["Salary Slip"]), employee: x.add(l.PartyType, ["Employee"]) })))],
+    },
+    invoicing: { descriptor: feature("Invoices.", [ledgerFeature]), files: [file("values/vouchers.js", adds("invoicing", (x, l) => ({ salesInvoice: x.add(l.VoucherType, ["Sales Invoice"]) })))] },
+    // Adds to the ledger's set though it needs nothing: it doesn't depend on the set's owner.
+    rogue: { descriptor: Blueprint.feature({ description: "Needs nothing." }), files: [file("values/rogue.js", adds("rogue", (x, l) => ({ rogue: x.add(l.VoucherType, ["Rogue Entry"]) })))] },
+  };
+
+  // An app thing of its own that holds the ledger's sets, as an app that depends on the ledger may.
+  const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, party: Party }, code: "PS" });
+  return { s, ledger, pkgs, Posting };
+};
+export interface Ledger {
+  readonly VoucherType: Value;
+  readonly PartyType: Value;
+  readonly AccountType: Value;
+  readonly Voucher: Value;
+  readonly Party: Value;
+}
+export type Books = ReturnType<typeof books>;
+
+export interface AppSpec {
+  /** Each mount, by its file's name (`blueprint/features/<mount>.ts`), and the package it mounts. */
+  readonly mounts: Readonly<Record<string, Name>>;
+  /** The app's own files besides its mounts, under `blueprint/`. */
+  readonly files?: ReadonlyArray<LoadedFile>;
+}
+
+/** The app's model: every package installed, only `mounts` mounted. */
+export const modelExit = (b: Books, app: AppSpec) => {
+  const appFiles = [
+    ...Object.entries(app.mounts).map(([mount, name]) => file(`features/${mount}.ts`, { default: Blueprint.use(b.pkgs[name].descriptor) })),
+    file("things/posting/thing.ts", { Posting: b.Posting }),
+    ...(app.files ?? []),
+  ];
+  const installed: ReadonlyArray<PluginPackage> = (Object.keys(b.pkgs) as ReadonlyArray<Name>).map((name) => ({ name: `@fixture/${name}`, version: "1.0.0", kind: "feature", descriptor: b.pkgs[name].descriptor }));
+  const source = Layer.succeed(BlueprintSource, {
+    list: Effect.succeed(appFiles.map((f) => f.path).sort()),
+    load: (path) => Effect.succeed(appFiles.find((f) => f.path === path)!),
+    plugins: Effect.succeed(installed),
+    pluginFiles: (pkg) => {
+      const name = pkg.slice("@fixture/".length) as Name;
+      return Effect.succeed({ integrity: `sha256-${name}`, files: b.pkgs[name].files.map((f) => ({ ...f, specifier: `${pkg}/blueprint/${f.path}` })) });
+    },
+  });
+  return Effect.runPromiseExit(Compiler.model.pipe(Effect.provide(source)));
+};
+
+/** The model, or a failure carrying every problem the compiler gave. */
+export const modelOf = (b: Books, app: AppSpec): Promise<Model> =>
+  modelExit(b, app).then((exit) => (Exit.isSuccess(exit) ? exit.value : expect.fail(`the blueprint was refused:\n${problemsOf(exit).join("\n")}`)));
+
+/** A field's options as the model holds them, when it has any. */
+export const optionsOf = (field: { readonly value: unknown } | undefined): ReadonlyArray<string> | undefined =>
+  (field?.value as { readonly options?: ReadonlyArray<string> } | undefined)?.options;
+
+export const problemsOf = (exit: Exit.Exit<unknown, unknown>): ReadonlyArray<string> => {
+  if (Exit.isSuccess(exit)) return [];
+  const error = exit.cause.reasons.map((r) => (r as { error?: unknown }).error).find((e) => e instanceof BlueprintInvalid);
+  return error instanceof BlueprintInvalid ? error.problems : [`not a refusal of the blueprint: ${String(exit.cause)}`];
+};
+
+/** The books every positive check mounts: the ledger and four features that add, payroll through payments. */
+export const MOUNTED: AppSpec["mounts"] = { ledger: "ledger", payments: "payments", expenses: "expenses", parties: "parties", payroll: "payroll" };
