@@ -71,7 +71,7 @@ Two packages of ours hold what is written once, by hand:
   spike workarounds live. Framework-free; it imports `@ui-sdk/core`, `orthograph` and Effect.
 
 `@orthograph/react` (ST1.01) is not built. A UI SDK primitive already is what a hook would be (state, pending,
-refusal, an api), and it renders in every framework; a React-only hook layer would sit beside it doing the same job.
+refusal, an api), and it renders in every framework; a React-only hook layer would sit beside it doing the same job. (Superseded by K48, 26 November 2026, for an app's screens: generated headless hooks over the actions, drawn by the app's own component library; UI SDK waits.)
 
 ## 3. What the generators emit, against Plugged In
 

@@ -84,7 +84,7 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   with `// Scaffolded from <path>. Yours from now on.`
 - Package rules (Nx module boundaries): `orthograph` (the front door, the `Blueprint` API) depends only on Effect;
   generated code imports only the language's runtime, `orthograph`, the host and project code, and in `generated/web/`
-  also `@ui-sdk/*`, `react` and `@orthograph/web` (K29); `compiler` and `generators`
+  also `react` and `@orthograph/web`, and the app's own generated SDK and actions (K48); `compiler` and `generators`
   never run in production.
 - Pin dependency versions exactly, and use versions published at least three days before you add them (Aaron, 17
   November 2026). A younger version needs an override: its name in `minimumReleaseAgeExclude` in
