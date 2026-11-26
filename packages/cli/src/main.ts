@@ -265,7 +265,7 @@ const newApp = Command.make(
   "app",
   {
     name: Argument.String("name").pipe(Argument.variadic(), Argument.withDescription("The new app's name, lower case words joined by dashes; its folder takes the same name")),
-    root: rootFlag("is made in"),
+    root: Flag.String("root").pipe(Flag.withDefault(process.cwd()), Flag.withDescription("The folder the new app's folder is made in (the current folder by default)")),
   },
   ({ name, root }) =>
     App.nameIn(name).pipe(
