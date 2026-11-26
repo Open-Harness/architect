@@ -69,6 +69,10 @@ describe("owners no Safe could be set up with are refused, typed", () => {
       expect(predicted).toStrictEqual(new OwnersNotUnique({ owner: OWNER_B }));
     }));
 
+  test("an owner repeated at the front of the list is OwnersNotUnique naming it", () =>
+    refused(SafeAddress.predict({ owners: [OWNER_A, OWNER_A, OWNER_B], saltNonce: 0n }))
+      .then((error) => expect(error).toStrictEqual(new OwnersNotUnique({ owner: OWNER_A }))));
+
   test("the same owner in another case is still the same owner", () =>
     refused(SafeAddress.predict({ owners: [OWNER_A, OWNER_A.toLowerCase() as typeof OWNER_A], saltNonce: 0n }))
       .then((error) => expect(error).toStrictEqual(new OwnersNotUnique({ owner: OWNER_A }))));

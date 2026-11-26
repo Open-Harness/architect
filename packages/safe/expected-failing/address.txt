@@ -1,5 +1,6 @@
 # #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
 src/modules/address/address.test.ts > owners no Safe could be set up with are refused, typed > an owner given twice is OwnersNotUnique naming it, for the initializer and the prediction
+src/modules/address/address.test.ts > owners no Safe could be set up with are refused, typed > an owner repeated at the front of the list is OwnersNotUnique naming it
 src/modules/address/address.test.ts > owners no Safe could be set up with are refused, typed > no owners at all is NoOwners, for the initializer and the prediction
 src/modules/address/address.test.ts > owners no Safe could be set up with are refused, typed > the same owner in another case is still the same owner
 src/modules/address/address.test.ts > the initializer, in the implementation's shape (infrastructure:P/safe-address.ts:114-141) > for owner A it is setup(owners, 1, MultiSend, a delegatecall of enableModules([4337 module]) to SafeModuleSetup, 4337 module, no payment), byte for byte
