@@ -1023,6 +1023,22 @@ importers:
         specifier: workspace:*
         version: link:../orthograph
 
+  packages/zodiac-roles:
+    dependencies:
+      '@orthograph/chain-evm':
+        specifier: workspace:*
+        version: link:../chain-evm
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+    devDependencies:
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../language-effect
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
+
 packages:
 
   '@adobe/react-spectrum-ui@1.2.1':

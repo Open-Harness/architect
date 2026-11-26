@@ -1,0 +1,1245 @@
+{
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "name": "_avatar",
+          "type": "address"
+        },
+        {
+          "name": "_target",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "error",
+      "name": "AlreadyDisabledModule",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "AlreadyEnabledModule",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ArraysDifferentLength",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "CalldataOutOfBounds",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ConditionViolation",
+      "inputs": [
+        {
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "name": "info",
+          "type": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "FunctionSignatureTooShort",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "HashAlreadyConsumed",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidInitialization",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InvalidModule",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidPageSize",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "MalformedMultiEntrypoint",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ModuleTransactionFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NoMembership",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NotAuthorized",
+      "inputs": [
+        {
+          "name": "sender",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotInitializing",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "OwnableInvalidOwner",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableUnauthorizedAccount",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SetupModulesAlreadyCalled",
+      "inputs": []
+    },
+    {
+      "type": "event",
+      "name": "AllowFunction",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "targetAddress",
+          "type": "address",
+          "indexed": false
+        },
+        {
+          "name": "selector",
+          "type": "bytes4",
+          "indexed": false
+        },
+        {
+          "name": "options",
+          "type": "uint8",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "AllowTarget",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "targetAddress",
+          "type": "address",
+          "indexed": false
+        },
+        {
+          "name": "options",
+          "type": "uint8",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "AssignRoles",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false
+        },
+        {
+          "name": "roleKeys",
+          "type": "bytes32[]",
+          "indexed": false
+        },
+        {
+          "name": "memberOf",
+          "type": "bool[]",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "AvatarSet",
+      "inputs": [
+        {
+          "name": "previousAvatar",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "newAvatar",
+          "type": "address",
+          "indexed": true
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ConsumeAllowance",
+      "inputs": [
+        {
+          "name": "allowanceKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "consumed",
+          "type": "uint128",
+          "indexed": false
+        },
+        {
+          "name": "newBalance",
+          "type": "uint128",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "DisabledModule",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "EnabledModule",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ExecutionFromModuleFailure",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": true
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ExecutionFromModuleSuccess",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": true
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "HashExecuted",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "HashInvalidated",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Initialized",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint64",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "previousOwner",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RevokeFunction",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "targetAddress",
+          "type": "address",
+          "indexed": false
+        },
+        {
+          "name": "selector",
+          "type": "bytes4",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RevokeTarget",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "targetAddress",
+          "type": "address",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RolesModSetup",
+      "inputs": [
+        {
+          "name": "initiator",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "owner",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "avatar",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "target",
+          "type": "address",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ScopeFunction",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "targetAddress",
+          "type": "address",
+          "indexed": false
+        },
+        {
+          "name": "selector",
+          "type": "bytes4",
+          "indexed": false
+        },
+        {
+          "name": "conditions",
+          "type": "tuple[]",
+          "indexed": false,
+          "components": [
+            {
+              "name": "parent",
+              "type": "uint8"
+            },
+            {
+              "name": "paramType",
+              "type": "uint8"
+            },
+            {
+              "name": "operator",
+              "type": "uint8"
+            },
+            {
+              "name": "compValue",
+              "type": "bytes"
+            }
+          ]
+        },
+        {
+          "name": "options",
+          "type": "uint8",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ScopeTarget",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "targetAddress",
+          "type": "address",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "SetAllowance",
+      "inputs": [
+        {
+          "name": "allowanceKey",
+          "type": "bytes32",
+          "indexed": false
+        },
+        {
+          "name": "balance",
+          "type": "uint128",
+          "indexed": false
+        },
+        {
+          "name": "maxRefill",
+          "type": "uint128",
+          "indexed": false
+        },
+        {
+          "name": "refill",
+          "type": "uint128",
+          "indexed": false
+        },
+        {
+          "name": "period",
+          "type": "uint64",
+          "indexed": false
+        },
+        {
+          "name": "timestamp",
+          "type": "uint64",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "SetDefaultRole",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false
+        },
+        {
+          "name": "defaultRoleKey",
+          "type": "bytes32",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "SetUnwrapAdapter",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": false
+        },
+        {
+          "name": "selector",
+          "type": "bytes4",
+          "indexed": false
+        },
+        {
+          "name": "adapter",
+          "type": "address",
+          "indexed": false
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "TargetSet",
+      "inputs": [
+        {
+          "name": "previousTarget",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "newTarget",
+          "type": "address",
+          "indexed": true
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "function",
+      "name": "allowFunction",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetAddress",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "options",
+          "type": "uint8"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "allowTarget",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetAddress",
+          "type": "address"
+        },
+        {
+          "name": "options",
+          "type": "uint8"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "allowances",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "refill",
+          "type": "uint128"
+        },
+        {
+          "name": "maxRefill",
+          "type": "uint128"
+        },
+        {
+          "name": "period",
+          "type": "uint64"
+        },
+        {
+          "name": "balance",
+          "type": "uint128"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "assignRoles",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address"
+        },
+        {
+          "name": "roleKeys",
+          "type": "bytes32[]"
+        },
+        {
+          "name": "memberOf",
+          "type": "bool[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "avatar",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "consumed",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address"
+        },
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "defaultRoles",
+      "inputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "disableModule",
+      "inputs": [
+        {
+          "name": "prevModule",
+          "type": "address"
+        },
+        {
+          "name": "module",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "enableModule",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "execTransactionFromModule",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "operation",
+          "type": "uint8"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "execTransactionFromModuleReturnData",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "operation",
+          "type": "uint8"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        },
+        {
+          "name": "returnData",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "execTransactionWithRole",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "operation",
+          "type": "uint8"
+        },
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "shouldRevert",
+          "type": "bool"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "execTransactionWithRoleReturnData",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "operation",
+          "type": "uint8"
+        },
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "shouldRevert",
+          "type": "bool"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        },
+        {
+          "name": "returnData",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "getModulesPaginated",
+      "inputs": [
+        {
+          "name": "start",
+          "type": "address"
+        },
+        {
+          "name": "pageSize",
+          "type": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "array",
+          "type": "address[]"
+        },
+        {
+          "name": "next",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "invalidate",
+      "inputs": [
+        {
+          "name": "hash",
+          "type": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "isModuleEnabled",
+      "inputs": [
+        {
+          "name": "_module",
+          "type": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "moduleTxHash",
+      "inputs": [
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "salt",
+          "type": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "renounceOwnership",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "revokeFunction",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetAddress",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "revokeTarget",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetAddress",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "scopeFunction",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetAddress",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "conditions",
+          "type": "tuple[]",
+          "components": [
+            {
+              "name": "parent",
+              "type": "uint8"
+            },
+            {
+              "name": "paramType",
+              "type": "uint8"
+            },
+            {
+              "name": "operator",
+              "type": "uint8"
+            },
+            {
+              "name": "compValue",
+              "type": "bytes"
+            }
+          ]
+        },
+        {
+          "name": "options",
+          "type": "uint8"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "scopeTarget",
+      "inputs": [
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetAddress",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setAllowance",
+      "inputs": [
+        {
+          "name": "key",
+          "type": "bytes32"
+        },
+        {
+          "name": "balance",
+          "type": "uint128"
+        },
+        {
+          "name": "maxRefill",
+          "type": "uint128"
+        },
+        {
+          "name": "refill",
+          "type": "uint128"
+        },
+        {
+          "name": "period",
+          "type": "uint64"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint64"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setAvatar",
+      "inputs": [
+        {
+          "name": "_avatar",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setDefaultRole",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address"
+        },
+        {
+          "name": "roleKey",
+          "type": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setTarget",
+      "inputs": [
+        {
+          "name": "_target",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setTransactionUnwrapper",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "name": "adapter",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setUp",
+      "inputs": [
+        {
+          "name": "initParams",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "target",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "unwrappers",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    }
+  ]
+}
