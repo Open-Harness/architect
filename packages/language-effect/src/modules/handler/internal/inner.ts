@@ -79,13 +79,13 @@ export const innerRun = (pipeline: Pipeline) => {
         yield* Effect.annotateCurrentSpan(answerAttributes(answer, op.answer));
         yield* check(answer).pipe(Effect.mapError((e) => new Error(`${name} answered outside its declaration: ${e.message}`)), Effect.orDie);
         const outcome = yield* Ref.get(chosen);
-        if (outcome !== undefined) {
-          // Its move is applied once its handler answers, as an outer's is; its entry joins the attempt's journal in the order the moves were made.
-          attempt.journal.push(yield* applyMove(name, op, payload, answer, outcome, unit, handed.id));
-          if (from !== undefined) yield* Effect.annotateCurrentSpan({ "move.from": from });
-        }
+        // Its move is applied once its handler answers, as an outer's is.
+        const entry = outcome === undefined ? undefined : yield* applyMove(name, op, payload, answer, outcome, unit, handed.id);
+        if (from !== undefined && outcome !== undefined) yield* Effect.annotateCurrentSpan({ "move.from": from });
         const broken = yield* unit.check;
         if (broken !== undefined && own.has(broken.rule)) return yield* settleViolation(name, invariants, logs, () => new Conflict())(broken);
+        // Its entry joins the attempt's journal only once it has answered, in the order the moves were made.
+        if (entry !== undefined) attempt.journal.push(entry);
         return answer;
       }).pipe(Effect.tapCause(ending(codes, logs.last)), spanned(name, { operation: name, ...principalAttributes(principal) }));
     });
