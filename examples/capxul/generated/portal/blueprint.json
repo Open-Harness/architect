@@ -17,6 +17,9 @@
       "AllocationOverlaps": "LL-005",
       "AllocationTypeNotInCompany": "LL-003",
       "AlreadyRecorded": "BT-004",
+      "AmountFractional": "UW-002",
+      "AmountNegative": "UW-001",
+      "AmountNotANumber": "UW-003",
       "ApplicantHasLeft": "LP-002",
       "ApplicantNotInCompany": "LP-001",
       "ApplicantRejected": "IV-001",
@@ -289,7 +292,8 @@
       "TemplateWithoutKras": "TP-001",
       "TransferNotYetDue": "TR-005",
       "TransferredEmployeeHasLeft": "TR-002",
-      "TransferredEmployeeNotInCompany": "TR-001"
+      "TransferredEmployeeNotInCompany": "TR-001",
+      "WorkStateUnknown": "UW-004"
     },
     "values": {
       "Abbr": {
@@ -10000,6 +10004,95 @@
           "kind": "app"
         },
         "hash": "30e7de62fc742642"
+      },
+      "us-withholding": {
+        "name": "us-withholding",
+        "identifier": "UsWithholding",
+        "code": "UW",
+        "description": "One pay's US tax lines: federal and state, each employee's and employer's share.",
+        "fields": {
+          "id": {
+            "value": {
+              "type": "id",
+              "prefix": "uwh"
+            }
+          }
+        },
+        "lives": "database",
+        "machine": null,
+        "events": {},
+        "errors": {
+          "AmountNegative": {
+            "fields": {
+              "figure": {
+                "value": {
+                  "type": "schema",
+                  "format": "choice",
+                  "options": [
+                    "wage",
+                    "yearToDate"
+                  ]
+                }
+              }
+            },
+            "exit": 41,
+            "code": "UW-001"
+          },
+          "AmountFractional": {
+            "fields": {
+              "figure": {
+                "value": {
+                  "type": "schema",
+                  "format": "choice",
+                  "options": [
+                    "wage",
+                    "yearToDate"
+                  ]
+                }
+              }
+            },
+            "exit": 42,
+            "code": "UW-002"
+          },
+          "AmountNotANumber": {
+            "fields": {
+              "figure": {
+                "value": {
+                  "type": "schema",
+                  "format": "choice",
+                  "options": [
+                    "wage",
+                    "yearToDate"
+                  ]
+                }
+              }
+            },
+            "exit": 43,
+            "code": "UW-003"
+          },
+          "WorkStateUnknown": {
+            "fields": {
+              "workState": {
+                "value": {
+                  "type": "text",
+                  "max": 40
+                }
+              }
+            },
+            "exit": 44,
+            "code": "UW-004"
+          }
+        },
+        "roles": [],
+        "roleRules": {},
+        "from": {
+          "kind": "feature",
+          "mount": "payroll-tax-us",
+          "package": "@capxul/payroll-tax-us",
+          "version": "0.0.0",
+          "thing": "us-withholding"
+        },
+        "hash": "3e15fcd393b001f6"
       }
     },
     "operations": {
@@ -27431,6 +27524,110 @@
           "p95Ms": 50
         },
         "hash": "d37b96804198a8a8"
+      },
+      "us-withholding.compute": {
+        "kind": "operation",
+        "name": "us-withholding.compute",
+        "thing": "us-withholding",
+        "verb": "compute",
+        "identifier": "compute",
+        "file": "@capxul/payroll-tax-us/blueprint/things/us-withholding/verbs/compute.ts",
+        "from": {
+          "kind": "feature",
+          "mount": "payroll-tax-us",
+          "package": "@capxul/payroll-tax-us",
+          "version": "0.0.0",
+          "thing": "us-withholding"
+        },
+        "description": "Work out one pay's US tax lines from its wage, frequency, pay date, work state, wages so far this year and W-4.",
+        "payload": {
+          "wage": {
+            "value": {
+              "type": "text",
+              "max": 40
+            }
+          },
+          "frequency": {
+            "value": {
+              "type": "schema",
+              "format": "choice",
+              "options": [
+                "weekly",
+                "biweekly",
+                "semimonthly",
+                "monthly",
+                "quarterly",
+                "semiannual",
+                "annual",
+                "daily"
+              ]
+            }
+          },
+          "payDate": {
+            "value": {
+              "type": "day"
+            }
+          },
+          "workState": {
+            "value": {
+              "type": "text",
+              "max": 40
+            }
+          },
+          "yearToDate": {
+            "value": {
+              "type": "text",
+              "max": 40
+            }
+          },
+          "w4": {
+            "value": {
+              "type": "schema"
+            },
+            "json": "object"
+          }
+        },
+        "answer": {
+          "lines": {
+            "value": {
+              "type": "schema",
+              "format": "list",
+              "fields": [
+                "jurisdiction",
+                "tax",
+                "share",
+                "amount"
+              ]
+            }
+          }
+        },
+        "move": null,
+        "errors": [
+          "AmountNegative",
+          "AmountFractional",
+          "AmountNotANumber",
+          "WorkStateUnknown"
+        ],
+        "breaks": [],
+        "refusals": [
+          "AmountNegative",
+          "AmountFractional",
+          "AmountNotANumber",
+          "WorkStateUnknown",
+          "NotAllowed"
+        ],
+        "allowed": [
+          {
+            "kind": "signed-in"
+          }
+        ],
+        "agentTool": true,
+        "steps": {},
+        "idempotent": null,
+        "runs": "server",
+        "test": "unit",
+        "budget": null,
+        "hash": "30da97853fa59eac"
       }
     },
     "journeys": {
@@ -115799,6 +115996,797 @@
         ],
         "sourceHash": "ef0fb68bccf7ab72f8a744980385af09494c164e0c28ba8fbd6ef2d6374799a7"
       },
+      "journeys/tax-us-footing.ts": {
+        "name": "tax-us: the piece's footing",
+        "file": "journeys/tax-us-footing.ts",
+        "cast": {
+          "ada": {
+            "kind": "signed-in"
+          }
+        },
+        "starts": null,
+        "steps": [
+          {
+            "title": "a negative wage is refused, naming the wage",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "-1",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNegative",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a wage that isn't whole base units is refused, naming the wage",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "1500000000.5",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountFractional",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a wage that isn't a number is refused, naming the wage",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "abc",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNotANumber",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a negative year to date is refused, naming the year to date",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "1500000000",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "-1",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNegative",
+                "fields": {
+                  "figure": "yearToDate"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a year to date that isn't whole base units is refused, naming the year to date",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "1500000000",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "3000000000.25",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountFractional",
+                "fields": {
+                  "figure": "yearToDate"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a year to date that isn't a number is refused, naming the year to date",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "ten",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNotANumber",
+                "fields": {
+                  "figure": "yearToDate"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a work state that isn't one of the fifty or DC is refused, naming it",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "1500000000",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "PR",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "WorkStateUnknown",
+                "fields": {
+                  "workState": "PR"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a wage of nothing, with no Step 4(c) extra withholding, gives no lines: a line of nothing is left out",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a wage of \" \" isn't a number, and is refused, naming the wage",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": " ",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNotANumber",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a wage of \"12abc\" isn't a number, and is refused, naming the wage",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "12abc",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNotANumber",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a wage of \"-\" isn't a number, and is refused, naming the wage",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "-",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNotANumber",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "any wage below nothing is refused, not only one base unit below",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "-5",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNegative",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "any fraction of a base unit is refused",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "1.75",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountFractional",
+                "fields": {
+                  "figure": "wage"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "the year to date is read whole, as the wage is",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "1500000000",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "12abc",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "refuses",
+                "error": "AmountNotANumber",
+                "fields": {
+                  "figure": "yearToDate"
+                }
+              },
+              {
+                "kind": "no-events"
+              }
+            ]
+          },
+          {
+            "title": "a pay of 1,500 dollars gives no lines yet: no rows, so every tax is nothing and left out",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "1500000000",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a wage past 2^53 base units is taken, not refused or rounded",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "9007199254740993",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "9007199254740993",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "California is a work state as Texas is",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "CA",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a weekly pay is taken",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "weekly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a semimonthly pay is taken",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "semimonthly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a monthly pay is taken",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "monthly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a quarterly pay is taken",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "quarterly",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a semiannual pay is taken",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "semiannual",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a annual pay is taken",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "annual",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "a daily pay is taken",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "daily",
+                "payDate": "2026-12-04",
+                "workState": "TX",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          },
+          {
+            "title": "DC is a work state as the fifty are",
+            "call": {
+              "actor": "ada",
+              "operation": "us-withholding.compute",
+              "payload": {
+                "wage": "0",
+                "frequency": "biweekly",
+                "payDate": "2026-12-04",
+                "workState": "DC",
+                "yearToDate": "0",
+                "w4": {
+                  "filingStatus": "single",
+                  "step2": false,
+                  "step3Credits": "0",
+                  "step4aOtherIncome": "0",
+                  "step4bDeductions": "0",
+                  "step4cExtraWithholding": "0"
+                }
+              }
+            },
+            "checks": [
+              {
+                "kind": "expect-equal",
+                "value": []
+              }
+            ]
+          }
+        ],
+        "sourceHash": "0d38ba0b392ff18144ad0a2401bf3e4993e315fa5995016f02e764bcd1ee830a"
+      },
       "journeys/transfer-an-employee.ts": {
         "name": "transfer an employee",
         "file": "journeys/transfer-an-employee.ts",
@@ -126891,6 +127879,46 @@
         }
       },
       {
+        "id": "anomaly:UW-001",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "UW-001",
+          "severity": "ticket",
+          "owner": "blueprint/things/us-withholding/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:UW-002",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "UW-002",
+          "severity": "ticket",
+          "owner": "blueprint/things/us-withholding/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:UW-003",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "UW-003",
+          "severity": "ticket",
+          "owner": "blueprint/things/us-withholding/errors.ts"
+        }
+      },
+      {
+        "id": "anomaly:UW-004",
+        "kind": "anomaly",
+        "labels": {
+          "environment": "*",
+          "code": "UW-004",
+          "severity": "ticket",
+          "owner": "blueprint/things/us-withholding/errors.ts"
+        }
+      },
+      {
         "id": "defect:account.balance",
         "kind": "defect",
         "labels": {
@@ -134458,6 +135486,48 @@
           "operation": "supplier.get",
           "severity": "page",
           "owner": "blueprint/things/supplier/verbs/get.ts"
+        },
+        "target": 0.999,
+        "windowDays": 28,
+        "minCalls": 20,
+        "alerts": [
+          {
+            "name": "fast",
+            "burn": 14.4,
+            "windowsMs": [
+              3600000,
+              300000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "slow",
+            "burn": 6,
+            "windowsMs": [
+              21600000,
+              1800000
+            ],
+            "severity": "page"
+          },
+          {
+            "name": "ticket",
+            "burn": 1,
+            "windowsMs": [
+              259200000,
+              21600000
+            ],
+            "severity": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "defect:us-withholding.compute",
+        "kind": "defect",
+        "labels": {
+          "environment": "*",
+          "operation": "us-withholding.compute",
+          "severity": "page",
+          "owner": "@capxul/payroll-tax-us/blueprint/things/us-withholding/verbs/compute.ts"
         },
         "target": 0.999,
         "windowDays": 28,
@@ -143916,6 +144986,26 @@
         }
       },
       {
+        "id": "verdict:tax-us: the piece's footing:local",
+        "kind": "verdict",
+        "labels": {
+          "environment": "local",
+          "journey": "tax-us: the piece's footing",
+          "severity": "page",
+          "owner": "journeys/tax-us-footing.ts"
+        }
+      },
+      {
+        "id": "verdict:tax-us: the piece's footing:staging",
+        "kind": "verdict",
+        "labels": {
+          "environment": "staging",
+          "journey": "tax-us: the piece's footing",
+          "severity": "page",
+          "owner": "journeys/tax-us-footing.ts"
+        }
+      },
+      {
         "id": "verdict:transfer an employee:local",
         "kind": "verdict",
         "labels": {
@@ -143955,7 +145045,18 @@
           "owner": "journeys/weekly-offs.ts"
         }
       }
-    ]
+    ],
+    "mounts": {
+      "payroll-tax-us": {
+        "kind": "feature",
+        "file": "blueprint/features/payroll-tax-us.ts",
+        "package": "@capxul/payroll-tax-us",
+        "version": "0.0.0",
+        "integrity": "sha256-EBqqdp9JYMEYigCfSb0otSwB5cvzic2b2V+LBGTBog8=",
+        "chosen": {},
+        "hash": "6a2ccf49894196fa"
+      }
+    }
   },
   "dependsOnByOperation": {
     "account.balance": {
@@ -145072,6 +146173,10 @@
       "thing:company": "bf9b5c8f8591f130",
       "thing:supplier": "d6f72adbd347161c",
       "thing:supplier-group": "30e7de62fc742642"
+    },
+    "us-withholding.compute": {
+      "operation:us-withholding.compute": "30da97853fa59eac",
+      "thing:us-withholding": "3e15fcd393b001f6"
     }
   },
   "docs": {
@@ -145313,7 +146418,9 @@
     "supplier/disable.md": "<!-- Generated from the blueprint. Do not edit. -->\n# supplier.disable\n\nDisable a supplier: no payment to it can be submitted until it is enabled again.\n\n**Who may call:** the owner of its supplier.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| supplier | supplier.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| supplier | supplier.id |\n\n## Move\n\n`disable`: from active to disabled, emitting SupplierDisabled.\n\n## Steps\n\n- `supplier.disable.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SupplierNotActive | 40 | SU-900 | the supplier is in a state disable can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its supplier.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### add customers and suppliers\n\nStarts from the world `an outside supplier`.\n\n- **Ada disables the second.** `ada` (role company.owner) calls and sends supplier the last call's supplier, and is answered.\n- **Bo can't disable it.** `bo` (signed in) calls and sends supplier the world's supplier, and is refused with NotAllowed, AR-001.\n- **Ada disables it.** `ada` (role company.owner) calls and sends supplier the world's supplier, and is answered.\n- **it can't be disabled twice.** `ada` (role company.owner) calls and sends supplier the world's supplier, and is refused with SupplierNotActive, SU-900, carrying state `disabled`.\n\n### post a payment entry\n\nStarts from the world `a received advance`.\n\n- **Ada disables Mara Office Rentals.** `ada` (role company.owner) calls and sends supplier the world's supplier, and gets back the world's supplier.\n\n## How to call\n\n```sh\ncapxul supplier disable --supplier <supplier>\n```\n\nHTTP: `POST /supplier/disable` with the payload as JSON. SDK: `Sdk.supplier.disable(payload)`.\n",
     "supplier/enable.md": "<!-- Generated from the blueprint. Do not edit. -->\n# supplier.enable\n\nEnable a disabled supplier again.\n\n**Who may call:** the owner of its supplier.company.\n\n**Idempotent by request:** send `idempotency-key`; the same key twice is one call.\n\n**Budget:** p95 100ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| supplier | supplier.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| supplier | supplier.id |\n\n## Move\n\n`enable`: from disabled to active, emitting SupplierEnabled.\n\n## Steps\n\n- `supplier.enable.update` (database)\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| SupplierNotActive | 40 | SU-900 | the supplier is in a state enable can't start from; carries `state` |\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its supplier.company; the handler never runs |\n| IdempotencyConflict | 120 | AR-002 | the request key was first used with another payload; the handler never runs |\n\n## Worked examples\n\n### add customers and suppliers\n\nStarts from the world `an outside supplier`.\n\n- **Mara Office Rentals can't be enabled while active.** `ada` (role company.owner) calls and sends supplier the world's supplier, and is refused with SupplierNotActive, SU-900, carrying state `active`.\n- **Ada enables it again.** `ada` (role company.owner) calls and sends supplier the world's supplier, and gets back the world's supplier.\n- **and it can't be enabled twice.** `ada` (role company.owner) calls and sends supplier the world's supplier, and is refused with SupplierNotActive, SU-900, carrying state `active`.\n\n### post a payment entry\n\nStarts from the world `a received advance`.\n\n- **Ada enables it again.** `ada` (role company.owner) calls and sends supplier the world's supplier, and gets back the world's supplier.\n\n## How to call\n\n```sh\ncapxul supplier enable --supplier <supplier>\n```\n\nHTTP: `POST /supplier/enable` with the payload as JSON. SDK: `Sdk.supplier.enable(payload)`.\n",
     "supplier/get.md": "<!-- Generated from the blueprint. Do not edit. -->\n# supplier.get\n\nRead one supplier by its id: company, supplierName, supplierType, supplierGroup, state.\n\n**Who may call:** the owner of its company.\n\n**A read:** answered from the records, with no handler.\n\n**Budget:** p95 50ms.\n\n## Payload\n\n| field | value |\n|---|---|\n| id | supplier.id |\n\n## Answer\n\n| field | value |\n|---|---|\n| company | supplier.company |\n| supplierName | supplier.supplierName |\n| supplierType | supplier.supplierType |\n| supplierGroup (optional) | supplier.supplierGroup |\n| state | text |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| NotAllowed | 3 | AR-001 | the caller isn't the owner of its company; the handler never runs |\n\n## Worked examples\n\n### add customers and suppliers\n\nStarts from the world `an outside supplier`.\n\n- **Acme Trading's supplier reads back an active company in its ledger group.** `ada` (role company.owner) calls and sends id the world's supplier, and gets back [the world's company, `Mara Office Rentals`, `Company`, the world's supplierGroup, `active`].\n- **Acme Logistics' supplier reads back there, in no group.** `ada` (role company.owner) calls and sends id the world's otherSupplier, and gets back [the world's otherCompany, `Nile Fuel`, `Company`, null, `active`].\n- **Bo can't read Mara Office Rentals.** `bo` (signed in) calls and sends id the world's supplier, and is refused with NotAllowed, AR-001.\n- **it reads back as typed.** `ada` (role company.owner) calls and sends id the last call's supplier, and gets back [the world's company, `Otieno Plumbing`, `Partnership`, null, `active`].\n- **it reads back a disabled individual.** `ada` (role company.owner) calls and sends id the last call's supplier, and gets back [the world's company, `Mara Office Rentals`, `Individual`, the world's supplierGroup, `disabled`].\n- **and the first is still a company.** `ada` (role company.owner) calls and sends id the world's supplier, and gets back [the world's company, `Mara Office Rentals`, `Company`, the world's supplierGroup, `active`].\n- **it reads back disabled.** `ada` (role company.owner) calls and sends id the world's supplier, and gets back [the world's company, `Mara Office Rentals`, `Company`, the world's supplierGroup, `disabled`].\n\n## How to call\n\n```sh\ncapxul supplier get --id <id>\n```\n\nHTTP: `POST /supplier/get` with the payload as JSON. SDK: `Sdk.supplier.get(payload)`.\n",
-    "supplier/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# supplier\n\nSomeone a company buys from and pays money to.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| supplierName | Name |\n| supplierType | PartyKind |\n| supplierGroup (optional) | supplier-group.id |\n\n## Machine\n\nStates: active, disabled. A move from the wrong state is refused SupplierNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | SupplierCreated |\n| disable | active | disabled | SupplierDisabled |\n| enable | disabled | active | SupplierEnabled |\n\n## Events\n\n- `SupplierCreated`: carries supplier (supplier.id), company (supplier.company); emitted by the move create\n- `SupplierDisabled`: carries supplier (supplier.id); emitted by the move disable\n- `SupplierEnabled`: carries supplier (supplier.id); emitted by the move enable\n\n## Operations\n\n- [supplier.balance](balance.md): A supplier's balance on a day, from the ledger lines posted with it as their party.\n- [supplier.create](create.md): Add a supplier to a company.\n- [supplier.disable](disable.md): Disable a supplier: no payment to it can be submitted until it is enabled again.\n- [supplier.enable](enable.md): Enable a disabled supplier again.\n- [supplier.get](get.md): Read one supplier by its id: company, supplierName, supplierType, supplierGroup, state.\n"
+    "supplier/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# supplier\n\nSomeone a company buys from and pays money to.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n| company | company.id |\n| supplierName | Name |\n| supplierType | PartyKind |\n| supplierGroup (optional) | supplier-group.id |\n\n## Machine\n\nStates: active, disabled. A move from the wrong state is refused SupplierNotActive (exit 40).\n\n| move | from | to | emits |\n|---|---|---|---|\n| create | (creates) | active | SupplierCreated |\n| disable | active | disabled | SupplierDisabled |\n| enable | disabled | active | SupplierEnabled |\n\n## Events\n\n- `SupplierCreated`: carries supplier (supplier.id), company (supplier.company); emitted by the move create\n- `SupplierDisabled`: carries supplier (supplier.id); emitted by the move disable\n- `SupplierEnabled`: carries supplier (supplier.id); emitted by the move enable\n\n## Operations\n\n- [supplier.balance](balance.md): A supplier's balance on a day, from the ledger lines posted with it as their party.\n- [supplier.create](create.md): Add a supplier to a company.\n- [supplier.disable](disable.md): Disable a supplier: no payment to it can be submitted until it is enabled again.\n- [supplier.enable](enable.md): Enable a disabled supplier again.\n- [supplier.get](get.md): Read one supplier by its id: company, supplierName, supplierType, supplierGroup, state.\n",
+    "us-withholding/compute.md": "<!-- Generated from the blueprint. Do not edit. -->\n# us-withholding.compute\n\nWork out one pay's US tax lines from its wage, frequency, pay date, work state, wages so far this year and W-4.\n\n**Who may call:** anyone signed in.\n\n## Payload\n\n| field | value |\n|---|---|\n| wage | text |\n| frequency | schema |\n| payDate | day |\n| workState | text |\n| yearToDate | text |\n| w4 | schema |\n\n## Answer\n\n| field | value |\n|---|---|\n| lines | schema |\n\n## Refusals\n\n| refusal | exit | code | when |\n|---|---|---|---|\n| AmountNegative | 41 | UW-001 | declared in errors.ts, carrying figure |\n| AmountFractional | 42 | UW-002 | declared in errors.ts, carrying figure |\n| AmountNotANumber | 43 | UW-003 | declared in errors.ts, carrying figure |\n| WorkStateUnknown | 44 | UW-004 | declared in errors.ts, carrying workState |\n| NotAllowed | 3 | AR-001 | the caller isn't anyone signed in; the handler never runs |\n\n## Worked examples\n\n### tax-us: the piece's footing\n\nStarts from an empty world.\n\n- **a negative wage is refused, naming the wage.** `ada` (signed in) calls and sends wage `-1`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNegative, UW-001, carrying figure `wage`.\n- **a wage that isn't whole base units is refused, naming the wage.** `ada` (signed in) calls and sends wage `1500000000.5`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountFractional, UW-002, carrying figure `wage`.\n- **a wage that isn't a number is refused, naming the wage.** `ada` (signed in) calls and sends wage `abc`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNotANumber, UW-003, carrying figure `wage`.\n- **a negative year to date is refused, naming the year to date.** `ada` (signed in) calls and sends wage `1500000000`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `-1`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNegative, UW-001, carrying figure `yearToDate`.\n- **a year to date that isn't whole base units is refused, naming the year to date.** `ada` (signed in) calls and sends wage `1500000000`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `3000000000.25`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountFractional, UW-002, carrying figure `yearToDate`.\n- **a year to date that isn't a number is refused, naming the year to date.** `ada` (signed in) calls and sends wage `0`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `ten`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNotANumber, UW-003, carrying figure `yearToDate`.\n- **a work state that isn't one of the fifty or DC is refused, naming it.** `ada` (signed in) calls and sends wage `1500000000`, frequency `biweekly`, payDate `2026-12-04`, workState `PR`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with WorkStateUnknown, UW-004, carrying workState `PR`.\n- **a wage of nothing, with no Step 4(c) extra withholding, gives no lines: a line of nothing is left out.** `ada` (signed in) calls and sends wage `0`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a wage of \" \" isn't a number, and is refused, naming the wage.** `ada` (signed in) calls and sends wage ` `, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNotANumber, UW-003, carrying figure `wage`.\n- **a wage of \"12abc\" isn't a number, and is refused, naming the wage.** `ada` (signed in) calls and sends wage `12abc`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNotANumber, UW-003, carrying figure `wage`.\n- **a wage of \"-\" isn't a number, and is refused, naming the wage.** `ada` (signed in) calls and sends wage `-`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNotANumber, UW-003, carrying figure `wage`.\n- **any wage below nothing is refused, not only one base unit below.** `ada` (signed in) calls and sends wage `-5`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNegative, UW-001, carrying figure `wage`.\n- **any fraction of a base unit is refused.** `ada` (signed in) calls and sends wage `1.75`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountFractional, UW-002, carrying figure `wage`.\n- **the year to date is read whole, as the wage is.** `ada` (signed in) calls and sends wage `1500000000`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `12abc`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and is refused with AmountNotANumber, UW-003, carrying figure `yearToDate`.\n- **a pay of 1,500 dollars gives no lines yet: no rows, so every tax is nothing and left out.** `ada` (signed in) calls and sends wage `1500000000`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a wage past 2^53 base units is taken, not refused or rounded.** `ada` (signed in) calls and sends wage `9007199254740993`, frequency `biweekly`, payDate `2026-12-04`, workState `TX`, yearToDate `9007199254740993`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **California is a work state as Texas is.** `ada` (signed in) calls and sends wage `0`, frequency `biweekly`, payDate `2026-12-04`, workState `CA`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a weekly pay is taken.** `ada` (signed in) calls and sends wage `0`, frequency `weekly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a semimonthly pay is taken.** `ada` (signed in) calls and sends wage `0`, frequency `semimonthly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a monthly pay is taken.** `ada` (signed in) calls and sends wage `0`, frequency `monthly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a quarterly pay is taken.** `ada` (signed in) calls and sends wage `0`, frequency `quarterly`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a semiannual pay is taken.** `ada` (signed in) calls and sends wage `0`, frequency `semiannual`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a annual pay is taken.** `ada` (signed in) calls and sends wage `0`, frequency `annual`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **a daily pay is taken.** `ada` (signed in) calls and sends wage `0`, frequency `daily`, payDate `2026-12-04`, workState `TX`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n- **DC is a work state as the fifty are.** `ada` (signed in) calls and sends wage `0`, frequency `biweekly`, payDate `2026-12-04`, workState `DC`, yearToDate `0`, w4 { filingStatus: `single`, step2: false, step3Credits: `0`, step4aOtherIncome: `0`, step4bDeductions: `0`, step4cExtraWithholding: `0` }, and gets back [].\n\n## How to call\n\n```sh\ncapxul us-withholding compute --wage <wage> --frequency <frequency> --payDate <payDate> --workState <workState> --yearToDate <yearToDate> --w4 <w4>\n```\n\nHTTP: `POST /us-withholding/compute` with the payload as JSON. SDK: `Sdk.us-withholding.compute(payload)`.\n",
+    "us-withholding/index.md": "<!-- Generated from the blueprint. Do not edit. -->\n# us-withholding\n\nOne pay's US tax lines: federal and state, each employee's and employer's share.\n\nLives in the database.\n\n## Fields\n\n| field | value |\n|---|---|\n| id | id |\n\n## Operations\n\n- [us-withholding.compute](compute.md): Work out one pay's US tax lines from its wage, frequency, pay date, work state, wages so far this year and W-4.\n"
   },
   "extensions": {
     "journeys": {
@@ -145329,5 +146436,5 @@
       "reason": "no trace source is wired to the portal yet"
     }
   },
-  "digest": "27e6c90dd3cab4fd2cd8847666a1baff6a69cb304cc8ed7c4cc81442397e9d54"
+  "digest": "4218fc34746f7e538a32c255e6c2ba32415dfc497f672a047c1f649c76edacdf"
 }

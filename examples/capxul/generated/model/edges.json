@@ -3043,5 +3043,10 @@
     "from": "supplier-group.get",
     "to": "company.owner",
     "kind": "allowed-by"
+  },
+  {
+    "from": "us-withholding.compute",
+    "to": "us-withholding",
+    "kind": "acts-on"
   }
 ]

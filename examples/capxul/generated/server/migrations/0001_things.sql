@@ -611,6 +611,10 @@ CREATE TABLE "supplier-group" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "supplier-group_oneNamePerCompany" ON "supplier-group" ("company", "supplierGroupName");
+CREATE TABLE "us-withholding" (
+  "id" TEXT PRIMARY KEY,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 -- Every event a move emitted, with the trace of the call that made it (language-effect's Journal).
 CREATE TABLE "_journal" (
   "seq" INTEGER PRIMARY KEY AUTOINCREMENT,

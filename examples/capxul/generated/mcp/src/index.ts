@@ -181,6 +181,7 @@ import { declaration as supplierEnable } from "../../api/src/supplier/enable.ts"
 import { declaration as supplierGet } from "../../api/src/supplier/get.ts";
 import { declaration as supplierGroupCreate } from "../../api/src/supplier-group/create.ts";
 import { declaration as supplierGroupGet } from "../../api/src/supplier-group/get.ts";
+import { declaration as usWithholdingCompute } from "../../api/src/us-withholding/compute.ts";
 
 /** One tool per operation and read, named as the operation is. */
 export const catalog = {
@@ -365,4 +366,5 @@ export const catalog = {
   "supplier.get": { description: "Read one supplier by its id: company, supplierName, supplierType, supplierGroup, state.", operation: supplierGet, states: ["active","disabled"] },
   "supplier-group.create": { description: "Add a supplier group to a company, under a group or as its one root. Refuses SupplierGroupNameTaken when another supplier group holds this company and supplier group name.", operation: supplierGroupCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"SupplierGroupCreated"} },
   "supplier-group.get": { description: "Read one supplier-group by its id: company, supplierGroupName, parentSupplierGroup, state.", operation: supplierGroupGet, states: ["group","ledger"] },
+  "us-withholding.compute": { description: "Work out one pay's US tax lines from its wage, frequency, pay date, work state, wages so far this year and W-4.", operation: usWithholdingCompute },
 } as const satisfies { readonly [name: string]: McpEntry };

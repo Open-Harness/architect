@@ -1,0 +1,31 @@
+{
+  "name": "@capxul/payroll-tax-us",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "US payroll tax: each pay's federal and state tax lines, from the government's published figures.",
+  "type": "module",
+  "orthograph": {
+    "kind": "feature",
+    "blueprint": "blueprint",
+    "src": "src"
+  },
+  "nx": {
+    "tags": [
+      "scope:plugin",
+      "env:runtime"
+    ]
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./blueprint/*.js": "./blueprint/*.ts",
+    "./blueprint/*": "./blueprint/*",
+    "./src/*.js": "./src/*.ts",
+    "./src/*": "./src/*"
+  },
+  "dependencies": {
+    "effect": "4.1.4",
+    "orthograph": "workspace:*",
+    "@orthograph/language-effect": "workspace:*"
+  }
+}

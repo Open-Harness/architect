@@ -60,6 +60,7 @@ export * as salaryStructureAssignment from "./salary-structure-assignment/index.
 export * as shiftType from "./shift-type/index.ts";
 export * as supplier from "./supplier/index.ts";
 export * as supplierGroup from "./supplier-group/index.ts";
+export * as usWithholding from "./us-withholding/index.ts";
 export type { Account, AccountState, AccountCreated, AccountMadeLedger } from "./account/types.ts";
 export type { Appraisal, AppraisalState, AppraisalCreated, AppraisalRated, AppraisalSelfRated, AppraisalSubmitted } from "./appraisal/types.ts";
 export type { AppraisalCycle, AppraisalCycleState, AppraisalCycleCompleted, AppraisalCycleCreated, AppraisalCycleReopened, AppraisalCycleStarted } from "./appraisal-cycle/types.ts";
@@ -118,3 +119,4 @@ export type { SalaryStructureAssignment, SalaryStructureAssignmentState, SalaryS
 export type { ShiftType, ShiftTypeState, ShiftTypeCreated } from "./shift-type/types.ts";
 export type { Supplier, SupplierState, SupplierCreated, SupplierDisabled, SupplierEnabled } from "./supplier/types.ts";
 export type { SupplierGroup, SupplierGroupState, SupplierGroupCreated } from "./supplier-group/types.ts";
+export type { UsWithholding } from "./us-withholding/types.ts";

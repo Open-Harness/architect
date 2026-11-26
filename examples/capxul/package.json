@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "orthograph": "workspace:*",
+    "@capxul/payroll-tax-us": "workspace:*",
     "@orthograph/host-cloudflare": "workspace:*",
     "@orthograph/portal": "workspace:*",
     "@orthograph/language-effect": "workspace:*",

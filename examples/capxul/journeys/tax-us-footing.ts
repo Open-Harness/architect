@@ -1,0 +1,149 @@
+// Journey-author file. The builder never edits it (AGENTS.md, "Journeys and checks come first").
+// Slice 0 of the US payroll tax lane (design/goals/16-lane-payroll-tax.md): the piece's footing. It needs no rows: it
+// proves the piece is mounted, that `us-withholding.compute` judges its figures by name, and that a line of nothing is
+// left out, never shown as zero (CX-payroll's accrual does the same). It imports only `@capxul/payroll-tax-us` and
+// `orthograph`, nothing of the app's, until Capxul's own parts move into plugins (CX-composable-pieces, section 6).
+//
+// The contract the builder declares, in `examples/capxul/plugins/payroll-tax-us/blueprint/things/us-withholding/`:
+// - `verbs/compute.ts`, the operation `us-withholding.compute`, which any signed-in person may call. Its payload has
+//   `wage` and `yearToDate` as text, so a figure that isn't whole base units reaches the handler and is refused by
+//   name rather than by the wire; `frequency`; `payDate`, a day; `workState`, as text, judged by the handler; and `w4`,
+//   Form W-4's figures. Its answer has `lines`, a list of tax lines.
+// - `errors.ts`: `AmountNegative`, `AmountFractional` and `AmountNotANumber`, each with `figure` ("wage" or
+//   "yearToDate"), and `WorkStateUnknown`, with `workState`.
+import { Blueprint, expect, noEvents, refuses } from "orthograph";
+import compute from "@capxul/payroll-tax-us/blueprint/things/us-withholding/verbs/compute.ts";
+import { AmountFractional, AmountNegative, AmountNotANumber, WorkStateUnknown } from "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.ts";
+
+// A single filer's 2020-and-later W-4 with nothing in Steps 2 to 4: no extra withholding in Step 4(c).
+const plainW4 = {
+  filingStatus: "single",
+  step2: false,
+  step3Credits: "0",
+  step4aOtherIncome: "0",
+  step4bDeductions: "0",
+  step4cExtraWithholding: "0",
+} as const;
+
+// One biweekly pay in Texas, dated 2026-12-04, with no wages paid before it this year. Amounts are USDC base units.
+const pay = (changes: { readonly wage?: string; readonly yearToDate?: string; readonly workState?: string }) => ({
+  wage: "0",
+  frequency: "biweekly" as const,
+  payDate: "2026-12-04",
+  workState: "TX",
+  yearToDate: "0",
+  w4: plainW4,
+  ...changes,
+});
+
+export default Blueprint.journey("tax-us: the piece's footing", {
+  cast: { ada: Blueprint.signedIn },
+  steps: (s) => [
+    s.step(
+      "a negative wage is refused, naming the wage",
+      s.ada.run(compute, pay({ wage: "-1" })),
+      refuses(AmountNegative, { figure: "wage" }),
+      noEvents(),
+    ),
+    s.step(
+      "a wage that isn't whole base units is refused, naming the wage",
+      s.ada.run(compute, pay({ wage: "1500000000.5" })),
+      refuses(AmountFractional, { figure: "wage" }),
+      noEvents(),
+    ),
+    s.step(
+      "a wage that isn't a number is refused, naming the wage",
+      s.ada.run(compute, pay({ wage: "abc" })),
+      refuses(AmountNotANumber, { figure: "wage" }),
+      noEvents(),
+    ),
+    // The year to date is judged as the wage is, each refusal naming it, behind a wage that is fine, of something or nothing.
+    s.step(
+      "a negative year to date is refused, naming the year to date",
+      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "-1" })),
+      refuses(AmountNegative, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    s.step(
+      "a year to date that isn't whole base units is refused, naming the year to date",
+      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "3000000000.25" })),
+      refuses(AmountFractional, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    s.step(
+      "a year to date that isn't a number is refused, naming the year to date",
+      s.ada.run(compute, pay({ wage: "0", yearToDate: "ten" })),
+      refuses(AmountNotANumber, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    s.step(
+      "a work state that isn't one of the fifty or DC is refused, naming it",
+      // Puerto Rico has its own withholding, outside this piece (CX-payroll-tax: the United States only).
+      s.ada.run(compute, pay({ wage: "1500000000", workState: "PR" })),
+      refuses(WorkStateUnknown, { workState: "PR" }),
+      noEvents(),
+    ),
+    s.step(
+      "a wage of nothing, with no Step 4(c) extra withholding, gives no lines: a line of nothing is left out",
+      s.ada.run(compute, pay({ wage: "0" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    // Text is judged as a whole: nothing a lenient parse would take is a number of base units (the hostile pass).
+    ...([" ", "12abc", "-"] as const).map((wage) =>
+      s.step(
+        `a wage of ${JSON.stringify(wage)} isn't a number, and is refused, naming the wage`,
+        s.ada.run(compute, pay({ wage })),
+        refuses(AmountNotANumber, { figure: "wage" }),
+        noEvents(),
+      ),
+    ),
+    s.step(
+      "any wage below nothing is refused, not only one base unit below",
+      s.ada.run(compute, pay({ wage: "-5" })),
+      refuses(AmountNegative, { figure: "wage" }),
+      noEvents(),
+    ),
+    s.step(
+      "any fraction of a base unit is refused",
+      s.ada.run(compute, pay({ wage: "1.75" })),
+      refuses(AmountFractional, { figure: "wage" }),
+      noEvents(),
+    ),
+    s.step(
+      "the year to date is read whole, as the wage is",
+      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "12abc" })),
+      refuses(AmountNotANumber, { figure: "yearToDate" }),
+      noEvents(),
+    ),
+    // Until slice 3 brings federal's rows, every tax is nothing, so a pay of something gives no lines either. Slice 3's
+    // author changes these two steps when the rows arrive.
+    s.step(
+      "a pay of 1,500 dollars gives no lines yet: no rows, so every tax is nothing and left out",
+      s.ada.run(compute, pay({ wage: "1500000000" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    s.step(
+      "a wage past 2^53 base units is taken, not refused or rounded",
+      s.ada.run(compute, pay({ wage: "9007199254740993", yearToDate: "9007199254740993" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    s.step(
+      "California is a work state as Texas is",
+      s.ada.run(compute, pay({ workState: "CA" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+    // Every frequency the declaration names is taken.
+    ...(["weekly", "semimonthly", "monthly", "quarterly", "semiannual", "annual", "daily"] as const).map((frequency) =>
+      s.step(
+        `a ${frequency} pay is taken`,
+        s.ada.run(compute, { ...pay({}), frequency }),
+        expect((a) => a.lines).toEqual([]),
+      ),
+    ),
+    s.step(
+      "DC is a work state as the fifty are",
+      s.ada.run(compute, pay({ wage: "0", workState: "DC" })),
+      expect((a) => a.lines).toEqual([]),
+    ),
+  ],
+});
