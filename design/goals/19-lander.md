@@ -5,15 +5,13 @@ milestone: "Goal 19: the lander"
 release: beta
 branch: main
 base: main
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
-  harness: amp         # claude | codex | opencode | amp, set by the lead when it starts
-  model: claude-opus-5-5 # the model id it runs on
-  since: 2026-11-23    # the date it started
-  thread: https://ampcode.com/threads/T-01a209a1-9868-7586-bf92-78d1f6c34e13 # the Amp loop, a round every 30 minutes
+  harness: null        # claude | codex | opencode | amp, set by the lead when it starts
+  model: null          # the model id it runs on
+  since: null          # the date it started
 done_check: never done; it runs while the apps are being built (K42, section 8)
 owns:
-  - main
   - design/goals/19-lander.md
 slices:
   - "1 · goal/stage-1 lands in main and is retired; every goal branch then bases on main"
@@ -85,9 +83,11 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-26 November 2026, about 15:00 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
-minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
-said no Claude-led goal is running now.
+26 November 2026, about 22:30 UTC. Goal 19 is parked: Aaron asked to wrap it up, so the Amp lander loop
+(https://ampcode.com/threads/T-01a209a1-9868-7586-bf92-78d1f6c34e13, a round every 30 minutes from 23 to 26 November)
+has stopped and its schedule is paused. Under K42 section 1 it released its claims: `main` is no longer claimed by the
+lander, and no `lane:goal-19` item is open. The one lander pull request still open, #1156, is handed to Goal 18 (below).
+To restart the lander, any harness reads this brief and K42 and runs it.
 
 - **Slice 1 is done.** #707 landed `goal/stage-1` in `main` at `438f631c`, with all ten required checks green.
   `goal/stage-1` is retired: it is locked read-only with its protections kept, and not deleted. `main` requires all ten
@@ -100,10 +100,13 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Sixteen Capxul rounds have landed. `goal/capxul` is ahead of `main` by
-  #1103 (CX-from-doctype: `ortho add thing --from-doctype` and its checks), #1123 (CX-composable-pieces), #1131 (the US
-  payroll tax lane's brief) and #1141 (CX-onchain-safe: Capxul's on-chain account is a Safe), with #1143 (Goal 16's
-  merge of `main`), which the next round looks at:
+- **Slice 3, the landing loop, stopped with the goal.** Sixteen Capxul rounds landed, listed below. #1156, the
+  seventeenth, is open and handed to Goal 18. It brings `goal/capxul` through #1144: #1103 and #1122 (CX-from-doctype's
+  checks and build), #1123, #1131, #1141, #1143, #1121 and #1144. The lander's 🔍 passed it, and every job passes except
+  `e2e-m1`, where five tests of Goal 18's check 48 fail because its `approved.json` pins the `changes` job and #1103
+  adds a `from_doctype` output and a `from-doctype-paths.sh` line to it. Goal 18, as that check's author, recaptures
+  `changesJob` on #1156's branch, merges `main` in, gets a 🔍 and merges; the exact steps are in #1156's handoff comment.
+  #1116 and later `goal/capxul` work stay on that branch for the next landing:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
