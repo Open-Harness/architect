@@ -3466,6 +3466,39 @@
       },
       "earlier": []
     },
+    "SF-001": {
+      "name": "SafeAlreadyOpen",
+      "owner": "personal-safe",
+      "from": "blueprint/things/personal-safe/errors.ts",
+      "fields": {
+        "person": {
+          "value": "id",
+          "prefix": "per"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SafeAlreadyOpen"
+        }
+      },
+      "earlier": []
+    },
+    "SF-900": {
+      "name": "PersonalSafeNotUnclaimed",
+      "owner": "personal-safe",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PersonalSafeNotUnclaimed"
+        }
+      },
+      "earlier": []
+    },
     "SG-001": {
       "name": "ParentSupplierGroupNotInCompany",
       "owner": "supplier-group",

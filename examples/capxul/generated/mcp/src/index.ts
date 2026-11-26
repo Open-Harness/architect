@@ -157,6 +157,9 @@ import { declaration as payrollEntrySubmit } from "../../api/src/payroll-entry/s
 import { declaration as payrollEntrySubmitSlips } from "../../api/src/payroll-entry/submit-slips.ts";
 import { declaration as payrollPeriodCreate } from "../../api/src/payroll-period/create.ts";
 import { declaration as payrollPeriodGet } from "../../api/src/payroll-period/get.ts";
+import { declaration as personalSafeGet } from "../../api/src/personal-safe/get.ts";
+import { declaration as personalSafeList } from "../../api/src/personal-safe/list.ts";
+import { declaration as personalSafeOpen } from "../../api/src/personal-safe/open.ts";
 import { declaration as salaryComponentCreate } from "../../api/src/salary-component/create.ts";
 import { declaration as salaryComponentGet } from "../../api/src/salary-component/get.ts";
 import { declaration as salaryDetailList } from "../../api/src/salary-detail/list.ts";
@@ -341,6 +344,9 @@ export const catalog = {
   "payroll-entry.submit-slips": { description: "Submit a payroll entry's salary slips, booking their pay in one accrual journal entry.", operation: payrollEntrySubmitSlips, states: ["draft","submitted","accrued"], move: {"key":"submitSlips","from":["submitted"],"to":["accrued"],"emits":"SalarySlipsSubmitted"} },
   "payroll-period.create": { description: "Set up a company's payroll period. Refuses PayrollPeriodNameTaken when another payroll period holds this company and payroll period name.", operation: payrollPeriodCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"PayrollPeriodCreated"} },
   "payroll-period.get": { description: "Read one payroll-period by its id: company, payrollPeriodName, startDate, endDate, state.", operation: payrollPeriodGet, states: ["active"] },
+  "personal-safe.get": { description: "Read one personal-safe by its id: person, saltNonce, signer, firstOwner, account, state.", operation: personalSafeGet, states: ["unclaimed"] },
+  "personal-safe.list": { description: "List personal-safes, oldest first, 50 to a page, filtered by person.", operation: personalSafeList, states: ["unclaimed"] },
+  "personal-safe.open": { description: "Open your own Safe. It has no address until you claim it with the key you sign with. Refuses SafeAlreadyOpen when another personal safe holds this person.", operation: personalSafeOpen, states: ["unclaimed"], move: {"key":"open","from":[],"to":["unclaimed"],"emits":"PersonalSafeOpened"} },
   "salary-component.create": { description: "Add a part of pay, an earning or a deduction, with its default amount and the ledger it is booked to. Refuses SalaryComponentTaken when another salary component holds this company and salary component.", operation: salaryComponentCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"SalaryComponentCreated"} },
   "salary-component.get": { description: "Read one salary-component by its id: company, salaryComponent, type, amount, account, state.", operation: salaryComponentGet, states: ["active"] },
   "salary-detail.list": { description: "List salary-details, oldest first, 100 to a page, filtered by salaryStructure.", operation: salaryDetailList },
