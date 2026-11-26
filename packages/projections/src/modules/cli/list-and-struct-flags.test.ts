@@ -234,7 +234,9 @@ describe("The controls, on a verb with no list or struct: text flags are still t
 });
 
 /** A flag's entry in `--help`: its metavar, and its description (with any lines it wraps onto). */
-const helpFor = (help: string, flag: string): { readonly metavar: string; readonly description: string } => {
+const helpFor = (said: string, flag: string): { readonly metavar: string; readonly description: string } => {
+  // Without any colouring a terminal may have asked for.
+  const help = `\n${said.replace(/\u001b\[[0-9;]*m/g, "")}`;
   const at = help.search(new RegExp(`\\n\\s*--${flag}\\b`));
   if (at < 0) return { metavar: "", description: "" };
   const rest = help.slice(at + 1);
@@ -267,6 +269,6 @@ describe("3. --help says a list or struct flag takes JSON, in its metavar and it
   it("--memo and --name say text, not JSON (the control)", async () => {
     const help = (await ran(["--help"], "note")).stdout;
     const said = [helpFor(help, "memo"), helpFor(help, "name")];
-    expect(said.map((h) => [h.metavar, /json/i.test(h.description)])).toEqual([["text", false], ["text", false]]);
+    expect(said.map((h) => [h.metavar, /json/i.test(h.description)]), `--help said: ${JSON.stringify(help)}`).toEqual([["text", false], ["text", false]]);
   });
 });

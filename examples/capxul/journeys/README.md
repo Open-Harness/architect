@@ -29,7 +29,13 @@ record types are listed in `../doctypes.md`.
 - `two bank accounts`, from `a bank account`: Ada opens Payroll, a euro account, too. It gives those and `payroll`,
   `payrollBankName`, `payrollAccountNumber` and `payrollRoutingNumber`.
 - `a reopened account`, from `two bank accounts`: Ada closes Operating and opens a new US dollar account under its name.
-  It gives `company`, `business`, `old`, `oldAccountNumber`, and the new `account` with its three details.
+  It gives `company`, `business`, `old`, `oldAccountNumber`, and the new `account` with its three details, and `payroll`, the euro account, still open.
+- `a transfer sent`, from `a reopened account`: Ada sends 300.25 dollars from the new Operating to `ea_landlord`, under
+  the request `rent-december`. It gives `company`, `account`, `payroll`, `transfer` and `transferReference`.
+- `bo has an account`, from `two kybs started`: Bridge approves both KYBs and Bo opens Bo Main, a US dollar account,
+  the world's first. It gives `company`, `business`, `boBusiness` and `boAccount`.
+- `two companies' accounts`, from `bo has an account`: Ada opens Acme Trading's Operating after it. It gives `company`,
+  `account` and `boAccount`.
 - `two kybs started`, from `kyb started`: Bo sets up Bo Ltd and starts its KYB. It gives Ada's four and `boBusiness`,
   `boKybLink` and `boTosLink`.
 - `kyc started`: Ada (signed in) starts her own KYC with Bridge. It gives `individual`, `kycLink` and `tosLink`.
@@ -105,9 +111,14 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
 | `bridge-a-kyc-keeps-what-bridge-gave` | `kyc started` | Ada (the person checked), Bridge (the system) | Ada's KYC reads back with the form and terms `start` gave her, and Bridge's decision (`KycRejected`) changes no other field |
 | `bridge-an-approved-kyc-keeps-what-bridge-gave` | `kyc started` | Ada (the person checked), Bridge (the system) | Bridge's approval (`KycApproved`) changes no field but the state: every field reads back as `start` gave it |
 | `bridge-two-kycs-are-each-their-own` | `two kycs started` | Ada, Bo (each the person checked) | Bo's KYC reads back whole against what his `start` answered, form and terms differing, and Ada's is unchanged by his. Ada can't read his (`NotAllowed`) |
-| `bridge-open-a-bank-account` | `kyb approved` | Ada (owner), Bo (signed in) | Bo can't open an account on Ada's company. `bank-account.open` answers a `bac_` id and the deposit details: for USD an account number and a nine-digit routing number, for EUR an IBAN and a BIC. It emits `BankAccountOpened` with the company, the KYB and the currency, `open`, with the `load` and `insert` spans. Bo can't read it. A second open account by the same name is `BankAccountNameTaken`. The second account reads back as itself |
+| `bridge-open-a-bank-account` | `kyb approved` | Ada (owner), Bo (signed in) | Bo can't open an account on Ada's company. `bank-account.open` answers a `bac_` id and a bank's own deposit details: for USD an account number and an ABA routing number passing 3-7-1, for EUR an IBAN passing mod 97 and a BIC of its country. It emits `BankAccountOpened` with the company, the KYB and the currency, `open`, with the `load` and `insert` spans. Bo can't read it. A second open account by the same name is `BankAccountNameTaken`. The second account reads back as itself |
 | `bridge-a-bank-account-closes` | `two bank accounts` | Ada (owner), Bo (signed in) | The account reads back with every detail `open` answered. Bo can't close it. Ada closes it (`BankAccountClosed`, `closed`, the `update` span), not twice (`notFrom`). Its name is then free for a new account, and the old one stays closed with its details. The euro account reads back with the IBAN and BIC it was opened with |
 | `bridge-a-reopened-account-is-its-own` | `a reopened account` | Ada (owner) | An account opened under a closed one's name reads back with every detail its own opening answered, and the old one stays closed with its own number |
+| `bridge-a-deposit-lands` | `two bank accounts` | Ada (owner), Bo (signed in), Bridge (the system) | Only Bridge reports a deposit (`NotAllowed` for Ada). `bank-transaction.land` answers a `btx_` id and emits `DepositLanded` with the deposit in USDC base units (1,250.50 dollars is 1250500000), `settled`. It reads back with the account's company and currency, nothing withdrawn; Bo can't read it. The same deposit reported again, or a day later, is `AlreadyRecorded`. One millionth of a dollar is 1 and reads back as itself; 1.005 is exactly 1005000 and 9007199254.740993 exactly 9007199254740993, which a float gets wrong; six places on Payroll read back in EUR. Each account lists only its own deposits, each once |
+| `bridge-send-money-out` | `a reopened account` | Ada (owner), Bo (signed in) | Bo can't send. The closed account is `AccountClosed`, judged first; a currency the account doesn't hold is `CurrencyNotHeld`, judged before the amount; 0 and less are `NothingToSend`, but one millionth is sent. `bank-transaction.send` emits `TransferSent` with the withdrawal in exact base units, `pending`; a second transfer has its own reference, and the account lists both. Payroll pays in euros with six places |
+| `bridge-a-transfer-is-paid-or-returned` | `a transfer sent` | Ada (owner), Bo (signed in), Bridge (the system) | The transfer reads back pending with the reference it was given; the same request again is the same transfer and inserts nothing. Only Bridge settles or fails one, and it moves that one alone: failing the refund leaves the rent pending, and paying the rent leaves three others as they were. Failed or paid once, it can't move again. A transfer is dated by the world's clock in UTC: at 23:30 the same day, after midnight the next. Paid a day later, the rent keeps the day it was sent. This is the one Bridge journey that moves the clock (CX-bridge) |
+| `bridge-each-companys-money-is-its-own` | `two companies' accounts` | Ada, Bo (each an owner), Bridge (the system) | A deposit and a transfer on Acme Trading's account, opened after Bo's, are Acme Trading's: Ada reads them, Bo can't; Bo's deposit is his, and Ada can't read it |
+| `bridge-a-bank-account-end-to-end` | none | Ada, Bridge (the system) | K42 §6's bank account journey: Ada's KYC through Bridge's link, Bridge's approval, read back; her company, its KYB, approved; a US dollar account with a bank's own details; a deposit landing, read back; a transfer out, Bridge's word it was paid, read back; the account listing both, each once |
 | `set-up-a-holiday-list` | `a company` | Ada (owner), Bo (signed in) | `holiday-list.create` answers an `hls_` id, emits `HolidayListCreated` with the company, leaves it `active`, with the `insert` span. It reads back as typed with no holidays. An end before its start, one day back across a year's end and one inside a month, is `HolidayListEndsBeforeStart` (carrying `fromDate`, before `insert`); a name taken in the company is `HolidayListNameTaken`. Bo can't read it or start one in Ada's company (`NotAllowed`). A one-day list is allowed and reads back as itself |
 | `add-holidays` | `a holiday list` | Ada (owner), Bo (signed in) | `holiday.add` answers a `hol_` id and the list's new count, emits `HolidayAdded`, `active`, with the `load` and `insert` spans. The list's first and last days may be holidays; the day before and the day after are `HolidayOutsideList` (carrying both ends, after `load`, before `insert`). A day held already is `HolidayDateTaken`. Bo can't read or add (`NotAllowed`). Each reads back as typed, and the list counts two |
 | `weekly-offs` | `a sunday holiday` | Ada (owner), Bo (signed in) | `holiday-list.add-weekly-off` makes every given weekday between the list's ends a holiday: Sunday adds 51 (2027 has 52, one held already, which keeps its name), Friday 53 (2027 starts and ends on one), and Friday again adds 0, each with `WeeklyOffAdded` and the exact total. The days it added are then taken, first, middle and last; another weekday's day isn't. Bo can't run it (`NotAllowed`) |
@@ -175,9 +186,11 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
   else may make them. When the door lands, the journeys keep their steps and the door's events take the system's place.
 - **Bridge's states.** Bridge's `kyc_status` has ten values; Capxul keeps `started`, `approved` and `rejected`, the three a
   company acts on. A virtual account is `activated` or `deactivated`, here `open` and `closed`.
-- **Deposit details.** Bridge gives them per currency (`source_deposit_instructions`). The journeys judge their shape
-  for USD (account and routing numbers) and EUR (IBAN and BIC), and that a read gives back what `open` answered, never
-  fixed values, since the stand-in or Bridge chooses them. No two accounts, open or closed, share them
+- **Deposit details.** Bridge gives them per currency (`source_deposit_instructions`). The journeys judge that they are a
+  bank's (#912, `support/deposit-details.ts`): for USD a 4 to 17 digit account and an ABA routing number (an assigned
+  prefix, the 3-7-1 checksum); for EUR an IBAN of a registry country, of its length, passing mod 97, and a BIC in that
+  country. And a read gives back what `open` answered, never fixed values, since the stand-in or Bridge chooses them;
+  that they equal what Bridge issued waits on #995. No two accounts, open or closed, share them
   (`oneAccountPerNumber`: the account number or IBAN alone), since Bridge routes a deposit by it. A clash is the handler's bug, so the rule names no
   refusal. Only USD and EUR are declared until a check judges each other currency Bridge takes.
 - **A decision changes only the state.** After every move (approve, reject, close) a journey reads the whole record
@@ -199,10 +212,20 @@ A world can hand on only the answer of its latest call (`s.last`), so most add o
   span when the list already holds days, so a
   list of many years is slow until that lands. A weekly off emits one `WeeklyOffAdded` with its count and total, not a
   `HolidayAdded` per day, as ERPNext saves those rows in one go.
-- **Bridge, part two.** Not checked yet, each waiting on the adapter (#739 for its generator gaps): the call to Bridge
-  as a step in each operation, Bridge's webhooks as events (deposits landing as Bank Transactions, transfers), Bridge's
-  other KYC states, a business's associated persons, transfers out, and help with incorporation. Those checks come with
-  the adapter, in a later author pull request on this slice.
+- **Bridge, part two.** Not checked yet, each waiting on #995 (`decisions/CX-bridge.md`, last section): the call to
+  Bridge as a step in each operation, Bridge's webhooks arriving signed through its door and moving the records, the
+  relay of the deposit details the stand-in issued, a transfer's `Idempotency-Key` held across a retry, a deposit's
+  later activity events leaving its one Bank Transaction settled and none refused, and Bridge's other KYC states. A
+  business's associated persons wait on #992. Help with incorporation is left out. Those checks come in a second author
+  pull request on this slice.
+- **Bank Transaction.** ERPNext's Bank Transaction, one movement on a company's bank account: a deposit Bridge lands
+  (`land`, `settled`) or a transfer out (`send`, `pending`, then Bridge's `settle` or `fail`). `deposit` and `withdrawal`
+  are USDC base units, one of them 0; Bridge's amounts are dollars with up to six places (`Dollars`), turned into base
+  units exactly. One transaction per `reference`, Bridge's id for the movement (a deposit's `deposit_id`, a transfer's
+  `id`), so a report made again is `AlreadyRecorded`: keyed on the webhook's `event_id`, one deposit's three activity
+  events would count three times (CX-bridge). `send` refuses `AccountClosed`, then `CurrencyNotHeld`, then
+  `NothingToSend`, and dates a transfer by the world's clock, in UTC. A read's answer carries no id, so `a transfer sent` hands
+  on the transfer for the journey that settles and fails it.
 - **Branch and Employee Grade.** ERPNext's Branch is one name (`branch`) and HRMS's Employee Grade is named by the user,
   each unique across a site; here each is unique within a company, as departments and job titles are, so one owner's
   two companies may share one. A grade's three fields (`default_salary_structure`, `default_base_pay` and its
