@@ -195,7 +195,7 @@ export default Blueprint.operation(Draft, {
   and notes. A store's binding shows per environment.
 
 A chain is a host. The store kind that runs on it is `chain`, supplied by `language-solidity` (K3 item 2) (superseded by K27, 20 November 2026: supplied by `Host.chain`, written for by `language-solidity`). "Pending
-until mined" belongs to the caller (superseded by K7, 18 November 2026: a chain store's own commit may answer late, with a submission), so a server call that sends a transaction is a workflow (seam 6).
+until mined" belongs to the caller (superseded by K7, 18 November 2026: a chain store's own commit may answer late, with a submission), so a server call that sends a transaction is a workflow (seam 6) (superseded by K46, 26 November 2026: it is more than one call).
 
 ### 3. An Effect operation: editing a draft
 
@@ -501,7 +501,7 @@ Live evidence needs four things that `main` doesn't have yet:
 | Handler ↔ enforcer | the language (the wrapper, or the generated contract) | the payload, the principal, steps and the move in; an answer or a declared refusal out | storage, transport, a span written by hand |
 | Enforcer ↔ door | the projection that makes the door | the payload, a credential, a request key and a `traceparent` in; an answer, a refusal with its code, or a defect out | a second role check |
 | SDK ↔ action | the actions projection | input, output, refusals, exposure | authority: an action never decides |
-| Server ↔ chain | a workflow (K3 item 5) | an activity's call and the confirmed event it waits for | one commit spanning both |
+| Server ↔ chain | a workflow (K3 item 5) (superseded by K46, 26 November 2026: more than one call, joined by an event) | an activity's call and the confirmed event it waits for | one commit spanning both |
 | Store ↔ the world | the store's kind | one commit: writes, journal, outbox and request key, versioned | another writer |
 | Source ↔ handler | the adapter | typed calls as steps, events in through `on:` | a migration or a commit |
 | Evidence ↔ portal and proof | prove, the logbook, the portal | spans, step signals, journal and chain events, counts, under model names | untraced text and private fields (O2) |

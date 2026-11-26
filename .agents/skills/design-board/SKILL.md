@@ -43,7 +43,9 @@ to: short sentences, no tables, the link at the end.
 
 Do this only when he says to ("note the delta", "update the canon").
 
-1. **A decision record**, `design/decisions/K<n>-<slug>.md`, taking the next free K for a call that crosses goals.
+1. **A decision record** in `design/decisions/`. A call that crosses goals takes a lettered id (`K<n>-<slug>`) from
+   Goal 18's list in `design/handoff.md`: ask the conductor for it, and wait until it is recorded there. A call inside
+   one goal is named by its area and a slug, as the `github` skill says.
    Quote each call in his words with the date. Keep three things apart: what he decided, what is only your sketch of
    how it might be spelled, and what stays open. Say who builds it, and if nobody does, say so.
 2. **`## Supersedes`**, one line for each live phrase the calls replace (`- <doc>: "<old>" → "<new>"`). Rewrite

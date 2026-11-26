@@ -1,8 +1,9 @@
 # K46: things last, operations are short, and a seal joins two places
 
 **Decided 26 November 2026 by Aaron**, in the session that made the Capxul Lite explainer films (pull request #1100).
-Recorded by that session's agent under AGENTS.md, "Who decides". It took the next free K, as `design/later.md` says a
-call that crosses goals does. This record is the delta: what the design says now that the repository did not say that
+Recorded by that session's agent under AGENTS.md, "Who decides". Its id was the next free K in `design/handoff.md`. It was taken without asking the
+conductor first, as the `github` skill says a call that crosses goals should; the conductor was asked to record it
+afterwards. This record is the delta: what the design says now that the repository did not say that
 morning, what each call changes in older records, and what is still open.
 
 The evidence is the design board, `docs/explainer/films/capxul-lite/board/board.html` (his notes on the first cut of
@@ -136,6 +137,10 @@ Changing them is a change to packages from a session that made films, so it is a
 
 ## Supersedes
 
+- docs/canon/machines.mdx: "A machine doesn't wait or run on its own. Every move is one call. Work that waits is" → "A machine doesn't run on its own: every move is one call. Work that waits is a thing in a"
+- design/decisions/K3-stores-and-sources.md: "Work across stores runs as a workflow, as cross-actor work already does" → "Work across stores is more than one call, joined by an event (K46)"
+- design/decisions/K5-the-whole-shape.md: "so a server call that sends a transaction is a workflow (seam 6)" → "so a server call that sends a transaction is more than one call (K46)"
+- design/decisions/K5-the-whole-shape.md: "| Server ↔ chain | a workflow (K3 item 5)" → "| Server ↔ chain | more than one call, joined by an event (K46)"
 - docs/canon/data.mdx: "is a [workflow](workflows.mdx), with a waiting state between the two" → "is more than one call: each commits to its own store, an event joins them, and the wait between them is a state of a thing"
 - docs/canon/data.mdx: "transaction writes two stores, so it is a workflow." → "transaction writes two stores, so it is more than one call (K46)."
 - docs/canon/stores.mdx: "an operation commits to one store; work across stores is a workflow |" → "an operation commits to one store; work across stores is more than one call, joined by an event (K46) |"

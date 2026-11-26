@@ -251,8 +251,8 @@ changed, like a person, needs none. Its operations declare no `move` and, until 
   name. See [invariants](invariants.mdx).
 - **Not a role check.** `NotAllowed` says who may call, and it comes first. Everyone may call the sheet's operations
   (`Blueprint.anyone`), so signup never shows it: see [roles](roles.mdx).
-- **Not a workflow.** A machine doesn't wait or run on its own. Every move is one call. Work that waits is
-  [workflows](workflows.mdx).
+- **Not a workflow.** A machine doesn't run on its own: every move is one call. Work that waits is a thing in a
+  state, held by its machine (K46). A [workflow](workflows.mdx) is for durable work that belongs to no single thing.
 - **Not a view.** An event is one move's record. A list built from many events is a view: see [views](views.mdx).
 
 ## Where it lives
@@ -344,8 +344,9 @@ and a missing instance.
 
 <Note kind="decision" decision="K46">
   Things last, and operations are short (Aaron, 26 November 2026). An operation is one call and one commit. If something
-  has to wait, it is a thing, in a state, and its machine is where the wait is held. So every move should say what makes
-  it: a caller in a role (`allowed`), an event from another thing (`on`), or a clock (`by`, K23). Read the other way, the
+  has to wait, it is a thing, in a state, and its machine is where the wait is held. So every move should be made by something
+  the blueprint names: a caller in a role (the operation's `allowed`), an event from another thing (the operation's
+  `on`), or a clock (the move's `by`, K23). Read the other way, the
   moves out of a waiting state are what the thing needs, and the framework can ask for it: show the move to whoever
   holds the role, listen for the event, set the timer. Owners approving a grant is a thing that asks for enough of them,
   not a workflow. Designed, with no slice: a way to say a move is asked for and of how many, a check that every waiting

@@ -87,7 +87,7 @@ that does all of that can be where a thing lives.
 
 5. **One call commits to one store.** A call's writes all land in its thing's store. The compiler refuses an
    operation whose steps write to two stores. Work across stores runs as a workflow, as cross-actor work already does
-   (delta, Data).
+   (delta, Data) (superseded by K46, 26 November 2026: it is more than one call, joined by an event).
 
 6. **Migrations are per store**, generated from the model diff for each store, ordered per environment. Never for a
    source.
