@@ -55,7 +55,7 @@ Film.scene("rules", {
     s.to(".rule .nev", { color: "#62c6ff", duration: 0.3 }, c("r3", "never"));
     // r4: nobody says this one aloud. What it decides: the name changes hands with a payment on its way.
     s.in(".aloud", c("r4", "might"), { y: -8 });
-    s.out(rules.filter((r) => r !== sent && r !== one), c("r4", "aloud"), { dur: 0.45 });
+    s.out(rules.filter((r) => r !== sent && r !== one), c("r4") - 0.1, { dur: 0.4 });
     s.in(".c1, .sega", c("r4", "decides"), { y: 10, stagger: 0.1 }); s.fromTo(".track", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, c("r4", "decides") + 0.2);
     s.in(".c2, .segb", c("r4", "changes"), { x: -14, y: 0, stagger: 0.08 }); s.fromTo(".hands", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("r4", "changes"));
     s.in(".dot", c("r4", "payment"), { y: 0, scale: 0.3, dur: 0.35 }); s.in(".c3", c("r4", "payment"), { y: 6 }); s.draw(".tick", c("r4", "payment"), 0.3);
@@ -64,5 +64,7 @@ Film.scene("rules", {
     s.draw(".home", home, 0.6); s.fromTo(".homeh", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, home + 0.55);
     s.in(".land", home + 0.5, { x: 12, y: 0 }); s.to(".land", { borderColor: "#e9f0fa", duration: 0.3 }, home + 0.9); s.to(".segb", { opacity: 0.5, duration: 0.3 }, home + 0.9); s.in(".pic .nev", home + 0.9, { y: 0 });
     s.to(".pg", { borderColor: "#e9f0fa", duration: 0.35 }, c("r4", "page"));
+    // A stroke waits unseen until it is drawn.
+    s.tl.set(s.$$(".home, .tick"), { autoAlpha: 0 }, s.start);
   },
 });

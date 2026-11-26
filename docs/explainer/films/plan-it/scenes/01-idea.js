@@ -55,5 +55,7 @@ Film.scene("idea", {
     s.to(".g2", { borderColor: "#e9f0fa", duration: 0.3 }, c("i4", "app")); s.in(".g2 .what", c("i4", "app"), { y: 6, dur: 0.35 });
     s.to(".g2 .today", { color: "#7389a6", duration: 0.3 }, c("i4", "app"));
     s.draw(".a2", c("i4", "app") + 0.1, 0.5); s.in(".a2h", c("i4", "app") + 0.55, { y: 0, dur: 0.2 });
+    // A stroke waits unseen until it is drawn.
+    s.tl.set(s.$$(".a1, .a2"), { autoAlpha: 0 }, s.start);
   },
 });
