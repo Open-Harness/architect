@@ -45,8 +45,8 @@ Each step is small and composes with what's built. Payroll's core (9a, built) st
    W-8BEN or W-8BEN-E: kind, received day, the file, its expiry) and a **payout method** (a wallet address, or a bank
    account in the contractor's currency). Paying one is a Payment Entry of type Pay to the supplier, which #1116's
    shape allows with no invoice; paying many is one operation making one Payment Entry each. **The money moves outside
-   Capxul at this step:** the company pays from its own wallet or bank and Capxul records the payment, with both
-   amounts when currencies differ. This keeps K44's order (25 November), which puts Bridge at slice 10 and the Safe at
+   Capxul at this step:** the company pays from its own wallet or bank, and Capxul records the payment through
+   `payments`, with both amounts when currencies differ. This keeps K44's order (25 November), which puts Bridge at slice 10 and the Safe at
    slice 2, last.
 3. **The year-end for US contractors:** each W-9 contractor's total for the calendar year, and the 1099-NEC figures and
    upload file for those at or above the year's threshold, or with anything withheld. The threshold is a dated row,
