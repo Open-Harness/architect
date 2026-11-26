@@ -455,11 +455,16 @@ currency slice inside `company`, `rates`, `ledger` and `payments`, then slice 7b
 in parallel with currency, which needs none of it. `contractors` comes once `payments` exists, before
 `payroll-tax-us`.
 
-**Agreement with the developer-experience thread.** Its pages and this record use the same crossings: one store and one
-commit, an event with a waiting state, and an outside call. This record adds one for the books, the in-commit call to
-another piece's operation in the same store. Its worked example dropped a `step.operation` with an undo across two
-stores; this call has no undo because it never leaves the commit. The one difference is the actor for budgets
-(section 3).
+**Agreement with the developer-experience thread** (session `session_01S8RF7Ab2eChDNZHaQJ44eV`, draft #1100). It
+replied on 26 November 2026 that it designed nothing for composing an app from pieces, and that none of its pages
+assumes mounting or switching anything on in a running app: everything it shows is fixed at build time. Its
+"composition" is how operations inside one blueprint cross two stores, and how a screen falls out of a thing. So nothing
+here conflicts with it. This record uses its crossings (one commit in one store, an event with a waiting state, an
+outside call) and adds one for the books, an in-commit call into another piece's operation in the same store; its own
+proposals (a reference to a thing, `Blueprint.next`, owners together, a rule as data) are unconfirmed by Aaron and
+nothing here builds on them. The one difference is its example's Budget as an actor (section 3). Its finding for
+`onchain-pay`: a rule that lives on chain changes by a migration with money in it, which the blueprint has no word for
+yet, so that piece inherits the problem when it comes.
 
 ## 9. Supersedes
 
