@@ -1,0 +1,3 @@
+$ ortho promote --to staging
+promote couldn't run: no logbook: start one with `ortho env up logbook`, or set ORTHO_LOGBOOK_URL
+exit 2

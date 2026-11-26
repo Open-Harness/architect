@@ -1,0 +1,3 @@
+$ ortho env up staging --run demo1
+CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set: the staging deploy reads both from the environment, and no connection was made
+exit 2

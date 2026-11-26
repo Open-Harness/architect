@@ -1,0 +1,17 @@
+$ ortho promote --help
+DESCRIPTION
+  Move the exact built bundle on to staging or production, once its verdicts earn it
+
+USAGE
+  ortho promote [flags]
+
+FLAGS
+  --to choice      The environment the built bundle moves on to (choices: staging, production)
+  --root string    The app's folder whose bundle is promoted (the current folder by default)
+
+GLOBAL FLAGS
+  --help, -h                                                          Show help information
+  --version, -v                                                       Show version information
+  --wizard                                                            Start wizard mode for a command
+  --completions <bash|zsh|fish|powershell|sh|pwsh>                    Print shell completion script (choices: bash, zsh, fish, powershell, sh, pwsh)
+  --log-level <all|trace|debug|info|warn|warning|error|fatal|none>    Sets the minimum log level (choices: all, trace, debug, info, warn, warning, error, fatal, none)
