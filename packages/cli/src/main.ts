@@ -22,6 +22,7 @@ import { TelemetryCommand } from "#modules/telemetry/service.js";
 import { WatchCommand } from "#modules/watch/service.js";
 import { proveAddress, stagingLive } from "#modules/staging/service.js";
 import { Compiler, nodeSource } from "@orthograph/compiler";
+import { App } from "@orthograph/preset";
 
 const model = Command.make(
   "model",
@@ -242,7 +243,18 @@ const newAdapter = Command.make(
           Effect.catchTag("NewRefused", (e) => fail(e.message, 2)),
         ),
 );
-const newCommand = Command.make("new").pipe(Command.withSubcommands([newAdapter]));
+// `ortho new app <name>`: the starter project, as a folder named <name> in the working directory (the same one `npm create orthograph` makes).
+const newApp = Command.make(
+  "app",
+  { name: Argument.String("name").pipe(Argument.variadic()), root: Flag.String("root").pipe(Flag.withDefault(process.cwd())) },
+  ({ name, root }) =>
+    App.nameIn(name).pipe(
+      Effect.flatMap((one) => App.create({ parent: root, name: one })),
+      Effect.flatMap((lines) => Console.log(lines.join("\n"))),
+      Effect.catchTag("AppRefused", (e) => fail(e.message, 2)),
+    ),
+);
+const newCommand = Command.make("new").pipe(Command.withSubcommands([newAdapter, newApp]));
 
 const tsFiles = (dir: string): ReadonlyArray<string> =>
   existsSync(dir) ? readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? tsFiles(join(dir, d.name)) : d.name.endsWith(".ts") ? [join(dir, d.name)] : [])) : [];

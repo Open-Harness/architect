@@ -544,6 +544,9 @@ importers:
       '@orthograph/lint':
         specifier: workspace:*
         version: link:../lint
+      '@orthograph/preset':
+        specifier: workspace:*
+        version: link:../preset
       '@orthograph/projections':
         specifier: workspace:*
         version: link:../projections
@@ -584,6 +587,18 @@ importers:
       orthograph:
         specifier: workspace:*
         version: link:../orthograph
+
+  packages/create-orthograph:
+    dependencies:
+      '@effect/platform-node':
+        specifier: 4.1.4
+        version: 4.1.4(effect@4.1.4)(redis@6.3.1(@opentelemetry/api@1.10.0))
+      '@orthograph/preset':
+        specifier: workspace:*
+        version: link:../preset
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
 
   packages/generators:
     dependencies:
@@ -905,13 +920,12 @@ importers:
       effect:
         specifier: 4.1.4
         version: 4.1.4
-      orthograph:
-        specifier: workspace:*
-        version: link:../orthograph
-    devDependencies:
       nx:
         specifier: 24.0.3
         version: 24.0.3
+      orthograph:
+        specifier: workspace:*
+        version: link:../orthograph
 
   packages/projections:
     dependencies:

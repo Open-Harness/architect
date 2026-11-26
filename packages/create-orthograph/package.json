@@ -1,0 +1,30 @@
+{
+  "name": "create-orthograph",
+  "version": "0.0.0",
+  "description": "npm create orthograph <name>: a new Orthograph app",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@orthograph/preset": "workspace:*",
+    "@effect/platform-node": "4.1.4",
+    "effect": "4.1.4"
+  },
+  "bin": {
+    "create-orthograph": "./src/main.ts"
+  },
+  "imports": {
+    "#modules/*.js": "./src/modules/*.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "imports": {
+      "#modules/*.js": "./dist/modules/*.js"
+    },
+    "bin": {
+      "create-orthograph": "./dist/main.js"
+    }
+  }
+}

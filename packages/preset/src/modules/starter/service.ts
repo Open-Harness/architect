@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { installPackagesTask } from "@nx/devkit";
 import { Effect } from "effect";
 import type { Model } from "@orthograph/compiler";
@@ -33,4 +33,12 @@ const write: StarterApi["write"] = (tree, { name }, source) => {
   return () => installPackagesTask(tree);
 };
 
-export const Starter: StarterApi = { read, write };
+// This file sits three folders below the package root (src/ or dist/, modules/, starter/), which holds package.json.
+const packageRoot = resolve(import.meta.dirname, "../../..");
+const bundled: StarterApi["bundled"] = () => {
+  const root = [join(packageRoot, "files"), join(packageRoot, "../../examples/starter")].find((d) => existsSync(join(d, "blueprint")))!;
+  const { version } = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as { readonly version: string };
+  return read(root, version);
+};
+
+export const Starter: StarterApi = { read, write, bundled };
