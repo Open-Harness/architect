@@ -10,7 +10,7 @@ questions:
 status: specified
 milestone: M3
 slices: [M1.22, ST1.25, ST3.07, M3.09, M6.11, M7.04, M7.13, M8.09]
-decisions: [K5, K2, K7, K9, K14, K23, K29, K30, K37, K41]
+decisions: [K5, K2, K7, K9, K14, K23, K29, K30, K37, K41, K48]
 links: [blueprint, languages-and-hosts, plugins, data, doors, things, machines, invariants, operations, handlers, journeys, proof, traces, projections, ui, portal, environments, time, agents, chains-and-wallets, factory]
 ---
 
@@ -251,7 +251,7 @@ blueprint changes, and each reaches the same enforcer. A client written by hand 
 | every operation of Plugged In reaches the SDK, the CLI, MCP and the portal | proved | | `e2e/m1/20-plugged-in-loop.test.ts:86` |
 | Plugged In proves: every story green in a real world | proved | | `e2e/stage1/01-plugged-in-journeys.test.ts:69`, "7 journeys, 56 steps" |
 | the infra plan is what the model asks for | proved | | `e2e/m1/37-m7-03-staging-plan.test.ts:87` |
-| actions and the screen | specified | M1.22 | K29; the claim form in ST1.25 |
+| actions and the screen | specified | M1.22 | K29, K48 (hooks over the actions, any component library); the claim form in ST1.25 |
 | agents in the app | specified | ST3.07 | an agent spends under its own hat |
 | the chain, time, staging and the release | specified | M6.11 | K7; K23 (M8.09); M7.04; M7.13 |
 | the factory closes the loop | specified | M3.09 | after 1.0 |
