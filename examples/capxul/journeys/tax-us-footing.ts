@@ -57,7 +57,7 @@ export default Blueprint.journey("tax-us: the piece's footing", {
       refuses(AmountNotANumber, { figure: "wage" }),
       noEvents(),
     ),
-    // The year to date is judged as the wage is, each refusal naming it, behind a wage that is fine.
+    // The year to date is judged as the wage is, each refusal naming it, behind a wage that is fine, of something or nothing.
     s.step(
       "a negative year to date is refused, naming the year to date",
       s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "-1" })),
@@ -72,7 +72,7 @@ export default Blueprint.journey("tax-us: the piece's footing", {
     ),
     s.step(
       "a year to date that isn't a number is refused, naming the year to date",
-      s.ada.run(compute, pay({ wage: "1500000000", yearToDate: "ten" })),
+      s.ada.run(compute, pay({ wage: "0", yearToDate: "ten" })),
       refuses(AmountNotANumber, { figure: "yearToDate" }),
       noEvents(),
     ),
