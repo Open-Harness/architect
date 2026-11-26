@@ -24,9 +24,26 @@ export type StepRunners<St, C = {}> = {
   readonly [K in keyof St]: St[K] extends { readonly type: "call" }
     ? CallRunner<K extends keyof C ? (C[K] extends Callable ? C[K] : Callable) : Callable>
     : St[K] extends { readonly type: "operation"; readonly operation: infer I }
-      ? (payload: PayloadOf<I>) => Effect.Effect<AnswerOf<I>, ErrorOf<I> | NotAllowed | NotFrom | NotFound>
+      ? (payload: PayloadOf<I>) => Effect.Effect<AnswerOf<I>, InnerRefusalOf<I>>
       : <A, E, R>(work: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>;
 };
+
+/** How deep the types follow operation steps. The compiler refuses a cycle; this only stops the type from running for ever on one. */
+type Depth = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+/**
+ * Every refusal an inner operation can make when an operation step runs it (#1079): its declared errors, its access rule's `NotAllowed`, its
+ * machine's `NotFrom`, a `<Thing>NotFound` for what its payload names, and the same of each operation it runs in turn, at any depth.
+ */
+export type InnerRefusalOf<I, D extends number = 10> = ErrorOf<I> | NotAllowed | NotFrom | NotFound | InnerErrorOf<I, D>;
+
+/**
+ * The refusals `O`'s operation steps can make, through every inner operation at any depth: what its handler may let through beside its own
+ * declared errors. `never` for an operation with no operation step, so its handler's errors stay exactly `ErrorOf<O>`.
+ */
+export type InnerErrorOf<O, D extends number = 10> = [D] extends [never] ? never : {
+  readonly [K in keyof StepsOf<O>]: StepsOf<O>[K] extends { readonly type: "operation"; readonly operation: infer I } ? InnerRefusalOf<I, Depth[D]> : never;
+}[keyof StepsOf<O>];
 
 export interface HandlerContext<O, C = {}> {
   readonly principal: Principal;
@@ -68,8 +85,11 @@ type CreatedId<O> = O extends { readonly move: infer M }
 
 type MoveTo<O> = O extends { readonly move: infer M } ? (NonNullable<M> extends { readonly to: ReadonlyArray<infer S> } ? S : never) : never;
 
-/** What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out. */
-export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
+/**
+ * What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out, or a refusal one of its
+ * operation steps made (#1079), which the handler may let through as it came or map to its own.
+ */
+export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | InnerErrorOf<O>, R>;
 
 export interface Served<O, R> {
   readonly name: string;
@@ -77,12 +97,12 @@ export interface Served<O, R> {
   readonly operation: O;
   // A `<Thing>NotFound` (M1.46) is refused by tag like `NotFrom`; the generated wire classes carry it to every surface.
   /** From the outside: decode first, refusing with `InvalidPayload`. */
-  readonly call: (payload: unknown, principal: Principal) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | InvalidPayload | NotAllowed | NotFrom, Exclude<R, Records> | Busy | Store>;
+  readonly call: (payload: unknown, principal: Principal) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | InnerErrorOf<O> | InvalidPayload | NotAllowed | NotFrom, Exclude<R, Records> | Busy | Store>;
   /**
    * From a server that has already decoded the payload against the same declaration. `request` is the caller's
    * idempotency key: for an operation declared `idempotent: "request"`, the same key from the same caller is one call.
    */
-  readonly run: (payload: PayloadOf<O>, principal: Principal, request?: string) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | NotAllowed | NotFrom, Exclude<R, Records> | Busy | Store>;
+  readonly run: (payload: PayloadOf<O>, principal: Principal, request?: string) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | InnerErrorOf<O> | NotAllowed | NotFrom, Exclude<R, Records> | Busy | Store>;
 }
 
 /** Nothing has the id a payload field names, and no role check read it. Named `<Thing>NotFound`; refused before the handler. */

@@ -71,9 +71,12 @@ Three kinds of line carry the declaration: the declared steps (`steps.load`, `st
 
 The frame is one type, made from the operation:
 
-```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=71-72
-/** What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out. */
-export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O>, R>;
+```ts file=packages/language-effect/src/modules/handler/types.ts name=Handler lines=88-92
+/**
+ * What a project writes in `<verb>.handler.ts`: the declared payload in, the declared answer or a declared error out, or a refusal one of its
+ * operation steps made (#1079), which the handler may let through as it came or map to its own.
+ */
+export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: HandlerContext<O, C>) => Effect.Effect<AnswerOf<O>, ErrorOf<O> | InnerErrorOf<O>, R>;
 ```
 
 - **The payload**, already decoded against the declaration. `people` is a `bigint` here, never a string.
@@ -113,7 +116,8 @@ export type Handler<O, R = never, C = {}> = (payload: PayloadOf<O>, context: Han
   as the handler calls it, and a handler can run only the operations its steps declare.
 - **Services**, from the frame's `R`: `Records` to find and change the thing's records, and `Auth`.
 
-It returns an Effect of the declared answer, failing only with a declared error. Both are checked twice. The compiler
+It returns an Effect of the declared answer, failing only with a declared error or a refusal one of its operation steps
+made, at any depth (`InnerErrorOf`, #1079): never any other. Both are checked twice. The compiler
 refuses a handler that fails with an error its operation doesn't list
 (`packages/generators/src/modules/render/handler-type.test.ts:40`). At run time, an answer outside its declaration
 is never sent. It dies as the handler's bug:
