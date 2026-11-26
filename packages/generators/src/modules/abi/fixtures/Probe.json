@@ -1,0 +1,662 @@
+{
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "start",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "LIMIT",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "bad",
+      "inputs": [
+        {
+          "name": "code",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "boxed",
+      "inputs": [
+        {
+          "name": "b",
+          "type": "tuple",
+          "internalType": "struct Probe.Box",
+          "components": [
+            {
+              "name": "width",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "holder",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "inner",
+              "type": "tuple",
+              "internalType": "struct Probe.Inner",
+              "components": [
+                {
+                  "name": "sealed_",
+                  "type": "bool",
+                  "internalType": "bool"
+                },
+                {
+                  "name": "tag",
+                  "type": "bytes32",
+                  "internalType": "bytes32"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "extra",
+          "type": "uint256[]",
+          "internalType": "uint256[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "out",
+          "type": "tuple",
+          "internalType": "struct Probe.Box",
+          "components": [
+            {
+              "name": "width",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "holder",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "inner",
+              "type": "tuple",
+              "internalType": "struct Probe.Inner",
+              "components": [
+                {
+                  "name": "sealed_",
+                  "type": "bool",
+                  "internalType": "bool"
+                },
+                {
+                  "name": "tag",
+                  "type": "bytes32",
+                  "internalType": "bytes32"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "total",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "count",
+      "inputs": [
+        {
+          "name": "n",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "drain",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "first",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct Probe.Item",
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "who",
+              "type": "address",
+              "internalType": "address"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "fund",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "funded",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "label",
+      "inputs": [
+        {
+          "name": "data",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "list",
+      "inputs": [
+        {
+          "name": "extra",
+          "type": "tuple[]",
+          "internalType": "struct Probe.Item[]",
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "who",
+              "type": "address",
+              "internalType": "address"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple[]",
+          "internalType": "struct Probe.Item[]",
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "who",
+              "type": "address",
+              "internalType": "address"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "mark",
+      "inputs": [
+        {
+          "name": "h",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "marks",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "pair",
+      "inputs": [
+        {
+          "name": "a",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "b",
+          "type": "int8",
+          "internalType": "int8"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "sum",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "odd",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "peek",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "poke",
+      "inputs": [
+        {
+          "name": "x",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "refuse",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "refuseWrite",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "reject",
+      "inputs": [
+        {
+          "name": "item",
+          "type": "tuple",
+          "internalType": "struct Probe.Item",
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "who",
+              "type": "address",
+              "internalType": "address"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "send",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "send",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "tick",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "total",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "sum",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "whoami",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "event",
+      "name": "Counted",
+      "inputs": [
+        {
+          "name": "n",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "flag",
+          "type": "bool",
+          "indexed": true,
+          "internalType": "bool"
+        },
+        {
+          "name": "tag",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Funded",
+      "inputs": [
+        {
+          "name": "from",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Marked",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Poked",
+      "inputs": [
+        {
+          "name": "who",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "x",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Sent",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Tick",
+      "inputs": [],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "Bad",
+      "inputs": [
+        {
+          "name": "code",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "Empty",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "Rejected",
+      "inputs": [
+        {
+          "name": "item",
+          "type": "tuple",
+          "internalType": "struct Probe.Item",
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "who",
+              "type": "address",
+              "internalType": "address"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "Spent",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TooBig",
+      "inputs": [
+        {
+          "name": "x",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "limit",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    }
+  ],
+  "bytecode": {
+    "object": "0x6080604052348015600e575f5ffd5b50604051610f9b380380610f9b833981016040819052602b916043565b5f55600280546001600160a01b031916331790556059565b5f602082840312156052575f5ffd5b5051919050565b610f35806100665f395ff3fe608060405260043610610147575f3560e01c8063b60d4288116100b3578063d0679d341161006d578063d0679d3414610373578063d1c5e5e414610392578063ee02438e146103c6578063f331920b146103e5578063f3a504f214610404578063f907f40814610419575f5ffd5b8063b60d4288146102d6578063bb734757146102de578063c3e4e17d14610309578063c48b9ce214610328578063cd8cf0d414610354578063cdd732bc14610251575f5ffd5b806359e02dd71161010457806359e02dd71461023e57806362c69b80146102515780638da5cb5b146102655780639890220b1461029c578063af8214ef146102b0578063b3b36bb3146102c4575f5ffd5b80632ddbd13a1461014b57806332145f90146101725780633df4ddf4146101a15780633e58c58c146101ea5780633eaf5d9f1461020b57806355e44a4f1461021f575b5f5ffd5b348015610156575f5ffd5b5061015f610477565b6040519081526020015b60405180910390f35b34801561017d575f5ffd5b5061019161018c3660046109c4565b61048c565b6040519015158152602001610169565b3480156101ac575f5ffd5b506040805180820182525f808252602091820181905282518084019093525482526002546001600160a01b03169082015260405161016991906109db565b3480156101f5575f5ffd5b50610209610204366004610a16565b610523565b005b348015610216575f5ffd5b50610209610569565b34801561022a575f5ffd5b5061015f610239366004610a74565b610593565b348015610249575f5ffd5b505f5461015f565b34801561025c575f5ffd5b506102096105cb565b348015610270575f5ffd5b50600254610284906001600160a01b031681565b6040516001600160a01b039091168152602001610169565b3480156102a7575f5ffd5b506102096105fc565b3480156102bb575f5ffd5b5061015f606481565b3480156102cf575f5ffd5b5033610284565b610209610622565b3480156102e9575f5ffd5b5061015f6102f83660046109c4565b60036020525f908152604090205481565b348015610314575f5ffd5b50610209610323366004610ae0565b61066f565b348015610333575f5ffd5b50610347610342366004610b28565b6106bf565b6040516101699190610b99565b34801561035f575f5ffd5b5061019161036e366004610bf9565b6107d6565b34801561037e575f5ffd5b5061020961038d366004610c12565b610801565b34801561039d575f5ffd5b506103b16103ac366004610c3a565b610848565b60408051928352901515602083015201610169565b3480156103d1575f5ffd5b506102096103e03660046109c4565b610888565b3480156103f0575f5ffd5b506102096103ff3660046109c4565b610904565b34801561040f575f5ffd5b5061015f60015481565b348015610424575f5ffd5b50610438610433366004610c6d565b610920565b60408051835181526020808501516001600160a01b0316818301529382015180511515928201929092529201516060830152608082015260a001610169565b5f6001545f546104879190610d09565b905090565b5f60648211156104be57604051631ab6737f60e21b815260048101839052606460248201526044015b60405180910390fd5b5f82905560405133907feec57f3e23ecbe37d208ffbb70c1b73c083d42c8fdcb76e9945c7ef2faf0cbb49061051390858152604060208201819052600590820152641c1bdad95960da1b606082015260800190565b60405180910390a2506001919050565b806001600160a01b03167f510ffb4dcab972ae9d2007a58e13f1b0881776d23cd8f5cc32f8c5be2dbf70d25f60405161055e91815260200190565b60405180910390a250565b6040517f69e9c124815de375694fc163013eda46d15d79fe197fc42da80f1cf29f2a24a4905f90a1565b5f848484846040516020016105ab9493929190610d1c565b604051602081830303815290604052805190602001209050949350505050565b60405162461bcd60e51b81526004016104b5906020808252600490820152636e6f706560e01b604082015260600190565b5f545f0361061d57604051631ed9509560e11b815260040160405180910390fd5b5f8055565b3460015f8282546106339190610d09565b909155505060405134815233907f5af8184bef8e4b45eb9f6ed7734d04da38ced226495548f46e0c8ff8d7d9a5249060200160405180910390a2565b8261067b600282610d3b565b6001141515847f22aebb434b2e84f262083ecd5284541abc088181c5a22a90dd8f4ad7d7b3846885856040516106b2929190610d5a565b60405180910390a4505050565b60605f6106cd836001610d09565b67ffffffffffffffff8111156106e5576106e5610d88565b60405190808252806020026020018201604052801561072957816020015b604080518082019091525f80825260208201528152602001906001900390816107035790505b50604080518082019091525f805482526002546001600160a01b031660208301528251929350909183919061076057610760610d9c565b60209081029190910101525f5b838110156107cc5784848281811061078757610787610d9c565b90506040020180360381019061079d9190610de5565b826107a9836001610d09565b815181106107b9576107b9610d9c565b602090810291909101015260010161076d565b5090505b92915050565b5f8135156107f95781604051630aa747a960e11b81526004016104b59190610e1b565b506001919050565b816001600160a01b03167f510ffb4dcab972ae9d2007a58e13f1b0881776d23cd8f5cc32f8c5be2dbf70d28260405161083c91815260200190565b60405180910390a25050565b5f5f5f835f0b126108595782610862565b61086283610e43565b61086e905f0b85610d09565b610879600286610d3b565b600114915091505b9250929050565b5f81815260036020526040902054156108b757604051631628765d60e31b8152600481018290526024016104b5565b5f8181526003602052604090819020439055517fbb8dd65b96615771311f670a3fa9ac625ca1cc5ed737ead7e217ac3f6808aced906108f99083815260200190565b60405180910390a150565b604051630a2f431360e41b8152600481018290526024016104b5565b610928610982565b5f8435815b848110156109635785858281811061094757610947610d9c565b90506020020135826109599190610d09565b915060010161092d565b50858161097536839003830183610e5f565b9890975095505050505050565b60405180606001604052805f81526020015f6001600160a01b031681526020016109bf60405180604001604052805f151581526020015f81525090565b905290565b5f602082840312156109d4575f5ffd5b5035919050565b815181526020808301516001600160a01b031690820152604081016107d0565b80356001600160a01b0381168114610a11575f5ffd5b919050565b5f60208284031215610a26575f5ffd5b610a2f826109fb565b9392505050565b5f5f83601f840112610a46575f5ffd5b50813567ffffffffffffffff811115610a5d575f5ffd5b602083019150836020828501011115610881575f5ffd5b5f5f5f5f60408587031215610a87575f5ffd5b843567ffffffffffffffff811115610a9d575f5ffd5b610aa987828801610a36565b909550935050602085013567ffffffffffffffff811115610ac8575f5ffd5b610ad487828801610a36565b95989497509550505050565b5f5f5f60408486031215610af2575f5ffd5b83359250602084013567ffffffffffffffff811115610b0f575f5ffd5b610b1b86828701610a36565b9497909650939450505050565b5f5f60208385031215610b39575f5ffd5b823567ffffffffffffffff811115610b4f575f5ffd5b8301601f81018513610b5f575f5ffd5b803567ffffffffffffffff811115610b75575f5ffd5b8560208260061b8401011115610b89575f5ffd5b6020919091019590945092505050565b602080825282518282018190525f918401906040840190835b81811015610bee57610bd8838551805182526020908101516001600160a01b0316910152565b6020939093019260409290920191600101610bb2565b509095945050505050565b5f6040828403128015610c0a575f5ffd5b509092915050565b5f5f60408385031215610c23575f5ffd5b610c2c836109fb565b946020939093013593505050565b5f5f60408385031215610c4b575f5ffd5b8235915060208301355f81900b8114610c62575f5ffd5b809150509250929050565b5f5f5f83850360a0811215610c80575f5ffd5b6080811215610c8d575f5ffd5b50839250608084013567ffffffffffffffff811115610caa575f5ffd5b8401601f81018613610cba575f5ffd5b803567ffffffffffffffff811115610cd0575f5ffd5b8660208260051b8401011115610ce4575f5ffd5b939660209190910195509293505050565b634e487b7160e01b5f52601160045260245ffd5b808201808211156107d0576107d0610cf5565b838582375f8482015f8152838582375f93019283525090949350505050565b5f82610d5557634e487b7160e01b5f52601260045260245ffd5b500690565b60208152816020820152818360408301375f818301604090810191909152601f909201601f19160101919050565b634e487b7160e01b5f52604160045260245ffd5b634e487b7160e01b5f52603260045260245ffd5b6040805190810167ffffffffffffffff81118282101715610ddf57634e487b7160e01b5f52604160045260245ffd5b60405290565b5f6040828403128015610df6575f5ffd5b50610dff610db0565b82358152610e0f602084016109fb565b60208201529392505050565b81358152604081016001600160a01b03610e37602085016109fb565b16602083015292915050565b5f81810b60808101610e5757610e57610cf5565b5f0392915050565b5f818303608081128015610e71575f5ffd5b506040516060810167ffffffffffffffff81118282101715610ea157634e487b7160e01b5f52604160045260245ffd5b60405283358152610eb4602085016109fb565b60208201526040603f1983011215610eca575f5ffd5b610ed2610db0565b915060408401358015158114610ee6575f5ffd5b825260609390930135602082015260408301525091905056fea26469706673582212206d4af872d471e920cdf83bbd2f755fd45854d5612275eeb932dbf853f017133764736f6c634300081e0033"
+  }
+}

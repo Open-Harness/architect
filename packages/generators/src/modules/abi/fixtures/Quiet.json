@@ -1,0 +1,19 @@
+[
+  { "type": "function", "name": "ping", "stateMutability": "view", "inputs": [], "outputs": [{ "name": "", "type": "string" }] },
+  { "type": "function", "name": "pair", "stateMutability": "view", "inputs": [], "outputs": [{ "name": "", "type": "tuple", "components": [{ "name": "a", "type": "uint64" }, { "name": "b", "type": "address" }] }] },
+  {
+    "type": "event", "name": "Tagged", "anonymous": false,
+    "inputs": [
+      { "name": "label", "type": "string", "indexed": true },
+      { "name": "blob", "type": "bytes", "indexed": true },
+      { "name": "list", "type": "uint256[]", "indexed": true },
+      { "name": "box", "type": "tuple", "indexed": true, "components": [{ "name": "a", "type": "uint256" }] },
+      { "name": "who", "type": "address", "indexed": true },
+      { "name": "plain", "type": "string", "indexed": false },
+      { "name": "grid", "type": "uint8[2][]", "indexed": false }
+    ]
+  },
+  { "type": "constructor", "stateMutability": "nonpayable", "inputs": [] },
+  { "type": "fallback", "stateMutability": "nonpayable" },
+  { "type": "receive", "stateMutability": "payable" }
+]
