@@ -6,6 +6,7 @@ belongs to, and why it waits.
 - Indexers beyond the generated follower, for views too large for an organisation's index. Later.
 - Safe as a kit, built from its own events and our own small core. Later.
 - Python as a third target. Later.
+- **A sponsored ERC-4337 path for Capxul's Safes** (CX-safe, section 3): a paymaster pays a Safe's deploy and transactions as a UserOperation, as the earlier implementation did, instead of Capxul's relayer. After Goal 16's S3, once the relayer path is proved.
 - **The rest of the app's map** (K31): the docs' page per screen, `ortho add page <name>`, the agent's `map` tool on
   an app, and `open(pages.x)` in `ortho prove --through web`; and K36's rest: the web projection's component wiring,
   `ortho add component <name>`, a component on its screen's docs page, a journey acting on a component, and Plugged
