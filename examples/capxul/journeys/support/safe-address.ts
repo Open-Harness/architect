@@ -3,8 +3,10 @@
 // (design/decisions/CX-safe.md, "The address before deploy"). Not a journey: prove reads only the files directly in
 // journeys/. The expected values come from the pinned contracts and the formula, never from what a handler answers;
 // `tests/safe-address.test.ts` holds this formula to addresses the canonical factory on Base Sepolia gave.
-import { encodeFunctionData, encodePacked, getAddress, getContractAddress, hexToBigInt, keccak256, parseAbi, toHex, type Hex } from "viem";
+import { keccak_256 } from "@noble/hashes/sha3.js";
 import { SafeSettings } from "../../blueprint/values/safe.ts";
+
+type Hex = `0x${string}`;
 
 /** Safe 1.4.1, the L2 singleton, with the Safe 4337 module, at their canonical addresses on every EVM chain (CX-safe, `SafeDeployment`). */
 export const SafeContracts = {
@@ -21,38 +23,54 @@ export const SafeContracts = {
 export const PROXY_CREATION_CODE: Hex =
   "0x608060405234801561001057600080fd5b506040516101e63803806101e68339818101604052602081101561003357600080fd5b8101908080519060200190929190505050600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1614156100ca576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260228152602001806101c46022913960400191505060405180910390fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505060ab806101196000396000f3fe608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea264697066735822122003d1488ee65e08fa41e58e888a9865554c535f2c77126a82cb4c0f917f31441364736f6c63430007060033496e76616c69642073696e676c65746f6e20616464726573732070726f7669646564";
 
-const abi = parseAbi([
-  "function setup(address[] _owners, uint256 _threshold, address to, bytes data, address fallbackHandler, address paymentToken, uint256 payment, address paymentReceiver)",
-  "function enableModules(address[] modules)",
-]);
+const hex = (bytes: Uint8Array): string => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+const bytesOf = (h: string): Uint8Array => Uint8Array.from((h.replace(/^0x/, "").match(/../g) ?? []).map((p) => parseInt(p, 16)));
+/** keccak256 of bytes given as hex, as hex with no `0x`. */
+const keccak = (h: string): string => hex(keccak_256(bytesOf(h)));
+/** One ABI word: a number or an address, left-padded to 32 bytes. */
+const word = (v: bigint | string): string => (typeof v === "bigint" ? v.toString(16) : v.replace(/^0x/, "").toLowerCase()).padStart(64, "0");
+/** The first four bytes of keccak256 of a function's signature. */
+const selector = (signature: string): string => keccak(hex(new TextEncoder().encode(signature))).slice(0, 8);
 const ZERO = "0x0000000000000000000000000000000000000000";
+
+/** An address with its EIP-55 checksum: each letter upper-cased where the hash of the lower-case address has a nibble of 8 or more. */
+export const checksummed = (address: string): Hex => {
+  const lower = address.replace(/^0x/, "").toLowerCase();
+  const hash = keccak(hex(new TextEncoder().encode(lower)));
+  return `0x${[...lower].map((c, i) => (parseInt(hash[i]!, 16) >= 8 ? c.toUpperCase() : c)).join("")}`;
+};
 
 /** The address in a CAIP-10 account, `eip155:<chain>:0x…`. */
 const addressOf = (account: string): Hex => account.split(":")[2] as Hex;
 
-/** `setup([owner], 1, SafeModuleSetup, enableModules([Safe4337Module]), Safe4337Module, 0, 0, 0)`: one owner, the 4337 module on, no payment. */
-export const initializer = (owner: Hex): Hex =>
-  encodeFunctionData({
-    abi, functionName: "setup",
-    args: [[owner], 1n, SafeContracts.moduleSetup, encodeFunctionData({ abi, functionName: "enableModules", args: [[SafeContracts.module4337]] }), SafeContracts.module4337, ZERO, 0n, ZERO],
-  });
+/**
+ * `setup([owner], 1, SafeModuleSetup, enableModules([Safe4337Module]), Safe4337Module, 0, 0, 0)`: one owner, the 4337
+ * module on, no payment. ABI-encoded by hand for this one shape: the head's eight words (the two dynamic arguments as
+ * offsets, 0x100 and 0x140), then the owners array and the `enableModules` call as bytes padded to a whole word.
+ */
+export const initializer = (owner: string): Hex => {
+  const enable = selector("enableModules(address[])") + word(0x20n) + word(1n) + word(SafeContracts.module4337);
+  const enableBytes = word(BigInt(enable.length / 2)) + enable.padEnd(Math.ceil(enable.length / 64) * 64, "0");
+  return `0x${selector("setup(address[],uint256,address,bytes,address,address,uint256,address)")}${[
+    word(0x100n), word(1n), word(SafeContracts.moduleSetup), word(0x140n), word(SafeContracts.module4337), word(ZERO), word(0n), word(ZERO),
+    word(1n), word(owner), enableBytes,
+  ].join("")}`;
+};
 
 /** CREATE2 from the factory: salt `keccak256(keccak256(initializer) ‖ saltNonce)`, code the proxy's creation code ‖ the singleton as a uint256. */
-export const predictAddress = (owner: Hex, saltNonce: bigint): Hex =>
-  getContractAddress({
-    opcode: "CREATE2",
-    from: SafeContracts.factory,
-    salt: keccak256(encodePacked(["bytes32", "uint256"], [keccak256(initializer(owner)), saltNonce])),
-    bytecode: encodePacked(["bytes", "uint256"], [PROXY_CREATION_CODE, hexToBigInt(SafeContracts.singleton)]),
-  });
+export const predictAddress = (owner: string, saltNonce: bigint): Hex => {
+  const salt = keccak(keccak(initializer(owner)) + word(saltNonce));
+  const codeHash = keccak(PROXY_CREATION_CODE.slice(2) + word(SafeContracts.singleton));
+  return checksummed(`0x${keccak(`ff${word(SafeContracts.factory).slice(24)}${salt}${codeHash}`).slice(24)}`);
+};
 
 /** `uint256(keccak256("<namespace>:<id>"))`, the id a person's `per_…` or a company's `com_…`. */
-export const saltNonceOf = (namespace: string, id: string): bigint => hexToBigInt(keccak256(toHex(`${namespace}:${id}`)));
+export const saltNonceOf = (namespace: string, id: string): bigint => BigInt(`0x${keccak(hex(new TextEncoder().encode(`${namespace}:${id}`)))}`);
 
 const local = SafeSettings.local;
 
 /** The local environment's bootstrap address, as the CAIP-10 account a personal Safe's first owner is. */
-export const localBootstrap = `${local.chain}:${getAddress(local.bootstrap)}`;
+export const localBootstrap = `${local.chain}:${checksummed(local.bootstrap)}`;
 
 /**
  * What is wrong with a Safe's record as `safe.get` answers it in the local environment, or `""` when nothing is: its

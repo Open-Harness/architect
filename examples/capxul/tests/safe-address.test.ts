@@ -5,14 +5,15 @@
 // the address was read back as a Safe proxy's code instead. The factory and singleton sit at the same addresses on every
 // chain, so the address is the same in a world.
 import { describe, expect, it } from "vitest";
-import { keccak256 } from "viem";
+import { keccak_256 } from "@noble/hashes/sha3.js";
 import { PROXY_CREATION_CODE, initializer, localBootstrap, predictAddress, saltNonceOf } from "../journeys/support/safe-address.ts";
 
 const BOOTSTRAP = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
 describe("a Safe's address, worked out the factory's way", () => {
   it("uses the canonical factory's own proxy creation code", () => {
-    expect(keccak256(PROXY_CREATION_CODE)).toBe("0x1856e0ee08399d74e0ea0b03adca210aeade6f748969ac023cdcb4dd62dcaf5f");
+    const bytes = Uint8Array.from(PROXY_CREATION_CODE.slice(2).match(/../g)!.map((p) => parseInt(p, 16)));
+    expect(Buffer.from(keccak_256(bytes)).toString("hex")).toBe("1856e0ee08399d74e0ea0b03adca210aeade6f748969ac023cdcb4dd62dcaf5f");
   });
 
   it("works the salt nonce out from the namespace and the id, never anything else", () => {
