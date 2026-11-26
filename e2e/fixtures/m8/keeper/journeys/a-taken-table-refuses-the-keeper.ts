@@ -2,10 +2,11 @@
 // The world starts at 2027-01-10T09:00:00.000Z, stepped. A clock step answers `{ now, fired }` (M8-checks call 2): `fired` lists every
 // move made by time that ran on the way, in the order it ran, as `<thing>.<move> due <instant>`, and ` refused <name>` when the keeper's
 // run was refused (CX-keeper call 7).
-import { Blueprint, emits, expect, noEvents } from "orthograph";
+import { Blueprint, emits, expect, noEvents, refuses } from "orthograph";
 import { machine } from "../blueprint/things/booking/machine.ts";
 import { BookingSeated } from "../blueprint/things/booking/events.ts";
 import get from "../blueprint/things/booking/verbs/get.ts";
+import seat from "../blueprint/things/booking/verbs/seat.ts";
 
 const fired = (a: { readonly fired: ReadonlyArray<{ readonly thing: string; readonly move: string; readonly due: string; readonly refused?: string }> }) =>
   a.fired.map((f) => `${f.thing}.${f.move} due ${f.due}${f.refused === undefined ? "" : ` refused ${f.refused}`}`);
@@ -17,6 +18,13 @@ export default Blueprint.journey("the keeper is refused a taken table", {
   cast: { aaron: Blueprint.anyone, bea: Blueprint.anyone },
   starts: "table-seven-booked-twice",
   steps: (s) => [
+    s.step(
+      "bea cannot seat her own booking: only the keeper may",
+      s.bea.run(seat, { booking: s.world.second }),
+      refuses(Blueprint.NotAllowed),
+      noEvents(),
+      machine.isIn(s.world.second, "waiting"),
+    ),
     s.step(
       "at ten the keeper seats aaron's booking",
       s.clock.moveTo("2027-01-10T10:00:00Z"),

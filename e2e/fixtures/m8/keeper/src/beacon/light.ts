@@ -10,7 +10,7 @@ const light: Handler = ({ name }, { steps, move }) =>
     const records = yield* Records;
     const litAt = DateTime.formatIso(DateTime.makeUnsafe(yield* Clock.currentTimeMillis));
     const beacon = yield* Ids.of(Beacon.fields.id);
-    yield* steps.insert(records.insert(Beacon, { id: beacon, name, litAt, pings: 0n }));
+    yield* steps.insert(records.insert(Beacon, { id: beacon, name, litAt, lastPingAt: litAt, pings: 0n }));
     yield* move("lit");
     return { beacon, litAt };
   });

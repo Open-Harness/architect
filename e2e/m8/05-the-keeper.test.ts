@@ -7,14 +7,18 @@
 // The done check of #1199, one half per check:
 //   1. `after`: a desk held at nine is still held at 9:59 and expired at ten when the clock steps past the hour;
 //   2. leaving the state first: a desk released at half past nine does not expire;
-//   3. `every` re-arms: three pings in one three-hour step, none after dousing;
+//   3. `every` re-arms from the due it fired: a ping at ten, a person's self-move at half past that keeps the row on the hour, two
+//      pings in one step at eleven and twelve (each run at its own instant), none after dousing; and an `after` self-move that
+//      leaves its field alone fires once, never again for a due that fired;
 //   4. a keeper move refused by a G5 rule writes nothing, keeps its state, is not tried again, and has its deciding log: eval 9
 //      (explainability) on `booking.seat` passes with the keeper's refused run as its evidence, which eval 8 (coverage) shows is
 //      there, since only a keeper firing can refuse `TableTaken` in this club;
 //   5. a stale row is fenced off: a row armed in one journey's world never fires in another's, and after a warm reset of a world
-//      (`POST /_world/reset`) the row armed before it is gone and fires nothing, while one armed after it fires once;
-//   6. a self-move that writes the field forward re-arms `after`: a person's snooze moves the check, each observe backs off one,
-//      two and four hours, and parking drops the row;
+//      (`POST /_world/reset`) the row armed before it is gone and fires nothing, while one armed after it fires once. A wake already
+//      in flight when the reset comes (CX-keeper call 8's generation check) is not reachable from here: M8.07's write fence
+//      covers it, and the builder unit-tests the generation check;
+//   6. a self-move that writes the field forward re-arms `after`, with one row for the newest value: a person's snooze moves the
+//      check, the observes back off two and then four hours, and parking drops the row;
 //   7. a move that clears the field drops the row: a hushed watch stays watching and nothing fires. It also needs a handler to
 //      be able to clear an optional field, which it can't today (snag #1205).
 // `e2e/m8/03` is M8.04's wider check, which the keeper also turns; this file is the slice's own.
@@ -26,17 +30,18 @@
 //
 // Red today on the missing keeper only: no row is armed and nothing fires, every journey shares one world's clock, and the
 // compiler refuses `after(field, "0 seconds")`; the hush handler also dies clearing `nextCheckAt` (#1205).
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import { club, failedAt, generated, nothingRunning, once, passedWhole, plant, prove } from "./support.ts";
+import { club, failedAt, generated, nothingRunning, once, ortho, passedWhole, plant, prove } from "./support.ts";
 import { advance, call, clockOf, inWorld } from "./world.ts";
 
 const JOURNEYS = {
-  after: { club: "keeper", file: "a-held-desk-expires-after-an-hour", name: "a held desk expires an hour after it was held", steps: 4 },
+  after: { club: "keeper", file: "a-held-desk-expires-after-an-hour", name: "a held desk expires an hour after it was held", steps: 5 },
   left: { club: "keeper", file: "a-released-desk-does-not-expire", name: "a desk released before the hour does not expire", steps: 4 },
-  every: { club: "keeper", file: "a-beacon-pings-every-hour", name: "a beacon pings every hour until it is doused", steps: 6 },
-  refused: { club: "keeper", file: "a-taken-table-refuses-the-keeper", name: "the keeper is refused a taken table", steps: 5 },
+  every: { club: "keeper", file: "a-beacon-pings-every-hour", name: "a beacon pings every hour until it is doused", steps: 8 },
+  refused: { club: "keeper", file: "a-taken-table-refuses-the-keeper", name: "the keeper is refused a taken table", steps: 6 },
+  once: { club: "keeper", file: "a-bell-chimes-once", name: "a bell set for an hour chimes once", steps: 2 },
   armed: { club: "keeper", file: "a-desk-left-held", name: "a desk left held when the journey ends", steps: 1 },
   fenced: { club: "keeper", file: "a-fresh-world-fires-nothing-old", name: "a fresh world fires nothing armed in another", steps: 3 },
   backoff: { club: "keeper-backoff", file: "a-watch-backs-off-and-parks", name: "a watch backs off and parks", steps: 6 },
@@ -54,12 +59,21 @@ const PLANTED: ReadonlyArray<readonly [Half, string, string, ReadonlyArray<reado
   ["after", "expires-again", "a day later nothing more fires", [['s.clock.advance("1 day"),\n      expect(fired).toEqual([]),', 's.clock.advance("1 day"),\n      expect(fired).toEqual(["desk.expire due 2027-01-11T10:00:00.000Z"]),']]],
   ["left", "expires-anyway", "two hours pass, ten o'clock among them: nothing expires", [['expect(fired).toEqual([]),\n      noEvents(),\n      machine.isIn(s.world.desk, "free"),', 'expect(fired).toEqual(["desk.expire due 2027-01-10T10:00:00.000Z"]),\n      noEvents(),\n      machine.isIn(s.world.desk, "free"),']]],
   ["left", "expired-state", "read back, free", [['expect((a) => a.state).toBe("free"),', 'expect((a) => a.state).toBe("expired"),']]],
-  ["every", "two-pings", "three hours pass in one step: it pings at ten, eleven and twelve, in order", [[', "beacon.ping due 2027-01-10T12:00:00.000Z"]', "]"]]],
-  ["every", "four-pings", "three hours pass in one step: it pings at ten, eleven and twelve, in order", [['"beacon.ping due 2027-01-10T12:00:00.000Z"]', '"beacon.ping due 2027-01-10T12:00:00.000Z", "beacon.ping due 2027-01-10T12:00:00.000Z"]']]],
-  ["every", "out-of-order", "three hours pass in one step: it pings at ten, eleven and twelve, in order", [['["beacon.ping due 2027-01-10T10:00:00.000Z", "beacon.ping due 2027-01-10T11:00:00.000Z"', '["beacon.ping due 2027-01-10T11:00:00.000Z", "beacon.ping due 2027-01-10T10:00:00.000Z"']]],
-  ["every", "drifts", "three hours pass in one step: it pings at ten, eleven and twelve, in order", [['"beacon.ping due 2027-01-10T11:00:00.000Z"', '"beacon.ping due 2027-01-10T11:00:00.001Z"']]],
-  ["every", "counted-twice", "read back, three pings", [["[3n, \"lit\"]", "[4n, \"lit\"]"]]],
+  ["every", "no-ping", "an hour and a half passes: it pinged at ten", [['expect(fired).toEqual(["beacon.ping due 2027-01-10T10:00:00.000Z"]),', "expect(fired).toEqual([]),"]]],
+  ["every", "tend-moves-it", "another hour and a half in one step: it pinged at eleven and at twelve, on the hour, in order", [['["beacon.ping due 2027-01-10T11:00:00.000Z", "beacon.ping due 2027-01-10T12:00:00.000Z"]', '["beacon.ping due 2027-01-10T11:30:00.000Z"]']]],
+  ["every", "one-ping", "another hour and a half in one step: it pinged at eleven and at twelve, on the hour, in order", [[', "beacon.ping due 2027-01-10T12:00:00.000Z"]', "]"]]],
+  ["every", "three-pings", "another hour and a half in one step: it pinged at eleven and at twelve, on the hour, in order", [['"beacon.ping due 2027-01-10T12:00:00.000Z"]', '"beacon.ping due 2027-01-10T12:00:00.000Z", "beacon.ping due 2027-01-10T12:00:00.000Z"]']]],
+  ["every", "out-of-order", "another hour and a half in one step: it pinged at eleven and at twelve, on the hour, in order", [['["beacon.ping due 2027-01-10T11:00:00.000Z", "beacon.ping due 2027-01-10T12:00:00.000Z"]', '["beacon.ping due 2027-01-10T12:00:00.000Z", "beacon.ping due 2027-01-10T11:00:00.000Z"]']]],
+  ["every", "drifts", "another hour and a half in one step: it pinged at eleven and at twelve, on the hour, in order", [['"beacon.ping due 2027-01-10T11:00:00.000Z", "beacon.ping', '"beacon.ping due 2027-01-10T11:00:00.001Z", "beacon.ping']]],
+  ["every", "second-ran-late", "another hour and a half in one step: it pinged at eleven and at twelve, on the hour, in order", [['pings: 2n, at: "2027-01-10T11:00:00.000Z" })', 'pings: 2n, at: "2027-01-10T12:00:00.000Z" })']]],
+  ["every", "counted-twice", "read back, three pings, the last at twelve", [['[3n, "2027-01-10T12:00:00.000Z", "lit"]', '[4n, "2027-01-10T12:00:00.000Z", "lit"]']]],
+  ["every", "last-ran-late", "read back, three pings, the last at twelve", [['[3n, "2027-01-10T12:00:00.000Z", "lit"]', '[3n, "2027-01-10T12:30:00.000Z", "lit"]']]],
   ["every", "pings-in-the-dark", "two more hours: no ping after it was doused", [['expect(fired).toEqual([]),\n      noEvents(),\n      machine.isIn(s.world.beacon, "dark"),', 'expect(fired).toEqual(["beacon.ping due 2027-01-10T13:00:00.000Z", "beacon.ping due 2027-01-10T14:00:00.000Z"]),\n      noEvents(),\n      machine.isIn(s.world.beacon, "dark"),']]],
+  ["once", "chimes-again", "three hours pass: it chimed at ten, once", [['["bell.chime due 2027-01-10T10:00:00.000Z"]', '["bell.chime due 2027-01-10T10:00:00.000Z", "bell.chime due 2027-01-10T10:00:00.000Z"]']]],
+  ["once", "never-chimes", "three hours pass: it chimed at ten, once", [['["bell.chime due 2027-01-10T10:00:00.000Z"]', "[]"]]],
+  ["once", "chimed-twice", "read back, one chime", [['1n, "ringing"]', '2n, "ringing"]']]],
+  ["after", "replay-moves", "a second keeper fires the same expiry for the same due: the first answer, and nothing new", [['expect((a) => a.at).toBe("2027-01-10T10:00:00.000Z"),\n      noEvents(),', 'expect((a) => a.at).toBe("2027-01-10T11:01:00.000Z"),\n      noEvents(),']]],
+  ["refused", "bea-seats", "bea cannot seat her own booking: only the keeper may", [["refuses(Blueprint.NotAllowed),", "expect((a) => a.at).toBe(\"2027-01-10T09:30:00.000Z\"),"]]],
   ["refused", "seated-anyway", "at half past ten it would seat bea's at the same table: refused TableTaken, and nothing is written", [['"booking.seat due 2027-01-10T10:30:00.000Z refused TableTaken"', '"booking.seat due 2027-01-10T10:30:00.000Z"']]],
   ["refused", "not-allowed", "at half past ten it would seat bea's at the same table: refused TableTaken, and nothing is written", [["refused TableTaken\"]", "refused NotAllowed\"]"]]],
   ["refused", "moved", "at half past ten it would seat bea's at the same table: refused TableTaken, and nothing is written", [['machine.isIn(s.world.second, "waiting"),\n    ),\n    s.step(\n      "read back bea', 'machine.isIn(s.world.second, "seated"),\n    ),\n    s.step(\n      "read back bea']]],
@@ -132,7 +146,7 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
     expect(run.lines.filter((l) => l.startsWith("watch.observe coverage ")), run.out).toEqual(["watch.observe coverage ✔"]);
   });
 
-  it("fenced: after a warm reset, the row armed before it is gone and fires nothing; one armed after it fires once", async () => {
+  it("fenced: a row is armed at the commit and dropped on leaving; after a warm reset, the row armed before it is gone and fires nothing; one armed after it fires once", async () => {
     const root = generated(clubs.keeper.good.root);
     await inWorld(root, "m8-keeper-reset", async ({ url }) => {
       const cast = await fetch(`${url}/_world/cast`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ names: ["ada"] }) });
@@ -144,13 +158,23 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
         expect(held.status, JSON.stringify(held.body)).toBe(200);
         return { desk: String(held.body["desk"]), heldAt: held.body["heldAt"] };
       };
-      const keeperRows = async () => (await clockOf(url)).timers.filter((t) => t.owner === "desk.expire");
+      const keeperRows = async () => (await clockOf(url)).timers.filter((t) => t.owner === "desk.expire").map(({ due, owner, name }) => ({ due, owner, name })).sort((a, b) => a.name.localeCompare(b.name));
       const firedBy = (body: Record<string, unknown>) =>
         (body["fired"] as ReadonlyArray<{ readonly thing: string; readonly move: string; readonly due: string; readonly refused?: string }>).map((f) => ({ thing: f.thing, move: f.move, due: f.due, refused: f.refused }));
 
       // Armed by the keeper (CX-keeper call 2): one row for the desk, owned by its move, named by the instance, due an hour on.
       const before = await hold("Window");
       expect(before.heldAt).toBe("2027-01-10T09:00:00.000Z");
+      expect(await keeperRows()).toEqual([{ due: "2027-01-10T10:00:00.000Z", owner: "desk.expire", name: before.desk }]);
+
+      // Leaving the state drops the row at the commit, not when it would fire (CX-keeper call 3): a released desk has none.
+      const released = await hold("Door");
+      expect(await keeperRows()).toEqual([
+        { due: "2027-01-10T10:00:00.000Z", owner: "desk.expire", name: before.desk },
+        { due: "2027-01-10T10:00:00.000Z", owner: "desk.expire", name: released.desk },
+      ].sort((a, b) => a.name.localeCompare(b.name)));
+      const freed = await call(url, "desk.release", { desk: released.desk }, token);
+      expect(freed.status, JSON.stringify(freed.body)).toBe(200);
       expect(await keeperRows()).toEqual([{ due: "2027-01-10T10:00:00.000Z", owner: "desk.expire", name: before.desk }]);
 
       const reset = await fetch(`${url}/_world/reset`, { method: "POST" });
@@ -172,6 +196,40 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
       expect(firedBy(moved.body)).toEqual([{ thing: "desk", move: "expire", due: "2027-01-10T12:00:00.000Z", refused: undefined }]);
       expect(await keeperRows()).toEqual([]);
     });
+  });
+
+  it("backoff: a self-move that writes the field moves the row, keeping one row for the newest value", async () => {
+    const root = generated(clubs["keeper-backoff"].good.root);
+    await inWorld(root, "m8-keeper-backoff", async ({ url }) => {
+      const cast = await fetch(`${url}/_world/cast`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ names: ["ada"] }) });
+      expect(cast.status).toBe(200);
+      const token = ((await cast.json()) as Record<string, { readonly token?: string }>)["ada"]?.token;
+      const rows = async () => (await clockOf(url)).timers.filter((t) => t.owner === "watch.observe").map(({ due, owner, name }) => ({ due, owner, name }));
+      const started = await call(url, "watch.start", { name: "Deploy" }, token);
+      expect(started.status, JSON.stringify(started.body)).toBe(200);
+      const watch = String(started.body["watch"]);
+      expect(await rows()).toEqual([{ due: "2027-01-10T10:00:00.000Z", owner: "watch.observe", name: watch }]);
+      const snoozed = await call(url, "watch.snooze", { watch }, token);
+      expect(snoozed.status, JSON.stringify(snoozed.body)).toBe(200);
+      expect(await rows()).toEqual([{ due: "2027-01-10T09:40:00.000Z", owner: "watch.observe", name: watch }]);
+      const hushed = await call(url, "watch.hush", { watch }, token);
+      expect(hushed.status, JSON.stringify(hushed.body)).toBe(200);
+      expect(await rows()).toEqual([]);
+    });
+  });
+
+  it("`after` may be due at its field's own instant, and `every` still may not have a zero span", () => {
+    const copy = club("keeper");
+    try {
+      const file = join(copy.root, "blueprint/things/beacon/machine.ts");
+      writeFileSync(file, readFileSync(file, "utf8").replace('every("1 hour", { from: "litAt" })', 'every("0 seconds", { from: "litAt" })'));
+      const run = ortho(copy.root, "generate");
+      expect(run.status, run.stdout + run.stderr).not.toBe(0);
+      expect(run.stdout + run.stderr).toMatch(/beacon\.ping/);
+      expect(run.stdout + run.stderr).toMatch(/0 seconds/);
+    } finally {
+      copy.remove();
+    }
   });
 
   it("both clubs prove whole, with nothing else failing and nothing left running", () => {

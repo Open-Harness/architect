@@ -12,7 +12,7 @@ const ping: Handler = ({ beacon }, { steps, move }) =>
     if (!found) return yield* Effect.die(new Error(`beacon ${beacon} was checked and then not found`));
     const pings = (found["pings"] as bigint) + 1n;
     const at = DateTime.formatIso(DateTime.makeUnsafe(yield* Clock.currentTimeMillis));
-    yield* steps.record(records.update(Beacon, beacon, { pings }));
+    yield* steps.record(records.update(Beacon, beacon, { pings, lastPingAt: at }));
     yield* move("lit");
     return { pings, at };
   });

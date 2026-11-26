@@ -4,34 +4,50 @@
 // run was refused (CX-keeper call 7).
 import { Blueprint, emits, expect, noEvents } from "orthograph";
 import { machine } from "../blueprint/things/beacon/machine.ts";
-import { BeaconDoused, BeaconPinged } from "../blueprint/things/beacon/events.ts";
+import { BeaconDoused, BeaconPinged, BeaconTended } from "../blueprint/things/beacon/events.ts";
+import tend from "../blueprint/things/beacon/verbs/tend.ts";
 import douse from "../blueprint/things/beacon/verbs/douse.ts";
 import get from "../blueprint/things/beacon/verbs/get.ts";
 
 const fired = (a: { readonly fired: ReadonlyArray<{ readonly thing: string; readonly move: string; readonly due: string; readonly refused?: string }> }) =>
   a.fired.map((f) => `${f.thing}.${f.move} due ${f.due}${f.refused === undefined ? "" : ` refused ${f.refused}`}`);
 
-// Check 3: `every` re-arms after each firing, from the due it fired (CX-keeper call 4); leaving the state drops the row.
+// Check 3: `every` re-arms after each firing, from the due it fired (CX-keeper call 4); a person's self-move keeps the row on the
+// hour; leaving the state drops the row.
 export default Blueprint.journey("a beacon pings every hour until it is doused", {
   cast: { aaron: Blueprint.anyone },
   starts: "beacon-lit",
   steps: (s) => [
     s.step(
-      "three hours pass in one step: it pings at ten, eleven and twelve, in order",
-      s.clock.advance("3 hours"),
-      expect((a) => a.now).toBe("2027-01-10T12:00:00.000Z"),
-      expect(fired).toEqual(["beacon.ping due 2027-01-10T10:00:00.000Z", "beacon.ping due 2027-01-10T11:00:00.000Z", "beacon.ping due 2027-01-10T12:00:00.000Z"]),
+      "an hour and a half passes: it pinged at ten",
+      s.clock.advance("90 minutes"),
+      expect((a) => a.now).toBe("2027-01-10T10:30:00.000Z"),
+      expect(fired).toEqual(["beacon.ping due 2027-01-10T10:00:00.000Z"]),
       emits(BeaconPinged, { beacon: s.world.beacon, pings: 1n, at: "2027-01-10T10:00:00.000Z" }),
       machine.isIn(s.world.beacon, "lit"),
     ),
     s.step(
-      "read back, three pings",
+      "aaron tends it at half past ten",
+      s.aaron.run(tend, { beacon: s.world.beacon }),
+      emits(BeaconTended, { beacon: s.world.beacon }),
+      machine.isIn(s.world.beacon, "lit"),
+    ),
+    s.step(
+      "another hour and a half in one step: it pinged at eleven and at twelve, on the hour, in order",
+      s.clock.advance("90 minutes"),
+      expect((a) => a.now).toBe("2027-01-10T12:00:00.000Z"),
+      expect(fired).toEqual(["beacon.ping due 2027-01-10T11:00:00.000Z", "beacon.ping due 2027-01-10T12:00:00.000Z"]),
+      emits(BeaconPinged, { beacon: s.world.beacon, pings: 2n, at: "2027-01-10T11:00:00.000Z" }),
+      machine.isIn(s.world.beacon, "lit"),
+    ),
+    s.step(
+      "read back, three pings, the last at twelve",
       s.aaron.run(get, { id: s.world.beacon }),
-      expect((a) => [a.pings, a.state]).toEqual([3n, "lit"]),
+      expect((a) => [a.pings, a.lastPingAt, a.state]).toEqual([3n, "2027-01-10T12:00:00.000Z", "lit"]),
       noEvents(),
     ),
     s.step(
-      "half an hour on, aaron douses it",
+      "half an hour on, nothing",
       s.clock.advance("30 minutes"),
       expect(fired).toEqual([]),
       noEvents(),
@@ -53,7 +69,7 @@ export default Blueprint.journey("a beacon pings every hour until it is doused",
     s.step(
       "read back, still three",
       s.aaron.run(get, { id: s.world.beacon }),
-      expect((a) => [a.pings, a.state]).toEqual([3n, "dark"]),
+      expect((a) => [a.pings, a.lastPingAt, a.state]).toEqual([3n, "2027-01-10T12:00:00.000Z", "dark"]),
       noEvents(),
     ),
   ],

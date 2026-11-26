@@ -92,6 +92,8 @@ because every journey shares one world's clock.
 8. **A stale row is fenced by its generation.** A reset empties the table (M8.07 call 1) and moves the generation on.
    A keeper wake whose `generation` is not the world's runs nothing, writes nothing and is not reported in `fired`; a
    run already under way when the reset comes is refused by the world's write fence (M8.07 I2, `world/internal/fence.ts`).
+   No journey or front-door step can hold a wake in flight across a reset, so the builder unit-tests the generation
+   check beside `timers/reset.test.ts`; the e2e check judges the table and the worlds.
    A journey that moves time gets a world of its own from the environment's `starts` (`M8-checks` call 3, which M8.07
    left to this slice), so nothing one journey arms fires in another.
 
@@ -109,10 +111,10 @@ the keeper also turns.
 |---|---|---|
 | 1 | a desk held at nine expires at ten, when the clock steps past the hour, and not a minute before | `a-held-desk-expires-after-an-hour` |
 | 2 | a desk released at half past nine does not expire | `a-released-desk-does-not-expire` |
-| 3 | a beacon lit at nine pings at ten, eleven and twelve in one step, and stops when doused | `a-beacon-pings-every-hour` |
+| 3 | a beacon lit at nine pings at ten; a person's self-move at half past keeps the row on the hour; it pings at eleven and twelve in one step, each run at its own instant, and stops when doused. A bell whose `after` self-move leaves its field alone chimes once, never again for a due that fired | `a-beacon-pings-every-hour`, `a-bell-chimes-once` |
 | 4 | a booking the keeper would seat at a taken table is refused `TableTaken`, writes nothing, keeps its state, is not retried, and has its deciding log | `a-taken-table-refuses-the-keeper` |
 | 5 | a row armed in one journey's world never fires in another's; after a warm reset, a row from before it does not fire | `a-desk-left-held`, `a-fresh-world-fires-nothing-old`, and the front-door half |
-| 6 | a watch's `observe`, `after("nextCheckAt", "0 seconds")`, re-arms on each self-move that writes `nextCheckAt` forward (one, two, four hours), parks on the third, and fires nothing after | `a-watch-backs-off-and-parks` |
+| 6 | a watch's `observe`, `after("nextCheckAt", "0 seconds")`, re-arms on each self-move that writes `nextCheckAt` forward: a snooze moves the first check from ten to ten past, then the observes back off two and four hours, park on the third, and nothing fires after | `a-watch-backs-off-and-parks` |
 | 7 | a watch hushed at nine, a self-move that clears `nextCheckAt`, stays watching and fires nothing across ten o'clock; it also needs a handler to clear an optional field (snag #1205) | `a-hushed-watch-fires-nothing` |
 
 ## Supersedes

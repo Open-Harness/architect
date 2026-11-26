@@ -1,19 +1,25 @@
 # Written before the keeper is built (M8.10, #1199; CX-keeper). Red until the keeper arms, fires and fences rows, journeys that
-# move time get worlds of their own, and the compiler allows after(field, "0 seconds"); due before M8's gate.
-m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > after: "a held desk expires an hour after it was held" passes all 4 steps
+# move time get worlds of their own, the compiler allows after(field, "0 seconds"), and a handler can clear an optional field
+# (#1205); due before M8's gate.
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > after: "a held desk expires an hour after it was held" passes all 5 steps
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > after: each planted break fails exactly its own step
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > armed: "a desk left held when the journey ends" passes all 1 steps
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > backoff: "a watch backs off and parks" passes all 6 steps
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > backoff: a self-move that writes the field moves the row, keeping one row for the newest value
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > backoff: each planted break fails exactly its own step
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > backoff: watch.observe was made, and judged on the keeper's runs
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > both clubs prove whole, with nothing else failing and nothing left running
-m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > every: "a beacon pings every hour until it is doused" passes all 6 steps
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > cleared: "a hushed watch fires nothing" passes all 3 steps
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > cleared: each planted break fails exactly its own step
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > every: "a beacon pings every hour until it is doused" passes all 8 steps
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > every: each planted break fails exactly its own step
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > fenced: "a fresh world fires nothing armed in another" passes all 3 steps
-m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > fenced: after a warm reset, the row armed before it is gone and fires nothing; one armed after it fires once
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > fenced: a row is armed at the commit and dropped on leaving; after a warm reset, the row armed before it is gone and fires nothing; one armed after it fires once
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > fenced: each planted break fails exactly its own step
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > left: "a desk released before the hour does not expire" passes all 4 steps
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > left: each planted break fails exactly its own step
-m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > refused: "the keeper is refused a taken table" passes all 5 steps
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > once: "a bell set for an hour chimes once" passes all 2 steps
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > once: each planted break fails exactly its own step
+m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > refused: "the keeper is refused a taken table" passes all 6 steps
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > refused: each planted break fails exactly its own step
 m8/05-the-keeper.test.ts > 05 M8.10: the keeper fires moves made by time > refused: the keeper's refused seat has its deciding log, judged on the keeper's own run
