@@ -111,7 +111,8 @@ describe("44 (c) the licence is Apache-2.0, exactly", () => {
   it("the repository fails, naming each public package whose licence is not Apache-2.0, and no other", () => {
     const ran = realRun();
     const lacking = publicOf(repo).filter((m) => m.license !== APACHE).map((m) => m.name).sort();
-    expect(ran.status, lines(ran)).toBe(lacking.length === 0 ? 0 : 1);
+    // Goal 18 slice 5 (check 47): the dry run also judges workspace links, bins and the preset's starter, which need the packages built; here only the licence is judged.
+    expect(ran.status, lines(ran)).toBe(lacking.length === 0 && ran.all.split("\n").every((l) => !l.startsWith("refused:")) ? 0 : 1);
     expect([...unlicensed(ran.all)].sort(), lines(ran)).toEqual(lacking);
     expect(ran.all).not.toContain("@orthograph/services");
   });

@@ -1,0 +1,21 @@
+# Goal 18, slice 5 (#1063, publishing that works): check 47 was written before the build. Red until the version, the starter packed into the preset, the release-age exemption and the dry run's three refusals land (design/goals/18-framework.md, slice 5).
+m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > in dependencies: exit 1, one refusal naming the package and the dependency, and no other package
+m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > in devDependencies: exit 1, one refusal naming the package and the dependency, and no other package
+m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > in optionalDependencies: exit 1, one refusal naming the package and the dependency, and no other package
+m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > in peerDependencies: exit 1, one refusal naming the package and the dependency, and no other package
+m1/47-g18-5-publishing.test.ts > 47 (a) a `workspace:` link that survives is refused > two packages with a link are both named, a third without one is not, and every block is still printed
+m1/47-g18-5-publishing.test.ts > 47 (b) a `bin` outside the tarball is refused > `bin` as a string is judged the same way
+m1/47-g18-5-publishing.test.ts > 47 (b) a `bin` outside the tarball is refused > `publishConfig.bin` names a file that does not exist (dist/main.js, not built)
+m1/47-g18-5-publishing.test.ts > 47 (b) a `bin` outside the tarball is refused > the file exists, but outside the package's folder (`../shared/run.js`)
+m1/47-g18-5-publishing.test.ts > 47 (b) a `bin` outside the tarball is refused > two entries, one inside the tarball and one outside: only the one outside is named
+m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > all three mistakes at once: each is named, under its own package, and every block is printed
+m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > everything but files/blueprint/
+m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > everything but files/generated/model/model.json
+m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > everything but files/journeys/
+m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > everything but files/src/
+m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > no `files/` at all
+m1/47-g18-5-publishing.test.ts > 47 (c) a preset with no starter is refused > the starter is on the disk but `package.json`'s `files` leaves it out of the tarball
+m1/47-g18-5-publishing.test.ts > 47 (d) the repository: a real version, and the starter packed into the preset > every public package is at one version, 0.1.0-next.<n>, and not 0.0.0
+m1/47-g18-5-publishing.test.ts > 47 (e) the preset's workspace exempts orthograph and @orthograph/* from the minimum release age > a fresh workspace lists exactly `orthograph` and `@orthograph/*`
+m1/47-g18-5-publishing.test.ts > 47 (e) the preset's workspace exempts orthograph and @orthograph/* from the minimum release age > one Nx already wrote is kept, and both are added to it, each once
+m1/47-g18-5-publishing.test.ts > 47 (e) the preset's workspace exempts orthograph and @orthograph/* from the minimum release age > one that already lists them is not given them twice, and the minimum age is not turned off
