@@ -71,9 +71,9 @@ The spellings are the audit's (`design/briefs/coworker-audit/HANDOFF.md`, step 8
     hook layer is now the layer.
   - Layer 5, UI SDK's widgets: the app's own library.
   - K29 keeps its words and gains notes.
-- **K24.** "go in all the way" stands for Orthograph's own portal unless it is decided otherwise. For an app's
+- **K24.** No words replaced: "go in all the way" stands for Orthograph's own portal unless it is decided otherwise. For an app's
   screens, the component library is the app's.
-- **K36.** A composite's wiring is still generated (its reads and actions). Its behaviour and look are the app
+- **K36.** No words replaced: a composite's wiring is still generated (its reads and actions). Its behaviour and look are the app
   library's component, not a `definePrimitive`.
 
 ## Who builds it
@@ -90,3 +90,6 @@ this. This record adds no lane, row, slice or goal.
 ## Supersedes
 
 - AGENTS.md: "also `@ui-sdk/*`, `react` and `@orthograph/web` (K29); `compiler` and `generators`" → "also `react` and `@orthograph/web`, and the app's own generated SDK and actions (K48); `compiler` and `generators`"
+- design/decisions/K29-ui-layer.md: "a React-only hook layer would sit beside it doing the same job" → "an app's screens are generated headless hooks over its actions, drawn by the app's own component library (K48)"
+- design/decisions/K29-ui-layer.md: "one per operation: a UI SDK primitive bound to its action, and its parts per framework" → "for an app's screens, one generated headless hook per operation, drawn by the app's own library (K48)"
+- design/decisions/K29-ui-layer.md: "inputs, buttons, dialogs, focus, keyboard, screen readers, the agent bridge" → "for an app's screens, the app's own component library; the portal keeps UI SDK (K48)"
