@@ -1,0 +1,8 @@
+# #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/refusal/refusal.test.ts > SafeRefusal.from > a require string GS000 is SafeRefused with that code, for the Safe it is given
+src/modules/refusal/refusal.test.ts > SafeRefusal.from > a require string GS013 is SafeRefused with that code, for the Safe it is given
+src/modules/refusal/refusal.test.ts > SafeRefusal.from > a require string GS020 is SafeRefused with that code, for the Safe it is given
+src/modules/refusal/refusal.test.ts > SafeRefusal.from > a require string GS025 is SafeRefused with that code, for the Safe it is given
+src/modules/refusal/refusal.test.ts > SafeRefusal.from > a require string GS026 is SafeRefused with that code, for the Safe it is given
+src/modules/refusal/refusal.test.ts > SafeRefusal.from > a require string GS031 is SafeRefused with that code, for the Safe it is given
+src/modules/refusal/refusal.test.ts > SafeRefusal.typed > a call whose Safe refused fails as SafeRefused
