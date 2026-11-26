@@ -53,8 +53,8 @@ Each step is small and composes with what's built. Payroll's core (9a, built) st
    because it is indexed for inflation after 2026. The company files.
 4. **Employer of record, recorded:** a supplier whose monthly invoice is a bill in its own currency, paid like a
    contractor.
-5. **Paying through the rails.** When Bridge (slice 10) and the Safe (slice 2) are built, the payout method becomes a
-   rail Capxul drives, and Bridge's receipt books the payment at its realised rate. Whether this moves earlier is
+5. **Paying through the rails.** When Bridge (slice 10) and the Safe (slice 2) are built, they become rails: pieces
+   that move the money and then record it, and Bridge's receipt books the payment at its realised rate. Whether this moves earlier is
    decision 6.
 6. **Later, each a piece of its own, when a customer needs it:** the US tax piece (case a, with case d's switches), on
    the open-withholding dataset imported at a pinned commit, with filing and deposits through an outside service; an
@@ -137,11 +137,13 @@ Each is a new outside dependency, so each is Aaron's call. None is needed for st
    piece moves from next to later. The spike (#1119) lands as a record, and its import plan is how the piece starts.
    Payroll's 9b and 9c go on: they are jurisdiction-free. A Capxul with payroll and no tax piece is valid; slips then
    carry no tax lines (agreed with CX-composable-pieces).
-2. **Add, in slice 7: money in several currencies**, after #1116 and the move of `company` and `ledger` into pieces
-   (CX-composable-pieces), before invoices. It unparks Company currency (#882) as a framework gap Goal 16 claims; its
+2. **Add, in slice 7: money in several currencies.** The currency slice comes after the `company` and `ledger` pieces
+   have moved (CX-composable-pieces, moves 1 and 2), works inside `company`, `rates`, `ledger` and `payments`, and comes
+   before slice 7b's invoices; the rest of the move runs in parallel with currency. It unparks Company currency (#882) as a framework gap Goal 16 claims; its
    checks (#923, a draft) are rewritten to this record by an author.
 3. **#1116 (parties and payments) lands as it is.** Its USDC amounts are right for a company reporting in USDC, so its
-   journeys stay valid. Its decision already leaves "the received amount and exchange rates" for later
+   journeys stay valid. It lands in `blueprint/things/`, and the move then takes its customer and supplier things and
+   their groups to `parties`, and Payment Entry to `payments` (CX-composable-pieces, section 6). Its decision already leaves "the received amount and exchange rates" for later
    (`CX-parties-payments.md`, "Also later"); the currency slice adds them to Payment Entry, and the account-currency
    pair to GL Entry, as new journeys.
 4. **Add the `contractors` piece** (section 2, steps 2 and 3), once `payments` holds Payment Entry and before the US tax
@@ -159,20 +161,25 @@ Each is a new outside dependency, so each is Aaron's call. None is needed for st
 - `ledger` holds an account's currency, both amounts on every line, the gain-or-loss accounts, rounding, revaluation,
   and each party's outstanding.
 - `payments` (core, below `invoicing`) holds Payment Entry, including between currencies, and settles a party's
-  outstanding. Rails fill a contract it declares: `payments`' own default rail, *recorded* (the money moved outside
-  Capxul, from the company's own bank or wallet; the entry carries the mode of payment and a reference), then Bridge,
-  and later the Safe. So a Capxul with no Bridge and no Safe builds, and section 2's step 2 is the recorded rail.
+  outstanding. It only records money that moved, with its mode of payment and a reference, through an in-commit
+  `record`. A rail is a piece that moves the money first and then records it through `payments.record`:
+  `bridge-accounts` for payouts, later the Safe. Without a rail the company moves the money itself and Capxul records
+  it, which is section 2's step 2.
 - What is owed is the ledger's party outstanding, not a new record. In both records: payroll calculates and posts its
   accrual through `ledger.post` in its own commit; it never writes ledger lines itself and never moves money.
-  `payments` moves money and settles outstandings. `ledger` owns the lines, both amounts and revaluation.
-- `contractors` (core): a `parties` Supplier with the payer's tax form, a payout method, paying many through `payments`,
-  and the 1099 year-end. The forms can't live in `payroll-tax-us`, because every US payer needs them. Payroll stays for
+  A rail moves money; `payments` records it and settles outstandings. `ledger` owns the lines, both amounts and revaluation.
+- `contractors` (core): a `parties` Supplier with the payer's tax form, a payout method, paying many through `payments`
+  (and through `bridge-accounts` for a payout to an external account), and the 1099 year-end. The forms can't live in `payroll-tax-us`, because every US payer needs them. Payroll stays for
   employees.
-- `bridge` holds external accounts and transfers out; `payroll-tax-us` is optional and later; `eor` is optional and
+- `bridge-accounts` (renamed from `bridge`, so as not to clash with the adapter `@orthograph/bridge`) holds external
+  accounts and transfers out; `payroll-tax-us` is optional and later; `eor` is optional and
   later, and until then an employer of record is a supplier.
 
-**Order:** the move of `company`, then `ledger` and `people`; then the currency slice inside `company`, `rates`,
-`ledger` and `payments`; then invoices (7b). The rest of the move runs alongside. Then `contractors`.
+**Order:** the currency slice as in point 2, then `contractors`. Both records mark three things as resting on decision
+1: `contractors` as core, no tax piece mounted for now, and this order. If Aaron says no, `payroll-tax-us` is mounted
+from the start and `contractors` comes later as an optional piece. Choosing between two countries' tax pieces per
+employee waits on a decision of its own (one filler per contract, CX-composable-pieces); this record needs none,
+since no tax piece is mounted for now.
 
 ## 6. Questions for a professional
 
