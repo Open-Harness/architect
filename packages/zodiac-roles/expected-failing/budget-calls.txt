@@ -4,21 +4,44 @@ src/modules/roles/budget-calls.test.ts > the calls > every call is the Safe's to
 src/modules/roles/budget-calls.test.ts > the calls > in the implementation's order: the allowance, the target, the function, then each member in turn
 src/modules/roles/budget-calls.test.ts > the calls > the function scoped: its role, target and selector, with no value or delegate call
 src/modules/roles/budget-calls.test.ts > the conditions > V3 send's shape: the item's fields scoped inside its tuple, the token exactly, the rest passed
-src/modules/roles/budget-calls.test.ts > the conditions > a limit of 0 is a limit; with no limit, the allowance alone; recipients anyone pass
-src/modules/roles/budget-calls.test.ts > the conditions > a token as a parameter of the function itself
-src/modules/roles/budget-calls.test.ts > the conditions > breadth-first, under the calldata's Matches, an And or an Or with paramType None
-src/modules/roles/budget-calls.test.ts > the conditions > the amount first, a string passed unchecked, the recipient last: each condition at its own parameter
+src/modules/roles/budget-calls.test.ts > the conditions > a limit of 0 is a limit
+src/modules/roles/budget-calls.test.ts > the conditions > a token as an input of the function itself, with a limit and listed recipients
+src/modules/roles/budget-calls.test.ts > the conditions > a token as an input, recipients anyone, a limit
+src/modules/roles/budget-calls.test.ts > the conditions > a tuple at input 1, its uint128 amount and its other kinds of field passed
+src/modules/roles/budget-calls.test.ts > the conditions > no limit: the allowance alone; recipients anyone pass
+src/modules/roles/budget-calls.test.ts > the conditions > one recipient
+src/modules/roles/budget-calls.test.ts > the conditions > ten recipients
+src/modules/roles/budget-calls.test.ts > the conditions > the amount first, a string passed unchecked, the recipient last
+src/modules/roles/budget-calls.test.ts > the conditions > the largest limit there can be
 src/modules/roles/budget-calls.test.ts > the conditions > transfer: the recipient one of three, the amount at most 60 and within the allowance
+src/modules/roles/budget-calls.test.ts > the conditions > two tuples, a field scoped in each: each in its own tuple
+src/modules/roles/budget-calls.test.ts > what a budget may not be > a budget with no members: the allowance and the scope, no assignRoles
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a field of an input that is not a tuple
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a field the tuple does not have
-src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a nested tuple
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a fixed-size array input
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a limit of 2^256 - 1, which no LessThan can hold
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a member listed twice
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a nested tuple, scoped
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a parameter the function does not have
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a recipient listed twice
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a recipient parameter the function does not have
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a recipient that is not an address (a bytes32)
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped array
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped bytes field
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped string
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped string field
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped top-level bytes
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a token parameter the function does not have
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a token that is not an address (a uint256)
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a tuple input with nothing scoped in it
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a whole tuple scoped as an amount
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: an amount that is not a uint (a bool)
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: an amount that is not a uint (an int256)
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: an array input
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: an empty recipient list
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: an unscoped array field beside scoped ones
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: an unscoped tuple field beside scoped ones
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the amount and the recipient on one parameter
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the token and the amount on one field
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the token and the amount on one parameter
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the token and the recipient on one field
