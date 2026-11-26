@@ -32,6 +32,13 @@ List gl-entrys, oldest first, 50 to a page, filtered by account, voucherId.
 
 ## Worked examples
 
+### draft a payment entry
+
+Starts from the world `an outside supplier`.
+
+- **a draft posts nothing: Debtors' ledger is empty.** `ada` (role company.owner) calls and sends account the world's debtors, and gets back 0.
+- **and so is Bank's.** `ada` (role company.owner) calls and sends account the world's bank, and gets back 0.
+
 ### keep the books
 
 Starts from the world `a chart`.
@@ -63,6 +70,21 @@ Starts from the world `a capital entry`.
 - **Bank's line keeps Operations.** `ada` (role company.owner) calls and sends account the world's bank, voucherId the last call's journalEntry, and gets back [[the world's costCenter, `20000000`]].
 - **Rent holds one line of that entry.** `ada` (role company.owner) calls and sends account the world's rent, voucherId the last call's items 0 voucherId, and gets back [[`20000000`, false]].
 - **Rent's line and its reversal are both cancelled, in the same cost center.** `ada` (role company.owner) calls and sends account the world's rent, voucherId the last call's journalEntry, and gets back [[`20000000`, `0`, true], [`0`, `20000000`, true]] and gets back true.
+
+### post a payment entry
+
+Starts from the world `a received advance`.
+
+- **Debtors' ledger holds the party's credit, with Kibo Stores as its party.** `ada` (role company.owner) calls and sends account the world's debtors, and gets back [[the world's company, the world's debtors, the world's costCenter, `2026-02-10`, `0`, `500000000`, `Customer`, the world's customer, `Payment Entry`, the world's paymentEntry, false]].
+- **and Bank's the debit, with no party.** `ada` (role company.owner) calls and sends account the world's bank, and gets back [[the world's company, the world's bank, the world's costCenter, `2026-02-10`, `500000000`, `0`, null, null, `Payment Entry`, the world's paymentEntry, false]].
+- **Debtors' ledger keeps the credit and adds its reversal, a debit with the same party, both cancelled.** `ada` (role company.owner) calls and sends account the world's debtors, and gets back [[the world's company, the world's debtors, the world's costCenter, `2026-02-10`, `0`, `500000000`, `Customer`, the world's customer, `Payment Entry`, the world's paymentEntry, true], [the world's company, the world's debtors, the world's costCenter, `2026-02-10`, `500000000`, `0`, `Customer`, the world's customer, `Payment Entry`, the world's paymentEntry, true]].
+- **Bank's the same, the other way, with no party.** `ada` (role company.owner) calls and sends account the world's bank, and gets back [[the world's company, the world's bank, the world's costCenter, `2026-02-10`, `500000000`, `0`, null, null, `Payment Entry`, the world's paymentEntry, true], [the world's company, the world's bank, the world's costCenter, `2026-02-10`, `0`, `500000000`, null, null, `Payment Entry`, the world's paymentEntry, true]].
+- **Creditors' ledger holds the party's debit, with Mara Office Rentals as its party.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back [[the world's company, the world's creditors, the world's costCenter, `2026-03-05`, `200000000`, `0`, `Supplier`, the world's supplier, `Payment Entry`, the last call's paymentEntry, false]].
+- **and Bank's newest line is the credit, with no party.** `ada` (role company.owner) calls and sends account the world's bank, and gets back 3 and gets back [the world's company, the world's bank, the world's costCenter, `2026-03-05`, `0`, `200000000`, null, null, `Payment Entry`, the last call's paymentEntry, false].
+- **Creditors' newest line is the party's credit.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back 2 and gets back [the world's company, the world's creditors, the world's costCenter, `2026-03-20`, `0`, `50000000`, `Supplier`, the world's supplier, `Payment Entry`, the last call's paymentEntry, false].
+- **Creditors' ledger keeps the refund and adds its reversal, both cancelled.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back [[the world's company, the world's creditors, the world's costCenter, `2026-03-20`, `0`, `50000000`, `Supplier`, the world's supplier, `Payment Entry`, the last call's paymentEntry, true], [the world's company, the world's creditors, the world's costCenter, `2026-03-20`, `50000000`, `0`, `Supplier`, the world's supplier, `Payment Entry`, the last call's paymentEntry, true]] and gets back false.
+- **Debtors' newest line is the party's debit.** `ada` (role company.owner) calls and sends account the world's debtors, and gets back 3 and gets back [the world's company, the world's debtors, the world's costCenter, `2026-04-01`, `100000000`, `0`, `Customer`, the world's customer, `Payment Entry`, the last call's paymentEntry, false].
+- **nothing was posted to Creditors.** `ada` (role company.owner) calls and sends account the world's creditors, and gets back 3.
 
 ### run a payroll
 

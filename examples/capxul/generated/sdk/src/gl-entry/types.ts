@@ -14,6 +14,8 @@ export type GlEntry = {
   readonly "postingDate": Of<Declared["postingDate"]>;
   readonly "debit": Of<Declared["debit"]>;
   readonly "credit": Of<Declared["credit"]>;
+  readonly "partyType"?: Of<Declared["partyType"]>;
+  readonly "party"?: Of<Declared["party"]>;
   readonly "voucherType": Of<Declared["voucherType"]>;
   readonly "voucherId": Of<Declared["voucherId"]>;
   /** Set on a line its voucher's cancel reversed, and on the reversing line itself: neither counts in a balance. */

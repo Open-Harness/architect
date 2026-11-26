@@ -82,6 +82,19 @@ Starts from the world `a capital entry`.
 - **Assets, above Bank, too.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2027-12-31`, and gets back [`0`, `200000000`, `-200000000`].
 - **Equity, whose only lines were cancelled, holds nothing.** `ada` (role company.owner) calls and sends account the world's equity, onDay `2027-12-31`, and gets back [`0`, `0`, `0`].
 
+### post a payment entry
+
+Starts from the world `a received advance`.
+
+- **Bank's balance is the advance.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`500000000`, `0`, `500000000`].
+- **Debtors' is the advance owed back, negative.** `ada` (role company.owner) calls and sends account the world's debtors, onDay `2026-12-31`, and gets back [`0`, `500000000`, `-500000000`].
+- **and Assets, which holds both, nets to nothing.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2026-12-31`, and gets back [`500000000`, `500000000`, `0`].
+- **and Bank's.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`0`, `0`, `0`].
+- **and Debtors'.** `ada` (role company.owner) calls and sends account the world's debtors, onDay `2026-12-31`, and gets back [`0`, `0`, `0`].
+- **Liabilities, above Creditors, holds it.** `ada` (role company.owner) calls and sends account the world's liabilities, onDay `2026-12-31`, and gets back [`200000000`, `0`, `200000000`].
+- **Bank is 200 USDC down.** `ada` (role company.owner) calls and sends account the world's bank, onDay `2026-12-31`, and gets back [`0`, `200000000`, `-200000000`].
+- **while Debtors holds both.** `ada` (role company.owner) calls and sends account the world's debtors, onDay `2026-12-31`, and gets back [`100000000`, `70000000`, `30000000`].
+
 ### run a payroll
 
 Starts from the world `an outside cost center`.
