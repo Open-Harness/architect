@@ -5,9 +5,12 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { Names } from "orthograph/server";
 import { afterEach, describe, expect, it } from "vitest";
 
 const entry = resolve(import.meta.dirname, "../src/main.ts");
+/** The hand-off mark, named as main.ts names it. */
+const handedOff = Names.variable("HANDED_OFF");
 const roots: Array<string> = [];
 const pids: Array<number> = [];
 afterEach(() => {
@@ -32,12 +35,12 @@ const app = (script: string) => {
   const cli = join(root, "node_modules/@orthograph/cli");
   mkdirSync(cli, { recursive: true });
   writeFileSync(join(cli, "package.json"), JSON.stringify({ name: "@orthograph/cli", bin: { ortho: "child.mjs" } }));
-  writeFileSync(join(cli, "child.mjs"), `import { writeFileSync } from "node:fs";\nwriteFileSync(${JSON.stringify(join(root, "seen.json"))}, JSON.stringify({ pid: process.pid, args: process.argv.slice(2), mark: process.env.ORTHO_HANDED_OFF ?? null }));\n${script}\n`);
+  writeFileSync(join(cli, "child.mjs"), `import { writeFileSync } from "node:fs";\nwriteFileSync(${JSON.stringify(join(root, "seen.json"))}, JSON.stringify({ pid: process.pid, args: process.argv.slice(2), mark: process.env[${JSON.stringify(handedOff)}] ?? null }));\n${script}\n`);
   return root;
 };
 const run = (root: string, args: ReadonlyArray<string>) => {
   const env = { ...process.env };
-  delete env["ORTHO_HANDED_OFF"];
+  delete env[handedOff];
   const child = spawn("node", [entry, ...args], { cwd: root, env, stdio: "ignore" });
   pids.push(child.pid!);
   const ended = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((done) => child.on("exit", (code, signal) => done({ code, signal })));
