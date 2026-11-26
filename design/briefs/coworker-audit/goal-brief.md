@@ -21,7 +21,7 @@ owns:
 slices:
   - "1 · The loop by hand: Manager, Task and Run, people playing both parts"
   - "2 · The loop by agents: one manager running one worker on one task, on a scripted model (after 1)"
-  - "3 · One screen through the whole stack: the question page on a reference and a piece (after 1)"
+  - "3 · One screen through the whole stack: the question page on generated hooks, drawn by Astryx (after 1)"
   - "4 · It asks first: Ask, grants as a guard, the answer as the manager's next turn (after 2, 3)"
   - "5 · The Inbox: the first composite, a list read, live (after 3, 4)"
   - "6 · Getting in: sign-in, workspaces, joining, roles, and their screens (after 3)"
@@ -41,6 +41,9 @@ Branch `goal/coworker`. Drafted 26 November 2026 by the 📐 designer thread tha
 (`design/decisions/K47-coworker.md`) and the audit in `design/briefs/coworker-audit/`. Goal 18 numbers it, moves it into
 `design/goals/`, adds it to `design/goals/map.md` and the board, and starts it. This is an app goal (K42): it builds
 Coworker, and the framework gaps Coworker finds, unless another running goal has claimed them.
+
+**First run as a fast experiment** (K47, "How it is built first"): `design/briefs/coworker-audit/HANDOFF.md` on branch
+`design/coworker-audit`.
 
 **To start it, in any harness:** "You lead Goal <n>. Read `AGENTS.md`, `design/decisions/K47-coworker.md` and
 `design/goals/<nn>-coworker.md`, and run it."
@@ -84,10 +87,10 @@ author, not the builder, and fails on empty handlers first.
    Framework: #781's runtime landed in pieces on Pi Durable 1.6.0, `agent.tell` and `agent.close`, the stand-in model,
    #905's outbox with an actor's own events making hops, three operations offered as tools, and an agent's own
    credential.
-3. **One screen through the whole stack.** The question page: the reference `useAsk(id)` and `<Ask.*>`, the piece for
-   `ask.answer`, the page in `blueprint/app/`, Coworker's look as a theme. Check: the page's journey through the web,
-   and Goal 5's checks 04 to 08 green on this app. Framework: the piece generator and `@orthograph/web` (Goal 5's slice
-   4), the reference per thing (K46 call 9, no row yet), pages in an example (K31).
+3. **One screen through the whole stack.** The question page: the generated hooks `useAsk(id)` and `useAskAnswer()`
+   over the generated actions, drawn by Coworker's Astryx components (K48), the page in `blueprint/app/`. Check: the
+   page's journey through a browser, and the screen beside its old screenshot. Framework: the hook generator and a
+   small `@orthograph/web` runtime (K48, replacing Goal 5's slice 4), pages in an example (K31).
 4. **It asks first.** The `Ask` thing; grants as Coworker's own guard; an action set to ask raises an ask showing
    exactly what will be done; the answer is the asker's next turn; silence never approves. Check: the journeys behind
    Coworker's `flw:permissions/ask`, `flw:permissions/off` and `flw:inbox/own-words`.
@@ -122,7 +125,7 @@ slice is not scheduled, so this goal takes it, and tells Goal 18.
 | The agent runtime, tools from operations, an agent's own credential | `packages/agents`, `packages/host-cloudflare/src/modules/actors`, `.../auth` | Goal 17's slice 9, parked: this goal takes it |
 | The outbox, and an actor's events making hops | `packages/host-cloudflare/src/modules/outbox` | Goal 17's slice 9, parked: this goal takes it |
 | Grants: a role decided by data, ask as a gate | `packages/orthograph/src/modules/roles`, `packages/language-effect/src/modules/access` | unclaimed; Goal 16 last changed `access`, so ask it first |
-| The piece generator and `@orthograph/web` | `packages/projections`, `packages/web` | Goal 5's slice 4, parked: this goal takes it |
+| The hook generator and `@orthograph/web` (K48) | `packages/projections`, `packages/web` | Goal 5's slice 4, parked: this goal takes it |
 | The reference per thing | `packages/projections`, `packages/web` | nobody; Goal 18 adds its row |
 | Pages and composites in an app | `packages/projections/src/modules/app`, `packages/shell` | Goal 6, parked: this goal takes what it uses |
 | Live references, a relayed transcript | `packages/host-cloudflare`, `packages/web` | a decision for Goal 18 first (K47, "What stays open") |

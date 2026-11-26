@@ -1,6 +1,6 @@
 # K47: Coworker is rebuilt on Orthograph, as a third build
 
-**Decided 26 November 2026 by Aaron.** Recorded by the 📐 designer thread that audited Coworker (draft pull request
+**Decided 26 November 2026 by Aaron**, confirmed by him in the designer's session ("yes", to K47). Recorded by the 📐 designer thread that audited Coworker (draft pull request
 #1179), under AGENTS.md, "Who decides". It took the next free K: K46 is on #1100, which this branch carries, and no open
 pull request held K47 when it was written. The evidence is the audit in `design/briefs/coworker-audit/`, above all
 `README.md`, `end-to-end.md` and the board, `board.html`.
@@ -22,9 +22,10 @@ the audit's questions to him and relayed his answer word for word.
 1. **Rebuild it, and replace everything that works.** "I want to rebuild it with Orthograph" (his first ask, through
    the thread that started the audit). "it needs more than that. it needs a front end, it needs to replace everything
    that works currently in the vibe coded version" (relayed). The screens are the authority; the code is evidence.
-2. **Every screen is rebuilt on Orthograph's own layer.** "we will take all the ui but rebuild it all on our things.
-   including hooks and headless components" (in the session). That is a generated reference per thing (K46 call 9) and
-   a generated piece per operation (K29), not the app's own component code.
+2. **Every screen is rebuilt on Orthograph's own headless layer, drawn by Astryx.** "we will take all the ui but
+   rebuild it all on our things. including hooks and headless components" (in the session), then "i only want headless
+   componnets that work with any library like astryx". K48 records how: generated hooks over the actions, Coworker's
+   own Astryx components drawing them, and UI SDK deferred.
 3. **The agents are Pi Durable, and each is an actor.** "one thing that defo doesn't work is the agents they should be
    pi durable" and "and they should be actors" (relayed); "they need to be actors and they should follow the same
    pattern from pi durable and its examples in the repo" (in the session).
@@ -32,8 +33,8 @@ the audit's questions to him and relayed his answer word for word.
    decisions as the thread put them, each with its recommendation. Where his later words above differ, they win. So:
    - **Which screens are the authority:** the built screens for everything that works; the screens his page of 25
      November agrees (`docs/screens.md` in Coworker) for the board, the task, the manager tree and the agents.
-   - **The look:** kept exactly, reproduced as a theme on Orthograph's components, every rebuilt screen checked beside
-     its old screenshot.
+   - **The look:** kept exactly. Astryx stays as the component library (K48), and every rebuilt screen is checked
+     beside its old screenshot.
    - **A third build:** Coworker is built now, beside the alpha and Capxul. It takes the agent work of the parked
      superagent (Goal 17's slice 9: #781 and #905) and the UI work of the parked Goals 5 and 6, under the collision rule
      ("a stopped goal's slice is not scheduled: the app goal that needs it takes it").
@@ -57,8 +58,16 @@ The proposal in `design/briefs/coworker-audit/end-to-end.md` is the audit's, and
   agent's actor as a submission with a request id. Inside an actor, Pi as it is.
 - **An agent's tool never waits for another agent or a person**, from Pi's own spec ("a parked call keeps its run
   busy") and K46 call 2.
-- **The screens** as pages (K31), references and pieces, seven composites (K36), a theme and live reads.
+- **The screens** as pages (K31) on generated hooks (K48), Astryx drawing them, and live reads.
 - The spellings in `design/briefs/coworker-audit/blueprint/` and `web/`, every new one marked `// new`.
+
+## How it is built first
+
+Aaron asked for a fast experiment: "can this be done on its own fork like a faster experiment fixing the things in the
+framework as its going not waiting on ci for merging and sprinting to the end", then "give me a proper handoff ill do it
+in codex instead". The handoff is `design/briefs/coworker-audit/HANDOFF.md` on branch `design/coworker-audit`: one
+branch, `experiment/coworker`, cut from `main`, with framework fixes in their own commits to be lifted into proper pull
+requests later. Nothing from it reaches `main` except through the normal process.
 
 ## What stays open
 
