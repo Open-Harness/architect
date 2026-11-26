@@ -72,7 +72,7 @@ function page(text, { level = 2, id, film } = {}) {
 const words = (n) => ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"][n] ?? String(n);
 const film = (name) => !existsSync(join(here, "site/films", `${name}.mp4`))
   ? `<p class="soon">The film of this chapter is still being made.</p>`
-  : `<figure class="film"><video controls preload="none" playsinline poster="films/${name}.jpg" src="films/${name}.mp4" data-captions="films/${name}.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>`;
+  : `<figure class="film"><video controls preload="none" playsinline poster="films/${name}.jpg" src="films/${name}.mp4" data-captions="films/${name}.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">${read(`site/films/${name}.captions.txt`).replace(/</g, "&lt;")}</script></figure>`;
 const spine = JSON.parse(read("spine.json")), all = spine.parts.flatMap((p) => p.chapters), last = all[all.length - 1].n;
 const partNames = ["one", "two", "three", "four", "five"];
 const chapter = (c, part) => {

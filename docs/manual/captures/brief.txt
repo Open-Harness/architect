@@ -26,4 +26,5 @@ Don't touch
 Done when
   ortho prove --env local passes, with handle.claim's 9 evals: answer shape, declared errors, machine path, events, who may call, steps, performance, coverage, explainability
   and the journeys that call it: journeys/a-name-is-claimed-once.ts, journeys/a-stranger-cannot-edit-a-page.ts, journeys/claim-a-handle.ts, journeys/release-a-handle.ts, journeys/the-story.ts
+  (to run one of them alone: ortho prove --only journeys/a-name-is-claimed-once.ts)
   ortho check passes

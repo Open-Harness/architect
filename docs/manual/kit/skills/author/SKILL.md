@@ -12,8 +12,8 @@ description: How to write the journeys for an operation in an Orthograph app, be
 A journey is a story told through real operations: who does what, and what must be true afterwards. It is the spec.
 
 1. **Start from the stubs the designer left**, and read the declaration, not the handler: the payload, the answer, the move, who may call, and every refusal.
-2. **Write a step for each path**: the move that works, each refusal, and each caller who must be turned away. A
-   refusal that a rule gives has no stub: write its journey yourself. Add the starting world a journey needs.
+2. **Write a step for each path**: the move that works, each refusal, and each caller who must be turned away. Add the
+   starting world a journey needs.
 3. **Assert what the owner would check**: the answer, the event, the state it ended in, and that nothing else changed.
 4. **Run `ortho prove --empty`.** Every new step must fail, and each failure must name the journey, the step, what was
    expected and what came back. The one exception is a step marked `proved by the description`: the runtime refuses

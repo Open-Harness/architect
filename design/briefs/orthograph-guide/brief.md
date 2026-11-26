@@ -28,6 +28,28 @@ He confirmed this reading ("thats it"):
 5. **It runs other threads.** Some stages hand work to another agent in a role (author, builder, reviewer, spike). The
    router briefs that thread, reads back its result, and records it.
 
+Then, on how it works (his words):
+
+"how it does this is important. it creates other threads with tasks and invokes the skills. so they are essentially
+subagents. even if they are threads they use these skills so they should encode the protocol for how to work together
+with clear contracts and expected outcomes"
+
+"this is the main agents goal. it uses the threads to do that. it plans and has an understnding of its workflow. it knows
+where it is and nhow to get to the next thing. it gets around blockers within its permissions repanning to get to where
+it needs to get to"
+
+So:
+
+6. **The router hands over by starting threads.** For a stage's work it starts another thread (a subagent, or a
+   thread in the harness), gives it a task, and that thread invokes the stage's skill. Every stage skill therefore
+   encodes the protocol for working together: a contract for what the thread is given (its inputs, the one thing it
+   may touch), what it must hand back (its outputs, in a fixed shape the router can read), and its expected outcome
+   (the check that says it is done). A thread that cannot meet its contract says so in that same shape.
+7. **The main agent owns the goal: the project done.** It plans, and keeps the plan as a workflow it understands: it
+   knows which stage it is in, what the next thing is, and how to reach it. When it meets a blocker, it gets round it
+   within its permissions and replans to reach the same goal, and only comes back to the person for what it truly cannot
+   decide or do (the same line `AGENTS.md` draws for this repository's own threads, "Who decides").
+
 ## What already exists to build on
 
 - **The stages and their order**: `docs/manual/spine.json` and the eleven chapters in `docs/manual/chapters/`. Each

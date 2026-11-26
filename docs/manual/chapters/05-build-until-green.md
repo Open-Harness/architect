@@ -34,7 +34,8 @@ over as it is printed. Anything you add in your own words is something the build
 ## Start from the scaffold
 
 The builder never starts from an empty file. The framework has already written the frame of the handler, with a blank
-where the behaviour goes. So the first thing the builder does is run the one journey, and read what fails.
+where the behaviour goes. So the first thing the builder does is run the one journey, by the name it declares or by its file, and read what
+fails.
 
 ```sh capture=climb-0-prove.txt
 $ ortho prove --only "claim a handle"
@@ -55,7 +56,7 @@ again.
 $ ortho prove --only "claim a handle"
 journey claim a handle ✘ 4/8 steps
   ✘ "aaron claims the free name": expected HandleClaimed, journal has nothing
-  ✘ "aaron claims the free name": hdl_rec9a826nfjzxocb is in no state, expected "claimed"
+  ✘ "aaron claims the free name": hdl_y1y7uv6vhtmrfudv is in no state, expected "claimed"
 handle.claim machine path ✘ claim-a-handle "aaron claims the free name": answered without making its move claim
 ```
 
@@ -65,16 +66,17 @@ first.
 
 ## Green on one journey is not done
 
-One line makes the move, and the journey passes.
+One line makes the move, and the journey passes, and so does the run.
 
 ```sh capture=climb-2-prove.txt
 $ ortho prove --only "claim a handle"
 journey claim a handle ✔ 8/8 steps
-prove ✘ 5 failing
+ran 1 of 7 journeys (--only): coverage is judged by the whole run, ortho prove; 5 operations above not reached in full by this one
+prove ✔
 ```
 
-The last line is still red, and it is right to be. One journey does not reach every operation, so the proof's
-coverage fails. The builder finishes by running all of it, and then the check.
+Read the line before the verdict. One journey does not reach every operation, so this run does not judge coverage:
+it says so, and points at the whole run. The builder finishes by running all of it, and then the check.
 
 ```sh capture=prove.txt
 $ ortho prove

@@ -38,13 +38,15 @@ wrote blueprint/journeys/handle-claim-created-in-claimed.ts
 wrote blueprint/journeys/handle-release-claimed-to-released.ts
 wrote blueprint/journeys/handle-release-refused-from-released.ts
 wrote blueprint/journeys/handle-claim-refused-anonymous.ts
+wrote blueprint/journeys/handle-claim-refused-handle-taken.ts
+wrote blueprint/journeys/handle-claim-refused-handle-already-owned.ts
 wrote blueprint/journeys/handle-release-refused-not-handleOwner.ts
 wrote blueprint/journeys/handle-resolve-allowed-anyone.ts
 wrote blueprint/journeys/handle-resolve-refused-handle-not-found.ts
 ```
 
-Seven files: one for each path through the handle's states, one for each role, and one for each error an operation
-declares. A stub already knows who may call and who must be turned away. What it cannot know, it leaves blank, and
+Nine files: one for each path through the handle's states, one for each role, one for each error an operation
+declares, and one for each refusal a rule gives, such as a name that is already taken. A stub already knows who may call and who must be turned away. What it cannot know, it leaves blank, and
 the check lists every blank as a question, with its file and its line. A blank is a question for you, never a default.
 
 ```sh capture=stubs-check.txt
@@ -114,8 +116,7 @@ unfinished, until someone answers them.
 Stories tend to cover the path where everything works. Count the refusals: every one the blueprint declares needs a
 step that causes it. The full run counts them for you, on its coverage line, in the next chapter.
 
-The journey commands are rough in four places today, and they are being fixed. A refusal that a rule gives, such as a
-name already taken, gets no stub, so the author writes that story unprompted. The check lists blanks only inside the
+The journey commands are rough in three places today, and they are being fixed. The check lists blanks only inside the
 blueprint's folder; Plugged In keeps its finished journeys in a folder of their own beside it, and both are read.
 Adding stubs turns the check red, which is right while they are blanks, and it also reports drift in what was
 generated until that is made again. And adding one journey by name writes a stub with a blank cast, and every command that reads the

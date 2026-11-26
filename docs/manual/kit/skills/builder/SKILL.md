@@ -13,9 +13,9 @@ description: How to write one handler in an Orthograph app from its brief, and c
    the handler must do, what the runtime does for you, the paths you must not touch, and what must pass.
 2. **Write only behaviour.** The runtime checks who is calling and the machine before your handler runs, and the rules
    after it, before the commit. Refuse only what the brief tells you to refuse, and never what it says the runtime does.
-3. **Climb.** Run `ortho prove --only "<journey's name>"`, with the name the journey declares and not its file. Read the
-   first failure, fix the handler, and run it again. A green run of one journey still ends in a failing line, because
-   coverage counts the operations it did not reach. So finish with `ortho prove` and `ortho check`, each run whole.
+3. **Climb.** Run `ortho prove --only "<journey's name>"` (or its file, as the brief prints it). Read what failed, fix
+   the handler, and run it again. A run of one journey does not judge coverage, and says so. So finish with
+   `ortho prove` and `ortho check`, each run whole.
 4. **Report** which journeys ran and passed, and anything you could not make pass.
 
 Never add or edit anything in `blueprint/`, `journeys/` or `generated/`. If a journey looks wrong, stop and tell its author: do not change

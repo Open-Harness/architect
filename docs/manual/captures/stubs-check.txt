@@ -7,6 +7,12 @@ journeys/handle-claim-created-in-claimed has 4 blanks
 journeys/handle-claim-refused-anonymous has 2 blanks
   blueprint/journeys/handle-claim-refused-anonymous.ts:12  a starting world where handle.claim can run
   blueprint/journeys/handle-claim-refused-anonymous.ts:16  handle.claim's payload: name
+journeys/handle-claim-refused-handle-already-owned has 2 blanks
+  blueprint/journeys/handle-claim-refused-handle-already-owned.ts:14  a starting world where handle.claim would break handle.oneNamePerPerson
+  blueprint/journeys/handle-claim-refused-handle-already-owned.ts:18  handle.claim's payload that breaks handle.oneNamePerPerson: name
+journeys/handle-claim-refused-handle-taken has 2 blanks
+  blueprint/journeys/handle-claim-refused-handle-taken.ts:14  a starting world where handle.claim would break handle.oneHolderPerName
+  blueprint/journeys/handle-claim-refused-handle-taken.ts:18  handle.claim's payload that breaks handle.oneHolderPerName: name
 journeys/handle-release-claimed-to-released has 4 blanks
   blueprint/journeys/handle-release-claimed-to-released.ts:15  a starting world with a handle in claimed
   blueprint/journeys/handle-release-claimed-to-released.ts:19  handle.release's payload: handle

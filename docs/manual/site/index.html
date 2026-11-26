@@ -103,7 +103,156 @@ th { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.1
 <p class="facts"><span>eleven of eleven chapters written</span><span>twelve films</span><span>every command recorded on <code>examples/plugged-in</code></span></p></header>
 <section class="chapter first"><h2 id="opening">The hard part is the next morning</h2>
 <p class="lede">An agent can write a working system in an afternoon. The server, the database, the command line, the tools for other agents, the page of docs. Writing it was never the hard part.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/why.jpg" src="films/why.mp4" data-captions="films/why.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/why.jpg" src="films/why.mp4" data-captions="films/why.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.449
+An agent can write a working system in an afternoon.
+
+2
+00:00:03.849 --> 00:00:04.309
+The server.
+
+3
+00:00:04.309 --> 00:00:05.049
+The database.
+
+4
+00:00:05.049 --> 00:00:06.309
+The command line.
+
+5
+00:00:06.309 --> 00:00:07.969
+The tools for other agents.
+
+6
+00:00:07.969 --> 00:00:09.539
+The page of docs.
+
+7
+00:00:09.939 --> 00:00:11.813
+Writing it was never the hard part.
+
+8
+00:00:13.413 --> 00:00:15.299
+The hard part is the next morning.
+
+9
+00:00:15.699 --> 00:00:16.199
+Is it right?
+
+10
+00:00:16.199 --> 00:00:17.139
+Is it fast enough?
+
+11
+00:00:17.139 --> 00:00:19.225
+What happens when something fails?
+
+12
+00:00:19.625 --> 00:00:22.489
+And when one rule changes, what else has to change?
+
+13
+00:00:22.889 --> 00:00:25.649
+To answer any of that, someone has to read all of it.
+
+14
+00:00:25.649 --> 00:00:27.633
+Usually, that someone is you.
+
+15
+00:00:29.233 --> 00:00:31.227
+Orthograph moves the part you read.
+
+16
+00:00:31.627 --> 00:00:33.007
+You work on the system itself:
+
+17
+00:00:33.007 --> 00:00:37.341
+the things in it, who may do what to them, and what must always be true.
+
+18
+00:00:37.741 --> 00:00:39.161
+That description is the blueprint.
+
+19
+00:00:39.161 --> 00:00:41.219
+It is small enough to read whole.
+
+20
+00:00:41.619 --> 00:00:47.615
+Everything below it is made by the framework, or written by an agent inside a frame the blueprint sets.
+
+21
+00:00:48.015 --> 00:00:50.315
+And nobody takes anyone's word that it works.
+
+22
+00:00:50.315 --> 00:00:55.264
+The running system is proved, against stories you agreed to before it was built.
+
+23
+00:00:56.864 --> 00:00:59.146
+So three parties do three different jobs.
+
+24
+00:00:59.546 --> 00:01:02.933
+You decide the system, and you read the blueprint and the stories.
+
+25
+00:01:03.333 --> 00:01:07.856
+Your agents plan with you, write the stories, build the behaviour, and review each other.
+
+26
+00:01:08.256 --> 00:01:13.649
+The framework makes the server, the A P I, the S D K and the command line, and proves them.
+
+27
+00:01:15.249 --> 00:01:17.829
+This manual follows one small app, Plugged In.
+
+28
+00:01:17.829 --> 00:01:21.459
+A person claims a name, and gets a public page of links.
+
+29
+00:01:21.859 --> 00:01:23.879
+Eleven chapters, in the order things happen.
+
+30
+00:01:23.879 --> 00:01:24.819
+Before any code.
+
+31
+00:01:24.819 --> 00:01:25.519
+Build it.
+
+32
+00:01:25.519 --> 00:01:26.219
+Run it.
+
+33
+00:01:26.219 --> 00:01:27.148
+Live with it.
+
+34
+00:01:27.548 --> 00:01:30.608
+Everything a chapter prints was recorded from a real run.
+
+35
+00:01:30.608 --> 00:01:34.225
+And where something doesn't exist yet, the chapter says so.
+
+36
+00:01:34.625 --> 00:01:36.565
+And we start where every system should start:
+
+37
+00:01:36.565 --> 00:01:37.604
+with a plan.
+</script></figure>
 <p>The hard part is the next morning. Is it right? Is it fast enough, and what happens when something fails? When one rule changes, what else has to change? To answer any of that, someone has to read all of it. Usually that someone is you.</p>
 <h3 id="opening-what-orthograph-does-about-it">What Orthograph does about it</h3>
 <p>We want you to be able to trust a system you did not write and have not read. So Orthograph moves the part you read.</p>
@@ -122,7 +271,196 @@ th { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.1
 <div class="part"><span>Part one</span><h2 class="part-title">Before any code</h2></div>
 <section class="chapter" id="chapter-1-wrap"><header class="opener"><span class="num">01</span><span class="of">Part one · Before any code</span></header><h2 id="chapter-1">Plan it</h2><p class="ask">What is the system, and what don't we know yet?</p>
 <p class="lede">Before anything is described to the framework, you talk the system through with an agent until it fits on one page. The page is what you argue with. Code comes later, and so does the blueprint.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/plan-it.jpg" src="films/plan-it.mp4" data-captions="films/plan-it.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/plan-it.jpg" src="films/plan-it.mp4" data-captions="films/plan-it.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:06.241
+Before anything is described to the framework, you talk the system through, until it fits on one page.
+
+2
+00:00:06.641 --> 00:00:08.741
+It starts with one sentence, in your words.
+
+3
+00:00:08.741 --> 00:00:11.999
+Here is a real one, for the next stage of Plugged In.
+
+4
+00:00:12.399 --> 00:00:14.519
+People should be able to pay each other by name.
+
+5
+00:00:14.519 --> 00:00:18.608
+A handle gets a wallet, and anyone can send money to that name.
+
+6
+00:00:19.008 --> 00:00:20.488
+That is all the designer is given.
+
+7
+00:00:20.488 --> 00:00:22.779
+That, and the app as it stands.
+
+8
+00:00:24.379 --> 00:00:28.565
+The first thing a designer does is say your idea back, as strongly as it can.
+
+9
+00:00:28.965 --> 00:00:31.405
+A claimed name becomes a place money can be sent.
+
+10
+00:00:31.405 --> 00:00:34.057
+Every claimed handle has one wallet.
+
+11
+00:00:34.457 --> 00:00:36.017
+And it says what the idea is not.
+
+12
+00:00:36.017 --> 00:00:36.957
+Not a bank.
+
+13
+00:00:36.957 --> 00:00:37.817
+Not a checkout.
+
+14
+00:00:37.817 --> 00:00:39.082
+Not an exchange.
+
+15
+00:00:39.482 --> 00:00:40.462
+Then it draws the system:
+
+16
+00:00:40.462 --> 00:00:42.802
+the things, and the states each can be in.
+
+17
+00:00:42.802 --> 00:00:43.622
+A wallet.
+
+18
+00:00:43.622 --> 00:00:44.462
+A payment.
+
+19
+00:00:44.462 --> 00:00:45.531
+A withdrawal.
+
+20
+00:00:47.131 --> 00:00:47.811
+Then, the rules.
+
+21
+00:00:47.811 --> 00:00:50.004
+What must stay true, in your language.
+
+22
+00:00:50.404 --> 00:00:52.540
+A name has at most one open wallet.
+
+23
+00:00:52.940 --> 00:00:56.440
+Money sent to a name reaches the person who held it when it was sent.
+
+24
+00:00:56.440 --> 00:00:58.042
+Never a later one.
+
+25
+00:00:58.442 --> 00:01:00.742
+You might never have said that second rule aloud.
+
+26
+00:01:00.742 --> 00:01:05.382
+It decides what happens when a name changes hands with a payment on its way.
+
+27
+00:01:05.382 --> 00:01:07.616
+That is what the page is for.
+
+28
+00:01:09.216 --> 00:01:12.149
+Two parts of the page are where real systems go wrong.
+
+29
+00:01:12.549 --> 00:01:14.009
+The first is anything that waits.
+
+30
+00:01:14.009 --> 00:01:18.309
+On the page, it's a thing in a state, and it says what it is waiting for.
+
+31
+00:01:18.309 --> 00:01:21.666
+A wallet, opening, waits for the money provider.
+
+32
+00:01:22.066 --> 00:01:25.206
+The second is every place two records of one fact must agree.
+
+33
+00:01:25.206 --> 00:01:29.017
+The app's balance, and the money the provider really holds.
+
+34
+00:01:30.617 --> 00:01:33.117
+A plan is finished when it says what it doesn't know.
+
+35
+00:01:33.517 --> 00:01:34.197
+Seven doubts.
+
+36
+00:01:34.197 --> 00:01:36.837
+Each one is a question, and each is sorted.
+
+37
+00:01:36.837 --> 00:01:38.637
+Try it in throwaway code.
+
+38
+00:01:38.637 --> 00:01:40.807
+Or leave it blank, for you to decide.
+
+39
+00:01:41.207 --> 00:01:42.827
+And it asks one question first.
+
+40
+00:01:42.827 --> 00:01:47.315
+Is this real money, and if so, who holds it while it sits in a wallet?
+
+41
+00:01:47.715 --> 00:01:48.615
+One honest note.
+
+42
+00:01:48.615 --> 00:01:51.355
+This page is real, and it is half a session.
+
+43
+00:01:51.355 --> 00:01:55.322
+The owner hasn't answered yet, so nothing on it is decided.
+
+44
+00:01:55.922 --> 00:01:57.322
+No command runs any of this.
+
+45
+00:01:57.322 --> 00:01:59.202
+It's how we plan, and it is practice.
+
+46
+00:01:59.202 --> 00:02:00.302
+Next:
+
+47
+00:02:00.302 --> 00:02:02.026
+the doubts become spikes.
+</script></figure>
 <h3 id="chapter-1-say-the-idea-in-one-sentence">Say the idea in one sentence</h3>
 <p>We want the plan to start from what you mean, in your words, and not from a feature list. Plugged In already lets a person claim a name and keep a page of links. Its next stage began as one sentence from its owner: people should be able to pay each other by name, a handle gets a wallet, and anyone can send money to that name.</p>
 <p>That is all the designer is given. It reads the app as it stands, and it reads nothing about how the idea might be built.</p>
@@ -169,7 +507,232 @@ Why: every thing, wait and join above changes shape with the answer, and so does
 <p>This is how we plan in this repository, and it is practice: no command runs a planning session, and nothing in Orthograph draws the page. The page above is real. An agent drew it on 26 November 2026 from the one sentence and the app as it stands, and it is printed as it was written. It is the first half of a session only: the owner has not yet answered its first question, so nothing on it is decided, and the film shows that first half and stops there.</p></section>
 <section class="chapter" id="chapter-2-wrap"><header class="opener"><span class="num">02</span><span class="of">Part one · Before any code</span></header><h2 id="chapter-2">Spike what you doubt</h2><p class="ask">Will the part I'm unsure of actually work?</p>
 <p class="lede">The plan for "pay by name" fits on one page, and the page lists seven doubts. Five are decisions only you can make. Two are questions nobody can answer by thinking harder. If you describe the system now, you build it on a guess, and you find out which guess was wrong after the journeys are written.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/spike.jpg" src="films/spike.mp4" data-captions="films/spike.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/spike.jpg" src="films/spike.mp4" data-captions="films/spike.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.020
+The plan for pay by name fits on one page.
+
+2
+00:00:03.020 --> 00:00:05.257
+And the page lists seven doubts.
+
+3
+00:00:05.657 --> 00:00:07.797
+Five are decisions only you can make.
+
+4
+00:00:07.797 --> 00:00:11.430
+Two are questions nobody can answer by thinking harder.
+
+5
+00:00:11.830 --> 00:00:14.543
+Describe the system now, and you build it on a guess.
+
+6
+00:00:14.943 --> 00:00:18.823
+So one agent takes the spike role, and is given one line of the page.
+
+7
+00:00:18.823 --> 00:00:23.266
+Can a late reversal be mirrored, without a balance going below zero?
+
+8
+00:00:23.666 --> 00:00:26.386
+It may write throwaway code in a folder of its own.
+
+9
+00:00:26.386 --> 00:00:28.418
+It touches nothing in the app.
+
+10
+00:00:30.018 --> 00:00:32.258
+A late reversal is a question about order.
+
+11
+00:00:32.258 --> 00:00:33.598
+Money came in.
+
+12
+00:00:33.598 --> 00:00:34.458
+Some of it left.
+
+13
+00:00:34.458 --> 00:00:36.937
+Then the provider took the payment back.
+
+14
+00:00:37.337 --> 00:00:40.337
+So the spike builds no wallet, and calls no provider.
+
+15
+00:00:40.337 --> 00:00:45.001
+It keeps a small ledger, and plays eight events in every order they can happen.
+
+16
+00:00:45.401 --> 00:00:47.860
+Two thousand five hundred and twenty orders.
+
+17
+00:00:48.460 --> 00:00:51.600
+In two thirds of them the reversal comes before the payment clears.
+
+18
+00:00:51.600 --> 00:00:53.444
+Every rule is kept.
+
+19
+00:00:53.844 --> 00:00:56.638
+In eight hundred and forty, the reversal is late.
+
+20
+00:00:56.638 --> 00:01:02.895
+And in two hundred and twenty-five of those, the holder has already withdrawn, and what is left cannot cover it.
+
+21
+00:01:04.495 --> 00:01:09.713
+The spike tries three things the app could do, and holds each to rules taken from the plan page.
+
+22
+00:01:10.114 --> 00:01:11.073
+Mirror it at once.
+
+23
+00:01:11.073 --> 00:01:12.754
+A payment of fifty clears.
+
+24
+00:01:12.754 --> 00:01:14.828
+The holder withdraws thirty.
+
+25
+00:01:14.828 --> 00:01:17.027
+The provider reverses the payment.
+
+26
+00:01:17.027 --> 00:01:18.787
+The balance is minus thirty.
+
+27
+00:01:19.387 --> 00:01:20.627
+Refuse to mirror it.
+
+28
+00:01:20.627 --> 00:01:23.867
+The balance stays above zero, and stops being true.
+
+29
+00:01:23.867 --> 00:01:27.235
+The app and the provider disagree in every late order.
+
+30
+00:01:27.635 --> 00:01:30.715
+Or take what is there, and write the rest down as a shortfall.
+
+31
+00:01:30.715 --> 00:01:33.149
+The balance holds in every order.
+
+32
+00:01:33.549 --> 00:01:37.849
+But two rules break as they are written, until the shortfall is counted in them.
+
+33
+00:01:37.849 --> 00:01:42.223
+And in one hundred and fifty orders, somebody is still owed money at the end.
+
+34
+00:01:43.823 --> 00:01:45.803
+The spike ends by writing one page.
+
+35
+00:01:45.803 --> 00:01:48.710
+It opens with the question, and the answer.
+
+36
+00:01:49.110 --> 00:01:51.530
+Not with the rules as the plan page has them.
+
+37
+00:01:51.530 --> 00:01:58.202
+Once the holder has withdrawn, a late reversal breaks one of three rules, and the app only chooses which.
+
+38
+00:01:58.602 --> 00:02:01.680
+Then what was tried, what was found, and what was not tried.
+
+39
+00:02:02.080 --> 00:02:03.020
+It decides nothing.
+
+40
+00:02:03.020 --> 00:02:04.960
+It says what you have to decide.
+
+41
+00:02:04.960 --> 00:02:09.237
+Either a settled payment is final, or the plan gains a new thing.
+
+42
+00:02:09.637 --> 00:02:10.897
+The code is thrown away.
+
+43
+00:02:10.897 --> 00:02:15.554
+Two files stay in the folder, as evidence, and the app never imports them.
+
+44
+00:02:17.154 --> 00:02:18.594
+You read the page, and nothing else.
+
+45
+00:02:18.594 --> 00:02:20.940
+The answer, then the open risks.
+
+46
+00:02:21.340 --> 00:02:23.880
+A spike goes wrong when it answers a different question.
+
+47
+00:02:23.880 --> 00:02:26.480
+Or when it only shows the idea working.
+
+48
+00:02:26.480 --> 00:02:28.323
+Ask what it did to break it.
+
+49
+00:02:28.723 --> 00:02:33.127
+And it goes wrong when the code gets kept, or when the answer is read as a decision.
+
+50
+00:02:33.527 --> 00:02:35.827
+Spiking is how we work in this repository.
+
+51
+00:02:35.827 --> 00:02:37.887
+No command runs one.
+
+52
+00:02:37.887 --> 00:02:40.487
+An agent ran this spike for this chapter.
+
+53
+00:02:40.487 --> 00:02:45.752
+It is small, it called no provider, and nobody has agreed the design it tests.
+
+54
+00:02:46.352 --> 00:02:48.032
+The page's other spike was not run.
+
+55
+00:02:48.032 --> 00:02:48.872
+Next:
+
+56
+00:02:48.872 --> 00:02:49.806
+describe it.
+</script></figure>
 <h3 id="chapter-2-give-one-agent-one-question">Give one agent one question</h3>
 <p>We want an answer before the design depends on it, and we want it cheaply. So one agent takes the <a href="#working-with-your-agents">spike</a> role and is given one line of the page, as it is written there.</p>
 <figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/plan-page.txt · 1 of its 60 lines</span></figcaption><pre>- Can a late reversal be mirrored without a balance going below zero? Spike.</pre></figure>
@@ -223,7 +786,248 @@ spike.mjs</pre></figure>
 <p>The page's other spike, whether a provider can open a wallet for each person, was not run. And nothing in Orthograph stops an app importing spike code. That it never does is a rule we keep by hand.</p></section>
 <section class="chapter" id="chapter-3-wrap"><header class="opener"><span class="num">03</span><span class="of">Part one · Before any code</span></header><h2 id="chapter-3">Describe it</h2><p class="ask">How does the plan become something the framework can check?</p>
 <p class="lede">The plan page is agreed as far as it goes. It names a wallet and its states, and it still has seven doubts on it, five of them marked blank. Now the page has to become something the framework can check, and the parts you have not decided must not be decided for you on the way.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/describe.jpg" src="films/describe.mp4" data-captions="films/describe.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/describe.jpg" src="films/describe.mp4" data-captions="films/describe.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.100
+The plan page is agreed, as far as it goes.
+
+2
+00:00:03.100 --> 00:00:04.360
+It names a wallet.
+
+3
+00:00:04.360 --> 00:00:06.116
+It still has doubts on it.
+
+4
+00:00:06.516 --> 00:00:08.136
+Now the page becomes a blueprint.
+
+5
+00:00:08.136 --> 00:00:12.078
+And what you haven't decided must not get decided on the way.
+
+6
+00:00:12.478 --> 00:00:14.498
+The designer doesn't start from an empty file.
+
+7
+00:00:14.498 --> 00:00:16.798
+It runs ortho add thing, wallet.
+
+8
+00:00:16.798 --> 00:00:19.698
+Then ortho add operation, wallet.
+
+9
+00:00:19.698 --> 00:00:20.592
+open.
+
+10
+00:00:20.992 --> 00:00:22.372
+The framework writes the frame.
+
+11
+00:00:22.372 --> 00:00:25.559
+Seven files for the thing, one for the operation.
+
+12
+00:00:25.959 --> 00:00:27.259
+None of them holds a decision.
+
+13
+00:00:27.259 --> 00:00:31.480
+Where a decision goes, there is a blank, and the blank says what is missing.
+
+14
+00:00:33.080 --> 00:00:34.385
+Now run ortho check.
+
+15
+00:00:34.785 --> 00:00:36.265
+The wallet has seven blanks.
+
+16
+00:00:36.265 --> 00:00:37.565
+Each one is a line:
+
+17
+00:00:37.565 --> 00:00:40.132
+a file, a line number, and the question.
+
+18
+00:00:40.732 --> 00:00:41.672
+What a wallet is.
+
+19
+00:00:41.672 --> 00:00:42.452
+Its states.
+
+20
+00:00:42.452 --> 00:00:44.052
+Who holds a role on it.
+
+21
+00:00:44.052 --> 00:00:45.556
+And four about opening one.
+
+22
+00:00:45.956 --> 00:00:47.156
+The model says it shorter.
+
+23
+00:00:47.156 --> 00:00:51.839
+The wallet is listed with no states, and two lines say what is unfinished.
+
+24
+00:00:53.439 --> 00:00:56.119
+Two of the seven are already answered on the plan page.
+
+25
+00:00:56.119 --> 00:00:59.698
+So the designer fills those two, in the page's words.
+
+26
+00:01:00.098 --> 00:01:00.958
+What a wallet is:
+
+27
+00:01:00.958 --> 00:01:03.844
+a handle's money, one for each claimed handle.
+
+28
+00:01:04.244 --> 00:01:04.884
+And its states:
+
+29
+00:01:04.884 --> 00:01:07.191
+opening, open, frozen, closed.
+
+30
+00:01:07.591 --> 00:01:08.091
+Check again.
+
+31
+00:01:08.091 --> 00:01:09.175
+Five blanks.
+
+32
+00:01:09.775 --> 00:01:11.115
+The designer stops there.
+
+33
+00:01:11.115 --> 00:01:14.495
+Who may open a wallet depends on a question you haven't answered.
+
+34
+00:01:14.495 --> 00:01:16.059
+So it stays a blank.
+
+35
+00:01:17.659 --> 00:01:19.099
+The check has a second complaint.
+
+36
+00:01:19.099 --> 00:01:20.839
+Drift, eight files.
+
+37
+00:01:20.839 --> 00:01:23.964
+The blueprint changed, so what was made from it is stale.
+
+38
+00:01:24.364 --> 00:01:25.727
+So run ortho generate.
+
+39
+00:01:25.727 --> 00:01:27.565
+It doesn't wait for the blanks.
+
+40
+00:01:27.965 --> 00:01:31.425
+The wallet gets its types, its page of docs and its table.
+
+41
+00:01:31.425 --> 00:01:35.917
+The unfinished operation is left out, and no handler is written for it.
+
+42
+00:01:36.317 --> 00:01:36.837
+Check again.
+
+43
+00:01:36.837 --> 00:01:37.517
+Types pass.
+
+44
+00:01:37.517 --> 00:01:38.617
+Rules pass.
+
+45
+00:01:38.617 --> 00:01:39.777
+Drift passes.
+
+46
+00:01:39.777 --> 00:01:42.177
+And check still fails, on five blanks.
+
+47
+00:01:42.177 --> 00:01:43.081
+That is right.
+
+48
+00:01:44.681 --> 00:01:47.421
+You read two changed lines, and a list of questions.
+
+49
+00:01:47.421 --> 00:01:50.892
+The count should go down only when you decide something.
+
+50
+00:01:51.292 --> 00:01:53.332
+Generate too early, and it goes wrong.
+
+51
+00:01:53.332 --> 00:01:59.115
+With the states still blank, generate wrote a types file that doesn't compile, and check said so.
+
+52
+00:01:59.515 --> 00:02:01.655
+And the check can't tell a decision from a guess.
+
+53
+00:02:01.655 --> 00:02:06.228
+When the count drops, ask which line of the plan each answer came from.
+
+54
+00:02:06.628 --> 00:02:07.708
+One honest note.
+
+55
+00:02:07.708 --> 00:02:11.348
+The recording filled those two blanks itself, in the plan's words.
+
+56
+00:02:11.348 --> 00:02:13.588
+No agent was filmed designing.
+
+57
+00:02:13.588 --> 00:02:15.608
+And leaving blanks is our practice.
+
+58
+00:02:15.608 --> 00:02:17.681
+Nothing enforces it yet.
+
+59
+00:02:18.281 --> 00:02:18.681
+Next:
+
+60
+00:02:18.681 --> 00:02:19.803
+say what done means.
+</script></figure>
 <h3 id="chapter-3-declare-what-the-page-names">Declare what the page names</h3>
 <p>We want the framework to hold the plan's nouns, and nothing more than the plan says. The designer does not write the <span class="canon" title="explained in the canon, docs/canon/blueprint.mdx">blueprint</span> from an empty file. It asks for each <span class="canon" title="explained in the canon, docs/canon/things.mdx">thing</span> and each <span class="canon" title="explained in the canon, docs/canon/operations.mdx">operation</span> by name, and the framework writes the frame.</p>
 <figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/describe-add-thing.txt · 4 of its 8 lines</span></figcaption><pre><b>$ ortho add thing wallet</b>
@@ -305,7 +1109,280 @@ check <span class="no">✘</span></pre></figure>
 <div class="part"><span>Part two</span><h2 class="part-title">Build it</h2></div>
 <section class="chapter" id="chapter-4-wrap"><header class="opener"><span class="num">04</span><span class="of">Part two · Build it</span></header><h2 id="chapter-4">Say what done means</h2><p class="ask">How will I know it's right without reading the code?</p>
 <p class="lede">An agent can write a handler in minutes. So the question is never whether it can build this. The question is how you will know it is right. The answer is to say what done means before anyone builds, and to have someone other than the builder say it.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/say-done.jpg" src="films/say-done.mp4" data-captions="films/say-done.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/say-done.jpg" src="films/say-done.mp4" data-captions="films/say-done.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.540
+An agent can write a handler in minutes.
+
+2
+00:00:02.540 --> 00:00:05.240
+So the question is never, can it build this.
+
+3
+00:00:05.240 --> 00:00:08.117
+The question is, how will you know it's right.
+
+4
+00:00:08.517 --> 00:00:11.417
+The answer is to say what done means before anyone builds.
+
+5
+00:00:11.417 --> 00:00:13.355
+And to have someone else say it.
+
+6
+00:00:13.955 --> 00:00:15.655
+In Orthograph, done is a journey:
+
+7
+00:00:15.655 --> 00:00:19.618
+a short story, told through real calls to the real system.
+
+8
+00:00:20.018 --> 00:00:21.538
+One agent writes the journeys.
+
+9
+00:00:21.538 --> 00:00:22.918
+We call it the author.
+
+10
+00:00:22.918 --> 00:00:27.101
+A different agent builds until they pass, and it may not change them.
+
+11
+00:00:28.701 --> 00:00:30.661
+Here's the app we build across this series:
+
+12
+00:00:30.661 --> 00:00:31.581
+Plugged In.
+
+13
+00:00:31.581 --> 00:00:35.256
+A person claims a name, and gets a public page of links.
+
+14
+00:00:35.656 --> 00:00:37.976
+The stubs are made while planning, before anyone builds.
+
+15
+00:00:37.976 --> 00:00:40.036
+The designer picks one thing:
+
+16
+00:00:40.036 --> 00:00:40.835
+the handle.
+
+17
+00:00:41.235 --> 00:00:42.275
+And runs one command.
+
+18
+00:00:42.275 --> 00:00:44.389
+ortho add journeys handle.
+
+19
+00:00:44.789 --> 00:00:45.949
+Seven files appear.
+
+20
+00:00:45.949 --> 00:00:52.853
+One for each path through the handle's states, one for each role, and one for each error an operation declares.
+
+21
+00:00:53.253 --> 00:00:54.273
+Look inside one.
+
+22
+00:00:54.273 --> 00:00:57.353
+A stranger tries to release a name that isn't theirs.
+
+23
+00:00:57.353 --> 00:01:02.183
+The stub already knows who may call, and that this caller must be refused.
+
+24
+00:01:02.583 --> 00:01:04.243
+What it can't know, it leaves blank.
+
+25
+00:01:04.243 --> 00:01:09.067
+And ortho check lists every blank as a question, with its file and its line.
+
+26
+00:01:10.667 --> 00:01:14.227
+The author fills the blanks, and writes the stories the stubs couldn't guess.
+
+27
+00:01:14.227 --> 00:01:16.071
+This is the one you read.
+
+28
+00:01:16.471 --> 00:01:17.131
+Claim a handle.
+
+29
+00:01:17.131 --> 00:01:19.531
+Eight steps, and each one is a sentence.
+
+30
+00:01:19.531 --> 00:01:22.611
+A name nobody has claimed does not resolve.
+
+31
+00:01:22.611 --> 00:01:24.471
+Aaron claims the free name.
+
+32
+00:01:24.471 --> 00:01:27.725
+Aaron cannot claim a second name while he holds one.
+
+33
+00:01:28.325 --> 00:01:31.225
+Under each sentence is a call, and then what must be true afterwards.
+
+34
+00:01:31.225 --> 00:01:32.465
+The answer.
+
+35
+00:01:32.465 --> 00:01:33.425
+The event.
+
+36
+00:01:33.425 --> 00:01:34.265
+The state.
+
+37
+00:01:34.265 --> 00:01:35.985
+The spans in the trace.
+
+38
+00:01:36.385 --> 00:01:37.385
+You don't check the code.
+
+39
+00:01:37.385 --> 00:01:41.325
+You read the sentences, and say yes, or no, or you've missed one.
+
+40
+00:01:42.925 --> 00:01:44.925
+Now the author has to prove something odd:
+
+41
+00:01:44.925 --> 00:01:46.661
+that its journeys can fail.
+
+42
+00:01:47.061 --> 00:01:51.804
+ortho prove, with the flag empty, runs every journey on handlers that do nothing.
+
+43
+00:01:52.204 --> 00:01:52.964
+Seven journeys.
+
+44
+00:01:52.964 --> 00:01:54.244
+Fifty-six steps.
+
+45
+00:01:54.244 --> 00:01:55.422
+Fifty of them red.
+
+46
+00:01:56.122 --> 00:01:57.282
+That's the result you want.
+
+47
+00:01:57.282 --> 00:01:59.690
+A check that can't fail proves nothing.
+
+48
+00:02:00.090 --> 00:02:01.990
+And every red line says what it expected.
+
+49
+00:02:01.990 --> 00:02:03.110
+Expected:
+
+50
+00:02:03.110 --> 00:02:05.210
+refused, with profile not found.
+
+51
+00:02:05.210 --> 00:02:06.150
+Got:
+
+52
+00:02:06.150 --> 00:02:07.840
+failed, with five hundred.
+
+53
+00:02:08.240 --> 00:02:11.800
+Six steps are green already, marked proved by the description.
+
+54
+00:02:11.800 --> 00:02:17.640
+The blueprint says who may call, so the runtime refuses a stranger before any handler runs.
+
+55
+00:02:17.640 --> 00:02:19.866
+Nobody has to build those.
+
+56
+00:02:21.466 --> 00:02:24.326
+So before a single handler exists, you hold two things.
+
+57
+00:02:24.326 --> 00:02:26.166
+The stories, which you agreed.
+
+58
+00:02:26.166 --> 00:02:28.851
+And a red run, which shows they bite.
+
+59
+00:02:29.251 --> 00:02:30.591
+Three things go wrong here.
+
+60
+00:02:30.591 --> 00:02:35.691
+A journey that's green on the empty run, and isn't proved by the description, can't fail.
+
+61
+00:02:35.691 --> 00:02:36.974
+Send it back.
+
+62
+00:02:37.374 --> 00:02:41.554
+An author who is also the builder writes down what the code does, not what you meant.
+
+63
+00:02:41.554 --> 00:02:43.086
+Use two sessions.
+
+64
+00:02:43.486 --> 00:02:44.666
+And be plain about this one:
+
+65
+00:02:44.666 --> 00:02:47.986
+nothing in Orthograph enforces that split for you yet.
+
+66
+00:02:47.986 --> 00:02:52.014
+It's a way of working, and you keep it by how you hand out the work.
+
+67
+00:02:52.714 --> 00:02:53.114
+Next:
+
+68
+00:02:53.114 --> 00:02:55.366
+a builder gets one brief, and climbs.
+</script></figure>
 <h3 id="chapter-4-done-is-a-story">Done is a story</h3>
 <p>In Orthograph, done is a <span class="canon" title="explained in the canon, docs/canon/orthograph.mdx">journey</span>: a short story with a cast, told through real calls to the real system. Each step is a sentence you can say yes or no to, and under the sentence is a call and what must be true once it returns.</p>
 <figure class="rec"><figcaption><span class="kind">quoted</span><span>examples/plugged-in/journeys/claim-a-handle.ts · lines 37 to 44</span></figcaption><pre>    s.step(
@@ -324,11 +1401,13 @@ wrote blueprint/journeys/handle-claim-created-in-claimed.ts
 wrote blueprint/journeys/handle-release-claimed-to-released.ts
 wrote blueprint/journeys/handle-release-refused-from-released.ts
 wrote blueprint/journeys/handle-claim-refused-anonymous.ts
+wrote blueprint/journeys/handle-claim-refused-handle-taken.ts
+wrote blueprint/journeys/handle-claim-refused-handle-already-owned.ts
 wrote blueprint/journeys/handle-release-refused-not-handleOwner.ts
 wrote blueprint/journeys/handle-resolve-allowed-anyone.ts
 wrote blueprint/journeys/handle-resolve-refused-handle-not-found.ts</pre></figure>
-<p>Seven files: one for each path through the handle's states, one for each role, and one for each error an operation declares. A stub already knows who may call and who must be turned away. What it cannot know, it leaves blank, and the check lists every blank as a question, with its file and its line. A blank is a question for you, never a default.</p>
-<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/stubs-check.txt · 6 of its 39 lines</span></figcaption><pre><b>$ ortho check</b>
+<p>Nine files: one for each path through the handle's states, one for each role, one for each error an operation declares, and one for each refusal a rule gives, such as a name that is already taken. A stub already knows who may call and who must be turned away. What it cannot know, it leaves blank, and the check lists every blank as a question, with its file and its line. A blank is a question for you, never a default.</p>
+<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/stubs-check.txt · 6 of its 45 lines</span></figcaption><pre><b>$ ortho check</b>
 journeys/handle-claim-created-in-claimed has 4 blanks
   blueprint/journeys/handle-claim-created-in-claimed.ts:14  a starting world where handle.claim can run
   blueprint/journeys/handle-claim-created-in-claimed.ts:18  handle.claim's payload: name
@@ -360,17 +1439,290 @@ journey claim a handle <span class="no">✘</span> 0/8 steps
 <p>A journey that is green on the empty run, and is not marked as proved by the description, cannot fail. It proves nothing, and it goes back to the author.</p>
 <p>A stub is sometimes left as it was written. The check keeps listing its blanks, and <code>ortho model</code> shows the file as unfinished, until someone answers them.</p>
 <p>Stories tend to cover the path where everything works. Count the refusals: every one the blueprint declares needs a step that causes it. The full run counts them for you, on its coverage line, in the next chapter.</p>
-<p>The journey commands are rough in four places today, and they are being fixed. A refusal that a rule gives, such as a name already taken, gets no stub, so the author writes that story unprompted. The check lists blanks only inside the blueprint's folder; Plugged In keeps its finished journeys in a folder of their own beside it, and both are read. Adding stubs turns the check red, which is right while they are blanks, and it also reports drift in what was generated until that is made again. And adding one journey by name writes a stub with a blank cast, and every command that reads the model then stops with an error, where it should ask a question, until the cast is filled in.</p>
+<p>The journey commands are rough in three places today, and they are being fixed. The check lists blanks only inside the blueprint's folder; Plugged In keeps its finished journeys in a folder of their own beside it, and both are read. Adding stubs turns the check red, which is right while they are blanks, and it also reports drift in what was generated until that is made again. And adding one journey by name writes a stub with a blank cast, and every command that reads the model then stops with an error, where it should ask a question, until the cast is filled in.</p>
 <figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/stub-one-check.txt · 2 of its 3 lines</span></figcaption><pre><b>$ ortho check</b>
 exit 1</pre></figure>
 <h3 id="chapter-4-how-this-stands">How this stands</h3>
 <p>Every command here runs today, and everything printed was recorded on Plugged In on 26 November 2026. That a different agent writes the stories is how we work in this repository. No command starts an agent in a role, and nothing in a new app stops a builder editing a journey: you keep the split by how you hand out the work.</p></section>
 <section class="chapter" id="chapter-5-wrap"><header class="opener"><span class="num">05</span><span class="of">Part two · Build it</span></header><h2 id="chapter-5">Build until green</h2><p class="ask">How do I hand work to an agent and get back something proved?</p>
 <p class="lede">The journeys are agreed, and every one of them is red. Now an agent has to write the code that turns them green, and you have to believe the result without reading that code.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/build-green.jpg" src="films/build-green.mp4" data-captions="films/build-green.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/build-green.jpg" src="films/build-green.mp4" data-captions="films/build-green.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.907
+The journeys are agreed, and they're red.
+
+2
+00:00:02.907 --> 00:00:03.906
+Now someone builds.
+
+3
+00:00:04.306 --> 00:00:05.246
+You don't write a task.
+
+4
+00:00:05.246 --> 00:00:08.166
+You run ortho brief, with the name of one operation:
+
+5
+00:00:08.166 --> 00:00:09.006
+handle.
+
+6
+00:00:09.006 --> 00:00:09.784
+claim.
+
+7
+00:00:10.184 --> 00:00:12.844
+The brief is everything a builder needs, and nothing else.
+
+8
+00:00:12.844 --> 00:00:14.504
+The one file to write.
+
+9
+00:00:14.504 --> 00:00:15.784
+The files to read.
+
+10
+00:00:15.784 --> 00:00:17.381
+What the handler must do.
+
+11
+00:00:17.781 --> 00:00:19.061
+The paths it must not touch:
+
+12
+00:00:19.061 --> 00:00:21.951
+the blueprint, the journeys, anything generated.
+
+13
+00:00:22.351 --> 00:00:23.231
+And what done means:
+
+14
+00:00:23.231 --> 00:00:25.271
+prove passes, and check passes.
+
+15
+00:00:25.271 --> 00:00:27.514
+Hand it over exactly as printed.
+
+16
+00:00:29.114 --> 00:00:31.214
+The builder doesn't start from an empty file.
+
+17
+00:00:31.214 --> 00:00:33.814
+Generate has already written a scaffold:
+
+18
+00:00:33.814 --> 00:00:36.892
+the frame, with a blank where the behaviour goes.
+
+19
+00:00:37.292 --> 00:00:37.912
+First run.
+
+20
+00:00:37.912 --> 00:00:39.732
+It proves only the one journey:
+
+21
+00:00:39.732 --> 00:00:40.754
+claim a handle.
+
+22
+00:00:41.154 --> 00:00:43.614
+Four of eight steps pass before a line is written.
+
+23
+00:00:43.614 --> 00:00:46.530
+Those are the steps that never needed this handler.
+
+24
+00:00:46.930 --> 00:00:50.850
+And one of the failures names the blank the handler reached, and the file it's in.
+
+25
+00:00:50.850 --> 00:00:52.746
+That's where the builder goes.
+
+26
+00:00:54.346 --> 00:00:55.286
+So it writes the work.
+
+27
+00:00:55.286 --> 00:00:57.206
+Two records, saved together:
+
+28
+00:00:57.206 --> 00:00:59.282
+the handle, and its public page.
+
+29
+00:00:59.682 --> 00:01:00.222
+Prove again.
+
+30
+00:01:00.222 --> 00:01:01.463
+Still four of eight.
+
+31
+00:01:02.063 --> 00:01:02.903
+The number didn't move.
+
+32
+00:01:02.903 --> 00:01:03.883
+But read the reasons.
+
+33
+00:01:03.883 --> 00:01:04.723
+Before:
+
+34
+00:01:04.723 --> 00:01:05.743
+the server died.
+
+35
+00:01:05.743 --> 00:01:06.503
+Now:
+
+36
+00:01:06.503 --> 00:01:08.531
+answered, without making its move.
+
+37
+00:01:08.931 --> 00:01:11.851
+The handler saved the records and forgot to change the state.
+
+38
+00:01:11.851 --> 00:01:14.071
+So there's no event, and no state.
+
+39
+00:01:14.071 --> 00:01:16.311
+The failure says exactly that.
+
+40
+00:01:16.711 --> 00:01:18.431
+This is what climbing looks like.
+
+41
+00:01:18.431 --> 00:01:20.611
+Not every rung turns a light green.
+
+42
+00:01:20.611 --> 00:01:23.434
+But every rung changes what fails first.
+
+43
+00:01:25.034 --> 00:01:25.554
+One line:
+
+44
+00:01:25.554 --> 00:01:26.459
+make the move.
+
+45
+00:01:26.859 --> 00:01:27.399
+Prove again.
+
+46
+00:01:27.399 --> 00:01:28.293
+Eight of eight.
+
+47
+00:01:28.993 --> 00:01:30.073
+But look at the last line.
+
+48
+00:01:30.073 --> 00:01:32.593
+Prove is still red, with five failing.
+
+49
+00:01:32.593 --> 00:01:36.548
+One journey doesn't reach every operation, so coverage fails.
+
+50
+00:01:36.948 --> 00:01:38.708
+Green on one journey is not done.
+
+51
+00:01:38.708 --> 00:01:40.735
+The builder runs the whole proof.
+
+52
+00:01:41.135 --> 00:01:41.895
+Seven journeys.
+
+53
+00:01:41.895 --> 00:01:43.215
+Fifty-six steps.
+
+54
+00:01:43.215 --> 00:01:45.915
+Nine evals for each of seven operations.
+
+55
+00:01:45.915 --> 00:01:47.155
+Prove passes.
+
+56
+00:01:47.155 --> 00:01:48.624
+Then check passes.
+
+57
+00:01:50.224 --> 00:01:51.404
+You read none of that code.
+
+58
+00:01:51.404 --> 00:01:55.492
+You read one line for each journey, and the last line of the full run.
+
+59
+00:01:55.892 --> 00:01:59.652
+When a builder says a journey is wrong, it stops, and tells the author.
+
+60
+00:01:59.652 --> 00:02:02.758
+It doesn't edit the story, and it doesn't work round it.
+
+61
+00:02:03.158 --> 00:02:08.031
+When a handler starts deciding things the blueprint never said, that's a finding for review.
+
+62
+00:02:08.431 --> 00:02:09.491
+One honest note.
+
+63
+00:02:09.491 --> 00:02:11.411
+What you just watched is a replay.
+
+64
+00:02:11.411 --> 00:02:15.631
+We put one handler at three points, and recorded the real run at each.
+
+65
+00:02:15.631 --> 00:02:18.021
+No agent was filmed writing it.
+
+66
+00:02:18.621 --> 00:02:20.961
+The loop is real, and an agent can run it alone.
+
+67
+00:02:20.961 --> 00:02:22.021
+Next:
+
+68
+00:02:22.021 --> 00:02:24.486
+run the app, break it, and read the trace.
+</script></figure>
 <h3 id="chapter-5-hand-over-one-brief">Hand over one brief</h3>
 <p>We want the builder to know exactly two things: what it may write, and when it is done. You don't write that task yourself. You ask for it, by the name of one operation.</p>
-<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/brief.txt · 14 of its 29 lines</span></figcaption><pre><b>$ ortho brief handle.claim</b>
+<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/brief.txt · 14 of its 30 lines</span></figcaption><pre><b>$ ortho brief handle.claim</b>
 brief handle.claim
 Write   src/handle/claim.ts, and nothing else.
 Don't touch
@@ -386,26 +1738,27 @@ Done when
   ortho check passes</pre></figure>
 <p>The brief also says what to read and what the <span class="canon" title="explained in the canon, docs/canon/handlers.mdx">handler</span> must do, left out here. One line of it tells the builder never to refuse a taken name itself, because the runtime does that from a rule. Hand it over as it is printed. Anything you add in your own words is something the builder can misread.</p>
 <h3 id="chapter-5-start-from-the-scaffold">Start from the scaffold</h3>
-<p>The builder never starts from an empty file. The framework has already written the frame of the handler, with a blank where the behaviour goes. So the first thing the builder does is run the one journey, and read what fails.</p>
-<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/climb-0-prove.txt · 4 of its 92 lines</span></figcaption><pre><b>$ ortho prove --only "claim a handle"</b>
+<p>The builder never starts from an empty file. The framework has already written the frame of the handler, with a blank where the behaviour goes. So the first thing the builder does is run the one journey, by the name it declares or by its file, and read what fails.</p>
+<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/climb-0-prove.txt · 4 of its 93 lines</span></figcaption><pre><b>$ ortho prove --only "claim a handle"</b>
 journey claim a handle <span class="no">✘</span> 4/8 steps
   <span class="no">✘</span> "aaron claims the free name": the server died: BlankReached: record: the work this step does
   <span class="no">✘</span> "aaron claims the free name": handler src/handle/claim.ts, declared in blueprint/things/handle/verbs/claim.ts (handle.claim)</pre></figure>
 <p>Four of eight steps pass before a line is written. Those are the steps that never needed this handler. One failure names the blank the handler reached, and the next names the file it is in. That is where the builder goes.</p>
 <h3 id="chapter-5-same-count-a-different-failure">Same count, a different failure</h3>
 <p>The builder writes the work: two records, saved together, the handle and its public page. Then it runs the journey again.</p>
-<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/climb-1-prove.txt · 5 of its 91 lines</span></figcaption><pre><b>$ ortho prove --only "claim a handle"</b>
+<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/climb-1-prove.txt · 5 of its 92 lines</span></figcaption><pre><b>$ ortho prove --only "claim a handle"</b>
 journey claim a handle <span class="no">✘</span> 4/8 steps
   <span class="no">✘</span> "aaron claims the free name": expected HandleClaimed, journal has nothing
-  <span class="no">✘</span> "aaron claims the free name": hdl_rec9a826nfjzxocb is in no state, expected "claimed"
+  <span class="no">✘</span> "aaron claims the free name": hdl_y1y7uv6vhtmrfudv is in no state, expected "claimed"
 handle.claim machine path <span class="no">✘</span> claim-a-handle "aaron claims the free name": answered without making its move claim</pre></figure>
 <p>The number has not moved, and the builder has. Before, the server died. Now it answered without making its move: the records were saved and the state never changed. Not every rung turns a light green. Every rung changes what fails first.</p>
 <h3 id="chapter-5-green-on-one-journey-is-not-done">Green on one journey is not done</h3>
-<p>One line makes the move, and the journey passes.</p>
-<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/climb-2-prove.txt · 3 of its 76 lines</span></figcaption><pre><b>$ ortho prove --only "claim a handle"</b>
+<p>One line makes the move, and the journey passes, and so does the run.</p>
+<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/climb-2-prove.txt · 4 of its 76 lines</span></figcaption><pre><b>$ ortho prove --only "claim a handle"</b>
 journey claim a handle <span class="ok">✔</span> 8/8 steps
-prove <span class="no">✘</span> 5 failing</pre></figure>
-<p>The last line is still red, and it is right to be. One journey does not reach every operation, so the proof's coverage fails. The builder finishes by running all of it, and then the check.</p>
+ran 1 of 7 journeys (--only): coverage is judged by the whole run, ortho prove; 5 operations above not reached in full by this one
+prove <span class="ok">✔</span></pre></figure>
+<p>Read the line before the verdict. One journey does not reach every operation, so this run does not judge coverage: it says so, and points at the whole run. The builder finishes by running all of it, and then the check.</p>
 <figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/prove.txt · 5 of its 80 lines</span></figcaption><pre><b>$ ortho prove</b>
 journey claim a handle <span class="ok">✔</span> 8/8 steps
 handle.claim 9 evals <span class="ok">✔</span> …
@@ -425,10 +1778,259 @@ check <span class="ok">✔</span></pre></figure>
 <p>Everything printed above was recorded on Plugged In. The climb is a replay: we put one handler at three points and recorded the real run at each, and no agent was filmed writing it. That a builder may touch one handler and nothing else is how we work in this repository. Nothing in Orthograph enforces it for you yet.</p></section>
 <section class="chapter" id="chapter-6-wrap"><header class="opener"><span class="num">06</span><span class="of">Part two · Build it</span></header><h2 id="chapter-6">Review without reading the code</h2><p class="ask">Is this change what I asked for, and nothing more?</p>
 <p class="lede">A change has come back. You asked for two small things about claiming a name: say what it does more plainly, and hold it to a hundred milliseconds where it had a hundred and fifty. Nine files changed. Is this what you asked for, and nothing more? You should not have to read nine files to find out.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/review.jpg" src="films/review.mp4" data-captions="films/review.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/review.jpg" src="films/review.mp4" data-captions="films/review.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:01.920
+A change has come back.
+
+2
+00:00:01.920 --> 00:00:04.920
+You asked for two small things about claiming a name:
+
+3
+00:00:04.920 --> 00:00:08.058
+a plainer description, and a tighter time budget.
+
+4
+00:00:08.458 --> 00:00:09.518
+Nine files changed.
+
+5
+00:00:09.518 --> 00:00:11.835
+You should not have to read nine files.
+
+6
+00:00:12.235 --> 00:00:13.775
+So the change goes to a reviewer:
+
+7
+00:00:13.775 --> 00:00:15.858
+an agent that wrote none of it.
+
+8
+00:00:16.258 --> 00:00:17.498
+It is given two things.
+
+9
+00:00:17.498 --> 00:00:20.278
+The change, and the brief the change was made from.
+
+10
+00:00:20.278 --> 00:00:23.107
+Here, the brief is your two sentences.
+
+11
+00:00:23.507 --> 00:00:24.307
+It touches nothing.
+
+12
+00:00:24.307 --> 00:00:27.234
+It reads, it runs commands, and it reports.
+
+13
+00:00:28.834 --> 00:00:33.550
+The reviewer starts with the blueprint's part of the change, because that is the part you will read.
+
+14
+00:00:33.950 --> 00:00:35.610
+Two lines out, two lines in.
+
+15
+00:00:35.610 --> 00:00:36.530
+The description.
+
+16
+00:00:36.530 --> 00:00:37.770
+And the budget:
+
+17
+00:00:37.770 --> 00:00:40.721
+a hundred and fifty milliseconds becomes a hundred.
+
+18
+00:00:41.121 --> 00:00:42.781
+Then every file the change touched.
+
+19
+00:00:42.781 --> 00:00:44.141
+One is the blueprint's.
+
+20
+00:00:44.141 --> 00:00:45.719
+Eight are generated.
+
+21
+00:00:46.119 --> 00:00:46.759
+No handler.
+
+22
+00:00:46.759 --> 00:00:47.819
+No journey.
+
+23
+00:00:47.819 --> 00:00:49.619
+And nobody reads the eight:
+
+24
+00:00:49.619 --> 00:00:53.100
+a check will say whether they are exactly what the blueprint makes.
+
+25
+00:00:54.700 --> 00:00:55.100
+Next:
+
+26
+00:00:54.960 --> 00:00:56.220
+how far does the change reach?
+
+27
+00:00:56.220 --> 00:00:57.660
+One command says:
+
+28
+00:00:57.660 --> 00:00:59.010
+ortho impact.
+
+29
+00:00:59.410 --> 00:01:02.630
+It compares with the record the last full proof left on this machine.
+
+30
+00:01:02.630 --> 00:01:03.950
+Before the change:
+
+31
+00:01:03.950 --> 00:01:07.276
+nothing stale, and seven operations proven.
+
+32
+00:01:07.876 --> 00:01:11.076
+With the change in place, it names the declaration that changed:
+
+33
+00:01:11.076 --> 00:01:11.996
+handle.
+
+34
+00:01:11.996 --> 00:01:14.596
+claim, its budget and its description.
+
+35
+00:01:14.996 --> 00:01:16.576
+And it names what that unproved.
+
+36
+00:01:16.576 --> 00:01:18.156
+One operation is stale.
+
+37
+00:01:18.156 --> 00:01:19.657
+The other six stand.
+
+38
+00:01:21.257 --> 00:01:23.357
+A report that says it passes is a claim.
+
+39
+00:01:23.357 --> 00:01:26.052
+So the reviewer runs the whole proof itself.
+
+40
+00:01:26.452 --> 00:01:27.592
+Seven journeys pass.
+
+41
+00:01:27.592 --> 00:01:31.452
+And claim's performance line is now measured against the new budget:
+
+42
+00:01:31.452 --> 00:01:33.082
+a hundred milliseconds.
+
+43
+00:01:33.482 --> 00:01:34.082
+Then the check.
+
+44
+00:01:34.082 --> 00:01:35.082
+Drift passes.
+
+45
+00:01:35.082 --> 00:01:38.989
+That one line is why nobody read the eight generated files.
+
+46
+00:01:39.389 --> 00:01:40.629
+Ask impact once more.
+
+47
+00:01:40.629 --> 00:01:41.569
+Nothing stale.
+
+48
+00:01:41.569 --> 00:01:44.001
+Seven proven, as before the change.
+
+49
+00:01:45.601 --> 00:01:48.521
+You read four lines of blueprint, and the reviewer's findings.
+
+50
+00:01:48.521 --> 00:01:52.676
+A finding names a file, a line, and what would make it right.
+
+51
+00:01:53.076 --> 00:01:58.972
+When a change arrives before generate was run, the check fails, and names every file that is behind.
+
+52
+00:01:59.372 --> 00:02:05.032
+When an operation goes stale and no line says what changed, the code moved and the blueprint did not.
+
+53
+00:02:05.032 --> 00:02:07.782
+That is when the reviewer reads the handler.
+
+54
+00:02:08.182 --> 00:02:09.762
+And ask impact before you prove.
+
+55
+00:02:09.762 --> 00:02:13.840
+A full proof writes a new record, and after it nothing is stale.
+
+56
+00:02:14.240 --> 00:02:14.920
+Honest notes.
+
+57
+00:02:14.920 --> 00:02:16.120
+This was staged:
+
+58
+00:02:16.120 --> 00:02:20.060
+the recording made the change, and no reviewer was filmed reading it.
+
+59
+00:02:20.060 --> 00:02:22.160
+And no command checks who wrote what.
+
+60
+00:02:22.160 --> 00:02:23.615
+That is practice.
+
+61
+00:02:24.215 --> 00:02:24.615
+Next:
+
+62
+00:02:24.595 --> 00:02:26.756
+run the app, break it, and read the trace.
+</script></figure>
 <h3 id="chapter-6-give-it-to-someone-who-wrote-none-of-it">Give it to someone who wrote none of it</h3>
 <p>We want the change judged by an agent with nothing to defend. So the reviewer is a fresh agent that had no part in the work, and it is given two things: the change, and the brief the change was made from. Here the brief is your two sentences. Had the change been a handler, the brief would be what <code>ortho brief</code> printed in the last chapter, and one line of it would be the reviewer's first test.</p>
-<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/brief.txt · 1 of its 29 lines</span></figcaption><pre>Write   src/handle/claim.ts, and nothing else.</pre></figure>
+<figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/brief.txt · 1 of its 30 lines</span></figcaption><pre>Write   src/handle/claim.ts, and nothing else.</pre></figure>
 <p>The reviewer touches nothing. It reads, it runs commands, and it reports.</p>
 <h3 id="chapter-6-start-with-the-part-you-can-read">Start with the part you can read</h3>
 <p>The reviewer opens the blueprint's part of the change first, because that is the part you will read.</p>
@@ -485,7 +2087,232 @@ stale handle.claim</pre></figure>
 <div class="part"><span>Part three</span><h2 class="part-title">Run it</h2></div>
 <section class="chapter" id="chapter-7-wrap"><header class="opener"><span class="num">07</span><span class="of">Part three · Run it</span></header><h2 id="chapter-7">Run it, break it, read the trace</h2><p class="ask">When something looks wrong, how do I find out why?</p>
 <p class="lede">Everything is green. So you try the app yourself, and something looks wrong. You want to know why, and you do not want to read the code to find out.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/read-trace.jpg" src="films/read-trace.mp4" data-captions="films/read-trace.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/read-trace.jpg" src="films/read-trace.mp4" data-captions="films/read-trace.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:01.620
+Everything is green.
+
+2
+00:00:01.620 --> 00:00:04.340
+So you try it yourself, and something looks wrong.
+
+3
+00:00:04.740 --> 00:00:07.900
+ortho dev runs the app on your machine, with a local world.
+
+4
+00:00:07.900 --> 00:00:09.455
+No cloud account.
+
+5
+00:00:09.855 --> 00:00:11.675
+Plugged In has no screens yet.
+
+6
+00:00:11.675 --> 00:00:15.799
+So we use the command line tool that was generated from the blueprint.
+
+7
+00:00:16.199 --> 00:00:17.119
+Aaron claims a name:
+
+8
+00:00:17.119 --> 00:00:17.959
+first page.
+
+9
+00:00:17.959 --> 00:00:20.110
+It answers with a handle's id.
+
+10
+00:00:21.710 --> 00:00:23.179
+Then he claims a second name.
+
+11
+00:00:23.879 --> 00:00:24.559
+Refused.
+
+12
+00:00:24.559 --> 00:00:27.119
+A code, HN-002, and a name:
+
+13
+00:00:27.119 --> 00:00:28.698
+handle already owned.
+
+14
+00:00:29.098 --> 00:00:29.758
+Is that a bug?
+
+15
+00:00:29.758 --> 00:00:30.798
+You don't have to know.
+
+16
+00:00:30.798 --> 00:00:32.118
+You say what you saw:
+
+17
+00:00:32.118 --> 00:00:34.458
+I asked for a second name, and it said no.
+
+18
+00:00:34.458 --> 00:00:36.497
+And you hand that to your agent.
+
+19
+00:00:38.097 --> 00:00:40.717
+The agent doesn't guess, and it doesn't open the handler.
+
+20
+00:00:40.717 --> 00:00:44.537
+It makes the same call again, and keeps one thing from the answer:
+
+21
+00:00:44.537 --> 00:00:46.797
+the trace's id, in a header.
+
+22
+00:00:47.197 --> 00:00:47.997
+Then one command.
+
+23
+00:00:47.997 --> 00:00:50.746
+ortho telemetry trace, with that id.
+
+24
+00:00:51.146 --> 00:00:53.186
+The trace is everything that one call did.
+
+25
+00:00:53.186 --> 00:00:54.806
+Start at the top span.
+
+26
+00:00:54.806 --> 00:00:55.986
+The operation.
+
+27
+00:00:55.986 --> 00:00:57.286
+How long it took.
+
+28
+00:00:57.286 --> 00:01:00.112
+And the word refused, with the refusal's name.
+
+29
+00:01:00.512 --> 00:01:01.692
+The next line is the cause.
+
+30
+00:01:01.692 --> 00:01:03.892
+A rule, by its name in the blueprint:
+
+31
+00:01:03.892 --> 00:01:05.653
+one name per person.
+
+32
+00:01:06.053 --> 00:01:07.033
+And look at what's missing.
+
+33
+00:01:07.033 --> 00:01:08.673
+The record step ran.
+
+34
+00:01:08.673 --> 00:01:09.893
+There is no commit.
+
+35
+00:01:09.893 --> 00:01:13.795
+The rule was checked after the work, and before anything was saved.
+
+36
+00:01:14.195 --> 00:01:15.815
+Beside it, a call that was answered.
+
+37
+00:01:15.815 --> 00:01:17.863
+Its last step is the commit.
+
+38
+00:01:19.463 --> 00:01:21.723
+So the refusal didn't come from the handler at all.
+
+39
+00:01:21.723 --> 00:01:24.142
+It came from six lines of blueprint.
+
+40
+00:01:24.542 --> 00:01:26.822
+A person holds one claimed name at a time.
+
+41
+00:01:26.822 --> 00:01:29.522
+Unique on the owner, while the handle is claimed.
+
+42
+00:01:29.522 --> 00:01:30.742
+Refuse with:
+
+43
+00:01:30.742 --> 00:01:32.073
+handle already owned.
+
+44
+00:01:32.473 --> 00:01:36.200
+From what you saw on screen, to the line that gave it, in two commands.
+
+45
+00:01:37.800 --> 00:01:40.280
+Now the question is yours, and it's a real one.
+
+46
+00:01:40.280 --> 00:01:42.546
+Should a person hold only one name?
+
+47
+00:01:42.946 --> 00:01:45.766
+If yes, the app is right, and the message needs work.
+
+48
+00:01:45.766 --> 00:01:49.042
+If no, you change the rule, and that's a later chapter.
+
+49
+00:01:49.442 --> 00:01:50.762
+Two things to watch for.
+
+50
+00:01:50.762 --> 00:01:53.702
+Refused means a declared answer, with a code.
+
+51
+00:01:53.702 --> 00:01:57.162
+A defect is the server failing, and it's marked as one.
+
+52
+00:01:57.162 --> 00:01:59.193
+Don't read one as the other.
+
+53
+00:01:59.593 --> 00:02:03.709
+And if an explanation doesn't name a line of the blueprint, ask for the trace.
+
+54
+00:02:04.309 --> 00:02:05.689
+Two parts are missing today.
+
+55
+00:02:05.689 --> 00:02:12.189
+No command signs a test person in to a local app, so the recording asks the local world's own door.
+
+56
+00:02:12.189 --> 00:02:15.668
+And the generated tool doesn't print the trace's id.
+</script></figure>
 <h3 id="chapter-7-run-it-and-say-what-you-saw">Run it, and say what you saw</h3>
 <p>One command runs the app on your machine, with a local world and no cloud account.</p>
 <figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/dev.txt · 1 of its 2 lines</span></figcaption><pre><b>$ ortho dev --port 4517</b></pre></figure>
@@ -528,7 +2355,224 @@ export const oneNamePerPerson = Blueprint.invariant.unique(Handle.fields.owner, 
 <p>Running the app, calling it and printing a trace all run today, and everything above was recorded on Plugged In. Two parts are missing. No command signs a test person in to a local app, so the recording asked the local world's own door for a session, as journeys do. And the generated command line tool prints a refusal's code and not its trace's id, which is why the agent repeats the call to read the id from the answer.</p></section>
 <section class="chapter" id="chapter-8-wrap"><header class="opener"><span class="num">08</span><span class="of">Part three · Run it</span></header><h2 id="chapter-8">Stage it</h2><p class="ask">How does it get from my machine to a real address?</p>
 <p class="lede">Plugged In is green on your machine, and you have run it there and read a trace. Nobody else can reach it. To give it a real address, something has to be made in a cloud account that you pay for, and what runs there has to be the thing that was proved, not something built again on the way. You want to see both before anything is made.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/stage.jpg" src="films/stage.mp4" data-captions="films/stage.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/stage.jpg" src="films/stage.mp4" data-captions="films/stage.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.260
+Plugged In is green on your machine.
+
+2
+00:00:02.260 --> 00:00:04.056
+Nobody else can reach it.
+
+3
+00:00:04.456 --> 00:00:08.616
+To give it a real address, something has to be made in a cloud account you pay for.
+
+4
+00:00:08.616 --> 00:00:11.172
+You want to see what, before it is made.
+
+5
+00:00:11.572 --> 00:00:13.692
+Staging is one short file in the blueprint.
+
+6
+00:00:13.692 --> 00:00:17.244
+One server, one database, and real sign-in.
+
+7
+00:00:17.644 --> 00:00:20.404
+It also needs a value for every secret the app declares.
+
+8
+00:00:20.404 --> 00:00:21.724
+So we ask.
+
+9
+00:00:21.724 --> 00:00:23.472
+Plugged In declares none.
+
+10
+00:00:25.072 --> 00:00:28.412
+A staging in the cloud is made for one run, and you name the run.
+
+11
+00:00:28.412 --> 00:00:29.985
+Here it is demo1.
+
+12
+00:00:30.385 --> 00:00:33.285
+We run ortho env up staging, with the word plan.
+
+13
+00:00:33.285 --> 00:00:36.129
+It prints what would be made, and touches nothing.
+
+14
+00:00:36.529 --> 00:00:37.169
+Three things.
+
+15
+00:00:37.169 --> 00:00:37.909
+The server.
+
+16
+00:00:37.909 --> 00:00:38.909
+Its database.
+
+17
+00:00:38.909 --> 00:00:41.561
+And a namespace that belongs to the server.
+
+18
+00:00:41.961 --> 00:00:43.541
+Every name starts with one prefix:
+
+19
+00:00:43.541 --> 00:00:46.139
+the app, the environment, and the run.
+
+20
+00:00:46.539 --> 00:00:48.939
+The prefix is also how a run is cleaned up.
+
+21
+00:00:48.939 --> 00:00:52.255
+Destroy, with the word plan, prints the same three.
+
+22
+00:00:53.855 --> 00:00:56.615
+What runs in staging must be the file that was proved.
+
+23
+00:00:56.615 --> 00:00:59.040
+So it is built once, from a commit.
+
+24
+00:00:59.440 --> 00:01:01.000
+Ortho build prints two things:
+
+25
+00:01:01.000 --> 00:01:04.157
+the commit, cut short, and a fingerprint of the file.
+
+26
+00:01:04.557 --> 00:01:06.942
+Those two are what you will ask any address for.
+
+27
+00:01:07.342 --> 00:01:09.642
+And it will not build from work that is not committed.
+
+28
+00:01:09.642 --> 00:01:12.536
+It refuses, and says to commit first.
+
+29
+00:01:14.136 --> 00:01:18.458
+Before the account comes into it, the same file runs as staging on your machine.
+
+30
+00:01:18.858 --> 00:01:21.338
+Ortho env up staging, with a port and no run.
+
+31
+00:01:21.338 --> 00:01:23.298
+It starts, and it stays up.
+
+32
+00:01:23.698 --> 00:01:25.214
+Then we ask it what it is running.
+
+33
+00:01:25.814 --> 00:01:26.554
+The same commit.
+
+34
+00:01:26.554 --> 00:01:27.634
+The same fingerprint.
+
+35
+00:01:27.634 --> 00:01:29.468
+Then env down stops it.
+
+36
+00:01:31.068 --> 00:01:31.948
+Now the real one.
+
+37
+00:01:31.948 --> 00:01:34.490
+The same command, without the word plan.
+
+38
+00:01:34.890 --> 00:01:35.350
+It stops.
+
+39
+00:01:35.350 --> 00:01:40.944
+It names two values from your cloud account that are not set, and it says no connection was made.
+
+40
+00:01:41.344 --> 00:01:42.604
+Those values are yours.
+
+41
+00:01:42.604 --> 00:01:44.684
+You set them where the command runs.
+
+42
+00:01:44.684 --> 00:01:46.984
+Keeping them from an agent is practice.
+
+43
+00:01:46.984 --> 00:01:49.410
+The framework only never prints them.
+
+44
+00:01:49.810 --> 00:01:51.430
+Other things stop early too.
+
+45
+00:01:51.430 --> 00:01:54.470
+A run name with a capital letter is refused.
+
+46
+00:01:54.470 --> 00:01:57.830
+Proving a staging asks where your account puts its servers.
+
+47
+00:01:57.830 --> 00:02:02.032
+And promote asks for a logbook, which Plugged In does not have.
+
+48
+00:02:02.432 --> 00:02:03.472
+One honest note.
+
+49
+00:02:03.472 --> 00:02:05.972
+There is no real deployment in this film.
+
+50
+00:02:05.972 --> 00:02:10.492
+It waits on a cloud credential we do not have yet, and it will be recorded then.
+
+51
+00:02:10.492 --> 00:02:13.669
+Everything you saw ran with no cloud account.
+
+52
+00:02:14.269 --> 00:02:17.149
+So this is the path to a real address, and not yet an address.
+
+53
+00:02:17.149 --> 00:02:18.109
+Next:
+
+54
+00:02:18.109 --> 00:02:18.845
+watch it.
+</script></figure>
 <h3 id="chapter-8-read-where-it-will-run">Read where it will run</h3>
 <p>We want to know what staging is before we ask for it. It is one short file of the blueprint, an <span class="canon" title="explained in the canon, docs/canon/languages-and-hosts.mdx">environment</span>, and you can read it whole.</p>
 <figure class="rec"><figcaption><span class="kind">quoted</span><span>examples/plugged-in/blueprint/environments/staging.ts · lines 4 to 9</span></figcaption><pre>export default Blueprint.environment({
@@ -613,7 +2657,280 @@ exit 2</pre></figure>
 <p>The status page (<code>docs/canon/status.md</code>) says the same. The plan and the two commands are built, proved with no credential and no network. A live staging run is building: in this repository it is a workflow started by hand. A deploy that stays up, with a public address, is provisional, and so staging here is made for a run and destroyed. Secrets are building, and so are the logbook and promote, proved on another example and not on Plugged In, which declares no production. The canon has no page on environments yet, so the link above goes to the nearest one. Who holds the two values is practice, and the framework only never prints them.</p></section>
 <section class="chapter" id="chapter-9-wrap"><header class="opener"><span class="num">09</span><span class="of">Part three · Run it</span></header><h2 id="chapter-9">Watch it</h2><p class="ask">Is it healthy, and what changed this week?</p>
 <p class="lede">Plugged In is running somewhere, and people are calling it. Nobody is running journeys against those calls. So the question changes: is it healthy, and what changed this week? You want that answer on one screen, and you still do not want to read the code.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/watch.jpg" src="films/watch.mp4" data-captions="films/watch.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/watch.jpg" src="films/watch.mp4" data-captions="films/watch.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.160
+Plugged In is running, and people are calling it.
+
+2
+00:00:03.160 --> 00:00:06.072
+Nobody is running journeys against those calls.
+
+3
+00:00:06.472 --> 00:00:07.652
+So the question changes.
+
+4
+00:00:07.652 --> 00:00:10.236
+Is it healthy, and what changed this week?
+
+5
+00:00:10.636 --> 00:00:12.476
+Start with what is already written down.
+
+6
+00:00:12.476 --> 00:00:15.456
+Every operation in the blueprint carries a budget.
+
+7
+00:00:15.456 --> 00:00:17.776
+For the public page, profile.
+
+8
+00:00:17.776 --> 00:00:20.706
+get, it's a hundred and fifty milliseconds.
+
+9
+00:00:21.106 --> 00:00:23.406
+The proof has held the app to that number all along.
+
+10
+00:00:23.406 --> 00:00:27.585
+A full run prints a line for each operation, with its budget.
+
+11
+00:00:27.985 --> 00:00:29.665
+But those are the journeys' own calls.
+
+12
+00:00:29.665 --> 00:00:31.527
+They say nothing about this week.
+
+13
+00:00:33.127 --> 00:00:35.147
+One command judges real calls.
+
+14
+00:00:35.147 --> 00:00:38.018
+ortho watch, with the name of an environment.
+
+15
+00:00:38.418 --> 00:00:42.510
+Before the environment has run, there's nothing to read, and watch says so.
+
+16
+00:00:42.910 --> 00:00:45.910
+So we start the test environment on this machine, and use it.
+
+17
+00:00:45.910 --> 00:00:47.090
+A name claimed.
+
+18
+00:00:47.090 --> 00:00:48.690
+A second one refused.
+
+19
+00:00:48.690 --> 00:00:51.440
+The public page, read three times.
+
+20
+00:00:51.840 --> 00:00:52.440
+Watch again.
+
+21
+00:00:52.440 --> 00:00:56.120
+Each operation that was called has a line, against its own budget.
+
+22
+00:00:56.120 --> 00:00:57.386
+Both pass.
+
+23
+00:00:57.986 --> 00:00:58.506
+Then the counts.
+
+24
+00:00:58.506 --> 00:01:00.326
+Two claims, three reads.
+
+25
+00:01:00.326 --> 00:01:01.886
+One refusal, by name.
+
+26
+00:01:01.886 --> 00:01:04.486
+A refusal is the app saying no on purpose.
+
+27
+00:01:04.486 --> 00:01:05.906
+Defects:
+
+28
+00:01:05.906 --> 00:01:06.340
+none.
+
+29
+00:01:06.740 --> 00:01:07.646
+And the evals.
+
+30
+00:01:07.646 --> 00:01:09.360
+That's the proof again, on real calls.
+
+31
+00:01:09.360 --> 00:01:10.080
+Drift:
+
+32
+00:01:10.080 --> 00:01:10.726
+none.
+
+33
+00:01:12.326 --> 00:01:13.846
+Nothing on our machine was slow.
+
+34
+00:01:13.846 --> 00:01:18.366
+So, to see what slow looks like, we tightened one budget in the blueprint.
+
+35
+00:01:18.366 --> 00:01:21.250
+From a hundred and fifty milliseconds, to ten.
+
+36
+00:01:21.650 --> 00:01:25.071
+Then we read the page twenty-five more times, and watched again.
+
+37
+00:01:25.671 --> 00:01:26.451
+Now profile.
+
+38
+00:01:26.451 --> 00:01:27.511
+get is marked.
+
+39
+00:01:27.511 --> 00:01:29.764
+Twenty-two milliseconds, against ten.
+
+40
+00:01:29.764 --> 00:01:31.439
+And the drift line names it.
+
+41
+00:01:31.839 --> 00:01:32.959
+Watch did one more thing.
+
+42
+00:01:32.959 --> 00:01:34.134
+It wrote a file.
+
+43
+00:01:35.734 --> 00:01:38.303
+The file is a task, ready to hand to a builder.
+
+44
+00:01:38.703 --> 00:01:39.463
+It has the numbers.
+
+45
+00:01:39.463 --> 00:01:44.766
+It names the slowest calls by their trace, so the builder reads one before it guesses.
+
+46
+00:01:45.166 --> 00:01:47.305
+It points at the brief for that one operation.
+
+47
+00:01:47.705 --> 00:01:49.325
+And it ends with a line for you.
+
+48
+00:01:49.325 --> 00:01:52.065
+Making the handler faster is a builder's job.
+
+49
+00:01:52.065 --> 00:01:54.469
+Loosening the budget is your decision.
+
+50
+00:01:54.869 --> 00:01:55.849
+We put the budget back.
+
+51
+00:01:55.849 --> 00:01:58.634
+The same twenty-eight calls are healthy again.
+
+52
+00:02:00.234 --> 00:02:00.954
+What goes wrong?
+
+53
+00:02:00.954 --> 00:02:03.374
+Calls you make under ortho dev are not watched.
+
+54
+00:02:03.374 --> 00:02:06.045
+We made three, and watch counted none.
+
+55
+00:02:06.445 --> 00:02:07.925
+A few calls are not a pattern.
+
+56
+00:02:07.925 --> 00:02:12.365
+Under twenty, watch says the numbers are thin, and won't call it drift.
+
+57
+00:02:12.765 --> 00:02:15.185
+And an environment only starts from committed work.
+
+58
+00:02:15.185 --> 00:02:18.449
+One stray file, and ours was refused.
+
+59
+00:02:18.849 --> 00:02:19.909
+One honest note.
+
+60
+00:02:19.909 --> 00:02:23.029
+The drift you saw was staged, by tightening a budget.
+
+61
+00:02:23.029 --> 00:02:25.709
+The traffic was ours, on one machine.
+
+62
+00:02:25.709 --> 00:02:28.909
+Watch can also read a hosted store, Axiom.
+
+63
+00:02:28.909 --> 00:02:31.970
+It was not available to us, so it is not shown.
+
+64
+00:02:32.570 --> 00:02:33.850
+And watch prints one window.
+
+65
+00:02:33.850 --> 00:02:36.630
+It doesn't compare weeks, and nothing runs it for you.
+
+66
+00:02:36.630 --> 00:02:37.870
+Someone has to ask.
+
+67
+00:02:37.870 --> 00:02:38.810
+Next:
+
+68
+00:02:38.810 --> 00:02:40.303
+change it, months later.
+</script></figure>
 <h3 id="chapter-9-the-budget-is-already-written-down">The budget is already written down</h3>
 <p>We want "fast enough" to be a number you agreed to, not a feeling. It already is. Every operation in the blueprint carries a <span class="canon" title="explained in the canon, docs/canon/operations.mdx">budget</span>, and the page a visitor reads has one too.</p>
 <figure class="rec"><figcaption><span class="kind">quoted</span><span>examples/plugged-in/blueprint/things/profile/verbs/get.ts · lines 19 to 20</span></figcaption><pre>  steps: { load: Blueprint.step.database({ writes: [] }) },
@@ -687,7 +3004,300 @@ drift none</pre></figure>
 <div class="part"><span>Part four</span><h2 class="part-title">Live with it</h2></div>
 <section class="chapter" id="chapter-10-wrap"><header class="opener"><span class="num">10</span><span class="of">Part four · Live with it</span></header><h2 id="chapter-10">Change it, months later</h2><p class="ask">I need one rule different. What else has to change?</p>
 <p class="lede">Plugged In has been live for months, and you have an answer to the question the trace left you with. No: a person should be able to hold more than one name. It is one rule, and you could delete it yourself. What you cannot see by looking is everything that was leaning on it.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/change.jpg" src="films/change.mp4" data-captions="films/change.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/change.jpg" src="films/change.mp4" data-captions="films/change.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.420
+Plugged In has been live for months.
+
+2
+00:00:02.420 --> 00:00:03.740
+And you've decided:
+
+3
+00:00:03.740 --> 00:00:06.005
+a person may hold more than one name.
+
+4
+00:00:06.405 --> 00:00:07.105
+It's one rule.
+
+5
+00:00:07.105 --> 00:00:08.614
+But what was leaning on it?
+
+6
+00:00:09.014 --> 00:00:12.214
+First, your agent runs the whole proof on the app as it stands.
+
+7
+00:00:12.214 --> 00:00:14.714
+Seven operations, all proven.
+
+8
+00:00:14.714 --> 00:00:17.487
+That's the record the change is measured from.
+
+9
+00:00:17.887 --> 00:00:20.107
+Then the designer takes the rule out of the blueprint.
+
+10
+00:00:20.107 --> 00:00:22.487
+Six lines, and no other file.
+
+11
+00:00:22.487 --> 00:00:24.407
+This is the part you read.
+
+12
+00:00:26.007 --> 00:00:28.627
+Before anything is rebuilt, ask what the change did.
+
+13
+00:00:28.627 --> 00:00:30.971
+The command is ortho impact.
+
+14
+00:00:31.371 --> 00:00:32.311
+It names the change:
+
+15
+00:00:32.311 --> 00:00:35.151
+the handle's rules, and one operation, handle.
+
+16
+00:00:35.151 --> 00:00:35.953
+claim.
+
+17
+00:00:36.353 --> 00:00:36.953
+Then the cost.
+
+18
+00:00:36.953 --> 00:00:37.593
+Stale:
+
+19
+00:00:37.593 --> 00:00:38.793
+all seven operations.
+
+20
+00:00:38.793 --> 00:00:39.473
+Proven:
+
+21
+00:00:39.473 --> 00:00:40.020
+none.
+
+22
+00:00:40.620 --> 00:00:44.276
+In an app this small, one rule on the handle unproved everything.
+
+23
+00:00:45.876 --> 00:00:46.516
+Now the check.
+
+24
+00:00:46.516 --> 00:00:48.556
+It fails, in three of its parts.
+
+25
+00:00:48.956 --> 00:00:49.356
+Drift:
+
+26
+00:00:49.316 --> 00:00:52.556
+nine generated files still describe the old rule.
+
+27
+00:00:52.556 --> 00:00:56.194
+That's the framework's own work, and generate rewrites them.
+
+28
+00:00:56.594 --> 00:00:57.054
+Changes:
+
+29
+00:00:57.054 --> 00:00:59.614
+a refusal your callers could be given is gone.
+
+30
+00:00:59.614 --> 00:01:01.961
+That's counted as a major change.
+
+31
+00:01:02.361 --> 00:01:02.901
+And types.
+
+32
+00:01:02.901 --> 00:01:04.221
+The handler for link.
+
+33
+00:01:04.221 --> 00:01:05.701
+add no longer fits.
+
+34
+00:01:05.701 --> 00:01:07.701
+It found your page through this rule:
+
+35
+00:01:07.701 --> 00:01:09.588
+one name meant one page.
+
+36
+00:01:09.988 --> 00:01:12.208
+So with two names, which page gets the link?
+
+37
+00:01:12.208 --> 00:01:13.968
+That isn't a builder's question.
+
+38
+00:01:13.968 --> 00:01:15.458
+It comes back to you.
+
+39
+00:01:17.058 --> 00:01:17.958
+Prove what changed.
+
+40
+00:01:17.958 --> 00:01:22.278
+It can't place the regenerated files, so it chooses all seven journeys.
+
+41
+00:01:22.278 --> 00:01:23.798
+And then it can't run:
+
+42
+00:01:23.798 --> 00:01:25.299
+the app doesn't build.
+
+43
+00:01:25.699 --> 00:01:27.419
+To see further, we stood in for the builder.
+
+44
+00:01:27.419 --> 00:01:29.599
+The link goes on the oldest name.
+
+45
+00:01:29.599 --> 00:01:31.394
+Nobody decided that.
+
+46
+00:01:31.794 --> 00:01:32.734
+Now the whole proof.
+
+47
+00:01:32.734 --> 00:01:33.994
+Six journeys pass.
+
+48
+00:01:33.994 --> 00:01:34.954
+Claim a handle:
+
+49
+00:01:34.954 --> 00:01:35.778
+six of eight.
+
+50
+00:01:36.478 --> 00:01:37.198
+Read the reason.
+
+51
+00:01:37.198 --> 00:01:39.898
+Expected refused, with handle already owned.
+
+52
+00:01:39.898 --> 00:01:40.988
+It answered.
+
+53
+00:01:41.388 --> 00:01:42.408
+That's the proof working.
+
+54
+00:01:42.408 --> 00:01:45.828
+Months ago, an author wrote the old rule down as a step.
+
+55
+00:01:45.828 --> 00:01:47.475
+The step is still there.
+
+56
+00:01:49.075 --> 00:01:52.555
+So the red step is the author's to change, and nobody else's.
+
+57
+00:01:52.555 --> 00:01:54.915
+The author also writes the new story:
+
+58
+00:01:54.915 --> 00:01:57.175
+a person with two names adds a link.
+
+59
+00:01:57.175 --> 00:01:58.610
+It fails first.
+
+60
+00:01:59.010 --> 00:02:01.170
+Only then does a builder take the brief for link.
+
+61
+00:02:01.170 --> 00:02:02.854
+add, and climb.
+
+62
+00:02:03.254 --> 00:02:03.934
+What goes wrong.
+
+63
+00:02:03.934 --> 00:02:09.414
+After a failed proof, impact forgets the change, and calls every operation unproven.
+
+64
+00:02:09.414 --> 00:02:11.670
+So ask before you prove again.
+
+65
+00:02:12.070 --> 00:02:13.690
+And the next version needs a logbook.
+
+66
+00:02:13.690 --> 00:02:15.523
+On a laptop, we had none.
+
+67
+00:02:15.923 --> 00:02:16.903
+One honest note.
+
+68
+00:02:16.903 --> 00:02:20.443
+We made the edit ourselves, and the stand-in handler was staged.
+
+69
+00:02:20.443 --> 00:02:24.908
+No author and no builder were filmed, so this film stops at red.
+
+70
+00:02:25.508 --> 00:02:26.628
+The roles are our practice.
+
+71
+00:02:26.628 --> 00:02:28.748
+Nothing enforces them for you yet.
+
+72
+00:02:28.748 --> 00:02:29.648
+Next:
+
+73
+00:02:29.648 --> 00:02:30.998
+more than one agent.
+</script></figure>
 <h3 id="chapter-10-start-from-a-proof-and-take-the-rule-out">Start from a proof, and take the rule out</h3>
 <p>We want the change measured against something, so the first thing your agent does is run the whole proof on the app as it stands. Every full proof keeps a record of what each passing operation rested on. Then the designer makes the change where the rule lives, in the blueprint, and nowhere else.</p>
 <figure class="rec"><figcaption><span class="kind">recorded</span><span>captures/change-diff.txt · 6 of its 24 lines</span></figcaption><pre>-// A person holds one claimed name at a time.
@@ -758,7 +3368,268 @@ exit 2</pre></figure>
 <p>Asking what went stale, the check, generating and proving all run today. Narrowing the proof runs, and for a change to the blueprint it chose every journey. Working out the next version needs a logbook, and we had none, so no next version was recorded. That the designer changes the blueprint, the author the journeys and the builder one handler is how we work in this repository. Nothing in Orthograph enforces it for you yet.</p></section>
 <section class="chapter" id="chapter-11-wrap"><header class="opener"><span class="num">11</span><span class="of">Part four · Live with it</span></header><h2 id="chapter-11">More than one agent</h2><p class="ask">How do several agents work at once without stepping on each other?</p>
 <p class="lede">So far one agent has worked on Plugged In at a time: a designer, then an author, then a builder with one brief. Pay by name is bigger than that. You will want several agents building at once, and two agents in the same files undo each other's work without either of them noticing.</p>
-<figure class="film"><video controls preload="none" playsinline poster="films/agents.jpg" src="films/agents.mp4" data-captions="films/agents.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>
+<figure class="film"><video controls preload="none" playsinline poster="films/agents.jpg" src="films/agents.mp4" data-captions="films/agents.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption><script type="text/plain" class="vtt">WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.600
+Until now, one agent worked on Plugged In at a time.
+
+2
+00:00:03.600 --> 00:00:05.220
+The next stage is bigger.
+
+3
+00:00:05.220 --> 00:00:07.552
+You want several building at once.
+
+4
+00:00:07.952 --> 00:00:12.207
+Two agents in the same files undo each other's work, and neither notices.
+
+5
+00:00:12.607 --> 00:00:14.667
+Orthograph has no command for this yet.
+
+6
+00:00:14.667 --> 00:00:20.429
+So this film leaves Plugged In, and shows how this repository builds Orthograph itself.
+
+7
+00:00:20.829 --> 00:00:23.309
+Every line of work has one owner, called a goal:
+
+8
+00:00:23.309 --> 00:00:26.349
+one long-running agent that manages others.
+
+9
+00:00:26.349 --> 00:00:28.780
+We asked the map which goals run.
+
+10
+00:00:29.180 --> 00:00:29.580
+Three.
+
+11
+00:00:29.520 --> 00:00:30.900
+One builds the framework.
+
+12
+00:00:30.900 --> 00:00:32.580
+One builds an app on it.
+
+13
+00:00:32.580 --> 00:00:34.140
+One builds nothing new:
+
+14
+00:00:34.140 --> 00:00:36.830
+it brings finished work into the shared branch.
+
+15
+00:00:38.430 --> 00:00:40.669
+Before a goal builds anything, it claims it.
+
+16
+00:00:41.069 --> 00:00:43.929
+The status page keeps one row for each piece of work.
+
+17
+00:00:43.929 --> 00:00:46.169
+A claim is two cells of that row:
+
+18
+00:00:46.169 --> 00:00:50.085
+the lane, which names the goal, and the paths it will change.
+
+19
+00:00:50.485 --> 00:00:54.065
+Here, goal sixteen holds this piece, and names two folders.
+
+20
+00:00:54.065 --> 00:00:57.936
+Any other agent that needs those folders reads this first.
+
+21
+00:00:58.336 --> 00:00:59.836
+We counted the claims held today.
+
+22
+00:00:59.836 --> 00:01:01.736
+Thirteen for the app's goal.
+
+23
+00:01:01.736 --> 00:01:03.016
+One for the framework's.
+
+24
+00:01:03.016 --> 00:01:05.074
+Every other lane says none.
+
+25
+00:01:06.674 --> 00:01:10.074
+An agent building an app keeps finding gaps in the framework under it.
+
+26
+00:01:10.074 --> 00:01:11.134
+Whose are they?
+
+27
+00:01:11.134 --> 00:01:13.214
+One rule, three cases.
+
+28
+00:01:13.614 --> 00:01:14.194
+Case one.
+
+29
+00:01:14.194 --> 00:01:15.954
+A running goal already has it.
+
+30
+00:01:15.954 --> 00:01:18.478
+Wait, or take the part that has landed.
+
+31
+00:01:18.878 --> 00:01:19.498
+Case two.
+
+32
+00:01:19.498 --> 00:01:21.838
+It would change paths another goal has claimed.
+
+33
+00:01:21.838 --> 00:01:23.878
+One named goal settles it:
+
+34
+00:01:23.878 --> 00:01:25.961
+one of them does it, or they split it.
+
+35
+00:01:26.361 --> 00:01:27.035
+Case three.
+
+36
+00:01:27.035 --> 00:01:27.581
+Neither.
+
+37
+00:01:27.581 --> 00:01:28.832
+Claim it, and build it.
+
+38
+00:01:29.232 --> 00:01:31.475
+Only the second case needs a decision.
+
+39
+00:01:33.075 --> 00:01:35.835
+Checks are written before the build, by a different agent.
+
+40
+00:01:35.835 --> 00:01:40.103
+So red checks sit in the shared branch before the code that passes them.
+
+41
+00:01:40.503 --> 00:01:44.383
+To keep that branch a gate, each failure we know about is written in a list.
+
+42
+00:01:44.383 --> 00:01:47.845
+The build fails on any failure that is not listed.
+
+43
+00:01:48.245 --> 00:01:51.045
+Here is one whole list, about Plugged In's own journeys.
+
+44
+00:01:51.045 --> 00:01:53.645
+One line says why the entry is there.
+
+45
+00:01:53.645 --> 00:01:56.168
+The other names the one check that may fail.
+
+46
+00:01:56.568 --> 00:01:59.448
+A builder may delete a line, and may never add one.
+
+47
+00:01:59.448 --> 00:02:03.702
+A script in this repository's CI refuses the pull request.
+
+48
+00:02:04.102 --> 00:02:04.922
+Ten lists today.
+
+49
+00:02:04.922 --> 00:02:06.822
+The smallest holds one file.
+
+50
+00:02:06.822 --> 00:02:08.992
+Over time, the numbers go down.
+
+51
+00:02:10.592 --> 00:02:11.312
+What goes wrong.
+
+52
+00:02:11.312 --> 00:02:13.372
+A claim is a cell in a table.
+
+53
+00:02:13.372 --> 00:02:19.097
+Nothing locks the paths, so two agents can still meet in one file, as a merge conflict.
+
+54
+00:02:19.497 --> 00:02:23.187
+And a claim can go stale, when a goal stops and leaves its lane set.
+
+55
+00:02:23.587 --> 00:02:24.587
+One honest note.
+
+56
+00:02:24.587 --> 00:02:27.767
+Everything you watched is this repository's practice.
+
+57
+00:02:27.767 --> 00:02:32.533
+No ortho command claims work, settles a collision, or keeps a list.
+
+58
+00:02:32.933 --> 00:02:34.713
+Nothing here was run on Plugged In.
+
+59
+00:02:34.713 --> 00:02:37.688
+We read files, and counted them with plain shell.
+
+60
+00:02:38.088 --> 00:02:39.908
+The product's answer is called the factory:
+
+61
+00:02:39.908 --> 00:02:41.968
+a board that agents build from.
+
+62
+00:02:41.968 --> 00:02:44.342
+It is designed, and not built.
+
+63
+00:02:44.942 --> 00:02:48.142
+This is the manual's closing chapter, so nothing comes next.
+
+64
+00:02:48.142 --> 00:02:50.242
+What you can copy today is small:
+
+65
+00:02:50.242 --> 00:02:54.417
+one file of claims, one rule, and one list that only shrinks.
+</script></figure>
 <p>Orthograph has no command for this yet. So this chapter leaves Plugged In, and shows how this repository builds Orthograph itself with many agents at once. Three things do the work: a claim, one rule for collisions, and a list that may only shrink.</p>
 <h3 id="chapter-11-every-line-of-work-has-one-owner">Every line of work has one owner</h3>
 <p>We want each line of work to belong to one agent you can name. Here that owner is called a goal: one long-running agent that manages other agents, with a brief of its own. We asked the file that lists the goals which of them run.</p>
@@ -827,11 +3698,11 @@ stage1/01-plugged-in-journeys.test.ts &gt; --env test &gt; `--env test` reports 
 <h3 id="working-with-your-agents-the-brief">The brief</h3>
 <p><code>ortho brief &lt;thing&gt;.&lt;verb&gt;</code> prints everything a builder needs for one handler, and nothing else: the one file to write, the files to read, what the handler must do, what the runtime already does for it, the paths it must not touch, and what must pass. Hand it over as it is. A builder given only its brief has no room to wander.</p>
 <h3 id="working-with-your-agents-the-climb">The climb</h3>
-<p>Building is climbing. The builder runs the journeys, reads the first failure, fixes the handler, and runs them again. <code>ortho prove --only "&lt;journey's name&gt;"</code> runs one journey, by the name it declares. <code>ortho prove</code> runs them all, and only that run means done: a green run of one journey still ends in a failing line, because the operations it never reached fail coverage. <code>ortho prove --empty</code> runs them on empty handlers, which is how an author shows a journey can fail. You watch one number go down: the steps that are still red.</p>
+<p>Building is climbing. The builder runs the journeys, reads the first failure, fixes the handler, and runs them again. <code>ortho prove --only "&lt;journey's name&gt;"</code> runs one journey, by the name it declares or by its file. <code>ortho prove</code> runs them all, and only that run means done: a run of one journey does not judge coverage, and says so on the line before its verdict. <code>ortho prove --empty</code> runs them on empty handlers, which is how an author shows a journey can fail. You watch one number go down: the steps that are still red.</p>
 <h3 id="working-with-your-agents-when-it-goes-wrong">When it goes wrong</h3>
 <ul><li><b>A builder says a journey is wrong.</b> It stops and tells the author. It does not edit the journey, and it does not work round it. You decide which of them is right, by reading the journey.</li><li><b>Everything is green and the app is still wrong.</b> The journeys do not say what you meant. That is the author's work, and the fix starts with a new journey that fails.</li><li><b>A handler grew a rule.</b> If behaviour depends on a decision you never saw, it belongs in the blueprint as a rule, a role or a state. A reviewer looks for exactly this.</li><li><b>An agent reports success you cannot see.</b> Ask which journeys ran. "It passes" with no run is not a report.</li></ul>
 <h3 id="working-with-your-agents-what-orthograph-does-not-do-for-you-yet">What Orthograph does not do for you yet</h3>
-<ul><li>It does not put the kit into a new app.</li><li>The journey commands are rough, and are being fixed (26 November 2026). <code>ortho add journeys &lt;thing&gt;</code> writes no stub for a refusal that a rule gives. <code>ortho check</code> lists a blank only under <code>blueprint/</code>. The add commands write journeys to <code>blueprint/journeys/</code>, and Plugged In keeps its own in <code>journeys/</code>; both are read.</li><li>It has no command that starts an agent in a role, or that stops a builder editing a journey. This repository enforces that for itself in its own CI; an app has to keep the rule by how it hands out work.</li><li>It has no board of work that many agents build from. That is designed, and not built.</li></ul></section>
+<ul><li>It does not put the kit into a new app.</li><li>The journey commands are rough, and are being fixed (26 November 2026). <code>ortho check</code> lists a blank only under <code>blueprint/</code>, and <code>ortho add journey &lt;name&gt;</code> writes a stub that stops the commands that read the model. The add commands write journeys to <code>blueprint/journeys/</code>, and Plugged In keeps its own in <code>journeys/</code>; both are read.</li><li>It has no command that starts an agent in a role, or that stops a builder editing a journey. This repository enforces that for itself in its own CI; an app has to keep the rule by how it hands out work.</li><li>It has no board of work that many agents build from. That is designed, and not built.</li></ul></section>
 <section class="chapter reference"><h2 id="the-agent-kit">The agent kit</h2>
 <p class="lede">What an Orthograph app gives a coding agent, so it knows its role and its limits. It is agent-neutral: an <code>AGENTS.md</code> at the root, and one skill for each role under <code>.agents/skills/</code>.</p>
 <p><b>How it stands.</b> Nothing generates this yet. A new app made from the preset gets no instructions for an agent, and the kit the milestones plan (M3.12) is parked. Until then, copy it in:</p>
@@ -845,7 +3716,9 @@ stage1/01-plugged-in-journeys.test.ts &gt; --env test &gt; `--env test` reports 
 (() => {
   const seconds = (stamp) => stamp.split(":").reduce((sum, part) => sum * 60 + parseFloat(part), 0);
   document.querySelectorAll("video[data-captions]").forEach((video) => {
-    fetch(video.dataset.captions).then((r) => (r.ok ? r.text() : "")).then((text) => {
+    // The captions are in the page beside the film, so they work from a file too; fetching them is the fallback.
+    const inline = video.parentElement.querySelector("script.vtt");
+    (inline ? Promise.resolve(inline.textContent.replace(/&lt;/g, "<")) : fetch(video.dataset.captions).then((r) => (r.ok ? r.text() : ""))).then((text) => {
       const cues = [...text.matchAll(/(\d\d:\d\d:\d\d\.\d\d\d) --> (\d\d:\d\d:\d\d\.\d\d\d)\n([^\n]+)/g)];
       if (!cues.length) return;
       const track = video.addTextTrack("captions", "English", "en");

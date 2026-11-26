@@ -22,9 +22,9 @@ journey add, order and remove a link ✘ 0/12 steps
   ✘ "the page shows the new order": BlankReached: refuse ProfileNotFound when?; expected an answer, failed with 500
   ✘ "a position past the end puts a link last": payload: nothing at last.links.1.id; telemetry missing: no span of this call reached the collector
   ✘ "the page shows GitHub last": BlankReached: refuse ProfileNotFound when?; expected an answer, failed with 500
-  ✘ "aaron removes the talks link": BlankReached: record: the work this step does; expected LinkRemoved, journal has nothing; lnk_9tu2g5i3k5g0angi is in "listed", expected "removed"; span link.remove.commit missing: expected present, the call produced journey.add, order and remove a link, link.remove, link.remove.record
+  ✘ "aaron removes the talks link": BlankReached: record: the work this step does; expected LinkRemoved, journal has nothing; lnk_gu692s2kth4we9cq is in "listed", expected "removed"; span link.remove.commit missing: expected present, the call produced journey.add, order and remove a link, link.remove, link.remove.record
   ✘ "the page no longer lists it, and keeps the order of the rest": BlankReached: refuse ProfileNotFound when?; expected an answer, failed with 500
-  ✘ "he cannot remove it twice": BlankReached: record: the work this step does; expected refused with LinkNotListed, failed with 500; lnk_9tu2g5i3k5g0angi is in "listed", expected "removed"; span link.remove.record present, expected absent
+  ✘ "he cannot remove it twice": BlankReached: record: the work this step does; expected refused with LinkNotListed, failed with 500; lnk_gu692s2kth4we9cq is in "listed", expected "removed"; span link.remove.record present, expected absent
   ✘ "he cannot move a removed link": BlankReached: load: the work this step does; expected refused with LinkAlreadyRemoved, failed with 500
   ✘ "the page is as the removal left it": BlankReached: refuse ProfileNotFound when?; expected an answer, failed with 500
 journey anyone reads a public page ✘ 0/5 steps
@@ -45,14 +45,14 @@ journey claim a handle ✘ 0/8 steps
 journey release a handle ✘ 1/13 steps
   ✘ "aaron puts a link on his page before he lets the name go": BlankReached: load: the work this step does; expected an answer, failed with 500
   ✔ "bob cannot release aaron's name": proved by the description
-  ✘ "aaron releases his name": BlankReached: record: the work this step does; expected HandleReleased, journal has nothing; hdl_m723dbpgl9wptoev is in "claimed", expected "released"; span handle.release.commit missing: expected present, the call produced handle.release, handle.release.record, journey.release a handle
-  ✘ "he cannot release it twice": BlankReached: record: the work this step does; expected refused with HandleNotClaimed, failed with 500; hdl_m723dbpgl9wptoev is in "claimed", expected "released"; span handle.release.record present, expected absent
+  ✘ "aaron releases his name": BlankReached: record: the work this step does; expected HandleReleased, journal has nothing; hdl_jagy78km93xdhsim is in "claimed", expected "released"; span handle.release.commit missing: expected present, the call produced handle.release, handle.release.record, journey.release a handle
+  ✘ "he cannot release it twice": BlankReached: record: the work this step does; expected refused with HandleNotClaimed, failed with 500; hdl_jagy78km93xdhsim is in "claimed", expected "released"; span handle.release.record present, expected absent
   ✘ "the released name no longer resolves": BlankReached: refuse HandleNotFound when?; expected refused with HandleNotFound, failed with 500
   ✘ "the released name has no public page": BlankReached: refuse ProfileNotFound when?; expected refused with ProfileNotFound, failed with 500
   ✘ "aaron has no page to add a link to any more": BlankReached: load: the work this step does; expected refused with LinkNeedsHandle, failed with 500
-  ✘ "someone else claims the released name": BlankReached: record: the work this step does; expected HandleClaimed, journal has nothing; hdl_m723dbpgl9wptoev is in "claimed", expected "released"
+  ✘ "someone else claims the released name": BlankReached: record: the work this step does; expected HandleClaimed, journal has nothing; hdl_jagy78km93xdhsim is in "claimed", expected "released"
   ✘ "the new page has none of the old owner's links": BlankReached: refuse ProfileNotFound when?; expected an answer, failed with 500
-  ✘ "the old handle is not bob's: he cannot release it, and it stays released": hdl_m723dbpgl9wptoev is in "claimed", expected "released"
+  ✘ "the old handle is not bob's: he cannot release it, and it stays released": hdl_jagy78km93xdhsim is in "claimed", expected "released"
   ✘ "aaron can claim again: a released handle does not count as one he holds": BlankReached: record: the work this step does; expected HandleClaimed, journal has nothing; span handle.claim.commit missing: expected present, the call produced handle.claim, handle.claim.record, journey.release a handle
   ✘ "aaron can add a link again, to his new page": BlankReached: load: the work this step does; expected an answer, failed with 500; emits: nothing at last.link
   ✘ "his new page has only the new link, and the old name's page is still bob's and empty": BlankReached: refuse ProfileNotFound when?; expected an answer, failed with 500

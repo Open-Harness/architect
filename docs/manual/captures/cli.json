@@ -176,6 +176,15 @@
       "root": "value"
      },
      "subcommands": {}
+    },
+    "app": {
+     "arguments": [
+      "name..."
+     ],
+     "flags": {
+      "root": "value"
+     },
+     "subcommands": {}
     }
    }
   },

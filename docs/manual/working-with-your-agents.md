@@ -54,9 +54,9 @@ must pass. Hand it over as it is. A builder given only its brief has no room to 
 ## The climb
 
 Building is climbing. The builder runs the journeys, reads the first failure, fixes the handler, and runs them again.
-`ortho prove --only "<journey's name>"` runs one journey, by the name it declares. `ortho prove` runs them all, and only
-that run means done: a green run of one journey still ends in a failing line, because the operations it never reached
-fail coverage. `ortho prove --empty` runs them on empty handlers, which is how an author shows a journey can fail. You
+`ortho prove --only "<journey's name>"` runs one journey, by the name it declares or by its file. `ortho prove` runs them
+all, and only that run means done: a run of one journey does not judge coverage, and says so on the line before its
+verdict. `ortho prove --empty` runs them on empty handlers, which is how an author shows a journey can fail. You
 watch one number go down: the steps that are still red.
 
 ## When it goes wrong
@@ -72,8 +72,8 @@ watch one number go down: the steps that are still red.
 ## What Orthograph does not do for you yet
 
 - It does not put the kit into a new app.
-- The journey commands are rough, and are being fixed (26 November 2026). `ortho add journeys <thing>` writes no stub for a
-  refusal that a rule gives. `ortho check` lists a blank only under `blueprint/`. The add commands write journeys to
+- The journey commands are rough, and are being fixed (26 November 2026). `ortho check` lists a blank only under
+  `blueprint/`, and `ortho add journey <name>` writes a stub that stops the commands that read the model. The add commands write journeys to
   `blueprint/journeys/`, and Plugged In keeps its own in `journeys/`; both are read.
 - It has no command that starts an agent in a role, or that stops a builder editing a journey. This repository enforces
   that for itself in its own CI; an app has to keep the rule by how it hands out work.

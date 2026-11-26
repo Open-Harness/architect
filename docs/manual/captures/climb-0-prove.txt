@@ -19,13 +19,13 @@ handle.claim machine path ✔
 handle.claim events ✔
 handle.claim who may call ✔
 handle.claim steps ✔
-handle.claim performance ✔ p50 1ms p95 2ms budget p95 150ms
-handle.claim coverage ✘ move handle.claim made by no journey
-handle.claim coverage ✘ outcome handle claimed reached by no journey
-handle.claim coverage ✘ rule handle.oneHolderPerName refused by no journey
-handle.claim coverage ✘ rule handle.oneNamePerPerson refused by no journey
+handle.claim performance ✔ p50 1ms p95 3ms budget p95 150ms
+handle.claim coverage not judged: move handle.claim made by no journey
+handle.claim coverage not judged: outcome handle claimed reached by no journey
+handle.claim coverage not judged: rule handle.oneHolderPerName refused by no journey
+handle.claim coverage not judged: rule handle.oneNamePerPerson refused by no journey
 handle.claim explainability ✔
-handle.claim 1 of 9 evals ✘ p50 1ms p95 2ms budget p95 150ms
+handle.claim 8 evals ✔, coverage not judged p50 1ms p95 3ms budget p95 150ms
 handle.release answer shape ✔
 handle.release declared errors ✔
 handle.release machine path ✔
@@ -33,30 +33,30 @@ handle.release events ✔
 handle.release who may call ✔
 handle.release steps ✔
 handle.release performance ✔ no timed calls
-handle.release coverage ✘ handle.release reached by no journey
+handle.release coverage not judged: handle.release reached by no journey
 handle.release explainability ✔
-handle.release 1 of 9 evals ✘ no timed calls
+handle.release 8 evals ✔, coverage not judged no timed calls
 handle.resolve answer shape ✔
 handle.resolve declared errors ✔
 handle.resolve machine path ✔
 handle.resolve events ✔
 handle.resolve who may call ✔
 handle.resolve steps ✔
-handle.resolve performance ✔ p50 8ms p95 14ms budget p95 150ms
+handle.resolve performance ✔ p50 6ms p95 14ms budget p95 150ms
 handle.resolve coverage ✔
 handle.resolve explainability ✔
-handle.resolve 9 evals ✔ p50 8ms p95 14ms budget p95 150ms
+handle.resolve 9 evals ✔ p50 6ms p95 14ms budget p95 150ms
 link.add answer shape ✔
 link.add declared errors ✔
 link.add machine path ✔
 link.add events ✔
 link.add who may call ✔
 link.add steps ✔
-link.add performance ✔ p50 13ms p95 13ms budget p95 150ms
-link.add coverage ✘ move link.add made by no journey
-link.add coverage ✘ outcome link listed reached by no journey
+link.add performance ✔ p50 11ms p95 11ms budget p95 150ms
+link.add coverage not judged: move link.add made by no journey
+link.add coverage not judged: outcome link listed reached by no journey
 link.add explainability ✔
-link.add 1 of 9 evals ✘ p50 13ms p95 13ms budget p95 150ms
+link.add 8 evals ✔, coverage not judged p50 11ms p95 11ms budget p95 150ms
 link.order answer shape ✔
 link.order declared errors ✔
 link.order machine path ✔
@@ -64,9 +64,9 @@ link.order events ✔
 link.order who may call ✔
 link.order steps ✔
 link.order performance ✔ no timed calls
-link.order coverage ✘ link.order reached by no journey
+link.order coverage not judged: link.order reached by no journey
 link.order explainability ✔
-link.order 1 of 9 evals ✘ no timed calls
+link.order 8 evals ✔, coverage not judged no timed calls
 link.remove answer shape ✔
 link.remove declared errors ✔
 link.remove machine path ✔
@@ -74,9 +74,9 @@ link.remove events ✔
 link.remove who may call ✔
 link.remove steps ✔
 link.remove performance ✔ no timed calls
-link.remove coverage ✘ link.remove reached by no journey
+link.remove coverage not judged: link.remove reached by no journey
 link.remove explainability ✔
-link.remove 1 of 9 evals ✘ no timed calls
+link.remove 8 evals ✔, coverage not judged no timed calls
 profile.get answer shape ✔
 profile.get declared errors ✔
 profile.get machine path ✔
@@ -88,5 +88,6 @@ profile.get coverage ✔
 profile.get explainability ✔
 profile.get 9 evals ✔ p50 6ms p95 6ms budget p95 150ms
 coverage ✔ moves 0/4 · outcomes 0/4 · refusals 3/6 · runtime refusals 0/7 (not counted: IdempotencyConflict, which no journey can cause: a step cannot send a second payload under a held request key)
-prove ✘ 9 failing
+ran 1 of 7 journeys (--only): coverage is judged by the whole run, ortho prove; 5 operations above not reached in full by this one
+prove ✘ 4 failing
 exit 1
