@@ -212,8 +212,12 @@ before marking one ready.
    `decisions/CX-open-sets.md`.
    - History: four 🔍 rounds. The needs relation is judged pairwise from the model. Where a set sits is judged as a
      matrix: 4 positions by 9 wrappers by 2 leaves, through the API, SDK, MCP and CLI.
-   - State: a 🔍 of the matrix was running at the wind-down.
-   - Next: answer that 🔍, mark it ready, land it. Its build is not started.
+   - State: the fifth 🔍 (at 281cbcc4) blocked. The matrix misses value forms that main declares: a raw
+     `Schema.Array` as the value itself, a `.check(...)` refinement on an array or a struct (Capxul's journal-entry
+     `lines`), `Schema.fromJsonString(...)`, `Blueprint.described(...)` and `Blueprint.optional` over a struct or a list.
+     Two nits: say that only `Blueprint.list` names `fields`, and tie the three copies of the wrappers together. The
+     findings are in a comment on #1175.
+   - Next: add those wrappers (or plant their refusal), get a 🔍 pass, mark it ready, land it. Its build is not started.
    - Collision: #1203 (snag #995, another goal's) also calls itself "m2 check 14". One of the two must take another
      number before both land.
 3. **Contracts one feature declares and another fills** (#1133). Its checks are #1210, from `goal-16/snag-1133-check`,
