@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { SafeTx, type SafeTransaction } from "../../main.ts";
+import { SafeTx, type SafeTransaction } from "../../index.ts";
 import { ZERO } from "../world/internal/testing.ts";
 
 // Expected digests: viem 2.57.20's hashTypedData over Safe 1.4.1's SafeTx type and domain (spikes/safe-hats-module/script/safe.ts:57-76),
@@ -56,6 +56,9 @@ describe("SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns", 
       ...BASE, safeTxGas: 5n, baseGas: 6n, gasPrice: 7n, gasToken: "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed", refundReceiver: OTHER_SAFE,
     }, "0x5e9368cb3ae3b44dde5d4386ebd5d7603e2f7a8c4708e739f7c9b36a8cf98a52"],
     ["empty data", 84532, SAFE, { ...BASE, data: "0x" }, "0x722daa1915a58ead1a492e4a9ce1e618d4adeb006ab045145b1020952664ae2f"],
+    ["numbers past 2^53 in value, nonce and every gas field", 84532, SAFE, {
+      ...BASE, value: 2n ** 200n + 3n, safeTxGas: 2n ** 64n + 5n, baseGas: 2n ** 128n + 6n, gasPrice: 2n ** 255n + 7n, nonce: 2n ** 70n + 9n,
+    }, "0xb7d4ae695b710cd7aa9926c1fc02ec7cb456dee6c52074298022cc2506c5e01d"],
   ] as const)("for %s", (_name, chainId, safe, tx, digest) => {
     expect(SafeTx.digest(chainId, safe, tx)).toBe(digest);
   });

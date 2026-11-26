@@ -6,6 +6,7 @@ src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's g
 src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for another chain id
 src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for empty data
 src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for every gas and refund field set
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for numbers past 2^53 in value, nonce and every gas field
 src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for the base transaction on Base Sepolia
 src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for the next nonce
 src/modules/safe-tx/safe-tx.test.ts > SafeTx.typedData > is the SafeTx type, a domain of the chain id and the Safe alone, and the nonce in the message

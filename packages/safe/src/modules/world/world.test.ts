@@ -1,17 +1,19 @@
 import { Effect } from "effect";
 import { describe, expect, test } from "vitest";
 import { Keys, type Hex } from "@orthograph/chain-evm/device";
-import { SafeAddress, SafeWorld } from "../../main.ts";
-import { ABI, CANON, codeAt, deploySafe, freshOwner, keccak, read, rpc, withWorld } from "./internal/testing.ts";
+import { SafeAddress, SafeWorld } from "../../index.ts";
+import { ABI, CANON, codeAt, deploySafe, balanceOf, freshOwner, keccak, read, rpc, txCount, withWorld } from "./internal/testing.ts";
 
 // Needs Foundry's Anvil on PATH, as CI's check-static has it. Expected code hashes: @safe-global/safe-deployments 1.37.67 (canonical);
-// SafeModuleSetup's runtime from @safe-global/safe-4337 0.3.0 (it has no immutables); the 4337 module's EntryPoint is v0.7's.
+// SafeModuleSetup's runtime from @safe-global/safe-4337 0.3.0 (it has no immutables); the 4337 module bound to EntryPoint v0.7.
 const CODE_HASHES = [
   ["SafeProxyFactory", CANON.proxyFactory, "0x50c3cdc4074750a7a974204a716c999edd37482f907608d960b2b025ee0b3317"],
   ["SafeL2", CANON.singleton, "0xb1f926978a0f44a2c0ec8fe822418ae969bd8c3f18d61e5103100339894f81ff"],
   ["MultiSend", CANON.multiSend, "0x0e4f7fc66550a322d1e7688e181b75e217e662a4f3f4d6a29b22bc61217c4b77"],
   ["MultiSendCallOnly", CANON.multiSendCallOnly, "0xecd5bd14a08c5d2122379900b2f272bdf107a7e92423c10dd5fe3254386c9939"],
   ["SafeModuleSetup", CANON.moduleSetup, "0xaf2d170bb766d2773c3fa88717f5b3599827478074d3767d1dee55e5c2f3fbcb"],
+  // Safe4337Module 0.3.0's creation code (@safe-global/safe-4337 0.3.0) run with EntryPoint v0.7: its one immutable.
+  ["Safe4337Module", CANON.safe4337Module, "0x2aea997c4e3cf0e2f333025372e219abcfde81c21fc2f8fb066414a5685dd3e0"],
 ] as const;
 const TIMEOUT = { timeout: 60_000 };
 
@@ -32,6 +34,19 @@ describe("SafeWorld.install, the world starter", () => {
       const [entryPoint] = yield* read(world.port, world.keys[1]!.address, CANON.safe4337Module, ABI.SUPPORTED_ENTRYPOINT);
       expect(entryPoint).toBe(CANON.entryPoint);
     })));
+
+  test("leaves the EntryPoint's address empty, and the world's own accounts as they were", TIMEOUT, () =>
+    withWorld((world) => Effect.gen(function* () {
+      const standing = Effect.forEach(world.keys, (key) => Effect.all([balanceOf(world.rpcUrl, key.address), txCount(world.rpcUrl, key.address)]));
+      const before = yield* standing;
+      yield* SafeWorld.install(world.rpcUrl);
+      expect(yield* codeAt(world.rpcUrl, CANON.entryPoint)).toBe("0x");
+      expect(yield* standing).toStrictEqual(before);
+    })));
+
+  test("a chain that does not answer is a ChainFault, not a defect", TIMEOUT, () =>
+    Effect.runPromise(SafeWorld.install("http://127.0.0.1:9").pipe(Effect.flip))
+      .then((error) => expect(error).toMatchObject({ _tag: "ChainFault" })));
 
   test("the factory's proxy creation code is SafeProxy 1.4.1's", TIMEOUT, () =>
     withWorld((world) => Effect.gen(function* () {

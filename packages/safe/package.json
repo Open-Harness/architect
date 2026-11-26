@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
-    ".": "./src/main.ts"
+    ".": "./src/index.ts"
   },
   "dependencies": {
     "@orthograph/chain-evm": "workspace:*",
@@ -22,8 +22,8 @@
     "tag": "next",
     "exports": {
       ".": {
-        "types": "./dist/main.d.ts",
-        "default": "./dist/main.js"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
       }
     }
   }

@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { describe, expect, test } from "vitest";
-import { SafeAddress } from "../../main.ts";
+import { SafeAddress } from "../../index.ts";
 import { expectedInitializer, keccak } from "../world/internal/testing.ts";
 
 // The fixed vectors, worked out with the implementation's formula (infrastructure:P/safe-address.ts:205-206) from SafeProxy 1.4.1's

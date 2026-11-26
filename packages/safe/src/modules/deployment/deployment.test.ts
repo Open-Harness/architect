@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { SafeDeployment } from "../../main.ts";
+import { SafeDeployment } from "../../index.ts";
 import { CANON, keccak } from "../world/internal/testing.ts";
 
 // Expected values: the issue's infrastructure citations (#1161) and @safe-global/safe-deployments 1.37.67 (v1.4.1, canonical),

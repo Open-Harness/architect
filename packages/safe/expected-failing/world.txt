@@ -1,4 +1,6 @@
 # #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > a chain that does not answer is a ChainFault, not a defect
+src/modules/world/world.test.ts > SafeWorld.install, the world starter > leaves the EntryPoint's address empty, and the world's own accounts as they were
 src/modules/world/world.test.ts > SafeWorld.install, the world starter > puts each contract's pinned code at its canonical address, with the canonical code hash
 src/modules/world/world.test.ts > SafeWorld.install, the world starter > puts the 4337 module at its address, bound to EntryPoint v0.7
 src/modules/world/world.test.ts > SafeWorld.install, the world starter > running it twice changes nothing and fails nothing
