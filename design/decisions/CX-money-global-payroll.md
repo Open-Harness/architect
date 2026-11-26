@@ -147,8 +147,8 @@ Each is a new outside dependency, so each is Aaron's call. None is needed for st
    their groups to `parties`, and Payment Entry to `payments` (CX-composable-pieces, section 6). Its decision already leaves "the received amount and exchange rates" for later
    (`CX-parties-payments.md`, "Also later"); the currency slice adds them to Payment Entry, and the account-currency
    pair to GL Entry, as new journeys.
-4. **Add the `contractors` piece** (section 2, steps 2 and 3), once `payments` holds Payment Entry and before the US tax
-   piece.
+4. **Add the `contractors` piece** (section 2, steps 2 and 3), once `payments` holds Payment Entry, on the main path; the US
+   tax piece is built alongside in its own lane.
 5. **Slice 10 (Bridge)** adds external accounts in a payee's currency and books a transfer's receipt as a payment
    between currencies. CX-bridge's Bank Transaction, which holds USDC even on a euro account, gains the account's own
    amount beside it.
@@ -246,13 +246,15 @@ separate thing and just like stay up to date with what we're doing."
 
 ## 8. Supersedes
 
-**Applied once Aaron answers decision 3, in one change dated that day.** Then one change rewrites each live doc and marks
+**Applied once Aaron answers decision 3, in one change dated that day,** which also renames this heading to
+`## Supersedes` so `tools/ci/supersedes.sh` reads it (it would fail today, while the live docs still hold the old
+words). Then one change rewrites each live doc and marks
 each dated record, and `git grep` finds each old phrase only in dated records and `design/process/`. Lines below are
 `<file>: "<old words>" → "<new words>"`; written as if decision 3 is US dollars.
 
 Live docs:
 
-- `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)" → "tax from a piece per jurisdiction, the United States in its own lane (`16-lane-payroll-tax.md`); contractors are their own piece (CX-money-global-payroll)"
+- `design/goals/16-capxul.md`: "tax from a module per jurisdiction, the United States only, in dollars (CX-payroll-tax)" → "tax from a piece per jurisdiction, the United States in its own lane; contractors are their own piece (CX-money-global-payroll)"
 - `design/goals/16-capxul.md`: "in USDC, the one dollar asset every Capxul company uses for now" → "in USDC, the reporting currency of today's companies (CX-money-global-payroll)"
 - `design/goals/16-capxul.md`: "parked by Aaron's one-dollar-asset call and unclaimed while parked" → "unparked by CX-money-global-payroll and claimed by Goal 16"
 - `design/goals/16-capxul.md`: "payslips, the pay run and taxes, each run posting" → "payslips and the pay run, with taxes from their own lane and contractors beside it, each run posting"
