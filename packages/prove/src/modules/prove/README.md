@@ -8,7 +8,10 @@ stopped when its scope closes. Test: `prove.test.ts` (acme passes; each planted 
 
 `ortho prove --empty` makes the starting world using the project's handlers and runs the journey steps using the
 scaffolds in that same world. It reports the blank reached on a red step and labels a passing step "proved by the
-description". It records no verdicts. `--only` selects a journey by its declared name.
+description". It records no verdicts. `--only` selects a journey by its declared name or by its file as `ortho brief` and `ortho model` list it
+(`journeys/claim-a-handle.ts`). A run of one journey left the others out, so it does not judge coverage: each operation's gap is
+printed as "coverage not judged", with what the run did not reach, the line before the last says how many journeys ran, and a
+green journey ends `prove ✔`. Every other eval is judged as in a whole run, and nothing is recorded as proven.
 
 A failing step is followed by a line naming the handler (`src/<thing>/<verb>.ts`) and the declaration it answers to, and a
 missing span says what was expected and which spans the call produced (sorted, since concurrent spans start in no fixed

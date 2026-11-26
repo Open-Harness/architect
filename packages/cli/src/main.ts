@@ -5,6 +5,7 @@ import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import { spawn } from "node:child_process";
+import { constants } from "node:os";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -25,6 +26,7 @@ import { TelemetryCommand } from "#modules/telemetry/service.js";
 import { WatchCommand } from "#modules/watch/service.js";
 import { proveAddress, stagingLive } from "#modules/staging/service.js";
 import { Compiler, nodeSource } from "@orthograph/compiler";
+import { App } from "@orthograph/preset";
 
 /** `--root`: the app's folder, the current one by default; `what` says what the command does there. */
 const rootFlag = (what: string) => Flag.String("root").pipe(Flag.withDefault(process.cwd()), Flag.withDescription(`The app's folder ${what} (the current folder by default)`));
@@ -79,7 +81,7 @@ const prove = Command.make(
     port: Flag.Int("port").pipe(Flag.withDefault(0), Flag.withDescription("The local port for the app under proof; 0 picks a free one")),
     empty: Flag.Boolean("empty").pipe(Flag.withDefault(false), Flag.withDescription("Run the journeys on the scaffolded handlers, recording no verdict")),
     // The journeys to judge, by name: any number of times with `--env staging` (CX-staging), at most once with `--env local`.
-    only: Flag.String("only").pipe(Flag.atLeast(0), Flag.withDescription("Run only the journey with this declared name; repeat it to name several with --env staging")),
+    only: Flag.String("only").pipe(Flag.atLeast(0), Flag.withDescription("Run only this journey, named by its declared name or by its file as ortho brief lists it; repeat it to name several with --env staging")),
     // Only the journeys a change since the last proof's record touches; everything, saying why, when it cannot tell (ST1.23).
     changed: Flag.Boolean("changed").pipe(Flag.withDefault(false), Flag.withDescription("Run only the journeys a change since the last proof touches")),
     // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).
@@ -219,7 +221,7 @@ const addPlugin = (kind: Kind) =>
         Effect.catchTag("MountRefused", (e) => fail(e.message, 2)),
       ),
   ).pipe(Command.withDescription(ADD_PLUGIN[kind]));
-// `ortho add journeys <thing>`: a stub per path, role and declared error, writing only the ones that are missing (K16 e).
+// `ortho add journeys <thing>`: a stub per path, role, declared error and rule an operation can break, writing only the ones that are missing (K16 e).
 const addJourneys = Command.make(
   "journeys",
   { thing: Argument.String("thing").pipe(Argument.withDescription("The declared thing whose journeys are stubbed")), root: rootFlag("whose model is read") },
@@ -240,7 +242,7 @@ const addJourneys = Command.make(
       }),
       Effect.catchTags({ BlueprintInvalid: (e) => fail(e.problems.join("\n"), 2), SourceError: (e) => fail(e.message, 2) }),
     ),
-).pipe(Command.withDescription("Stub a journey for each path, role and declared error of a thing, keeping those already written"));
+).pipe(Command.withDescription("Stub a journey for each path, role, declared error and rule of a thing's operations, keeping those already written"));
 const add = Command.make("add").pipe(
   Command.withDescription("Add a declaration, a journey or a plugin to the app"),
   Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
@@ -262,7 +264,24 @@ const newAdapter = Command.make(
           Effect.catchTag("NewRefused", (e) => fail(e.message, 2)),
         ),
 ).pipe(Command.withDescription("Generate an adapter from a service's own OpenAPI description"));
-const newCommand = Command.make("new").pipe(Command.withDescription("Create something new from a source, such as an adapter from an API description"), Command.withSubcommands([newAdapter]));
+// `ortho new app <name>`: the starter project, as a folder named <name> in the working directory (the same one `npm create orthograph` makes).
+const newApp = Command.make(
+  "app",
+  {
+    name: Argument.String("name").pipe(Argument.variadic(), Argument.withDescription("The new app's name, lower case words joined by dashes; its folder takes the same name")),
+    root: Flag.String("root").pipe(Flag.withDefault(process.cwd()), Flag.withDescription("The folder the new app's folder is made in (the current folder by default)")),
+  },
+  ({ name, root }) =>
+    App.nameIn(name).pipe(
+      Effect.flatMap((one) => App.create({ parent: root, name: one })),
+      Effect.flatMap((lines) => Console.log(lines.join("\n"))),
+      Effect.catchTag("AppRefused", (e) => fail(e.message, 2)),
+    ),
+).pipe(Command.withDescription("Make a new app, the starter project, in a folder of its name"));
+const newCommand = Command.make("new").pipe(
+  Command.withDescription("Create something new: an app from the starter, or an adapter from an API description"),
+  Command.withSubcommands([newAdapter, newApp]),
+);
 
 const tsFiles = (dir: string): ReadonlyArray<string> =>
   existsSync(dir) ? readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? tsFiles(join(dir, d.name)) : d.name.endsWith(".ts") ? [join(dir, d.name)] : [])) : [];
@@ -468,8 +487,11 @@ const handOff = (entry: string) => {
   });
   child.on("exit", (code, signal) => {
     for (const s of signals) process.off(s, forward);
-    if (signal !== null) process.kill(process.pid, signal);
-    else process.exit(code ?? 1);
+    // The same signal ends this process too; one Node ignores (SIGPIPE) would leave it to exit 0, so the exit is the shell's 128 + n.
+    if (signal !== null) {
+      process.kill(process.pid, signal);
+      process.exit(128 + constants.signals[signal]);
+    } else process.exit(code ?? 1);
   });
 };
 
