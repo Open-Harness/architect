@@ -1,0 +1,5 @@
+# Snag #1001 (G16-journey-clocks): prove's journeys share one clock and lose their sessions past seven days. The check came first; the build that gives each journey its own clock and signs the cast in again after each step takes these lines off.
+m2/10-journey-clocks.test.ts > 10 each journey has its own clock, and its cast stays signed in across a step > a journey that sorts after two that stepped a month starts on the environment's day all the same, and may move to 12 January
+m2/10-journey-clocks.test.ts > 10 each journey has its own clock, and its cast stays signed in across a step > a journey's clock starts on its starting world's day, after the starting world's own month, and its cast survives both steps
+m2/10-journey-clocks.test.ts > 10 each journey has its own clock, and its cast stays signed in across a step > acme's own journeys still pass beside them, and the whole run proves, leaving nothing running
+m2/10-journey-clocks.test.ts > 10 each journey has its own clock, and its cast stays signed in across a step > one journey steps 31 days and its next calls are still allowed, as the same person, at the day it stepped to
