@@ -18,8 +18,9 @@ every holding to it, and puts the difference into profit and loss. If Chainlink 
 stops until someone types one in, and the books say it was typed.
 
 Every coin that comes in is kept as a lot, with its date and cost. When coins go out, the oldest go first. The books
-show the gain against cost on each sale, and the month-end mark carries the rest. The accountant gets every lot, so
-they can use whatever method they choose when they file.
+show the gain against cost on each sale, and the month-end mark carries the rest. The accountant gets every lot and
+every disposal. Picking specific lots instead of oldest-first has to be recorded when the coins go out, not at filing,
+so it is a later setting if anyone asks for it.
 
 It's all core, no optional piece. Nothing is left for Aaron to decide.
 
@@ -77,8 +78,11 @@ It's all core, no optional piece. Nothing is left for Aaron to decide.
    month starts from this one. The adjustment is also exactly the difference between book value and tax cost, which is
    what the accountant needs for deferred tax.
 5. **The accountant's file.** Capxul prepares the books and doesn't file them (Aaron: "these are going to go to a real
-   accountant before filing anyway"). With every lot and every disposal in hand, the accountant can apply specific
-   identification, or anything else, at filing.
+   accountant before filing anyway"). The accountant gets every lot and every disposal, so they can check the books'
+   FIFO, compute deferred tax and apply anything a return allows after the fact. One choice can't be made at filing:
+   specific identification must be recorded in the books no later than the disposal (Treas. Reg. 1.1012-1(j)(2)(ii)),
+   or FIFO applies. So the books are FIFO, and choosing lots per disposal is a later setting, made before the disposals
+   it covers, if a company or its accountant asks for it.
 6. **Reports**, from ASC 350-60's disclosures: holdings per asset (units, cost, fair value); each year's roll-forward
    (additions, dispositions, gains, losses); cumulative realised gains and losses; the cost method (FIFO); and the lot
    export.
@@ -156,7 +160,8 @@ USDC needs P1 to P4 and P6; ether needs P5 as well.
 - **The accountant's review** comes before Capxul onboards real money; the building goes ahead now (Aaron: "we will do
   before onboarding real money but we are building none the less"). The review covers the classifications in 1(b), the
   presentation, and the deferred tax.
-- **The tax method** is the accountant's at filing. The books keep lots and show FIFO.
+- **The tax method** is FIFO, recorded as each disposal happens; specific identification, if wanted, has to be chosen at
+  disposal (Treas. Reg. 1.1012-1(j)(2)(ii)), never at filing. The books keep every lot for the accountant.
 
 ## 2. USDC under US GAAP: the research
 
@@ -361,7 +366,8 @@ On the second draft:
 - On an accountant's review: "we will do before onboarding real money but we are building none the less".
 - On the USDC tax basis: "what does that look like to let the accountant decide? remember we are just preping books its
   not like we are submiting the actual books ourselves. these are going to go to a real accountant before filing
-  anyway". So the books keep every lot and show FIFO, and the accountant chooses the method at filing.
+  anyway". So the books keep every lot and record FIFO at each disposal; the accountant reviews and files from them. Choosing
+  lots specifically would have to be made at disposal, not at filing, so it is a later setting, not a filing-time choice.
 
 ## 9. What it changes
 
