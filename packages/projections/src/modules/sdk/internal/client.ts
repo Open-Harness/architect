@@ -68,7 +68,7 @@ export const clientSource = (name: string, client: string, hasDevice: boolean): 
     "  send: Effect.Effect<A, E, R>,",
     "): Effect.Effect<A, E | InvalidPayload, R> =>",
     "  Effect.gen(function* () {",
-    "    yield* Schema.encodeUnknownEffect(declaration.payloadSchema)(payload).pipe(Effect.mapError((cause) => new InvalidPayload({ message: said((cause as { readonly issue: Parameters<typeof said>[0] }).issue).join(\"; \") })));",
+    "    yield* Schema.encodeUnknownEffect(declaration.payloadSchema)(payload, { errors: \"all\" }).pipe(Effect.mapError((cause) => new InvalidPayload({ message: said((cause as { readonly issue: Parameters<typeof said>[0] }).issue).join(\"; \") })));",
     "    const key = options?.requestKey ?? (yield* Effect.flatMap(SecureRandom.SecureRandom, (random) => random.uuidV4()));",
     "    const tries = retry ? Effect.retry(send, { schedule: Schedule.exponential(\"50 millis\"), times: 3, while: isTransport }) : send;",
     "    return yield* tries.pipe(",

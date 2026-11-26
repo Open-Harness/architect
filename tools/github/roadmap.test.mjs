@@ -27,13 +27,13 @@ test("dependency order: an item starts the day after everything it needs ends", 
   assert.deepEqual([f.a, f.b, f.c], [{ start: "2026-11-23", end: "2026-11-23" }, { start: "2026-11-24", end: "2026-11-24" }, { start: "2026-11-25", end: "2026-11-25" }]);
 });
 
-test("parallel items share the day's pace, capped at 1/width each, the superagent's before Capxul's", () => {
-  const rows = [mk("sa", "provisional", "coding agent"), mk("cx", "provisional", "getting paid"), mk("cx2", "provisional", "books")];
+test("parallel items share the day's pace, capped at 1/width each, the alpha's first, then Capxul's path in order (K44)", () => {
+  const rows = [mk("sa", "provisional", "getting paid"), mk("cx", "provisional", "books"), mk("cx2", "provisional", "alpha")];
   const f = forecast({ rows, today, pace: 4, perItem: 4, width: 4 });
   // each item may take 1 pull request a day, so all three run at once and end on day 3.
   assert.deepEqual(Object.values(f).map((d) => d.end), ["2026-11-26", "2026-11-26", "2026-11-26"]);
   const scarce = forecast({ rows, today, pace: 1, perItem: 1, width: 1 });
-  assert.deepEqual([scarce.sa.end, scarce.cx.end, scarce.cx2.end], ["2026-11-23", "2026-11-24", "2026-11-25"], "the superagent's milestone first, then Capxul's in order");
+  assert.deepEqual([scarce.cx2.end, scarce.cx.end, scarce.sa.end], ["2026-11-23", "2026-11-24", "2026-11-25"], "the alpha first, then the books, then getting paid");
 });
 
 test("a row a milestone needs is scheduled first, but only milestone rows are returned; a done need costs nothing", () => {
@@ -106,7 +106,7 @@ test("facts: Start is the earlier of the lane's first day and the first evidence
 
 test("the superagent's milestones run in order, skipping an empty one; a claimed row starts today", () => {
   const rows = [mk("a", "provisional", "coding agent"), mk("b", "provisional", "extraction"), mk("c", "provisional", "launch"), mk("p", "provisional", "books"), mk("q", "provisional", "banking")];
-  const f = forecast({ rows, today, pace: 4, perItem: 4, width: 1 });
+  const f = forecast({ rows: rows.slice(0, 3), today, pace: 4, perItem: 4, width: 1 });
   assert.deepEqual([f.a.end, f.b.start, f.b.end, f.c.start, f.c.end], ["2026-11-23", "2026-11-24", "2026-11-24", "2026-11-25", "2026-11-25"]);
   // Capxul's two milestones share the pace and do not wait on each other: with room to spare they end the same day.
   assert.equal(forecast({ rows: rows.slice(3), today, pace: 8, perItem: 4, width: 2 }).p.end, forecast({ rows: rows.slice(3), today, pace: 8, perItem: 4, width: 2 }).q.end);

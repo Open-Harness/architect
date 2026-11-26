@@ -15,7 +15,7 @@ export const applySteps = ({ steps, state, repo, rowById, gh, ghAll }) => {
     if (s.do === "updateLabel") gh(`repos/${repo}/labels/${encodeURIComponent(s.name)}`, { method: "PATCH", body: { color: s.color, description: s.description } });
     if (s.do === "createMilestone") milestones.set(s.title, gh(`repos/${repo}/milestones`, { method: "POST", body: { title: s.title, description: s.description } }).number);
     if (s.do === "updateMilestone") gh(`repos/${repo}/milestones/${s.number}`, { method: "PATCH", body: { description: s.description } });
-    if (s.do === "setMilestoneDue") gh(`repos/${repo}/milestones/${milestones.get(s.title)}`, { method: "PATCH", body: { due_on: `${s.day}T12:00:00Z` } });
+    if (s.do === "setMilestoneDue") gh(`repos/${repo}/milestones/${milestones.get(s.title)}`, { method: "PATCH", body: { due_on: s.day ? `${s.day}T12:00:00Z` : null } });
     if (s.do === "createIssue") {
       const i = gh(`repos/${repo}/issues`, { method: "POST", body: { title: s.title, body: s.body, labels: s.labels, milestone: milestones.get(s.milestone), type: s.type } });
       created.set(s.key, { number: i.number, id: i.id });
@@ -36,8 +36,13 @@ export const applySteps = ({ steps, state, repo, rowById, gh, ghAll }) => {
       execFileSync("gh", ["api", "graphql", "-f", `query=${TYPE_MUTATION}`, "-f", `o=${state.ownerId}`, "-f", `n=${s.name}`, "-f", `c=${s.color}`, "-f", `d=${s.description}`], { encoding: "utf8" });
     }
     if (s.do === "setType") gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { type: s.type } });
+    if (s.do === "removeBlockedBy") gh(`repos/${repo}/issues/${s.issue}/dependencies/blocked_by/${issueRef(s.blocker).id}`, { method: "DELETE" });
     if (s.do === "addBlockedBy") gh(`repos/${repo}/issues/${issueRef(s.issue).number}/dependencies/blocked_by`, { method: "POST", body: { issue_id: issueRef(s.blocker).id } });
     if (s.do === "addSubIssue") gh(`repos/${repo}/issues/${issueRef(s.parent).number}/sub_issues`, { method: "POST", body: { sub_issue_id: issueRef(s.child).id } });
+    if (s.do === "setParked") {
+      if (s.parked) gh(`repos/${repo}/issues/${s.number}/labels`, { method: "POST", body: { labels: ["parked"] } });
+      else gh(`repos/${repo}/issues/${s.number}/labels/parked`, { method: "DELETE" });
+    }
     if (s.do === "moveIssue") {
       if (s.milestone) gh(`repos/${repo}/issues/${s.number}`, { method: "PATCH", body: { milestone: milestones.get(s.milestone) } });
       if (s.addLabels.length) gh(`repos/${repo}/issues/${s.number}/labels`, { method: "POST", body: { labels: s.addLabels } });
