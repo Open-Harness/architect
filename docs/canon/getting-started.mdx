@@ -57,11 +57,14 @@ ortho dev --port 8787
 ```
 
 In a second terminal, from the app's folder, call it through its generated CLI. The CLI is named after the app, so here
-it is `my-links`, and Node runs it from its generated source.
+it is `my-links`, and Node runs it from its generated source. `system health` asks the running app whether it is up: it
+prints `ok` and exits 0, and when nothing is listening at that address it fails and exits 1.
 
 ```sh planned=M2.09
-MY_LINKS_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts --help
+MY_LINKS_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health
 ```
+
+Run `node generated/cli/src/main.ts --help` to see every operation the generated CLI can call.
 
 An operation that needs a signed-in caller also needs a session token: set `MY_LINKS_TOKEN` to the token a sign-in gave
 you, beside `MY_LINKS_URL`.
