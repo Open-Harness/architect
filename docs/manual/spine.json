@@ -1,0 +1,124 @@
+{
+  "note": "The manual's order: an opening, eleven chapters in four parts, and the reference at the back. build.mjs draws the page from this, and check.mjs holds each written chapter to it. A chapter with `file` is written; one with only `planned` is shown in its place as not written yet. `film` is its folder under docs/explainer/films, and `section` its recording, record/NN-<section>.sh.",
+  "opening": {
+    "title": "The hard part is the next morning",
+    "file": "chapters/00-why-this-exists.md",
+    "film": "why"
+  },
+  "parts": [
+    {
+      "title": "Before any code",
+      "chapters": [
+        {
+          "n": 1,
+          "title": "Plan it",
+          "question": "What is the system, and what don't we know yet?",
+          "file": "chapters/01-plan-it.md",
+          "film": "plan-it"
+        },
+        {
+          "n": 2,
+          "title": "Spike what you doubt",
+          "question": "Will the part I'm unsure of actually work?",
+          "planned": "chapters/02-spike-what-you-doubt.md",
+          "film": "spike",
+          "section": "spike"
+        },
+        {
+          "n": 3,
+          "title": "Describe it",
+          "question": "How does the plan become something the framework can check?",
+          "planned": "chapters/03-describe-it.md",
+          "film": "describe",
+          "section": "describe"
+        }
+      ]
+    },
+    {
+      "title": "Build it",
+      "chapters": [
+        {
+          "n": 4,
+          "title": "Say what done means",
+          "question": "How will I know it's right without reading the code?",
+          "file": "chapters/04-say-what-done-means.md",
+          "film": "say-done"
+        },
+        {
+          "n": 5,
+          "title": "Build until green",
+          "question": "How do I hand work to an agent and get back something proved?",
+          "file": "chapters/05-build-until-green.md",
+          "film": "build-green"
+        },
+        {
+          "n": 6,
+          "title": "Review without reading the code",
+          "question": "Is this change what I asked for, and nothing more?",
+          "planned": "chapters/06-review-without-reading-the-code.md",
+          "film": "review",
+          "section": "review"
+        }
+      ]
+    },
+    {
+      "title": "Run it",
+      "chapters": [
+        {
+          "n": 7,
+          "title": "Run it, break it, read the trace",
+          "question": "When something looks wrong, how do I find out why?",
+          "file": "chapters/07-run-it-and-read-the-trace.md",
+          "film": "read-trace"
+        },
+        {
+          "n": 8,
+          "title": "Stage it",
+          "question": "How does it get from my machine to a real address?",
+          "planned": "chapters/08-stage-it.md",
+          "film": "stage",
+          "section": "stage"
+        },
+        {
+          "n": 9,
+          "title": "Watch it",
+          "question": "Is it healthy, and what changed this week?",
+          "planned": "chapters/09-watch-it.md",
+          "film": "watch",
+          "section": "watch"
+        }
+      ]
+    },
+    {
+      "title": "Live with it",
+      "chapters": [
+        {
+          "n": 10,
+          "title": "Change it, months later",
+          "question": "I need one rule different. What else has to change?",
+          "planned": "chapters/10-change-it-months-later.md",
+          "film": "change",
+          "section": "change"
+        },
+        {
+          "n": 11,
+          "title": "More than one agent",
+          "question": "How do several agents work at once without stepping on each other?",
+          "planned": "chapters/11-more-than-one-agent.md",
+          "film": "agents",
+          "section": "agents"
+        }
+      ]
+    }
+  ],
+  "reference": [
+    {
+      "title": "Working with your agents",
+      "file": "working-with-your-agents.md"
+    },
+    {
+      "title": "The agent kit",
+      "file": "kit/README.md"
+    }
+  ]
+}

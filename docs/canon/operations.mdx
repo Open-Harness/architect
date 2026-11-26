@@ -11,7 +11,7 @@ questions:
 status: specified
 milestone: M1
 slices: [M1.20, M1.26, M3.16]
-decisions: [K5, O2, N1]
+decisions: [K5, O2, N1, K46]
 links: [machines, invariants, roles, handlers, doors, traces]
 ---
 
@@ -202,7 +202,7 @@ them: `steps.load(…)` and `steps.record(…)`. Each step is one span named `<t
 
 Three rules decide what a step is (K5, seam 3):
 
-- **A step is a span inside one attempt.** It is not durable work, and nothing resumes it. Durable work is a workflow.
+- **A step is a span inside one attempt.** It is not durable work, and nothing resumes it. Work that waits is a thing's state, and work that belongs to no single thing is a workflow (K46).
 - **The handler chooses which steps run.** The declaration names the parts; the handler's own code takes the path.
 - **A rerun runs them again.** When the commit loses a race with another call, the whole attempt is run again, steps
   and all, up to a fixed number of times. The call is named once, before its first attempt, and each attempt's span carries that name
@@ -449,8 +449,8 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
 - **Not a span.** A step makes a span, but the span, its attributes and how a refusal looks in a trace are on
   `traces`.
 - **Not a door.** An operation says what a call is; `doors` says what reaches it and from where.
-- **Not a workflow.** A step lives inside one attempt and is run again on a rerun. Work that must survive a crash,
-  or wait for something, is a workflow (M3.01).
+- **Not a workflow.** A step lives inside one attempt and is run again on a rerun. Work that waits is a thing in a
+  state ([machines](machines.mdx), K46). A workflow is for durable work that belongs to no single thing (M3.01).
 - **Not the commit.** An operation's writes land in one commit at the end. What that is, and where, is on `stores`.
 
 ## Where it lives
@@ -549,4 +549,13 @@ sending. It costs one kept answer per key. Leave it off when a second call is ha
 <Note kind="status" slice="M1.26">
   Today eval 6 requires every declared step on an answered call, and there is no `optional`. A handler that skips a
   step on a successful path fails prove, and nothing warns about a step the handler never calls until prove runs.
+</Note>
+
+<Note kind="decision" decision="K46">
+  An operation stays short: one call, one commit, one store (Aaron, 26 November 2026). Two things follow. Work that waits
+  is a thing's state ([machines](machines.mdx)), so an operation is never held open for an answer; the answer is another
+  operation, checked like any other when it arrives. And when one act has to change two places and the other half is
+  only data, the data is sealed into the one call: a private field of a chain operation travels with the signed call to
+  the relayer, and the chain carries only a salted hash of it. One operation and one signature then cover both. Designed,
+  with no slice; K46 has the sketch, and says why the order of anything that spans a wait belongs in the blueprint.
 </Note>

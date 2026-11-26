@@ -1,0 +1,254 @@
+<title>The Manual, Planned</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* A reading page: a serif set for long reading, a quiet sans for structure, the films' navy only where a terminal is. Left rail of contents on wide screens. */
+:root {
+  --paper: #fcfcfd; --ink: #141c27; --ink2: #3d4a5c; --muted: #6b7787; --rule: #e3e7ee; --wash: #f3f5f8;
+  --accent: #0b5cad; --term: #0d1b2e; --termink: #d9e4f2; --termdim: #8ea3c0; --termcmd: #6cc3ff; --termok: #5bd69c;
+  --ok: #0f7a4e; --okbg: #e6f5ee; --warn: #9a5800; --warnbg: #fdf2e2; --todo: #6b7787; --todobg: #f0f2f5;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif; --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0b1320; --ink: #e8edf4; --ink2: #b4c0cf; --muted: #8593a6; --rule: #223146; --wash: #111c2c;
+  --accent: #6cb8ff; --term: #060d18; --ok: #5bd69c; --okbg: #0f2a22; --warn: #f0b35c; --warnbg: #2a2010; --todo: #8593a6; --todobg: #162234; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #0b1320; --ink: #e8edf4; --ink2: #b4c0cf; --muted: #8593a6; --rule: #223146; --wash: #111c2c;
+  --accent: #6cb8ff; --term: #060d18; --ok: #5bd69c; --okbg: #0f2a22; --warn: #f0b35c; --warnbg: #2a2010; --todo: #8593a6; --todobg: #162234; color-scheme: dark; }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 19px; line-height: 1.6; font-optical-sizing: auto; -webkit-font-smoothing: antialiased; }
+.page { max-width: 1180px; margin: 0 auto; padding-block: 56px 120px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); display: grid; grid-template-columns: 1fr; gap: 40px; }
+@media (min-width: 1060px) { .page { grid-template-columns: 210px minmax(0, 1fr); gap: 64px; } .rail { position: sticky; top: calc(32px + env(safe-area-inset-top, 0px)); align-self: start; } }
+.rail { font-family: var(--sans); font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+.rail b { font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 14px 0 4px; }
+.rail b:first-child { margin-top: 0; }
+.rail a { color: var(--ink2); text-decoration: none; padding: 2px 0; } .rail a:hover { color: var(--accent); }
+main { min-width: 0; display: flex; flex-direction: column; }
+main > * { min-width: 0; }
+p, li { max-width: 34em; } p { margin: 0 0 1em; }
+.kicker { font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(38px, 6vw, 58px); line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 20px; text-wrap: balance; font-variation-settings: "opsz" 60; }
+.lede { font-size: 23px; line-height: 1.45; color: var(--ink2); max-width: 30em; margin-bottom: 0; }
+h2 { font-family: var(--sans); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 88px 0 10px; padding-top: 18px; border-top: 1px solid var(--rule); }
+h3 { font-family: var(--serif); font-weight: 600; font-size: 32px; line-height: 1.15; letter-spacing: -0.012em; margin: 0 0 18px; text-wrap: balance; font-variation-settings: "opsz" 40; }
+h4 { font-family: var(--sans); font-weight: 600; font-size: 16px; margin: 30px 0 8px; }
+ul, ol { padding-left: 1.15em; margin: 0 0 1em; } li { margin-bottom: 0.4em; } li::marker { color: var(--muted); }
+code { font-family: var(--mono); font-size: 0.8em; background: var(--wash); padding: 0.1em 0.35em; border-radius: 3px; }
+b { font-weight: 600; } em { font-style: italic; }
+a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.aside { font-family: var(--sans); font-size: 15.5px; line-height: 1.55; color: var(--ink2); border-left: 2px solid var(--rule); padding-left: 16px; max-width: 36em; margin: 0 0 1.2em; }
+
+/* The spine: the proposed contents, as a sequence. */
+.spine { list-style: none; padding: 0; margin: 8px 0 0; counter-reset: none; }
+.part { font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 34px 0 6px; }
+.part:first-child { margin-top: 6px; }
+.ch { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr) auto; gap: 4px 14px; align-items: baseline; padding: 14px 0; border-top: 1px solid var(--rule); max-width: none; margin: 0; }
+.ch .n { font-family: var(--serif); font-size: 30px; line-height: 1; color: var(--muted); font-variant-numeric: lining-nums tabular-nums; font-variation-settings: "opsz" 40; }
+.ch .t { font-weight: 600; font-size: 21px; line-height: 1.3; }
+.ch .q { grid-column: 2; font-size: 17px; color: var(--ink2); line-height: 1.5; }
+.ch .m { grid-column: 2; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+.ch .s { grid-row: 1; grid-column: 3; }
+.ch.new .n { color: var(--accent); }
+.tag { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.tag.done { color: var(--ok); background: var(--okbg); } .tag.new { color: var(--warn); background: var(--warnbg); } .tag.todo { color: var(--todo); background: var(--todobg); }
+@media (max-width: 560px) { .ch { grid-template-columns: 2.4rem minmax(0, 1fr); } .ch .s { grid-row: auto; grid-column: 2; justify-self: start; } .ch .n { font-size: 24px; } }
+
+/* The draft opening, set as it would read. */
+.draft { border: 1px solid var(--rule); border-radius: 6px; padding: clamp(22px, 4vw, 44px); background: var(--paper); margin: 8px 0 0; }
+.draft .kicker { color: var(--muted); }
+.draft h3 { font-size: clamp(30px, 4.4vw, 42px); font-variation-settings: "opsz" 60; }
+.draft p { font-size: 20px; }
+.layers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; margin: 18px 0 24px; font-family: var(--sans); }
+.layers div { padding: 14px 16px; border-right: 1px solid var(--rule); } .layers div:last-child { border-right: 0; }
+.layers b { display: block; font-size: 15px; } .layers span { font-size: 14px; color: var(--ink2); line-height: 1.45; display: block; margin-top: 4px; }
+.layers .you { background: var(--wash); }
+@media (max-width: 640px) { .layers { grid-template-columns: 1fr; } .layers div { border-right: 0; border-bottom: 1px solid var(--rule); } .layers div:last-child { border-bottom: 0; } }
+
+/* A chapter opener and a terminal, as specimens. */
+.specimen { border: 1px solid var(--rule); border-radius: 6px; padding: clamp(22px, 4vw, 44px); margin: 8px 0 0; }
+.opener { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 22px; align-items: end; margin-bottom: 22px; }
+.opener .big { font-family: var(--serif); font-size: clamp(64px, 10vw, 104px); line-height: 0.8; color: var(--accent); font-variant-numeric: lining-nums; font-variation-settings: "opsz" 60; }
+.opener .kicker { margin: 0 0 6px; }
+.opener h3 { margin: 0; font-size: clamp(30px, 4.4vw, 40px); }
+.stands { font-family: var(--sans); font-size: 15px; line-height: 1.55; color: var(--ink2); background: var(--wash); border-radius: 6px; padding: 12px 16px; max-width: none; margin: 0 0 22px; }
+.stands b { color: var(--ink); }
+.fourpart { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; font-family: var(--sans); font-size: 14px; margin: 0 0 22px; }
+.fourpart div { background: var(--paper); padding: 10px 12px; color: var(--ink2); } .fourpart b { display: block; color: var(--ink); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 2px; }
+@media (max-width: 640px) { .fourpart { grid-template-columns: 1fr 1fr; } }
+figure.term { margin: 0; border-radius: 6px; overflow: hidden; background: var(--term); }
+figure.term figcaption { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 8px 14px; font-family: var(--mono); font-size: 12px; color: var(--termdim); border-bottom: 1px solid rgba(255,255,255,0.08); }
+figure.term figcaption em { font-style: normal; color: var(--termok); }
+figure.term pre { margin: 0; padding: 14px 0; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.7; color: var(--termink); }
+figure.term pre span { display: block; padding: 0 16px; white-space: pre; min-width: max-content; }
+figure.term .cmd { color: var(--termcmd); } figure.term .dim { color: var(--termdim); } figure.term .no { color: #ff8a8a; }
+
+/* Decisions. */
+ol.ask { list-style: none; padding: 0; counter-reset: ask; }
+ol.ask li { counter-increment: ask; display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: 2px 10px; max-width: 40em; padding: 14px 0; border-top: 1px solid var(--rule); margin: 0; }
+ol.ask li::before { content: counter(ask); font-family: var(--serif); font-size: 24px; color: var(--accent); line-height: 1.2; grid-row: span 2; }
+ol.ask b { font-size: 19px; } ol.ask span { grid-column: 2; font-size: 17px; color: var(--ink2); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 8px 36px; }
+.cols > * { min-width: 0; }
+</style>
+
+<div class="page">
+  <nav class="rail" aria-label="Contents">
+    <b>The plan</b>
+    <a href="#changes">What changes</a>
+    <a href="#spine">The spine</a>
+    <a href="#opening">The opening, drafted</a>
+    <a href="#plan-it">Chapter 1: Plan it</a>
+    <a href="#look">The look</a>
+    <a href="#existing">What happens to what exists</a>
+    <a href="#decide">Five decisions</a>
+  </nav>
+
+  <main>
+    <p class="kicker">Orthograph · the manual · a plan before it is rebuilt</p>
+    <h1>One app, from an idea to a system you trust</h1>
+    <p class="lede">The manual should read as one story. It opens with the problem and the answer, then follows a single app from the first conversation about it to a change made months later. This page is the plan for that, set in the type I am proposing.</p>
+
+    <h2 id="changes">What changes</h2>
+    <h3>Four changes to the pilot</h3>
+    <ol>
+      <li><b>It opens with the problem and the solution.</b> Today it opens with a page about roles, before you know why there are roles.</li>
+      <li><b>It gains a first chapter: planning.</b> Before anything is described, you and an agent talk the system through until it fits on one page. Nothing in the pilot covers this.</li>
+      <li><b>It has one spine.</b> Every chapter is a stage in the life of Plugged In, in order, grouped into four parts. The roles and the kit move to the back, as reference, and are met in the story as they appear.</li>
+      <li><b>It reads like a book, not a dashboard.</b> A serif for reading, a quiet sans for structure, the films' navy only for terminals, and contents that stay in view.</li>
+    </ol>
+
+    <h2 id="spine">The spine</h2>
+    <h3>Eleven chapters in four parts</h3>
+    <p>Each chapter answers one question you would ask at that point. The line under it is the moment in Plugged In's life that it shows.</p>
+    <div class="spine">
+      <div class="part">Opening</div>
+      <div class="ch new"><span class="n">0</span><span class="t">Why this exists</span><span class="s"><span class="tag new">new</span></span><span class="q">What is hard about building with agents, and what Orthograph does about it.</span><span class="m">The problem, the answer, how to read the manual, and the cast of roles in five lines.</span></div>
+
+      <div class="part">Part one · Before any code</div>
+      <div class="ch new"><span class="n">1</span><span class="t">Plan it</span><span class="s"><span class="tag new">new</span></span><span class="q">What is the system, and what don't we know yet?</span><span class="m">"Claim a name, keep a public page of links" becomes one page: three things, who may do what, what must stay true, and two doubts.</span></div>
+      <div class="ch"><span class="n">2</span><span class="t">Spike what you doubt</span><span class="s"><span class="tag todo">to write</span></span><span class="q">Will the part I'm unsure of actually work?</span><span class="m">One doubt from the plan, answered in throwaway code, kept as one page.</span></div>
+      <div class="ch"><span class="n">3</span><span class="t">Describe it</span><span class="s"><span class="tag todo">to write</span></span><span class="q">How does the plan become something the framework can check?</span><span class="m">The page becomes a blueprint. Blanks where you haven't decided, listed by the check.</span></div>
+
+      <div class="part">Part two · Build it</div>
+      <div class="ch"><span class="n">4</span><span class="t">Say what done means</span><span class="s"><span class="tag done">pilot</span></span><span class="q">How will I know it's right without reading the code?</span><span class="m">Journeys written by a second agent. The first run is red on purpose.</span></div>
+      <div class="ch"><span class="n">5</span><span class="t">Build until green</span><span class="s"><span class="tag done">pilot</span></span><span class="q">How do I hand work to an agent and get back something proved?</span><span class="m">One brief, one handler, red to green.</span></div>
+      <div class="ch"><span class="n">6</span><span class="t">Review without reading the code</span><span class="s"><span class="tag todo">to write</span></span><span class="q">Is this change what I asked for, and nothing more?</span><span class="m">A reviewer that wrote none of it, the blueprint's diff, and what the change touched.</span></div>
+
+      <div class="part">Part three · Run it</div>
+      <div class="ch"><span class="n">7</span><span class="t">Run it, break it, read the trace</span><span class="s"><span class="tag done">pilot</span></span><span class="q">When something looks wrong, how do I find out why?</span><span class="m">A refusal followed from the answer to the step that gave it.</span></div>
+      <div class="ch"><span class="n">8</span><span class="t">Stage it</span><span class="s"><span class="tag todo">to write</span></span><span class="q">How does it get from my machine to a real address?</span><span class="m">One command up, the journeys run against it, promote, take it down. A real deployment.</span></div>
+      <div class="ch"><span class="n">9</span><span class="t">Watch it</span><span class="s"><span class="tag todo">to write</span></span><span class="q">Is it healthy, and what changed this week?</span><span class="m">Each operation against its time budget, from what was recorded.</span></div>
+
+      <div class="part">Part four · Live with it</div>
+      <div class="ch"><span class="n">10</span><span class="t">Change it, months later</span><span class="s"><span class="tag todo">to write</span></span><span class="q">I need one rule different. What else has to change?</span><span class="m">One line changed. What went stale, rebuilt, and proved again.</span></div>
+      <div class="ch"><span class="n">11</span><span class="t">More than one agent</span><span class="s"><span class="tag todo">to write</span></span><span class="q">How do several agents work at once without stepping on each other?</span><span class="m">Lanes, claims, and a list of red checks that may only shrink.</span></div>
+
+      <div class="part">Reference, at the back</div>
+      <div class="ch"><span class="n">A</span><span class="t">Working with your agents</span><span class="s"><span class="tag done">written</span></span><span class="q">The five roles in full, and what each may touch.</span></div>
+      <div class="ch"><span class="n">B</span><span class="t">The agent kit</span><span class="s"><span class="tag done">written</span></span><span class="q">The files to copy into an app so your agents know their roles.</span></div>
+      <div class="ch"><span class="n">C</span><span class="t">Reading a blueprint</span><span class="s"><span class="tag todo">to write</span></span><span class="q">One guided read of a real one.</span></div>
+      <div class="ch"><span class="n">D</span><span class="t">The primitives</span><span class="s"><span class="tag todo">canon</span></span><span class="q">One page per idea, in the canon. The manual links to it and never explains a word twice.</span></div>
+    </div>
+    <p class="aside" style="margin-top:18px">I moved "Spike" before "Describe". The plan ends with a list of doubts, so answering them comes next. Describing a system you are not sure can work is wasted effort. The films never say a chapter's number, so renumbering costs nothing.</p>
+
+    <h2 id="opening">The opening, drafted</h2>
+    <h3>How chapter 0 would read</h3>
+    <p>Short, and in the same words as the films, so the page and the films agree. It is drafted here so you can react to the words, not only the idea.</p>
+    <div class="draft">
+      <p class="kicker">Chapter 0 · Why this exists</p>
+      <h3>The hard part is the next morning</h3>
+      <p>An agent can write a working system in an afternoon. The contract, the server, the database, the app, the command line, the tools for other agents. Writing it was never the hard part.</p>
+      <p>The hard part is the next morning. Is it right? Is it fast enough, and what happens when something fails? And when one rule changes, what else has to change? To answer any of that, someone has to read all of it. Usually that someone is you.</p>
+      <p>Orthograph takes a position. You work on the system: the things in it, who may do what, and what must always be true. That description is the blueprint, and it is the part you read. Everything below it, an agent writes and the framework makes. And nobody takes anyone's word for it: the running system is proved, against stories you agreed to.</p>
+      <div class="layers" role="img" aria-label="Three layers: you decide the system and read the blueprint; your agents write handlers and journeys; the framework makes everything else and proves it.">
+        <div class="you"><b>You</b><span>decide the system, and read the blueprint and the journeys</span></div>
+        <div><b>Your agents</b><span>plan with you, write the stories, build the handlers, review each other</span></div>
+        <div><b>The framework</b><span>makes the server, the API, the SDK, the tools and the deployment, and proves them</span></div>
+      </div>
+      <p>This manual follows one small app, Plugged In, from the first conversation about it to a change made months after it went live. Each chapter is one stage. It says what you do, what your agents do, what you read, and what goes wrong, and it has a film. Everything shown was recorded from a real run, and each chapter says plainly what does not exist yet.</p>
+    </div>
+
+    <h2 id="plan-it">Chapter 1</h2>
+    <h3>Plan it: the chapter that is missing</h3>
+    <p>Before anything is described, you talk the system through with an agent until it fits on one page. The page is what you argue with. Code comes later.</p>
+    <div class="cols">
+      <div>
+        <h4>What you do</h4>
+        <ul>
+          <li>Say the idea in one sentence.</li>
+          <li>Answer questions, one at a time. Say "I don't know" when you don't.</li>
+          <li>Argue with the page until it is right. Reject what is wrong, and say why.</li>
+        </ul>
+        <h4>What your agent does</h4>
+        <ul>
+          <li>Says your idea back, as strongly as it can, before judging it.</li>
+          <li>Draws one page: the things, who may do what, what must stay true, what waits on what, where two places have to agree.</li>
+          <li>When you reject something, starts again from the facts, with options graded on one rubric.</li>
+          <li>Ends with the doubts it could not settle.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>What you read</h4>
+        <ul>
+          <li>One page. Nothing else. If you can't see the whole system on it, it isn't planned yet.</li>
+          <li>The list of doubts. Each becomes a spike, or a blank in the blueprint.</li>
+        </ul>
+        <h4>What goes wrong</h4>
+        <ul>
+          <li>The agent plans a feature, not a system. A small whole thing shows the joins; a feature hides them.</li>
+          <li>The page says how, not what. A plan names things and rules, never files and functions.</li>
+          <li>A doubt gets decided by guessing. It should stay a blank until someone answers it.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="aside"><b>How it would stand.</b> This is how this repository plans, every day, but it is practice and not a command. Nothing in Orthograph runs it, and there is nothing to record from <code>ortho</code>. To keep the manual's rule that nothing is invented, I would run a real planning session for Plugged In with an agent, keep the page it draws and the conversation as the chapter's recordings, and film that. The agent stays neutral: any agent that can draw a page will do.</p>
+
+    <h2 id="look">The look</h2>
+    <h3>A book, with a terminal in it</h3>
+    <div class="cols">
+      <ul>
+        <li><b>Serif for reading.</b> Source Serif at 19 pixels, lines about 70 characters long.</li>
+        <li><b>A quiet sans for structure.</b> IBM Plex Sans for labels and contents, the same face as the films.</li>
+        <li><b>Terminals in the films' navy.</b> The only dark blocks on the page, so recorded output stands out.</li>
+      </ul>
+      <ul>
+        <li><b>Contents always in view.</b> On a wide screen they sit in a rail on the left.</li>
+        <li><b>Each chapter opens the same way.</b> Its number, its question, how it stands, its film, then its four parts.</li>
+        <li><b>Fewer boxes and capitals.</b> Lines and space do the work. Labels are small and few.</li>
+      </ul>
+    </div>
+    <p style="margin-top:14px">A chapter opener, set as it would be:</p>
+    <div class="specimen">
+      <div class="opener"><span class="big">4</span><div><p class="kicker">Part two · Build it</p><h3>Say what done means</h3></div></div>
+      <p style="font-size:21px;color:var(--ink2);max-width:30em">How will I know it's right without reading the code? A second agent writes the stories first, and they fail before anyone builds.</p>
+      <p class="stands"><b>How it stands.</b> Every command here runs today, and every line of output was recorded on Plugged In. That a different agent writes the journeys is this repository's practice. No command enforces it yet.</p>
+      <div class="fourpart" aria-label="The chapter's four parts"><div><b>You</b>agree the stories</div><div><b>Your agent</b>writes them, red first</div><div><b>You read</b>the stories, and the red run</div><div><b>Goes wrong</b>a story that can't fail</div></div>
+      <figure class="term">
+        <figcaption><span>docs/manual/captures/prove-empty-one.txt</span><em>recorded</em></figcaption>
+        <pre><span class="cmd">$ ortho prove --empty --only "claim a handle"</span><span class="dim">world      local · fresh · handlers scaffolded</span><span><span class="no">✘</span> claim a handle</span><span class="dim">  step 1   ada claims @ada</span><span>    expected  the handle in state claimed</span><span>    got       NotWritten: src/handle/claim.ts</span></pre>
+      </figure>
+      <p class="aside" style="margin:14px 0 0">The terminal above is a specimen of the style, not a recording. In the manual every block is quoted from a real recording, and the check fails if it is not.</p>
+    </div>
+
+    <h2 id="existing">What happens to what exists</h2>
+    <h3>Nothing written is lost</h3>
+    <ul>
+      <li><b>The three pilot chapters keep their numbers,</b> 4, 5 and 7, and their films. Their words are kept; only their openers change to the new pattern.</li>
+      <li><b>"Working with your agents" moves to the back.</b> Its five-line cast goes into the opening, and each role is introduced in the chapter where it first appears: the designer in chapter 1, the spike in 2, the author in 4, the builder in 5, the reviewer in 6.</li>
+      <li><b>The chapters not yet written appear in the contents, in place,</b> marked "to write", so the whole journey is visible from the start.</li>
+      <li><b>The check and the recorder stay.</b> Every quote is still checked against a real recording.</li>
+      <li><b>One page,</b> while it holds about a dozen chapters. If it grows past that, a page per chapter with the same contents rail.</li>
+    </ul>
+
+    <h2 id="decide">Five decisions</h2>
+    <h3>For you, each with what I recommend</h3>
+    <ol class="ask">
+      <li><b>The spine.</b><span>Eleven chapters in four parts, as above. I recommend it as drawn.</span></li>
+      <li><b>Spike before describe.</b><span>The plan ends with doubts, so answering them comes next. I recommend this order.</span></li>
+      <li><b>How to make chapter 1 real.</b><span>Run a real planning session for Plugged In, and record it. The other choice is to use today's Capxul Lite board as the worked example. I recommend Plugged In, so the whole manual follows one app.</span></li>
+      <li><b>The opening's words.</b><span>Drafted above, in the films' own words. I recommend keeping it this short.</span></li>
+      <li><b>The look.</b><span>A serif for reading and a sans for structure, as this page is set. The other choice is all sans, matching the films exactly. I recommend the serif.</span></li>
+    </ol>
+  </main>
+</div>

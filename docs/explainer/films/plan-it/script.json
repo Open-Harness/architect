@@ -1,0 +1,142 @@
+{
+ "title": "Plan it",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Idea",
+  "Page",
+  "Rules",
+  "Joins",
+  "Doubts"
+ ],
+ "about": "The page in this film is real: an agent drew it from one sentence and the app as it stands, and it is shown as it was written. It is the first half of a planning session. The owner has not answered it yet.",
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "scenes": [
+  {
+   "id": "idea",
+   "title": "One sentence",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "i1",
+     "text": "Before anything is described to the framework, you talk the system through, until it fits on one page."
+    },
+    {
+     "id": "i2",
+     "text": "It starts with one sentence, in your words. Here is a real one, for the next stage of Plugged In."
+    },
+    {
+     "id": "i3",
+     "text": "People should be able to pay each other by name. A handle gets a wallet, and anyone can send money to that name."
+    },
+    {
+     "id": "i4",
+     "text": "That is all the designer is given. That, and the app as it stands."
+    }
+   ]
+  },
+  {
+   "id": "back",
+   "title": "Said back",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "The first thing a designer does is say your idea back, as strongly as it can."
+    },
+    {
+     "id": "b2",
+     "text": "A claimed name becomes a place money can be sent. Every claimed handle has one wallet."
+    },
+    {
+     "id": "b3",
+     "text": "And it says what the idea is not. Not a bank. Not a checkout. Not an exchange."
+    },
+    {
+     "id": "b4",
+     "text": "Then it draws the system: the things, and the states each can be in. A wallet. A payment. A withdrawal."
+    }
+   ]
+  },
+  {
+   "id": "rules",
+   "title": "What must stay true",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "r1",
+     "text": "Then, the rules. What must stay true, in your language."
+    },
+    {
+     "id": "r2",
+     "text": "A name has at most one open wallet."
+    },
+    {
+     "id": "r3",
+     "text": "Money sent to a name reaches the person who held it when it was sent. Never a later one."
+    },
+    {
+     "id": "r4",
+     "text": "You might never have said that second rule aloud. It decides what happens when a name changes hands with a payment on its way. That is what the page is for.",
+     "gap": 0.7
+    }
+   ]
+  },
+  {
+   "id": "joins",
+   "title": "What waits, and what must agree",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "j1",
+     "text": "Two parts of the page are where real systems go wrong."
+    },
+    {
+     "id": "j2",
+     "text": "The first is anything that waits. On the page, it's a thing in a state, and it says what it is waiting for. A wallet, opening, waits for the money provider."
+    },
+    {
+     "id": "j3",
+     "text": "The second is every place two records of one fact must agree. The app's balance, and the money the provider really holds."
+    }
+   ]
+  },
+  {
+   "id": "doubts",
+   "title": "It ends with doubts",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "d1",
+     "text": "A plan is finished when it says what it doesn't know."
+    },
+    {
+     "id": "d2",
+     "text": "Seven doubts. Each one is a question, and each is sorted. Try it in throwaway code. Or leave it blank, for you to decide."
+    },
+    {
+     "id": "d3",
+     "text": "And it asks one question first. Is this real money, and if so, who holds it while it sits in a wallet?"
+    },
+    {
+     "id": "d4",
+     "text": "One honest note. This page is real, and it is half a session. The owner hasn't answered yet, so nothing on it is decided.",
+     "gap": 0.6
+    },
+    {
+     "id": "d5",
+     "text": "No command runs any of this. It's how we plan, and it is practice. Next: the doubts become spikes."
+    }
+   ]
+  }
+ ]
+}

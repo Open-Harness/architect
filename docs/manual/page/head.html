@@ -1,0 +1,37 @@
+<title>The Orthograph Manual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Barlow+Condensed:wght@500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* One quiet reading column on drafting paper. Prose in a serif; what was recorded or quoted sits between two hairlines, unboxed, with one caption; a film is the only dark thing. */
+:root {
+  --paper: #f5f7fa; --ink: #0c1a2c; --soft: #40516a; --faint: #6c7d95; --line: #cfd8e5; --mark: #0b63b8; --ok: #0c7a4c; --no: #b3261e;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif; --mono: "JetBrains Mono", Menlo, Consolas, monospace; --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #08111f; --ink: #e9f0fa; --soft: #a9bcd6; --faint: #7d92ae; --line: #25395a; --mark: #62c6ff; --ok: #54d898; --no: #ff8080; color-scheme: dark; } }
+:root[data-theme="dark"] { --paper: #08111f; --ink: #e9f0fa; --soft: #a9bcd6; --faint: #7d92ae; --line: #25395a; --mark: #62c6ff; --ok: #54d898; --no: #ff8080; color-scheme: dark; }
+body { background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 19px; line-height: 1.6; }
+main { max-width: 720px; margin: 0 auto; padding-block: 56px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main, section { display: flex; flex-direction: column; gap: 22px; } main > *, section > * { min-width: 0; margin: 0; }
+.chapter { margin-top: 72px; padding-top: 26px; border-top: 2px solid var(--ink); scroll-margin-top: 16px; }
+.block { font-family: var(--mono); font-size: 13px; line-height: 1.9; color: var(--faint); display: grid; grid-template-columns: auto 1fr; gap: 0 18px; }
+.block b { font-weight: 400; color: var(--ink); }
+h2 { font-size: clamp(32px, 6vw, 44px); line-height: 1.1; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; scroll-margin-top: 16px; }
+h3 { font-size: 26px; line-height: 1.25; font-weight: 600; text-wrap: balance; margin-top: 30px; }
+h4 { font-size: 21px; font-weight: 600; margin-top: 14px; }
+.lede { font-size: 22px; line-height: 1.5; color: var(--soft); }
+.unwritten h2 { color: var(--faint); font-size: 30px; }
+.part { font: 600 16px var(--label); text-transform: uppercase; letter-spacing: 0.16em; color: var(--mark); margin-top: 84px; margin-bottom: -50px; }
+nav { display: grid; gap: 2px; font-family: var(--mono); font-size: 14px; margin-top: 30px; padding: 18px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+nav span { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.14em; color: var(--faint); margin-top: 10px; }
+nav a { color: var(--ink); text-decoration: none; padding: 3px 0; } nav a:hover { color: var(--mark); } nav a.unwritten { color: var(--faint); }
+ul, ol { padding-left: 24px; display: flex; flex-direction: column; gap: 8px; } li > figure { margin-top: 10px; }
+code { font-family: var(--mono); font-size: 0.8em; overflow-wrap: anywhere; } b { font-weight: 600; }
+a { color: var(--mark); text-underline-offset: 3px; } a:focus-visible, video:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
+.canon { border-bottom: 1px dotted var(--faint); }
+figure { margin: 6px 0; } figcaption { font-family: var(--mono); font-size: 12.5px; color: var(--faint); margin-top: 8px; overflow-wrap: anywhere; }
+pre { margin: 0; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.85; color: var(--soft); tab-size: 2; }
+pre b { color: var(--ink); } pre .ok { color: var(--ok); } pre .no { color: var(--no); }
+.film video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #08111f; }
+.tablewrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; font-size: 16px; } th, td { border-bottom: 1px solid var(--line); padding: 10px 14px 10px 0; text-align: left; vertical-align: top; }
+th { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint); }
+</style>
