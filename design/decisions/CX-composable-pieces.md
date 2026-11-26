@@ -345,8 +345,8 @@ milestone Goal 16, `lane:goal-16` unless a running goal has it).
    declares a contract (an input and output schema, run in the caller's commit); another feature fills it; `check`
    refuses a required contract with no filler or two, and an optional one with none is skipped. Checks: a required contract with no filler, or with two, is refused; payroll with no
    tax piece compiles and its slips have no tax lines; with `payroll-tax-us` a United States employee's slip carries its
-   tax lines; with no budgets a posting is not checked." Interim: no tax piece is mounted while the United States
-   module is paused (CX-money-global-payroll, decision 1).
+   tax lines; with no budgets a posting is not checked." Interim: payroll runs with no tax piece mounted, while
+   `payroll-tax-us` is built in its own lane (Aaron, 26 November 2026).
 4. **`check` enforces that a piece writes only its own things.** *Doesn't block*; makes section 2's rule real. Draft:
    "A step's `writes` may name only things of its own plugin or the app's; another plugin's thing is a compile error
    naming the owner's in-commit operation to call." After gap 1.
@@ -465,16 +465,18 @@ Capxul is built, and adding it to a deployed Capxul is a rebuild with gap 5's fo
 
 ## 8. Decisions for Aaron
 
-Two here. Three parts of this record also wait on CX-money-global-payroll's decision 1 (contractors first, the United
-States payroll module paused): `contractors` as a core piece, gap 3's interim (no tax piece mounted) and the order in
-the next paragraph. If Aaron says no there, `payroll-tax-us` is mounted from the start, the order puts it with payroll,
-and `contractors` comes later as an optional piece.
+**Answered by Aaron on 26 November 2026, by voice, relayed by Goal 16's lead:** "I'm giving yes to anything that you
+just said so far." So both decisions below are yes, as recommended.
 
-1. **Is a business allowed to leave out selling, buying, the till, subscriptions, assets, equity, projects and the rest
+He also said the United States tax lane is not parked: it runs now as a lane of its own (in Amp). So contractors come
+first on the main path, and `payroll-tax-us` is built alongside as its own piece. It plugs into payroll's *tax on a
+slip* contract when gap 3 lands; until then a Capxul's payroll runs with no tax piece mounted.
+
+1. **Yes (Aaron, 26 November 2026).** **Is a business allowed to leave out selling, buying, the till, subscriptions, assets, equity, projects and the rest
    of section 1's optional list?** I recommend yes: the core is the books, HR, payroll and Bridge, and the rest are
    optional pieces offered through presets. The other choice is one fixed Capxul with everything, which is simpler to
    test but makes every company carry tables and screens it never uses.
-2. **Adding a piece to a running Capxul means rebuilding and redeploying it, with its data kept.** I recommend yes, as
+2. **Yes (Aaron, 26 November 2026).** **Adding a piece to a running Capxul means rebuilding and redeploying it, with its data kept.** I recommend yes, as
    you asked: no switch inside the running app. For the hosted Capxul that is a redeploy we run for the customer; for a
    self-hoster it is `ortho add`, then deploy. The other choice is a switch in the running app, which needs every
    piece's code shipped to every company and turned on or off at run time: the hot-swapping you ruled out.
@@ -487,11 +489,11 @@ Customer, Supplier and groups go to `parties`, Payment Entry to `payments`, and 
 set when Employee and Shareholder join. Each new country's payroll tax is another `payroll-tax-<country>` piece. An
 employer of record is no piece at first: it is a supplier and its invoice a bill paid through `payments`; later, an
 optional `eor` piece with its adapter may fill a payroll contract, *who calculates this worker*. The order the two
-records agree, if that decision is yes: the currency slice comes after the `company` and `ledger` pieces have moved
+records agree: the currency slice comes after the `company` and `ledger` pieces have moved
 (this record's moves 1 and 2), works inside `company`, `rates`, `ledger` and `payments`, and comes before slice 7b's
 invoices; the rest of the move runs
-in parallel with currency, which needs none of it. `contractors` comes once `payments` exists, before
-`payroll-tax-us`.
+in parallel with currency, which needs none of it. `contractors` comes once `payments` exists, on the main path;
+`payroll-tax-us` is built alongside in its own lane.
 
 **Agreement with the developer-experience thread** (session `session_01S8RF7Ab2eChDNZHaQJ44eV`, draft #1100). It
 replied on 26 November 2026 that it designed nothing for composing an app from pieces, and that none of its pages
