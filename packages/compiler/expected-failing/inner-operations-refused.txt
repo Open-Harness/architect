@@ -1,0 +1,8 @@
+# #1079 (CX-inner-operations): `Blueprint.step.operation` doesn't exist, so the compiler refuses no inner operation in another store, no cycle, no
+# operation that is no verb, and no clash of refusal names. Clears with #1079's build.
+src/modules/model/inner-operations-refused.test.ts > #1079: what the compiler refuses of an inner operation > refuses an inner operation whose thing lives in another store, naming both operations
+src/modules/model/inner-operations-refused.test.ts > #1079: what the compiler refuses of an inner operation > refuses an inner operation whose thing lives as actors, naming both operations
+src/modules/model/inner-operations-refused.test.ts > #1079: what the compiler refuses of an inner operation > refuses an operation that runs itself through its steps
+src/modules/model/inner-operations-refused.test.ts > #1079: what the compiler refuses of an inner operation > refuses a cycle through two operations, A runs B and B runs A, naming the cycle once
+src/modules/model/inner-operations-refused.test.ts > #1079: what the compiler refuses of an inner operation > refuses an inner operation that is no verb of the app
+src/modules/model/inner-operations-refused.test.ts > #1079: what the compiler refuses of an inner operation > refuses an outer and an inner that declare one refusal's name with two shapes, naming both operations
