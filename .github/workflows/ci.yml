@@ -679,7 +679,7 @@ jobs:
   # Goal 18 slice 11's acceptance check (e2e/acceptance/, GOAL18-getting-started-acceptance): Orthograph built and published to a local
   # Verdaccio on 127.0.0.1 (Orthograph's names served only from this run's publish; every other dependency proxied to npmjs, read only),
   # then `ortho new app`, one thing declared, generated, proved, run and called through the CLI, SDK and MCP, and the getting-started
-  # page's steps run. Through the ratchet: its checks red until slices 6 and 7 land are on e2e/acceptance/expected-failing/. A job of its
+  # page's steps run. Through the ratchet: every check is green, so e2e/acceptance/expected-failing/ is empty and any red fails it. A job of its
   # own, so its build, install and two proves have the 20 minutes to themselves. Skipped as e2e-m2 is. Not a required check yet.
   e2e-acceptance:
     needs: [ready, changes]

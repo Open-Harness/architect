@@ -5,8 +5,8 @@
 // declare one thing, then generate, prove, run it, and call it through the generated CLI, SDK and MCP. And, once slice 7's page
 // exists, the getting-started page's steps (`docs/canon/getting-started.mdx`) are run as a reader runs them, in an empty folder.
 //
-// WHY IT IS RED TODAY: `ortho new app` is slice 6 (#1064, pull request #1087, a draft); the published `ortho` has no `new app`, so the run
-// stops at its second step and every step after it says "(not run: an earlier step failed)". The page (slice 7, #1139) stops at its own `ortho new app` step the same way.
+// GREEN SINCE slice 6 (#1087, `ortho new app`), #1152 (the page's real call) and #1153 (the global CLI's hand-off) reached main: every
+// test passes, so e2e/acceptance/expected-failing/ is empty. A red test here is a regression.
 //
 // THE REGISTRY (e2e/local-registry.ts, the one shared helper: tools/e2e/starter.sh's steps, from its own tools/e2e/verdaccio.yaml).
 // Verdaccio under Node, a process of this file, listening on 127.0.0.1 only. Orthograph's own names are served only from what this run
@@ -390,8 +390,8 @@ const pageRan: Ran[] = [];
 let pageCwd = pageRoot;
 const exported: Record<string, string> = {};
 let pageDev: ChildProcess | undefined;
-/** The page's own port for the app, read as the free one this run gave its `ortho dev`. */
-const local = (s: string) => s.replace(/:8787\b/g, `:${PORTS.pageDev}`);
+/** The page's own port for the app (`:8787` in an address, `--port 8787` on dev), read as the free one this run gave its `ortho dev`. */
+const local = (s: string) => s.replace(/:8787\b/g, `:${PORTS.pageDev}`).replace(/(--port[=\s]+)8787\b/g, `$1${PORTS.pageDev}`);
 const runPageStep = async (raw: string): Promise<Ran> => {
   const step = local(raw);
   const cd = /^cd\s+(\S+)$/.exec(step);
