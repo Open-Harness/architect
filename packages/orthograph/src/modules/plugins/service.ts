@@ -58,6 +58,7 @@ export const Stand: StandApi = {
   process: (what) => Object.freeze({ kind: "stand-in", how: "process", what }),
   vendor: (what) => Object.freeze({ kind: "stand-in", how: "vendor", what }),
   none: Object.freeze({ kind: "stand-in", how: "none" }),
+  command: (mount, name) => (args) => Object.freeze({ kind: "stand-call", mount, command: name, args }),
 };
 
 /** For the runtime and the compiler: what a mount picked, by identity. */
