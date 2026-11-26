@@ -1,0 +1,65 @@
+{
+ "doctype": "DocType",
+ "name": "Tea Order",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 0,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "blend",
+   "fieldtype": "Link",
+   "label": "Blend",
+   "options": "Tea Blend",
+   "reqd": 1
+  },
+  {
+   "fieldname": "second_blend",
+   "fieldtype": "Link",
+   "label": "Second Blend",
+   "options": "Tea Blend"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Tea Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "shop",
+   "fieldtype": "Link",
+   "label": "Shop",
+   "options": "Tea Shop"
+  },
+  {
+   "fieldname": "return_against",
+   "fieldtype": "Link",
+   "label": "Return Against",
+   "options": "Tea Order"
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "label": "Party Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Party",
+   "options": "party_type",
+   "reqd": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Tea Master",
+   "permlevel": 0,
+   "read": 1,
+   "write": 1,
+   "create": 1
+  }
+ ]
+}

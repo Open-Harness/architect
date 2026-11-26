@@ -1,0 +1,6 @@
+# CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
+from-doctype/04-links.test.ts > CX-from-doctype 04: links > gives the later record type the shared value and an edge back to the one already there
+from-doctype/04-links.test.ts > CX-from-doctype 04: links > makes each kind of link its own field: an edge, an optional edge, a target's name, its own id, any record; the Dynamic Link's doctype field is dropped
+from-doctype/04-links.test.ts > CX-from-doctype 04: links > scaffolds the target later without touching what was written: the earlier link stays a name, and the shared link value is kept
+from-doctype/04-links.test.ts > CX-from-doctype 04: links > type-checks and passes the rules with the three record types and their link values
+from-doctype/04-links.test.ts > CX-from-doctype 04: links > writes a link value for each record type not scaffolded yet, beside the thing's files

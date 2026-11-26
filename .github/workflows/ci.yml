@@ -473,6 +473,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: NX_DAEMON=false pnpm nx run e2e:m8-ratchet --outputStyle=static
 
+  # The from-doctype checks (e2e/from-doctype/README.md, CX-from-doctype), written before `ortho add thing
+  # --from-doctype` is built: the ratchet passes while every failure is listed in e2e/from-doctype/expected-failing/,
+  # and fails on any other. Skipped on a docs-only pull request. Like e2e-superagent for goal/superagent, it also runs
+  # on the fast gate of a pull request into goal/capxul, where Goal 16's builder makes them green (an exception to
+  # CI-integration.md B1). No branch requires it.
+  e2e-from-doctype:
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || (needs.changes.outputs.fast == 'true' && github.base_ref != 'goal/capxul'))) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: NX_DAEMON=false pnpm nx run e2e:from-doctype-ratchet --outputStyle=static
+
   # Goal 17's checks (e2e/superagent/README.md), written before the superagent is built: the ratchet passes while every
   # failure is listed in e2e/superagent/expected-failing/, and fails on any other. Check 07 fetches the full published
   # specs once into tmp/specs/ (no key). Skipped on a docs-only pull request, like the gates above. Unlike them, it also

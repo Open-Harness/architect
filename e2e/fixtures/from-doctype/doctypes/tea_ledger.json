@@ -1,0 +1,524 @@
+{
+ "doctype": "DocType",
+ "name": "Tea Ledger",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 0,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "TL-.####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "entry_001",
+   "fieldtype": "Data",
+   "label": "Entry 1"
+  },
+  {
+   "fieldname": "entry_002",
+   "fieldtype": "Data",
+   "label": "Entry 2"
+  },
+  {
+   "fieldname": "entry_003",
+   "fieldtype": "Data",
+   "label": "Entry 3"
+  },
+  {
+   "fieldname": "entry_004",
+   "fieldtype": "Data",
+   "label": "Entry 4"
+  },
+  {
+   "fieldname": "entry_005",
+   "fieldtype": "Data",
+   "label": "Entry 5"
+  },
+  {
+   "fieldname": "entry_006",
+   "fieldtype": "Data",
+   "label": "Entry 6"
+  },
+  {
+   "fieldname": "entry_007",
+   "fieldtype": "Data",
+   "label": "Entry 7"
+  },
+  {
+   "fieldname": "entry_008",
+   "fieldtype": "Data",
+   "label": "Entry 8"
+  },
+  {
+   "fieldname": "entry_009",
+   "fieldtype": "Data",
+   "label": "Entry 9"
+  },
+  {
+   "fieldname": "entry_010",
+   "fieldtype": "Data",
+   "label": "Entry 10"
+  },
+  {
+   "fieldname": "entry_011",
+   "fieldtype": "Data",
+   "label": "Entry 11"
+  },
+  {
+   "fieldname": "entry_012",
+   "fieldtype": "Data",
+   "label": "Entry 12"
+  },
+  {
+   "fieldname": "entry_013",
+   "fieldtype": "Data",
+   "label": "Entry 13"
+  },
+  {
+   "fieldname": "entry_014",
+   "fieldtype": "Data",
+   "label": "Entry 14"
+  },
+  {
+   "fieldname": "entry_015",
+   "fieldtype": "Data",
+   "label": "Entry 15"
+  },
+  {
+   "fieldname": "entry_016",
+   "fieldtype": "Data",
+   "label": "Entry 16"
+  },
+  {
+   "fieldname": "entry_017",
+   "fieldtype": "Data",
+   "label": "Entry 17"
+  },
+  {
+   "fieldname": "entry_018",
+   "fieldtype": "Data",
+   "label": "Entry 18"
+  },
+  {
+   "fieldname": "entry_019",
+   "fieldtype": "Data",
+   "label": "Entry 19"
+  },
+  {
+   "fieldname": "entry_020",
+   "fieldtype": "Data",
+   "label": "Entry 20"
+  },
+  {
+   "fieldname": "entry_021",
+   "fieldtype": "Data",
+   "label": "Entry 21"
+  },
+  {
+   "fieldname": "entry_022",
+   "fieldtype": "Data",
+   "label": "Entry 22"
+  },
+  {
+   "fieldname": "entry_023",
+   "fieldtype": "Data",
+   "label": "Entry 23"
+  },
+  {
+   "fieldname": "entry_024",
+   "fieldtype": "Data",
+   "label": "Entry 24"
+  },
+  {
+   "fieldname": "entry_025",
+   "fieldtype": "Data",
+   "label": "Entry 25"
+  },
+  {
+   "fieldname": "entry_026",
+   "fieldtype": "Data",
+   "label": "Entry 26"
+  },
+  {
+   "fieldname": "entry_027",
+   "fieldtype": "Data",
+   "label": "Entry 27"
+  },
+  {
+   "fieldname": "entry_028",
+   "fieldtype": "Data",
+   "label": "Entry 28"
+  },
+  {
+   "fieldname": "entry_029",
+   "fieldtype": "Data",
+   "label": "Entry 29"
+  },
+  {
+   "fieldname": "entry_030",
+   "fieldtype": "Data",
+   "label": "Entry 30"
+  },
+  {
+   "fieldname": "entry_031",
+   "fieldtype": "Data",
+   "label": "Entry 31"
+  },
+  {
+   "fieldname": "entry_032",
+   "fieldtype": "Data",
+   "label": "Entry 32"
+  },
+  {
+   "fieldname": "entry_033",
+   "fieldtype": "Data",
+   "label": "Entry 33"
+  },
+  {
+   "fieldname": "entry_034",
+   "fieldtype": "Data",
+   "label": "Entry 34"
+  },
+  {
+   "fieldname": "entry_035",
+   "fieldtype": "Data",
+   "label": "Entry 35"
+  },
+  {
+   "fieldname": "entry_036",
+   "fieldtype": "Data",
+   "label": "Entry 36"
+  },
+  {
+   "fieldname": "entry_037",
+   "fieldtype": "Data",
+   "label": "Entry 37"
+  },
+  {
+   "fieldname": "entry_038",
+   "fieldtype": "Data",
+   "label": "Entry 38"
+  },
+  {
+   "fieldname": "entry_039",
+   "fieldtype": "Data",
+   "label": "Entry 39"
+  },
+  {
+   "fieldname": "entry_040",
+   "fieldtype": "Data",
+   "label": "Entry 40"
+  },
+  {
+   "fieldname": "column_break_a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_b",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "shown",
+   "fieldtype": "Currency",
+   "label": "Shown",
+   "is_virtual": 1
+  },
+  {
+   "fieldname": "entry_041",
+   "fieldtype": "Data",
+   "label": "Entry 41"
+  },
+  {
+   "fieldname": "entry_042",
+   "fieldtype": "Data",
+   "label": "Entry 42"
+  },
+  {
+   "fieldname": "entry_043",
+   "fieldtype": "Data",
+   "label": "Entry 43"
+  },
+  {
+   "fieldname": "entry_044",
+   "fieldtype": "Data",
+   "label": "Entry 44"
+  },
+  {
+   "fieldname": "entry_045",
+   "fieldtype": "Data",
+   "label": "Entry 45"
+  },
+  {
+   "fieldname": "entry_046",
+   "fieldtype": "Data",
+   "label": "Entry 46"
+  },
+  {
+   "fieldname": "entry_047",
+   "fieldtype": "Data",
+   "label": "Entry 47"
+  },
+  {
+   "fieldname": "entry_048",
+   "fieldtype": "Data",
+   "label": "Entry 48"
+  },
+  {
+   "fieldname": "entry_049",
+   "fieldtype": "Data",
+   "label": "Entry 49"
+  },
+  {
+   "fieldname": "entry_050",
+   "fieldtype": "Data",
+   "label": "Entry 50"
+  },
+  {
+   "fieldname": "entry_051",
+   "fieldtype": "Data",
+   "label": "Entry 51"
+  },
+  {
+   "fieldname": "entry_052",
+   "fieldtype": "Data",
+   "label": "Entry 52"
+  },
+  {
+   "fieldname": "entry_053",
+   "fieldtype": "Data",
+   "label": "Entry 53"
+  },
+  {
+   "fieldname": "entry_054",
+   "fieldtype": "Data",
+   "label": "Entry 54"
+  },
+  {
+   "fieldname": "entry_055",
+   "fieldtype": "Data",
+   "label": "Entry 55"
+  },
+  {
+   "fieldname": "entry_056",
+   "fieldtype": "Data",
+   "label": "Entry 56"
+  },
+  {
+   "fieldname": "entry_057",
+   "fieldtype": "Data",
+   "label": "Entry 57"
+  },
+  {
+   "fieldname": "entry_058",
+   "fieldtype": "Data",
+   "label": "Entry 58"
+  },
+  {
+   "fieldname": "entry_059",
+   "fieldtype": "Data",
+   "label": "Entry 59"
+  },
+  {
+   "fieldname": "entry_060",
+   "fieldtype": "Data",
+   "label": "Entry 60"
+  },
+  {
+   "fieldname": "entry_061",
+   "fieldtype": "Data",
+   "label": "Entry 61"
+  },
+  {
+   "fieldname": "entry_062",
+   "fieldtype": "Data",
+   "label": "Entry 62"
+  },
+  {
+   "fieldname": "entry_063",
+   "fieldtype": "Data",
+   "label": "Entry 63"
+  },
+  {
+   "fieldname": "entry_064",
+   "fieldtype": "Data",
+   "label": "Entry 64"
+  },
+  {
+   "fieldname": "entry_065",
+   "fieldtype": "Data",
+   "label": "Entry 65"
+  },
+  {
+   "fieldname": "entry_066",
+   "fieldtype": "Data",
+   "label": "Entry 66"
+  },
+  {
+   "fieldname": "entry_067",
+   "fieldtype": "Data",
+   "label": "Entry 67"
+  },
+  {
+   "fieldname": "entry_068",
+   "fieldtype": "Data",
+   "label": "Entry 68"
+  },
+  {
+   "fieldname": "entry_069",
+   "fieldtype": "Data",
+   "label": "Entry 69"
+  },
+  {
+   "fieldname": "entry_070",
+   "fieldtype": "Data",
+   "label": "Entry 70"
+  },
+  {
+   "fieldname": "entry_071",
+   "fieldtype": "Data",
+   "label": "Entry 71"
+  },
+  {
+   "fieldname": "entry_072",
+   "fieldtype": "Data",
+   "label": "Entry 72"
+  },
+  {
+   "fieldname": "entry_073",
+   "fieldtype": "Data",
+   "label": "Entry 73"
+  },
+  {
+   "fieldname": "entry_074",
+   "fieldtype": "Data",
+   "label": "Entry 74"
+  },
+  {
+   "fieldname": "entry_075",
+   "fieldtype": "Data",
+   "label": "Entry 75"
+  },
+  {
+   "fieldname": "entry_076",
+   "fieldtype": "Data",
+   "label": "Entry 76"
+  },
+  {
+   "fieldname": "entry_077",
+   "fieldtype": "Data",
+   "label": "Entry 77"
+  },
+  {
+   "fieldname": "entry_078",
+   "fieldtype": "Data",
+   "label": "Entry 78"
+  },
+  {
+   "fieldname": "entry_079",
+   "fieldtype": "Data",
+   "label": "Entry 79"
+  },
+  {
+   "fieldname": "entry_080",
+   "fieldtype": "Data",
+   "label": "Entry 80"
+  },
+  {
+   "fieldname": "entry_081",
+   "fieldtype": "Data",
+   "label": "Entry 81"
+  },
+  {
+   "fieldname": "entry_082",
+   "fieldtype": "Data",
+   "label": "Entry 82"
+  },
+  {
+   "fieldname": "entry_083",
+   "fieldtype": "Data",
+   "label": "Entry 83"
+  },
+  {
+   "fieldname": "entry_084",
+   "fieldtype": "Data",
+   "label": "Entry 84"
+  },
+  {
+   "fieldname": "entry_085",
+   "fieldtype": "Data",
+   "label": "Entry 85"
+  },
+  {
+   "fieldname": "entry_086",
+   "fieldtype": "Data",
+   "label": "Entry 86"
+  },
+  {
+   "fieldname": "entry_087",
+   "fieldtype": "Data",
+   "label": "Entry 87"
+  },
+  {
+   "fieldname": "entry_088",
+   "fieldtype": "Data",
+   "label": "Entry 88"
+  },
+  {
+   "fieldname": "entry_089",
+   "fieldtype": "Data",
+   "label": "Entry 89"
+  },
+  {
+   "fieldname": "entry_090",
+   "fieldtype": "Data",
+   "label": "Entry 90"
+  },
+  {
+   "fieldname": "entry_091",
+   "fieldtype": "Data",
+   "label": "Entry 91"
+  },
+  {
+   "fieldname": "entry_092",
+   "fieldtype": "Data",
+   "label": "Entry 92"
+  },
+  {
+   "fieldname": "entry_093",
+   "fieldtype": "Data",
+   "label": "Entry 93"
+  },
+  {
+   "fieldname": "entry_094",
+   "fieldtype": "Data",
+   "label": "Entry 94"
+  },
+  {
+   "fieldname": "entry_095",
+   "fieldtype": "Data",
+   "label": "Entry 95"
+  },
+  {
+   "fieldname": "entry_096",
+   "fieldtype": "Data",
+   "label": "Entry 96"
+  },
+  {
+   "fieldname": "entry_097",
+   "fieldtype": "Data",
+   "label": "Entry 97"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Tea Master",
+   "permlevel": 0,
+   "read": 1,
+   "create": 1
+  }
+ ]
+}

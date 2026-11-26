@@ -1,0 +1,7 @@
+# CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
+from-doctype/03-a-submittable-record-type.test.ts > CX-from-doctype 03: a submittable record type > drops the derived status, amended_from and naming_series, and keeps a reqd field with a default required
+from-doctype/03-a-submittable-record-type.test.ts > CX-from-doctype 03: a submittable record type > has ERPNext's docstatus machine: draft, submitted, cancelled, with create, save, submit and cancel and their events
+from-doctype/03-a-submittable-record-type.test.ts > CX-from-doctype 03: a submittable record type > leaves who may act blank per move: the rights of each ERPNext role, All among them, and cancel the manager's alone
+from-doctype/03-a-submittable-record-type.test.ts > CX-from-doctype 03: a submittable record type > once filled, each operation makes its move, submit and cancel take the id alone and write the invoice, and ortho check passes
+from-doctype/03-a-submittable-record-type.test.ts > CX-from-doctype 03: a submittable record type > writes a verb per docstatus move and get, and nothing else
+from-doctype/03-a-submittable-record-type.test.ts > CX-from-doctype 03: a submittable record type > writes the derived status's options beside the machine, as a comment, not as states
