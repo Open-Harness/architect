@@ -1,0 +1,16 @@
+test/getting-started.test.ts > every command and flag it shows exists > each `--flag` after it is one that command has, or a global one
+test/getting-started.test.ts > every command and flag it shows exists > each `ortho <command>` is a command `ortho --help` lists
+test/getting-started.test.ts > every command and flag it shows exists > shows at least one `ortho` command
+test/getting-started.test.ts > it names the generated tools and what they read > agrees with a generated CLI on the address it talks to when nothing is set
+test/getting-started.test.ts > it names the generated tools and what they read > names `<APP>_URL` and `<APP>_TOKEN`, and says how an app's name becomes the prefix
+test/getting-started.test.ts > it names the generated tools and what they read > names the generated CLI, SDK and MCP, each in its own sentence
+test/getting-started.test.ts > it names the generated tools and what they read > shows a generated tool being used with those variables set, after `ortho dev`
+test/getting-started.test.ts > it names the generated tools and what they read > shows the variables for the app it creates, derived the way the generated CLI derives them
+test/getting-started.test.ts > it takes a reader from install to a proved, running app, in that order > names the Node version the repository requires
+test/getting-started.test.ts > it takes a reader from install to a proved, running app, in that order > proves before it runs: `ortho check` or `ortho generate` come before `ortho prove`
+test/getting-started.test.ts > it takes a reader from install to a proved, running app, in that order > puts them in order: install, create, prove, dev, then the generated tools
+test/getting-started.test.ts > it takes a reader from install to a proved, running app, in that order > shows the install, the creating of an app, `ortho prove` and `ortho dev`, each as a command in a fence
+test/getting-started.test.ts > the getting-started page exists and is a canon page > is docs/canon/getting-started.mdx, titled Getting started
+test/getting-started.test.ts > the getting-started page exists and is a canon page > is in the outline, in the canon's row format
+test/getting-started.test.ts > the getting-started page exists and is a canon page > is linked from the repository's README and from the CLI's README
+test/getting-started.test.ts > the getting-started page exists and is a canon page > passes the canon's own check (frontmatter, the eight sections, the outline, quotes, retired words)
