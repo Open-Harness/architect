@@ -50,7 +50,7 @@ const PACKAGES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     "index.ts": descriptor("The books.", []),
     "blueprint/values/ledger.ts": `import { Blueprint } from "orthograph";
 /** The kind of record a ledger line was posted by: the ledger's own, and what each feature that posts adds. */
-export const VoucherType = Blueprint.value(Blueprint.oneOf.open(["Journal Entry"]));
+export const VoucherType = Blueprint.value(Blueprint.oneOf.open(["Journal Entry", "Contra Entry"]));
 /** The kind of party a line is against: none of the ledger's own. */
 export const PartyType = Blueprint.value(Blueprint.oneOf.open([]));
 export const Voucher = Blueprint.value(Blueprint.refAny.of(VoucherType));
@@ -80,6 +80,8 @@ const FILES: Readonly<Record<string, string>> = {
   "blueprint/values/channels.ts": `import { Blueprint } from "orthograph";
 /** How a posting came in. */
 export const Channel = Blueprint.value(Blueprint.oneOf.open(["Web", "Phone"]));
+/** A tag: an open set the app owns with no member yet, so it takes nothing. */
+export const Tag = Blueprint.value(Blueprint.oneOf.open([]));
 `,
   "blueprint/things/posting/thing.ts": `import { Blueprint } from "orthograph";
 import { Party, Voucher, VoucherType } from "@fixture/ledger/blueprint/values/ledger.js";
@@ -89,9 +91,10 @@ export const Posting = Blueprint.thing({ description: "A posting the app keeps."
 `,
   "blueprint/things/posting/verbs/record.ts": `import { Blueprint } from "orthograph";
 import { Posting } from "../thing.ts";
+import { Tag } from "../../../values/channels.ts";
 export default Blueprint.operation(Posting, {
   description: "Record a posting.",
-  payload: { posting: Blueprint.id("pst"), voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party, contactType: Posting.fields.contactType, channel: Posting.fields.channel },
+  payload: { posting: Blueprint.id("pst"), tag: Blueprint.optional(Tag), voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party, contactType: Posting.fields.contactType, channel: Posting.fields.channel },
   answer: { posting: Posting.fields.id },
   allowed: [Blueprint.signedIn],
   steps: { save: Blueprint.step.database() },
@@ -150,6 +153,20 @@ const generated = (root: string): ReadonlyArray<readonly [string, string]> => {
   return walk(join(root, "generated")).map((f) => [f.slice(root.length + 1), readFileSync(f, "utf8")] as const);
 };
 
+/** A schema with its `$ref` followed, once. */
+const resolved = (s: unknown, root: unknown): Record<string, unknown> | undefined => {
+  const o = s as Record<string, unknown> | undefined;
+  return typeof o?.["$ref"] === "string" && o["$ref"].startsWith("#/") ? o["$ref"].slice(2).split("/").reduce<unknown>((at, key) => (at as Record<string, unknown> | undefined)?.[key], root) as Record<string, unknown> : o;
+};
+/**
+ * The members a property takes, read where they constrain it: its own `enum`, in order, with no `anyOf`, `oneOf`, `allOf` or `not`
+ * beside it that could let other text through; for a reference, its `kind`'s. Anything else is reported as what it is.
+ */
+const membersAt = (property: unknown, root: unknown, reference: boolean): unknown => {
+  const at = resolved(reference ? (resolved(property, root)?.["properties"] as Record<string, unknown> | undefined)?.["kind"] : property, root);
+  const loose = ["anyOf", "oneOf", "allOf", "not", "const"].filter((k) => at !== undefined && k in at);
+  return loose.length > 0 ? `loosened by ${loose.join(", ")}: ${JSON.stringify(at)}` : at?.["enum"];
+};
 /** Every string a JSON schema allows by `enum` or `const`, through its `$ref`s. */
 const kindsIn = (schema: unknown, root: unknown): ReadonlyArray<string> => {
   const seen = new Set<unknown>();
@@ -200,10 +217,11 @@ const flagsOf = (help: string): ReadonlyMap<string, string> => {
   return flags;
 };
 
-const VOUCHERS = ["Journal Entry", "Payment Entry"];
+// In the model's order: the owner's own, in its order, then what the mounted features add, by name.
+const VOUCHERS = ["Journal Entry", "Contra Entry", "Payment Entry"];
 const PARTIES = ["Customer", "Supplier"];
 const CONTACTS = ["Lead"];
-const CHANNELS = ["Phone", "Web"];
+const CHANNELS = ["Web", "Phone"];
 const voucher = (kind: string, id = "v_1") => ({ kind, id });
 
 describe("14 an open set holds the mounted features' members, at every door, on D1", () => {
@@ -227,7 +245,7 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         const post = sender(url, ada);
         let n = 0;
         const next = () => `pst_${String(++n)}`;
-        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string } = {}) =>
+        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string; tag?: string } = {}) =>
           post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", ...more });
         const api = {
           payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
@@ -243,6 +261,13 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           // The crm's PartyType and the ledger's are two sets: neither takes the other's member.
           ledgerPartyAsContact: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { contactType: "Customer" }),
           contactAsParty: await record("Payment Entry", voucher("Payment Entry"), { kind: "Lead", id: "c_1" }),
+          idNotText: await record("Payment Entry", { kind: "Payment Entry", id: 5 }, { kind: "Customer", id: "c_1" }),
+          // A member is its exact name: not another case, not padded.
+          caseKind: await record("payment entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
+          caseRef: await record("Payment Entry", voucher("payment entry"), { kind: "Customer", id: "c_1" }),
+          paddedKind: await record(" Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
+          // A set with no member takes nothing.
+          emptySet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { tag: "Anything" }),
           noSuchChannel: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { channel: "Fax" }),
         };
         const rpc = async (method: string, params: object) => {
@@ -267,18 +292,18 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     // The API: a member of the set, the owner's or a mounted feature's, is taken; anything else is refused before the handler runs.
     expect(got.api.payment.status, JSON.stringify(got.api.payment.body)).toBe(200);
     expect(got.api.journal.status, JSON.stringify(got.api.journal.body)).toBe(200);
-    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "noSuchChannel"] as const) {
+    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "noSuchChannel"] as const) {
       expect(got.api[key], `${key}: ${JSON.stringify(got.api[key].body)}`).toMatchObject({ status: 400, body: { _tag: "InvalidPayload" } });
     }
 
     // MCP: the tool's input lists exactly the mounted members for each field, and refuses the unmounted one.
     expect(got.mcp.tool, "MCP lists posting.record").toBeDefined();
     const input = got.mcp.tool!.inputSchema as { properties?: Record<string, unknown> };
-    expect(kindsIn(input.properties?.["voucherType"], input), "the voucher type field's members").toEqual(VOUCHERS);
-    expect(kindsIn(input.properties?.["voucher"], input), "the voucher reference's kinds").toEqual(VOUCHERS);
-    expect(kindsIn(input.properties?.["party"], input), "the party reference's kinds").toEqual(PARTIES);
-    expect(kindsIn(input.properties?.["contactType"], input), "the crm's party type: its own set, not the ledger's").toEqual(CONTACTS);
-    expect(kindsIn(input.properties?.["channel"], input), "the app's own set").toEqual(CHANNELS);
+    for (const [field, kinds, reference] of [["voucherType", VOUCHERS, false], ["voucher", VOUCHERS, true], ["party", PARTIES, true], ["contactType", CONTACTS, false], ["channel", CHANNELS, false], ["tag", [], false]] as const) {
+      // Exactly the union, in the model's order, once each, where it constrains the field; and no other member allowed anywhere under it.
+      expect(membersAt(input.properties?.[field], input, reference), `${field}'s members`).toEqual(kinds);
+      expect(kindsIn(input.properties?.[field], input), `${field}: no other member under it`).toEqual([...kinds].sort());
+    }
     expect(got.mcp.accepted?.isError, JSON.stringify(got.mcp.accepted)).not.toBe(true);
     expect(got.mcp.refused?.isError, JSON.stringify(got.mcp.refused)).toBe(true);
     expect(JSON.stringify(got.mcp.refused)).toContain("InvalidPayload");
@@ -289,6 +314,9 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     for (const [flag, kinds] of [["voucherType", VOUCHERS], ["voucher", VOUCHERS], ["party", PARTIES], ["contactType", CONTACTS], ["channel", CHANNELS]] as const) {
       expect(flags.get(flag), `the help has --${flag}`).toBeDefined();
       for (const kind of kinds) expect(flags.get(flag), `--${flag}'s help names ${kind}`).toContain(kind);
+      // In the model's order.
+      const where = kinds.map((k) => flags.get(flag)!.indexOf(k));
+      expect(where, `--${flag}'s help names its members in order`).toEqual([...where].sort((a, b) => a - b));
       // Each flag names only its own set's members: the other set's, and the unmounted feature's, are not a value it takes.
       for (const kind of [...VOUCHERS, ...PARTIES, ...CONTACTS, ...CHANNELS, "Sales Invoice"].filter((k) => !kinds.includes(k))) expect(flags.get(flag), `--${flag}'s help doesn't name ${kind}`).not.toContain(kind);
     }

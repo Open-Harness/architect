@@ -10,7 +10,9 @@ import { MOUNTED, books, modelExit, modelOf, optionsOf, problemsOf } from "./tes
 const refusedAt = async (exit: ReturnType<typeof modelExit>, where: string) => {
   const problems = problemsOf(await exit);
   expect(problems.length, "the blueprint is refused").toBeGreaterThan(0);
-  const named = problems.filter((p) => p.includes(where));
+  // An app file is named as itself, never as a path inside some package (`@fixture/x/blueprint/...`).
+  const at = where.startsWith("blueprint/") ? new RegExp(`(^|[\\s"'\`(])${where.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}`) : undefined;
+  const named = problems.filter((p) => (at === undefined ? p.includes(where) : at.test(p)));
   expect(named, `a problem names ${where}; the problems were:\n${problems.join("\n")}`).toHaveLength(1);
   return named[0]!;
 };
@@ -28,6 +30,7 @@ describe("#1132: what the compiler refuses about open sets", () => {
     const wrong = { path: "values/accounts.ts", exports: { card: b.s.add(b.ledger.AccountType, ["Card"]) } };
     const said = await refusedAt(modelExit(b, { mounts: MOUNTED, files: [wrong] }), "blueprint/values/accounts.ts");
     expect(said).toContain("AccountType");
+    expect(said).toContain("Blueprint.oneOf.open");
   });
 
   it("refuses a feature that doesn't depend on the set's owner adding to it, naming the adder, the owner and the member", async () => {
@@ -50,6 +53,7 @@ describe("#1132: what the compiler refuses about open sets", () => {
     const said = await refusedAt(modelExit(b, { mounts: MOUNTED }), "@fixture/payments/blueprint/values/vouchers.js");
     expect(said).toContain("Journal Entry");
     expect(said).toContain("@fixture/ledger/blueprint/values/ledger.js");
+    expect(said, "it names the one member the owner has, not the rest of the addition").not.toContain("Payment Entry");
   });
 
   it("refuses a member repeated in one feature's additions, and an empty member, each naming the adder's file", async () => {
@@ -58,6 +62,9 @@ describe("#1132: what the compiler refuses about open sets", () => {
     expect(said).toContain("Customer");
     const empty = books({ parties: (s, l) => ({ parties: s.add(l.PartyType, ["Customer", ""]) }) });
     await refusedAt(modelExit(empty, { mounts: MOUNTED }), "@fixture/parties/blueprint/values/parties.js");
+    // Repeated inside one addition, too.
+    const inOne = books({ parties: (s, l) => ({ parties: s.add(l.PartyType, ["Customer", "Supplier", "Customer"]) }) });
+    expect(await refusedAt(modelExit(inOne, { mounts: MOUNTED }), "@fixture/parties/blueprint/values/parties.js")).toContain("Customer");
   });
 
   it("never reads a feature that is installed but not mounted: what it would add wrongly refuses nothing", async () => {
@@ -84,7 +91,7 @@ describe("#1132: what the compiler refuses about open sets", () => {
   it("refuses a feature adding to the app's own open set: no feature depends on the app; it names the adder, the app's file and the member", async () => {
     const b = books({ payments: (s, l) => ({ paymentEntry: s.add(l.VoucherType, ["Payment Entry"]), fax: s.add(l.Channel, ["Fax"]) }) });
     const said = await refusedAt(modelExit(b, { mounts: MOUNTED }), "@fixture/payments/blueprint/values/vouchers.js");
-    expect(said).toContain("blueprint/values/channels.ts");
+    expect(said).toMatch(/(^|[\s"'`(])blueprint\/values\/channels\.ts/);
     expect(said).toContain("Fax");
   });
 
@@ -93,5 +100,24 @@ describe("#1132: what the compiler refuses about open sets", () => {
     const said = await refusedAt(modelExit(b, { mounts: { ...MOUNTED, crm: "crm", leads: "leads" } }), "@fixture/parties/blueprint/values/parties.js");
     expect(said).toContain("@fixture/crm");
     expect(said).toContain("Vendor");
+  });
+
+  it("refuses the app adding a member a feature adds, naming both files and the member", async () => {
+    const b = books();
+    const mine = { path: "values/vouchers.ts", exports: { mine: b.s.add(b.ledger.VoucherType, ["Payment Entry"]) } };
+    const problems = problemsOf(await modelExit(b, { mounts: MOUNTED, files: [mine] }));
+    const said = problems.filter((p) => p.includes("Payment Entry"));
+    expect(said, problems.join("\n")).toHaveLength(1);
+    expect(said[0]).toContain("@fixture/payments/blueprint/values/vouchers.js");
+    expect(said[0]).toMatch(/(^|[\s"'`(])blueprint\/values\/vouchers\.ts/);
+  });
+
+  it("refuses the app's own empty member, repeated member and member the owner has, as it refuses a feature's, naming the app's file", async () => {
+    for (const members of [["Opening Entry", ""], ["Opening Entry", "Opening Entry"], ["Opening Entry", "Journal Entry"]]) {
+      const b = books();
+      const mine = { path: "values/vouchers.ts", exports: { mine: b.s.add(b.ledger.VoucherType, members) } };
+      const said = await refusedAt(modelExit(b, { mounts: MOUNTED, files: [mine] }), "blueprint/values/vouchers.ts");
+      expect(said, JSON.stringify(members)).not.toContain("not a refusal");
+    }
   });
 });

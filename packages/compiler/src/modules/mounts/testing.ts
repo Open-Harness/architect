@@ -40,7 +40,8 @@ interface Pkg {
 const file = (path: string, exports: Readonly<Record<string, unknown>>): LoadedFile => ({ path, exports });
 
 /** What the members of each set are, as the fixtures declare them: the values the checks expect, never read from the model they judge. */
-export const OWN_VOUCHERS = ["Journal Entry"] as const;
+// Two members, out of sort order: the owner's own keep the owner's order.
+export const OWN_VOUCHERS = ["Journal Entry", "Contra Entry"] as const;
 /** The members of the app's own open set, `Channel`: no feature depends on the app, so no feature adds to it. */
 export const OWN_CHANNELS = ["Web", "Phone"] as const;
 /** The members of the crm's own `PartyType`, a set apart from the ledger's though it has the same export name in a file of the same path. */
@@ -114,7 +115,7 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, (s
   };
 
   // An app thing of its own that holds the ledger's sets, as an app that depends on the ledger may.
-  const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, party: Party, channel: Channel }, code: "PS" });
+  const Posting = Blueprint.thing({ description: "A posting the app keeps.", fields: { id: Blueprint.id("pst"), voucherType: VoucherType, party: Party, channel: Channel, alsoType: Blueprint.optional(VoucherType) }, code: "PS" });
   return { s, ledger, pkgs, Posting };
 };
 export interface Ledger {

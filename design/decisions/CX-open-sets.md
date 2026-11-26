@@ -31,7 +31,10 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
    as ERPNext names a DocType. Only a feature that depends on the owner may add: one that lists the owner in its `needs`,
    or needs a feature that does, through any depth (payroll adds Salary Slip through payments). Having needs is not
    enough: a feature that needs only another feature (leads needs the crm) may add to the crm's sets and never to the
-   ledger's. The app may add to any open set of a feature it mounts, since it depends on all of them.
+   ledger's. A need that is conditional (`need(ledger, { when })`) counts only when the mount picks it, as everywhere
+   else a need is met. The app may add to any open set of a feature it mounts, since it depends on all of them, and to
+   an open set it owns itself, from any of its `values/` files; the app's additions are judged by the same rules as a
+   feature's (call 6).
 3. **The compiled model holds the union.** Every field that holds the set has
    `{ type: "schema", format: "choice", options: [...], open: true }`, where `options` is the owner's members in the
    owner's order, then each member a **mounted** feature (or the app) adds, sorted by plain string order (JavaScript's
@@ -53,9 +56,10 @@ kinds, but its kinds are the app's declarations, and nothing lets a later featur
 6. **What the compiler refuses**, each naming the file that declared it: an addition to a value that isn't open (naming
    the value and `Blueprint.oneOf.open`), by a feature or by the app; an addition by a feature that doesn't depend on the
    set's owner (naming the owner's package, or the app's file that declares the set, and the member), including any feature
-   adding to a set the app owns; a member two features add (naming both files and the
-   member); a member the owner already has (naming the owner's file); a member repeated in one feature's additions; and
-   an empty member.
+   adding to a set the app owns; a member two adders add, two features or the app and a feature (naming both files and
+   the member); a member the owner already has (naming the owner's file and that member only); a member repeated in one
+   adder's additions, within one `add` or across two; and an empty member. Each holds for the app's additions as for a
+   feature's.
 
 ## Interim
 
@@ -64,15 +68,25 @@ section 5, gap 2), so the Books lane doesn't wait on this. Once it lands, Capxul
 `PartyType`, moves each member to the feature that owns its voucher or party, and may replace the pair `voucherType` and
 `voucherId` with one `Blueprint.refAny.of(VoucherType)` where it lists by neither.
 
+## Open, not yet checked
+
+Found by the hostile pass on #1175 and left for the build to raise if it matters: an app adding to an open set of an
+installed feature it doesn't mount (it should be refused, naming the app's file and the package); a set re-exported
+from a second package's `values/` (the owner stays the package that declared it; a re-export adds nothing); a set
+held inside a list or a struct (only fields, optional ones included, are checked); and a conditional need the mount
+didn't pick (call 2 says it doesn't count; no fixture has one).
+
 ## Checks
 
-- `packages/compiler/src/modules/mounts/open-sets.test.ts` (9) and `open-sets-refused.test.ts` (10), with the scratch
+- `packages/compiler/src/modules/mounts/open-sets.test.ts` (9) and `open-sets-refused.test.ts` (12), with the scratch
   books in `mounts/testing.ts`: the model (calls 1 to 4) and the refusals (call 6), over an in-memory source with nine
   installed feature packages (among them a crm with its own `PartyType` and a leads feature that needs only the crm)
   and an app that owns a `Channel` set.
 - `e2e/m2/14-open-sets.test.ts`: the doors (call 5), in a copy of acme with five installed feature packages, four of
   them mounted (the crm's `PartyType` beside the ledger's), and the app's own `Channel` set, made with the real
-  `ortho generate` and run in a world over local D1.
+  `ortho generate` and run in a world over local D1. The door check also sends a reference whose id is a number, a member in
+  another case or padded, and a member of an app-owned set with no member (`Tag`), each refused; MCP's `enum` must sit where it
+  constrains the field, in the model's order, with nothing beside it that loosens it.
 
 ## Supersedes
 
