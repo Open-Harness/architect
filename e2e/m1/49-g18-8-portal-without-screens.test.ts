@@ -8,7 +8,7 @@
 //   C  in a real world on workerd, from a project whose installed `@orthograph/portal` has no `dist/client`, with the licence token
 //      unset: `ortho build` exits 0 and ships no client, the feed answers, and A holds over HTTP;
 //   D  the licence: building a published package that does not itself take Pro builds no package that needs it (the `build` task
-//      graph of those packages, read from nx, holds no project, anywhere in the workspace, that declares `@heroui-pro/*`, and no command in
+//      graph of those packages, read from nx, holds no project, anywhere in the workspace, that declares Pro's scope, and no command in
 //      it reaches one), and the `@orthograph/portal` tarball, packed by pnpm from a checkout where the licensed client was built, holds only
 //      the server's built files, and its published manifest needs no UI package. `portal-ui` stays published with Pro as a peer (Aaron's
 //      F7 call of 19 November 2026; check 15): whether it is published is not this slice's.
@@ -147,11 +147,18 @@ describe("49 controls: each judge passes a correct stand-in and names each plant
     ["the words only in noscript", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><noscript>The screens are not in this release (Preview).</noscript>" }) : undefined), /does not say "not in this release"/],
     ["the words hidden by a sheet", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><style>.n{display:none}</style><h1>Welcome</h1><p class=\"n\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
     ["the words written by a script only", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p id=\"n\"></p><script>n.textContent = 'The screens are not in this release (Preview).'</script>" }) : undefined), /does not say "not in this release"/],
+    ["the words at opacity 0", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p style=\"opacity:0\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words at font-size 0", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p style=\"font-size:0\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words at 4 px", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p style=\"font-size:4px\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words off the page's left edge", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p style=\"position:absolute;left:-9999px\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words above the page's top edge", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><p style=\"position:absolute;top:-500px\">The screens are not in this release (Preview).</p>" }) : undefined), /does not say "not in this release"/],
+    ["the words in a 1 px clip", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><h1>Welcome</h1><div style=\"width:1px;height:1px;overflow:hidden\"><p>The screens are not in this release (Preview).</p></div>" }) : undefined), /does not say "not in this release"/],
+    ["the words in an sr-only span", plant((p) => isScreen(p) ? notice({ body: "<!doctype html><style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style><h1>Welcome</h1><span class=\"sr-only\">The screens are not in this release (Preview).</span>" }) : undefined), /does not say "not in this release"/],
     ["a notice that may be cached", plant((p) => isScreen(p) ? notice({ cache: "public, max-age=3600" }) : undefined), /cache-control "public, max-age=3600", not no-store/],
     ["a notice with no cache-control", plant((p) => isScreen(p) ? notice({ cache: null }) : undefined), /cache-control null, not no-store/],
   ];
-  it("the page judge reads what a person sees: the words visible under a heading of its own, and in a main, pass", async () => {
-    for (const body of ["<!doctype html><h1>The portal's screens are not in this release (Preview)</h1>", "<!doctype html><main><section><p>The screens are</p><p>not in this release (Preview).</p></section></main>", `${NOTICE}<p hidden>404 Not Found</p>`]) {
+  it("the page judge reads what a person sees: the words under a heading, split across a main, below the fold, in small but legible type, pass", async () => {
+    for (const body of ["<!doctype html><h1>The portal's screens are not in this release (Preview)</h1>", `<!doctype html><div style="height:3000px"></div><p>The screens are not in this release (Preview).</p>`, "<!doctype html><p style=\"font-size:12px\"><span>The screens are not</span> <b>in this release</b> (Preview).</p>", "<!doctype html><main><section><p>The screens are</p><p>not in this release (Preview).</p></section></main>", `${NOTICE}<p hidden>404 Not Found</p>`]) {
       expect(await screens(plant((p) => isScreen(p) ? notice({ body }) : undefined)), body).toEqual([]);
     }
   });
@@ -372,7 +379,16 @@ const projects = (() => {
 const manifestOf = (root: string): Manifest | undefined => existsSync(join(repo, root, "package.json")) ? JSON.parse(readFileSync(join(repo, root, "package.json"), "utf8")) as Manifest : undefined;
 const manifests = projects.filter((p) => p.root.startsWith("packages/")).flatMap((p) => { const manifest = manifestOf(p.root); return manifest === undefined ? [] : [{ dir: p.name, root: p.root, manifest }]; });
 const FIELDS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"] as const;
-const needsPro = (m: Manifest) => FIELDS.some((f) => Object.keys(m[f] ?? {}).some((n) => n.startsWith("@heroui-pro/")));
+/**
+ * HeroUI Pro's npm scope, read from the one peer of `portal-ui` whose scope ends in `-pro`: check 15 keeps Pro's name out of every file
+ * but its own and portal-ui's, so this check never writes it. Every judge below that needs the name uses this.
+ */
+const PRO = (() => {
+  const peers = Object.keys((manifestOf("packages/portal-ui") ?? { name: "" }).peerDependencies ?? {}).filter((n) => /^@[^/]+-pro\//.test(n));
+  if (peers.length !== 1) throw new Error(`portal-ui's peers name ${peers.length} -pro scopes, not one: ${peers.join(", ")}`);
+  return peers[0]!.split("/")[0]!;
+})();
+const needsPro = (m: Manifest) => FIELDS.some((f) => Object.keys(m[f] ?? {}).some((n) => n.startsWith(`${PRO}/`)));
 /** The nx projects, anywhere in the workspace, whose manifest declares the licensed package: found from the manifests, not from any task output. */
 const licensed = projects.filter((p) => { const m = manifestOf(p.root); return m !== undefined && needsPro(m); }).map((p) => p.name);
 const licensedRoots = projects.filter((p) => licensed.includes(p.name)).map((p) => p.root);
@@ -385,11 +401,11 @@ const published = manifests.filter((m) => m.manifest.private !== true);
  */
 const unlicensedPublished = published.filter((m) => !licensed.includes(m.dir));
 /** A dependency that is a UI package: React and Preact, the portal's components and the new portal, the web kit, HeroUI, a client bundler. */
-const UI = /^(react|react-dom|preact|@orthograph\/(portal-ui|portal-next|web|shell|theme)|@heroui|@heroui-pro|@ui-sdk|@tanstack\/react-[^/]+|vite|@vitejs)(\/|$)/;
+const UI = /^(react|react-dom|preact|@orthograph\/(portal-ui|portal-next|web|shell|theme)|@heroui(-[a-z]+)?|@ui-sdk|@tanstack\/react-[^/]+|vite|@vitejs)(\/|$)/;
 /** The text of a target's command(s). */
 const commandOf = (target: Target | undefined): string => [target?.options?.command ?? "", ...(target?.options?.commands ?? []).map((c) => typeof c === "string" ? c : c.command)].join(" && ");
 /** What in a command reaches the licence: a licensed project's folder or name, Pro's gate script, or HeroUI Pro itself. */
-const reachesLicence = (command: string): boolean => /pro\.mjs|heroui-pro|HEROUI_AUTH_TOKEN/i.test(command) || licensedRoots.some((r) => command.includes(r) || command.includes(`../${r.split("/").at(-1)}`)) || licensedNames.some((n) => new RegExp(`(^|[\\s"'=])${n.replace(/[/@.-]/g, "\\$&")}([\\s"':]|$)`).test(command));
+const reachesLicence = (command: string): boolean => /pro\.mjs|HEROUI_AUTH_TOKEN/i.test(command) || command.toLowerCase().includes(PRO.slice(1)) || licensedRoots.some((r) => command.includes(r) || command.includes(`../${r.split("/").at(-1)}`)) || licensedNames.some((n) => new RegExp(`(^|[\\s"'=])${n.replace(/[/@.-]/g, "\\$&")}([\\s"':]|$)`).test(command));
 
 const buildGraph = (projects: ReadonlyArray<string>): ReadonlyArray<string> => {
   const parent = mkdtempSync(join(realpathSync(tmpdir()), "ortho-g18-8-"));
@@ -464,12 +480,13 @@ describe("49 D: nothing a published package builds from needs the HeroUI Pro lic
   it("the oracle is real: portal-ui declares the licensed package, and the portal is among the published packages", () => {
     expect(unlicensedPublished.map((m) => m.dir), "the graph starts from the unlicensed published packages").toContain("portal");
     expect(unlicensedPublished.map((m) => m.dir)).not.toContain("portal-ui");
-    expect(licensed, "the packages that declare @heroui-pro/*").toContain("portal-ui");
+    expect(PRO, "Pro's scope, from portal-ui's peers").toMatch(/^@[a-z]+-pro$/);
+    expect(licensed, "the packages that declare Pro's scope").toContain("portal-ui");
     expect(published.map((m) => m.manifest.name)).toContain("@orthograph/portal");
     expect(published.map((m) => m.manifest.name)).toContain("orthograph");
   });
 
-  it("the build tasks of every published package include no project that declares @heroui-pro/*", { timeout: 300_000 }, () => {
+  it("the build tasks of the published packages that do not take Pro include no project that takes it", { timeout: 300_000 }, () => {
     const tasks = buildGraph(unlicensedPublished.map((m) => m.dir));
     expect(tasks.length, "the graph has tasks").toBeGreaterThanOrEqual(unlicensedPublished.length);
     const pulled = tasks.filter((t) => licensed.includes(t.split(":")[0]!));
@@ -506,7 +523,7 @@ describe("49 D: nothing a published package builds from needs the HeroUI Pro lic
       expect(tasks.filter((t) => licensed.includes(t.split(":")[0]!))).toEqual(["portal-ui:build"]);
     });
     it("a manifest with a UI dependency is named by the same pattern, in each field, and a server dependency is not", () => {
-      for (const planted of ["react", "react-dom", "preact", "@orthograph/portal-ui", "@orthograph/portal-next", "@orthograph/web", "@heroui/react", "@heroui-pro/react", "@ui-sdk/react", "@tanstack/react-query", "vite", "@vitejs/plugin-react"]) {
+      for (const planted of ["react", "react-dom", "preact", "@orthograph/portal-ui", "@orthograph/portal-next", "@orthograph/web", "@heroui/react", `${PRO}/react`, "@ui-sdk/react", "@tanstack/react-query", "vite", "@vitejs/plugin-react"]) {
         expect(UI.test(planted), planted).toBe(true);
         for (const field of ["dependencies", "peerDependencies", "optionalDependencies"] as const) expect(uiOf({ name: "x", [field]: { effect: "4.1.4", [planted]: "1.0.0" } }), `${planted} in ${field}`).toEqual([`${field}: ${planted}`]);
         expect(uiOf({ name: "x", bundleDependencies: [planted] }), `${planted} bundled`).toEqual([`bundled: ${planted}`]);
@@ -525,7 +542,7 @@ describe("49 D: nothing a published package builds from needs the HeroUI Pro lic
       expect(licensedRoots, "the licensed folders").toContain("packages/portal-ui");
       expect(reachesLicence(commandOf(projects.find((p) => p.name === "portal")!.targets["build"])), "portal's build today").toBe(false);
       expect(reachesLicence(commandOf(projects.find((p) => p.name === "portal")!.targets["typecheck"])), "portal's typecheck runs Pro's gate").toBe(true);
-      for (const planted of ["tsc -p x && node ../portal-ui/tools/pro.mjs pro require vite build", "pnpm --filter @orthograph/portal-ui build", "nx run portal-ui:build", "tsc -p packages/portal-ui/tsconfig.build.json", "HEROUI_AUTH_TOKEN=$T vite build", "cd ../portal-ui && tsc"]) {
+      for (const planted of ["tsc -p x && node ../portal-ui/tools/pro.mjs pro require vite build", "pnpm --filter @orthograph/portal-ui build", "nx run portal-ui:build", "tsc -p packages/portal-ui/tsconfig.build.json", "HEROUI_AUTH_TOKEN=$T vite build", `pnpm add ${PRO.slice(1)}`, "cd ../portal-ui && tsc"]) {
         expect(reachesLicence(planted), planted).toBe(true);
       }
     });

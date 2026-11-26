@@ -11,9 +11,10 @@
 //   on npm under `next`, `docs/canon/status.md`; not a "Preview 2"), and never the old "client is not installed" text. Who asks
 //   picks the form, by `accept`, as the data's errors already do:
 //     a browser (Chrome's and Firefox's or Safari's `accept` for a navigation) gets a page: `text/html`, starting `<!doctype html>`,
-//     whose text a person sees says it and says no "404" or "not found". What a person sees is what Chromium renders with scripts off
-//     (`innerText`): no comment, title, script, style, `template` or `noscript`, nothing `hidden`, `aria-hidden="true"`,
-//     `display:none` or `visibility:hidden`; the words are in the page as served, not written by a script;
+//     whose text a person sees says it and says no "404" or "not found". What a person sees is what Chromium renders with scripts off:
+//     no comment, title, script, style, `template` or `noscript`, nothing `hidden`, `aria-hidden="true"`, `display:none`,
+//     `visibility:hidden` or `opacity:0`, no box under 2 by 2 px (`sr-only`, a 1 px clip), nothing off the page's left or top edge, no
+//     font under 8 px (`visible`, below, says how); the words are in the page as served, not written by a script;
 //     an API client (`accept: application/json`, or axios's `application/json, text/plain, */*`) gets `application/json`,
 //     `{ "_tag": "NotInThisRelease", "message": "..." }`, the message saying it (the shape of the data's own `{ _tag: "NotFound" }`);
 //     a request with no `accept` (curl) gets either form, and still says it; a HEAD gets the 501 (its body is not judged);
@@ -76,22 +77,45 @@ const noStore = (at: string, seen: Seen, problems: string[]) => {
 let browser: Promise<Browser> | undefined;
 const seenText = new Map<string, Promise<string>>();
 /**
- * The text a person sees on a page: Chromium renders it with scripts off and reads `document.body.innerText`, after taking out what a
- * browser with scripts on would not show (`noscript`) and what is hidden from a reader (`aria-hidden="true"`). `innerText` already leaves
- * out comments, the title, scripts, styles, `template`, `hidden`, `display:none` and `visibility:hidden`. One browser, each body once.
+ * The text a person sees on a page. Chromium renders it with scripts off, at 1280 by 800, and each text node counts only when a person
+ * could read it: it is not inside a `noscript` (a browser with scripts on does not show it), `template`, `title`, `script` or `style`, nor
+ * under `aria-hidden="true"`; and it and each element above it pass `checkVisibility` with opacity and visibility (so nothing
+ * `display:none`, `hidden`, `visibility:hidden` or `opacity:0`), each element's box is at least 2 by 2 px (an `sr-only` span or a 1 px
+ * clip is not), the text's own box lies on the page (not pushed off its left or top edge), and its font is at least 8 px. One browser,
+ * each body once.
  */
 export const visible = (html: string): Promise<string> => {
   const known = seenText.get(html);
   if (known !== undefined) return known;
   const text = (async () => {
     browser ??= chromium.launch({ headless: true });
-    const context = await (await browser).newContext({ javaScriptEnabled: false });
+    const context = await (await browser).newContext({ javaScriptEnabled: false, viewport: { width: 1280, height: 800 } });
     try {
       const tab = await context.newPage();
-      await tab.setContent(html, { waitUntil: "domcontentloaded" });
+      await tab.setContent(html, { waitUntil: "load" });
       const seen = await tab.evaluate(() => {
-        for (const hidden of Array.from(document.querySelectorAll("noscript, [aria-hidden='true' i]"))) hidden.remove();
-        return document.body?.innerText ?? "";
+        const out: string[] = [];
+        const walker = document.createTreeWalker(document.body ?? document.documentElement, NodeFilter.SHOW_TEXT);
+        const pageWidth = document.documentElement.scrollWidth, pageHeight = document.documentElement.scrollHeight;
+        for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+          const words = node.textContent ?? "";
+          if (words.trim() === "") continue;
+          const parent = node.parentElement;
+          if (parent === null || parent.closest("noscript, template, title, script, style, [aria-hidden='true' i]") !== null) continue;
+          let shown = true;
+          for (let el: Element | null = parent; el !== null && el !== document.documentElement; el = el.parentElement) {
+            const box = el.getBoundingClientRect();
+            if (!el.checkVisibility({ opacityProperty: true, visibilityProperty: true }) || box.width < 2 || box.height < 2) { shown = false; break; }
+          }
+          if (!shown) continue;
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const box = range.getBoundingClientRect();
+          if (box.right <= 0 || box.bottom <= 0 || box.left >= pageWidth || box.top >= pageHeight) continue;
+          if (parseFloat(getComputedStyle(parent).fontSize) < 8) continue;
+          out.push(words);
+        }
+        return out.join(" ");
       });
       return seen.replace(/\s+/g, " ").trim();
     } finally { await context.close(); }
