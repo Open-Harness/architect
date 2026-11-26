@@ -1,0 +1,348 @@
+<title>Coworker Audit Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* A pinboard of design questions: wide, grouped, every card carrying its standing. Green runs, blue is decided, amber is proposed, red is open. */
+:root {
+  --bg: #f6f8fb; --panel: #ffffff; --panel2: #eef2f8; --rule: #d5dde9; --ink: #0c1a2c; --text2: #41526a; --muted: #6a7b93;
+  --blue: #0b63b8; --bluebg: #e6f0fb; --amber: #a35a00; --amberbg: #fff3df; --green: #0c7a4c; --greenbg: #e2f6ec; --red: #b3261e; --redbg: #fdeceb;
+  --k: #1d4fb0; --s: #0f6d4c; --c: #72829a; --n: #a14a12; --t: #0a6f78; --f: #6a3fb5;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", Menlo, Consolas, monospace; --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #08111f; --panel: #0e1c30; --panel2: #13253e; --rule: #25395a; --ink: #e9f0fa; --text2: #a9bcd6; --muted: #7d92ae;
+  --blue: #62c6ff; --bluebg: #10283f; --amber: #ffb55c; --amberbg: #2a2010; --green: #54d898; --greenbg: #0f2a22; --red: #ff8080; --redbg: #2c1518;
+  --k: #8db4ff; --s: #9adbb3; --c: #6f86a6; --n: #ffb98a; --t: #7adce0; --f: #c7b5ff; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #08111f; --panel: #0e1c30; --panel2: #13253e; --rule: #25395a; --ink: #e9f0fa; --text2: #a9bcd6; --muted: #7d92ae;
+  --blue: #62c6ff; --bluebg: #10283f; --amber: #ffb55c; --amberbg: #2a2010; --green: #54d898; --greenbg: #0f2a22; --red: #ff8080; --redbg: #2c1518;
+  --k: #8db4ff; --s: #9adbb3; --c: #6f86a6; --n: #ffb98a; --t: #7adce0; --f: #c7b5ff; color-scheme: dark; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16.5px; line-height: 1.55; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 40px 90px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 20px; }
+.wrap > * { min-width: 0; }
+h1 { font-size: clamp(32px, 5vw, 50px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; margin: 6px 0 0; text-wrap: balance; }
+h2 { font-size: 30px; line-height: 1.15; font-weight: 600; letter-spacing: -0.012em; margin: 40px 0 0; text-wrap: balance; }
+h3 { font-size: 19px; font-weight: 600; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 72ch; } .lede { font-size: 20px; color: var(--text2); }
+ul { margin: 0; padding-left: 20px; max-width: 72ch; display: flex; flex-direction: column; gap: 6px; }
+code { font-family: var(--mono); font-size: 0.88em; } b { font-weight: 600; }
+.eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-weight: 600; font-size: 17px; color: var(--blue); }
+.st { display: inline-block; font: 600 13px var(--label); text-transform: uppercase; letter-spacing: 0.12em; padding: 1px 8px; border: 1px solid currentColor; white-space: nowrap; vertical-align: 1px; }
+.st.run { color: var(--green); background: var(--greenbg); } .st.dec { color: var(--blue); background: var(--bluebg); } .st.new { color: var(--amber); background: var(--amberbg); } .st.open { color: var(--red); background: var(--redbg); } .st.film { color: var(--muted); border-style: dashed; }
+.by { font: 600 13px var(--label); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 15px; color: var(--text2); align-items: center; }
+.legend span { display: inline-flex; gap: 8px; align-items: center; }
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr)); gap: 14px; align-items: start; } .board > * { min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--rule); padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.card .top { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; } .card .at { font: 500 14px var(--mono); color: var(--blue); }
+.card blockquote { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.35; } .card p { font-size: 15.5px; color: var(--text2); } .card p b { color: var(--ink); }
+.verdict { background: var(--panel); border: 1px solid var(--rule); border-left: 5px solid var(--blue); padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; } .verdict .big { font-size: 24px; font-weight: 600; line-height: 1.25; max-width: 40ch; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 16px; align-items: start; } .cols > * { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.file { margin: 0; background: var(--panel); border: 1px solid var(--rule); min-width: 0; }
+.file figcaption { display: flex; flex-wrap: wrap; overflow-wrap: anywhere; justify-content: space-between; gap: 4px 12px; padding: 8px 14px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 13.5px; color: var(--muted); }
+pre.code { margin: 0; padding: 12px 0; overflow-x: auto; font-family: var(--mono); font-size: 14px; line-height: 1.7; font-variant-ligatures: none; tab-size: 2; }
+pre.code .ln { display: block; padding: 0 16px; border-left: 3px solid transparent; white-space: pre; min-width: max-content; } pre.code .ln.isnew { border-left-color: var(--amber); background: var(--amberbg); }
+.k { color: var(--k); } .s { color: var(--s); } .c { color: var(--c); font-style: italic; } .n { color: var(--n); } .t { color: var(--t); } .f { color: var(--f); } .x { color: var(--muted); }
+.tablewrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; font-size: 15px; background: var(--panel); } th, td { border: 1px solid var(--rule); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); background: var(--panel2); white-space: nowrap; } td code, td.mono { font-family: var(--mono); font-size: 13.5px; } td.q { font-weight: 500; min-width: 170px; } td.a { min-width: 190px; color: var(--text2); } td.a b { color: var(--ink); }
+tr.grp td { background: var(--panel2); font: 600 15px var(--label); text-transform: uppercase; letter-spacing: 0.14em; color: var(--blue); }
+.seq { background: var(--panel); border: 1px solid var(--rule); overflow-x: auto; } .seq svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+.seq text { font-family: var(--sans); font-size: 13.5px; fill: var(--ink); } .seq .lab { paint-order: stroke; stroke: var(--panel); stroke-width: 6px; stroke-linejoin: round; } .seq .sub { fill: var(--muted); font-size: 12.5px; }
+.seq .hd rect { fill: var(--panel2); stroke: var(--ink); stroke-width: 1.5; } .seq .hd text { font-weight: 600; font-size: 14px; } .seq .life { stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.seq .ar { stroke: var(--ink); stroke-width: 1.8; fill: none; } .seq .ar.dash { stroke-dasharray: 6 5; } .seq .ar.new { stroke: var(--amber); } .seq .hdn { fill: var(--ink); } .seq .hdn.new { fill: var(--amber); } .seq text.new { fill: var(--amber); font-weight: 600; }
+.seq .stbox { fill: var(--panel2); stroke: var(--blue); stroke-width: 1.5; } .seq .stname { font-family: var(--mono); font-size: 16px; fill: var(--blue); font-weight: 500; } .seq .cap { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em; font-size: 13px; font-weight: 600; fill: var(--muted); } .seq .wait { fill: var(--panel2); stroke: var(--muted); stroke-dasharray: 3 3; }
+.chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; } .chain div { background: var(--panel); border: 1px solid var(--rule); padding: 10px 14px; flex: 1 1 170px; min-width: 0; } .chain div b { display: block; font-family: var(--mono); font-size: 15px; } .chain div span { font-size: 14px; color: var(--text2); } .chain i { align-self: center; font-style: normal; color: var(--muted); font-size: 20px; }
+.out { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 10px; } .out div { background: var(--panel); border: 1px solid var(--rule); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; } .out b { font-size: 16.5px; } .out code { color: var(--muted); overflow-wrap: anywhere; } .out span.d { font-size: 14.5px; color: var(--text2); }
+ol.ask { margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 12px; max-width: 76ch; } ol.ask li::marker { font-weight: 600; color: var(--blue); } ol.ask span { display: block; color: var(--text2); font-size: 15.5px; }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px; align-items: start; } .opts > * { min-width: 0; }
+.opt { background: var(--panel); border: 1px solid var(--rule); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; } .opt .num { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.13em; color: var(--blue); } .opt h3 { font-size: 24px; } .opt p, .opt li { font-size: 15.5px; color: var(--text2); } .opt p b, .opt li b { color: var(--ink); } .opt .file { border-color: var(--rule); } .opt pre.code { font-size: 13px; }
+.g { display: inline-grid; place-items: center; width: 26px; height: 26px; font: 600 15px var(--mono); font-style: normal; margin-right: 8px; border: 1.5px solid currentColor; vertical-align: -6px; } .g.hi { color: var(--green); background: var(--greenbg); } .g.mid { color: var(--amber); background: var(--amberbg); } .g.lo { color: var(--red); background: var(--redbg); }
+table.rubric td.a { min-width: 230px; } tr.tot td { background: var(--panel2); font-size: 20px; } tr.tot td b { color: var(--ink); }
+a { color: var(--blue); }
+
+.note { background: var(--panel); border: 1px dashed var(--muted); padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; } .note p { font-size: 15.5px; color: var(--text2); } .note p b { color: var(--ink); }
+.tree { background: var(--panel); border: 1px solid var(--rule); overflow-x: auto; } .tree svg { display: block; min-width: 900px; width: 100%; height: auto; }
+.tree text { font-family: var(--sans); font-size: 14px; fill: var(--ink); } .tree .sub { fill: var(--muted); font-size: 12.5px; } .tree .bx { fill: var(--panel2); stroke: var(--ink); stroke-width: 1.5; } .tree .bx.miss { stroke: var(--red); stroke-dasharray: 5 4; fill: var(--redbg); } .tree .bx.ok { stroke: var(--green); fill: var(--greenbg); }
+.tree .ln2 { stroke: var(--ink); stroke-width: 1.6; fill: none; } .tree .ln2.miss { stroke: var(--red); stroke-dasharray: 5 4; } .tree .cap { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em; font-size: 13px; font-weight: 600; fill: var(--muted); } .tree .red { fill: var(--red); font-weight: 600; }
+ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 10px; max-width: 76ch; } ol.steps li::marker { font-weight: 600; color: var(--blue); } ol.steps span { display: block; color: var(--text2); font-size: 15.5px; }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Orthograph · an app audit · 26 November 2026</div>
+  <h1>Coworker, the audit board</h1>
+  <p class="lede">Your app, read from eight sides. What Orthograph can hold of it today, and what it can't. A first blueprint with the blanks marked. Six decisions are yours, at the end.</p>
+  <div class="legend">
+    <span><i class="st run">runs today</i> green on main, proved by an app's journeys</span>
+    <span><i class="st new">being built</i> code exists, not proved or not merged</span>
+    <span><i class="st dec">decided</i> a record, and no code</span>
+    <span><i class="st open">missing</i> nothing</span>
+  </div>
+
+  <div class="note">
+    <p><b>Nothing was run.</b> Coworker was read, at its one commit of 25 November. It was not installed, built, tested or opened, and I saw no screen rendered. Its score of 81 out of 81 was not reproduced. On the Orthograph side I ran no suite either: each standing comes from the status page, the ratchet lists and the pull requests' own words. An app only read is an app not seen working.</p>
+  </div>
+
+  <h2>What you asked, said back</h2>
+  <div class="verdict">
+    <p class="big">The screens say what the product is. The code behind them is a first attempt and can go.</p>
+    <p>You designed Coworker's interface, so the things it shows, their fields and their states are the model you want. You want that model written as an Orthograph blueprint, the app rebuilt from it, and every place where Orthograph falls short found and fixed in the framework as the rebuild goes. It is all TypeScript.</p>
+    <p>One thing has to be settled before that is true. Coworker has two sets of screens: the ones that are built, and the ones your own page of 25 November says they should become. They imply different models. That is decision 1.</p>
+  </div>
+
+  <h2>What Coworker is</h2>
+  <p>A workspace where people give work to managers. A manager is a durable agent with a job, a mission page, a board, an email address and a way to ask a person. It hears from people and from outside, decides what is work, starts workers on tasks, and asks first when it must.</p>
+  <div class="tree">
+    <svg viewBox="0 0 1100 320" role="img" aria-label="Coworker's shape: a person, a root manager that does not exist yet, a manager, a worker, the inbox and the outside">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker>
+      </defs>
+      <path class="ln2" d="M115,60 C115,14 605,14 605,60" marker-end="url(#ah)"/>
+      <text x="360" y="20" text-anchor="middle" class="sub">today: you talk straight to a manager</text>
+      <rect class="bx" x="40" y="60" width="150" height="56"/><text x="115" y="84" text-anchor="middle">You</text><text x="115" y="102" text-anchor="middle" class="sub">Owner, Builder, Member</text>
+      <rect class="bx miss" x="260" y="60" width="190" height="56"/><text x="355" y="84" text-anchor="middle">Root manager</text><text x="355" y="102" text-anchor="middle" class="sub">agreed, not in code</text>
+      <rect class="bx ok" x="520" y="60" width="170" height="56"/><text x="605" y="84" text-anchor="middle">Manager</text><text x="605" y="102" text-anchor="middle" class="sub">board, mission, address</text>
+      <rect class="bx ok" x="790" y="60" width="170" height="56"/><text x="875" y="84" text-anchor="middle">Worker</text><text x="875" y="102" text-anchor="middle" class="sub">one run, one task</text>
+      <path class="ln2 miss" d="M190,88 L258,88" marker-end="url(#ah)"/>
+      <path class="ln2 miss" d="M450,88 L518,88" marker-end="url(#ah)"/>
+      <path class="ln2" d="M690,78 L788,78" marker-end="url(#ah)"/><text x="739" y="70" text-anchor="middle" class="sub">starts a run</text>
+      <path class="ln2 miss" d="M788,100 L692,100" marker-end="url(#ah)"/><text x="875" y="140" text-anchor="middle" class="red">its report wakes nobody</text>
+      <rect class="bx ok" x="520" y="230" width="170" height="56"/><text x="605" y="254" text-anchor="middle">Outside</text><text x="605" y="272" text-anchor="middle" class="sub">email, GitHub</text>
+      <path class="ln2" d="M605,230 L605,118" marker-end="url(#ah)"/><text x="615" y="180" class="sub">through "who may ask"</text>
+      <rect class="bx ok" x="40" y="230" width="150" height="56"/><text x="115" y="254" text-anchor="middle">Inbox</text><text x="115" y="272" text-anchor="middle" class="sub">waiting on you</text>
+      <path class="ln2" d="M530,116 L192,244" marker-end="url(#ah)"/><text x="330" y="200" class="sub">asks, and waits</text>
+      <path class="ln2" d="M115,230 L115,118" marker-end="url(#ah)"/>
+      <text x="790" y="250" class="cap">Red and dashed</text><text x="790" y="270" class="sub">agreed in your docs, absent in the code</text>
+    </svg>
+  </div>
+  <div class="cols">
+    <div>
+      <h3>Three facts that shape everything</h3>
+      <ul>
+        <li><b>Two apps share the repository.</b> An older chat app, and the manager product. Your screens page does not mention the older one. The rebuild is of the manager product.</li>
+        <li><b>Its own docs call the build a spike.</b> They list 78 fixes found by using staging, none started. The redesign lives in three pages of docs.</li>
+        <li><b>Nested managers are not in the code.</b> There is one level. A manager has no parent, and no manager knows of another.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What is worth keeping, by its own account</h3>
+      <ul>
+        <li>One place per workspace and one per manager, kept apart.</li>
+        <li>The vault: a key per workspace, used and never returned.</li>
+        <li>"Who may ask": the gate on what reaches a manager.</li>
+        <li>Email and GitHub in, with every awkward case tested.</li>
+        <li>A fake for every outside thing, picked in one file.</li>
+        <li>One list of actions for a person's buttons and a manager's tools.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Eight sides</h2>
+  <div class="board">
+    <div class="card"><div class="top"><span class="at">1 · the screens</span></div>
+      <blockquote>About 45 built screens, 15,500 lines, and they come apart cleanly.</blockquote>
+      <p>Built on Astryx components, enforced by a check. <b>Each group of screens reaches the server through one interface</b>, so they can be pointed at a new backend by rewriting about seven interfaces.</p>
+      <p>Everything live is polled: chat every 0.6 seconds, the board every 3.</p></div>
+    <div class="card"><div class="top"><span class="at">2 · the model</span></div>
+      <blockquote>Three models, and they disagree.</blockquote>
+      <p>The code, the first model page, and the next model page. The next one adds a manager tree, permissions handed down, accounts, work with "done when" and "what happens next", and asks with a deadline.</p>
+      <p><b>Tasks and runs live inside one document per manager</b>, not in tables. Fifteen structures exist only for how the code works and are left out.</p></div>
+    <div class="card"><div class="top"><span class="at">3 · the verbs</span></div>
+      <blockquote>About 180 verbs, in two systems.</blockquote>
+      <p>76 actions in one list that people and managers share, each on, ask or off. <b>30 of the 76 do something.</b></p>
+      <p>Beside it, about 75 plain calls for workspace, people, keys and settings, with their own checks. A worker's four tools are under no permission at all.</p></div>
+    <div class="card"><div class="top"><span class="at">4 · the lives</span></div>
+      <blockquote>The one real wait is held inside the agent.</blockquote>
+      <p>When a manager asks you something, its tool call sleeps inside Pi Durable until you answer. Your findings suspect this blocks the manager's whole conversation.</p>
+      <p><b>Your call of this morning fits exactly:</b> the question should be a thing in a state, and the manager carries on.</p></div>
+    <div class="card"><div class="top"><span class="at">5 · the agents</span></div>
+      <blockquote>The loop never closes.</blockquote>
+      <p>A manager starts a worker. The worker's report changes a field, and <b>the manager is never woken</b>. A model that stops without reporting leaves its run running for ever.</p>
+      <p>No memory, no schedule, and the manager's prompt does not include its mission.</p></div>
+    <div class="card"><div class="top"><span class="at">6 · the outside</span></div>
+      <blockquote>Email and GitHub are real. The rest is on paper.</blockquote>
+      <p>GitHub can only comment. Slack is a spike. WhatsApp, MCP servers and a CRM are docs. Billing does nothing.</p>
+      <p>"A connector is a plug-in with a view" is a proposal with nothing built.</p></div>
+    <div class="card"><div class="top"><span class="at">7 · who is who</span></div>
+      <blockquote>Sound, and close to what Orthograph already uses.</blockquote>
+      <p>Better Auth with its organisations. Owner, Builder, Member. Four ways to join. A region per workspace. People outside are known by a proved email or GitHub id and can only ask.</p></div>
+    <div class="card"><div class="top"><span class="at">8 · proved and run</span></div>
+      <blockquote>81 of 81 passed while the product was unusable.</blockquote>
+      <p>Those are your findings' words. 134 test files, a score that can't go backwards, a real staging on Cloudflare, no CI and no traces.</p>
+      <p><b>The stories its tests tell are good</b>, and become the first journeys.</p></div>
+  </div>
+
+  <h2>Which screens are the authority?</h2>
+  <p>Your screens page counts 49 screens: 3 kept, 27 adapted, 7 redone, 11 new, 1 dropped. So "the screens are how I want it" can mean two things.</p>
+  <div class="opts">
+    <div class="opt">
+      <span class="num">A · the screens that are built</span>
+      <h3>What runs on staging</h3>
+      <ul>
+        <li>A flat list of managers.</li>
+        <li>A board with lanes and custom fields; a task is a form.</li>
+        <li>Events, Sources, permissions per manager.</li>
+        <li>A run, reachable only from its task.</li>
+      </ul>
+      <p>You can see every one today. They show the model your docs call a spike.</p>
+    </div>
+    <div class="opt">
+      <span class="num">B · the screens your page agrees</span>
+      <h3>What 25 November says</h3>
+      <ul>
+        <li>A tree of managers under a root, with versions compared.</li>
+        <li>A task with "done when", evidence and what happens next.</li>
+        <li>Threads as a tree; "In and out"; a connector's own view.</li>
+        <li>Connectors and accounts, MCP servers, Build inside Settings.</li>
+      </ul>
+      <p><b>Recommended.</b> It is a day old and it is where nested managers live. Eighteen of these screens have never been drawn, so they are drawn before they are built.</p>
+    </div>
+  </div>
+
+  <h2>What Orthograph holds today</h2>
+  <div class="verdict">
+    <p class="big">The model, yes. The agent that makes it Coworker, not yet.</p>
+    <p>Things, states, operations, refusals, events, the generated server, SDK, command line and agent tools, and proving journeys all run today. A running durable agent, tools made from operations, and "on, ask or off" handed down a tree do not.</p>
+    <p><b>The parked superagent is Coworker's nearest relative.</b> Its plugins already hold triggers, the gate, policy, threads, tickets with a derived stage, and "needs you", much of it passing its checks on main. Its agent runtime is a draft pull request. Coworker would be the app that finishes them.</p>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Coworker needs</th><th>Standing</th><th>Where</th></tr>
+    <tr class="grp"><td colspan="3">The core</td></tr>
+    <tr><td class="q">Things, states, moves, operations with refusals</td><td><i class="st run">runs today</i></td><td class="a">Plugged In's journeys prove it</td></tr>
+    <tr><td class="q">One set of verbs for buttons and for agents' tools</td><td><i class="st run">runs today</i></td><td class="a">the SDK, command line and MCP tools are generated per operation</td></tr>
+    <tr><td class="q">A stage worked out from other rows</td><td><i class="st new">being built</i></td><td class="a">derived reads; in use as the superagent's ticket stage</td></tr>
+    <tr><td class="q">Versions of a manager, an agent, a page</td><td><i class="st new">being built</i></td><td class="a">in use in the superagent example</td></tr>
+    <tr><td class="q">Lists with filters; a record under a parent</td><td><i class="st dec">decided</i></td><td class="a">both wait on Capxul's books</td></tr>
+    <tr class="grp"><td colspan="3">Who is who</td></tr>
+    <tr><td class="q">Sign-in, workspaces, members, invitations</td><td><i class="st new">being built</i></td><td class="a">Better Auth in the host; the things are copied into each app, not yet a package</td></tr>
+    <tr><td class="q">Owner, Builder, Member</td><td><i class="st dec">decided</i></td><td class="a">only a rule in code exists; Capxul landed a company-wide role</td></tr>
+    <tr><td class="q">An agent as a caller, told apart from a person</td><td><i class="st new">being built</i></td><td class="a">the form is on main, the caller is in the draft</td></tr>
+    <tr class="grp"><td colspan="3">Agents</td></tr>
+    <tr><td class="q">A durable agent on Pi Durable</td><td><i class="st new">being built</i></td><td class="a">draft pull request 781, on Pi 1.5; seven checks red. On main: a record and two blank handlers</td></tr>
+    <tr><td class="q">Tools from operations</td><td><i class="st dec">decided</i></td><td class="a">"not wired yet", in the draft's own words</td></tr>
+    <tr><td class="q">Managers above managers</td><td><i class="st open">missing</i></td><td class="a">nothing generic. It needs no new idea: two agents and an event between them</td></tr>
+    <tr><td class="q">An agent asks a person and carries on</td><td><i class="st dec">decided</i></td><td class="a">your call of this morning: the wait is a thing's state</td></tr>
+    <tr><td class="q">On, ask or off per action, handed down</td><td><i class="st open">missing</i></td><td class="a">approvals are a spike with no slice</td></tr>
+    <tr><td class="q">A workspace's own model key</td><td><i class="st open">missing</i></td><td class="a">a model is set per environment</td></tr>
+    <tr><td class="q">The transcript, and a live line while it writes</td><td><i class="st open">missing</i></td><td class="a">no live read anywhere in the framework</td></tr>
+    <tr class="grp"><td colspan="3">The outside</td></tr>
+    <tr><td class="q">Signed webhooks in, taken once</td><td><i class="st new">being built</i></td><td class="a">GitHub and Slack signatures are verified on main</td></tr>
+    <tr><td class="q">GitHub and Slack adapters</td><td><i class="st new">being built</i></td><td class="a">generated from each service's spec, passing against stand-ins</td></tr>
+    <tr><td class="q">Email in and out</td><td><i class="st open">missing</i></td><td class="a">Coworker's own module is the best starting point</td></tr>
+    <tr><td class="q">A vault per workspace</td><td><i class="st open">missing</i></td><td class="a">secrets are per environment</td></tr>
+    <tr><td class="q">MCP servers, billing, files, search</td><td><i class="st open">missing</i></td><td class="a">none is needed for a manager to close its loop</td></tr>
+    <tr class="grp"><td colspan="3">Screens</td></tr>
+    <tr><td class="q">Generated screens</td><td><i class="st dec">decided</i></td><td class="a">spiked only; no generator</td></tr>
+    <tr><td class="q">A kanban board</td><td><i class="st open">missing</i></td><td class="a">two spikes on the library being phased out</td></tr>
+    <tr><td class="q">Staging on Cloudflare</td><td><i class="st run">runs today</i></td><td class="a">as a plan with no credential; a live run is being built</td></tr>
+  </table></div>
+  <p>The full map, with every row and its evidence, is <code>map.md</code>.</p>
+
+  <h2>A first blueprint</h2>
+  <p>Thirty-two files for Coworker's core: manager, lane, task, run, ask, grant and page. <b>It does not compile, and nobody has tried.</b> An amber line is a blank: one only you can fill, or one the framework can't hold yet.</p>
+  <div class="cols">
+    <div>
+      <figure class="file"><figcaption><span>blueprint/things/manager/thing.ts</span><span>a row with a parent</span></figcaption><pre class="code"><span class="ln">import { Blueprint } from &quot;orthograph&quot;;</span><span class="ln">import { Title, Note } from &quot;../../values/coworker.ts&quot;;</span><span class="ln"> </span><span class="ln"><span class="c">// A row, not an actor: managers are listed, searched and drawn as a tree. Its conversation is an Agent, which is the actor.</span></span><span class="ln">export const Manager = Blueprint.thing({</span><span class="ln">  description: &quot;A co-worker: it has a job, a mission, a board and an address, and it answers to the manager above it.&quot;,</span><span class="ln">  fields: {</span><span class="ln">    id: Blueprint.id(&quot;mgr&quot;),</span><span class="ln">    workspace: Blueprint.id(&quot;org&quot;),</span><span class="ln">    name: Title,</span><span class="ln">    job: Note,</span><span class="ln">    above: Blueprint.optional(Blueprint.id(&quot;mgr&quot;)), // empty: the root. One per workspace (first-principles 10)</span><span class="ln">    agent: Blueprint.id(&quot;agt&quot;), // its conversation, from @orthograph/agents</span><span class="ln">    mission: Blueprint.id(&quot;pge&quot;),</span><span class="ln">    address: Blueprint.text({ max: 120 }), // &lt;manager&gt;.&lt;workspace&gt;@&lt;domain&gt;</span><span class="ln">  },</span><span class="ln">  versions: { key: &quot;id&quot; }, // &quot;versions kept&quot;, and &quot;old and new side by side on the same past cases&quot; (screens.md)</span><span class="ln">  code: &quot;MG&quot;,</span><span class="ln">});</span><span class="ln isnew"><span class="c">// GAP trees: &quot;a record under a parent&quot; is provisional (status row `trees`, Capxul&#x27;s books). `above` works as a plain</span></span><span class="ln"><span class="c">// field; rolling numbers up the tree and &quot;one root per workspace&quot; as an invariant do not exist.</span></span></pre></figure>
+      <figure class="file"><figcaption><span>blueprint/things/ask/machine.ts</span><span>the wait is the ask's</span></figcaption><pre class="code"><span class="ln">import { Blueprint } from &quot;orthograph&quot;;</span><span class="ln">import { Ask } from &quot;./thing.ts&quot;;</span><span class="ln">import * as Events from &quot;./events.ts&quot;;</span><span class="ln"> </span><span class="ln">export const machine = Blueprint.machine(Ask, {</span><span class="ln">  states: [&quot;waiting&quot;, &quot;answered&quot;, &quot;passed&quot;, &quot;lapsed&quot;],</span><span class="ln">  moves: {</span><span class="ln">    raise: { from: [], to: &quot;waiting&quot;, emits: Events.AskRaised },</span><span class="ln">    answer: { from: [&quot;waiting&quot;], to: &quot;answered&quot;, emits: Events.AskAnswered }, // yes, no, an option, or their own words</span><span class="ln"><span class="c">    // &quot;No deadline, reminder or stand-in&quot; today; all three are agreed (screens.md, &quot;Asking people&quot;).</span></span><span class="ln">    pass: { from: [&quot;waiting&quot;], to: &quot;passed&quot;, emits: Events.AskPassed }, // to the stand-in, or the next person in `then`</span><span class="ln">    lapse: { from: [&quot;waiting&quot;], to: &quot;lapsed&quot;, emits: Events.AskLapsed }, // the deadline went by. Never taken as yes for an approval</span><span class="ln">  },</span><span class="ln">});</span><span class="ln isnew"><span class="c">// GAP clock-moves: `pass` and `lapse` are moves made by a clock. Declared here, not runnable (`world-clock-keeper`, spiked).</span></span><span class="ln isnew"><span class="c">// GAP waiting-list: K46 leaves open &quot;telling people a thing is waiting on them: a list per person and how it reaches them&quot;.</span></span><span class="ln"><span class="c">// Coworker&#x27;s Inbox is exactly that list. Here it is a plain read over Ask by `to` and state.</span></span><span class="ln"><span class="c">// Approvals that any Owner may answer (&quot;first answer wins&quot;) want K46&#x27;s `asks: Blueprint.atLeast(1, owner, &quot;answer&quot;)` // new</span></span></pre></figure>
+    </div>
+    <div>
+      <figure class="file"><figcaption><span>blueprint/things/run/machine.ts</span><span>every report wakes its manager</span></figcaption><pre class="code"><span class="ln">import { Blueprint } from &quot;orthograph&quot;;</span><span class="ln">import { Run } from &quot;./thing.ts&quot;;</span><span class="ln">import * as Events from &quot;./events.ts&quot;;</span><span class="ln"> </span><span class="ln">export const machine = Blueprint.machine(Run, {</span><span class="ln">  states: [&quot;running&quot;, &quot;waiting&quot;, &quot;ended&quot;, &quot;stopped&quot;],</span><span class="ln">  moves: {</span><span class="ln">    start: { from: [], to: &quot;running&quot;, emits: Events.RunStarted },</span><span class="ln">    report: { from: [&quot;running&quot;, &quot;waiting&quot;], to: &quot;running&quot;, emits: Events.RunReported }, // progress</span><span class="ln">    wait: { from: [&quot;running&quot;], to: &quot;waiting&quot;, emits: Events.RunReported }, // waiting or blocked: its manager is woken</span><span class="ln">    end: { from: [&quot;running&quot;, &quot;waiting&quot;], to: &quot;ended&quot;, emits: Events.RunEnded }, // ready, failed or dropped</span><span class="ln">    stop: { from: [&quot;running&quot;, &quot;waiting&quot;], to: &quot;stopped&quot;, emits: Events.RunStopped }, // a person or its manager</span><span class="ln"><span class="c">    // The old app&#x27;s hole: a model that stops without reporting leaves the run running for ever.</span></span><span class="ln">    idled: { from: [&quot;running&quot;], to: &quot;ended&quot;, emits: Events.RunEnded }, // made by AgentIdled from @orthograph/agents, not by a caller</span><span class="ln">  },</span><span class="ln">});</span><span class="ln"><span class="c">// K46&#x27;s check on waiting states (a way out for yes, for no and for silence) is sketched and not built.</span></span><span class="ln isnew"><span class="c">// GAP clock-moves: &quot;silence&quot; needs a move made by time. `world-clock-keeper` is spiked.</span></span></pre></figure>
+      <figure class="file"><figcaption><span>blueprint/things/grant/thing.ts</span><span>what the framework can't say yet</span></figcaption><pre class="code"><span class="ln">import { Blueprint } from &quot;orthograph&quot;;</span><span class="ln">import { Manager } from &quot;../manager/thing.ts&quot;;</span><span class="ln">import { Action, Mode } from &quot;../../values/coworker.ts&quot;;</span><span class="ln"> </span><span class="ln"><span class="c">// What a manager may do: &quot;a smaller part handed down at each level, taken back from above&quot;.</span></span><span class="ln"><span class="c">// The old app has on, ask or off per manager over a string catalogue of 76 actions, 46 with nothing behind them.</span></span><span class="ln"><span class="c">// Here an action is an operation of the blueprint, so the catalogue is the model and cannot drift.</span></span><span class="ln">export const Grant = Blueprint.thing({</span><span class="ln">  description: &quot;A part of what the holder above may do, handed to a manager: one action, on or ask, on one account and place.&quot;,</span><span class="ln">  fields: {</span><span class="ln">    id: Blueprint.id(&quot;grt&quot;),</span><span class="ln">    holder: Manager.fields.id,</span><span class="ln">    from: Blueprint.optional(Blueprint.id(&quot;grt&quot;)), // whose part it is; taking that away takes this</span><span class="ln">    account: Blueprint.optional(Blueprint.id(&quot;acc&quot;)), // from @orthograph/intake</span><span class="ln">    on: Blueprint.text({ max: 200 }), // &quot;acme/api&quot;, &quot;#launch&quot;, &quot;*&quot;</span><span class="ln">    action: Action,</span><span class="ln">    mode: Mode,</span><span class="ln">  },</span><span class="ln">});</span><span class="ln isnew"><span class="c">// GAP grants: three things the framework cannot hold.</span></span><span class="ln"><span class="c">//  1. A role decided by rows of data: &quot;this caller holds a grant for this operation&quot;. `allowed` takes roles declared in code.</span></span><span class="ln"><span class="c">//  2. Ask as an outcome of a call: neither allowed nor refused, but an Ask raised and the call made on a yes.</span></span><span class="ln"><span class="c">//     The status page has it as `gap-approval-declaration` and `approvals-once`, both spiked, no slice.</span></span><span class="ln"><span class="c">//  3. &quot;Wider than its parent is an error&quot;: an invariant across two rows of one thing.</span></span><span class="ln isnew"><span class="c">// AARON: whether grants are a framework primitive (every Orthograph app with agents wants them) or Coworker&#x27;s own</span></span><span class="ln"><span class="c">// guard in handlers. Board decision 5.</span></span></pre></figure>
+    </div>
+  </div>
+  <div class="cols">
+    <div>
+      <h3>Three choices the sketch makes</h3>
+      <ul>
+        <li><b>An ask is a thing, not a sleeping tool call.</b> The manager raises it and carries on. Your answer is its next turn.</li>
+        <li><b>An action is an operation.</b> The list of 76 strings goes. What a manager may do is checked against the blueprint itself, so 46 actions with nothing behind them can't happen.</li>
+        <li><b>Pi keeps the conversation and nothing else.</b> The board, the pages and the permissions move out of Pi's documents into things.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What is left out on purpose</h3>
+      <ul>
+        <li>Fifteen tables that exist for how the old code works: dedupe, fan-out, outboxes, routing, caches.</li>
+        <li>The whole older chat app.</li>
+        <li>The audit log as a table. Orthograph's own journal and traces already say who did what.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>The four questions</h2>
+  <h3>1 · Where should it live?</h3>
+  <p><b>In this repository, as an example beside Capxul, on its own goal branch.</b> Your instinct that it wants its own repository is right for where it ends up, and wrong for now.</p>
+  <div class="tablewrap"><table class="rubric">
+    <tr><th>Test</th><th>In this repository</th><th>Its own repository, now</th></tr>
+    <tr><td class="q">Can it install the framework?</td><td class="a"><i class="g hi">A</i>from the workspace</td><td class="a"><i class="g lo">D</i>a local registry, republished on every framework change. Nothing is on npm</td></tr>
+    <tr><td class="q">Can it mount the superagent's plugins?</td><td class="a"><i class="g hi">A</i>by path</td><td class="a"><i class="g lo">F</i>they are not packages</td></tr>
+    <tr><td class="q">A framework fix and its first use</td><td class="a"><i class="g hi">A</i>one pull request</td><td class="a"><i class="g lo">D</i>two repositories and a publish between</td></tr>
+    <tr><td class="q">Journeys, the ratchet, the reviewer, the lander</td><td class="a"><i class="g hi">A</i>apply as written</td><td class="a"><i class="g mid">C</i>set up again</td></tr>
+    <tr><td class="q">Cost to this repository</td><td class="a"><i class="g mid">C</i>15,000 lines of screens and a second component library in its CI</td><td class="a"><i class="g hi">A</i>none</td></tr>
+    <tr><td class="q">Where it ends up</td><td class="a"><i class="g mid">B</i>moved out once, as Capxul is already planned to be</td><td class="a"><i class="g hi">A</i>already there</td></tr>
+  </table></div>
+  <p>It moves out when two things are true: the packages install from npm, and the plugins it mounts are packages. One thing I did not check: whether this repository's lint rules reach an example's own screens. If they do, scoping them away is the first framework change.</p>
+
+  <h3>2 · What happens to the interface?</h3>
+  <p><b>Keep the screens and point them at the generated SDK.</b> They come apart cleanly, and the generated UI layer is only spiked, so waiting for it means no screen for months. Port a screen only if your page says Keep or Adapt. The eighteen marked New or Redo are drawn first, as real screens you can look at. Astryx stays as the app's look, and UI SDK is used only for what Orthograph generates. That leaves two component libraries in the repository, which is decision 4.</p>
+
+  <h3>3 · Which parts of its Pi Durable use carry over?</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Coworker's use of Pi</th><th>Carries over?</th><th>Onto what</th></tr>
+    <tr><td class="q">A harness on the object's own storage, resumed on restart</td><td><i class="st new">yes, in the draft</i></td><td class="a">the agent's actor</td></tr>
+    <tr><td class="q">One conversation per manager, for good</td><td><i class="st new">yes, in the draft</i></td><td class="a">one Agent per manager</td></tr>
+    <tr><td class="q">Submit with a request id; abort on stop</td><td><i class="st new">yes, in the draft</i></td><td class="a">tell and close, each as the hop of an event</td></tr>
+    <tr><td class="q">A turn ends and someone is told</td><td><i class="st new">yes, and better</i></td><td class="a">the agent going idle is an event. Coworker never built this</td></tr>
+    <tr><td class="q">Models and a scripted fake</td><td><i class="st new">partly</i></td><td class="a">a stand-in model and an OpenAI-shaped adapter; no Anthropic adapter</td></tr>
+    <tr><td class="q">Tools registered per action</td><td><i class="st dec">not yet</i></td><td class="a">decided as tools from operations</td></tr>
+    <tr><td class="q">The board, pages and permissions as Pi documents</td><td><i class="st open">no, on purpose</i></td><td class="a">things in stores</td></tr>
+    <tr><td class="q">An ask as a sleeping tool call</td><td><i class="st open">no, on purpose</i></td><td class="a">an Ask in a state</td></tr>
+    <tr><td class="q">Several conversations in one harness</td><td><i class="st open">no</i></td><td class="a">one agent, one actor, per run</td></tr>
+    <tr><td class="q">Forking a conversation ("threads are forks")</td><td><i class="st open">no</i></td><td class="a">nothing forks an agent. A gap if the Threads screen stays</td></tr>
+    <tr><td class="q">Sleeping until a date; streaming; usage and budgets</td><td><i class="st open">no</i></td><td class="a">timers are part-built; the other two are missing</td></tr>
+  </table></div>
+  <p>Coworker runs Pi Durable 1.6. The draft pins 1.5. The newer one has the signal that closes the worker's loop, so the draft moves up as it lands.</p>
+
+  <h3>4 · What is the first slice?</h3>
+  <p><b>The board and the inbox, with no agent in it.</b> Manager, lane, task and ask, in the database. Seven operations: make a manager, add a lane, add a task, move it, finish it, raise an ask, answer it. It ends green on one named check, <code>e2e/coworker/01-board-and-inbox.test.ts</code>, which proves six journeys. Everything it needs runs today, and the moment it is green an agent can already drive the board through the generated tools.</p>
+  <ol class="steps">
+    <li>The board and the inbox.<span>No agent. Needs nothing new from the framework.</span></li>
+    <li>A workspace and its people.<span>Owner, Builder, Member. Someone from another workspace is refused.</span></li>
+    <li>The first screens, re-pointed.<span>Board, task, inbox, a question as a page. Coworker's own browser tests, ported.</span></li>
+    <li>A manager that answers.<span>The agent runtime lands in pieces. "A chat becomes a task", and it survives a restart. First framework change.</span></li>
+    <li>The loop closes.<span>A worker reports and its manager acts on it. The old app never did this.</span></li>
+    <li>It asks first.<span>An action set to ask raises an ask; your answer is the manager's next turn.</span></li>
+    <li>It hears the world.<span>The superagent's intake and GitHub adapter, mounted. An email adapter, written in the app.</span></li>
+    <li>The tree.<span>A root manager, managers made by managers, permissions handed down and taken back.</span></li>
+  </ol>
+
+  <h2>The gaps, and who would fix them</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Gap</th><th>Fix or work round</th><th>Whose paths</th></tr>
+    <tr class="grp"><td colspan="3">Fix in the framework</td></tr>
+    <tr><td class="q">The agent runtime is a draft</td><td class="a">land it in pieces, on Pi 1.6</td><td class="a">unclaimed; the superagent is parked, so the app that needs it takes it</td></tr>
+    <tr><td class="q">Events to an agent are not retried in order</td><td class="a">land the outbox draft</td><td class="a">unclaimed</td></tr>
+    <tr><td class="q">No tools from operations</td><td class="a">build it: it is the heart of the product</td><td class="a">unclaimed</td></tr>
+    <tr><td class="q">A person told apart from an agent</td><td class="a">comes with the agent caller</td><td class="a">the framework goal already plans to bring it to main</td></tr>
+    <tr><td class="q">No email</td><td class="a">an adapter written inside the app first</td><td class="a">Coworker's; the inbound door is shared with Capxul's banking</td></tr>
+    <tr class="grp"><td colspan="3">Work round now, fix later</td></tr>
+    <tr><td class="q">On, ask or off, handed down</td><td class="a">a guard in Coworker's handlers; later a role decided by data, and "ask" as an answer to a call</td><td class="a">unclaimed; touches access, where Capxul just landed work, so it is asked first</td></tr>
+    <tr><td class="q">Owner, Builder, Member</td><td class="a">use the company-wide role Capxul landed</td><td class="a">Capxul's by rank</td></tr>
+    <tr><td class="q">No organisations package</td><td class="a">copy the starter's things</td><td class="a">shared with Capxul's companies</td></tr>
+    <tr><td class="q">Deadlines, reminders, a silent run</td><td class="a">a timer fires an event</td><td class="a">timers are Capxul's by rank; the keeper is unclaimed</td></tr>
+    <tr><td class="q">A workspace's own keys and vault</td><td class="a">one model per environment at first; then lift Coworker's vault as a plugin</td><td class="a">the vault goal is parked</td></tr>
+    <tr><td class="q">Live updates</td><td class="a">poll, as today</td><td class="a">nobody's: a question for the framework goal</td></tr>
+    <tr><td class="q">No generated screens, no kanban</td><td class="a">keep Coworker's screens</td><td class="a">both screen goals are parked</td></tr>
+  </table></div>
+  <p>I claimed nothing, opened no framework pull request, added no row and made no goal. If you accept this, the framework goal makes the goal.</p>
+
+  <h2>Decisions for you</h2>
+  <p>Each has my recommendation. A line each is enough.</p>
+  <ol class="ask">
+    <li><b>Which screens are the authority?</b><span>The ones built, or the ones your page of 25 November agrees, with the next model behind them. I recommend the agreed ones.</span></li>
+    <li><b>Is Coworker a third thing being built?</b><span>You said on 25 November that two things are built now, the alpha and Capxul, and parked the superagent. Coworker needs the superagent's unfinished agent work. I recommend yes: Coworker becomes the app that pulls agents, takes those open pieces, and the superagent stays parked.</span></li>
+    <li><b>Where does it live?</b><span>I recommend inside this repository, beside Capxul, until the packages are on npm.</span></li>
+    <li><b>Do the Astryx screens stay?</b><span>I recommend yes, re-pointed at the generated SDK, with UI SDK only for what Orthograph generates.</span></li>
+    <li><b>"On, ask or off, handed down": Coworker's own, or the framework's?</b><span>I recommend Coworker's own guard first, lifted into the framework once it works. Every app with agents will want it.</span></li>
+    <li><b>Four blanks in the model.</b><span>I recommend: a task keeps both its lane and "what happens next"; a worker is a saved agent with versions; a person's own permission changes stay; a connector's own view waits until pages exist.</span></li>
+  </ol>
+</div>
