@@ -7,7 +7,7 @@ Film.scene("climb", {
     const move = once("answered without making its move claim");
     return `${Kit.css}${Loc.css("climb")}<style>
       #scene-climb #cl-ed .code.small { line-height: 28px; }
-      #scene-climb .pair .cmd { color: var(--muted); } #scene-climb .pair .hit { color: var(--text2); }
+      #scene-climb .pair .cmd { color: var(--muted); } #scene-climb .pair .cur { display: none; } #scene-climb .pair .hit { color: var(--text2); }
       #scene-climb .saybox { left: 96px; top: 812px; }
     </style>
     <div class="head"><div class="eyebrow">Rung one</div><div class="hl">Same count. A different failure.</div></div>
@@ -47,11 +47,12 @@ Film.scene("climb", {
     s.out(".pair", t4 - 0.35, { dur: 0.3 }); Loc.lit(s, "#cl-term", [], t4 - 0.2); s.in("#cl-gap", t4, { y: 14 });
     s.focus(gap, [rec, close], c("d4", "saved")); s.focus(gap, [close + 1, ret - 1], c("d4", "forgot")); s.in(Kit.call(s, gap, close + 1, "no move here"), c("d4", "forgot") + 0.05, { x: 14, y: 0, dur: 0.3 });
     const event = Loc.rows(s, "#cl-term", "expected HandleClaimed, journal has nothing"), state = Loc.rows(s, "#cl-term", 'is in no state, expected "claimed"');
-    Loc.lit(s, "#cl-term", event, c("d4", "no event")); s.in(Loc.label(event[0], "no event"), c("d4", "no event") + 0.05, { x: 14, y: 0, dur: 0.3 });
-    Loc.lit(s, "#cl-term", [...event, ...state], c("d4", "no state")); s.in(Loc.label(state[0], "no state"), c("d4", "no state") + 0.05, { x: 14, y: 0, dur: 0.3 });
+    const noEvent = Loc.label(event[0], "no event"), noState = Loc.label(state[0], "no state");
+    Loc.lit(s, "#cl-term", event, c("d4", "no event")); s.in(noEvent, c("d4", "no event") + 0.05, { x: 14, y: 0, dur: 0.3 });
+    Loc.lit(s, "#cl-term", [...event, ...state], c("d4", "no state")); s.in(noState, c("d4", "no state") + 0.05, { x: 14, y: 0, dur: 0.3 });
     // d5: what climbing looks like.
     const t5 = c("d5");
-    s.out("#cl-gap", t5 - 0.3, { dur: 0.3 }); s.in(".pair", t5 + 0.1, { y: 12, stagger: 0.15 });
+    s.out("#cl-gap", t5 - 0.3, { dur: 0.3 }); s.out([noEvent, noState], t5 - 0.3, { dur: 0.3 }); Loc.lit(s, "#cl-term", [], t5 - 0.3); s.in(".pair", t5 + 0.1, { y: 12, stagger: 0.15 });
     s.fromTo(".ladder .rung0, .ladder .rung1", { scale: 1 }, { scale: 1.1, duration: 0.25, yoyo: true, repeat: 1 }, c("d5", "Not every"));
     s.in(".saybox", c("d5", "but every"), { y: 14 });
   },

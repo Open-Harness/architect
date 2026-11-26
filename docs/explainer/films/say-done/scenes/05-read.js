@@ -24,9 +24,10 @@ Film.scene("read", {
   build(s) {
     const c = s.cue;
     s.in(".head, .whoat", s.start + 0.3);
-    s.in(".hold1", c("e1", "the stories"), { y: 14 }); s.fromTo(".hold1 .kbig b", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e1", "agreed"));
-    s.in(".hold2", c("e1", "a red run"), { y: 14 }); s.fromTo(".hold2 .kbig b", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e1", "bite"));
-    s.in(".wrong > .lbl", c("e2"), { y: 8 }); s.to(".hold", { opacity: 0.45, duration: 0.4 }, c("e2"));
+    s.in(".hold", c("e1", "two things"), { y: 14, stagger: 0.12 });
+    s.fromTo(".hold1 .kbig, .hold1 .fact", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e1", "the stories")); s.fromTo(".hold1 .kbig b", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e1", "agreed"));
+    s.fromTo(".hold2 .kbig, .hold2 .fact", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e1", "a red run")); s.fromTo(".hold2 .kbig b", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e1", "bite"));
+    s.in(".wrong > .lbl", c("e2"), { y: 8 }); s.to(".hold", { opacity: 0.6, duration: 0.4 }, c("e2"));
     s.in(".it1", c("e2", "A journey"), { y: 10 }); s.fromTo(".it1 .then", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e2", "Send"));
     s.in(".it2", c("e3", "An author"), { y: 10 }); s.fromTo(".it2 .then", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, c("e3", "two sessions"));
     s.in(".it3", c("e4", "Nothing"), { y: 10 });

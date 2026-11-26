@@ -6,7 +6,7 @@ Film.scene("scaffold", {
     // The journey's own steps, by name, and which of them this run left red.
     const names = [...D.src["journeys/claim-a-handle.ts"].matchAll(/s\.step\(\s*"([^"]+)"/g)].map((m) => m[1]);
     const steps = names.map((name) => ({ name, ok: !run.includes(`✘ "${name}"`) }));
-    if (steps.length !== rung.stepsbox || steps.filter((x) => x.ok).length !== rung.green) throw new Error("scaffold: the journey's steps do not match the recorded count");
+    if (steps.length !== rung.steps || steps.filter((x) => x.ok).length !== rung.green) throw new Error("scaffold: the journey's steps do not match the recorded count");
     const first = '  ✘ "aaron claims the free name"';
     return `${Kit.css}${Loc.css("scaffold")}<style>
       #scene-scaffold #sc-ed .code.small { line-height: 30px; } #scene-scaffold #sc-ed .tag { color: var(--cyan); }
@@ -22,7 +22,7 @@ Film.scene("scaffold", {
     ${Kit.term(D, { id: "sc-term", cap: "climb-0-prove", x: 96, y: 262, w: 1728, h: 400, cls: "hidden0", tag: '<span class="tag">rung 0 · the scaffold</span>', keep: (l) => l.startsWith("journey ") || l.startsWith(first) })}
     <div class="abs stepsbox hidden0"><div class="lbl">the eight steps of journeys/claim-a-handle.ts, in this run</div>
       <div class="cols">${steps.map((x) => `<div class="step ${x.ok ? "held" : "fell"}"><b class="${x.ok ? "gr" : "rd"}">${x.ok ? "✔" : "✘"}</b>${Film.esc(x.name)}</div>`).join("")}</div>
-      <div class="needs hidden0">${rung.green} of ${rung.stepsbox} pass before a line is written: <span class="mu">the steps that never needed this handler.</span></div></div>
+      <div class="needs hidden0">${rung.green} of ${rung.steps} pass before a line is written: <span class="mu">the steps that never needed this handler.</span></div></div>
     ${Kit.ed(D, { id: "sc-blank", text: h.text, path: h.path, x: 96, y: 716, w: 1180, from: blank - 1, to: blank, cls: "hidden0", tag: '<span class="tag">the blank</span>' })}
     <div class="abs goes hidden0"><div class="say" style="font-size:38px">That is where the builder goes.</div></div>`;
   },
