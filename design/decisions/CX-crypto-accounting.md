@@ -1,116 +1,158 @@
-# CX-crypto-accounting: how a dollar-reporting company accounts for the USDC in its Safe
+# CX-crypto-accounting: how a dollar-reporting company accounts for USDC, ether and bitcoin in its Safe
 
-**Status: draft, 26 November 2026.** Proposed by Goal 16's 📐 designer thread, started by Goal 16's lead
-(session_01S8RF7ASqmdxbN37WdpZMcB), to answer Aaron's two questions of 26 November 2026 (kept as heard: "the value can
-change ... How is that supposed to be accounted for?" and "crypto assets ... as a treasury asset. So how does that
-work?"). **Aaron answered the first draft the same day** (section 7); this version follows his answers. It builds on
-CX-money-global-payroll (#1121, on `goal/capxul` once it lands; until then on
-`origin/goal-16/money-global-payroll-design`) and CX-composable-pieces. Nothing is superseded in this pull request;
-section 8 lists what would change.
+**Status: decided, 26 November 2026, by Aaron** (section 8), in answers to two drafts the same day. Proposed by Goal
+16's 📐 designer thread, started by Goal 16's lead (session_01S8RF7ASqmdxbN37WdpZMcB), for Aaron's questions of 26
+November 2026 (kept as heard: "the value can change ... How is that supposed to be accounted for?" and "crypto assets
+... as a treasury asset. So how does that work?"). It builds on CX-money-global-payroll (#1121, on `goal/capxul` once
+it lands; until then on `origin/goal-16/money-global-payroll-design`), CX-onchain-safe and CX-composable-pieces.
 
-This is research and a recommendation, not accounting advice. Capxul's books are production and hold real money, so
-question 1 asks for a qualified accountant's review before a customer relies on it.
+This is research and a design, not accounting advice. A qualified accountant reviews it before Capxul onboards real
+money; building goes ahead now (Aaron, section 8). Capxul prepares books; it doesn't file them.
 
 ## In short
 
-A Capxul company reports in dollars and holds USDC in its own Safe. It can't redeem USDC with Circle directly, so for
-the books USDC is a crypto asset, not cash. That means it's carried at its market price. At each month end, someone
-types that day's USDC price, and the books mark the Safe's USDC to it. If USDC sits at 99.85 cents, a hundred thousand
-USDC shows as $99,850 and a $150 loss goes to profit and loss; when it's back at a dollar, the $150 comes back as a
-gain. Spending USDC during the month books no gain or loss of its own. That's all: one price a month, in the core
-books, with no extra piece and no settings.
+A Capxul company reports in dollars and keeps its crypto in its own Safe: USDC, ether, and bitcoin as a wrapped token.
+It can't redeem USDC with Circle directly, so all three are crypto assets for the books, carried at market price, not
+cash. The price comes from Chainlink. At each month end Capxul reads Chainlink's last price before midnight, marks
+every holding to it, and puts the difference into profit and loss. If Chainlink has no fresh price, the month end
+stops until someone types one in, and the books say it was typed.
 
-Bitcoin and ether are left for later. Two things wait on Aaron: an accountant's review, and how tax counts the cost of
-each USDC spent.
+Every coin that comes in is kept as a lot, with its date and cost. When coins go out, the oldest go first. The books
+show the gain against cost on each sale, and the month-end mark carries the rest. The accountant gets every lot, so
+they can use whatever method they choose when they file.
 
-## 1. Recommendations
+It's all core, no optional piece. Nothing is left for Aaron to decide.
 
-### (a) USDC
+## 1. The design
 
-1. **Fair value, through net income.** A Capxul company holds USDC in its own self-custodial Safe and has no direct
-   redemption right with Circle; Circle's terms call such a holder "User Type B", which "may not redeem USDC with
-   Circle" (Aaron: "it cant"; section 7). Without that right USDC is not a financial asset (KPMG Q8.4.10; PwC 2.1.2)
-   and so not cash or a cash equivalent. It is measured as a crypto asset under ASC 350-60: fair value at each period
-   end, the change in net income. Whether it is in ASC 350-60's scope or an ordinary intangible at cost less impairment
-   is a judgment for the accountant (question 1); the books below are the same either way, except that impairment only
-   ever writes down.
-2. **One price a month.** Every movement books at its own realised rate, as CX-money-global-payroll says. At each month
-   end, a person types one USDC→USD price into `rates`, marked as a market price, until a price feed is its own call.
-   Nothing else is a setting.
-3. **The accounts.** *USDC (Safe)*, one per Safe, holds the units at cost: each receipt at its realised rate, each
-   payment out at the account's average cost. Beside it, *USDC fair-value adjustment*, a dollar-only account, holds the
-   mark. Together they are the balance-sheet line "USDC (digital asset)", apart from cash. Two income accounts:
-   *Gain or loss on remeasurement of USDC* for the mark, and *Realised gain or loss on USDC* for a payment whose
-   dollar value differs from the cost it relieves (usually nil). Bridge never holds USDC: it moves money in and out of
-   the Safe (Aaron: "its never in bridge its in the safe"), so there is no Bridge USDC account.
-4. **The month-end mark.** The adjustment's target is units times the typed price, less cost. The mark posts the change
-   in that target to the remeasurement account. It never reverses: next month's mark starts from this one.
-5. **What the reports show** (ASC 350-60's disclosures, through KPMG and PwC): units, cost and fair value at each
-   period end; each year a roll-forward of additions, dispositions, gains and losses; cumulative realised gains and
-   losses; and the cost method, average cost.
+### (a) Prices: Chainlink
 
-**Worked example.** USDC (Safe) receives 100,000 USDC from a customer paying a $100,000 invoice.
+1. **The source.** Every price comes from a Chainlink price feed (USDC/USD, ETH/USD, BTC/USD), read on chain through
+   `chain-evm` (Aaron: "chainlink decided"). There is no principal-market setting: the feed is the price. The feeds are a
+   build-time list of proxy addresses, read on Ethereum mainnet by default (section 6 lists them).
+2. **Which round.** At the month-end cut-off, midnight at the end of the month's last day in the company's zone, the
+   books take the last round whose `updatedAt` is at or before the cut-off. They read `latestRoundData` and, if a round
+   landed after the cut-off, walk back with `getRoundData`. The price row records the feed address, the round id, the
+   answer with its decimals, and `updatedAt`.
+3. **Stale or missing.** If the round is older than the feed's heartbeat, or the read fails, the mark stops for that
+   asset. A person types a price, and the row is recorded as *typed*, with who typed it.
+4. **Movements.** A movement with a dollar side, such as a customer paying a $100,000 invoice in USDC, books at its own
+   realised rate, as CX-money-global-payroll says. A movement with no dollar side, such as a swap or a receipt from
+   another wallet, books at the last Chainlink round before its block's time.
+5. **What a feed is.** A feed updates when the price moves by more than its deviation threshold, or when its heartbeat
+   passes. On Ethereum mainnet USDC/USD's threshold is 0.25%, so a dip to 0.9985 (0.15%) may not show until the next
+   heartbeat, up to 23 hours. The books take what the feed says; the error is bounded by the threshold.
+
+### (b) What is held, and how it is measured
+
+- **USDC** in the company's Safe. With no direct redemption right (Circle's terms: a holder with no Circle Mint account
+  "may not redeem USDC with Circle"; Aaron: "it cant", "cant be done"), it is not a financial asset (KPMG Q8.4.10;
+  PwC 2.1.2), so not cash. Bridge never holds it: Bridge moves money in and out, and the USDC lands in the Safe (Aaron:
+  "its never in bridge its in the safe which is self custodial").
+- **Ether**, native, in the Safe.
+- **Bitcoin**, as a wrapped token in the Safe (cbBTC or WBTC), priced at BTC/USD. Native bitcoin needs a bitcoin wallet
+  outside the Safe, which is "super complicated" in Aaron's words, so it is out.
+- **Measurement:** each is a crypto asset at fair value, with the change in net income (ASC 350-60, from ASU 2023-08,
+  for fiscal years beginning after 15 December 2024). The accountant's review confirms the classification of USDC and
+  of a wrapped token (FASB's transfers project, expected as a proposal in early 2027, would revise the scope test for
+  wrapped tokens).
+- **Presentation:** one balance-sheet line per asset, "Digital assets: USDC", "... ether", "... bitcoin", apart from cash
+  and other intangibles; the gains and losses on their own lines in net income.
+
+### (c) Lots and the books
+
+1. **Every acquisition is a lot**: asset, Safe, date, units, cost in dollars (fees included). This holds for USDC too.
+2. **Disposals go first in, first out, per Safe.** That is the IRS default for self-custody (Treas. Reg. 1.1012-1(j)),
+   and it is what the books show. Each disposal records its lots, units, dollar proceeds and *Realised gain or loss on
+   digital assets*, which is proceeds less the lots' cost. Paying a contractor's $1,000 bill with 1,000 USDC bought at a
+   dollar realises nothing.
+3. **Two accounts per asset.** *Digital assets: <asset> (Safe)* holds the units at lot cost. *<asset> fair-value
+   adjustment* is a dollar-only account that holds the mark. Together they are the balance-sheet line.
+4. **The month-end mark.** The adjustment's target is units times the Chainlink price, less the remaining lots' cost. The
+   mark posts the change in that target to *Gain or loss on remeasurement of digital assets*. It is never reversed: next
+   month starts from this one. The adjustment is also exactly the difference between book value and tax cost, which is
+   what the accountant needs for deferred tax.
+5. **The accountant's file.** Capxul prepares the books and doesn't file them (Aaron: "these are going to go to a real
+   accountant before filing anyway"). With every lot and every disposal in hand, the accountant can apply specific
+   identification, or anything else, at filing.
+6. **Reports**, from ASC 350-60's disclosures: holdings per asset (units, cost, fair value); each year's roll-forward
+   (additions, dispositions, gains, losses); cumulative realised gains and losses; the cost method (FIFO); and the lot
+   export.
+
+**Worked example 1: USDC.** All prices are Chainlink rounds.
 
 | Date | Event | Entry | After |
 |---|---|---|---|
-| 2 Nov | Customer pays a $100,000 invoice in USDC | Debit *USDC (Safe)* 100,000 USDC, $100,000; credit *Receivable* $100,000 | Units 100,000; cost $100,000; adjustment $0 |
-| 30 Nov | Price typed: 0.9985 | Target 100,000 × 0.9985 − 100,000 = −$150. Debit *Remeasurement* $150; credit *Adjustment* $150 | Balance sheet $99,850; November loss $150 |
-| 10 Dec | Pay a contractor's $1,000 bill with 1,000 USDC | Debit *Payable* $1,000; credit *USDC (Safe)* 1,000 USDC, $1,000 at average cost | Units 99,000; cost $99,000; realised gain or loss nil |
-| 31 Dec | Price typed: 1.0000 | Target 99,000 × 1 − 99,000 = $0; change +$150. Debit *Adjustment* $150; credit *Remeasurement* $150 | Balance sheet $99,000; December gain $150 |
+| 2 Nov | A customer pays a $100,000 invoice with 100,000 USDC | Debit *USDC (Safe)* 100,000 USDC, $100,000; credit *Receivable* $100,000 | Lot U1: 100,000 at $1.00 |
+| 30 Nov | Round: 0.9985 | Target 99,850 − 100,000 = −$150. Debit *Remeasurement* $150; credit *USDC adjustment* $150 | Balance sheet $99,850 |
+| 10 Dec | Pay a contractor's $1,000 bill with 1,000 USDC | Debit *Payable* $1,000; credit *USDC (Safe)* 1,000 USDC, $1,000 (lot U1) | Realised nil; U1: 99,000 |
+| 31 Dec | Round: 1.0000 | Target 99,000 − 99,000 = $0; change +$150. Debit *USDC adjustment* $150; credit *Remeasurement* $150 | Balance sheet $99,000 |
 
-The year's roll-forward: additions $100,000, dispositions $1,000, remeasurement losses $150 and gains $150, closing
-$99,000. Had the price been 0.97 at 31 December, the mark would have posted a further $2,820 loss (target −$2,970);
-a real depeg needs no other path.
+**Worked example 2: ether.**
 
-### (b) Bitcoin and ether, later
+| Date | Event | Entry | After |
+|---|---|---|---|
+| 3 Nov | Buy 1 ETH for 3,005 USDC (price 3,000 plus a 5 USDC fee) | Debit *ETH (Safe)* 1 ETH, $3,005; credit *USDC (Safe)* 3,005 USDC, $3,005 (USDC lots at $1.00, realised nil) | Lot E1: 1 ETH at $3,005 |
+| 30 Nov | Round: 3,400 | Target 3,400 − 3,005 = $395. Debit *ETH adjustment* $395; credit *Remeasurement* $395 | Balance sheet $3,400 |
+| 15 Dec | Sell 0.4 ETH for 1,397 USDC (after a 3 USDC fee) | Debit *USDC (Safe)* 1,397 USDC, $1,397; credit *ETH (Safe)* 0.4 ETH, $1,202 (E1); credit *Realised gain* $195 | E1: 0.6 ETH, cost $1,803; new USDC lot at $1.00 |
+| 31 Dec | Round: 3,300 | Target 1,980 − 1,803 = $177; change −$218. Debit *Remeasurement* $218; credit *ETH adjustment* $218 | Balance sheet $1,980 |
 
-Out of scope for now (section 7). Adding them later means, on top of this: an asset kind for a coin with no token
-contract (`Blueprint.asset.token` assumes one), lots per wallet with a disposal method for tax (FIFO by default), and a
-price from one principal market per asset at a fixed cut-off. The month-end mark above then works unchanged; section 3
-keeps the research.
+For the year, the book gain is $395 + $195 − $218 = **$372**. The realised gain against cost is **$195**, which is the
+FIFO tax gain. The adjustment of **$177** is book value less tax cost: about $37 of deferred tax at 21%, for the
+accountant to book. The roll-forward: additions $3,005, dispositions $1,397, gains $590, losses $218, closing $1,980.
 
-### (c) Where it sits
+### (d) Where it sits
 
-In core, as Aaron said ("its part of the thing, this is onchain offchain solution"):
+All in core, as on-chain and off-chain money (Aaron: "its part of the thing, this is onchain offchain solution"):
 
-- **`rates`** gains a source on every row: *realised* (from a movement), *typed*, or *market* (a typed month-end price).
-- **`ledger`** gains a measurement on each account whose asset is not the company's: *exchange* (ERPNext's revaluation,
-  for pounds and euros) or *fair value* (USDC), the fair-value adjustment and remeasurement accounts, the month-end mark,
-  and the two reports.
+- **`company`** owns the asset files: USDC, ETH, and wrapped BTC.
+- **`rates`** gains a source on every row: *realised*, *chainlink* (with feed, round id and `updatedAt`), or *typed*
+  (with who typed it). It also gains the read of the Chainlink feeds.
+- **`ledger`** gains a measurement on each account whose asset is not the company's. *Exchange* is ERPNext's
+  revaluation, for pounds and euros; *fair value* is for digital assets. It also gains the lots, FIFO disposals, the
+  adjustment and remeasurement accounts, the month-end mark and the reports.
 
-There is no `treasury` piece.
+There is no `treasury` piece. Both measurements live in `ledger`, so the open value sets of CX-composable-pieces gap 2
+(#1132) aren't needed for this.
 
-### (d) What the framework lacks
+### (e) What the framework lacks
 
-Nothing new. The conversion of a USDC amount (6 places) to dollars (2) at a rate is CX-money-global-payroll's gap 6
-(Company currency, #882), which must be exact. A month-end schedule in the company's zone already exists,
-`Blueprint.time.every("1 month", { on: { day: "last" }, zone })` (`packages/orthograph/src/modules/time/types.ts`),
-though the mark can equally stay an operation a person or an agent calls. A price feed is a later outside dependency,
-Aaron's call.
+1. **A native coin.** `Blueprint.asset.token({ symbol, decimals })` is read as a token contract whose `decimals()` the
+   host checks. Native ether has no contract. It needs an asset kind for a chain's own coin, for instance
+   `Blueprint.asset.native({ symbol: "ETH", decimals: 18 })`. USDC and wrapped bitcoin are tokens and need nothing new.
+2. **A Chainlink adapter.** The repository has none. Reading `AggregatorV3Interface` (`decimals`, `latestRoundData`,
+   `getRoundData`) from its ABI is a view call on someone else's contract. Adapters from an ABI are ST2.02 (`erc20`
+   first, provisional); a read-only call from an operation, outside a transaction, needs confirming in it. A stand-in
+   feed, whose rounds a journey sets, is needed for the checks.
+3. **Exact conversion across decimals.** CX-money-global-payroll's helper (gap 6, #882) must convert 18-place ether and
+   an 8-place feed answer to cents exactly. Nothing else is new. The month-end trigger already exists:
+   `Blueprint.time.every("1 month", { on: { day: "last" }, zone })`.
 
-### (e) Slices
+### (f) Slices
 
-Both come after CX-money-global-payroll's currency slice (accounts in several assets, both amounts on every line).
+They come after CX-money-global-payroll's currency slice (accounts in several assets, both amounts on every line).
+USDC needs P1 to P4 and P6; ether needs P5 as well.
 
 | # | Slice | Done when |
 |---|---|---|
-| U1 | `rates`: a source on every row | A journey types USDC→USD 0.998500000 as a *market* price for 30 November; it reads back with its source, and a payment's own rate reads back as *realised* |
-| U2 | `ledger`: *fair value* on the USDC account, the month-end mark and its two reports | The worked example as a journey: after 30 November the balance sheet shows $99,850 and a $150 loss; the 10 December payment books no gain or loss; 31 December posts a $150 gain; after every step the adjustment equals units × the latest price − cost; the holdings report shows 99,000 units, cost $99,000, fair value $99,000, and the roll-forward 100,000 / 1,000 / 150 / 150 / 99,000 |
+| P1 | `rates`: a source on every row | A journey records a *chainlink* USDC/USD row (feed, round id, `updatedAt`, 0.99850000 at 8 decimals) and a *typed* row; both read back with their source |
+| P2 | `rates`: the Chainlink read, against a stand-in feed | With rounds at 23:10 on 30 November and 00:20 on 1 December, and a cut-off of midnight, the 23:10 round is taken. With the last round 30 hours old against a 23-hour heartbeat, the mark is refused as stale, and a typed price is then accepted and recorded as typed |
+| P3 | `ledger`: lots and FIFO disposals | Example 2: after 15 December, lot E1 holds 0.6 ETH at cost $1,803 and the sale realised $195. Example 1: the 10 December payment realises nil |
+| P4 | `ledger`: *fair value* and the month-end mark | Examples 1 and 2 post −$150 and +$150, then +$395 and −$218. After every step, each adjustment equals units times the latest price less the lots' cost |
+| P5 | Framework: the native coin | ETH declared with 18 decimals compiles; 1 ETH round-trips as 10¹⁸ base units; a money field of it converts to $3,400.00 at an answer of 340000000000 (8 decimals) |
+| P6 | `ledger`: reports and the lot export | Example 2: roll-forward 3,005 / 1,397 / 590 / 218 / 1,980; cumulative realised gain $195; the export lists E1 (3 November, 1 ETH, $3,005) and its disposal (15 December, 0.4 ETH, $1,397) |
 
-### (f) Questions for Aaron
+### (g) Decided, nothing open
 
-1. **An accountant's review.** Recommended: yes. Before a customer's books rely on the USDC month-end mark, a certified
-   public accountant with digital-asset experience reads this record and the worked example, and confirms the fair-value
-   measurement. This is production and money. It is an outside spend, so it's your call.
-2. **The tax cost of each USDC spent.** For tax, USDC is property, so every payment out is a disposal with a gain or loss
-   against its cost, tiny but reportable (section 4). Recommended: the accountant confirms whether a cost of one dollar
-   per USDC is acceptable; if not, each receipt into the Safe is kept as a lot, taken first in, first out, which is the
-   IRS default for a self-custodial wallet.
+- **The accountant's review** comes before Capxul onboards real money; the building goes ahead now (Aaron: "we will do
+  before onboarding real money but we are building none the less"). The review covers the classifications in 1(b), the
+  presentation, and the deferred tax.
+- **The tax method** is the accountant's at filing. The books keep lots and show FIFO.
 
 ## 2. USDC under US GAAP: the research
 
-The first draft offered a second path, for a company with a direct redemption right (a Circle Mint account): USDC as a
-receivable at one dollar, with a depeg check. Aaron ruled it out (section 7). The research behind it stays below.
+The first draft offered a second path for a company with a direct redemption right (a Circle Mint account): USDC as a
+receivable at one dollar, with a depeg check. Aaron ruled it out (section 8). The research behind it stays below.
 
 **Scope of ASU 2023-08.** ASC 350-60 covers assets that are intangible and "do not provide the asset holder with
 enforceable rights to or claims on underlying goods, services, or other assets" (ASC 350-60-15-1(b)); the intangible
@@ -159,7 +201,7 @@ loss on the issuer and its reserves, and fair value is disclosed (ASC 825). At f
 option or ASC 350-60, it is remeasured through net income. As an ASC 350-30 intangible it is written down to the lower
 price with no reversal. This reading of the standards is ours, not quoted.
 
-## 3. Crypto treasury assets under ASU 2023-08: the research, kept for later
+## 3. Crypto assets under ASU 2023-08: the research
 
 - **Measurement:** fair value, "with the gain or loss associated with remeasurement ... reported in net income ...
   regardless of whether they have quoted prices in an active market" (ASC 350-60-35-1, via PwC 2.4.1.2).
@@ -194,8 +236,8 @@ price with no reversal. This reading of the standards is ours, not quoted.
 - **Basis by wallet** from 1 January 2025 (Treas. Reg. 1.1012-1(j)): units not in a broker's custody go out FIFO
   unless specifically identified "on its books and records" no later than the sale; in a broker's custody,
   identification is made to the broker, and a standing order counts. Rev. Proc. 2024-28 governed allocating basis as of
-  1 January 2025; Notice 2025-7 gave 2025 relief. So tax needs lots per wallet and a written lot method
-  (question 2; bitcoin and ether later).
+  1 January 2025; Notice 2025-7 gave 2025 relief. So the books keep lots per Safe, and the lot method (FIFO) is written
+  down, as section 1(c) does.
 - **Form 1099-DA:** gross proceeds for 2025 sales, basis for assets acquired after 2025. Corporations are exempt
   recipients, though a broker may still send one; qualifying stablecoin sales of $10,000 or less a year need not be
   reported by a broker using the optional method. A C-corporation should rely on its own lots, not on 1099-DAs.
@@ -217,7 +259,43 @@ Under IFRS, crypto is an intangible (IAS 38) or inventory (IAS 2), not fair valu
 USDC needs its own analysis, and the IASB opened a project on both on 19 November 2026; `ledger`'s measurement is where
 a non-US company's would go.
 
-## 6. ERPNext's own handling, and where it falls short (`a6f54f9c`)
+## 6. Chainlink's feeds: the research
+
+Taken from Chainlink's published feed directory (`reference-data-directory.vercel.app/feeds-<network>.json`, the data
+behind docs.chain.link's address pages) on 26 November 2026. The standard feeds (path `usdc-usd`, `eth-usd`, `btc-usd`):
+
+| Network | Feed | Proxy | Heartbeat | Deviation | Decimals |
+|---|---|---|---|---|---|
+| Ethereum | USDC / USD | `0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6` | 82,800 s (23 h) | 0.25% | 8 |
+| Ethereum | ETH / USD | `0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419` | 3,600 s | 0.5% | 8 |
+| Ethereum | BTC / USD | `0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c` | 3,600 s | 0.5% | 8 |
+| Base | USDC / USD | `0x7e860098F58bBFC8648a4311b374B1D669a2bc6B` | 86,400 s | 0.3% | 8 |
+| Base | cbBTC / USD | `0x07DA0E54543a844a80ABE69c8A12F22B3aA59f9D` | 1,200 s | 0.3% | 8 |
+| Arbitrum | USDC / USD | `0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3` | 255 s | 0.1% | 8 |
+| Arbitrum | ETH / USD | `0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612` | 1,755 s | 0.05% | 8 |
+| Arbitrum | BTC / USD | `0x6ce185860a4963106506C203335A2910413708e9` | 1,755 s | 0.05% | 8 |
+| OP Mainnet | USDC / USD | `0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3` | 86,400 s | 0.1% | 8 |
+| OP Mainnet | ETH / USD | `0x13e3Ee699D1909E989722E753853AE30b17e08c5` | 1,200 s | 0.15% | 8 |
+| OP Mainnet | BTC / USD | `0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593` | 1,200 s | 0.1% | 8 |
+
+On Base the directory lists ETH/USD and BTC/USD only as "SVR" variants (paths `eth-usd-svr`, `btc-usd-svr` and shared
+ones), which is why Ethereum mainnet is the default; P2 confirms which proxies a build lists. The directory carries
+several proxies per pair (SVR, shared and backup variants); the books take the standard one.
+
+- **How feeds update.** "Deviation Threshold: ... The deviation of the real-world data beyond a certain interval
+  triggers all the nodes to update. Heartbeat Threshold: If the data values stay within the deviation parameters, it
+  will only trigger an update every X minutes / hours" (docs.chain.link, historical data).
+- **Rounds.** "Rounds are identified by their `roundId`, which increases with each new round. This increase may not
+  be monotonic." The proxy's id is the phase shifted left 64 bits, combined with the aggregator's round id, and the
+  phase increments "each time the underlying aggregator implementation is updated". So the walk back from the latest
+  round stays within a phase, and crosses into the previous phase if it must.
+- **Reading.** `getRoundData(_roundId)` returns `roundId, answer, startedAt, updatedAt, answeredInRound`; `updatedAt`
+  is "the timestamp when the answer was computed" (API reference).
+- **Responsibility.** Chainlink leaves "data quality checks, circuit breakers, and appropriate contingency logic" to the
+  user (developer responsibilities), which is what the stale-price stop is. On a rollup, Chainlink also publishes a
+  sequencer-uptime feed; reading on Ethereum mainnet avoids needing it.
+
+## 7. ERPNext's own handling, and where it falls short (`a6f54f9c`)
 
 - **What it does.** Currency Exchange (`erpnext/setup/doctype/currency_exchange`) holds a date, from, to and a rate of
   9 places. `get_exchange_rate` (`erpnext/setup/utils.py`, line 136) takes a stored row first, then the inverse row,
@@ -234,66 +312,77 @@ a non-US company's would go.
   and revaluation posts units times rate less booked value, into the account itself.
 - **Where it falls short.**
   1. *One gain-or-loss account, named for exchange.* ASC 350-60 wants crypto remeasurement reported separately in net
-     income. Fix: USDC's own remeasurement account (section 1(a)).
+     income. Fix: the digital assets' own remeasurement account
+     (section 1(c)).
   2. *No lots.* An account's carrying rate is its average (booked base over units). A sale books the received amount
      against that average, which is neither FIFO nor specific identification, so neither the realised gain against
      cost nor the tax basis can be read back. ERPNext's FIFO lives only in its stock ledger, and revaluation skips Stock
-     accounts, so modelling ETH as a stock item gives lots but no fair value. For USDC, average cost is enough for
-     the books (section 1(a)); lots wait on question 2 and on bitcoin and ether.
-  3. *Revalue-and-reverse.* Built for foreign currency, where the next period starts from the booked rate. For USDC,
-     the mark sits in its own adjustment account and moves from month to month, so cost stays readable. Fix: no
+     accounts, so modelling ETH as a stock item gives lots but no fair value. Fix: lots and FIFO in
+     `ledger` (section 1(c)).
+  3. *Revalue-and-reverse.* Built for foreign currency, where the next period starts from the booked rate. Here the
+     mark sits in its own adjustment account and moves from month to month, so cost stays readable. Fix: no
      reversal for *fair value*.
-  4. *No price provenance.* A Currency Exchange row doesn't say where a rate came from. Fix: U1's source.
-  5. *Precision.* Frappe's currency precision tops out at 9 places, short of ether's 18 (later); Orthograph's base-unit
+  4. *No price provenance.* A Currency Exchange row doesn't say where a rate came from. Fix: P1's source.
+  5. *Precision.* Frappe's currency precision tops out at 9 places, short of ether's 18; Orthograph's base-unit
      money avoids this.
 
-## 7. Aaron's answers
+## 8. Aaron's answers
 
-Aaron answered on 26 November 2026, in writing, as replies to the lead's questions on the first draft. His words,
-exactly, and how they are read:
+Aaron answered on 26 November 2026, in writing, as replies to the lead's questions on each draft. His words, exactly,
+and how they are read.
 
-- On "If it can't [redeem directly]: USDC is probably carried at its market price": "it cant". So fair value.
-- On guiding customers to a direct redemption right: "cant be done". So no Circle Mint path and no depeg stop.
-- On USDC at Bridge: "its never in bridge its in the safe which is self custodial". So the Safe holds all USDC;
-  Bridge only moves money in and out. The question is dropped.
-- On `treasury` as an optional piece: "its part of the thing, this is onchain offchain solution". So holding USDC is
-  core, in `rates` and `ledger`, with no separate piece; bitcoin and ether are out of scope for now.
+On the first draft:
+
+- On "If it can't [redeem directly]: USDC is probably carried at its market price": "it cant". So USDC is at fair
+  value.
+- On guiding customers to a direct redemption right: "cant be done". So there is no Circle Mint path and no depeg stop.
+- On USDC at Bridge: "its never in bridge its in the safe which is self custodial". So the Safe holds the USDC, and
+  Bridge only moves money in and out.
+- On `treasury` as an optional piece: "its part of the thing, this is onchain offchain solution". So it is core, with
+  no separate piece.
 - On the defaults (FIFO, principal market, cut-off, depeg threshold, typed prices): "too complicated should jusolding
-  usdct be h", read as "should just be holding USDC". So one typed price a month and no settings.
+  usdct be h", read as "should just be holding USDC".
 
-Still open: questions 1 and 2 in section 1(f).
+On the second draft:
 
-## 8. What would change once applied
+- On prices typed by hand until a feed is decided: "chainlink decided". So prices come from Chainlink.
+- On just USDC, with bitcoin, ether, tax lots and the other settings out: "these are in unless super complicated". So
+  ether, wrapped bitcoin and lots are in; native bitcoin, a principal-market setting and a depeg threshold are out.
+- On an accountant's review: "we will do before onboarding real money but we are building none the less".
+- On the USDC tax basis: "what does that look like to let the accountant decide? remember we are just preping books its
+  not like we are submiting the actual books ourselves. these are going to go to a real accountant before filing
+  anyway". So the books keep every lot and show FIFO, and the accountant chooses the method at filing.
 
-Nothing is applied in this pull request. When it is:
+## 9. What it changes
 
-- **CX-money-global-payroll** (#1121), a dated record, keeps its words and gains "Superseded by CX-crypto-accounting,
-  <date>" beside item 5's "USDC to US dollars is a standing row of one (ERPNext's Pegged Currencies) until a rate says
-  otherwise" and item 9's "By CX-bridge's reading, Bridge lands deposits as USDC in custody and sends from it, so the
-  company's Bridge account is a USDC account too". Its open question on how a small US company classifies USDC is
-  answered here, pending the accountant.
-- **CX-bridge**, a decided record, says Bridge "lands a deposit as USDC in Capxul's custody and sends a transfer from
-  it". Aaron's answer contradicts it: the USDC lands in the company's Safe. It keeps its words and gains the note. Its
-  Bank Transaction holding USDC amounts is unaffected. Whether Bridge's checks (#769) model custody is for the Bridge
-  checks author to confirm.
-- **Live comments** that repeat CX-bridge's words are rewritten:
-  `examples/capxul/blueprint/things/bank-account/verbs/open.ts` (line 8), `examples/capxul/blueprint/things/bank-transaction/verbs/land.ts` (line 7) and
-  `examples/capxul/plugins/bridge/src/stand-in/webhooks.ts` (line 57).
-- **CX-composable-pieces**: `rates`' row adds the source; `ledger`'s row adds the fair-value measurement and the
-  month-end mark. No piece is added.
-- **`examples/capxul/blueprint/assets/usdc.ts`**: its comment says USDC is held in the company's Safe and marked to
-  market each month end.
+Applied in this pull request:
 
-Lines for this record's `## Supersedes` section, added when it is applied (not now, so `tools/ci/supersedes.sh` stays
-green):
+- **CX-bridge**, a decided record, keeps its words and gains a superseded note. It said Bridge "lands a deposit as USDC
+  in Capxul's custody and sends a transfer from it"; the USDC lands in the company's Safe. Its Bank Transaction, which
+  holds USDC amounts, is unaffected. The Bridge checks author should confirm whether the Bridge checks (#769) assume
+  custody.
+- **Three live comments** that repeated CX-bridge are rewritten:
+  - `examples/capxul/blueprint/things/bank-account/verbs/open.ts`
+  - `examples/capxul/blueprint/things/bank-transaction/verbs/land.ts`
+  - `examples/capxul/plugins/bridge/src/stand-in/webhooks.ts`
 
-```
+Not applied here, because the files aren't on `goal/capxul` yet or another pull request owns them:
+
+- **CX-money-global-payroll** (#1121) gains the superseded note beside item 5, "USDC to US dollars is a standing row of
+  one (ERPNext's Pegged Currencies) until a rate says otherwise", and beside item 9's Bridge custody reading, once it
+  lands. Its own open question on how to classify USDC is answered here.
+- **`examples/capxul/blueprint/assets/usdc.ts`**: #1121 already rewrites its comment. The ETH and wrapped-BTC asset files
+  come with P5 and P3.
+- **CX-composable-pieces** needs no change of words. Its `rates` and `ledger` rows gain what section 1(d) lists when
+  those slices build.
+
+## Supersedes
+
 - design/decisions/CX-bridge.md: "Bridge lands a deposit as USDC in Capxul's custody and sends a transfer from it" → "Bridge lands a deposit as USDC in the company's Safe, and a transfer is paid from the Safe"
 - examples/capxul/blueprint/things/bank-account/verbs/open.ts: "landing as USDC in Capxul's custody" → "landing as USDC in the company's Safe"
 - examples/capxul/blueprint/things/bank-transaction/verbs/land.ts: "reached Capxul's custody as USDC" → "reached the company's Safe as USDC"
 - examples/capxul/plugins/bridge/src/stand-in/webhooks.ts: "to Capxul's custody as USDC" → "to the company's Safe as USDC"
-- design/decisions/CX-money-global-payroll.md: "USDC to US dollars is a standing row of one (ERPNext's Pegged Currencies) until a rate says otherwise" → "USDC to US dollars is marked each month end at a typed market price (CX-crypto-accounting)"
-```
+- design/decisions/CX-money-global-payroll.md: "USDC to US dollars is a standing row of one (ERPNext's Pegged Currencies) until a rate says otherwise" → "USDC to US dollars is marked each month end at Chainlink's USDC/USD price (CX-crypto-accounting)"
 
 ## Appendix: sources
 
@@ -369,6 +458,17 @@ refused the ASU's own page to our fetcher (the PDF at `storage.fasb.org` was rea
 - `erpnext/accounts/doctype/pegged_currencies/pegged_currencies.json`
 - `erpnext/accounts/doctype/currency_exchange_settings/currency_exchange_settings.py`
 
+**Chainlink**
+- Feed directory, Ethereum: https://reference-data-directory.vercel.app/feeds-mainnet.json; Base:
+  https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json; Arbitrum:
+  https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json; OP Mainnet:
+  https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json
+- Addresses page: https://docs.chain.link/data-feeds/price-feeds/addresses
+- Historical data (heartbeat, deviation, rounds): https://docs.chain.link/data-feeds/historical-data
+- API reference (`getRoundData`, `latestRoundData`): https://docs.chain.link/data-feeds/api-reference
+- Developer responsibilities: https://docs.chain.link/data-feeds/developer-responsibilities
+- L2 sequencer uptime feeds: https://docs.chain.link/data-feeds/l2-sequencer-feeds (not fetched)
+
 **Not verified**
 - The AICPA practice aid's stablecoin section (members only) and Deloitte's roadmap text (not fetchable).
 - The ASC 350-60-50 paragraph number of each disclosure other than 50-2 and 50-6.
@@ -376,3 +476,6 @@ refused the ASU's own page to our fetcher (the PDF at `storage.fasb.org` was rea
 - That the wash-sale rule doesn't reach digital assets (no IRS statement found).
 - Any state's corporate income tax treatment of digital assets.
 - Whether FASB has redeliberated the cash-equivalents proposal since comments closed on 19 November 2026.
+- Which network Capxul's Safes live on (CX-onchain-safe doesn't say); prices are read on Ethereum mainnet regardless.
+- Whether ST2.02's adapters can make a read-only view call outside a transaction.
+- How the accountant classifies a wrapped bitcoin token (FASB's transfers project is open).

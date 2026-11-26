@@ -87,8 +87,9 @@ ERPNext's Bank Transaction (`erpnext/accounts/doctype/bank_transaction`), per co
   (ERPNext's `transaction_id`, the bank's own id for the movement, which ERPNext's bank imports dedupe on: here Bridge's)
   and `party` (`bank_party_name`).
 - **Base units.** `deposit` and `withdrawal` are USDC in base units (`Blueprint.money(usdc)`), one of the two 0, because
-  Bridge lands a deposit as USDC in Capxul's custody and sends a transfer from it. `currency` is the account's, the one
-  the money moved in at the bank. Unlike ERPNext's, the two amounts are not in the row's `currency`: an EUR account's
+  Bridge lands a deposit as USDC in Capxul's custody and sends a transfer from it (superseded by CX-crypto-accounting,
+  26 November 2026: the USDC lands in the company's own Safe). `currency` is the account's, the one the money moved in
+  at the bank. Unlike ERPNext's, the two amounts are not in the row's `currency`: an EUR account's
   rows hold USDC too.
 - **Bridge's amounts** are decimal strings in dollars. A virtual account's activity is "a dollar denominated string", and
   a transfer's amount is "in the fiat currency to which the source currency is pegged". Bridge's examples use up to six
