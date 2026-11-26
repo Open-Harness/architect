@@ -10,7 +10,7 @@ which core confirmed.
 ## What 9a holds
 
 The company's owner runs everything. An employee reads only their own salary slips and their lines. Every amount is
-USDC in base units (`Amount`, and `Balance` where a draft may go below nothing); no field holds a currency or a rate
+USDC in base units (`Amount`, and `Balance` where a draft may go below nothing); no field holds a currency or a rate (Superseded by CX-money-global-payroll, 26 November 2026: "in base units naming its asset")
 (CX-grill, section 3). Every day is typed: nothing reads the world's clock, so snag #1001 doesn't apply.
 
 - **Salary Component** (`active`): company, `salaryComponent` (its name, unique in the company), `type` (Earning or
