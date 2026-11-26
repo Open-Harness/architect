@@ -32,7 +32,7 @@ adapter call (Bridge). No Capxul thing is an actor today; three narrow places wi
 
 ## 1. The pieces
 
-27 pieces take all 485 record types in `examples/capxul/doctypes.md`; a 28th comes later with the chain. Fourteen are
+28 pieces take all 485 record types in `examples/capxul/doctypes.md`; a 29th comes later with the chain. Fifteen are
 **core** (every Capxul has them: the books, HR and payroll Aaron named as the offering, plus Bridge, K43) and thirteen
 are **optional** (a business leaves them out and its app has none of their tables, screens, commands or tools).
 Counts are record types from the catalogue, with child tables (`line`) in brackets. "Today" names the things already
@@ -43,7 +43,7 @@ built in `examples/capxul/blueprint/things/`.
 1. **`company`** (core). Who keeps the books and employs people: the company and its company-wide settings.
    13 (4): Company (with its reporting currency, CX-money-global-payroll), Global Defaults, Authorization Rule and
    Control, Terms and Conditions, Print Heading, Email Digest, SMS Center, Transaction Deletion Record, Portal User.
-   Today: `company`. Also owns the USDC asset (`blueprint/assets/usdc.ts`) and the shared
+   Today: `company`. Also owns the asset files (USDC today; USD, GBP, EUR and AED with CX-money-global-payroll) and the shared
    values every piece uses (`Day`, `Amount`, `Name`).
 2. **`rates`** (core, agreed with the money and global payroll designer). Exchange rates as dated rows (date, from,
    to, rate, source), entered by hand first; a feed is an adapter mounted on it later. 6 (3): Currency Exchange,
@@ -72,31 +72,37 @@ built in `examples/capxul/blueprint/things/`.
    sits below `invoicing`: what is still owed is the ledger's Payment Ledger Entry, so a payment settles an outstanding
    by its voucher kind and id and never needs to know what an invoice is. Payroll's and expenses' payables settle here
    too. The rails (Bridge, a bank, later the Safe) are below it, filling its *rail* contract.
-8. **`invoicing`** (core). Sales and purchase invoices and their terms. 23 (14): Sales Invoice, Purchase Invoice,
+8. **`contractors`** (core, agreed with the money and global payroll designer). Paying people who are not employees,
+   the most common case for Capxul's customers (a US company with people abroad). No ERPNext record types: a contractor
+   is a `parties` Supplier, and this piece adds its tax form (W-9, W-8BEN, W-8BEN-E: kind, received day, file, expiry),
+   its payout method (a wallet, or a rail's external account in a currency), paying many at once (one Payment Entry
+   each, through `payments`), and the 1099-NEC year end. The forms are the payer's, so they live here and not in a
+   payroll tax piece. Payroll stays employees only.
+9. **`invoicing`** (core). Sales and purchase invoices and their terms. 23 (14): Sales Invoice, Purchase Invoice,
    Payment Term and Terms Template, Payment Schedule, Dunning (and Type), Invoice Discounting, Opening Invoice Creation
    Tool, Process Statement Of Accounts, and their lines.
-9. **`banking`** (core). A company's bank accounts and what moved through them, matched to the books. 13 (3): Bank,
-   Bank Account (and Type, Subtype), Bank Transaction (and Mapping, Payments), Bank Statement Import, Bank Clearance,
-   Bank Reconciliation Tool, Bank Guarantee, Cheque Print Template. Today: `bank-account`, `bank-transaction`.
-10. **`bridge`** (core, gated later). Capxul's own Bridge account serving its customers: KYC, KYB, real bank details,
+10. **`banking`** (core). A company's bank accounts and what moved through them, matched to the books. 13 (3): Bank,
+    Bank Account (and Type, Subtype), Bank Transaction (and Mapping, Payments), Bank Statement Import, Bank Clearance,
+    Bank Reconciliation Tool, Bank Guarantee, Cheque Print Template. Today: `bank-account`, `bank-transaction`.
+11. **`bridge`** (core, gated later). Capxul's own Bridge account serving its customers: KYC, KYB, real bank details,
     and deposits and transfers fed to `banking`. No ERPNext record types: Capxul's own, with no translated code, as K43
     requires of a paid service. Today: `bridge-business`, `bridge-individual`, and the adapter `@orthograph/bridge` in
     `examples/capxul/plugins/bridge/`.
-11. **`people`** (core). Who works for a company and how it is organised. 34 (14): Employee and its history lines,
+12. **`people`** (core). Who works for a company and how it is organised. 34 (14): Employee and its history lines,
     Department (and Approver), Designation, Branch, Employee Grade, Employment Type, Employee Group, Holiday List and
     Holiday, onboarding, promotion, transfer and separation (with templates and boarding activities), Exit Interview, Full
     and Final Statement, skills, Identification Document Type, HR Settings. Today: `branch`, `department`,
     `designation`, `employee`, `employee-grade`, `employment-type`, `employee-promotion`, `employee-transfer`,
     `employee-separation`, `holiday-list`, `holiday`.
-12. **`time`** (core). When people work and when they are away. 28 (4): Attendance (and Request, Upload, Tool),
+13. **`time`** (core). When people work and when they are away. 28 (4): Attendance (and Request, Upload, Tool),
     Employee Checkin, Shift Type, Assignment, Request, Location and Schedule, Leave Type, Allocation, Application, Policy
     (and Assignment), Period, Block List, Encashment, Leave Ledger Entry, Leave Control Panel, Compensatory Leave
     Request, Timesheet (and Detail). Today: `attendance`, `attendance-request`, `shift-type`, `leave-type`,
     `leave-allocation`, `leave-application`.
-13. **`expenses`** (core). What employees spend for the company and get back. 11 (6): Expense Claim (and Type,
+14. **`expenses`** (core). What employees spend for the company and get back. 11 (6): Expense Claim (and Type,
     Account, Advance, Detail, Taxes), Employee Advance, Travel Request (and Itinerary, Costing), Purpose of Travel.
     Today: `expense-claim`, `expense-claim-type`, `expense`.
-14. **`payroll`** (core). Paying people: components, structures, pay runs and slips, holding no tax rule
+15. **`payroll`** (core). Paying people: components, structures, pay runs and slips, holding no tax rule
     (CX-payroll-tax). 28 (11): Salary Component (and Account), Salary Structure (and Assignment, bulk), Payroll Period,
     Payroll Entry, Salary Slip and its lines, Additional Salary, Employee Benefit Application and Claim, Employee
     Incentive, Employee Other Income, Retention Bonus, Gratuity (and Rule), Salary Withholding, Payroll Settings,
@@ -105,40 +111,40 @@ built in `examples/capxul/blueprint/things/`.
 
 ### Optional
 
-15. **`payroll-tax-us`** (optional, one per jurisdiction; a Capxul that runs payroll mounts at least one). United States
+16. **`payroll-tax-us`** (optional, one per jurisdiction; a Capxul that runs payroll mounts at least one). United States
     payroll tax as dated rows (CX-payroll-tax). 9 (4): Income Tax Slab (and Other Charges, Taxable Salary Slab),
     Employee Tax Exemption Category, Sub Category, Declaration and Proof Submission, with their lines.
-16. **`selling`**. Quotes and orders before an invoice. 26 (13): Quotation, Sales Order, Sales Person, Sales Partner,
+17. **`selling`**. Quotes and orders before an invoice. 26 (13): Quotation, Sales Order, Sales Person, Sales Partner,
     Sales Team, targets, Installation Note, Shipping Rule, Coupon Code, Loyalty Program, Incoterm, Selling Settings.
-17. **`buying`**. Orders and quotes from suppliers. 19 (10): Purchase Order, Request for Quotation, Supplier Quotation,
+18. **`buying`**. Orders and quotes from suppliers. 19 (10): Purchase Order, Request for Quotation, Supplier Quotation,
     Supplier Scorecard and its parts, Buying Settings.
-18. **`pos`**. A till. 19 (12): POS Invoice, Profile, Opening and Closing Entries, Settings, Cashier Closing.
-19. **`subscriptions`**. Recurring invoices. 5 (1): Subscription, Plan, Settings, Process Subscription.
-20. **`assets`**. What a company owns and how it depreciates. 24 (10): Asset and its capitalisation, depreciation,
+19. **`pos`**. A till. 19 (12): POS Invoice, Profile, Opening and Closing Entries, Settings, Cashier Closing.
+20. **`subscriptions`**. Recurring invoices. 5 (1): Subscription, Plan, Settings, Process Subscription.
+21. **`assets`**. What a company owns and how it depreciates. 24 (10): Asset and its capitalisation, depreciation,
     maintenance, movement, repair and value adjustment, Asset Category, Location.
-21. **`budgets`**. Limits on spending by account and cost centre, checked as money is spent (slice 12). 4 (2): Budget,
+22. **`budgets`**. Limits on spending by account and cost centre, checked as money is spent (slice 12). 4 (2): Budget,
     Monthly Distribution.
-22. **`equity`**. Who owns the company. 4 (1): Shareholder, Share Type, Share Transfer, Share Balance.
-23. **`projects`**. Work tracked against a project and billed from timesheets. 7 (3): Project, Task, Activity Type,
+23. **`equity`**. Who owns the company. 4 (1): Shareholder, Share Type, Share Transfer, Share Balance.
+24. **`projects`**. Work tracked against a project and billed from timesheets. 7 (3): Project, Task, Activity Type,
     Activity Cost, and Sales Invoice Timesheet (the join that bills a timesheet, owned here so `invoicing` never points
     at HR).
-24. **`performance`**. Appraisals and goals. 12 (5): Appraisal, Cycle, Template, KRA, Goal, Employee Performance
+25. **`performance`**. Appraisals and goals. 12 (5): Appraisal, Cycle, Template, KRA, Goal, Employee Performance
     Feedback and Criteria. Today: `appraisal`, `appraisal-cycle`, `appraisal-template`, `kra`, `goal`,
     `employee-feedback-criteria`, `employee-performance-feedback`.
-25. **`recruitment`**. Hiring. 21 (5): Job Requisition, Staffing Plan, Job Opening, Job Applicant, Interview (Round,
+26. **`recruitment`**. Hiring. 21 (5): Job Requisition, Staffing Plan, Job Opening, Job Applicant, Interview (Round,
     Type, Feedback), Job Offer, Appointment Letter, Employee Referral. Today: `job-opening`, `job-applicant`,
     `interview`, `interview-round`, `interview-feedback`, `job-offer`.
-26. **`workplace`**. The rest of HR, each a leaf: training, grievances, the vehicle log, daily work summaries, health
+27. **`workplace`**. The rest of HR, each a leaf: training, grievances, the vehicle log, daily work summaries, health
     insurance. 20 (6).
-27. **`crm`**. Frappe CRM's leads, deals and organisations (slice 11). 40 (10). Its won deal becomes a `parties`
+28. **`crm`**. Frappe CRM's leads, deals and organisations (slice 11). 40 (10). Its won deal becomes a `parties`
     customer.
 
 Later, with the chain (K44): **`onchain-pay`**, each person's and company's Safe and getting paid by a link (slice 2),
 on the framework's wallets and chain. It is listed so nothing else takes its records.
 
-**Presets, not pieces.** People don't pick from 27 names. `ortho new app` (status row `ortho-new`) offers presets that are
+**Presets, not pieces.** People don't pick from 28 names. `ortho new app` (status row `ortho-new`) offers presets that are
 lists of mounts: *Books* (the ten books pieces), *People* (`people`, `time`, `expenses`), *Payroll* (`payroll`, one tax
-piece), *Capxul core* (all fourteen core pieces), and *Everything*. A preset writes mount files; afterwards a person adds or
+piece), *Capxul core* (all fifteen core pieces), and *Everything*. A preset writes mount files; afterwards a person adds or
 removes a mount file and rebuilds.
 
 ## 2. Each piece's contract
@@ -185,11 +191,12 @@ link (L), in-commit call (I), event (E), adapter (A).
 | `payments` | O pay, receive, request a payment; I `settle` (a payment against an outstanding, by voucher kind and id); E PaymentSubmitted; C a rail; adds Payment Entry to *voucher type* | `ledger` I `post`, `parties` L, a rail C |
 | `invoicing` | O raise, submit and cancel invoices; E InvoiceSubmitted, InvoicePaid; R statements; adds its invoices to *voucher type* | `ledger` I `post`, `payments` L, `parties` L, `items` L, `tax` I |
 | `banking` | O record a bank transaction, reconcile it; E TransactionLanded, TransactionSettled; R balances by bank account | `ledger` I, `parties` L, `payments` L (a transaction matched to a payment) |
-| `bridge` | O start KYC and KYB, open a bank account; E KybApproved, KycApproved, deposits and transfers; fills `payments`' rail | `company` L, `banking` I (record a transaction), `payments` C, `@orthograph/bridge` A |
-| `people` | R workers (employees and contractors, a kind on the worker), departments, holidays; E EmployeeHired, EmployeeRelieved, EmployeeMoved; adds Employee and Contractor to *party type* | `company` L |
+| `bridge` | O start KYC and KYB, open a bank account; E KybApproved, KycApproved, deposits and transfers; external accounts in a payee's currency and payouts; fills `payments`' rail | `company` L, `banking` I (record a transaction), `payments` C, `@orthograph/bridge` A |
+| `people` | R employees, departments, holidays; E EmployeeHired, EmployeeRelieved, EmployeeMoved; adds Employee to *party type* | `company` L |
 | `time` | R attendance, leave balances, days worked in a period; E LeaveApproved, AttendanceMarked | `people` L |
 | `expenses` | O claim, approve, pay; E ClaimApproved, ClaimPaid | `people` L, `ledger` I `post`, `payments` L (its payable settles there; reacts to PaymentSubmitted) |
-| `payroll` | O assign structures, run payroll, submit slips; E PayRunSubmitted; C the tax on a slip, and who calculates a worker (for an employer of record); adds its vouchers to *voucher type* | `people` L, `time` R (days, leave without pay), `ledger` I `post` (the accrual: payroll payable, party = the worker), `payments` L (the payables settle there), a tax piece C |
+| `payroll` | O assign structures, run payroll, submit slips; E PayRunSubmitted; C the tax on a slip; adds its vouchers to *voucher type* | `people` L, `time` R (days, leave without pay), `ledger` I `post` (the accrual: payroll payable, party = the worker), `payments` L (the payables settle there), a tax piece C |
+| `contractors` | O record a tax form, set a payout method, pay many contractors; R a contractor's calendar-year total and the 1099-NEC figures | `parties` L (a contractor is a Supplier), `payments` I (one Payment Entry each), a rail's external account L |
 | `payroll-tax-us` | fills payroll's tax contract from dated rows | `payroll` L, C |
 | `selling` | O quote, order, make the invoice | `invoicing` I (make an invoice), `items`, `parties`, `tax` L |
 | `buying` | O request, quote, order, make the purchase invoice | the same as `selling` |
@@ -269,6 +276,7 @@ flowchart BT
   people[people] --> company
   time[time] --> people
   expenses[expenses] --> payments
+  contractors[contractors] --> payments
   expenses --> people
   payroll[payroll] --> time
   payroll --> ledger
@@ -330,7 +338,9 @@ milestone Goal 16, `lane:goal-16` unless a running goal has it).
    locked model against the last applied one and writes the next file, additive by default; dropping a piece's tables
    needs an explicit `ortho migrate --drop <mount>`. Checks: a world with data gains a new piece's tables and keeps its
    rows; dropping a piece without the flag is refused."
-6. **Two compositions proved in CI.** *Doesn't block*; proves optional pieces are optional. Draft: "Slice 13's job also
+6. **Money in a field's asset** (#882, unparked by CX-money-global-payroll, which owns it): `money.of` a field naming
+   an asset, and a conversion with rounding in the values module. *Blocks* several currencies; not the pieces.
+7. **Two compositions proved in CI.** *Doesn't block*; proves optional pieces are optional. Draft: "Slice 13's job also
    builds a Capxul with only the *Books* preset and runs the journeys whose pieces it mounts; a journey that needs an
    unmounted piece is skipped by name." Needs the journeys tagged by piece; journeys stay in `examples/capxul/journeys/`
    (the superagent keeps its own in `e2e/superagent/`).
@@ -381,7 +391,7 @@ writes the mount file, and ends with `prove` passing everything that passed befo
 5. **`payroll`** last of today's, after `time` and `ledger`. Its submit keeps `writes: [JournalEntry,
    JournalEntryAccount, GLEntry]` across the boundary until gap 1 lands, then calls `ledger.post`.
 
-New pieces (`rates`, `parties`, `payments`, `tax`, `items`, `invoicing` and the optional ones) are born as plugins:
+New pieces (`rates`, `parties`, `payments`, `contractors`, `tax`, `items`, `invoicing` and the optional ones) are born as plugins:
 #1116's things go into `parties` and `payments` when it is built, not into `blueprint/things/`.
 
 ## 7. What it changes in the plan
@@ -392,7 +402,7 @@ its piece's folder and, at most, one mount file.
 
 | Lane | Pieces | Starts after |
 |---|---|---|
-| Books core | `ledger` and `rates`, then `parties`, `payments`, `tax`, `items`, `invoicing` | the move's step 2; gaps 1 and 2 |
+| Books core | `ledger` and `rates`, then `parties`, `payments`, `contractors`, `tax`, `items`, `invoicing` | the move's step 2; gaps 1 and 2 |
 | Banking | `banking`, `bridge` | `ledger` moved |
 | HR | `people`, `time`, `expenses` | the move's step 2 |
 | Payroll | `payroll`, `payroll-tax-us` | `time` moved; gap 3 for the tax split |
@@ -428,8 +438,13 @@ Inputs, not decided here: the money and global payroll design (CX-money-global-p
 payroll, payments and ledger boundary in section 2; this record takes them. Whether a currency differs from an asset,
 how a company's currency is chosen and who Capxul's customers pay are that record's. #1116 fits as written: its
 Customer, Supplier and groups go to `parties`, Payment Entry to `payments`, and its fixed party types become gap 2's open
-set when Employee, Contractor and Shareholder join. Each new country's payroll tax is another `payroll-tax-<country>`
-piece; an employer of record is an optional piece with its adapter, filling payroll's *who calculates a worker*.
+set when Employee and Shareholder join. Each new country's payroll tax is another `payroll-tax-<country>` piece. An
+employer of record is no piece at first: it is a supplier and its invoice a bill paid through `payments`; later, an
+optional `eor` piece with its adapter may fill a payroll contract, *who calculates this worker*. The order the two
+records agree: this record's moves 1 and 2 (`company`, then `ledger` and `people`), then CX-money-global-payroll's
+currency slice inside `company`, `rates`, `ledger` and `payments`, then slice 7b's invoices; the rest of the move runs
+in parallel with currency, which needs none of it. `contractors` comes once `payments` exists, before
+`payroll-tax-us`.
 
 **Agreement with the developer-experience thread.** Its pages and this record use the same crossings: one store and one
 commit, an event with a waiting state, and an outside call. This record adds one for the books, the in-commit call to
