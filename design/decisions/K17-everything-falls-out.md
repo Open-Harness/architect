@@ -252,7 +252,7 @@ There the generated client runs the pre-checks in this order before sending, and
 - Chain: `chain.evm`, `chain.aztec` and `chain.solana`, with their capabilities (K7:275-283).
 - A store answers a commit at once on the server, or late, as a submission, on a chain (K7:77-78).
 - Binding: the database or the deployed address.
-- One call commits to one store; anything wider is a workflow (K3).
+- One call commits to one store; anything wider is a workflow (K3). (Superseded by K46, 26 November 2026: anything wider is more than one call, joined by an event.)
 
 **Mount, adapter and plugin.**
 - A plugin's operations fall out like the app's own, with `from` naming the plugin.

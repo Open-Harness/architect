@@ -116,7 +116,7 @@ links there. It doesn't guess.
 | # | Page | Job | Owns | Questions a reader brings | Links | Milestone |
 |---|---|---|---|---|---|---|
 | 32 | `time` | One clock for the whole system, which a world can move | clock, `Timers`, a move made by time, the world's clock | How does a budget reset each month, in every environment? Why does every wait go through `Timers`? How does a world move time, on the server, the chain and the indexer at once? | machines, workflows, proof, environments, chains-and-wallets | decided: M8 (K23; Goal 9) |
-| 24 | `workflows` | Durable work: processes that wait, and work across stores and owners | workflow, activity, the replay rule for workflows | When do I need a workflow and not a step? Why does an activity run once even after an eviction? How do I work across D1 and a chain? | stores, adapters, agents, operations | M3.01 |
+| 24 | `workflows` | Durable work that belongs to no single thing; a wait that one thing can hold is that thing's state (K46) | workflow, activity, the replay rule for workflows | When do I need a workflow and not a step? Why does an activity run once even after an eviction? How do I work across D1 and a chain? | stores, adapters, agents, operations | M3.01 |
 | 25 | `environments` | Where each projection lives, and how a revision moves | environment, place, promote, release, version, rollback, destroy | What goes in an environment file, and what doesn't? How is a version worked out? How do I roll back? | projections, secrets, stores, proof | built locally · cloud M7 |
 
 ## Layer 7: what Orthograph ships
@@ -145,7 +145,7 @@ links there. It doesn't guess.
 - **Sources** are part of `adapters`: a source is an adapter whose calls happen to read data (K3 item 8). `data` and
   `stores` say what a source is not, and link there.
 - **Steps** are part of `operations`: a step is a span inside one attempt, declared with the operation (K5 seam 3).
-  Durable work across attempts is a workflow activity, on `workflows`.
+  Work that waits is a thing's state, on `machines`; durable work that belongs to no single thing is on `workflows` (K46).
 - **Shipping** and **deployment** are `environments`: the environment file is where both are decided.
 - **What gets generated** is spread to its owners: the generated/scaffolded rule on `handlers`, each door on `doors`,
   each projection's outputs on `projections`, the agent kit on `agent-kit`.

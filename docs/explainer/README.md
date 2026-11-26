@@ -59,8 +59,12 @@ python tools/narrate.py <film>         # when its script.json changed
 python tools/mix.py <film>
 node tools/build.mjs <film>
 node tools/render.mjs <film>           # ten to fifteen minutes on four cores
-node tools/supplement.mjs capxul-lite  # the reading page
+node tools/supplement.mjs capxul-lite  # the docs page for the two Capxul Lite films
 ```
+
+The docs page plays each film at the head of its part. It looks for `capxul-describe-720.mp4`, `capxul-runs-720.mp4` and
+a `<film>.captions.txt` beside it (a 720p encode of each render, and its `captions.srt` as WebVTT text); they are published
+with the page and are not in the repository.
 
 `narrate.py` keeps each spoken line in `.cache/clips/` under the hash of its words, so a change to one line speaks one line.
 
@@ -88,5 +92,6 @@ the regenerated files (`films/how-it-works/captures/change-prove-changed.txt` ha
 
 ## What the design found
 
-The board lists every problem found and what was proposed for it. Two ideas carry the design: a thing that waits says what
+`design/decisions/K46-things-last.md` is the record: what Aaron decided on 26 November 2026, what it changes in older
+records, and what is still open. The board lists every problem found and what was proposed for it. Two ideas carry the design: a thing that waits says what
 it needs, and the framework asks; and when the other half of an act is only data, it is sealed into the one signed call.

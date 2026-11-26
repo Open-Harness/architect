@@ -12,7 +12,7 @@ questions:
 status: specified
 milestone: M1
 slices: [M1.27, M1.29, M1.30, M1.31, M1.32, M1.38, M1.39, M2.13, M6.10, M6.11]
-decisions: [K7, K12, K25, K27, M1-plugins]
+decisions: [K7, K12, K25, K27, M1-plugins, K46]
 links: [languages-and-hosts, plugins, data, stores, operations, doors, journeys, proof, stand-ins]
 ---
 
@@ -473,3 +473,12 @@ reaches it (M2.04's secrets) and the check that no key is ever in a binding, a c
 <Note kind="question" id="linked-half" slice="M2.13">Linking needs `Blueprint.step.call` and `step.use` on a device, which the M1.29 build did not
 need, and a starting-world fragment so a journey can begin with a linked wallet. Aztec has no default link, because linking
 a private account to a public person would undo its privacy.</Note>
+
+<Note kind="decision" decision="K46">
+  Three calls from 26 November 2026 touch this page. A chain store may make a contract per instance of its root thing,
+  and says whether its contracts can be upgraded ([stores](stores.mdx)). A private field of a chain operation can be
+  sealed: the relayer keeps the words, and the contract's event carries their salted hash, so one signature covers the
+  money and the reason; paying then needs no link between the person and the account, though reading the words back
+  does. And the follower is to be called the indexer: issue #1146 carries that rename as one change, code included, so
+  this page keeps the code's word until it lands. All three are designed, with no slice.
+</Note>

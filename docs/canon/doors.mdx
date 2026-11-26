@@ -10,7 +10,7 @@ questions:
 status: specified
 milestone: M1
 slices: [M1.12, M1.22, M1.23, M6.10]
-decisions: [K5, K2]
+decisions: [K5, K2, K46]
 links: [operations, handlers, roles, projections, portal, languages-and-hosts, traces]
 ---
 
@@ -288,3 +288,10 @@ CLI is a second call. The Worker already honours the `idempotency-key` header wh
 may reach) is replaced by K7's Q1: one generated entry for each operation, every external function reachable (Aaron's F1),
 and roles generated into the scaffold. A contract is the enforcer for a chain operation, and nothing more is claimed here
 until M6.11 builds it.</Note>
+
+<Note kind="decision" decision="K46">
+  Beside a generated piece for each operation (K29), a screen gets a generated reference to each thing: its state, the
+  fields this caller may see, the moves open to them now, and what the thing is waiting for (Aaron, 26 November 2026).
+  That is the hook and the headless parts of a screen, and nobody declares them: they come from the machine and the
+  roles. K29's point stands, that no hook is written by hand. Designed, with no slice.
+</Note>

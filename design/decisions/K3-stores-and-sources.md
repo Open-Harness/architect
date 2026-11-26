@@ -65,7 +65,7 @@ that does all of that can be where a thing lives.
    writer. What differs is time: the commit answers late, as a submission (`simulated → submitted → included →
    confirmed`, K7 Q3), not as `committed` or `conflict` on the spot. A server operation that sends a transaction and
    also writes D1 still writes two stores, so by item 5 it is a workflow, with S25's generated waiting state between
-   the two.
+   the two. (Superseded by K46, 26 November 2026: it is more than one call, and the wait between them is a state of a thing.)
 
    Later kinds are a package each, with nothing else changing: Postgres or MySQL that we own (through Hyperdrive),
    SQLite on a device for local-first, the `solana` and `aztec` chain kinds (K7). A kind declares what it can do (lists, search, private state),
