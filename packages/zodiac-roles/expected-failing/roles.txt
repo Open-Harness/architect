@@ -17,6 +17,7 @@ src/modules/roles/roles.test.ts > ZodiacRoles.deploy > every bit of the salt non
 src/modules/roles/roles.test.ts > ZodiacRoles.deploy > the address changes with the Safe and with the salt nonce, and with nothing else
 src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > a member's call through its role, a Call (operation 0) on the modifier, with value 0 and shouldRevert true by default
 src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > a value that is not a uint256 is refused
+src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > the largest value there can be, 2^256 - 1, is sent as it is
 src/modules/roles/roles.test.ts > ZodiacRoles.execTransactionWithRole > the value and shouldRevert given are the ones sent, and the call itself sends no wei to the modifier
 src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status AllowanceExceeded (17), typed by name
 src/modules/roles/roles.test.ts > ZodiacRoles.refusalOf > ConditionViolation, status BitmaskNotAllowed (15), typed by name

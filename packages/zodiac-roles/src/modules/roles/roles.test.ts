@@ -97,6 +97,13 @@ describe("ZodiacRoles.execTransactionWithRole", () => {
     });
   });
 
+  test("the largest value there can be, 2^256 - 1, is sent as it is", async () => {
+    const value = 2n ** 256n - 1n;
+    expect(await run(ZodiacRoles.execTransactionWithRole(modifier, { to: bob, data: "0x", value, roleKey }))).toEqual({
+      to: modifier, value: 0n, data: await run(encode(roles.execTransactionWithRole, [bob, value, "0x", 0, roleKey, true])),
+    });
+  });
+
   test("a value that is not a uint256 is refused", async () => {
     for (const value of [-1n, 2n ** 256n]) {
       expect(await fails(ZodiacRoles.execTransactionWithRole(modifier, { to: bob, data: "0x", value, roleKey }))).toMatchObject({ _tag: "ChainFault", kind: "configuration" });

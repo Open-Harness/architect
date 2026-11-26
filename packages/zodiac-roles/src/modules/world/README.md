@@ -12,8 +12,9 @@ it with zodiac-core's salt (`factory/proxyFactory`), then Integrity and Packer w
 linked to them, with constructor `(0x…01, 0x…01, 0x…01)` and salt 0. The creation code of the last three is in
 `zodiac-roles-sdk` 4.2.0's typechain (`Integrity__factory`, `Packer__factory`, `Roles__factory`; the ABI matches
 `@gnosis-guild/zodiac` 5.0.1's roles 2.1.1 exactly). `anvil_setCode` of the recorded runtime code is just as good, as long as the
-mastercopy's storage is what its constructor left (owner, avatar and target `0x…01`, initialised): the check reads the
-code hashes and that storage, not how they got there.
+mastercopy's storage is what its constructor left (owner, avatar and target `0x…01`, initialised: `world.test.ts`'s first
+test reads the three and sees a second `setUp` refused `InvalidInitialization`): the check reads the code hashes and that
+storage, not how they got there.
 
 **The bytes are the package's own, pinned by their code hashes.** The builder records the creation or runtime code of
 the factory, Integrity, Packer and the Roles mastercopy in this module, checked against the four hashes in `world.test.ts`.
