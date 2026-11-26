@@ -1,5 +1,0 @@
-# CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
-from-doctype/07-determinism.test.ts > CX-from-doctype 07: determinism > prints with --dry-run exactly the files a run writes, byte for byte, and writes nothing
-from-doctype/07-determinism.test.ts > CX-from-doctype 07: determinism > prints with --dry-run the link values a run writes, and the lines, for a doctype with two tables
-from-doctype/07-determinism.test.ts > CX-from-doctype 07: determinism > refuses a second run over a thing already there, naming it, and changes nothing
-from-doctype/07-determinism.test.ts > CX-from-doctype 07: determinism > writes the same bytes in two projects from the same files, run in the same order, the second 400 days later

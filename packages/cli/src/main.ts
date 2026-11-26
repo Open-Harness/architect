@@ -5,7 +5,7 @@ import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { Build, Environments, Prove, ProveFailed, Promote, TestWorlds, Verdicts } from "@orthograph/prove";
 import { ModelCommand } from "#modules/model/service.js";
 import { Add } from "#modules/add/service.js";
@@ -159,6 +159,49 @@ const secrets = Command.make(
   ({ env, root }) => SecretsCommand.list({ root, env }).pipe(Effect.flatMap(print)),
 ).pipe(Command.withSubcommands([secretsSet]));
 
+/** Writes the planned files, or with --dry-run prints them and writes nothing. */
+const writeOut = (root: string, planned: ReadonlyArray<{ readonly path: string; readonly content: string }>, dryRun: boolean) =>
+  Effect.sync(() => {
+    for (const f of planned) {
+      if (dryRun) process.stdout.write(`--- ${f.path}\n${f.content}`);
+      else {
+        mkdirSync(dirname(join(root, f.path)), { recursive: true });
+        writeFileSync(join(root, f.path), f.content);
+        process.stdout.write(`wrote ${f.path}\n`);
+      }
+    }
+    if (dryRun) process.stdout.write(`(dry run: ${planned.length} files, nothing written)\n`);
+  });
+
+// `ortho add thing <name>`, or `ortho add thing --from-doctype <file> [--asset <name>]` (CX-from-doctype), whose name is the doctype's.
+const addThing = Command.make(
+  "thing",
+  {
+    name: Argument.String("name").pipe(Argument.optional),
+    fromDoctype: Flag.String("from-doctype").pipe(Flag.optional),
+    asset: Flag.String("asset").pipe(Flag.optional),
+    dryRun: Flag.Boolean("dry-run").pipe(Flag.withDefault(false)),
+    root: Flag.String("root").pipe(Flag.withDefault(process.cwd())),
+  },
+  ({ name, fromDoctype, asset, dryRun, root }) => {
+    if (Option.isNone(fromDoctype)) {
+      if (Option.isNone(name)) return fail("ortho add thing needs a name, or --from-doctype <file>", 2);
+      const planned = Add.plan("thing", name.value, (path) => existsSync(join(root, path)));
+      return planned instanceof AddRefused ? fail(planned.message, 2) : writeOut(root, planned, dryRun);
+    }
+    if (Option.isSome(name)) return fail(`a name isn't given with --from-doctype: the thing is named from the doctype (drop "${name.value}")`, 2);
+    return Add.fromDoctype({ root, file: resolve(fromDoctype.value), asset: Option.getOrUndefined(asset) }).pipe(
+      Effect.flatMap((planned) =>
+        Effect.sync(() => {
+          for (const note of planned.notes) process.stdout.write(`${note}\n`);
+          for (const path of planned.kept) process.stdout.write(`kept ${path} (already there, shared)\n`);
+        }).pipe(Effect.andThen(writeOut(root, planned.write, dryRun))),
+      ),
+      Effect.catchTag("AddRefused", (e) => fail(e.message, 2)),
+    );
+  },
+);
+
 // `ortho add <what> <name>`: writes the planned files, or with --dry-run prints them and writes nothing.
 const addOne = (what: What) =>
   Command.make(
@@ -170,18 +213,7 @@ const addOne = (what: What) =>
     },
     ({ name, dryRun, root }) => {
       const planned = Add.plan(what, name, (path) => existsSync(join(root, path)));
-      if (planned instanceof AddRefused) return fail(planned.message, 2);
-      return Effect.sync(() => {
-        for (const f of planned) {
-          if (dryRun) process.stdout.write(`--- ${f.path}\n${f.content}`);
-          else {
-            mkdirSync(dirname(join(root, f.path)), { recursive: true });
-            writeFileSync(join(root, f.path), f.content);
-            process.stdout.write(`wrote ${f.path}\n`);
-          }
-        }
-        if (dryRun) process.stdout.write(`(dry run: ${planned.length} files, nothing written)\n`);
-      });
+      return planned instanceof AddRefused ? fail(planned.message, 2) : writeOut(root, planned, dryRun);
     },
   );
 // `ortho add feature|adapter|projection <package>`: one mount file, the version pinned exactly, and what it needs.
@@ -223,7 +255,7 @@ const addJourneys = Command.make(
     ),
 );
 const add = Command.make("add").pipe(
-  Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
+  Command.withSubcommands([addThing, addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
 );
 
 // `ortho new adapter <name> --from-openapi <file or URL>`: an adapter generated from a service's own API description (M5.07).

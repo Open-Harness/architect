@@ -1,6 +1,9 @@
 import { AddRefused, type AddApi } from "./types.ts";
 import { isThingName, kebab } from "./internal/names.ts";
 import { journeysOf } from "./internal/journeys.ts";
+import { Compiler, nodeSource } from "@orthograph/compiler";
+import { Effect } from "effect";
+import { planDoctype } from "./internal/doctype-plan.ts";
 import { journeyFile, operationFile, readFile, thingFiles } from "./internal/templates.ts";
 
 const verbName = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
@@ -24,4 +27,13 @@ export const Add: AddApi = {
     return there.length > 0 ? new AddRefused({ message: `already there, so nothing was written: ${there.map((f) => f.path).join(", ")}` }) : planned;
   },
   journeys: journeysOf,
+  fromDoctype: (input) =>
+    Compiler.model.pipe(
+      Effect.provide(nodeSource(input.root)),
+      Effect.catchTags({
+        BlueprintInvalid: (e) => Effect.fail(new AddRefused({ message: `the blueprint doesn't load, so nothing was written:\n${e.problems.join("\n")}` })),
+        SourceError: (e) => Effect.fail(new AddRefused({ message: e.message })),
+      }),
+      Effect.flatMap((model) => planDoctype(model, input)),
+    ),
 };

@@ -1,6 +1,0 @@
-# CX-from-doctype: these wait on `ortho add thing --from-doctype` (#877), which a builder writes; today the flag doesn't exist.
-from-doctype/08-more-shapes.test.ts > CX-from-doctype 08: more shapes > makes both tables lines, each with its own prefix and code, the step's link the shared value
-from-doctype/08-more-shapes.test.ts > CX-from-doctype 08: more shapes > maps Data with other options to text, keeps a default's field required and a read-only reqd field, and names a link's target
-from-doctype/08-more-shapes.test.ts > CX-from-doctype 08: more shapes > once filled, create and save take the reqd fields that aren't read only and both tables, and write the infusion and both lines in order
-from-doctype/08-more-shapes.test.ts > CX-from-doctype 08: more shapes > says an, and says no role holds a right none is given
-from-doctype/08-more-shapes.test.ts > CX-from-doctype 08: more shapes > writes the doctype's files, both lines and one link value shared by the doctype and a line, each opening with its scaffold line
