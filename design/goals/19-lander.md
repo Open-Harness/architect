@@ -101,7 +101,8 @@ said no Claude-led goal is running now.
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
 - **Slice 3, the landing loop, is running.** Fourteen Capxul rounds have landed. `goal/capxul` is ahead of
-  `main` only by #1091 and #1078, which come next:
+  `main` by #1091 (Capxul's journeys in CI, the `e2e-capxul` job), which can land alone, and by #1078 (payroll's
+  checks, slice 9a), which waits for its build, #1102:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
