@@ -1,0 +1,72 @@
+# Publish Orthograph's packages to npm under `next`, by hand, with npm's trusted publishing (OIDC): no npm token is stored
+# anywhere (design/decisions/R2-trusted-publishing.md). Each package's trusted publisher names this file, so it must keep
+# this name. It runs only when someone starts it from the Actions tab, on `main`.
+name: publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version every package gets, a preview of the form 0.1.0-next.<n>"
+        required: true
+      dry_run:
+        description: "Pack and check, but publish nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write # npm's trusted publishing, and the provenance it attaches
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERSION: ${{ inputs.version }}
+      DRY_RUN: ${{ inputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24.22.2
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false # never a cache in a release build
+      - name: A preview version, and an npm that can publish by OIDC (11.5.1 or later)
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-next\.[0-9]+$ ]] || { echo "version must look like 0.1.0-next.2, got: $VERSION"; exit 1; }
+          npm --version
+          node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$(npm --version)" \
+            || { echo "npm $(npm --version) is older than 11.5.1"; exit 1; }
+      - run: pnpm install --frozen-lockfile
+      - run: NX_DAEMON=false pnpm nx run-many -t build --outputStyle=static
+      # The packages, in the order each needs the ones before it: the list tools/e2e/starter.sh publishes, and layer 1's check 01
+      # proves from a local registry on every pull request.
+      - name: Set the version, pack, publish
+        run: |
+          set -euo pipefail
+          packages=(orthograph compiler language-effect chain-evm lint portal projections generators host-cloudflare logbook prove preset cli create-orthograph)
+          # Every package first, so pack writes this version wherever a package names another with `workspace:`.
+          for p in "${packages[@]}"; do (cd "packages/$p" && npm pkg set version="$VERSION"); done
+          out="$RUNNER_TEMP/tarballs"; mkdir -p "$out"
+          for p in "${packages[@]}"; do
+            name=$(node -p "require('./packages/$p/package.json').name")
+            if npm view "$name@$VERSION" version >/dev/null 2>&1; then echo "$name@$VERSION is already on npm; skipped"; continue; fi
+            # pnpm pack runs the preset's prepack (it copies the starter in) and rewrites `workspace:` and `catalog:` versions.
+            rm -f "$out"/*.tgz
+            (cd "packages/$p" && pnpm pack --pack-destination "$out" >/dev/null)
+            tarball=$(ls "$out"/*.tgz)
+            if [ "$DRY_RUN" = "true" ]; then
+              npm publish "$tarball" --tag next --access public --dry-run
+              echo "would publish $name@$VERSION"
+            else
+              npm publish "$tarball" --tag next --access public
+              echo "published $name@$VERSION"
+            fi
+          done
