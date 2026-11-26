@@ -21,7 +21,7 @@ Read one personal-safe by its id: person, saltNonce, signer, firstOwner, account
 |---|---|---|
 | person | personal-safe.person | Whose Safe it is. |
 | saltNonce | personal-safe.saltNonce | The salt nonce its address is worked out from, kept at open so the address can be checked again. |
-| signer (optional) | personal-safe.signer | The key the person proved they hold, set at claim. |
+| signer (optional) | personal-safe.signer | The key the person proved they hold, set at claim (S1b). |
 | firstOwner (optional) | personal-safe.firstOwner | The one owner it is set up with, set at claim: the signer, on the environment's chain. |
 | account (optional) | personal-safe.account | Its address once claimed, worked out before it is deployed, checksummed (EIP-55). |
 | state | text |  |

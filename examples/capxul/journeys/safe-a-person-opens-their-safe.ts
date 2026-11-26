@@ -8,7 +8,6 @@ import { PersonalSafeOpened } from "../blueprint/things/personal-safe/events.ts"
 import { SafeAlreadyOpen } from "../blueprint/things/personal-safe/errors.ts";
 import { machine } from "../blueprint/things/personal-safe/machine.ts";
 import open from "../blueprint/things/personal-safe/verbs/open.ts";
-import claim from "../blueprint/things/personal-safe/verbs/claim.ts";
 import get from "../blueprint/things/personal-safe/verbs/get.ts";
 import { saltProblem } from "./support/safe-address.ts";
 
@@ -86,9 +85,9 @@ export default Blueprint.journey("safe: a person opens their safe", {
       noEvents(),
     ),
     s.step(
-      "an agent's MCP tools hold opening, claiming and reading a Safe",
+      "an agent's MCP tools hold opening and reading a Safe",
       s.bo.via(Via.agent).tools(),
-      has(open, claim, get),
+      has(open, get),
     ),
   ],
 });

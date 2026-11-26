@@ -102,7 +102,7 @@ export type { LeaveType, LeaveTypeState, LeaveTypeCreated } from "./leave-type/t
 export type { PayrollEmployeeDetail } from "./payroll-employee-detail/types.ts";
 export type { PayrollEntry, PayrollEntryState, PayrollEntryDrafted, PayrollEntrySubmitted, SalarySlipsSubmitted } from "./payroll-entry/types.ts";
 export type { PayrollPeriod, PayrollPeriodState, PayrollPeriodCreated } from "./payroll-period/types.ts";
-export type { PersonalSafe, PersonalSafeState, PersonalSafeClaimed, PersonalSafeOpened } from "./personal-safe/types.ts";
+export type { PersonalSafe, PersonalSafeState, PersonalSafeOpened } from "./personal-safe/types.ts";
 export type { SalaryComponent, SalaryComponentState, SalaryComponentCreated } from "./salary-component/types.ts";
 export type { SalaryDetail } from "./salary-detail/types.ts";
 export type { SalarySlip } from "./salary-slip/types.ts";

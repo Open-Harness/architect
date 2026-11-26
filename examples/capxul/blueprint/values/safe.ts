@@ -8,8 +8,6 @@ import { Schema } from "effect";
 export const SaltNonce = Blueprint.value(Blueprint.uint(256));
 /** An EVM address, checksummed (EIP-55): the key a person signs with. */
 export const EvmAddress = Blueprint.value(Schema.String.check(Schema.isPattern(/^0x[0-9a-fA-F]{40}$/)));
-/** An EIP-191 `personal_sign` signature: 65 bytes as hex. */
-export const PersonalSignature = Blueprint.value(Schema.String.check(Schema.isPattern(/^0x[0-9a-fA-F]{130}$/)));
 
 /**
  * What a Safe's address depends on in each environment beside its owner: the chain its accounts are on and the salt's

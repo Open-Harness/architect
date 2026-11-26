@@ -152,7 +152,6 @@ import { submit as payrollEntrySubmit } from "./payroll-entry/submit.ts";
 import { submitSlips as payrollEntrySubmitSlips } from "./payroll-entry/submit-slips.ts";
 import { create as payrollPeriodCreate } from "./payroll-period/create.ts";
 import { get as payrollPeriodGet } from "./payroll-period/get.ts";
-import { claim as personalSafeClaim } from "./personal-safe/claim.ts";
 import { get as personalSafeGet } from "./personal-safe/get.ts";
 import { open as personalSafeOpen } from "./personal-safe/open.ts";
 import { create as salaryComponentCreate } from "./salary-component/create.ts";
@@ -222,7 +221,7 @@ const leaveType = Command.make("leave-type").pipe(Command.withSubcommands([leave
 const payrollEmployeeDetail = Command.make("payroll-employee-detail").pipe(Command.withSubcommands([payrollEmployeeDetailList]));
 const payrollEntry = Command.make("payroll-entry").pipe(Command.withSubcommands([payrollEntryCreate, payrollEntryGet, payrollEntryList, payrollEntrySubmit, payrollEntrySubmitSlips]));
 const payrollPeriod = Command.make("payroll-period").pipe(Command.withSubcommands([payrollPeriodCreate, payrollPeriodGet]));
-const personalSafe = Command.make("personal-safe").pipe(Command.withSubcommands([personalSafeClaim, personalSafeGet, personalSafeOpen]));
+const personalSafe = Command.make("personal-safe").pipe(Command.withSubcommands([personalSafeGet, personalSafeOpen]));
 const salaryComponent = Command.make("salary-component").pipe(Command.withSubcommands([salaryComponentCreate, salaryComponentGet]));
 const salaryDetail = Command.make("salary-detail").pipe(Command.withSubcommands([salaryDetailList]));
 const salarySlip = Command.make("salary-slip").pipe(Command.withSubcommands([salarySlipGet, salarySlipList]));

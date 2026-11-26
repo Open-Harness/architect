@@ -243,7 +243,6 @@
     "ShiftStartsWhenItEnds": "SH-002",
     "ShiftTypeNameTaken": "SH-001",
     "ShiftTypeNotActive": "SH-900",
-    "SignerNotProven": "SF-002",
     "StructureComponentNotInCompany": "SS-002",
     "StructureComponentRepeated": "SS-005",
     "StructureComponentWrongType": "SS-003",
@@ -464,9 +463,6 @@
     "PeriodName": {
       "type": "text",
       "max": 140
-    },
-    "PersonalSignature": {
-      "type": "schema"
     },
     "Progress": {
       "type": "decimal",
@@ -8152,7 +8148,7 @@
             "type": "schema"
           },
           "optional": true,
-          "description": "The key the person proved they hold, set at claim."
+          "description": "The key the person proved they hold, set at claim (S1b)."
         },
         "firstOwner": {
           "value": {
@@ -8181,8 +8177,7 @@
       },
       "machine": {
         "states": [
-          "unclaimed",
-          "claimed"
+          "unclaimed"
         ],
         "moves": {
           "open": {
@@ -8191,15 +8186,6 @@
               "unclaimed"
             ],
             "emits": "PersonalSafeOpened"
-          },
-          "claim": {
-            "from": [
-              "unclaimed"
-            ],
-            "to": [
-              "claimed"
-            ],
-            "emits": "PersonalSafeClaimed"
           }
         },
         "notFrom": {
@@ -8209,39 +8195,6 @@
         }
       },
       "events": {
-        "PersonalSafeClaimed": {
-          "safe": {
-            "value": {
-              "type": "id",
-              "prefix": "saf"
-            },
-            "ref": "personal-safe.id"
-          },
-          "person": {
-            "value": {
-              "type": "id",
-              "prefix": "per"
-            },
-            "ref": "personal-safe.person",
-            "description": "Whose Safe it is."
-          },
-          "signer": {
-            "value": {
-              "type": "schema"
-            },
-            "optional": true,
-            "ref": "personal-safe.signer",
-            "description": "The key the person proved they hold, set at claim."
-          },
-          "account": {
-            "value": {
-              "type": "account"
-            },
-            "optional": true,
-            "ref": "personal-safe.account",
-            "description": "Its address once claimed, worked out before it is deployed, checksummed (EIP-55)."
-          }
-        },
         "PersonalSafeOpened": {
           "safe": {
             "value": {
@@ -8274,18 +8227,6 @@
           },
           "exit": 41,
           "code": "SF-001"
-        },
-        "SignerNotProven": {
-          "fields": {
-            "signer": {
-              "value": {
-                "type": "schema"
-              },
-              "named": "EvmAddress"
-            }
-          },
-          "exit": 42,
-          "code": "SF-002"
         }
       },
       "roles": [
@@ -8297,7 +8238,7 @@
       "from": {
         "kind": "app"
       },
-      "hash": "4e0806a2c50ef54e"
+      "hash": "0f01982cca0839d5"
     },
     "salary-component": {
       "name": "salary-component",
@@ -23284,104 +23225,6 @@
       },
       "hash": "887a4d7c548840dc"
     },
-    "personal-safe.claim": {
-      "kind": "operation",
-      "name": "personal-safe.claim",
-      "thing": "personal-safe",
-      "verb": "claim",
-      "identifier": "claim",
-      "file": "blueprint/things/personal-safe/verbs/claim.ts",
-      "from": {
-        "kind": "app"
-      },
-      "description": "Claim your Safe with the key you sign with, proving you hold it. This works out its address; nothing is sent to the chain.",
-      "payload": {
-        "safe": {
-          "value": {
-            "type": "id",
-            "prefix": "saf"
-          },
-          "ref": "personal-safe.id"
-        },
-        "signer": {
-          "value": {
-            "type": "schema"
-          },
-          "named": "EvmAddress",
-          "description": "The key you sign with, which becomes the Safe's one owner."
-        },
-        "proof": {
-          "value": {
-            "type": "schema"
-          },
-          "named": "PersonalSignature",
-          "description": "Your signer's personal_sign of \"Capxul: claim Safe <safe> for <you>\"."
-        }
-      },
-      "answer": {
-        "safe": {
-          "value": {
-            "type": "id",
-            "prefix": "saf"
-          },
-          "ref": "personal-safe.id"
-        },
-        "account": {
-          "value": {
-            "type": "account"
-          }
-        }
-      },
-      "move": {
-        "key": "claim",
-        "from": [
-          "unclaimed"
-        ],
-        "to": [
-          "claimed"
-        ],
-        "emits": "PersonalSafeClaimed"
-      },
-      "errors": [
-        "SignerNotProven"
-      ],
-      "invariants": {
-        "SafeAlreadyOpen": "personal-safe.oneSafePerPerson"
-      },
-      "breaks": [
-        "personal-safe.oneSafePerPerson"
-      ],
-      "refusals": [
-        "SignerNotProven",
-        "SafeAlreadyOpen",
-        "PersonalSafeNotUnclaimed",
-        "NotAllowed",
-        "IdempotencyConflict"
-      ],
-      "allowed": [
-        {
-          "kind": "role",
-          "role": "personal-safe.holder"
-        }
-      ],
-      "agentTool": true,
-      "refs": {
-        "safe": "personal-safe"
-      },
-      "steps": {
-        "update": {
-          "name": "personal-safe.claim.update",
-          "type": "database"
-        }
-      },
-      "idempotent": "request",
-      "runs": "server",
-      "test": "unit",
-      "budget": {
-        "p95Ms": 150
-      },
-      "hash": "f0b727849c0fe5fc"
-    },
     "personal-safe.get": {
       "kind": "read",
       "name": "personal-safe.get",
@@ -23426,7 +23269,7 @@
           },
           "optional": true,
           "ref": "personal-safe.signer",
-          "description": "The key the person proved they hold, set at claim."
+          "description": "The key the person proved they hold, set at claim (S1b)."
         },
         "firstOwner": {
           "value": {
@@ -23471,7 +23314,7 @@
       "budget": {
         "p95Ms": 50
       },
-      "hash": "3f3d6979d74a0a9c"
+      "hash": "2231825001f4dfe7"
     },
     "personal-safe.open": {
       "kind": "operation",
@@ -81944,11 +81787,11 @@
           ]
         },
         {
-          "title": "an agent's MCP tools hold opening, claiming and reading a Safe",
+          "title": "an agent's MCP tools hold opening and reading a Safe",
           "skipped": "the tools list is not an operation"
         }
       ],
-      "sourceHash": "12aee52229ca011eb44171f7b57dcdc04880ba8695d15dd99d6a259219047597"
+      "sourceHash": "46830642c245d6c07e4ae98164c30c25a2699dc3aa288569e8bb7f6dc922e4a3"
     },
     "journeys/safe-opening-again-is-the-same-safe.ts": {
       "name": "safe: opening again is the same safe",
@@ -114167,16 +114010,6 @@
       }
     },
     {
-      "id": "anomaly:SF-002",
-      "kind": "anomaly",
-      "labels": {
-        "environment": "*",
-        "code": "SF-002",
-        "severity": "ticket",
-        "owner": "blueprint/things/personal-safe/errors.ts"
-      }
-    },
-    {
       "id": "anomaly:SF-900",
       "kind": "anomaly",
       "labels": {
@@ -120624,48 +120457,6 @@
         "operation": "payroll-period.get",
         "severity": "page",
         "owner": "blueprint/things/payroll-period/verbs/get.ts"
-      },
-      "target": 0.999,
-      "windowDays": 28,
-      "minCalls": 20,
-      "alerts": [
-        {
-          "name": "fast",
-          "burn": 14.4,
-          "windowsMs": [
-            3600000,
-            300000
-          ],
-          "severity": "page"
-        },
-        {
-          "name": "slow",
-          "burn": 6,
-          "windowsMs": [
-            21600000,
-            1800000
-          ],
-          "severity": "page"
-        },
-        {
-          "name": "ticket",
-          "burn": 1,
-          "windowsMs": [
-            259200000,
-            21600000
-          ],
-          "severity": "ticket"
-        }
-      ]
-    },
-    {
-      "id": "defect:personal-safe.claim",
-      "kind": "defect",
-      "labels": {
-        "environment": "*",
-        "operation": "personal-safe.claim",
-        "severity": "page",
-        "owner": "blueprint/things/personal-safe/verbs/claim.ts"
       },
       "target": 0.999,
       "windowDays": 28,
@@ -127745,49 +127536,6 @@
       "target": 0.95,
       "windowDays": 28,
       "thresholdMs": 50,
-      "minCalls": 20,
-      "alerts": [
-        {
-          "name": "fast",
-          "burn": 14.4,
-          "windowsMs": [
-            3600000,
-            300000
-          ],
-          "severity": "page"
-        },
-        {
-          "name": "slow",
-          "burn": 6,
-          "windowsMs": [
-            21600000,
-            1800000
-          ],
-          "severity": "page"
-        },
-        {
-          "name": "ticket",
-          "burn": 1,
-          "windowsMs": [
-            259200000,
-            21600000
-          ],
-          "severity": "ticket"
-        }
-      ]
-    },
-    {
-      "id": "latency:personal-safe.claim",
-      "kind": "latency",
-      "labels": {
-        "environment": "*",
-        "operation": "personal-safe.claim",
-        "severity": "page",
-        "owner": "blueprint/things/personal-safe/verbs/claim.ts"
-      },
-      "target": 0.95,
-      "windowDays": 28,
-      "thresholdMs": 150,
       "minCalls": 20,
       "alerts": [
         {

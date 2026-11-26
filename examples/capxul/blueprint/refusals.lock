@@ -3210,22 +3210,6 @@
       },
       "earlier": []
     },
-    "SF-002": {
-      "name": "SignerNotProven",
-      "owner": "personal-safe",
-      "from": "blueprint/things/personal-safe/errors.ts",
-      "fields": {
-        "signer": {
-          "value": "schema"
-        }
-      },
-      "wire": {
-        "effect": {
-          "tag": "SignerNotProven"
-        }
-      },
-      "earlier": []
-    },
     "SF-900": {
       "name": "PersonalSafeNotUnclaimed",
       "owner": "personal-safe",

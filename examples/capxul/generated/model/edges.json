@@ -2535,21 +2535,6 @@
     "kind": "allowed-by"
   },
   {
-    "from": "personal-safe.claim",
-    "to": "personal-safe",
-    "kind": "acts-on"
-  },
-  {
-    "from": "personal-safe.claim",
-    "to": "personal-safe.PersonalSafeClaimed",
-    "kind": "emits"
-  },
-  {
-    "from": "personal-safe.claim",
-    "to": "personal-safe.holder",
-    "kind": "allowed-by"
-  },
-  {
     "from": "personal-safe.get",
     "to": "personal-safe",
     "kind": "reads"
