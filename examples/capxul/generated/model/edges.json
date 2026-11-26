@@ -90,6 +90,21 @@
     "kind": "refers"
   },
   {
+    "from": "customer.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "customer.customerGroup",
+    "to": "customer-group.id",
+    "kind": "refers"
+  },
+  {
+    "from": "customer-group.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "department.company",
     "to": "company.id",
     "kind": "refers"
@@ -410,6 +425,26 @@
     "kind": "refers"
   },
   {
+    "from": "payment-entry.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payment-entry.paidFrom",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payment-entry.paidTo",
+    "to": "account.id",
+    "kind": "refers"
+  },
+  {
+    "from": "payment-entry.costCenter",
+    "to": "cost-center.id",
+    "kind": "refers"
+  },
+  {
     "from": "payroll-employee-detail.payrollEntry",
     "to": "payroll-entry.id",
     "kind": "refers"
@@ -516,6 +551,21 @@
   },
   {
     "from": "shift-type.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "supplier.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
+    "from": "supplier.supplierGroup",
+    "to": "supplier-group.id",
+    "kind": "refers"
+  },
+  {
+    "from": "supplier-group.company",
     "to": "company.id",
     "kind": "refers"
   },
@@ -1121,6 +1171,96 @@
   },
   {
     "from": "cost-center.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "customer.balance",
+    "to": "customer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "customer.balance",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "customer.create",
+    "to": "customer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "customer.create",
+    "to": "customer.CustomerCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "customer.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "customer.disable",
+    "to": "customer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "customer.disable",
+    "to": "customer.CustomerDisabled",
+    "kind": "emits"
+  },
+  {
+    "from": "customer.disable",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "customer.enable",
+    "to": "customer",
+    "kind": "acts-on"
+  },
+  {
+    "from": "customer.enable",
+    "to": "customer.CustomerEnabled",
+    "kind": "emits"
+  },
+  {
+    "from": "customer.enable",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "customer.get",
+    "to": "customer",
+    "kind": "reads"
+  },
+  {
+    "from": "customer.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "customer-group.create",
+    "to": "customer-group",
+    "kind": "acts-on"
+  },
+  {
+    "from": "customer-group.create",
+    "to": "customer-group.CustomerGroupCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "customer-group.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "customer-group.get",
+    "to": "customer-group",
+    "kind": "reads"
+  },
+  {
+    "from": "customer-group.get",
     "to": "company.owner",
     "kind": "allowed-by"
   },
@@ -2435,6 +2575,61 @@
     "kind": "allowed-by"
   },
   {
+    "from": "payment-entry.cancel",
+    "to": "payment-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payment-entry.cancel",
+    "to": "payment-entry.PaymentEntryCancelled",
+    "kind": "emits"
+  },
+  {
+    "from": "payment-entry.cancel",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payment-entry.create",
+    "to": "payment-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payment-entry.create",
+    "to": "payment-entry.PaymentEntryDrafted",
+    "kind": "emits"
+  },
+  {
+    "from": "payment-entry.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payment-entry.get",
+    "to": "payment-entry",
+    "kind": "reads"
+  },
+  {
+    "from": "payment-entry.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "payment-entry.submit",
+    "to": "payment-entry",
+    "kind": "acts-on"
+  },
+  {
+    "from": "payment-entry.submit",
+    "to": "payment-entry.PaymentEntrySubmitted",
+    "kind": "emits"
+  },
+  {
+    "from": "payment-entry.submit",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "payroll-employee-detail.list",
     "to": "payroll-employee-detail",
     "kind": "reads"
@@ -2756,6 +2951,96 @@
   },
   {
     "from": "shift-type.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "supplier.balance",
+    "to": "supplier",
+    "kind": "acts-on"
+  },
+  {
+    "from": "supplier.balance",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "supplier.create",
+    "to": "supplier",
+    "kind": "acts-on"
+  },
+  {
+    "from": "supplier.create",
+    "to": "supplier.SupplierCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "supplier.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "supplier.disable",
+    "to": "supplier",
+    "kind": "acts-on"
+  },
+  {
+    "from": "supplier.disable",
+    "to": "supplier.SupplierDisabled",
+    "kind": "emits"
+  },
+  {
+    "from": "supplier.disable",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "supplier.enable",
+    "to": "supplier",
+    "kind": "acts-on"
+  },
+  {
+    "from": "supplier.enable",
+    "to": "supplier.SupplierEnabled",
+    "kind": "emits"
+  },
+  {
+    "from": "supplier.enable",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "supplier.get",
+    "to": "supplier",
+    "kind": "reads"
+  },
+  {
+    "from": "supplier.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "supplier-group.create",
+    "to": "supplier-group",
+    "kind": "acts-on"
+  },
+  {
+    "from": "supplier-group.create",
+    "to": "supplier-group.SupplierGroupCreated",
+    "kind": "emits"
+  },
+  {
+    "from": "supplier-group.create",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "supplier-group.get",
+    "to": "supplier-group",
+    "kind": "reads"
+  },
+  {
+    "from": "supplier-group.get",
     "to": "company.owner",
     "kind": "allowed-by"
   }
