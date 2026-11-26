@@ -29,7 +29,7 @@ Film.scene("hand", {
     <div class="arr a1 ph2 hidden0" style="top:340px">←</div><div class="arr a2 ph2 hidden0" style="top:530px">←</div>
     <div class="kbox given g1 ph2 hidden0" style="top:290px;height:170px"><div class="lbl">given · the change</div><div class="kbig">${F.st.total} files: ${F.st.bp.length} blueprint, ${F.st.gen.length} generated</div></div>
     <div class="kbox given g2 ph2 hidden0" style="top:480px;height:180px"><div class="lbl">given · the brief it was made from · your ${F.df.hunks.length} sentences</div><div class="ask">a plainer description</div><div class="ask">a tighter time budget</div></div>
-    <div class="abs verbs hidden0"><span class="chip none v0">edits<i></i></span><span class="it">it</span><span class="chip v1 hidden0">reads</span><span class="chip v2 hidden0">runs commands</span><span class="chip v3 hidden0">reports</span></div>
+    <div class="abs verbs hidden0"><span class="it">it</span><span class="chip none v0">touches<i></i></span><span class="chip v1 hidden0">reads</span><span class="chip v2 hidden0">runs commands</span><span class="chip v3 hidden0">reports</span></div>
     ${Rv.tiles(D, "the change that came back")}`;
   },
   build(s) {

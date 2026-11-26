@@ -35,7 +35,7 @@ Film.scene("prove", {
     s.in(Rv.label(js[0], `${js.length} journeys`), c("d2", "pass") + 0.05, { x: 14, y: 0, dur: 0.3 });
     Rv.print(s, [perf], c("d2", "claims")); Rv.lit(s, "#pv-prove", [perf], c("d2", "performance"));
     Rv.hit(s, Rv.mark(perf, `budget p95 ${F.budget}ms`), c("d2", "hundred"));
-    const wl = Rv.label(perf, `was ${was}ms`); wl.style.top = (perf.offsetTop + perf.offsetHeight + 4) + "px"; s.in(wl, c("d2", "new budget"), { x: 14, y: 0, dur: 0.3 });
+    const wl = Rv.label(perf, `was ${was}ms`); s.in(wl, c("d2", "new budget"), { x: 14, y: 0, dur: 0.3 });
     Rv.print(s, [end], c("d2", "milliseconds") + 0.3); s.fromTo(".verdict", { autoAlpha: 0, scale: 1.6, rotate: -4 }, { autoAlpha: 1, scale: 1, rotate: -4, duration: 0.35, ease: "back.out(2)" }, c("d2", "milliseconds") + 0.45);
     // d3: then the check; drift passes.
     const t3 = c("d3");

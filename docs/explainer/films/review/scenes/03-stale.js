@@ -25,7 +25,7 @@ Film.scene("stale", {
     // c2: it compares with the record the last full proof left. Before: nothing stale, seven proven.
     s.in(R, c("c2", "record") - 0.1, { x: 14, y: 0 }); Rv.type(s, R, c("c2", "record"), 0.5); Rv.print(s, s.$$("#st-rec .o"), c("c2", "proof"));
     s.to(R, { borderColor: "#e9f0fa", duration: 0.3 }, c("c2", "machine"));
-    const rows = s.$$("#st-before .o"); Rv.print(s, rows, Math.max(typed + 0.2, c("c2", "Before") - 0.2), 0.12);
+    const rows = s.$$("#st-before .o"); Rv.print(s, rows, typed + 0.35, 0.12);
     const none = Rv.rows(s, "#st-before", /^stale none$/), proven = Rv.rows(s, "#st-before", /^proven /);
     Rv.lit(s, "#st-before", none, c("c2", "nothing"));
     Rv.lit(s, "#st-before", proven, c("c2", "seven")); Rv.set(s, "review-impact-before", c("c2", "seven"));

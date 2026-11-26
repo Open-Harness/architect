@@ -52,7 +52,7 @@ const Rv = {
     ${q} .tile { position: relative; height: 96px; border: 1.5px solid var(--rule2); background: rgba(14,28,48,.92); padding: 16px 14px 0; overflow: hidden; }
     ${q} .tile::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--cyan); }
     ${q} .tile.bp::before { background: var(--paper); } ${q} .tile.bp { border-color: var(--paper); }
-    ${q} .tile b { display: block; font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.02em; }
+    ${q} .tile b { display: block; font-family: var(--label); font-size: 27px; line-height: 30px; font-weight: 600; color: var(--paper); white-space: nowrap; overflow: hidden; letter-spacing: .01em; }
     ${q} .tile span { display: block; font-family: var(--label); font-size: 22px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); margin-top: 4px; white-space: nowrap; }
     ${q} .tile.bp span { color: var(--text2); }
     ${q} .ops { position: absolute; left: 96px; top: 824px; width: 1728px; }

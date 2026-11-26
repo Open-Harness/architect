@@ -9,11 +9,11 @@ Film.scene("where", {
     if (!/Identity\.betterAuth/.test(text)) throw new Error("where: staging.ts has no real sign-in");
     const sec = D.cap["stage-secrets"].out; if (!/^no secrets declared$/m.test(sec)) throw new Error("where: the secrets recording does not say none are declared");
     return `${Kit.css}${Stg.css("where")}<style>
-      #scene-where .place { position: absolute; top: 440px; height: 300px; padding: 26px 30px; }
+      #scene-where .place { position: absolute; top: 500px; height: 260px; padding: 26px 30px; }
       #scene-where .place .kbig { margin-top: 14px; } #scene-where .place .note { margin-top: 16px; font-size: 28px; }
       #scene-where .mine { left: 96px; width: 800px; border: 1.5px solid var(--paper); background: rgba(11,23,39,.92); }
       #scene-where .cloud { left: 1024px; width: 800px; border: 2px dashed var(--rule2); background: rgba(11,23,39,.6); }
-      #scene-where .gap { position: absolute; left: 896px; top: 580px; width: 128px; height: 2px; background: repeating-linear-gradient(90deg, var(--muted) 0 10px, transparent 10px 20px); }
+      #scene-where .gap { position: absolute; left: 896px; top: 630px; width: 128px; height: 2px; background: repeating-linear-gradient(90deg, var(--muted) 0 10px, transparent 10px 20px); }
       #scene-where .counts { position: absolute; left: 1210px; top: 262px; width: 614px; display: flex; flex-direction: column; gap: 14px; }
       #scene-where .cnt { display: flex; align-items: baseline; gap: 18px; padding: 10px 20px; border: 1px solid var(--rule2); background: rgba(14,28,48,.9); }
       #scene-where .cnt b { font-size: 44px; font-weight: 500; min-width: 1.4ch; font-variant-numeric: tabular-nums; } #scene-where .cnt span { font-size: 28px; } #scene-where .cnt code { margin-left: auto; font-family: var(--mono); font-size: 20px; color: var(--muted); }
@@ -42,7 +42,7 @@ Film.scene("where", {
     s.in(".n2", c("w2", "see"), { y: 8 });
     // w3: the file, whole. The places drop into the lower third and stay as the reason for it.
     const t3 = c("w3");
-    s.to(".mine, .cloud", { y: 230, scale: 0.86, transformOrigin: "50% 100%", opacity: 0.55, duration: 0.6, ease: "power2.inOut" }, t3 - 0.3);
+    s.to(".mine, .cloud", { y: 220, scale: 0.86, transformOrigin: "50% 100%", opacity: 0.55, duration: 0.6, ease: "power2.inOut" }, t3 - 0.3);
     s.out(".gap", t3 - 0.3, { dur: 0.3 });
     s.in("#wh-ed", t3, { y: 14 });
     s.focus(body, [n(/Deploy\.worker\(/), n(/Deploy\.worker\(/)], c("w3", "server")); s.in(".q1", c("w3", "server"), { x: 14, y: 0, dur: 0.35 });

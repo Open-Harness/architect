@@ -17,8 +17,8 @@ const Stg = {
     ${q} .trio .res .nm { font-family: var(--mono); font-size: 25px; line-height: 36px; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 6px; }
     ${q} .trio .res .nm.sub { font-size: 22px; color: var(--text2); }
     ${q} .trio .pre { position: relative; } ${q} .trio .pre i { position: absolute; left: 0; right: 0; bottom: -3px; height: 3px; background: var(--cyan); transform: scaleX(0); transform-origin: 0 50%; }
-    ${q} .trio.row .res .nm { font-size: 21px; line-height: 30px; }
-    ${q} .trio.mini { gap: 10px; } ${q} .trio.mini .res { padding: 8px 14px; border-width: 1.5px; } ${q} .trio.mini .res .lbl { font-size: 19px; }
+    ${q} .trio.row .res .nm { font-size: 21px; line-height: 30px; } ${q} .trio.row .res .lbl em { display: none; }
+    ${q} .trio.mini { gap: 10px; justify-content: flex-end; } ${q} .trio.mini .res { flex: 0 0 auto; white-space: nowrap; padding: 8px 14px; border-width: 1.5px; } ${q} .trio.mini .res .lbl { font-size: 19px; }
     ${q} .triocap { position: absolute; font-family: var(--label); text-transform: uppercase; letter-spacing: .13em; font-size: 21px; font-weight: 600; color: var(--muted); white-space: nowrap; }
     ${q} .tags { position: absolute; display: flex; flex-direction: column; gap: 16px; }
     ${q} .tagbox { border: 1.5px solid var(--paper); background: rgba(11,23,39,.95); padding: 12px 22px 14px; }
@@ -45,7 +45,7 @@ const Stg = {
       const what = Stg.what[r.kind]; if (!what) throw new Error("stage: no word for the kind " + r.kind);
       if (layout === "mini") return `<div class="res res${k}"><div class="lbl"><span>${Film.esc(r.kind)}</span></div></div>`;
       const main = r.name ? `<div class="nm">${Stg.pre(up.prefix, r.name)}</div>` : `<div class="nm">${Stg.pre(up.prefix, r.script)}</div>`;
-      const sub = layout === "col" && r.class ? `<div class="nm sub">class ${Film.esc(r.class)}${r.binding ? "" : ""}</div>` : layout === "col" && r.binding ? `<div class="nm sub">binding ${Film.esc(r.binding)}</div>` : "";
+      const sub = "";
       return `<div class="res res${k}"><div class="lbl"><span>${Film.esc(r.kind)}</span><em>${what}</em></div>${main}${sub}</div>`;
     };
     return `<div class="trio ${layout} ${cls}" id="${id}" style="left:${x}px;top:${y}px;width:${w}px">${res.map(box).join("")}</div>`;

@@ -19,7 +19,7 @@ Film.scene("local", {
     <div class="head"><div class="eyebrow">Run the same file here first</div><div class="hl">Staging, on your machine.</div></div>
     <div class="who">${Kit.who("agent", "your agent")}</div>
     ${Kit.term(D, { id: "lc-up", cap: "stage-local-up", x: 96, y: 262, w: 1300, h: 150, cls: "hidden0", tag: '<span class="tag">a port, no run</span>' })}
-    <div class="here hidden0"><div class="lbl">your machine</div><div class="state"><i class="dot"></i><span class="st1">it stays up</span></div></div>
+    <div class="here hidden0"><div class="lbl">your machine</div><div class="state"><i class="dot"></i><span class="st1">it stays up</span><span class="st2 hidden0" style="margin-left:-150px">stopped</span></div></div>
     ${Kit.term(D, { id: "lc-http", cap: "stage-bundle-http", x: 96, y: 430, w: 1728, h: 150, cls: "hidden0", keep: (l) => l === last, tag: '<span class="tag">what are you running?</span>' })}
     ${Stg.tags(D, { id: "lc-tags", x: 96, y: 596, w: 1310, cls: "hidden0", small: true })}
     <div class="eq e1 hidden0" style="top:628px"><b>=</b>the same commit</div>
@@ -50,6 +50,6 @@ Film.scene("local", {
     s.out(U, td - 0.3, { dur: 0.25 }); s.in(Dn, td - 0.1, { y: 0, dur: 0.25 });
     s.run(Dn, td, { type: 0.5, at: c("l4", "stops"), each: 0.1 });
     s.to(".here .dot", { backgroundColor: "#4d6382", duration: 0.3 }, c("l4", "stops") + 0.1);
-    s.to(".here .st1", { autoAlpha: 0, duration: 0.2 }, c("l4", "stops"));
+    s.to(".here .st1", { autoAlpha: 0, duration: 0.2 }, c("l4", "stops")); s.in(".here .st2", c("l4", "stops") + 0.15, { y: 0, dur: 0.3 });
   },
 });

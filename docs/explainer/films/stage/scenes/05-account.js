@@ -15,15 +15,15 @@ Film.scene("account", {
       #scene-account .vals { position: absolute; left: 96px; top: 512px; width: 1120px; display: flex; gap: 20px; }
       #scene-account .val { flex: 1; border: 2px dashed var(--paper); padding: 14px 22px; background: rgba(11,23,39,.85); }
       #scene-account .val .nm { font-family: var(--mono); font-size: 25px; margin-top: 8px; } #scene-account .val .lbl { display: flex; justify-content: space-between; }
-      #scene-account .holder { position: absolute; left: 96px; top: 680px; display: flex; align-items: center; gap: 18px; font-size: 30px; }
+      #scene-account .holder { position: absolute; left: 96px; top: 672px; display: flex; align-items: center; gap: 18px; font-size: 30px; }
       #scene-account .side { position: absolute; left: 1260px; top: 512px; width: 564px; display: flex; flex-direction: column; gap: 18px; }
       #scene-account .side .num { display: flex; align-items: baseline; gap: 16px; } #scene-account .side .num b { font-size: 56px; font-weight: 500; line-height: 1; } #scene-account .side .num span { font-size: 28px; color: var(--text2); }
       #scene-account .side .never { font-size: 30px; border-left: 2px solid var(--paper); padding-left: 18px; }
-      #scene-account .side .kstand { position: static; }
+      #scene-account .pr { position: absolute; left: 96px; top: 742px; } #scene-account .pr .kstand { position: static; }
       #scene-account .triocap { left: 96px; top: 790px; }
-      #scene-account .note { position: absolute; left: 96px; top: 280px; width: 1728px; }
-      #scene-account .note .big { font-size: 60px; font-weight: 500; letter-spacing: -.02em; line-height: 1.15; margin-top: 10px; }
-      #scene-account .note .b2 { position: absolute; left: 0; top: 34px; } #scene-account .note .sub { font-size: 32px; color: var(--text2); margin-top: 18px; }
+      #scene-account .hnote { position: absolute; left: 96px; top: 280px; width: 1728px; }
+      #scene-account .hnote .big { font-size: 60px; font-weight: 500; letter-spacing: -.02em; line-height: 1.15; margin-top: 10px; }
+      #scene-account .hnote .b2 { position: absolute; left: 0; top: 34px; } #scene-account .hnote .sub { font-size: 32px; color: var(--text2); margin-top: 18px; }
       #scene-account .stands { position: absolute; left: 96px; top: 560px; display: flex; flex-direction: column; gap: 16px; }
       #scene-account .stands .kstand { position: static; font-size: 22px; }
       #scene-account .next { position: absolute; left: 1240px; top: 600px; display: flex; align-items: center; gap: 18px; }
@@ -34,17 +34,17 @@ Film.scene("account", {
     <div class="g1">
       ${Kit.term(D, { id: "ac-up", cap: "stage-up-no-account", x: 96, y: 262, w: 1728, h: 222, cls: "hidden0", tag: '<span class="tag">no --plan</span>' })}
       <div class="vals">${names.map((nm, k) => `<div class="val v${k} hidden0"><div class="lbl"><span>from your cloud account</span><span class="cy">not set</span></div><div class="nm">${Film.esc(nm)}</div></div>`).join("")}</div>
+      <div class="pr hidden0">${Kit.stand("practice", "keeping them from an agent", "")}</div>
       <div class="holder hidden0">${Kit.who("you")}<span>yours · set where the command runs</span></div>
       <div class="side"><div class="num n1 hidden0"><b>${names.length}</b><span>values, not set</span></div>
-        <div class="pr hidden0">${Kit.stand("practice", "keeping them from an agent", "")}</div>
-        <div class="never hidden0">The framework never prints them.</div></div>
+                <div class="never hidden0">The framework never prints them.</div></div>
     </div>
     <div class="g2">
-      ${Kit.term(D, { id: "ac-bad", cap: "stage-bad-run", x: 96, y: 262, w: 1728, h: 168, size: 19, keep, cls: "hidden0", tag: '<span class="tag">a capital letter</span>' })}
-      ${Kit.term(D, { id: "ac-prove", cap: "stage-prove-no-address", x: 96, y: 442, w: 1728, h: 168, size: 19, keep, cls: "hidden0", tag: '<span class="tag">where your servers go</span>' })}
-      ${Kit.term(D, { id: "ac-promote", cap: "stage-promote", x: 96, y: 622, w: 1728, h: 168, size: 19, keep, cls: "hidden0", tag: '<span class="tag">no logbook</span>' })}
+      ${Kit.term(D, { id: "ac-bad", cap: "stage-bad-run", x: 96, y: 262, w: 1728, h: 160, size: 19, keep, cls: "hidden0", tag: '<span class="tag">a capital letter</span>' })}
+      ${Kit.term(D, { id: "ac-prove", cap: "stage-prove-no-address", x: 96, y: 434, w: 1728, h: 160, size: 19, keep, cls: "hidden0", tag: '<span class="tag">where your servers go</span>' })}
+      ${Kit.term(D, { id: "ac-promote", cap: "stage-promote", x: 96, y: 606, w: 1728, h: 160, size: 19, keep, cls: "hidden0", tag: '<span class="tag">no logbook</span>' })}
     </div>
-    <div class="note hidden0"><div class="lbl" style="font-size:24px">one honest note</div><div class="big b1">There is no real deployment in this film.</div><div class="big b2 hidden0">The path to a real address.<br><span class="mu">Not yet an address.</span></div>
+    <div class="hnote hidden0"><div class="lbl" style="font-size:24px">one honest note</div><div class="big b1">There is no real deployment in this film.</div><div class="big b2 hidden0">The path to a real address.<br><span class="mu">Not yet an address.</span></div>
       <div class="sub s1 hidden0">Everything you saw ran with no cloud account.</div></div>
     <div class="stands hidden0">
       <div class="st0">${Kit.stand("real", "the plan, the build, staging on your machine", "")}</div>
@@ -82,7 +82,7 @@ Film.scene("account", {
     // a5: the honest note. a6: the path, not yet an address. Next: watch it.
     const t5 = c("a5");
     s.out(".g2", t5 - 0.3, { dur: 0.35 }); s.to(".triocap", { autoAlpha: 0, duration: 0.2 }, t5 - 0.3);
-    s.in(".note", c("a5", "no real"), { y: 14 });
+    s.in(".hnote", c("a5", "no real"), { y: 14 });
     s.in(".stands", c("a5", "waits") - 0.3, { y: 0, dur: 0.01 });
     s.fromTo(".stands > div", { autoAlpha: 0, x: -14 }, { autoAlpha: 1, x: 0, duration: 0.35, stagger: 0.25 }, c("a5", "waits") - 0.3);
     s.to(".st2 .kstand", { color: "#e9f0fa", duration: 0.3 }, c("a5", "credential"));

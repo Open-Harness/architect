@@ -18,10 +18,10 @@ Film.scene("plan", {
       #scene-plan .touch .val { font-size: 30px; line-height: 1.2; }
       #scene-plan .runchip, #scene-plan .touch { border: 1px solid var(--rule2); background: rgba(14,28,48,.92); padding: 12px 20px; height: 100px; }
       #scene-plan .pfx { position: absolute; left: 940px; top: 384px; width: 884px; border: 1px solid var(--rule2); background: rgba(14,28,48,.92); padding: 12px 20px 10px; }
-      #scene-plan .pfx .line { display: flex; align-items: flex-start; font-family: var(--mono); font-size: 32px; margin-top: 4px; }
-      #scene-plan .seg { display: inline-flex; flex-direction: column; align-items: center; } #scene-plan .seg b { font-weight: 500; padding: 0 2px; border-bottom: 3px solid transparent; }
-      #scene-plan .seg i.lbl { font-style: normal; font-size: 19px; margin-top: 4px; visibility: hidden; opacity: 0; color: var(--cyan); }
-      #scene-plan .seg.fix b { color: var(--muted); }
+      #scene-plan .pfx .line { font-family: var(--mono); font-size: 32px; margin-top: 4px; padding-bottom: 30px; white-space: nowrap; }
+      #scene-plan .seg { position: relative; display: inline-block; } #scene-plan .seg b { font-weight: 500; padding: 0 2px; border-bottom: 3px solid transparent; }
+      #scene-plan .seg i.lbl { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: 19px; margin-top: 4px; visibility: hidden; opacity: 0; color: var(--cyan); }
+      #scene-plan .seg.fix b { color: var(--muted); } #scene-plan .seg:not(.fix) { margin: 0 26px; }
       #scene-plan .count { position: absolute; left: 940px; top: 896px; width: 884px; display: flex; align-items: baseline; gap: 18px; }
       #scene-plan .count b { font-size: 52px; font-weight: 500; line-height: 1; } #scene-plan .count span { font-size: 26px; color: var(--text2); }
       #scene-plan .again { position: absolute; right: 16px; bottom: 12px; font-family: var(--label); text-transform: uppercase; letter-spacing: .13em; font-size: 19px; font-weight: 600; color: var(--paper); padding: 1px 10px; border: 1.5px solid var(--paper); background: #0b1727; }

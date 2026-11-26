@@ -11,7 +11,7 @@ Film.scene("read", {
       #scene-read .tally .chip { font-family: var(--sans); font-size: 30px; padding: 10px 24px; } #scene-read .tally .chip b { font-family: var(--mono); font-weight: 500; color: var(--paper); }
       #scene-read .side { left: 1236px; width: 588px; }
       #scene-read .side .kbig { font-size: 34px; } #scene-read .side .mono { font-size: 24px; color: var(--text2); }
-      #scene-read .side.chk { border-color: var(--paper); }
+      #scene-read .side.chk { border-color: var(--paper); } #scene-read #rd-stat .o.bp .path { color: var(--paper); }
     </style>
     <div class="head"><div class="eyebrow">Start with the blueprint</div><div class="hl">The part you can read.</div></div>
     <div class="who">${Kit.who("agent", "the reviewer")}</div>
@@ -48,10 +48,11 @@ Film.scene("read", {
     Rv.type(s, S, t3 + 0.05, 0.8); const sr = s.$$("#rd-stat .o"); Rv.print(s, sr, c("b3", "touched"), 0.07);
     s.to(".tile.gen", { opacity: 1, duration: 0.3 }, c("b3", "touched"));
     const bp = Rv.rows(s, "#rd-stat", /^\s*blueprint\//), gen = Rv.rows(s, "#rd-stat", /^\s*generated\//);
+    bp.forEach((o) => o.classList.add("bp"));
     Rv.must(bp.length === F.st.bp.length && gen.length === F.st.gen.length, "the stat terminal lost a row");
     Rv.lit(s, "#rd-stat", bp, c("b3", "One")); const lb = Rv.label(bp[0], `${bp.length} · the blueprint's`); s.in(lb, c("b3", "One") + 0.05, { x: 14, y: 0, dur: 0.3 });
     s.fromTo(".tile.bp", { scale: 1 }, { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1 }, c("b3", "One"));
-    Rv.lit(s, "#rd-stat", [...bp, ...gen], c("b3", "eight")); const lg = Rv.label(gen[0], `${gen.length} · generated`); s.in(lg, c("b3", "eight") + 0.05, { x: 14, y: 0, dur: 0.3 });
+    Rv.lit(s, "#rd-stat", [...bp, ...gen], c("b3", "eight")); const lg = Rv.label(gen[Math.floor(gen.length / 2) - 1], `${gen.length} · generated`); s.in(lg, c("b3", "eight") + 0.05, { x: 14, y: 0, dur: 0.3 });
     s.fromTo(".tile.gen", { borderColor: "rgba(132,170,222,.36)" }, { borderColor: "#62c6ff", duration: 0.3 }, c("b3", "generated"));
     // b4: no handler, no journey; nobody reads the eight.
     s.in(".s1", c("b4", "handler") - 0.2, { x: 14, y: 0 }); s.in(".s2", c("b4", "journey") - 0.2, { x: 14, y: 0 });
