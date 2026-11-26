@@ -61,3 +61,19 @@ export const mergeWorkspace = (yaml: string, settings: typeof WORKSPACE): string
   }
   return lines.join("\n") + "\n";
 };
+
+/** What pnpm's minimum release age must not hold back: the framework's own packages, which are published as often as it is built (K28). */
+export const AGE_EXEMPT = ["orthograph", "'@orthograph/*'"];
+
+/** Add entries to a top-level list of a pnpm-workspace.yaml (created if missing), each once, keeping every entry already there. */
+export const addToList = (yaml: string, key: string, entries: ReadonlyArray<string>): string => {
+  const lines = yaml.trimEnd() === "" ? [] : yaml.trimEnd().split("\n");
+  let at = lines.findIndex((l) => l === `${key}:`);
+  if (at === -1) { lines.push(`${key}:`); at = lines.length - 1; }
+  let end = at + 1;
+  while (end < lines.length && /^(\s|-)/.test(lines[end]!)) end++;
+  const bare = (s: string) => s.replace(/^\s*-\s*/, "").replace(/^['"]|['"]$/g, "");
+  const present = new Set(lines.slice(at + 1, end).map(bare));
+  for (const e of entries) if (!present.has(bare(e))) { lines.splice(end, 0, `  - ${e}`); end++; }
+  return lines.join("\n") + "\n";
+};

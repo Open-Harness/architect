@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { createTreeWithEmptyWorkspace } from "nx/src/generators/testing-utils/create-tree-with-empty-workspace.js";
 import { describe, expect, it } from "vitest";
 import { Starter } from "./service.ts";
-import { WORKSPACE, mergeWorkspace } from "./internal/project.ts";
+import { AGE_EXEMPT, WORKSPACE, addToList, mergeWorkspace } from "./internal/project.ts";
 
 const starter = resolve(import.meta.dirname, "../../../../../examples/starter");
 
@@ -44,5 +44,13 @@ describe("the starter preset", () => {
       "autoInstallPeers: true\nallowBuilds:\n  nx: true\n  '@orthograph/preset': false\n  esbuild: true\n  workerd: true\nminimumReleaseAgeExclude:\n  - 'x@1'\noverrides:\n  kysely: 0.29.7\n",
     );
     expect(mergeWorkspace(mergeWorkspace(nx, WORKSPACE), WORKSPACE)).toBe(mergeWorkspace(nx, WORKSPACE));
+  });
+
+  it("exempts orthograph and @orthograph/* from the minimum release age, each once, keeping what is listed", () => {
+    const nx = "minimumReleaseAgeExclude:\n  - 'x@1'\n";
+    const once = addToList(nx, "minimumReleaseAgeExclude", AGE_EXEMPT);
+    expect(once).toBe("minimumReleaseAgeExclude:\n  - 'x@1'\n  - orthograph\n  - '@orthograph/*'\n");
+    expect(addToList(once, "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe(once);
+    expect(addToList("", "minimumReleaseAgeExclude", AGE_EXEMPT)).toBe("minimumReleaseAgeExclude:\n  - orthograph\n  - '@orthograph/*'\n");
   });
 });

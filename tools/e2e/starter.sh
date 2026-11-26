@@ -12,7 +12,6 @@ registry="http://127.0.0.1:$port/"
 registry_pid=""
 marker=""
 work=$(mktemp -d "${TMPDIR:-/tmp}/ortho-e2e.XXXXXX")
-preset_files="$repo/packages/preset/files"
 
 cleanup() {
   status=$?
@@ -24,7 +23,7 @@ cleanup() {
     wait "$registry_pid" >/dev/null 2>&1 || true
   fi
   [ -z "$marker" ] || rm -f "$marker"
-  rm -rf "$work" "$preset_files"
+  rm -rf "$work"
 }
 trap cleanup EXIT
 
@@ -32,11 +31,6 @@ step() { printf '\n== %s\n' "$*"; }
 
 step "build"
 (cd "$repo" && NX_DAEMON=false pnpm nx run-many -t build --outputStyle=static >/dev/null)
-
-step "pack the starter into the preset"
-mkdir -p "$preset_files"
-for part in blueprint src journeys; do cp -R "$repo/examples/starter/$part" "$preset_files/$part"; done
-mkdir -p "$preset_files/generated/model" && cp "$repo/examples/starter/generated/model/model.json" "$preset_files/generated/model/"
 
 step "registry on :$port"
 mkdir -p "$work/storage"
@@ -61,6 +55,7 @@ token=$(curl -sf -X PUT "$registry-/user/org.couchdb.user:e2e" -H 'content-type:
 printf '//127.0.0.1:%s/:_authToken=%s\n' "$port" "$token" > "$work/npmrc"
 unset token password
 
+# The preset's `prepack` (tools/release/starter.mjs) copies examples/starter into it as it is packed, and its `postpack` removes the copy.
 step "publish"
 for p in orthograph compiler language-effect chain-evm lint portal projections generators host-cloudflare logbook prove cli preset; do
   (cd "$repo/packages/$p" && NPM_CONFIG_USERCONFIG="$work/npmrc" pnpm publish --registry "$registry" --no-git-checks >/dev/null)
@@ -68,7 +63,7 @@ for p in orthograph compiler language-effect chain-evm lint portal projections g
 done
 
 export npm_config_registry="$registry" pnpm_config_registry="$registry"
-# Every run publishes 0.0.0 again, so nothing may come from a cache another run filled.
+# Every run publishes the same version again (0.1.0-next.<n>), so nothing may come from a cache another run filled.
 export npm_config_cache="$work/npm-cache" pnpm_config_cache_dir="$work/pnpm-cache" pnpm_config_store_dir="$work/pnpm-store"
 cd "$work"
 step "create-nx-workspace $name --preset=@orthograph/preset"
