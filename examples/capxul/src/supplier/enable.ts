@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/supplier/verbs/enable.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/supplier/enable.handler.ts";
 
 /**
@@ -38,17 +37,13 @@ import type { Handler } from "../../generated/api/src/supplier/enable.handler.ts
  *   once it answers, it writes SupplierEnabled: supplier from the answer;
  *   the call is the span supplier.enable, and its commit supplier.enable.commit.
  */
-const enable: Handler = (_payload, { steps, move }) =>
+const enable: Handler = ({ supplier }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span supplier.enable.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span supplier.enable.update. The state is the whole change; the runtime refused a supplier
+    // already active, and sets the new state once this answers.
+    yield* steps.update(move());
 
-    // The move enable, from disabled, to active.
-    yield* move();
-
-    return {
-      supplier: yield* Handlers.blank("supplier, a supplier.id"),
-    };
+    return { supplier };
   });
 
 export default enable;

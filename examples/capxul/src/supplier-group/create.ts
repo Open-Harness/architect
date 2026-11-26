@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/supplier-group/verbs/create.ts. Yours from now on.
 import { Effect, Match } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import type { InstanceOf } from "orthograph";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler, Outcome } from "../../generated/api/src/supplier-group/create.handler.ts";
+import { SupplierGroup } from "../../blueprint/things/supplier-group/thing.ts";
 
 const { ParentSupplierGroupNotInCompany, ParentSupplierGroupIsLedger, SupplierGroupRootExists } = Errors.declared;
 
@@ -47,36 +49,65 @@ const { ParentSupplierGroupNotInCompany, ParentSupplierGroupIsLedger, SupplierGr
  *   once it answers, it writes SupplierGroupCreated: supplierGroup from the answer, company from the payload;
  *   the call is the span supplier-group.create, and its commit supplier-group.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, supplierGroupName, parentSupplierGroup, isGroup }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span supplier-group.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // ParentSupplierGroupNotInCompany: exit 41, SG-001.
-    if (yield* Handlers.blank<boolean>("refuse ParentSupplierGroupNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentSupplierGroupNotInCompany was refused"));
-      return yield* new ParentSupplierGroupNotInCompany({});
+    // Step load: database, span supplier-group.create.load. The runtime read the parent, when one is named, and hands it
+    // in; a root is judged on the company's groups with no parent (Frappe's validate_one_root). The company's groups
+    // count as read at commit, so two roots made at once can't both land (decisions/CX-parties-payments.md).
+    const { parent, roots } = yield* steps.load(
+      Effect.gen(function* () {
+        if (parentSupplierGroup !== undefined) return { parent: refs.parentSupplierGroup, roots: [] };
+        const page = yield* records.list({
+          thing: SupplierGroup,
+          where: { company },
+          state: undefined,
+          order: "oldest",
+          limit: Number.MAX_SAFE_INTEGER,
+          after: undefined,
+        });
+        return { parent: undefined, roots: page.items.filter((g) => !g["parentSupplierGroup"]) };
+      }),
+    );
+
+    // Refusal order (errors.ts): ParentSupplierGroupNotInCompany, ParentSupplierGroupIsLedger, SupplierGroupRootExists; the
+    // name taken twice is the runtime's, after them.
+    if (parentSupplierGroup !== undefined) {
+      // ParentSupplierGroupNotInCompany: exit 41. Judged first, so nothing is said about another company's group.
+      if (!parent || parent["company"] !== company) {
+        yield* Effect.logInfo("the parent group belongs to another company");
+        return yield* new ParentSupplierGroupNotInCompany({});
+      }
+
+      // ParentSupplierGroupIsLedger: exit 42.
+      if (parent.state !== "group") {
+        yield* Effect.logInfo("the parent group is a ledger, not a group");
+        return yield* new ParentSupplierGroupIsLedger({});
+      }
+    } else {
+      // SupplierGroupRootExists: exit 43, carrying the root the company has.
+      const root = roots[0];
+      if (root) {
+        yield* Effect.logInfo("the company already has its root group");
+        return yield* new SupplierGroupRootExists({ root: root["id"] as never });
+      }
     }
 
-    // ParentSupplierGroupIsLedger: exit 42, SG-002.
-    if (yield* Handlers.blank<boolean>("refuse ParentSupplierGroupIsLedger when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentSupplierGroupIsLedger was refused"));
-      return yield* new ParentSupplierGroupIsLedger({});
-    }
-
-    // SupplierGroupRootExists: exit 43, SG-003.
-    if (yield* Handlers.blank<boolean>("refuse SupplierGroupRootExists when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SupplierGroupRootExists was refused"));
-      return yield* new SupplierGroupRootExists({
-        root: yield* Handlers.blank("SupplierGroupRootExists.root, a supplier-group.id"),
-      });
-    }
-
-    // Step insert: database, span supplier-group.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span supplier-group.create.insert. A name already used is the runtime's refusal
+    // (oneNamePerCompany). A root's parent is left out and stored empty; the cast is only because `InstanceOf` types
+    // every field as required.
+    yield* steps.insert(
+      records.insert(SupplierGroup, {
+        id,
+        company,
+        supplierGroupName,
+        ...(parentSupplierGroup !== undefined ? { parentSupplierGroup } : {}),
+      } as Omit<InstanceOf<typeof SupplierGroup>, "state">),
+    );
 
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where create ends: group or ledger");
+    const outcome: Outcome = isGroup ? "group" : "ledger";
     yield* Match.value(outcome).pipe(
       // To group. From there the supplier-group can: nothing more.
       Match.when("group", () => move("group")),

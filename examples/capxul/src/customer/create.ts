@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/customer/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import type { InstanceOf } from "orthograph";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/customer/create.handler.ts";
+import { Customer } from "../../blueprint/things/customer/thing.ts";
 
 const { CustomerGroupNotInCompany, CustomerGroupIsGroup } = Errors.declared;
 
@@ -47,25 +49,41 @@ const { CustomerGroupNotInCompany, CustomerGroupIsGroup } = Errors.declared;
  *   once it answers, it writes CustomerCreated: customer from the answer, company from the payload;
  *   the call is the span customer.create, and its commit customer.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, customerName, customerType, customerGroup }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span customer.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // CustomerGroupNotInCompany: exit 41, CU-001.
-    if (yield* Handlers.blank<boolean>("refuse CustomerGroupNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why CustomerGroupNotInCompany was refused"));
-      return yield* new CustomerGroupNotInCompany({});
+    // Step load: database, span customer.create.load. The runtime read the group, when one is named, and hands it in.
+    const group = yield* steps.load(Effect.succeed(refs.customerGroup));
+
+    // Refusal order (errors.ts): CustomerGroupNotInCompany, then CustomerGroupIsGroup. A group is optional; given, it is
+    // the company's and a ledger, whether a root or a group below it (ERPNext's validate on the party's group).
+    if (customerGroup !== undefined) {
+      // CustomerGroupNotInCompany: exit 41. Judged first, so nothing is said about another company's group.
+      if (!group || group["company"] !== company) {
+        yield* Effect.logInfo("the group belongs to another company");
+        return yield* new CustomerGroupNotInCompany({});
+      }
+
+      // CustomerGroupIsGroup: exit 42. A party goes in a ledger group, not one that holds other groups.
+      if (group.state === "group") {
+        yield* Effect.logInfo("the group holds other groups, not parties");
+        return yield* new CustomerGroupIsGroup({});
+      }
     }
 
-    // CustomerGroupIsGroup: exit 42, CU-002.
-    if (yield* Handlers.blank<boolean>("refuse CustomerGroupIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why CustomerGroupIsGroup was refused"));
-      return yield* new CustomerGroupIsGroup({});
-    }
-
-    // Step insert: database, span customer.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    // Step insert: database, span customer.create.insert. Two parties may share a name (ERPNext names them by a naming
+    // series). A group not given is left out and stored empty; the cast is only because `InstanceOf` types every field
+    // as required.
+    yield* steps.insert(
+      records.insert(Customer, {
+        id,
+        company,
+        customerName,
+        customerType,
+        ...(customerGroup !== undefined ? { customerGroup } : {}),
+      } as Omit<InstanceOf<typeof Customer>, "state">),
+    );
 
     // The move create, to active.
     yield* move();

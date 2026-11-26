@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/customer/verbs/enable.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/customer/enable.handler.ts";
 
 /**
@@ -38,17 +37,13 @@ import type { Handler } from "../../generated/api/src/customer/enable.handler.ts
  *   once it answers, it writes CustomerEnabled: customer from the answer;
  *   the call is the span customer.enable, and its commit customer.enable.commit.
  */
-const enable: Handler = (_payload, { steps, move }) =>
+const enable: Handler = ({ customer }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step update: database, span customer.enable.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span customer.enable.update. The state is the whole change; the runtime refused a customer
+    // already active, and sets the new state once this answers.
+    yield* steps.update(move());
 
-    // The move enable, from disabled, to active.
-    yield* move();
-
-    return {
-      customer: yield* Handlers.blank("customer, a customer.id"),
-    };
+    return { customer };
   });
 
 export default enable;
