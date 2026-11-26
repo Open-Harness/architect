@@ -12,17 +12,18 @@ import { databaseFacts } from "./internal/database-facts.ts";
 import { d1Facts } from "./internal/d1-facts.ts";
 import { subjectId } from "./internal/subject.ts";
 import { runChecks, show } from "./internal/checks.ts";
+import { sendCommand } from "./internal/stand-call.ts";
 import { WorldClock } from "#modules/world-clock/service.js";
 
 /** A call made to a served operation or the tools list; a step that moves the world's clock goes to the world's clock door instead (M8.07). */
-type Doable = Exclude<AnyCall, { readonly kind: "clock-call" }>;
+type Doable = Exclude<AnyCall, { readonly kind: "clock-call" | "stand-call" }>;
 
 type Codec = Schema.Codec<Record<string, unknown>, Record<string, unknown>>;
 
 const nameOfOperation = (project: Project, op: Operation | Read) => [...project.operations].find(([, o]) => o === op)?.[0];
 const tableOf = (project: Project) => (thing: Thing) => [...project.things].find(([, t]) => t === thing)?.[0];
 
-const run: JourneysApi["run"] = (project, url, journey, index, how = "world", given, empty = false, device) =>
+const run: JourneysApi["run"] = (project, url, journey, index, how = "world", given, empty = false, device, stands = {}) =>
   Effect.gen(function* () {
     const world = journey.starts === undefined ? undefined : project.startingWorlds.get(journey.starts);
     // A starting world may begin from another: make the oldest first, so each sees what the one before it gave.
@@ -67,7 +68,7 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     if (reading !== undefined) env["clock"] = { now: reading.now };
     // The keeper's call is not built yet (M8.10): it refuses, never pretends.
     const unbuilt = (call: AnyCall, kept: ReadonlySet<string> = keepers): string | undefined =>
-      call.kind !== "clock-call" && kept.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)" : undefined;
+      call.kind !== "clock-call" && call.kind !== "stand-call" && kept.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)" : undefined;
     // Each credential the world minted for a cast member's way in, once per journey and again after each clock step.
     const minted = new Map<string, string | undefined>();
     /** A step that moves the world's clock: the world's door answers `{ now, fired }` once it is quiet at the target (M8.07). */
@@ -96,6 +97,25 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
           minted.clear();
         }
         return record;
+      });
+    /**
+     * A command to a mount's stand-in, at the address of the one this world's prove started (never prove's own environment). Its args
+     * are resolved as a payload is; a 2xx JSON answer is `s.last`, recorded as a 200 so the step's checks judge it as an answer.
+     */
+    const commandStand = (step: string, call: Extract<AnyCall, { readonly kind: "stand-call" }>) =>
+      Effect.gen(function* () {
+        const resolved = Scripting.resolve(call.args, env);
+        const said = resolved.missing.length > 0
+          ? { status: undefined, body: null, failure: undefined }
+          : yield* sendCommand(Object.hasOwn(stands, call.mount) ? stands[call.mount] : undefined, call.mount, call.command, resolved.value);
+        if (said.status !== undefined && said.failure === undefined) env["last"] = said.body;
+        const record: CallRecord = {
+          journey: journey.name, step, actor: "stand", person: "", operation: `${call.mount}/_stand/${call.command}`,
+          payload: (resolved.value ?? {}) as Record<string, unknown>, status: said.failure === undefined && said.status !== undefined ? 200 : said.status !== undefined && (said.status < 200 || said.status > 299) ? said.status : 0, body: said.body,
+          trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], stand: true,
+        };
+        calls.push(record);
+        return { record, failures: [...resolved.missing.map((m) => `args: nothing at ${m}`), ...(said.failure === undefined ? [] : [said.failure])] };
       });
     /** What a refused clock step says, in the world's own words: a step that asks for a refusal names it, and any other fails. */
     const refusal = (record: CallRecord) => {
@@ -193,6 +213,16 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
         steps.push({
           journey: journey.name, title: step.title, trace: record.trace, spans: checked.spans,
           failures: [...unasked, ...checked.failures], findings: [...unasked.map((message) => ({ message })), ...checked.findings],
+        });
+        continue;
+      }
+      if (step.call.kind === "stand-call") {
+        // A failed command fails its step and leaves `s.last` as it was; the journey goes on, as after an operation's refusal.
+        const { record, failures } = yield* commandStand(step.title, step.call);
+        const checked = yield* runChecks(step.checks, record, env, facts);
+        steps.push({
+          journey: journey.name, title: step.title, trace: record.trace, spans: checked.spans,
+          failures: [...failures, ...checked.failures], findings: [...failures.map((message) => ({ message })), ...checked.findings],
         });
         continue;
       }
