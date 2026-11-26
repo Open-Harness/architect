@@ -32,20 +32,22 @@ export const exercise = (
   handlers?: ReturnType<typeof handlerHashes>, device?: DeviceHost,
   /** `prove --changed`: judge the evals of these operations only (what changed); the rest keep their recorded verdicts. */
   judging?: ReadonlySet<string>,
+  /** The address of each stand-in the world's prove started, by mount: where a journey's `Stand.command` goes. */
+  stands?: Readonly<Record<string, string>>,
 ): Effect.Effect<Exercised> =>
   Effect.gen(function* () {
     const bodies = handlers ?? handlerHashes(project.root, model);
-    const runs = yield* Effect.forEach(project.journeys, (j, i) => Journeys.run(project, url, j, i, people, facts, empty, device));
+    const runs = yield* Effect.forEach(project.journeys, (j, i) => Journeys.run(project, url, j, i, people, facts, empty, device, stands));
     const calls = runs.flatMap((r) => r.calls);
     const first = yield* collector.traces(calls.map((c) => ({ trace: c.trace, parent: c.parent, mayBeEmpty: noSpanExpected(c) })));
-    const roots = otlp === undefined ? [] : calls.filter((c) => c.tools !== true && c.clock !== true).flatMap((c) => rootOf({ trace: c.trace, span: c.parent, journey: c.journey, step: c.step, operation: c.operation, status: c.status }, first.get(c.trace)) ?? []);
+    const roots = otlp === undefined ? [] : calls.filter((c) => c.tools !== true && c.clock !== true && c.stand !== true).flatMap((c) => rootOf({ trace: c.trace, span: c.parent, journey: c.journey, step: c.step, operation: c.operation, status: c.status }, first.get(c.trace)) ?? []);
     if (otlp !== undefined) yield* exportRoots(otlp, roots);
     const rooted = new Set(roots.map((r) => r.traceId));
     const traces = roots.length === 0 ? first : yield* collector.traces(calls.map((c) => ({ trace: c.trace, parent: c.parent, rooted: rooted.has(c.trace), mayBeEmpty: noSpanExpected(c) })));
     const journeys = journeyLines(runs, traces, empty, model);
     if (empty) return { journeys, evals: { lines: [], failed: 0 }, verdicts: [], judged: [], results: [], failedTraces: journeys.failedTraces };
     // The tools list is not an operation's call: no eval reads it, and it has no operation span to find.
-    const evidence = Evals.gather(calls.filter((c) => c.tools !== true && c.clock !== true), traces);
+    const evidence = Evals.gather(calls.filter((c) => c.tools !== true && c.clock !== true && c.stand !== true), traces);
     const everything = Evals.judge(project, evidence);
     const verdicts = judging === undefined ? everything : everything.filter((v) => v.operation !== undefined && judging.has(v.operation));
     const judged = journeys.failed === 0 ? verdicts : verdicts.map((v) => ({ ...v, failures: [...v.failures, "a journey failed"] }));

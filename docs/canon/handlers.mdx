@@ -251,7 +251,7 @@ roles a `roles.ts` exports (F5). Signup has no blank left, so this example is wo
 **A blank in a handler** is `Handlers.blank("…")`, what every fresh scaffold holds. It type-checks as anything, and
 reaching it at run time is a defect that names what is missing:
 
-```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=199-202
+```ts file=packages/language-effect/src/modules/handler/service.ts name=Handlers lines=201-204
 export const Handlers: HandlerApi = {
   serve: serve as unknown as HandlerApi["serve"],
   blank: ((what: string, kind?: "failure") => (kind === "failure" ? () => new BlankReached({ what }) : Effect.die(new BlankReached({ what })))) as unknown as HandlerApi["blank"],

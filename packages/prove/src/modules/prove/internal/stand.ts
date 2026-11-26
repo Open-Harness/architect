@@ -6,7 +6,7 @@ import { Effect, type Scope } from "effect";
 import { Names } from "orthograph/server";
 import { packageDir, type Model } from "@orthograph/compiler";
 import { Timers, TimersLive } from "@orthograph/language-effect";
-import { WorldFailed } from "#modules/world/types.js";
+import { WorldFailed, type StandIns } from "#modules/world/types.js";
 import type { DeviceHost } from "#modules/journeys/types.js";
 import { PortalFeed } from "#modules/portal-feed/service.js";
 import { Sinks } from "#modules/sinks/service.js";
@@ -31,6 +31,8 @@ export interface Stand {
   /** Where the run's own spans (the journeys' roots) are exported. */
   readonly otlp: string;
   readonly device: DeviceHost | undefined;
+  /** The address of each stand-in this world stood up, by mount; a warm world has none. */
+  readonly stands: Readonly<Record<string, string>>;
   /** What to say before the journeys. */
   readonly notes: ReadonlyArray<string>;
 }
@@ -133,7 +135,7 @@ const stopStandIn = (child: ChildProcess) =>
  * Each process stand-in of the model, started under `<state>/stands/<mount>` and stopped, all together, when the scope
  * closes. What the Worker is told: `ORTHO_STAND_<MOUNT>` and `<MOUNT>_API_KEY` = `world-<mount>`.
  */
-export const standIns = (root: string, model: Model) => (state: string): Effect.Effect<Readonly<Record<string, string>>, WorldFailed, Scope.Scope> =>
+export const standIns = (root: string, model: Model) => (state: string): Effect.Effect<StandIns, WorldFailed, Scope.Scope> =>
   Effect.gen(function* () {
     const unfit = (message: string) => Effect.fail(new WorldFailed({ message: `the stand-ins couldn't start: ${message}` }));
     const wanted = yield* Effect.forEach(processMounts(model), ([mount, m]) => {
@@ -145,7 +147,7 @@ export const standIns = (root: string, model: Model) => (state: string): Effect.
       }).pipe(Effect.flatMap((entry) => typeof entry === "string" ? Effect.succeed({ mount, dir, entry })
         : unfit(`mount ${mount}: ${m.package}'s package.json names no orthograph.standIn, and its adapter stands in as a process`)));
     });
-    if (wanted.length === 0) return {};
+    if (wanted.length === 0) return { env: {}, addresses: {} };
     // Every folder is made before any stand-in starts: a failure here leaves nothing running, and the spawns that follow don't throw.
     const dirs = yield* Effect.try({
       try: () => wanted.map(({ mount }) => { const dir = join(state, "stands", mount); mkdirSync(dir, { recursive: true }); return dir; }),
@@ -162,7 +164,10 @@ export const standIns = (root: string, model: Model) => (state: string): Effect.
           Effect.andThen(Effect.fail(new WorldFailed({ message: `the stand-in for mount ${r.mount} said no "stand-in listening on <url>" line within 60 s` }))),
         ),
       ), { concurrency: "unbounded" }).pipe(Effect.provide(TimersLive));
-    return Object.fromEntries(running.flatMap((r, i) => [[`ORTHO_STAND_${envName(r.mount)}`, urls[i]!], [`${envName(r.mount)}_API_KEY`, `world-${r.mount}`]]));
+    return {
+      env: Object.fromEntries(running.flatMap((r, i) => [[`ORTHO_STAND_${envName(r.mount)}`, urls[i]!], [`${envName(r.mount)}_API_KEY`, `world-${r.mount}`]])),
+      addresses: Object.fromEntries(running.map((r, i) => [r.mount, urls[i]!])),
+    };
   });
 
 /** The warm world of a live `ortho dev`, emptied; `undefined` when a prove must have one of its own (or there is none to use). */
@@ -175,7 +180,7 @@ const warmWorld = ({ root, model, port, empty }: Wanted): Effect.Effect<Stand | 
     // Another prove is running in it: resetting now would empty the world under that run, so this one starts a world of its own.
     if (!(yield* Warm.lock(root))) return undefined;
     yield* Warm.reset(record).pipe(Effect.mapError(failed));
-    return { url: record.url, collector: Collectors.read(record.telemetry), otlp: record.collector, device: undefined, notes: [`prove: reusing the world of ortho dev at ${record.url}`] };
+    return { url: record.url, collector: Collectors.read(record.telemetry), otlp: record.collector, device: undefined, stands: {}, notes: [`prove: reusing the world of ortho dev at ${record.url}`] };
   });
 
 /** A fresh world and collector of the run's own. */
@@ -188,9 +193,9 @@ const ownWorld = ({ root, world, model, port, empty, env }: Wanted): Effect.Effe
     const stood = yield* standChain(model);
     // The world's portal reads this run's telemetry through a feed this process answers (the Worker cannot open the collector's files).
     const feed = yield* PortalFeed.serve({ source: collector, metrics: FileMetrics.open(dir), environment: "local", windowMs: PORTAL_WINDOW_MS, historyMs: PORTAL_HISTORY_MS }).pipe(Effect.mapError(failed));
-    const { url, chain } = yield* Worlds.start({ root: world, port, name: "prove", otlp: collector.url, portalFeed: feed.url, environment: "local", secretEnv: sinks.secretEnv, stands: standIns(root, model), ...(stood.chain ? { chain: Effect.succeed(stood.chain) } : {}) }).pipe(Effect.mapError(failed));
+    const { url, chain, stands } = yield* Worlds.start({ root: world, port, name: "prove", otlp: collector.url, portalFeed: feed.url, environment: "local", secretEnv: sinks.secretEnv, stands: standIns(root, model), ...(stood.chain ? { chain: Effect.succeed(stood.chain) } : {}) }).pipe(Effect.mapError(failed));
     const device = needsDevice(model) ? yield* deviceHost(world, collector.url, chain).pipe(Effect.mapError(failed)) : undefined;
-    return { url, collector, otlp: collector.url, device, notes: [...sinks.notes, ...stood.notes] };
+    return { url, collector, otlp: collector.url, device, stands: stands ?? {}, notes: [...sinks.notes, ...stood.notes] };
   });
 
 /** The world warm if there is one to use, else the run's own. */

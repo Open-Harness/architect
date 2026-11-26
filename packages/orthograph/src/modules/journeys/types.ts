@@ -51,8 +51,24 @@ export interface ToolsCall {
   readonly request?: undefined;
 }
 
-/** A call a step makes: an operation or read, or the tools list. */
-export type AnyCall = Call | ToolsCall | ClockCall;
+/** A value as JSON carries it: what a stand-in's command is sent. */
+export type Json = string | number | boolean | null | ReadonlyArray<Json> | { readonly [key: string]: Json };
+
+/**
+ * One command to a stand-in's own control routes (`Stand.command`): prove POSTs `args` to `/_stand/<command>` on the stand-in
+ * it started for `mount`, the mount's name in the app. It runs no operation, so no span comes; its 2xx answer is `s.last`.
+ */
+export interface StandCall<A = unknown> {
+  readonly kind: "stand-call";
+  readonly mount: string;
+  readonly command: string;
+  readonly args: Json;
+  /** The answer's type, for `s.last`; never set. */
+  readonly answers?: A;
+}
+
+/** A call a step makes: an operation or read, the tools list, a move of the clock or a stand-in's command. */
+export type AnyCall = Call | ToolsCall | ClockCall | StandCall;
 
 /**
  * What a refusal check names: a declared error class, a machine's own refusal (`machine.notFrom`), a thing's missing

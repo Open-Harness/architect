@@ -47,6 +47,15 @@ export interface Commit {
   readonly request?: { readonly key: string; readonly answer: string };
   /** #764: each list the call read. The store answers `conflict` when the rows matching a list's `thing`, `where` and `state` are not these any more. */
   readonly lists?: ReadonlyArray<ListRead>;
+  /** #1045: each row the call found, at the version it found it. The store answers `conflict` when one of them moved on. */
+  readonly reads?: ReadonlyArray<RowRead>;
+}
+
+/** A row one call found (#1045): its thing, its id and the version it was read at. */
+export interface RowRead {
+  readonly thing: Thing;
+  readonly id: string;
+  readonly version: number;
 }
 
 /** A list one call read (#764): every row then matching its `thing`, `where` and `state`, whatever page the call asked for, at the version the call read it. */
@@ -152,6 +161,8 @@ export interface Unit {
   readonly writes: Effect.Effect<ReadonlyArray<Write>>;
   /** #764: each list this call read, for the commit to guard. */
   readonly lists: Effect.Effect<ReadonlyArray<ListRead>>;
+  /** #1045: each row this call found by its id, for the commit to guard. A row only a list found is guarded by that list. */
+  readonly reads: Effect.Effect<ReadonlyArray<RowRead>>;
   /** G5: the first rule one of this call's rows breaks by taking a key another instance holds, or undefined. Run after the move, before `writes`. */
   readonly check: Effect.Effect<Violation | undefined>;
 }
