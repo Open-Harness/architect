@@ -1,0 +1,4 @@
+{
+  "extends": "../../../../../tsconfig.base.json",
+  "include": ["ledger.ts", "accepts.ts", "refuses/*.ts"]
+}
