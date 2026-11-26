@@ -106,6 +106,22 @@
       },
       "earlier": []
     },
+    "AC-901": {
+      "name": "AccountNotFound",
+      "owner": "account",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "acc"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccountNotFound"
+        }
+      },
+      "earlier": []
+    },
     "AN-001": {
       "name": "AttendeeNotInCompany",
       "owner": "attendance",
@@ -701,6 +717,22 @@
       "wire": {
         "effect": {
           "tag": "CostCenterNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "CC-901": {
+      "name": "CostCenterNotFound",
+      "owner": "cost-center",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "cct"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CostCenterNotFound"
         }
       },
       "earlier": []
@@ -2630,6 +2662,160 @@
       },
       "earlier": []
     },
+    "PE-001": {
+      "name": "PayrollEndsBeforeStart",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "startDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "PE-002": {
+      "name": "PayableAccountNotInCompany",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayableAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PE-003": {
+      "name": "PayableAccountIsGroup",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayableAccountIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "PE-004": {
+      "name": "PayableAccountHasType",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayableAccountHasType"
+        }
+      },
+      "earlier": []
+    },
+    "PE-005": {
+      "name": "PayrollCostCenterNotInCompany",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayrollCostCenterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PE-006": {
+      "name": "PayrollCostCenterIsGroup",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayrollCostCenterIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "PE-007": {
+      "name": "NoEmployeesFound",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "NoEmployeesFound"
+        }
+      },
+      "earlier": []
+    },
+    "PE-008": {
+      "name": "SalarySlipExists",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "employee": {
+          "value": "id",
+          "prefix": "emp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalarySlipExists"
+        }
+      },
+      "earlier": []
+    },
+    "PE-009": {
+      "name": "NoAssignmentAtStart",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "employee": {
+          "value": "id",
+          "prefix": "emp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "NoAssignmentAtStart"
+        }
+      },
+      "earlier": []
+    },
+    "PE-010": {
+      "name": "AccrualOutsideFiscalYear",
+      "owner": "payroll-entry",
+      "from": "blueprint/things/payroll-entry/errors.ts",
+      "fields": {
+        "postingDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AccrualOutsideFiscalYear"
+        }
+      },
+      "earlier": []
+    },
+    "PE-900": {
+      "name": "PayrollEntryNotDraft",
+      "owner": "payroll-entry",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollEntryNotDraft"
+        }
+      },
+      "earlier": []
+    },
     "PF-002": {
       "name": "FeedbackForOneself",
       "owner": "employee-performance-feedback",
@@ -2798,6 +2984,215 @@
       },
       "earlier": []
     },
+    "PP-001": {
+      "name": "PayrollPeriodEndsBeforeStart",
+      "owner": "payroll-period",
+      "from": "blueprint/things/payroll-period/errors.ts",
+      "fields": {
+        "startDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodEndsBeforeStart"
+        }
+      },
+      "earlier": []
+    },
+    "PP-002": {
+      "name": "PayrollPeriodOverlaps",
+      "owner": "payroll-period",
+      "from": "blueprint/things/payroll-period/errors.ts",
+      "fields": {
+        "payrollPeriod": {
+          "value": "id",
+          "prefix": "ppr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodOverlaps"
+        }
+      },
+      "earlier": []
+    },
+    "PP-003": {
+      "name": "PayrollPeriodNameTaken",
+      "owner": "payroll-period",
+      "from": "blueprint/things/payroll-period/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "PP-900": {
+      "name": "PayrollPeriodNotActive",
+      "owner": "payroll-period",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PayrollPeriodNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "SA-001": {
+      "name": "AssignedEmployeeNotInCompany",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedEmployeeNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SA-002": {
+      "name": "AssignedEmployeeHasLeft",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedEmployeeHasLeft"
+        }
+      },
+      "earlier": []
+    },
+    "SA-003": {
+      "name": "AssignmentExists",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {
+        "fromDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AssignmentExists"
+        }
+      },
+      "earlier": []
+    },
+    "SA-004": {
+      "name": "AssignmentBeforeJoining",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {
+        "dateOfJoining": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "AssignmentBeforeJoining"
+        }
+      },
+      "earlier": []
+    },
+    "SA-005": {
+      "name": "AssignedStructureNotInCompany",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedStructureNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SA-006": {
+      "name": "AssignedStructureNotSubmitted",
+      "owner": "salary-structure-assignment",
+      "from": "blueprint/things/salary-structure-assignment/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "AssignedStructureNotSubmitted"
+        }
+      },
+      "earlier": []
+    },
+    "SA-900": {
+      "name": "SalaryStructureAssignmentNotDraft",
+      "owner": "salary-structure-assignment",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureAssignmentNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "SC-001": {
+      "name": "ComponentAccountNotInCompany",
+      "owner": "salary-component",
+      "from": "blueprint/things/salary-component/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ComponentAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SC-002": {
+      "name": "ComponentAccountIsGroup",
+      "owner": "salary-component",
+      "from": "blueprint/things/salary-component/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ComponentAccountIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "SC-003": {
+      "name": "SalaryComponentTaken",
+      "owner": "salary-component",
+      "from": "blueprint/things/salary-component/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SalaryComponentTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SC-900": {
+      "name": "SalaryComponentNotActive",
+      "owner": "salary-component",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryComponentNotActive"
+        }
+      },
+      "earlier": []
+    },
     "SH-001": {
       "name": "ShiftTypeNameTaken",
       "owner": "shift-type",
@@ -2879,6 +3274,163 @@
       "wire": {
         "effect": {
           "tag": "EmployeeSeparationNotPending"
+        }
+      },
+      "earlier": []
+    },
+    "SS-001": {
+      "name": "StructureWithoutEarnings",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "StructureWithoutEarnings"
+        }
+      },
+      "earlier": []
+    },
+    "SS-002": {
+      "name": "StructureComponentNotInCompany",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureComponentNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SS-003": {
+      "name": "StructureComponentWrongType",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureComponentWrongType"
+        }
+      },
+      "earlier": []
+    },
+    "SS-004": {
+      "name": "StructureLineWithoutAmount",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureLineWithoutAmount"
+        }
+      },
+      "earlier": []
+    },
+    "SS-005": {
+      "name": "StructureComponentRepeated",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "salaryComponent": {
+          "value": "id",
+          "prefix": "scp"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureComponentRepeated"
+        }
+      },
+      "earlier": []
+    },
+    "SS-006": {
+      "name": "StructureNetPayNegative",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {
+        "netPay": {
+          "value": "money",
+          "bits": 128,
+          "signed": true,
+          "asset": {
+            "token": "usdc"
+          }
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "StructureNetPayNegative"
+        }
+      },
+      "earlier": []
+    },
+    "SS-007": {
+      "name": "StructureInUse",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "StructureInUse"
+        }
+      },
+      "earlier": []
+    },
+    "SS-008": {
+      "name": "SalaryStructureNameTaken",
+      "owner": "salary-structure",
+      "from": "blueprint/things/salary-structure/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SS-900": {
+      "name": "SalaryStructureNotDraft",
+      "owner": "salary-structure",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureNotDraft"
+        }
+      },
+      "earlier": []
+    },
+    "SS-901": {
+      "name": "SalaryStructureNotFound",
+      "owner": "salary-structure",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "sst"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SalaryStructureNotFound"
         }
       },
       "earlier": []
