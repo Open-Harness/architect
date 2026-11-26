@@ -52,7 +52,7 @@ describe("11 ortho new adapter --from-abi: the command", () => {
     const f = folder();
     const said = run(f.root, "new", "adapter", "probe-kit", "--from-abi", f.probe, "--from-abi", f.quiet);
     expect(said.status, said.out).toBe(0);
-    expect(said.stdout.trim().split("\n").at(-1)).toBe("generated adapter probe-kit: 2 contracts, 17 calls, 5 events, 3 errors");
+    expect(said.stdout.trim().split("\n").at(-1)).toBe("generated adapter probe-kit: 2 contracts, 26 calls, 7 events, 5 errors");
     expect(treeOf(join(f.root, "plugins/probe-kit"))).toEqual(await expectedFiles("probe-kit", [["Probe", probeJson], ["Quiet", quietJson]]));
   });
 

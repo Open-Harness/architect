@@ -29,6 +29,8 @@ interface ProbeModule {
   readonly TooBig: new (fields: { x: bigint; limit: bigint }) => { readonly _tag: "TooBig" };
   readonly Empty: new () => { readonly _tag: "Empty" };
   readonly Spent: new (fields: { arg0: string }) => { readonly _tag: "Spent" };
+  readonly Bad: new (fields: { code: bigint }) => { readonly _tag: "Bad" };
+  readonly Rejected: new (fields: { item: unknown }) => { readonly _tag: "Rejected" };
 }
 
 // Generated and loaded once, by the first test that runs, so each test fails on its own when the generator can't make it.
@@ -162,6 +164,65 @@ describe("a generated adapter against its stand-in on Anvil", () => {
       expect(spent).toBeInstanceOf(Probe.Spent);
       expect({ _tag: spent._tag, arg0: (spent as unknown as { arg0: string }).arg0 }).toEqual({ _tag: "Spent", arg0: h });
       expect(fieldsOf(spent)).toEqual(["arg0"]);
+    })));
+
+  anvil("each output shape answers as its type: one named output, a lone tuple, a lone array of tuples; a read is from chain.from", { timeout: 60_000 }, () =>
+    onAnvil(({ port, signer, other }) => Effect.gen(function* () {
+      const address = yield* Probe.deploy(port, signer, { start: 7n });
+      const c = Probe.at({ port, address });
+      expect(yield* c["total"]!()).toBe(7n);
+      const first = (yield* c["first"]!()) as { id: bigint; who: string };
+      expect({ id: first.id, who: lower(first.who) }).toEqual({ id: 7n, who: lower(signer.address) });
+      expect(Object.keys(first).sort()).toEqual(["id", "who"]);
+      const list = (yield* c["list"]!({ extra: [{ id: 9n, who: other.address }] })) as ReadonlyArray<{ id: bigint; who: string }>;
+      expect(list.map((i) => ({ id: i.id, who: lower(i.who) }))).toEqual([{ id: 7n, who: lower(signer.address) }, { id: 9n, who: lower(other.address) }]);
+      // A read is sent from chain.from; with none, from the zero address.
+      expect(lower(String(yield* Probe.at({ port, address, from: other.address })["whoami"]!()))).toBe(lower(other.address));
+      expect(lower(String(yield* Probe.at({ port, address, from: signer.address })["whoami"]!()))).toBe(lower(signer.address));
+      expect(lower(String(yield* c["whoami"]!()))).toBe(`0x${"0".repeat(40)}`);
+    })));
+
+  anvil("indexed value types decode as their types, and an event with no inputs decodes empty", { timeout: 60_000 }, () =>
+    onAnvil(({ port, signer }) => Effect.gen(function* () {
+      const address = yield* Probe.deploy(port, signer, { start: 7n });
+      const c = Probe.at({ port, address });
+      const counted = (yield* c["count"]!({ n: 5n, label: "five" }, signer)) as Submission;
+      yield* included(port, counted);
+      expect(yield* seen(port, Probe.events["Counted"]!(address, counted.fromBlock))).toEqual([
+        { eventName: "Counted", args: { n: 5n, flag: true, tag: `0x${"0".repeat(63)}5`, label: "five" }, address: lower(address) },
+      ]);
+      const ticked = (yield* c["tick"]!(signer)) as Submission;
+      yield* included(port, ticked);
+      const ticks = yield* seen(port, Probe.events["Tick"]!(address, ticked.fromBlock));
+      expect(ticks.map((t) => t.eventName)).toEqual(["Tick"]);
+      expect(Object.keys((ticks[0]?.args ?? {}) as object)).toEqual([]);
+    })));
+
+  anvil("a read that reverts with one of the contract's errors fails as its class, a tuple field decoded", { timeout: 60_000 }, () =>
+    onAnvil(({ port, signer, other }) => Effect.gen(function* () {
+      const c = Probe.at({ port, address: yield* Probe.deploy(port, signer, { start: 7n }) });
+      const bad = yield* Effect.flip(c["bad"]!({ code: 42n }));
+      expect(bad).toBeInstanceOf(Probe.Bad);
+      expect({ _tag: bad._tag, code: (bad as unknown as { code: bigint }).code }).toEqual({ _tag: "Bad", code: 42n });
+      expect(yield* c["reject"]!({ item: { id: 0n, who: other.address } })).toBe(true);
+      const rejected = yield* Effect.flip(c["reject"]!({ item: { id: 3n, who: other.address } }));
+      expect(rejected).toBeInstanceOf(Probe.Rejected);
+      const item = (rejected as unknown as { item: { id: bigint; who: string } }).item;
+      expect({ id: item.id, who: lower(item.who) }).toEqual({ id: 3n, who: lower(other.address) });
+      expect(fieldsOf(rejected)).toEqual(["item"]);
+    })));
+
+  anvil("a write that reverts with a require string fails as the chain's error, and keeps no nonce", { timeout: 60_000 }, () =>
+    onAnvil(({ port, signer }) => Effect.gen(function* () {
+      const address = yield* Probe.deploy(port, signer, { start: 7n });
+      const c = Probe.at({ port, address });
+      const first = (yield* c["poke"]!({ x: 1n }, signer)) as Submission;
+      yield* included(port, first);
+      const refused = yield* Effect.flip(c["refuseWrite"]!(signer));
+      expect(["ChainFault", "ChainRefusal"]).toContain(refused._tag);
+      for (const own of [Probe.TooBig, Probe.Empty, Probe.Spent, Probe.Bad, Probe.Rejected]) expect(refused).not.toBeInstanceOf(own);
+      const next = (yield* c["poke"]!({ x: 2n }, signer)) as Submission;
+      expect(next.nonce).toBe(first.nonce + 1);
     })));
 
   anvil("a payable write sends its value, an overload each its own function, and a write is its signer's", { timeout: 60_000 }, () =>

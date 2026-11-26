@@ -118,9 +118,32 @@ describe("the items", () => {
     expect(taken.contracts).toEqual([{ contract: "Probe", calls: 2, events: 1, errors: 1, deployable: false }]);
   });
 
-  it("takes a lone unnamed output, of a plain type or a tuple", async () => {
-    const lone = await made([contract([fn("one", [], [p("uint256", "")]), fn("two", [], [p("tuple", "", { components: [p("uint256", "a")] })])])]);
-    expect(lone.contracts[0]?.calls).toBe(3);
+  it("takes a lone unnamed output, of a plain type, a tuple or an array of tuples", async () => {
+    const lone = await made([contract([
+      fn("one", [], [p("uint256", "")]),
+      fn("two", [], [p("tuple", "", { components: [p("uint256", "a")] })]),
+      fn("three", [], [p("tuple[]", "", { components: [p("uint256", "a")] })]),
+    ])]);
+    expect(lone.contracts[0]?.calls).toBe(4);
+  });
+
+  it("takes an event with no inputs, and indexed value types", async () => {
+    const taken = await made([contract([
+      { type: "event", name: "Tick", anonymous: false, inputs: [] },
+      { type: "event", name: "Counted", anonymous: false, inputs: [p("uint256", "n", { indexed: true }), p("bool", "f", { indexed: true }), p("bytes32", "t", { indexed: true })] },
+    ])]);
+    expect(taken.contracts[0]?.events).toBe(2);
+  });
+
+  it("refuses an error named as one of the module's own exports, naming it", async () => {
+    for (const name of ["Refusal", "Chain", "abi", "bytecode", "at", "events", "deploy"]) {
+      expect(await refusal([contract([{ type: "error", name, inputs: [] }])]), name).toContain(`Probe: error ${name}`);
+    }
+  });
+
+  it("takes errors named as the module's imports might be: Effect, Data, Address, Hex", async () => {
+    const taken = await made([contract(["Effect", "Data", "Address", "Hex", "Option", "Stream", "Abi", "Signer"].map((name) => ({ type: "error", name, inputs: [] })))]);
+    expect(taken.contracts[0]?.errors).toBe(8);
   });
 
   it("refuses two generated names that collide, naming the name (function transferEvent and event Transfer both make TransferEventArgs)", async () => {

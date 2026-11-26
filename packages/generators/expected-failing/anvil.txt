@@ -1,7 +1,11 @@
 # Goal 16 unit A1 (#1164): `ortho new adapter --from-abi` is not built yet. The checks came first (the author skill); the builder takes these lines off as each passes.
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a payable write sends its value, an overload each its own function, and a write is its signer's
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a read that reverts with one of the contract's errors fails as its class, a tuple field decoded
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a revert that is not one of the contract's errors stays the chain's own error
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a revert with one of the contract's errors fails as its class with its fields, and nothing is sent
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a write prepares, simulates, signs and submits, answering the Submission; its event decodes typed
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > a write that reverts with a require string fails as the chain's error, and keeps no nonce
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > an unnamed input, named by its position, is sent and decoded by that name: a mapping's getter, an event and an error
 src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > deploy puts the stand-in on the chain with its constructor's arguments, and a read answers typed
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > each output shape answers as its type: one named output, a lone tuple, a lone array of tuples; a read is from chain.from
+src/modules/abi/anvil.test.ts > a generated adapter against its stand-in on Anvil > indexed value types decode as their types, and an event with no inputs decodes empty

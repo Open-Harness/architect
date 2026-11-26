@@ -49,9 +49,9 @@ describe("FromAbi.adapter", () => {
   it("says what it made on its last line: the contracts, calls, events and errors", async () => {
     const p = project();
     const r = await run(p.root, "probe-kit", [p.probe, p.quiet]);
-    expect(r._tag === "Success" ? r.success.at(-1) : says(r)).toBe("generated adapter probe-kit: 2 contracts, 17 calls, 5 events, 3 errors");
+    expect(r._tag === "Success" ? r.success.at(-1) : says(r)).toBe("generated adapter probe-kit: 2 contracts, 26 calls, 7 events, 5 errors");
     const one = await run(p.root, "solo", [p.probe]);
-    expect(one._tag === "Success" ? one.success.at(-1) : says(one)).toBe("generated adapter solo: 1 contracts, 15 calls, 4 events, 3 errors");
+    expect(one._tag === "Success" ? one.success.at(-1) : says(one)).toBe("generated adapter solo: 1 contracts, 24 calls, 6 events, 5 errors");
   });
 
   it("puts every generated file back when run again, and leaves the scaffolds as the user changed them", async () => {
@@ -65,12 +65,14 @@ describe("FromAbi.adapter", () => {
     writeFileSync(join(dir, "abi/Quiet.json"), "[]\n");
     rmSync(join(dir, "src/generated/index.ts"));
     writeFileSync(join(dir, "src/written.ts"), "// a file of the user's own\n");
+    writeFileSync(join(dir, "blueprint/README.md"), "# mine too\n");
     expect((await run(p.root, "probe-kit", [p.probe, p.quiet]))._tag).toBe("Success");
     const after = treeOf(dir);
     for (const path of ["src/generated/Probe.ts", "src/generated/Quiet.ts", "src/generated/index.ts", "abi/Probe.json", "abi/Quiet.json"]) expect(after.get(path), path).toBe(before.get(path));
     expect(after.get("src/index.ts")).toBe("// mine now\n");
     expect(after.get("package.json")).toBe("{\"name\": \"mine\"}\n");
     expect(after.get("src/written.ts")).toBe("// a file of the user's own\n");
+    expect(after.get("blueprint/README.md")).toBe("# mine too\n");
   });
 
   it("regenerates an adapter from its own abi/", async () => {

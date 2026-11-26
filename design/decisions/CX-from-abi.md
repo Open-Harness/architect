@@ -36,7 +36,10 @@ The whole shape is `packages/generators/src/modules/abi/README.md`; in short:
    `approvedHashes` and `signedMessages` and Roles 2.1.1's `allowances`, `HashAlreadyConsumed`, `HashExecuted` and
    `HashInvalidated` have one (public mappings), and refusing them would make A3 and A4 hand-edit the published ABIs (their
    authors, 26 November 2026). And bytecode still holding a library's `__$…$__` placeholder (Roles' mastercopy) is refused
-   with its own message: link it first, or leave it out and stand the contract in by hand, as A4's world starter does.
+   with its own message: link it first, or leave it out and stand the contract in by hand, as A4's world starter does. The hostile pass on the checks
+   fixed four more: a lone unnamed array of tuples answers `ReadonlyArray<<F>AnswerItem>`; an overloaded error's class is
+   `<name>_<n>`, tag and all; an error may be named as an import (`Effect`, `Address`) and the module still compiles; and an
+   error named as one of the module's own exports (`Refusal`, `Chain`, `abi`, …) is refused.
 4. **The calls run on chain-evm, untyped below and typed above.** `at({ port, address, from? })` holds one call per function: a
    `view` or `pure` one reads (`ChainPort.read`, decoded); any other writes (`prepare`, `simulate`, `sign`, `submit`, answering
    the `Submission`), a `payable` one taking `{ value }`. The generated module imports only `effect` and

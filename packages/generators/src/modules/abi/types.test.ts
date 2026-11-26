@@ -9,7 +9,7 @@ import { probe, quiet, repo, written, type Written } from "../../../test/from-ab
 
 const CHECK = `import { Effect } from "effect";
 import type { Address, ChainError, ChainPort, DecodedEvent, EventSource, Hex, Signer, Submission } from "@orthograph/chain-evm/device";
-import { Probe, Quiet } from "./src/generated/index.ts";
+import { Clash, Probe, Quiet } from "./src/generated/index.ts";
 import adapter from "./src/index.ts";
 
 type Eq<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
@@ -53,7 +53,23 @@ same<Probe.PokedEventArgs, { readonly who: Address; readonly x: bigint; readonly
 same<Probe.FundedEventArgs, { readonly from: Address; readonly amount: bigint }>(true);
 same<Probe.SentEventArgs, { readonly to: Address; readonly value: bigint }>(true);
 same<Probe.TooBigFields, { readonly x: bigint; readonly limit: bigint }>(true);
-same<Probe.Refusal, Probe.TooBig | Probe.Empty | Probe.Spent>(true);
+same<Probe.Refusal, Probe.TooBig | Probe.Empty | Probe.Spent | Probe.Bad | Probe.Rejected>(true);
+same<Probe.BadFields, { readonly code: bigint }>(true);
+same<Probe.RejectedFields, { readonly item: Probe.RejectedFieldsItem }>(true);
+same<Probe.RejectedFieldsItem, { readonly id: bigint; readonly who: Address }>(true);
+same<Probe.RejectArgs, { readonly item: Probe.RejectArgsItem }>(true);
+same<Probe.RejectArgsItem, { readonly id: bigint; readonly who: Address }>(true);
+// Indexed value types keep their type; only an indexed string, bytes, array or tuple is its topic's Hex.
+same<Probe.CountedEventArgs, { readonly n: bigint; readonly flag: boolean; readonly tag: Hex; readonly label: string }>(true);
+same<Probe.TickEventArgs, {}>(true);
+// One named output is its type; a lone unnamed tuple is the Answer itself; a lone unnamed array of tuples is an array of AnswerItem.
+same<Probe.TotalAnswer, bigint>(true);
+same<Probe.WhoamiAnswer, Address>(true);
+same<Probe.FirstAnswer, { readonly id: bigint; readonly who: Address }>(true);
+same<Probe.ListArgs, { readonly extra: ReadonlyArray<Probe.ListArgsExtra> }>(true);
+same<Probe.ListArgsExtra, { readonly id: bigint; readonly who: Address }>(true);
+same<Probe.ListAnswer, ReadonlyArray<Probe.ListAnswerItem>>(true);
+same<Probe.ListAnswerItem, { readonly id: bigint; readonly who: Address }>(true);
 // An unnamed input is named by its position.
 same<Probe.MarksArgs, { readonly arg0: Hex }>(true);
 same<Probe.MarksAnswer, bigint>(true);
@@ -107,12 +123,20 @@ c.poke({ x: 5n }, signer, { value: 1n });
 c.send({ to: address }, signer);
 // @ts-expect-error an address is a 0x string
 c.send_1({ to: "alice" }, signer);
+// @ts-expect-error a write's inputs are all required too
+c.poke({}, signer);
+// @ts-expect-error a value is a bigint, never a number
+c.fund(signer, { value: 1 });
+same<Parameters<typeof c.poke>, [args: Probe.PokeArgs, signer: Signer]>(true);
+same<Parameters<typeof c.pair>, [args: Probe.PairArgs]>(true);
+same<Parameters<typeof c.peek>, []>(true);
 
 // Events: a typed source per event.
 const poked = Probe.events.Poked(address, 0n);
 same<typeof poked, EventSource<DecodedEvent & { readonly eventName: "Poked"; readonly args: Probe.PokedEventArgs }>>(true);
 // @ts-expect-error an event's source needs its block
 Probe.events.Poked(address);
+same<Parameters<typeof Probe.events.Poked>, [address: Address, fromBlock: bigint]>(true);
 
 // Errors: a tagged class each.
 const big = new Probe.TooBig({ x: 1n, limit: 2n });
@@ -128,10 +152,21 @@ same<Err<ReturnType<typeof Probe.deploy>>, Fails>(true);
 Probe.deploy(port, signer, { start: 7n });
 // @ts-expect-error the constructor's arguments are required
 Probe.deploy(port, signer);
+// @ts-expect-error every constructor argument is required
+Probe.deploy(port, signer, {});
+same<Parameters<typeof Probe.deploy>, [port: ChainPort, signer: Signer, args: Probe.ConstructorArgs]>(true);
 // @ts-expect-error a contract with no bytecode has no deploy
 Quiet.deploy;
 // @ts-expect-error a contract with no error declares no classes
 Quiet.TooBig;
+
+// Names the imports might have taken, and overloads: each is its own export, and it all compiles.
+new Clash.Effect();
+new Clash.Address();
+new Clash.Hex();
+same<typeof Clash.Oops_2 extends new (f: Clash.Oops_2Fields) => infer I ? I extends { readonly _tag: "Oops_2"; readonly code: bigint } ? true : false : false, true>(true);
+same<Clash.Moved_2EventArgs, { readonly who: Address; readonly amount: bigint }>(true);
+same<Clash.Refusal, Clash.Effect | Clash.Data | Clash.Address | Clash.Hex | Clash.Option | Clash.Stream | Clash.Abi | Clash.Signer | Clash.Oops_1 | Clash.Oops_2>(true);
 
 // The descriptor.
 same<typeof adapter.kind, "adapter">(true);
@@ -142,10 +177,20 @@ adapter.calls.Probe.send;
 `;
 
 // Generated, written and typechecked once, by the first test that runs, so each test fails on its own when the generator can't make it.
+/** Errors named as the module's imports might be, and an overloaded error and event (README.md, "The names"). */
+const p = (type: string, name: string, extra: Record<string, unknown> = {}) => ({ type, name, ...extra });
+const clash = { contract: "Clash", json: [
+  { type: "function", name: "go", stateMutability: "nonpayable", inputs: [], outputs: [] },
+  ...["Effect", "Data", "Address", "Hex", "Option", "Stream", "Abi", "Signer"].map((name) => ({ type: "error", name, inputs: [] })),
+  { type: "error", name: "Oops", inputs: [] },
+  { type: "error", name: "Oops", inputs: [p("uint256", "code")] },
+  { type: "event", name: "Moved", anonymous: false, inputs: [p("address", "who", { indexed: true })] },
+  { type: "event", name: "Moved", anonymous: false, inputs: [p("address", "who", { indexed: true }), p("uint256", "amount")] },
+] };
 let w: Written | undefined;
 let ran: Promise<{ readonly status: number | null; readonly out: string }> | undefined;
 const typechecked = () => (ran ??= (async () => {
-  w = await written([probe, quiet]);
+  w = await written([probe, quiet, clash]);
   writeFileSync(join(w.dir, "check.ts"), CHECK);
   writeFileSync(join(w.dir, "tsconfig.json"), JSON.stringify({ extends: join(repo, "tsconfig.base.json"), compilerOptions: { typeRoots: [join(repo, "node_modules/@types")] }, include: ["**/*.ts"], exclude: ["node_modules"] }));
   const r = spawnSync(join(repo, "node_modules/.bin/tsc"), ["-p", w.dir, "--noEmit", "--pretty", "false"], { cwd: w.dir, encoding: "utf8" });

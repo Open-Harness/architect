@@ -4,6 +4,8 @@ src/modules/abi/abi.test.ts > one contract's module > has no bytecode, no deploy
 src/modules/abi/abi.test.ts > one contract's module > makes at(chain) one call per function, an overload as <name>_<n>, and calls nothing while it builds them
 src/modules/abi/abi.test.ts > one contract's module > makes each error a tagged error class of its name holding its fields, and one with no inputs holding none
 src/modules/abi/abi.test.ts > one contract's module > makes events.<Event>(address, fromBlock) a source of that event at that address, from that block
+src/modules/abi/abi.test.ts > overloaded events and errors > makes each overloaded error its own class, named and tagged <name>_<n>
+src/modules/abi/abi.test.ts > overloaded events and errors > makes each overloaded event's source of its own item, as <name>_<n>
 src/modules/abi/abi.test.ts > the files > counts each contract's calls, events and errors, in the order given, and says which has a stand-in
 src/modules/abi/abi.test.ts > the files > gives the same bytes for the same input, whichever form the artifact came in, and different bytes for a different ABI
 src/modules/abi/abi.test.ts > the files > keeps each input in abi/ as { abi, bytecode }, two-space JSON and a newline, from forge's artifact, a flat artifact or a bare array

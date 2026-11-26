@@ -13,9 +13,12 @@ const ADDRESS = "0x00000000000000000000000000000000000000aa";
 /** A port that is never called: `at` and `events` only build what they answer. */
 const idle = new Proxy({}, { get: (_t, key) => () => { throw new Error(`the port's ${String(key)} was called while only building calls`); } });
 
-const PROBE_CALLS = ["LIMIT", "boxed", "drain", "fund", "funded", "label", "mark", "marks", "owner", "pair", "peek", "poke", "refuse", "send_1", "send_2"];
-const PROBE_EVENTS = ["Funded", "Marked", "Poked", "Sent"];
-const PROBE_ERRORS = ["Empty", "Spent", "TooBig"];
+const PROBE_CALLS = [
+  "LIMIT", "bad", "boxed", "count", "drain", "first", "fund", "funded", "label", "list", "mark", "marks", "owner", "pair", "peek", "poke",
+  "refuse", "refuseWrite", "reject", "send_1", "send_2", "tick", "total", "whoami",
+];
+const PROBE_EVENTS = ["Counted", "Funded", "Marked", "Poked", "Sent", "Tick"];
+const PROBE_ERRORS = ["Bad", "Empty", "Rejected", "Spent", "TooBig"];
 
 describe("the files", () => {
   it("makes abi/, src/generated/ per contract and its index, the descriptor, blueprint/ and package.json, sorted by path", async () => {
@@ -115,7 +118,10 @@ describe("one contract's module", () => {
       const source = events[name]!(ADDRESS, 12n);
       expect(source.address.toLowerCase(), name).toBe(ADDRESS);
       expect(source.fromBlock, name).toBe(12n);
-      expect(source.event, name).toEqual(probeArtifact.abi.find((i) => i["type"] === "event" && i["name"] === name));
+      // The ABI's own item, an unnamed input named by its position (README.md, "The names"), so it decodes by that name.
+      const item = probeArtifact.abi.find((i) => i["type"] === "event" && i["name"] === name)!;
+      const inputs = (item["inputs"] as ReadonlyArray<{ readonly name: string }>).map((p, k) => (p.name === "" ? { ...p, name: `arg${k}` } : p));
+      expect(source.event, name).toEqual({ ...item, inputs });
       expect(typeof source.decode, name).toBe("function");
     }
   });
@@ -131,6 +137,33 @@ describe("one contract's module", () => {
     expect(empty._tag).toBe("Empty");
     expect(Object.keys(empty).filter((k) => !["_tag", "stack", "message", "name", "cause"].includes(k))).toEqual([]);
     expect(Object.keys(big).filter((k) => !["_tag", "stack", "message", "name", "cause"].includes(k)).sort()).toEqual(["limit", "x"]);
+  });
+});
+
+describe("overloaded events and errors", () => {
+  // solc refuses two errors of one name in a contract, and an ABI joined from several can hold them: a hand ABI, then.
+  const p = (type: string, name: string, extra: Record<string, unknown> = {}) => ({ type, name, ...extra });
+  const moved1 = { type: "event", name: "Moved", anonymous: false, inputs: [p("address", "who", { indexed: true })] };
+  const moved2 = { type: "event", name: "Moved", anonymous: false, inputs: [p("address", "who", { indexed: true }), p("uint256", "amount")] };
+  const oops1 = { type: "error", name: "Oops", inputs: [] };
+  const oops2 = { type: "error", name: "Oops", inputs: [p("uint256", "code")] };
+  const lone = { type: "function", name: "go", stateMutability: "nonpayable", inputs: [], outputs: [] };
+  const overloaded = { contract: "Over", json: [lone, moved1, oops1, moved2, oops2] };
+
+  it("makes each overloaded event's source of its own item, as <name>_<n>", async () => {
+    const Over = await (await open([overloaded], "over")).load("src/generated/Over.ts");
+    const events = Over["events"] as Record<string, (a: string, b: bigint) => { readonly event: unknown }>;
+    expect(Object.keys(events).sort()).toEqual(["Moved_1", "Moved_2"]);
+    expect(events["Moved_1"]!(ADDRESS, 0n).event).toEqual(moved1);
+    expect(events["Moved_2"]!(ADDRESS, 0n).event).toEqual(moved2);
+  });
+
+  it("makes each overloaded error its own class, named and tagged <name>_<n>", async () => {
+    const Over = await (await open([overloaded], "over")).load("src/generated/Over.ts");
+    expect(Object.keys(Over).sort()).toEqual(["Oops_1", "Oops_2", "abi", "at", "events"]);
+    const two = new (Over["Oops_2"] as new (f: { code: bigint }) => { _tag: string; code: bigint })({ code: 3n });
+    expect({ _tag: two._tag, code: two.code }).toEqual({ _tag: "Oops_2", code: 3n });
+    expect(new (Over["Oops_1"] as new () => { _tag: string })()._tag).toBe("Oops_1");
   });
 });
 
@@ -157,6 +190,10 @@ describe("the index and the descriptor", () => {
     expect(both.what).toContain("Probe");
     expect(both.what).not.toContain("Quiet");
     expect((await (await open([quiet], "quiet")).load("src/generated/index.ts"))["standIn"]).toEqual({ kind: "stand-in", how: "none" });
+    // Every contract with bytecode is named, not only the first.
+    const two = (await (await open([probe, { contract: "Twin", json: probeArtifact }, quiet])).load("src/generated/index.ts"))["standIn"] as { what?: string };
+    expect(two.what).toContain("Probe");
+    expect(two.what).toContain("Twin");
   });
 
   it("makes src/index.ts an adapter of those calls and that stand-in, re-exporting the contracts", async () => {

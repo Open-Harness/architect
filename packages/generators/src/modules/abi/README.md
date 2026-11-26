@@ -64,8 +64,13 @@ A call of `at(chain)`, for a function `f` (an overload is `f_1`, `f_2`, … ever
 |---|---|
 | a tuple `p` inside a generated type `T` (an `Args`, an `Answer`, an `EventArgs`, a `Fields`, `ConstructorArgs`, or another tuple's) | `T` + `Pascal(p)`: `BoxedArgsB` for `boxed(Box b)`, inside it `BoxedArgsBInner`; `BoxedAnswerOut` for its output `out` |
 | a lone unnamed tuple output of `f` | `Pascal(f)` + `Answer` itself: an interface of its components |
+| a lone unnamed array of tuples output of `f` | `Pascal(f)` + `Answer` is a `ReadonlyArray` of `Pascal(f)` + `AnswerItem`, the interface |
 | an unnamed input of a function, event, error or constructor (a public mapping's key, `marks(bytes32)`) | `arg` + its position from 0: `MarksArgs { readonly arg0: Hex }`, as typechain names it |
-| an overloaded name (two or more functions, events or errors of one name) | each is `<name>_<n>`, `n` counted from 1 in ABI order; a name with one member is left as it is |
+| an overloaded name (two or more functions, events or errors of one name) | each is `<name>_<n>`, `n` counted from 1 in ABI order, in every name made from it (`Moved_2EventArgs`, the class `Oops_2` and its tag); a name with one member is left as it is |
+
+The module's imports never take a name an item can make: an error may be called `Effect`, `Data`, `Address` or `Hex`, and its
+class is exported by that name. Only the module's own exports are refused as an error's name: `abi`, `bytecode`, `at`, `events`,
+`deploy`, `Refusal`, `Chain`.
 
 ## The mapping
 
@@ -78,7 +83,7 @@ A call of `at(chain)`, for a function `f` (an overload is `f_1`, `f_2`, … ever
 | `bytes`, `bytes<N>` | `Hex` |
 | `T[]`, `T[N]` | `ReadonlyArray<T>` |
 | `tuple` | an interface of its named components |
-| an `indexed` `string`, `bytes`, array or tuple of an event | `Hex`: the topic's hash is all the log holds |
+| an `indexed` `string`, `bytes`, array or tuple of an event | `Hex`: the topic's hash is all the log holds; an indexed value type (`uint`, `bool`, `bytes32`, `address`) keeps its type |
 
 `Address`, `Hex`, `ChainPort`, `Signer`, `Submission`, `ChainError`, `EventSource`, `DecodedEvent` and `AbiDocument` come from
 `@orthograph/chain-evm/device`; the module imports nothing else but `effect`. The descriptor's file imports `orthograph`.
@@ -105,6 +110,7 @@ contracts with bytecode, or `{ kind: "stand-in", how: "none" }` when none has an
 - bytecode that isn't `0x` and an even number of hex digits; bytecode still holding a library's `__$…$__` placeholder, with its own
   message: link it first, or leave the bytecode out and stand the contract in by hand
 - two generated names that collide (`function transferEvent` and `event Transfer` both make `TransferEventArgs`)
+- an error named as one of the module's own exports (`Refusal`, `Chain`, `abi`, `bytecode`, `at`, `events`, `deploy`)
 
 Tests: `abi.test.ts` (the files and the names), `types.test.ts` (the types, through `tsc`), `anvil.test.ts` (the calls against the
 fixture's stand-in on Anvil, `ORTHO_CHAIN_EVM_ANVIL=1`), `regenerate.test.ts` (the three adapters regenerate unchanged). The

@@ -8,6 +8,7 @@ src/modules/abi/refusals.test.ts > the file > refuses bytecode that isn't 0x and
 src/modules/abi/refusals.test.ts > the items > refuses a fixed-point type, naming it (Probe: function m)
 src/modules/abi/refusals.test.ts > the items > refuses a function type, naming it (Probe: function n)
 src/modules/abi/refusals.test.ts > the items > refuses an anonymous event, naming it (Probe: event Quiet)
+src/modules/abi/refusals.test.ts > the items > refuses an error named as one of the module's own exports, naming it
 src/modules/abi/refusals.test.ts > the items > refuses an overload whose suffixed name another item already has (send, send and send_1)
 src/modules/abi/refusals.test.ts > the items > refuses an unmapped type inside an array, naming it (Probe: function n2)
 src/modules/abi/refusals.test.ts > the items > refuses an unnamed input of an event whose position's name another has, naming it (Probe: event E2)
@@ -20,7 +21,9 @@ src/modules/abi/refusals.test.ts > the items > refuses two components of one nam
 src/modules/abi/refusals.test.ts > the items > refuses two generated names that collide, naming the name (function transferEvent and event Transfer both make TransferEventArgs)
 src/modules/abi/refusals.test.ts > the items > refuses two inputs of one name, naming it (Probe: function k)
 src/modules/abi/refusals.test.ts > the items > refuses two outputs of one name, naming it (Probe: function k2)
-src/modules/abi/refusals.test.ts > the items > takes a lone unnamed output, of a plain type or a tuple
+src/modules/abi/refusals.test.ts > the items > takes a lone unnamed output, of a plain type, a tuple or an array of tuples
+src/modules/abi/refusals.test.ts > the items > takes an event with no inputs, and indexed value types
+src/modules/abi/refusals.test.ts > the items > takes errors named as the module's imports might be: Effect, Data, Address, Hex
 src/modules/abi/refusals.test.ts > the items > takes unnamed inputs of a function, an event, an error and the constructor: each is named by its position
 src/modules/abi/refusals.test.ts > the name and the contracts > refuses a contract name that isn't an identifier starting with a capital letter, naming it
 src/modules/abi/refusals.test.ts > the name and the contracts > refuses an adapter name that isn't lower case words joined by dashes, naming it

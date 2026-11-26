@@ -14,15 +14,23 @@ contract Probe {
         bool sealed_;
         bytes32 tag;
     }
+    struct Item {
+        uint256 id;
+        address who;
+    }
 
     error TooBig(uint256 x, uint256 limit);
     error Empty();
     error Spent(bytes32);
+    error Bad(uint256 code);
+    error Rejected(Item item);
 
     event Poked(address indexed who, uint256 x, string note);
     event Funded(address indexed from, uint256 amount);
     event Sent(address indexed to, uint256 value);
     event Marked(bytes32);
+    event Counted(uint256 indexed n, bool indexed flag, bytes32 indexed tag, string label);
+    event Tick();
 
     uint256 public constant LIMIT = 100;
     uint256 private stored;
@@ -70,6 +78,47 @@ contract Probe {
         if (marks[h] != 0) revert Spent(h);
         marks[h] = block.number;
         emit Marked(h);
+    }
+
+    function count(uint256 n, string calldata label) external {
+        emit Counted(n, n % 2 == 1, bytes32(n), label);
+    }
+
+    function tick() external {
+        emit Tick();
+    }
+
+    function bad(uint256 code) external pure {
+        revert Bad(code);
+    }
+
+    function reject(Item calldata item) external pure returns (bool) {
+        if (item.id != 0) revert Rejected(item);
+        return true;
+    }
+
+    function whoami() external view returns (address) {
+        return msg.sender;
+    }
+
+    function total() external view returns (uint256 sum) {
+        return stored + funded;
+    }
+
+    function first() external view returns (Item memory) {
+        return Item(stored, owner);
+    }
+
+    function list(Item[] calldata extra) external view returns (Item[] memory) {
+        Item[] memory out = new Item[](extra.length + 1);
+        out[0] = Item(stored, owner);
+        for (uint256 i = 0; i < extra.length; i++) out[i + 1] = extra[i];
+        return out;
+    }
+
+    function refuseWrite() external {
+        stored = stored;
+        require(false, "nope");
     }
 
     function refuse() external pure {
