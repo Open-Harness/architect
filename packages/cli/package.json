@@ -7,6 +7,7 @@
     "@orthograph/compiler": "workspace:*",
     "@orthograph/generators": "workspace:*",
     "@orthograph/lint": "workspace:*",
+    "@orthograph/preset": "workspace:*",
     "@orthograph/projections": "workspace:*",
     "@orthograph/prove": "workspace:*",
     "orthograph": "workspace:*",

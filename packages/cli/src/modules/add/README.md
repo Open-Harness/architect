@@ -6,7 +6,8 @@ none. `--dry-run` prints what it would write. The module only plans; `main.ts` w
 
 `ortho add journeys <thing>` (K16 e) writes a journey stub to `blueprint/journeys/<thing>-<verb>-<path>.ts` for every path
 through the thing's machine, allowed and refused, then for each operation and read by name one per allowed role no
-machine stub casts, one caller turned away, and one per declared error (`renderJourneyStubs`, in
+machine stub casts, one caller turned away, one per declared error and one per rule the operation can break
+(`ADD-stubs-match-coverage`; `renderJourneyStubs`, in
 `@orthograph/projections`). Unlike the other kinds it writes the stubs that are missing and names the ones already
 there, refusing only when every one is: after the machine grows, it writes just the new paths.
 An operation or a read that still has a blank is not in the model's operations (#742), so it gets no stub: the

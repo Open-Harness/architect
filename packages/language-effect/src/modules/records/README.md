@@ -19,6 +19,13 @@ moved in keeps its place (`Store.place`), and the call's own inserts come after 
 the store answers `conflict` when the rows matching a list, or their versions, are not the ones the call read (whatever
 page it asked for). Tests: `list.test.ts`, `list-race.test.ts`.
 
+## Reads (#1045)
+
+Every row a unit finds by its id (a payload's ref, `Records.find`, a `findBy` holder, a row it updates) counts as read,
+at the version found: `unit.reads` goes on the `Commit`, and the store answers `conflict` when one of them moved on, so
+the call runs again through the same retry as a stale update and sees the change. The version is the guard, not the
+state. A row only a list found is guarded by its list; a find that found nothing guards nothing. Test: `ref-race.test.ts`.
+
 ## Rules (G5)
 
 A store and a unit hold the project's rules, each as a `NamedRule` (the invariant as declared, and its full name,

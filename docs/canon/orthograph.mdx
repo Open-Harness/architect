@@ -178,8 +178,9 @@ app runs; a mount says "use this plugin here, like this" ([plugins](plugins.mdx)
 
 - **Ideation, from an idea to a demo.** Name the idea in one sentence ("claim `@name`; a public page of links").
   `ortho add thing` and `ortho add operation` declare the things and verbs, each gap a blank; fill in the machine and
-  the rules you know; `ortho add journeys` writes a stub for every path through the machine, every role and every
-  refusal, and a journey author fills them in. Then check, generate, prove and climb, and look at it in the portal.
+  the rules you know; `ortho add journeys` writes a stub for every path through the machine, every role, and every
+  refusal an operation declares or a rule can give it, and a journey author fills them in or deletes the ones that
+  cannot happen. Then check, generate, prove and climb, and look at it in the portal.
   K30 makes `ortho add thing` take the states and verbs you already know, so it writes blanks only for the rest.
 - **Development: edit, check, prove, see what's stale.** Edit a handler or a declaration; `ortho generate` re-renders
   and scaffolds anything new; `ortho check` finds blanks, types, rules and drift; `ortho prove` runs every journey in a

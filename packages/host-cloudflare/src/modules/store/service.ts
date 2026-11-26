@@ -70,7 +70,9 @@ export const StoreD1: StoreD1Api = {
           if (changes && (commit.lists ?? []).some((l) => dbOf(l.thing) !== db)) {
             return Effect.die(new Error("a call listed things in one store and committed to another: a list is guarded only in the database the call commits to (#764)"));
           }
-          if (db !== undefined) return commitD1(db, tableOf, commit, rules);
+          // #1045: the rows it found are guarded in the same batch. One kept elsewhere (a person, an actor, another database) can't join it, and goes unguarded.
+          const reads = (commit.reads ?? []).filter((r) => r.thing !== people?.thing && r.thing.lives !== "actor" && dbOf(r.thing) === db);
+          if (db !== undefined) return commitD1(db, tableOf, { ...commit, reads }, rules);
           if (commit.request) return Effect.die(new Error("a request key on an actor's operation: idempotent actors arrive with layer four (design/later.md)"));
           return actors ? actorCommit(actors, commit, tableOf) : noActors;
         },

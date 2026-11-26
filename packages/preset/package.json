@@ -21,9 +21,7 @@
     "orthograph": "workspace:*",
     "@nx/devkit": "24.0.3",
     "effect": "4.1.4",
-    "yaml": "2.9.0"
-  },
-  "devDependencies": {
+    "yaml": "2.9.0",
     "nx": "24.0.3"
   },
   "files": [

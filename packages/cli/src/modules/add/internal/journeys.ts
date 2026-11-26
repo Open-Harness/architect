@@ -1,5 +1,5 @@
-// `ortho add journeys <thing>` (K16 e): a stub per path through the thing's machine, per role and per declared error, from
-// the model. Unlike the other kinds it writes the stubs that are missing, so after the machine grows it writes just the
+// `ortho add journeys <thing>` (K16 e): a stub per path through the thing's machine, per role, per declared error and per
+// rule an operation can break, from the model. Unlike the other kinds it writes the stubs that are missing, so after the machine grows it writes just the
 // new paths, and refuses only when every one is already there.
 import type { Model } from "@orthograph/compiler";
 import { renderJourneyStubs } from "@orthograph/projections/shared";

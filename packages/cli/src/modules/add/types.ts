@@ -28,6 +28,6 @@ export interface AddApi {
    * read is `allowance.spend`; a journey is its title, `"spend within an allowance"`.
    */
   readonly plan: (what: What, name: string, exists: (path: string) => boolean) => ReadonlyArray<Written> | AddRefused;
-  /** `add journeys <thing>`: a stub per path, role and declared error, writing only the missing ones (K16 e). */
+  /** `add journeys <thing>`: a stub per path, role, declared error and rule an operation can break, writing only the missing ones (K16 e). */
   readonly journeys: (model: Model, thing: string, exists: (path: string) => boolean) => Planned | AddRefused;
 }
