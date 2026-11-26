@@ -138,7 +138,7 @@ written three different ways.
 
 - **The inline form** (K7's spelling): it writes names as strings and repeats them on every thing.
 - **A contract per organisation (a clone), or the organisation as its own account**: an organisation is not something
-  deployed, and a contract that is the organisation would hold its whole treasury in generated code.
+  deployed, and a contract that is the organisation would hold its whole treasury in generated code. (Superseded by K46, 26 November 2026: a chain store may ask for a contract per instance of its root thing; the cost named here stands.)
 - **One contract holding every organisation's money, keyed by id**: all the money in one place, and custody becomes ours.
 - **Safe built into the core**: Safe is the first account adapter, not the only kind of account.
 - **One contract per thing**: a `holds` role whose rows sit in another contract can't be checked.

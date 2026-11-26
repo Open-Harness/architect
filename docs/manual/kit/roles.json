@@ -1,0 +1,35 @@
+{
+  "note": "The one place each role's limits are written. Each skill's opening lines and the table in working-with-your-agents.md must say the same words; check.mjs fails when they differ.",
+  "roles": [
+    {
+      "role": "designer",
+      "touches": "the plan, the blueprint and the journey stubs",
+      "given": "the problem, in the owner's words",
+      "checked": "the owner reads the blueprint, and every blank `ortho check` lists is a question the owner has seen"
+    },
+    {
+      "role": "author",
+      "touches": "journeys and their starting worlds, and nothing else",
+      "given": "the blueprint, and one operation or one finding",
+      "checked": "each journey step fails on empty handlers or is marked proved by the description, and each failure names what was expected"
+    },
+    {
+      "role": "builder",
+      "touches": "the one handler its brief names",
+      "given": "one brief, from `ortho brief`",
+      "checked": "`ortho prove` and `ortho check` pass, each run whole, with no flags"
+    },
+    {
+      "role": "reviewer",
+      "touches": "nothing: it reads",
+      "given": "the change and the brief it was made from",
+      "checked": "it wrote none of what it reviews"
+    },
+    {
+      "role": "spike",
+      "touches": "throwaway code under `spikes/`",
+      "given": "one question",
+      "checked": "one page with the answer and what was tried"
+    }
+  ]
+}

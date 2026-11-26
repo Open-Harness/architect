@@ -1,0 +1,2 @@
+$ ortho generate
+created src/handle/claim.ts (scaffold: yours from now on)

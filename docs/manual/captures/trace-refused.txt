@@ -1,0 +1,13 @@
+$ ortho telemetry trace 6586442f3b59173fa3fa4d9a1e3b62cf
+trace 6586442f3b59173fa3fa4d9a1e3b62cf  7 spans
+handle.claim  20 ms  refused HandleAlreadyOwned  move claim → claimed
+  · handle.oneNamePerPerson: another instance already holds this key
+  handle.claim.record  1.0 ms  step database
+    · handle.claim.record start
+    · handle.claim.record end
+  sqlite  5.0 ms
+  sqlite  3.0 ms
+  sqlite  3.0 ms
+  sqlite  3.0 ms
+  sqlite  2.0 ms
+· Sent HTTP response

@@ -1,0 +1,7 @@
+$ ortho prove ada-spends-from-her-budget
+world     a local chain · a local server · ada, bob and carol, each with a wallet
+✔ ada pays a supplier, and says why                   BudgetSpent · 1 sent · the spend is paid
+✔ over the limit is refused, and nothing is sent      BudgetExceeded · 0 sent
+✔ a month passes, and she can spend again             clock + 1 month · the budget is active
+✔ she pays around the app, and the books ask why      1 sent · the spend is unexplained
+4 steps · 4 green · 11.2 s

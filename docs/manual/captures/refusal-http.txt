@@ -1,0 +1,7 @@
+$ curl -i -X POST http://127.0.0.1:4517/handle/claim -H 'authorization: Bearer <token>' -H 'content-type: application/json' -d '{"name":"secondpage"}'
+HTTP/1.1 422 Unprocessable Entity
+Content-Length: 45
+Content-Type: application/json
+x-trace-id: 6586442f3b59173fa3fa4d9a1e3b62cf
+
+{"_tag":"HandleAlreadyOwned","code":"HN-002"}

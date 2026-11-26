@@ -1,0 +1,2 @@
+$ ortho add journey a-released-name-is-free-again
+wrote blueprint/journeys/a-released-name-is-free-again.ts
