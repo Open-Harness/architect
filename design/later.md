@@ -63,7 +63,8 @@ belongs to, and why it waits.
 - **Named value kinds** (ledger THI-08, K24): a web address, a pattern, a choice, yes or no, carried into the model so
   every output can tell them apart and a form picks the right input. Waits for a design pass, beside THI-02.
 - **Approval on an operation** (ledger OPS-15, K24): a declared mark that the action asks once and the page's agent
-  confirms before calling. Waits for a design pass; the second UI SDK spike (PR #222) shows what drives it.
+  confirms before calling. Waits for a design pass; the second UI SDK spike (PR #222) shows what drives it. Deferred by K48 until an app wants an
+  agent driving the live screen.
 - **Page marks for secret and hidden fields** (ledger PRJ-55, K24): the language has secret, private and issued;
   mapping them onto the page agent's marks waits for the second UI SDK spike (PR #222).
 
