@@ -92,9 +92,9 @@ describe("the generated SafeProxyFactory on an installed world", () => {
       const factory = SafeProxyFactory.at({ port: world.port, address: CANON.proxyFactory });
       expect(keccak(yield* factory.proxyCreationCode())).toBe("0x1856e0ee08399d74e0ea0b03adca210aeade6f748969ac023cdcb4dd62dcaf5f");
       const { key } = yield* freshOwner;
-      const predicted = yield* SafeAddress.predict({ firstOwner: key.address, saltNonce: 9n });
+      const predicted = yield* SafeAddress.predict({ owners: [key.address], saltNonce: 9n });
       const submission = yield* factory.createProxyWithNonce(
-        { _singleton: CANON.singleton, initializer: yield* expectedInitializer(key.address), saltNonce: 9n }, world.keys[0]!.signer);
+        { _singleton: CANON.singleton, initializer: yield* expectedInitializer([key.address]), saltNonce: 9n }, world.keys[0]!.signer);
       expect((yield* mined(world.port, submission)).status).toBe("success");
       const { Safe } = yield* generated;
       expect(yield* Safe.at({ port: world.port, address: predicted }).getOwners()).toStrictEqual([key.address]);

@@ -74,17 +74,17 @@ export const keccak = (data: Hex): Hex => hex(Keys.keccak256(bytes(data)));
 export const word = (value: bigint | Address): string => (typeof value === "bigint" ? value.toString(16) : value.slice(2)).padStart(64, "0");
 
 /**
- * The initializer as the implementation writes it (`infrastructure:P/safe-address.ts:114-141`, the conductor's reading on #1161),
- * encoded by the check itself: `to` is MultiSend, whose one packed transaction (uint8 operation, address to, uint256 value,
+ * The initializer in the implementation's shape (`infrastructure:P/safe-address.ts:114-141`, the conductor's reading on #1161),
+ * for any owner list, threshold 1, encoded by the check itself: `to` is MultiSend, whose one packed transaction (uint8 operation, address to, uint256 value,
  * uint256 data length, bytes data) is a delegatecall of `enableModules([Safe4337Module])` to SafeModuleSetup.
  */
-export const expectedInitializer = (owner: Address) =>
+export const expectedInitializer = (owners: ReadonlyArray<Address>) =>
   Effect.gen(function* () {
     const enable = yield* Abi.encodeCall(ABI.enableModules, [[CANON.safe4337Module]]);
     const length = BigInt((enable.length - 2) / 2);
     const packed: Hex = `0x01${CANON.moduleSetup.slice(2).toLowerCase()}${word(0n)}${word(length)}${enable.slice(2)}`;
     const transactions = yield* Abi.encodeCall(ABI.multiSend, [packed]);
-    return yield* Abi.encodeCall(ABI.setup, [[owner], 1n, CANON.multiSend, transactions, CANON.safe4337Module, ZERO, 0n, ZERO]);
+    return yield* Abi.encodeCall(ABI.setup, [owners, 1n, CANON.multiSend, transactions, CANON.safe4337Module, ZERO, 0n, ZERO]);
   });
 
 export const rpc = <A>(rpcUrl: string, method: string, params: ReadonlyArray<unknown>) =>
@@ -147,7 +147,7 @@ export const freshOwner = Effect.gen(function* () {
 /** Deploys a Safe through the factory with the check's own initializer; the address is the one the factory's `ProxyCreation` names. */
 export const deploySafe = (world: World, owner: Address, saltNonce: bigint) =>
   Effect.gen(function* () {
-    const initializer = yield* expectedInitializer(owner);
+    const initializer = yield* expectedInitializer([owner]);
     const data = yield* Abi.encodeCall(ABI.createProxyWithNonce, [CANON.singleton, initializer, saltNonce]);
     const receipt = yield* sendTx(world.port, world.keys[0]!, CANON.proxyFactory, data);
     // ProxyCreation(address indexed proxy, address singleton)
@@ -165,3 +165,32 @@ export const ownerSignature = (secret: Redacted.Redacted<Hex>, digest: Hex): Hex
 
 /** A pre-validated signature: r is the owner, s is 0, v is 1 (the owner sent it, or approved the hash). */
 export const approvedSignature = (owner: Address): Hex => `0x${word(owner)}${word(0n)}01`;
+
+export const OWNER_A: Address = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+export const OWNER_B: Address = "0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359";
+
+/**
+ * The fixed vectors: the checks' own owners and salt nonces in the implementation's shape (not its deployed Safes; Aaron, through
+ * the lead, 26 November 2026). Worked out with viem from SafeProxy 1.4.1's creation code, and each confirmed by an eth_call of
+ * createProxyWithNonce on Safe's canonical factory on Base Sepolia (26 November 2026). `world.test.ts` checks each again against
+ * the factory on Anvil, every run. S1 (#1168) uses the first.
+ */
+export const VECTORS = [
+  { name: "owner A, salt nonce 0", owners: [OWNER_A], saltNonce: 0n,
+    initializerHash: "0x69a9ff90d1b9b8a9389063c1c58f0b7334cfb9006504c00b1a6638f3875eca72",
+    salt: "0x92ae05ccab3b6ae4d9ff58c3041f7969365bacdb4041714de7da3adbd87663aa", address: "0xC53486dfF84DDBcA04958BA4894F6e3b49879C58" },
+  { name: "owner A, salt nonce 1", owners: [OWNER_A], saltNonce: 1n,
+    initializerHash: "0x69a9ff90d1b9b8a9389063c1c58f0b7334cfb9006504c00b1a6638f3875eca72",
+    salt: "0xfdba43d58d279cd4dd9f0e39f80f05edf3a19f2228bd16dd35bb5a7463c79833", address: "0xC9FB822eceD768758d387Ea131bF599398914036" },
+  { name: "owner B, salt nonce 0", owners: [OWNER_B], saltNonce: 0n,
+    initializerHash: "0x1659f7309b7281fd049058673e8ebddce1315e509657f92f99f589571c79aa08",
+    salt: "0x471d9eacb1a1f8c2024eeb09795c2c94960fa6da6729416309c2129d911b8f4b", address: "0x7C124133727d664ee77A34589C438da47B0842df" },
+  { name: "owner B, salt nonce 2^255 + 7", owners: [OWNER_B], saltNonce: 2n ** 255n + 7n,
+    initializerHash: "0x1659f7309b7281fd049058673e8ebddce1315e509657f92f99f589571c79aa08",
+    salt: "0x4cc7f35da9a75f9742a131cf161a1ffd9ed055ef8531c386d593fd854d847aab", address: "0x2C5F49C7Dd86BE818AeEE8cDc175e6c9b8855E5D" },
+  { name: "owners A and B, salt nonce 3", owners: [OWNER_A, OWNER_B], saltNonce: 3n,
+    initializerHash: "0x2ef7c016b424dc834b2a4746dea881be675b919353af488ea33a173d0fc58b3a",
+    salt: "0x7a7a249e8af8ffb34ee564c6ad30088735eca49c4e11a30351a5e13e052f338e", address: "0x5BFa5c7961756380B07b02d45FeD425e858b1091" },
+] as const satisfies ReadonlyArray<{
+  name: string; owners: ReadonlyArray<Address>; saltNonce: bigint; initializerHash: Hex; salt: Hex; address: Address;
+}>;

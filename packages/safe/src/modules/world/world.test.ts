@@ -1,8 +1,8 @@
 import { Effect } from "effect";
 import { describe, expect, test } from "vitest";
-import { Keys, type Hex } from "@orthograph/chain-evm/device";
+import { Abi, Keys, type Address, type Hex } from "@orthograph/chain-evm/device";
 import { SafeAddress, SafeWorld } from "../../index.ts";
-import { ABI, CANON, codeAt, deploySafe, balanceOf, freshOwner, keccak, read, rpc, txCount, withWorld } from "./internal/testing.ts";
+import { ABI, CANON, OWNER_A, OWNER_B, VECTORS, expectedInitializer, codeAt, deploySafe, balanceOf, freshOwner, keccak, read, rpc, txCount, withWorld } from "./internal/testing.ts";
 
 // Needs Foundry's Anvil on PATH, as CI's check-static has it. Expected code hashes: @safe-global/safe-deployments 1.37.67 (canonical);
 // SafeModuleSetup's runtime from @safe-global/safe-4337 0.3.0 (it has no immutables); the 4337 module bound to EntryPoint v0.7.
@@ -65,11 +65,29 @@ describe("SafeWorld.install, the world starter", () => {
 });
 
 describe("on an installed world, the factory deploys where the prediction says", () => {
+  // The second, independent derivation of every fixed vector: the factory itself, asked by an eth_call of createProxyWithNonce
+  // (Safe 1.4.1's factory has no calculateCreateProxyWithNonceAddress), with the check's own initializer.
+  test("each fixed vector, and owners B then A, is the address the factory answers to an eth_call of createProxyWithNonce", TIMEOUT, () =>
+    withWorld((world) => Effect.gen(function* () {
+      yield* SafeWorld.install(world.rpcUrl);
+      const factoryAnswer = (owners: ReadonlyArray<Address>, saltNonce: bigint) => Effect.gen(function* () {
+        const data = yield* Abi.encodeCall(ABI.createProxyWithNonce, [CANON.singleton, yield* expectedInitializer(owners), saltNonce]);
+        const [proxy] = yield* Abi.decodeResult(ABI.createProxyWithNonce, yield* world.port.read({ from: world.keys[1]!.address, to: CANON.proxyFactory, data }));
+        return proxy;
+      });
+      for (const vector of VECTORS) {
+        expect([vector.name, yield* factoryAnswer(vector.owners, vector.saltNonce)]).toStrictEqual([vector.name, vector.address]);
+        expect([vector.name, yield* SafeAddress.predict({ owners: vector.owners, saltNonce: vector.saltNonce })]).toStrictEqual([vector.name, vector.address]);
+      }
+      const reversed = [OWNER_B, OWNER_A] as const;
+      expect(yield* SafeAddress.predict({ owners: reversed, saltNonce: 3n })).toBe(yield* factoryAnswer(reversed, 3n));
+    })));
+
   test("the fixed vector: owner 0x5aAe…eAed with salt nonce 0 is deployed at 0xC534…9C58, as predicted", TIMEOUT, () =>
     withWorld((world) => Effect.gen(function* () {
       yield* SafeWorld.install(world.rpcUrl);
       const owner = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
-      const predicted = yield* SafeAddress.predict({ firstOwner: owner, saltNonce: 0n });
+      const predicted = yield* SafeAddress.predict({ owners: [owner], saltNonce: 0n });
       expect(predicted).toBe("0xC53486dfF84DDBcA04958BA4894F6e3b49879C58");
       expect(yield* deploySafe(world, owner, 0n)).toBe(predicted);
     })));
@@ -79,7 +97,7 @@ describe("on an installed world, the factory deploys where the prediction says",
       yield* SafeWorld.install(world.rpcUrl);
       const { key } = yield* freshOwner;
       const saltNonce = 2n ** 200n + 12345n;
-      const predicted = yield* SafeAddress.predict({ firstOwner: key.address, saltNonce });
+      const predicted = yield* SafeAddress.predict({ owners: [key.address], saltNonce });
       expect(yield* codeAt(world.rpcUrl, predicted)).toBe("0x");
       expect(yield* deploySafe(world, key.address, saltNonce)).toBe(predicted);
       expect(yield* codeAt(world.rpcUrl, predicted)).not.toBe("0x");

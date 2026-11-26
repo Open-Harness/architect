@@ -6,5 +6,6 @@ src/modules/world/world.test.ts > SafeWorld.install, the world starter > puts th
 src/modules/world/world.test.ts > SafeWorld.install, the world starter > running it twice changes nothing and fails nothing
 src/modules/world/world.test.ts > SafeWorld.install, the world starter > the factory's proxy creation code is SafeProxy 1.4.1's
 src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > a fresh owner and a large salt nonce are deployed at the predicted address
+src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > each fixed vector, and owners B then A, is the address the factory answers to an eth_call of createProxyWithNonce
 src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > the deployed Safe is 1.4.1, owned by its first owner alone at threshold 1, with the 4337 module enabled and as fallback handler
 src/modules/world/world.test.ts > on an installed world, the factory deploys where the prediction says > the fixed vector: owner 0x5aAe…eAed with salt nonce 0 is deployed at 0xC534…9C58, as predicted
