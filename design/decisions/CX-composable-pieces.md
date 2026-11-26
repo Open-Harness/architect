@@ -151,7 +151,7 @@ built in `examples/capxul/blueprint/things/`.
 28. **`crm`**. Frappe CRM's leads, deals and organisations (slice 11). 40 (10). Its won deal becomes a `parties`
     customer.
 
-Later, with the chain (K44): **`onchain-pay`**, each person's and company's Safe and getting paid by a link (slice 2),
+Later, with the chain (K44) (Superseded by CX-features, 26 November 2026: "Born early, after `company` and `people`, as section 6's move 2a says"): **`onchain-pay`**, each person's and company's Safe and getting paid by a link (slice 2),
 on the framework's wallets and chain. It is listed so nothing else takes its records.
 
 **Presets, not pieces.** (Superseded by CX-features, 26 November 2026: "Presets, not features.") People don't pick from 28 names. `ortho new app` (status row `ortho-new`) offers presets that are

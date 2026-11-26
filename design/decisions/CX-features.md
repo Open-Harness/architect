@@ -13,7 +13,7 @@ A part of Capxul that a business picks when its Capxul is built is a **feature**
 retired. A feature is what CX-composable-pieces called a piece: a package in `examples/capxul/plugins/<feature>/`,
 mounted by one file, `examples/capxul/blueprint/features/<feature>.ts`. Core features are in every Capxul; optional
 features are left out by a business that doesn't want them. Nothing else in CX-composable-pieces changes: the 28
-features, their contracts, the actors, the dependency picture, the framework gaps and the move all stand as written.
+features, their contracts, the actors, the dependency picture, the framework gaps and the move all stand as written, except the `onchain-pay` row added below.
 
 ## Why "feature"
 
