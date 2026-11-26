@@ -1,0 +1,12 @@
+# #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/world/contracts.test.ts > a SafeTx's digest is the Safe's getTransactionHash > for a call with data at a later nonce
+src/modules/world/contracts.test.ts > a SafeTx's digest is the Safe's getTransactionHash > for a delegatecall with every gas and refund field set
+src/modules/world/contracts.test.ts > a SafeTx's digest is the Safe's getTransactionHash > for a payment at nonce 0
+src/modules/world/contracts.test.ts > a SafeTx's digest is the Safe's getTransactionHash > for numbers past 2^53 in value, nonce and every gas field
+src/modules/world/contracts.test.ts > approveHash > an owner approves a SafeTx's hash, then anyone executes it on that approval; an unapproved one is refused GS025
+src/modules/world/contracts.test.ts > execTransaction sent by someone who is not an owner > a SafeTx signed by someone who is not an owner is refused GS026; no signatures at all, GS020
+src/modules/world/contracts.test.ts > execTransaction sent by someone who is not an owner > a replayed SafeTx is refused GS026, typed, and nothing is sent
+src/modules/world/contracts.test.ts > execTransaction sent by someone who is not an owner > pays on the owner's signature over SafeTx.digest, and moves the nonce on by one
+src/modules/world/contracts.test.ts > swapOwner > through a SafeTx swaps the owner; naming the wrong previous owner is refused GS013; called directly, GS031
+src/modules/world/contracts.test.ts > the generated Safe's reads on an installed world > version, owners, threshold, nonce and the 4337 module, as owners are added at threshold 1 and then 2
+src/modules/world/contracts.test.ts > the generated SafeProxyFactory on an installed world > createProxyWithNonce deploys a Safe at the predicted address

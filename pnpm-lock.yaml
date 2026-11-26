@@ -971,6 +971,22 @@ importers:
         specifier: 24.0.3
         version: 24.0.3
 
+  packages/safe:
+    dependencies:
+      '@orthograph/chain-evm':
+        specifier: workspace:*
+        version: link:../chain-evm
+      effect:
+        specifier: 4.1.4
+        version: 4.1.4
+    devDependencies:
+      '@noble/curves':
+        specifier: 1.9.1
+        version: 1.9.1
+      '@orthograph/language-effect':
+        specifier: workspace:*
+        version: link:../language-effect
+
   packages/services:
     dependencies:
       effect:
