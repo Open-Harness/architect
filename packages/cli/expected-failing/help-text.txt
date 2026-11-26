@@ -42,8 +42,6 @@ test/help-text.test.ts > every command says what it does > `ortho impact` has a 
 test/help-text.test.ts > every command says what it does > `ortho model --help` says what it does on its own page
 test/help-text.test.ts > every command says what it does > `ortho model` has a description in its parent's list
 test/help-text.test.ts > every command says what it does > `ortho new --help` says what it does on its own page
-test/help-text.test.ts > every command says what it does > `ortho new adapter --help` says what it does on its own page
-test/help-text.test.ts > every command says what it does > `ortho new adapter` has a description in its parent's list
 test/help-text.test.ts > every command says what it does > `ortho new` has a description in its parent's list
 test/help-text.test.ts > every command says what it does > `ortho promote --help` says what it does on its own page
 test/help-text.test.ts > every command says what it does > `ortho promote` has a description in its parent's list
