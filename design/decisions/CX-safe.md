@@ -3,7 +3,7 @@
 **Status: decided, 26 November 2026,** by Goal 16's 📐 designer thread, started by the money lane's 🧭 lead (issue
 #1158), under AGENTS.md "Who decides". It cuts Goal 16's slice 2, "each person's and each company's Safe, acted on from
 the CLI, MCP and an agent; a sales invoice with a pay link, paid from any wallet, settled by the chain, with the ledger
-lines posted" (`design/goals/16-capxul.md:93`), into units that each land in about a day, names what Goal 16 claims for them, and
+lines posted" (`design/goals/16-capxul.md:95`), into units that each land in about a day, names what Goal 16 claims for them, and
 says where the new things go. The two questions for Aaron are at the end; the decision goes ahead on the
 recommendation of each.
 
@@ -383,7 +383,7 @@ on CX-features's move list (#1157, `goal-16/features-rename`, not yet in `goal/c
 lead adds it). Its journeys go in
 `examples/capxul/journeys/`, named `safe-…` as Bridge's are `bridge-…`; Capxul's CI job (`tools/ci/capxul-paths.sh`)
 already runs `prove` over `examples/capxul`. A rule that lives on chain changing by a migration with money in it has no
-word in the blueprint yet (`CX-composable-pieces.md:520-521`); S4 meets it first, and a Snag is logged then if it bites.
+word in the blueprint yet (`CX-composable-pieces.md:524-525`); S4 meets it first, and a Snag is logged then if it bites.
 
 ## For Aaron
 
