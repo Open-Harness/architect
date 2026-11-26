@@ -140,6 +140,11 @@ const installedCli = (app: string): { readonly dir: string; readonly version: st
 };
 type Verdict = { passed?: boolean; totals?: { journeys?: number; journeysPassed?: number }; journeys?: ReadonlyArray<{ name: string; verdict: string; steps: ReadonlyArray<{ verdict: string; operation?: string; handlerFile?: string }> }> };
 const json = <T>(text: string): T | undefined => { try { return JSON.parse(text.trim()) as T; } catch { return undefined; } };
+/** The JSON document a command printed after any lines of its runner (pnpm's own): the first `{` at the start of a line that parses to the end. */
+const document = <T>(text: string): T | undefined => {
+  for (let at = text.startsWith("{") ? 0 : text.indexOf("\n{"); at >= 0; at = text.indexOf("\n{", at + 1)) { const found = json<T>(text.slice(at)); if (found !== undefined) return found; }
+  return undefined;
+};
 
 // ---- the one thing this check declares, and what it answers ----
 
@@ -237,11 +242,14 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
     const scaffold = existsSync(join(made, "src/greeting/say.ts")) ? readFileSync(join(made, "src/greeting/say.ts"), "utf8") : "";
     expect(scaffold.split("\n")[0], "src/greeting/say.ts, scaffolded").toBe("// Scaffolded from blueprint/things/greeting/verbs/say.ts. Yours from now on.");
     for (const [path, text] of Object.entries(WRITTEN)) { mkdirSync(join(made, path, ".."), { recursive: true }); writeFileSync(join(made, path), text); }
-    steps["written"] = { what: "the handler, the journey and the SDK script written", status: 0, out: "", err: "" };
+    // With the handler and the journey written, generated/ is made again, as a reader runs it after editing.
+    steps["written"] = run("pnpm ortho generate (after the handler and the journey)", "pnpm", ["ortho", "generate"], made, 5 * MIN);
+    expect(steps["written"].status, shown(steps["written"])).toBe(0);
+    expect(readFileSync(join(made, "src/greeting/say.ts"), "utf8"), "the handler written over the scaffold is kept").toBe(WRITTEN["src/greeting/say.ts"]);
   });
 
   it("bakery's generated/ is what its own `ortho generate` makes: a copy regenerated rewrites nothing", { timeout: 6 * MIN }, () => {
-    expect(steps["written"]?.status, shown(steps["generate"])).toBe(0);
+    expect(steps["written"]?.status, shown(steps["written"] ?? steps["generate"])).toBe(0);
     const copy = join(mkdtempSync(join(work, "regen-")), APP);
     mkdirSync(copy);
     for (const e of readdirSync(made)) if (e !== "node_modules") cpSync(join(made, e), join(copy, e), { recursive: true });
@@ -252,9 +260,9 @@ describe("09 the acceptance run: publish, ortho new app, declare one thing, gene
   });
 
   it("`ortho prove --env local --json` passes every journey: the starter's, by name, and the new one, which runs greeting.say through its handler", { timeout: 15 * MIN }, () => {
-    expect(steps["written"]?.status, shown(steps["generate"])).toBe(0);
+    expect(steps["written"]?.status, shown(steps["written"] ?? steps["generate"])).toBe(0);
     steps["prove"] = run("pnpm ortho prove --env local --json", "pnpm", ["ortho", "prove", "--env", "local", "--json"], made, 14 * MIN);
-    const verdict = json<Verdict>(steps["prove"].out.slice(steps["prove"].out.indexOf("{")));
+    const verdict = document<Verdict>(steps["prove"].out);
     expect(verdict, `no verdict: ${shown(steps["prove"])}`).toBeDefined();
     expect(verdict?.passed, shown(steps["prove"])).toBe(true);
     expect(steps["prove"].status, shown(steps["prove"])).toBe(0);
