@@ -71,7 +71,9 @@ built in `examples/capxul/blueprint/things/`.
    Mode of Payment (and Account), Payment Reconciliation and its jobs, Unreconcile Payment, Payment Gateway Account. It
    sits below `invoicing`: what is still owed is the ledger's Payment Ledger Entry, so a payment settles an outstanding
    by its voucher kind and id and never needs to know what an invoice is. Payroll's and expenses' payables settle here
-   too. The rails (Bridge, a bank, later the Safe) are below it, filling its *rail* contract.
+   too. It ships its own rail, *recorded*: the money moved outside Capxul, from the company's own bank or wallet, and the
+   entry carries the mode of payment and a reference (ERPNext's normal case). Bridge and later the Safe are further
+   rails a payment picks.
 8. **`contractors`** (core, agreed with the money and global payroll designer). Paying people who are not employees,
    the most common case for Capxul's customers (a US company with people abroad). No ERPNext record types: a contractor
    is a `parties` Supplier, and this piece adds its tax form (W-9, W-8BEN, W-8BEN-E: kind, received day, file, expiry),
@@ -172,8 +174,9 @@ removes a mount file and rebuilds.
 
 Two **contracts filled at build time** (gap 3) complete them: a piece declares a slot in its own rules that another
 piece may fill. `payroll` declares *the tax on a slip*, filled by `payroll-tax-us`; `ledger` declares *a check before a
-posting*, filled by `budgets`; `payments` declares *a rail*, filled by `bridge` (and later a bank or the Safe). A contract is required or optional. A required one with no filler is a `check` error
-(`payments` with no rail can't move money). An optional one with no filler is empty: no budgets, no budget check; no
+posting*, filled by `budgets`; `payments` declares *a rail*, filled by its own *recorded* rail and by `bridge` (later the Safe). A contract is required or optional. A required one with no filler is a `check` error
+(none today: `payments` fills its rail contract itself with *recorded*, so a Capxul with no Bridge and no Safe builds
+and records payments made elsewhere). An optional one with no filler is empty: no budgets, no budget check; no
 tax piece, a slip with no tax lines, which is right for contractors only, employees through an employer of record, or a
 country with no income tax. Where several fillers are mounted, the contract says how one is chosen: a slip's tax piece
 by the employee's place of work (CX-payroll-tax, point 1).
@@ -217,8 +220,8 @@ link (L), in-commit call (I), event (E), adapter (A).
 **Payroll, payments and the ledger** (agreed with the money and global payroll designer, CX-money-global-payroll).
 Payroll calculates gross to net and posts its accrual through `ledger.post` in its own commit (payroll payable, party
 the worker); it never writes ledger lines and never moves money. A payable is the ledger's outstanding against a party,
-not a record of its own. `payments` moves money and settles outstandings, through a rail filled by `bridge`, a bank or
-later the Safe. The ledger owns the lines, both amounts on each and revaluation; `rates` owns the rates.
+not a record of its own. `payments` moves money and settles outstandings, through a rail: *recorded* (money moved
+outside Capxul), `bridge`, or later the Safe. The ledger owns the lines, both amounts on each and revaluation; `rates` owns the rates.
 
 **Rules every contract keeps.** A piece writes only its own things, except through an in-commit call its owner offers
 (gap 4 makes `check` say so). A core piece never links to an optional one: when a core record must know about an
@@ -330,7 +333,8 @@ milestone Goal 16, `lane:goal-16` unless a running goal has it).
    `budgets`' stop (slice 12). M1.08's needs name a plugin, not a contract several plugins can meet. Draft: "A feature
    declares a contract (an input and output schema, run in the caller's commit); another feature fills it; `check`
    refuses a required contract with no filler, an optional one with none is skipped, and several fillers are allowed
-   only where the contract names how one is chosen per call. Checks: payments with no rail is refused; payroll with no
+   only where the contract names how one is chosen per call. Checks: a required contract with no filler is refused; payments with only its *recorded* rail compiles, and a payment
+   picks among the mounted rails; payroll with no
    tax piece compiles and its slips have no tax lines; with `payroll-tax-us` a United States employee's slip carries its
    tax lines; with no budgets a posting is not checked." Interim: no tax piece is mounted while the United States
    module is paused (CX-money-global-payroll, decision 1).
