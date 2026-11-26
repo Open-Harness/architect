@@ -44,7 +44,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 
 | Doctype | Kind | Flags | Columns | Source | Notes |
 |---|---|---|---|---|---|
-| Account | thing |  | 17 | `erpnext/erpnext/accounts/doctype/account/account.json` |  |
+| Account | thing |  | 17 | `erpnext/erpnext/accounts/doctype/account/account.json` | a tree: its company, name, an optional parent group, root type (a child carries its parent's), report type (worked out), account type (Bank, Cash, Receivable, Payable, Tax, or none). Group or ledger is its state; a group with nothing under it can become a ledger. Number, currency, freezing and the way back to a group come later (CX-ledger) |
 | Account Closing Balance | thing |  | 13 | `erpnext/erpnext/accounts/doctype/account_closing_balance/account_closing_balance.json` |  |
 | Accounting Dimension | thing |  | 4 | `erpnext/erpnext/accounts/doctype/accounting_dimension/accounting_dimension.json` |  |
 | Accounting Dimension Filter | thing |  | 6 | `erpnext/erpnext/accounts/doctype/accounting_dimension_filter/accounting_dimension_filter.json` |  |
@@ -86,7 +86,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Chart of Accounts Importer | job |  | 2 | `erpnext/erpnext/accounts/doctype/chart_of_accounts_importer/chart_of_accounts_importer.json` |  |
 | Cheque Print Template | thing |  | 26 | `erpnext/erpnext/accounts/doctype/cheque_print_template/cheque_print_template.json` |  |
 | Company | thing |  | 81 | `erpnext/erpnext/setup/doctype/company/company.json` | Capxul's companies, its own organisations (K42, call 10) |
-| Cost Center | thing |  | 9 | `erpnext/erpnext/accounts/doctype/cost_center/cost_center.json` |  |
+| Cost Center | thing |  | 9 | `erpnext/erpnext/accounts/doctype/cost_center/cost_center.json` | a tree like Account: company, name, an optional parent group; group or ledger is its state (CX-ledger) |
 | Cost Center Allocation | thing | SUB | 4 | `erpnext/erpnext/accounts/doctype/cost_center_allocation/cost_center_allocation.json` |  |
 | Coupon Code | thing |  | 11 | `erpnext/erpnext/accounts/doctype/coupon_code/coupon_code.json` |  |
 | Currency Exchange | thing | FX | 6 | `erpnext/erpnext/setup/doctype/currency_exchange/currency_exchange.json` | a rate between two currencies: money-units question (CX-grill §3) |
@@ -98,8 +98,8 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Email Digest | job |  | 29 | `erpnext/erpnext/setup/doctype/email_digest/email_digest.json` |  |
 | Exchange Rate Revaluation | job | SUB | 7 | `erpnext/erpnext/accounts/doctype/exchange_rate_revaluation/exchange_rate_revaluation.json` | money-units question (CX-grill §3) |
 | Finance Book | thing |  | 1 | `erpnext/erpnext/accounts/doctype/finance_book/finance_book.json` |  |
-| Fiscal Year | thing |  | 6 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` |  |
-| GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit (spike #710) |
+| Fiscal Year | thing |  | 6 | `erpnext/erpnext/accounts/doctype/fiscal_year/fiscal_year.json` | per company, not site-wide with a Fiscal Year Company table: name, first and last day, short year. A year not marked short is exactly a year less a day; a short one no longer; no overlap with the company's other years (CX-ledger) |
+| GL Entry | thing |  | 32 | `erpnext/erpnext/accounts/doctype/gl_entry/gl_entry.json` | ledger line; posted only by a voucher's submit, and by its cancel as a reversal with debit and credit swapped, both lines marked `isCancelled`. No machine and no operation of its own; read by account (CX-ledger) |
 | Global Defaults | settings |  | 8 | `erpnext/erpnext/setup/doctype/global_defaults/global_defaults.json` |  |
 | Incoterm | thing |  | 3 | `erpnext/erpnext/setup/doctype/incoterm/incoterm.json` |  |
 | Industry Type | thing |  | 1 | `erpnext/erpnext/selling/doctype/industry_type/industry_type.json` |  |
@@ -109,7 +109,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Item Group | thing |  | 7 | `erpnext/erpnext/setup/doctype/item_group/item_group.json` |  |
 | Item Price | thing |  | 19 | `erpnext/erpnext/stock/doctype/item_price/item_price.json` |  |
 | Item Tax Template | thing |  | 3 | `erpnext/erpnext/accounts/doctype/item_tax_template/item_tax_template.json` |  |
-| Journal Entry | thing | SUB | 41 | `erpnext/erpnext/accounts/doctype/journal_entry/journal_entry.json` |  |
+| Journal Entry | thing | SUB | 41 | `erpnext/erpnext/accounts/doctype/journal_entry/journal_entry.json` | draft, submitted, cancelled: company, posting day, remark and its totals, in USDC; created with its lines in one call; submit refuses unbalanced and outside every fiscal year, and posts one GL Entry per line, unmerged (CX-ledger) |
 | Journal Entry Template | thing |  | 6 | `erpnext/erpnext/accounts/doctype/journal_entry_template/journal_entry_template.json` |  |
 | Ledger Health | job |  | 5 | `erpnext/erpnext/accounts/doctype/ledger_health/ledger_health.json` |  |
 | Ledger Health Monitor | job |  | 4 | `erpnext/erpnext/accounts/doctype/ledger_health_monitor/ledger_health_monitor.json` |  |
@@ -238,7 +238,7 @@ Accounts, selling, buying, fixed assets and the records they need from stock and
 | Item Tax | line |  | 5 | `erpnext/erpnext/stock/doctype/item_tax/item_tax.json` |  |
 | Item Tax Template Detail | line |  | 3 | `erpnext/erpnext/accounts/doctype/item_tax_template_detail/item_tax_template_detail.json` |  |
 | Item Variant Attribute | line |  | 8 | `erpnext/erpnext/stock/doctype/item_variant_attribute/item_variant_attribute.json` |  |
-| Journal Entry Account | line | FX | 23 | `erpnext/erpnext/accounts/doctype/journal_entry_account/journal_entry_account.json` |  |
+| Journal Entry Account | line | FX | 23 | `erpnext/erpnext/accounts/doctype/journal_entry_account/journal_entry_account.json` | its line number, account, cost center, debit and credit in USDC; written only by its entry's create; party, reference and currency fields left out (CX-ledger) |
 | Journal Entry Template Account | line |  | 1 | `erpnext/erpnext/accounts/doctype/journal_entry_template_account/journal_entry_template_account.json` |  |
 | Ledger Health Monitor Company | line |  | 1 | `erpnext/erpnext/accounts/doctype/ledger_health_monitor_company/ledger_health_monitor_company.json` |  |
 | Ledger Merge Accounts | line |  | 3 | `erpnext/erpnext/accounts/doctype/ledger_merge_accounts/ledger_merge_accounts.json` |  |
@@ -337,11 +337,11 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 |---|---|---|---|---|---|
 | Appointment Letter | thing |  | 7 | `hrms/hrms/hr/doctype/appointment_letter/appointment_letter.json` |  |
 | Appointment Letter Template | thing |  | 3 | `hrms/hrms/hr/doctype/appointment_letter_template/appointment_letter_template.json` |  |
-| Appraisal | thing | SUB | 20 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` |  |
-| Appraisal Cycle | thing |  | 12 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` |  |
-| Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` |  |
-| Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` | one per employee per day (a unique rule), in the employee's company, not before joining, not for a leaver; Present, Absent, Half Day or Work From Home. On Leave and the check against leave come with leave (8b, #764); its shift waits on optional references (#742, item 5). HRMS has no future-day check at `46b38904` |
-| Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` | a draft, then approved or rejected; approving marks every day from its first to its last in one call (found through the attendance rule with `findBy`), changing a day marked with another status. Half days, shift, holidays and the overlap check wait on optional fields, holiday lists per employee and #764 |
+| Appraisal | thing | SUB | 20 | `hrms/hrms/hr/doctype/appraisal/appraisal.json` | one per employee per cycle (a unique rule), made by the cycle's start or by the owner; KRA and self-rating lines copied from the template. The owner rates by hand under Manual Rating, the employee rates themselves; HRMS's scores, rounded half up (`decisions/CX-appraisals.md`) |
+| Appraisal Cycle | thing |  | 12 | `hrms/hrms/hr/doctype/appraisal_cycle/appraisal_cycle.json` | the owner's: notStarted, inProgress, completed (and reopened). Start makes the appraisals; complete waits on every one submitted. Branch, department and job-title filters come later |
+| Appraisal Template | thing |  | 2 | `hrms/hrms/hr/doctype/appraisal_template/appraisal_template.json` | the company's, unique by title; KRA weightages total 100, criteria too when there are any |
+| Attendance | thing | SUB | 19 | `hrms/hrms/hr/doctype/attendance/attendance.json` | one per employee per day (a unique rule), in the employee's company, not before joining, not for a leaver; Present, Absent, Half Day or Work From Home by `mark`; On Leave only by a leave's approval, and `mark` refuses a day an approved leave covers (`decisions/CX-leave.md`); its shift, leave type and application wait on optional references (#967). HRMS has no future-day check at `46b38904` |
+| Attendance Request | thing | SUB | 13 | `hrms/hrms/hr/doctype/attendance_request/attendance_request.json` | a draft, then approved or rejected; approving marks every day from its first to its last in one call (found through the attendance rule with `findBy`), changing a day marked with another status. It refuses a draft or approved request of the employee sharing a day (`validate_request_overlap`, by list) and skips the days an approved leave covers (`decisions/CX-leave.md`). Half days, shift and holidays wait on optional fields and holiday lists per employee |
 | Branch | thing |  | 1 | `erpnext/erpnext/setup/doctype/branch/branch.json` | a place a company works from, its name unique within the company |
 | Compensatory Leave Request | thing | SUB | 11 | `hrms/hrms/hr/doctype/compensatory_leave_request/compensatory_leave_request.json` |  |
 | Daily Work Summary | thing |  | 3 | `hrms/hrms/hr/doctype/daily_work_summary/daily_work_summary.json` |  |
@@ -353,14 +353,14 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Employee Advance | thing | SUB FX | 19 | `hrms/hrms/hr/doctype/employee_advance/employee_advance.json` |  |
 | Employee Attendance Tool | job |  | 12 | `hrms/hrms/hr/doctype/employee_attendance_tool/employee_attendance_tool.json` |  |
 | Employee Checkin | thing |  | 16 | `hrms/hrms/hr/doctype/employee_checkin/employee_checkin.json` |  |
-| Employee Feedback Criteria | thing |  | 1 | `hrms/hrms/hr/doctype/employee_feedback_criteria/employee_feedback_criteria.json` |  |
+| Employee Feedback Criteria | thing |  | 1 | `hrms/hrms/hr/doctype/employee_feedback_criteria/employee_feedback_criteria.json` | the company's, unique by name |
 | Employee Grade | thing |  | 3 | `hrms/hrms/hr/doctype/employee_grade/employee_grade.json` | a level employees are placed at, its name unique within the company; its salary structure, base pay and currency come with payroll |
 | Employee Grievance | thing | SUB | 19 | `hrms/hrms/hr/doctype/employee_grievance/employee_grievance.json` |  |
 | Employee Group | thing |  | 1 | `erpnext/erpnext/setup/doctype/employee_group/employee_group.json` |  |
 | Employee Health Insurance | thing |  | 1 | `hrms/hrms/hr/doctype/employee_health_insurance/employee_health_insurance.json` |  |
 | Employee Onboarding | thing | SUB | 16 | `hrms/hrms/hr/doctype/employee_onboarding/employee_onboarding.json` |  |
 | Employee Onboarding Template | thing |  | 5 | `hrms/hrms/hr/doctype/employee_onboarding_template/employee_onboarding_template.json` |  |
-| Employee Performance Feedback | thing | SUB | 15 | `hrms/hrms/hr/doctype/employee_performance_feedback/employee_performance_feedback.json` |  |
+| Employee Performance Feedback | thing | SUB | 15 | `hrms/hrms/hr/doctype/employee_performance_feedback/employee_performance_feedback.json` | given by a colleague signed in as themselves, never on oneself, refused only against a completed cycle; any number per reviewer. A leaver may submit a draft but start none |
 | Employee Promotion | thing | SUB | 9 | `hrms/hrms/hr/doctype/employee_promotion/employee_promotion.json` | the job title only, as one property line: the current one copied from the employee on create and a new one of the company's; draft, submitted on or after its day by the world's clock (setting the employee's job title), cancelled (putting the old one back). Not for a leaver, judged on create. Grade, branch and pay (`revised_ctc`) come later (CX-employee-moves) |
 | Employee Referral | thing | SUB | 20 | `hrms/hrms/hr/doctype/employee_referral/employee_referral.json` |  |
 | Employee Separation | thing | SUB | 14 | `hrms/hrms/hr/doctype/employee_separation/employee_separation.json` | the resignation letter's day and the day it begins; pending, in process, completed, moved by the owner. One open separation per employee (a unique rule, Capxul's own). It doesn't relieve the employee. Activities, template, project and tasks, exit interview and Full and Final come later (CX-employee-moves) |
@@ -372,7 +372,7 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Expense Claim | thing | SUB | 26 | `hrms/hrms/hr/doctype/expense_claim/expense_claim.json` |  |
 | Expense Claim Type | thing |  | 3 | `hrms/hrms/hr/doctype/expense_claim_type/expense_claim_type.json` |  |
 | Full and Final Statement | thing | SUB | 13 | `hrms/hrms/hr/doctype/full_and_final_statement/full_and_final_statement.json` |  |
-| Goal | thing |  | 17 | `hrms/hrms/hr/doctype/goal/goal.json` |  |
+| Goal | thing |  | 17 | `hrms/hrms/hr/doctype/goal/goal.json` | pending, inProgress, completed, archived, closed; a group's progress follows its children, and under the automated method goals score the appraisal. Always in a cycle |
 | Grievance Type | thing |  | 1 | `hrms/hrms/hr/doctype/grievance_type/grievance_type.json` |  |
 | HR Settings | settings |  | 34 | `hrms/hrms/hr/doctype/hr_settings/hr_settings.json` |  |
 | Holiday List | thing |  | 8 | `erpnext/erpnext/setup/doctype/holiday_list/holiday_list.json` |  |
@@ -389,17 +389,17 @@ A company's people, leave, attendance, recruitment, appraisals and expenses. Sli
 | Job Opening | thing |  | 25 | `hrms/hrms/hr/doctype/job_opening/job_opening.json` | under a job title, whose company it takes, for at least one person; open, then closed by the owner (never by itself). Staffing plan, requisition, salary range and closing day come later (CX-recruitment) |
 | Job Opening Template | thing |  | 5 | `hrms/hrms/hr/doctype/job_opening_template/job_opening_template.json` |  |
 | Job Requisition | thing |  | 17 | `hrms/hrms/hr/doctype/job_requisition/job_requisition.json` |  |
-| KRA | thing |  | 2 | `hrms/hrms/hr/doctype/kra/kra.json` |  |
-| Leave Allocation | thing | SUB | 21 | `hrms/hrms/hr/doctype/leave_allocation/leave_allocation.json` |  |
-| Leave Application | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_application/leave_application.json` |  |
+| KRA | thing |  | 2 | `hrms/hrms/hr/doctype/kra/kra.json` | the company's, unique by title |
+| Leave Allocation | thing | SUB | 21 | `hrms/hrms/hr/doctype/leave_allocation/leave_allocation.json` | 8b: draft then submitted; leaves allocated an exact decimal; no overlap with a submitted one of the same employee and type, judged by list (`decisions/CX-leave.md`). Carry-forward, policy and period are out of scope |
+| Leave Application | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_application/leave_application.json` | 8b: open, then approved, rejected or cancelled; the balance, overlap, days in a row and covering allocation judged by list, approve marks its days On Leave (`decisions/CX-leave.md`). Half days are out of scope |
 | Leave Block List | thing |  | 4 | `hrms/hrms/hr/doctype/leave_block_list/leave_block_list.json` |  |
 | Leave Control Panel | job |  | 15 | `hrms/hrms/hr/doctype/leave_control_panel/leave_control_panel.json` |  |
 | Leave Encashment | thing | SUB | 22 | `hrms/hrms/hr/doctype/leave_encashment/leave_encashment.json` |  |
-| Leave Ledger Entry | thing | SUB | 14 | `hrms/hrms/hr/doctype/leave_ledger_entry/leave_ledger_entry.json` |  |
+| Leave Ledger Entry | thing | SUB | 14 | `hrms/hrms/hr/doctype/leave_ledger_entry/leave_ledger_entry.json` | not taken in 8b: the balance is computed from lists of allocations and approved applications (`decisions/CX-leave.md`) |
 | Leave Period | thing |  | 5 | `hrms/hrms/hr/doctype/leave_period/leave_period.json` |  |
 | Leave Policy | thing | SUB | 2 | `hrms/hrms/hr/doctype/leave_policy/leave_policy.json` |  |
 | Leave Policy Assignment | thing | SUB | 11 | `hrms/hrms/hr/doctype/leave_policy_assignment/leave_policy_assignment.json` |  |
-| Leave Type | thing |  | 23 | `hrms/hrms/hr/doctype/leave_type/leave_type.json` |  |
+| Leave Type | thing |  | 23 | `hrms/hrms/hr/doctype/leave_type/leave_type.json` | 8b: per company, its name unique there; days in a row (0 for no limit), leave without pay, holidays counted (`decisions/CX-leave.md`) |
 | Offer Term | thing |  | 1 | `hrms/hrms/hr/doctype/offer_term/offer_term.json` |  |
 | Purpose of Travel | thing |  | 1 | `hrms/hrms/hr/doctype/purpose_of_travel/purpose_of_travel.json` |  |
 | Shift Assignment | thing | SUB | 12 | `hrms/hrms/hr/doctype/shift_assignment/shift_assignment.json` |  |
@@ -472,7 +472,7 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 | Employee Benefit Claim | thing | SUB | 13 | `hrms/hrms/payroll/doctype/employee_benefit_claim/employee_benefit_claim.json` |  |
 | Employee Incentive | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_incentive/employee_incentive.json` |  |
 | Employee Other Income | thing | SUB | 7 | `hrms/hrms/payroll/doctype/employee_other_income/employee_other_income.json` |  |
-| Employee Tax Exemption Category | thing |  | 2 | `hrms/hrms/payroll/doctype/employee_tax_exemption_category/employee_tax_exemption_category.json` | India's income-tax exemption shape; slice 9 decides how to generalise it |
+| Employee Tax Exemption Category | thing |  | 2 | `hrms/hrms/payroll/doctype/employee_tax_exemption_category/employee_tax_exemption_category.json` | India's income-tax exemption shape: not taken until a jurisdiction needs it (CX-payroll-tax); for the United States, the withholding certificate (Form W-4) takes the Declaration's place |
 | Employee Tax Exemption Declaration | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration/employee_tax_exemption_declaration.json` | as above |
 | Employee Tax Exemption Proof Submission | thing | SUB | 11 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission/employee_tax_exemption_proof_submission.json` | as above |
 | Employee Tax Exemption Sub Category | thing |  | 3 | `hrms/hrms/payroll/doctype/employee_tax_exemption_sub_category/employee_tax_exemption_sub_category.json` | as above |
@@ -490,8 +490,8 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 | Salary Withholding | thing | SUB | 13 | `hrms/hrms/payroll/doctype/salary_withholding/salary_withholding.json` |  |
 | Employee Benefit Application Detail | line |  | 4 | `hrms/hrms/payroll/doctype/employee_benefit_application_detail/employee_benefit_application_detail.json` |  |
 | Employee Cost Center | line |  | 2 | `hrms/hrms/payroll/doctype/employee_cost_center/employee_cost_center.json` |  |
-| Employee Tax Exemption Declaration Category | line |  | 4 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration_category/employee_tax_exemption_declaration_category.json` |  |
-| Employee Tax Exemption Proof Submission Detail | line |  | 6 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission_detail/employee_tax_exemption_proof_submission_detail.json` |  |
+| Employee Tax Exemption Declaration Category | line |  | 4 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration_category/employee_tax_exemption_declaration_category.json` | a line of Employee Tax Exemption Declaration; as above |
+| Employee Tax Exemption Proof Submission Detail | line |  | 6 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission_detail/employee_tax_exemption_proof_submission_detail.json` | a line of Employee Tax Exemption Proof Submission; as above |
 | Gratuity Applicable Component | line |  | 1 | `hrms/hrms/payroll/doctype/gratuity_applicable_component/gratuity_applicable_component.json` |  |
 | Gratuity Rule Slab | line |  | 3 | `hrms/hrms/payroll/doctype/gratuity_rule_slab/gratuity_rule_slab.json` |  |
 | Income Tax Slab Other Charges | line |  | 4 | `hrms/hrms/payroll/doctype/income_tax_slab_other_charges/income_tax_slab_other_charges.json` |  |

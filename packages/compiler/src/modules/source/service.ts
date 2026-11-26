@@ -78,7 +78,7 @@ export const nodeSource = (given: string) => {
       const files = yield* Effect.forEach(blueprintFilesOf(folder), (path) =>
         loadFile(path, join(folder, path), `${name}/blueprint/${path}`).pipe(
           Effect.map((loaded) => ({ ...loaded, specifier: `${name}/blueprint/${path}` }))));
-      return { integrity, layer: manifest?.src !== undefined && existsSync(join(dir, manifest.src, "layer.js")), files };
+      return { integrity, layer: manifest?.src !== undefined && existsSync(join(dir, manifest.src, "layer.js")), ...(existsSync(join(dir, "src/written.ts")) ? { written: true } : {}), files };
     }),
   });
 };

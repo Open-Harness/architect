@@ -30,6 +30,8 @@ export interface PluginFiles {
   readonly integrity: string;
   /** Whether its declared `src` folder has a `layer.js`: the services its handlers and calls need. */
   readonly layer?: boolean;
+  /** Whether it has a `src/written.ts`: a generated adapter's, where its refusal code prefix and exit base are set by hand. */
+  readonly written?: boolean;
   /** `path` is relative to the blueprint folder (`things/echo/thing.js`); `specifier` is how code imports it. */
   readonly files: ReadonlyArray<LoadedFile & { readonly specifier: string }>;
 }

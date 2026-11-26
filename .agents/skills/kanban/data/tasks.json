@@ -4412,10 +4412,10 @@
   "size": "M",
   "stage": "backlog",
   "thread": null,
-  "title": "Capxul's first feature on Orthograph, in its staging",
+  "title": "Capxul's first features on Orthograph, in its staging: the books, HR and payroll (K44)",
   "updatedAt": "2026-11-19T09:00:00Z",
   "waiting": null,
-  "what": "Capxul's first feature on Orthograph, in its staging"
+  "what": "Capxul's first features on Orthograph, in its staging: the books, HR and payroll (K44)"
  },
  "M7-12": {
   "doneWhen": "nx run e2e:m7 passes, and the gate's resources are destroyed",

@@ -3,7 +3,7 @@ import { Day } from "../../values/employee.ts";
 
 // Refusals that depend on data. The machine's own refusal is generated and never written here.
 // When several apply, `attendance-request.create` refuses RequesterNotInCompany, then RequesterHasLeft, then
-// RequestEndsBeforeStart, then RequestBeforeJoining, in the order of HRMS's `validate` and `validate_dates`.
+// RequestEndsBeforeStart, RequestBeforeJoining, then AttendanceRequestOverlaps, in the order of HRMS's `validate`.
 /** The employee named works for another company. Capxul's own refusal: HRMS copies `company` from the employee (`fetch_from`). */
 export class RequesterNotInCompany extends Blueprint.error({}, { exit: 41 }) {}
 /**
@@ -16,3 +16,8 @@ export class RequesterHasLeft extends Blueprint.error({}, { exit: 42 }) {}
 export class RequestEndsBeforeStart extends Blueprint.error({ fromDate: Day }, { exit: 43 }) {}
 /** HRMS's `validate_dates`: "From date can not be less than employee's joining date". The joining day itself is allowed. */
 export class RequestBeforeJoining extends Blueprint.error({ dateOfJoining: Day }, { exit: 44 }) {}
+/**
+ * HRMS's `validate_request_overlap`: a draft or approved request of the employee shares a day with this one. A rejected
+ * one doesn't, as a request HRMS drops (a deleted draft, or cancelled) doesn't (`decisions/CX-leave.md`, call 6).
+ */
+export class AttendanceRequestOverlaps extends Blueprint.error({}, { exit: 45 }) {}

@@ -34,8 +34,8 @@ describe("ReadNotServed at each door", () => {
 
   it("is what the CLI exits with and prints, the MCP tool (through the server's table) describes and the SDK decodes: each reads the tables, by tag", async () => {
     const cliOut = (await Effect.runPromise(cli.render({ name: "acme", model, mount: "cli", mounts: {} }))).find((f) => f.path === "src/output.ts")!.content;
-    expect(cliOut).toContain("tag in Errors.refusals ? Errors.refusals[tag as keyof typeof Errors.refusals].exit");
-    expect(cliOut).toContain("tag in Errors.codes");
+    expect(cliOut).toContain("Object.hasOwn(Errors.refusals, tag) ? Errors.refusals[tag as keyof typeof Errors.refusals].exit");
+    expect(cliOut).toContain("Object.hasOwn(Errors.codes, tag)");
     const main = (await Effect.runPromise(server.render({ name: "acme", model, mount: "server", mounts: {} }))).find((f) => f.path.endsWith("main.ts"))!.content;
     expect(main).toContain("refusals: { codes: Errors.codes, declared: Errors.declared, table: Errors.refusals }");
     const sdkClient = (await Effect.runPromise(sdk.render({ name: "acme", model, mount: "sdk", mounts: {} }))).find((f) => f.path === "src/client.ts")!.content;

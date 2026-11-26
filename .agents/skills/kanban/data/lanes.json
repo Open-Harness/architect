@@ -70,8 +70,8 @@
   "workable": false
  },
  "M7": {
-  "gate": "nx run e2e:m7: acme goes from a pull request to test, staging and production on Cloudflare with a verdict in each, Orthograph's packages are released under @orthograph on npm, and everything the gate made is destroyed after. Capxul's first feature runs in its staging.",
-  "goal": "Every local destination swapped for the real one, each credential created only with Aaron's written yes and the spend under $10 a day; then Capxul's first feature running on Orthograph.",
+  "gate": "nx run e2e:m7: acme goes from a pull request to test, staging and production on Cloudflare with a verdict in each, Orthograph's packages are released under @orthograph on npm, and everything the gate made is destroyed after. Capxul's books, HR and payroll run in its staging (K44).",
+  "goal": "Every local destination swapped for the real one, each credential created only with Aaron's written yes and the spend under $10 a day; then Capxul's books, HR and payroll running on Orthograph (K44).",
   "id": "M7",
   "name": "The cloud, then Capxul",
   "order": 8,

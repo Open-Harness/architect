@@ -4,7 +4,9 @@
     "blueprint/**/*.ts",
     "generated/**/*.ts",
     "src/**/*.ts",
-    "journeys/**/*.ts"
+    "journeys/**/*.ts",
+    "plugins/**/*.ts",
+    "tests/**/*.ts"
   ],
   "exclude": [
     "node_modules",
