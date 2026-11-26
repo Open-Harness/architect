@@ -53,7 +53,15 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
    the offer rule, whoever calls it. `job-applicant.reject` does the same with `job-offer.reject`: it runs it when the
    applicant's offer is `awaiting`, and moves alone when there is no offer or the offer is already settled. The offer's
    operations stay callable on their own. The two-call flow goes, and so do the journey steps that make it. #972 closes
-   when #1079's build lands; the recruitment change is the app's, not this slice. CX-appraisals' `goal.roll-up` can fold
+   when #1079's build lands; the recruitment change is the app's, not this slice.
+
+   **Open, for Capxul's app change (Goal 16's lead, 26 November 2026).** #972's own hole is a caller running
+   `job-offer.accept` directly: the offer is accepted and the applicant is left unmoved. This decision doesn't close it,
+   since the framework gives an operation no way to admit only callers that are other operations. Capxul closes it in
+   its own `-check` slice on `goal/capxul` once #1079's build lands, by one of two choices it makes there: the offer's
+   accept and reject stop being callable by a person (only the applicant's operations run them), or the applicant's
+   accept stays a separate call the journeys make, as today. Until then CX-recruitment's two-call flow stands. This
+   slice touches no Capxul file or journey. CX-appraisals' `goal.roll-up` can fold
    into the child's own operations the same way later.
 
 ## The checks
