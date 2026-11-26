@@ -89,7 +89,8 @@ export const Mounts: MountsApi = {
           else sources.set(n, { ...s, mount: name, package: plugin.name });
         }
         // Each thing gets its own verbs map, so an omit changes only this mount's copy.
-        const mine = renamed(own, name, plugin.name, plugin.version).map((t) => ({ ...t, verbs: new Map(t.verbs) }));
+        const written = me.kind === "adapter" && files.success.written ? { written: `${plugin.name}/src/written.ts` } : {};
+        const mine = renamed(own, name, plugin.name, plugin.version).map((t) => ({ ...t, ...written, verbs: new Map(t.verbs) }));
         const applied = applyVerbs(file, plugin.name, mount, mine, layout);
         problems.push(...applied.problems);
         for (const s of renamedStores(own, name, plugin.name, plugin.version)) {

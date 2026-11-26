@@ -2,10 +2,13 @@
 import { Effect } from "effect";
 import { Records } from "@orthograph/language-effect";
 import { Attendance } from "../../blueprint/things/attendance/thing.ts";
+import { LeaveApplication } from "../../blueprint/things/leave-application/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/attendance/mark.handler.ts";
 
-const { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining } = Errors.declared;
+const { AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceOnLeave } = Errors.declared;
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
 /**
  * attendance.mark: Mark whether an employee was at work on a day.
@@ -52,12 +55,17 @@ const mark: Handler = ({ company, employee, attendanceDate, status }, { steps, m
   Effect.gen(function* () {
     const records = yield* Records;
 
-    // Step load: database, span attendance.mark.load. The runtime read the employee and hands it in, so this step only
-    // takes it; a missing one never reaches here.
-    const attendee = yield* steps.load(Effect.succeed(refs.employee));
+    // Step load: database, span attendance.mark.load. The runtime read the employee and hands it in; this step lists
+    // the employee's approved leave applications.
+    const { attendee, onLeave } = yield* steps.load(
+      Effect.gen(function* () {
+        const approved = yield* records.list({ ...all, thing: LeaveApplication, where: { employee }, state: "approved" });
+        return { attendee: refs.employee, onLeave: approved.items };
+      }),
+    );
     if (!attendee) return yield* Effect.die(new Error(`employee ${employee} was read and then not found`));
 
-    // Refusal order (errors.ts): AttendeeNotInCompany, then AttendeeHasLeft, then AttendanceBeforeJoining.
+    // Refusal order (errors.ts): AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, then AttendanceOnLeave.
     // AttendeeNotInCompany: exit 41, AN-001.
     if (attendee["company"] !== company) {
       yield* Effect.logInfo("the employee works for another company");
@@ -76,6 +84,14 @@ const mark: Handler = ({ company, employee, attendanceDate, status }, { steps, m
     if (attendanceDate < dateOfJoining) {
       yield* Effect.logInfo("the day is before the employee joined");
       return yield* new AttendanceBeforeJoining({ dateOfJoining });
+    }
+
+    // AttendanceOnLeave: exit 45, AN-005. An approved leave covers the day, holidays inside it included; On Leave is
+    // marked only by a leave's approval (CX-leave, call 5). A cancelled leave doesn't refuse the day.
+    const covering = onLeave.find((a) => (a["fromDate"] as string) <= attendanceDate && attendanceDate <= (a["toDate"] as string));
+    if (covering !== undefined) {
+      yield* Effect.logInfo(`an approved leave covers ${attendanceDate}`);
+      return yield* new AttendanceOnLeave({ leaveApplication: covering["id"] as never });
     }
 
     // Step insert: database, span attendance.mark.insert. A day already marked is the runtime's refusal

@@ -134,6 +134,16 @@ import { submit as journalEntrySubmit } from "./journal-entry/submit.ts";
 import { list as journalEntryAccountList } from "./journal-entry-account/list.ts";
 import { create as kraCreate } from "./kra/create.ts";
 import { get as kraGet } from "./kra/get.ts";
+import { create as leaveAllocationCreate } from "./leave-allocation/create.ts";
+import { get as leaveAllocationGet } from "./leave-allocation/get.ts";
+import { submit as leaveAllocationSubmit } from "./leave-allocation/submit.ts";
+import { approve as leaveApplicationApprove } from "./leave-application/approve.ts";
+import { cancel as leaveApplicationCancel } from "./leave-application/cancel.ts";
+import { create as leaveApplicationCreate } from "./leave-application/create.ts";
+import { get as leaveApplicationGet } from "./leave-application/get.ts";
+import { reject as leaveApplicationReject } from "./leave-application/reject.ts";
+import { create as leaveTypeCreate } from "./leave-type/create.ts";
+import { get as leaveTypeGet } from "./leave-type/get.ts";
 import { create as shiftTypeCreate } from "./shift-type/create.ts";
 import { get as shiftTypeGet } from "./shift-type/get.ts";
 
@@ -180,10 +190,13 @@ const jobOpening = Command.make("job-opening").pipe(Command.withSubcommands([job
 const journalEntry = Command.make("journal-entry").pipe(Command.withSubcommands([journalEntryCancel, journalEntryCreate, journalEntryGet, journalEntrySubmit]));
 const journalEntryAccount = Command.make("journal-entry-account").pipe(Command.withSubcommands([journalEntryAccountList]));
 const kra = Command.make("kra").pipe(Command.withSubcommands([kraCreate, kraGet]));
+const leaveAllocation = Command.make("leave-allocation").pipe(Command.withSubcommands([leaveAllocationCreate, leaveAllocationGet, leaveAllocationSubmit]));
+const leaveApplication = Command.make("leave-application").pipe(Command.withSubcommands([leaveApplicationApprove, leaveApplicationCancel, leaveApplicationCreate, leaveApplicationGet, leaveApplicationReject]));
+const leaveType = Command.make("leave-type").pipe(Command.withSubcommands([leaveTypeCreate, leaveTypeGet]));
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, shiftType]),
+  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

@@ -1,8 +1,12 @@
 // Scaffolded from blueprint/things/goal/verbs/create.ts. Yours from now on.
-import { Effect, Match } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
-import type { Handler, Outcome } from "../../generated/api/src/goal/create.handler.ts";
+import type { Handler } from "../../generated/api/src/goal/create.handler.ts";
+import { Goal } from "../../blueprint/things/goal/thing.ts";
+import { oneAppraisalPerCycle } from "../../blueprint/things/appraisal/invariants.ts";
+import { inPercent, statusOf, ZERO, type KraLine } from "../appraisal-math.ts";
+import { follow } from "../goal-tree.ts";
 
 const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, ParentGoalNotGroup } = Errors.declared;
 
@@ -111,73 +115,87 @@ const { GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraN
  *   once it answers, it writes GoalCreated: goal from the answer, employee and kra from the payload;
  *   the call is the span goal.create, and its commit goal.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ employee, appraisalCycle, kra, goalName, progress, isGroup, parentGoal }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span goal.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // GoalCycleCompleted: exit 41, GO-001.
-    if (yield* Handlers.blank<boolean>("refuse GoalCycleCompleted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalCycleCompleted was refused"));
+    // Step load: database, span goal.create.load. The runtime read the employee, the cycle, the KRA and the parent;
+    // the employee's appraisal in the cycle is read here, since the goal's KRA must be one of its lines.
+    const { person, cycle, parent, appraisal } = yield* steps.load(
+      Effect.all({
+        person: Effect.succeed(refs.employee),
+        cycle: Effect.succeed(refs.appraisalCycle),
+        parent: Effect.succeed(refs.parentGoal),
+        appraisal: records.findBy(oneAppraisalPerCycle, { employee, appraisalCycle } as never),
+      }),
+    );
+    if (!person || !cycle) return yield* Effect.die(new Error(`goal ${id}'s employee or cycle was read and then not found`));
+    const company = cycle["company"] as string;
+
+    // Refusal order (errors.ts). GoalCycleCompleted: exit 41, GO-001. A completed cycle takes no new goal.
+    if (cycle.state === "completed") {
+      yield* Effect.logInfo("the cycle is completed");
       return yield* new GoalCycleCompleted({});
     }
 
-    // GoalEmployeeNotInCompany: exit 42, GO-002.
-    if (yield* Handlers.blank<boolean>("refuse GoalEmployeeNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalEmployeeNotInCompany was refused"));
+    // GoalEmployeeNotInCompany: exit 42, GO-002. The goal takes the cycle's company.
+    if (person["company"] !== company) {
+      yield* Effect.logInfo("the employee doesn't work for the cycle's company");
       return yield* new GoalEmployeeNotInCompany({});
     }
 
-    // GoalOwnerHasLeft: exit 43, GO-003.
-    if (yield* Handlers.blank<boolean>("refuse GoalOwnerHasLeft when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalOwnerHasLeft was refused"));
+    // GoalOwnerHasLeft: exit 43, GO-003. CX-expense-leavers.
+    if (person.state !== "active") {
+      yield* Effect.logInfo("the employee has left");
       return yield* new GoalOwnerHasLeft({});
     }
 
-    // GoalKraNotInAppraisal: exit 44, GO-004.
-    if (yield* Handlers.blank<boolean>("refuse GoalKraNotInAppraisal when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why GoalKraNotInAppraisal was refused"));
+    // GoalKraNotInAppraisal: exit 44, GO-004. The employee has an appraisal in the cycle with this KRA on it; before
+    // the cycle starts there is none.
+    if (!appraisal || !(appraisal["kras"] as ReadonlyArray<KraLine>).some((line) => line.kra === kra)) {
+      yield* Effect.logInfo("the KRA isn't on the employee's appraisal in the cycle");
       return yield* new GoalKraNotInAppraisal({});
     }
 
-    // ParentGoalMismatch: exit 45, GO-005.
-    if (yield* Handlers.blank<boolean>("refuse ParentGoalMismatch when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentGoalMismatch was refused"));
+    // ParentGoalMismatch: exit 45, GO-005. HRMS's validate_parent_fields; a parent that doesn't exist is refused the same way.
+    if (parentGoal !== undefined && (parent?.["employee"] !== employee || parent["kra"] !== kra || parent["appraisalCycle"] !== appraisalCycle)) {
+      yield* Effect.logInfo("the parent goal isn't in the same employee's tree, KRA and cycle");
       return yield* new ParentGoalMismatch({});
     }
 
-    // ProgressOutOfRange: exit 46, GO-006.
-    if (yield* Handlers.blank<boolean>("refuse ProgressOutOfRange when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ProgressOutOfRange was refused"));
+    // ProgressOutOfRange: exit 46, GO-006. HRMS's validate_progress; below 0 is Capxul's. A group's progress isn't
+    // typed (it follows its children), so what is sent for one is set aside below rather than judged.
+    if (!isGroup && !inPercent(progress)) {
+      yield* Effect.logInfo("the progress isn't between 0 and 100");
       return yield* new ProgressOutOfRange({});
     }
 
-    // ParentGoalNotGroup: exit 48, GO-009.
-    if (yield* Handlers.blank<boolean>("refuse ParentGoalNotGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why ParentGoalNotGroup was refused"));
+    // ParentGoalNotGroup: exit 48, GO-009. Frappe's validate_ledger.
+    if (parent && parent["isGroup"] !== true) {
+      yield* Effect.logInfo("the parent goal isn't a group");
       return yield* new ParentGoalNotGroup({});
     }
 
-    // Step insert: database, in the store goal, appraisal, span goal.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
-
-    // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
-    const outcome = yield* Handlers.blank<Outcome>("where create ends: pending or inProgress or completed");
-    yield* Match.value(outcome).pipe(
-      // To pending. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
-      Match.when("pending", () => move("pending")),
-      // To inProgress. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), complete (to completed), archive (to archived), close (to closed), rollUp (to pending or inProgress or completed).
-      Match.when("inProgress", () => move("inProgress")),
-      // To completed. From there the goal can: updateProgress (to pending or inProgress or completed or archived or closed), rollUp (to pending or inProgress or completed).
-      Match.when("completed", () => move("completed")),
-      Match.exhaustive,
+    // Step insert: database, in the store goal, appraisal, span goal.create.insert. A group starts empty, so at 0;
+    // its progress follows its children. The groups above take the new average, and the appraisal its scores.
+    const own: BigDecimal.BigDecimal = isGroup ? ZERO : progress;
+    const state = statusOf(own);
+    const scored = yield* steps.insert(
+      Effect.gen(function* () {
+        yield* records.insert(Goal, { id, company, employee, appraisalCycle, kra, goalName, progress: own, isGroup, ...(parentGoal === undefined ? {} : { parentGoal }) } as never);
+        return yield* follow(employee, appraisalCycle, { id, progress: own, state });
+      }),
     );
+    if (!scored) return yield* Effect.die(new Error(`goal ${id}'s appraisal was read and then not found`));
+
+    // The move create, to where its progress puts it.
+    yield* move(state);
 
     return {
       // GoalCreated needs goal, and only the answer can give it.
       goal: id,
-      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
-      appraisalCycle: yield* Handlers.blank("appraisalCycle, a goal.appraisalCycle"),
+      appraisal: scored as never,
+      appraisalCycle,
     };
   });
 

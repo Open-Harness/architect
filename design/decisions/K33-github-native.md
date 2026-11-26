@@ -85,7 +85,7 @@ $ grep -c '^| `' design/ledger.md   # 731 rows of open problems, in a file nothi
    `slices`. The brief stays the whole context (K32); the front matter is the part a machine reads.
 6. **The sync mirrors the briefs onto GitHub.** `tools/github/sync.mjs`, dry run by default, `--apply` to write: the
    labels, a milestone per goal, the goal issue and a sub-issue per slice, keeping the goal issue's body equal to the
-   front matter. It finds its issues by a marker in their body, never by title, never deletes, and running it twice
+   front matter. It finds its issues by a marker in their body, never by title, never deletes (superseded by K44, 25 November 2026: it removes a blocked-by link between two of a goal's own slices that the brief no longer gives), and running it twice
    changes nothing (its tests, `tools/github/sync.test.mjs`). `--migrate` moves open issues and pull requests from
    `goal-<n>` labels and release milestones to goal milestones and release labels, once.
 7. **Snags are issues from now.** A goal's new snags are Snag issues in its milestone, so they can be filtered, linked

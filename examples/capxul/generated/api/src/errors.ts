@@ -39,6 +39,9 @@ import * as JobOffer from "../../../blueprint/things/job-offer/errors.ts";
 import * as JobOpening from "../../../blueprint/things/job-opening/errors.ts";
 import * as JournalEntry from "../../../blueprint/things/journal-entry/errors.ts";
 import * as Kra from "../../../blueprint/things/kra/errors.ts";
+import * as LeaveAllocation from "../../../blueprint/things/leave-allocation/errors.ts";
+import * as LeaveApplication from "../../../blueprint/things/leave-application/errors.ts";
+import * as LeaveType from "../../../blueprint/things/leave-type/errors.ts";
 import * as ShiftType from "../../../blueprint/things/shift-type/errors.ts";
 
 /** Every refusal's code, its exit for the CLI and its HTTP status: one row each, read by the CLI, HTTP and MCP. */
@@ -80,10 +83,12 @@ export const refusals = {
   AttendeeHasLeft: { code: "AN-002", exit: 42, status: 422 },
   AttendanceBeforeJoining: { code: "AN-003", exit: 43, status: 422 },
   AttendanceAlreadyMarked: { code: "AN-004", exit: 44, status: 422 },
+  AttendanceOnLeave: { code: "AN-005", exit: 45, status: 422 },
   RequesterNotInCompany: { code: "AQ-001", exit: 41, status: 422 },
   RequesterHasLeft: { code: "AQ-002", exit: 42, status: 422 },
   RequestEndsBeforeStart: { code: "AQ-003", exit: 43, status: 422 },
   RequestBeforeJoining: { code: "AQ-004", exit: 44, status: 422 },
+  AttendanceRequestOverlaps: { code: "AQ-005", exit: 45, status: 422 },
   KybNotApproved: { code: "BA-001", exit: 41, status: 422 },
   BankAccountNameTaken: { code: "BA-002", exit: 42, status: 422 },
   AccountClosed: { code: "BT-001", exit: 41, status: 422 },
@@ -178,6 +183,26 @@ export const refusals = {
   JournalEntryUnbalanced: { code: "JE-008", exit: 48, status: 422 },
   PostingDateOutsideFiscalYear: { code: "JE-009", exit: 49, status: 422 },
   KraTitleTaken: { code: "KR-001", exit: 41, status: 422 },
+  AllocateeNotInCompany: { code: "LL-001", exit: 41, status: 422 },
+  AllocateeHasLeft: { code: "LL-002", exit: 42, status: 422 },
+  AllocationTypeNotInCompany: { code: "LL-003", exit: 43, status: 422 },
+  AllocationEndsBeforeStart: { code: "LL-004", exit: 44, status: 422 },
+  AllocationOverlaps: { code: "LL-005", exit: 45, status: 422 },
+  LeaveWithoutPayNotAllocated: { code: "LL-006", exit: 46, status: 422 },
+  NoLeavesAllocated: { code: "LL-007", exit: 47, status: 422 },
+  AllocationExceedsPeriod: { code: "LL-008", exit: 48, status: 422 },
+  ApplicantNotInCompany: { code: "LP-001", exit: 41, status: 422 },
+  ApplicantHasLeft: { code: "LP-002", exit: 42, status: 422 },
+  ApplicationTypeNotInCompany: { code: "LP-003", exit: 43, status: 422 },
+  LeaveEndsBeforeStart: { code: "LP-004", exit: 44, status: 422 },
+  LeaveBeforeJoining: { code: "LP-005", exit: 45, status: 422 },
+  NoAllocationCovers: { code: "LP-006", exit: 46, status: 422 },
+  LeaveAllHolidays: { code: "LP-007", exit: 47, status: 422 },
+  InsufficientLeaveBalance: { code: "LP-008", exit: 48, status: 422 },
+  LeaveOverlaps: { code: "LP-009", exit: 49, status: 422 },
+  LeaveTooLong: { code: "LP-010", exit: 50, status: 422 },
+  LeaveDayAttended: { code: "LP-011", exit: 51, status: 422 },
+  LeaveTypeNameTaken: { code: "LT-001", exit: 41, status: 422 },
   ShiftTypeNameTaken: { code: "SH-001", exit: 41, status: 422 },
   ShiftStartsWhenItEnds: { code: "SH-002", exit: 42, status: 422 },
   AccountNotGroup: { code: "AC-900", exit: 40, status: 409 },
@@ -218,6 +243,9 @@ export const refusals = {
   JobOpeningNotOpen: { code: "JO-900", exit: 40, status: 409 },
   JournalEntryNotDraft: { code: "JE-900", exit: 40, status: 409 },
   KraNotActive: { code: "KR-900", exit: 40, status: 409 },
+  LeaveAllocationNotDraft: { code: "LL-900", exit: 40, status: 409 },
+  LeaveApplicationNotOpen: { code: "LP-900", exit: 40, status: 409 },
+  LeaveTypeNotActive: { code: "LT-900", exit: 40, status: 409 },
   ShiftTypeNotActive: { code: "SH-900", exit: 40, status: 409 },
   AppraisalNotFound: { code: "AP-901", exit: 4, status: 404 },
   AppraisalCycleNotFound: { code: "CY-901", exit: 4, status: 404 },
@@ -234,6 +262,7 @@ export const refusals = {
   InterviewNotFound: { code: "IV-901", exit: 4, status: 404 },
   InterviewRoundNotFound: { code: "IR-901", exit: 4, status: 404 },
   KraNotFound: { code: "KR-901", exit: 4, status: 404 },
+  LeaveTypeNotFound: { code: "LT-901", exit: 4, status: 404 },
   NotAllowed: { code: "AR-001", exit: 3, status: 403 },
   IdempotencyConflict: { code: "AR-002", exit: 120, status: 409 },
 } as const;
@@ -313,6 +342,8 @@ ErrorNames.name(Attendance.AttendanceBeforeJoining, "AttendanceBeforeJoining");
 export class AttendanceBeforeJoining extends Schema.TaggedError<AttendanceBeforeJoining>()("AttendanceBeforeJoining", { code: Schema.Literal(refusals.AttendanceBeforeJoining.code), ...wireStruct(Attendance.AttendanceBeforeJoining.fields).fields }, { httpApiStatus: refusals.AttendanceBeforeJoining.status }) { static readonly code = refusals.AttendanceBeforeJoining.code; }
 ErrorNames.name(Attendance.AttendanceAlreadyMarked, "AttendanceAlreadyMarked");
 export class AttendanceAlreadyMarked extends Schema.TaggedError<AttendanceAlreadyMarked>()("AttendanceAlreadyMarked", { code: Schema.Literal(refusals.AttendanceAlreadyMarked.code), ...wireStruct(Attendance.AttendanceAlreadyMarked.fields).fields }, { httpApiStatus: refusals.AttendanceAlreadyMarked.status }) { static readonly code = refusals.AttendanceAlreadyMarked.code; }
+ErrorNames.name(Attendance.AttendanceOnLeave, "AttendanceOnLeave");
+export class AttendanceOnLeave extends Schema.TaggedError<AttendanceOnLeave>()("AttendanceOnLeave", { code: Schema.Literal(refusals.AttendanceOnLeave.code), ...wireStruct(Attendance.AttendanceOnLeave.fields).fields }, { httpApiStatus: refusals.AttendanceOnLeave.status }) { static readonly code = refusals.AttendanceOnLeave.code; }
 ErrorNames.name(AttendanceRequest.RequesterNotInCompany, "RequesterNotInCompany");
 export class RequesterNotInCompany extends Schema.TaggedError<RequesterNotInCompany>()("RequesterNotInCompany", { code: Schema.Literal(refusals.RequesterNotInCompany.code), ...wireStruct(AttendanceRequest.RequesterNotInCompany.fields).fields }, { httpApiStatus: refusals.RequesterNotInCompany.status }) { static readonly code = refusals.RequesterNotInCompany.code; }
 ErrorNames.name(AttendanceRequest.RequesterHasLeft, "RequesterHasLeft");
@@ -321,6 +352,8 @@ ErrorNames.name(AttendanceRequest.RequestEndsBeforeStart, "RequestEndsBeforeStar
 export class RequestEndsBeforeStart extends Schema.TaggedError<RequestEndsBeforeStart>()("RequestEndsBeforeStart", { code: Schema.Literal(refusals.RequestEndsBeforeStart.code), ...wireStruct(AttendanceRequest.RequestEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.RequestEndsBeforeStart.status }) { static readonly code = refusals.RequestEndsBeforeStart.code; }
 ErrorNames.name(AttendanceRequest.RequestBeforeJoining, "RequestBeforeJoining");
 export class RequestBeforeJoining extends Schema.TaggedError<RequestBeforeJoining>()("RequestBeforeJoining", { code: Schema.Literal(refusals.RequestBeforeJoining.code), ...wireStruct(AttendanceRequest.RequestBeforeJoining.fields).fields }, { httpApiStatus: refusals.RequestBeforeJoining.status }) { static readonly code = refusals.RequestBeforeJoining.code; }
+ErrorNames.name(AttendanceRequest.AttendanceRequestOverlaps, "AttendanceRequestOverlaps");
+export class AttendanceRequestOverlaps extends Schema.TaggedError<AttendanceRequestOverlaps>()("AttendanceRequestOverlaps", { code: Schema.Literal(refusals.AttendanceRequestOverlaps.code), ...wireStruct(AttendanceRequest.AttendanceRequestOverlaps.fields).fields }, { httpApiStatus: refusals.AttendanceRequestOverlaps.status }) { static readonly code = refusals.AttendanceRequestOverlaps.code; }
 ErrorNames.name(BankAccount.KybNotApproved, "KybNotApproved");
 export class KybNotApproved extends Schema.TaggedError<KybNotApproved>()("KybNotApproved", { code: Schema.Literal(refusals.KybNotApproved.code), ...wireStruct(BankAccount.KybNotApproved.fields).fields }, { httpApiStatus: refusals.KybNotApproved.status }) { static readonly code = refusals.KybNotApproved.code; }
 ErrorNames.name(BankAccount.BankAccountNameTaken, "BankAccountNameTaken");
@@ -509,6 +542,46 @@ ErrorNames.name(JournalEntry.PostingDateOutsideFiscalYear, "PostingDateOutsideFi
 export class PostingDateOutsideFiscalYear extends Schema.TaggedError<PostingDateOutsideFiscalYear>()("PostingDateOutsideFiscalYear", { code: Schema.Literal(refusals.PostingDateOutsideFiscalYear.code), ...wireStruct(JournalEntry.PostingDateOutsideFiscalYear.fields).fields }, { httpApiStatus: refusals.PostingDateOutsideFiscalYear.status }) { static readonly code = refusals.PostingDateOutsideFiscalYear.code; }
 ErrorNames.name(Kra.KraTitleTaken, "KraTitleTaken");
 export class KraTitleTaken extends Schema.TaggedError<KraTitleTaken>()("KraTitleTaken", { code: Schema.Literal(refusals.KraTitleTaken.code), ...wireStruct(Kra.KraTitleTaken.fields).fields }, { httpApiStatus: refusals.KraTitleTaken.status }) { static readonly code = refusals.KraTitleTaken.code; }
+ErrorNames.name(LeaveAllocation.AllocateeNotInCompany, "AllocateeNotInCompany");
+export class AllocateeNotInCompany extends Schema.TaggedError<AllocateeNotInCompany>()("AllocateeNotInCompany", { code: Schema.Literal(refusals.AllocateeNotInCompany.code), ...wireStruct(LeaveAllocation.AllocateeNotInCompany.fields).fields }, { httpApiStatus: refusals.AllocateeNotInCompany.status }) { static readonly code = refusals.AllocateeNotInCompany.code; }
+ErrorNames.name(LeaveAllocation.AllocateeHasLeft, "AllocateeHasLeft");
+export class AllocateeHasLeft extends Schema.TaggedError<AllocateeHasLeft>()("AllocateeHasLeft", { code: Schema.Literal(refusals.AllocateeHasLeft.code), ...wireStruct(LeaveAllocation.AllocateeHasLeft.fields).fields }, { httpApiStatus: refusals.AllocateeHasLeft.status }) { static readonly code = refusals.AllocateeHasLeft.code; }
+ErrorNames.name(LeaveAllocation.AllocationTypeNotInCompany, "AllocationTypeNotInCompany");
+export class AllocationTypeNotInCompany extends Schema.TaggedError<AllocationTypeNotInCompany>()("AllocationTypeNotInCompany", { code: Schema.Literal(refusals.AllocationTypeNotInCompany.code), ...wireStruct(LeaveAllocation.AllocationTypeNotInCompany.fields).fields }, { httpApiStatus: refusals.AllocationTypeNotInCompany.status }) { static readonly code = refusals.AllocationTypeNotInCompany.code; }
+ErrorNames.name(LeaveAllocation.AllocationEndsBeforeStart, "AllocationEndsBeforeStart");
+export class AllocationEndsBeforeStart extends Schema.TaggedError<AllocationEndsBeforeStart>()("AllocationEndsBeforeStart", { code: Schema.Literal(refusals.AllocationEndsBeforeStart.code), ...wireStruct(LeaveAllocation.AllocationEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.AllocationEndsBeforeStart.status }) { static readonly code = refusals.AllocationEndsBeforeStart.code; }
+ErrorNames.name(LeaveAllocation.AllocationOverlaps, "AllocationOverlaps");
+export class AllocationOverlaps extends Schema.TaggedError<AllocationOverlaps>()("AllocationOverlaps", { code: Schema.Literal(refusals.AllocationOverlaps.code), ...wireStruct(LeaveAllocation.AllocationOverlaps.fields).fields }, { httpApiStatus: refusals.AllocationOverlaps.status }) { static readonly code = refusals.AllocationOverlaps.code; }
+ErrorNames.name(LeaveAllocation.LeaveWithoutPayNotAllocated, "LeaveWithoutPayNotAllocated");
+export class LeaveWithoutPayNotAllocated extends Schema.TaggedError<LeaveWithoutPayNotAllocated>()("LeaveWithoutPayNotAllocated", { code: Schema.Literal(refusals.LeaveWithoutPayNotAllocated.code), ...wireStruct(LeaveAllocation.LeaveWithoutPayNotAllocated.fields).fields }, { httpApiStatus: refusals.LeaveWithoutPayNotAllocated.status }) { static readonly code = refusals.LeaveWithoutPayNotAllocated.code; }
+ErrorNames.name(LeaveAllocation.NoLeavesAllocated, "NoLeavesAllocated");
+export class NoLeavesAllocated extends Schema.TaggedError<NoLeavesAllocated>()("NoLeavesAllocated", { code: Schema.Literal(refusals.NoLeavesAllocated.code), ...wireStruct(LeaveAllocation.NoLeavesAllocated.fields).fields }, { httpApiStatus: refusals.NoLeavesAllocated.status }) { static readonly code = refusals.NoLeavesAllocated.code; }
+ErrorNames.name(LeaveAllocation.AllocationExceedsPeriod, "AllocationExceedsPeriod");
+export class AllocationExceedsPeriod extends Schema.TaggedError<AllocationExceedsPeriod>()("AllocationExceedsPeriod", { code: Schema.Literal(refusals.AllocationExceedsPeriod.code), ...wireStruct(LeaveAllocation.AllocationExceedsPeriod.fields).fields }, { httpApiStatus: refusals.AllocationExceedsPeriod.status }) { static readonly code = refusals.AllocationExceedsPeriod.code; }
+ErrorNames.name(LeaveApplication.ApplicantNotInCompany, "ApplicantNotInCompany");
+export class ApplicantNotInCompany extends Schema.TaggedError<ApplicantNotInCompany>()("ApplicantNotInCompany", { code: Schema.Literal(refusals.ApplicantNotInCompany.code), ...wireStruct(LeaveApplication.ApplicantNotInCompany.fields).fields }, { httpApiStatus: refusals.ApplicantNotInCompany.status }) { static readonly code = refusals.ApplicantNotInCompany.code; }
+ErrorNames.name(LeaveApplication.ApplicantHasLeft, "ApplicantHasLeft");
+export class ApplicantHasLeft extends Schema.TaggedError<ApplicantHasLeft>()("ApplicantHasLeft", { code: Schema.Literal(refusals.ApplicantHasLeft.code), ...wireStruct(LeaveApplication.ApplicantHasLeft.fields).fields }, { httpApiStatus: refusals.ApplicantHasLeft.status }) { static readonly code = refusals.ApplicantHasLeft.code; }
+ErrorNames.name(LeaveApplication.ApplicationTypeNotInCompany, "ApplicationTypeNotInCompany");
+export class ApplicationTypeNotInCompany extends Schema.TaggedError<ApplicationTypeNotInCompany>()("ApplicationTypeNotInCompany", { code: Schema.Literal(refusals.ApplicationTypeNotInCompany.code), ...wireStruct(LeaveApplication.ApplicationTypeNotInCompany.fields).fields }, { httpApiStatus: refusals.ApplicationTypeNotInCompany.status }) { static readonly code = refusals.ApplicationTypeNotInCompany.code; }
+ErrorNames.name(LeaveApplication.LeaveEndsBeforeStart, "LeaveEndsBeforeStart");
+export class LeaveEndsBeforeStart extends Schema.TaggedError<LeaveEndsBeforeStart>()("LeaveEndsBeforeStart", { code: Schema.Literal(refusals.LeaveEndsBeforeStart.code), ...wireStruct(LeaveApplication.LeaveEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.LeaveEndsBeforeStart.status }) { static readonly code = refusals.LeaveEndsBeforeStart.code; }
+ErrorNames.name(LeaveApplication.LeaveBeforeJoining, "LeaveBeforeJoining");
+export class LeaveBeforeJoining extends Schema.TaggedError<LeaveBeforeJoining>()("LeaveBeforeJoining", { code: Schema.Literal(refusals.LeaveBeforeJoining.code), ...wireStruct(LeaveApplication.LeaveBeforeJoining.fields).fields }, { httpApiStatus: refusals.LeaveBeforeJoining.status }) { static readonly code = refusals.LeaveBeforeJoining.code; }
+ErrorNames.name(LeaveApplication.NoAllocationCovers, "NoAllocationCovers");
+export class NoAllocationCovers extends Schema.TaggedError<NoAllocationCovers>()("NoAllocationCovers", { code: Schema.Literal(refusals.NoAllocationCovers.code), ...wireStruct(LeaveApplication.NoAllocationCovers.fields).fields }, { httpApiStatus: refusals.NoAllocationCovers.status }) { static readonly code = refusals.NoAllocationCovers.code; }
+ErrorNames.name(LeaveApplication.LeaveAllHolidays, "LeaveAllHolidays");
+export class LeaveAllHolidays extends Schema.TaggedError<LeaveAllHolidays>()("LeaveAllHolidays", { code: Schema.Literal(refusals.LeaveAllHolidays.code), ...wireStruct(LeaveApplication.LeaveAllHolidays.fields).fields }, { httpApiStatus: refusals.LeaveAllHolidays.status }) { static readonly code = refusals.LeaveAllHolidays.code; }
+ErrorNames.name(LeaveApplication.InsufficientLeaveBalance, "InsufficientLeaveBalance");
+export class InsufficientLeaveBalance extends Schema.TaggedError<InsufficientLeaveBalance>()("InsufficientLeaveBalance", { code: Schema.Literal(refusals.InsufficientLeaveBalance.code), ...wireStruct(LeaveApplication.InsufficientLeaveBalance.fields).fields }, { httpApiStatus: refusals.InsufficientLeaveBalance.status }) { static readonly code = refusals.InsufficientLeaveBalance.code; }
+ErrorNames.name(LeaveApplication.LeaveOverlaps, "LeaveOverlaps");
+export class LeaveOverlaps extends Schema.TaggedError<LeaveOverlaps>()("LeaveOverlaps", { code: Schema.Literal(refusals.LeaveOverlaps.code), ...wireStruct(LeaveApplication.LeaveOverlaps.fields).fields }, { httpApiStatus: refusals.LeaveOverlaps.status }) { static readonly code = refusals.LeaveOverlaps.code; }
+ErrorNames.name(LeaveApplication.LeaveTooLong, "LeaveTooLong");
+export class LeaveTooLong extends Schema.TaggedError<LeaveTooLong>()("LeaveTooLong", { code: Schema.Literal(refusals.LeaveTooLong.code), ...wireStruct(LeaveApplication.LeaveTooLong.fields).fields }, { httpApiStatus: refusals.LeaveTooLong.status }) { static readonly code = refusals.LeaveTooLong.code; }
+ErrorNames.name(LeaveApplication.LeaveDayAttended, "LeaveDayAttended");
+export class LeaveDayAttended extends Schema.TaggedError<LeaveDayAttended>()("LeaveDayAttended", { code: Schema.Literal(refusals.LeaveDayAttended.code), ...wireStruct(LeaveApplication.LeaveDayAttended.fields).fields }, { httpApiStatus: refusals.LeaveDayAttended.status }) { static readonly code = refusals.LeaveDayAttended.code; }
+ErrorNames.name(LeaveType.LeaveTypeNameTaken, "LeaveTypeNameTaken");
+export class LeaveTypeNameTaken extends Schema.TaggedError<LeaveTypeNameTaken>()("LeaveTypeNameTaken", { code: Schema.Literal(refusals.LeaveTypeNameTaken.code), ...wireStruct(LeaveType.LeaveTypeNameTaken.fields).fields }, { httpApiStatus: refusals.LeaveTypeNameTaken.status }) { static readonly code = refusals.LeaveTypeNameTaken.code; }
 ErrorNames.name(ShiftType.ShiftTypeNameTaken, "ShiftTypeNameTaken");
 export class ShiftTypeNameTaken extends Schema.TaggedError<ShiftTypeNameTaken>()("ShiftTypeNameTaken", { code: Schema.Literal(refusals.ShiftTypeNameTaken.code), ...wireStruct(ShiftType.ShiftTypeNameTaken.fields).fields }, { httpApiStatus: refusals.ShiftTypeNameTaken.status }) { static readonly code = refusals.ShiftTypeNameTaken.code; }
 ErrorNames.name(ShiftType.ShiftStartsWhenItEnds, "ShiftStartsWhenItEnds");
@@ -551,6 +624,9 @@ export class JobOfferNotAwaiting extends Schema.TaggedError<JobOfferNotAwaiting>
 export class JobOpeningNotOpen extends Schema.TaggedError<JobOpeningNotOpen>()("JobOpeningNotOpen", { code: Schema.Literal(refusals.JobOpeningNotOpen.code), ...{ state: Schema.Literals(["open", "closed"]) } }, { httpApiStatus: refusals.JobOpeningNotOpen.status }) { static readonly code = refusals.JobOpeningNotOpen.code; }
 export class JournalEntryNotDraft extends Schema.TaggedError<JournalEntryNotDraft>()("JournalEntryNotDraft", { code: Schema.Literal(refusals.JournalEntryNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted", "cancelled"]) } }, { httpApiStatus: refusals.JournalEntryNotDraft.status }) { static readonly code = refusals.JournalEntryNotDraft.code; }
 export class KraNotActive extends Schema.TaggedError<KraNotActive>()("KraNotActive", { code: Schema.Literal(refusals.KraNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.KraNotActive.status }) { static readonly code = refusals.KraNotActive.code; }
+export class LeaveAllocationNotDraft extends Schema.TaggedError<LeaveAllocationNotDraft>()("LeaveAllocationNotDraft", { code: Schema.Literal(refusals.LeaveAllocationNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted"]) } }, { httpApiStatus: refusals.LeaveAllocationNotDraft.status }) { static readonly code = refusals.LeaveAllocationNotDraft.code; }
+export class LeaveApplicationNotOpen extends Schema.TaggedError<LeaveApplicationNotOpen>()("LeaveApplicationNotOpen", { code: Schema.Literal(refusals.LeaveApplicationNotOpen.code), ...{ state: Schema.Literals(["open", "approved", "rejected", "cancelled"]) } }, { httpApiStatus: refusals.LeaveApplicationNotOpen.status }) { static readonly code = refusals.LeaveApplicationNotOpen.code; }
+export class LeaveTypeNotActive extends Schema.TaggedError<LeaveTypeNotActive>()("LeaveTypeNotActive", { code: Schema.Literal(refusals.LeaveTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.LeaveTypeNotActive.status }) { static readonly code = refusals.LeaveTypeNotActive.code; }
 export class ShiftTypeNotActive extends Schema.TaggedError<ShiftTypeNotActive>()("ShiftTypeNotActive", { code: Schema.Literal(refusals.ShiftTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ShiftTypeNotActive.status }) { static readonly code = refusals.ShiftTypeNotActive.code; }
 export class AppraisalNotFound extends Schema.TaggedError<AppraisalNotFound>()("AppraisalNotFound", { code: Schema.Literal(refusals.AppraisalNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.AppraisalNotFound.status }) { static readonly code = refusals.AppraisalNotFound.code; }
 export class AppraisalCycleNotFound extends Schema.TaggedError<AppraisalCycleNotFound>()("AppraisalCycleNotFound", { code: Schema.Literal(refusals.AppraisalCycleNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.AppraisalCycleNotFound.status }) { static readonly code = refusals.AppraisalCycleNotFound.code; }
@@ -567,6 +643,7 @@ export class ExpenseClaimTypeNotFound extends Schema.TaggedError<ExpenseClaimTyp
 export class InterviewNotFound extends Schema.TaggedError<InterviewNotFound>()("InterviewNotFound", { code: Schema.Literal(refusals.InterviewNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.InterviewNotFound.status }) { static readonly code = refusals.InterviewNotFound.code; }
 export class InterviewRoundNotFound extends Schema.TaggedError<InterviewRoundNotFound>()("InterviewRoundNotFound", { code: Schema.Literal(refusals.InterviewRoundNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.InterviewRoundNotFound.status }) { static readonly code = refusals.InterviewRoundNotFound.code; }
 export class KraNotFound extends Schema.TaggedError<KraNotFound>()("KraNotFound", { code: Schema.Literal(refusals.KraNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.KraNotFound.status }) { static readonly code = refusals.KraNotFound.code; }
+export class LeaveTypeNotFound extends Schema.TaggedError<LeaveTypeNotFound>()("LeaveTypeNotFound", { code: Schema.Literal(refusals.LeaveTypeNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.LeaveTypeNotFound.status }) { static readonly code = refusals.LeaveTypeNotFound.code; }
 export class NotAllowed extends Schema.TaggedError<NotAllowed>()("NotAllowed", { code: Schema.Literal(refusals.NotAllowed.code), ...{} }, { httpApiStatus: refusals.NotAllowed.status }) { static readonly code = refusals.NotAllowed.code; }
 export class IdempotencyConflict extends Schema.TaggedError<IdempotencyConflict>()("IdempotencyConflict", { code: Schema.Literal(refusals.IdempotencyConflict.code), ...{} }, { httpApiStatus: refusals.IdempotencyConflict.status }) { static readonly code = refusals.IdempotencyConflict.code; }
 
@@ -615,10 +692,12 @@ export const declared = {
   AttendeeHasLeft: Attendance.AttendeeHasLeft,
   AttendanceBeforeJoining: Attendance.AttendanceBeforeJoining,
   AttendanceAlreadyMarked: Attendance.AttendanceAlreadyMarked,
+  AttendanceOnLeave: Attendance.AttendanceOnLeave,
   RequesterNotInCompany: AttendanceRequest.RequesterNotInCompany,
   RequesterHasLeft: AttendanceRequest.RequesterHasLeft,
   RequestEndsBeforeStart: AttendanceRequest.RequestEndsBeforeStart,
   RequestBeforeJoining: AttendanceRequest.RequestBeforeJoining,
+  AttendanceRequestOverlaps: AttendanceRequest.AttendanceRequestOverlaps,
   KybNotApproved: BankAccount.KybNotApproved,
   BankAccountNameTaken: BankAccount.BankAccountNameTaken,
   AccountClosed: BankTransaction.AccountClosed,
@@ -713,9 +792,29 @@ export const declared = {
   JournalEntryUnbalanced: JournalEntry.JournalEntryUnbalanced,
   PostingDateOutsideFiscalYear: JournalEntry.PostingDateOutsideFiscalYear,
   KraTitleTaken: Kra.KraTitleTaken,
+  AllocateeNotInCompany: LeaveAllocation.AllocateeNotInCompany,
+  AllocateeHasLeft: LeaveAllocation.AllocateeHasLeft,
+  AllocationTypeNotInCompany: LeaveAllocation.AllocationTypeNotInCompany,
+  AllocationEndsBeforeStart: LeaveAllocation.AllocationEndsBeforeStart,
+  AllocationOverlaps: LeaveAllocation.AllocationOverlaps,
+  LeaveWithoutPayNotAllocated: LeaveAllocation.LeaveWithoutPayNotAllocated,
+  NoLeavesAllocated: LeaveAllocation.NoLeavesAllocated,
+  AllocationExceedsPeriod: LeaveAllocation.AllocationExceedsPeriod,
+  ApplicantNotInCompany: LeaveApplication.ApplicantNotInCompany,
+  ApplicantHasLeft: LeaveApplication.ApplicantHasLeft,
+  ApplicationTypeNotInCompany: LeaveApplication.ApplicationTypeNotInCompany,
+  LeaveEndsBeforeStart: LeaveApplication.LeaveEndsBeforeStart,
+  LeaveBeforeJoining: LeaveApplication.LeaveBeforeJoining,
+  NoAllocationCovers: LeaveApplication.NoAllocationCovers,
+  LeaveAllHolidays: LeaveApplication.LeaveAllHolidays,
+  InsufficientLeaveBalance: LeaveApplication.InsufficientLeaveBalance,
+  LeaveOverlaps: LeaveApplication.LeaveOverlaps,
+  LeaveTooLong: LeaveApplication.LeaveTooLong,
+  LeaveDayAttended: LeaveApplication.LeaveDayAttended,
+  LeaveTypeNameTaken: LeaveType.LeaveTypeNameTaken,
   ShiftTypeNameTaken: ShiftType.ShiftTypeNameTaken,
   ShiftStartsWhenItEnds: ShiftType.ShiftStartsWhenItEnds,
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { ParentAccountNotInCompany, ParentAccountIsLedger, RootAccountIsLedger, RootTypeMissing, RootTypeNotParents, AccountHasChildren, AccountNameTaken, AppraisedEmployeeNotInCompany, AppraisedEmployeeHasLeft, AppraisalCycleCompleted, AppraisalTemplateNotInCompany, AppraisalAlreadyExists, NotRatedManually, ScoresDontMatchKras, KraScoreOutOfRange, SelfRatingsDontMatchCriteria, SelfRatingOutOfRange, CycleEndsBeforeStart, AppraiseeNotInCompany, AppraiseeHasLeft, AppraiseeTemplateNotInCompany, AppraiseeListedTwice, CycleWithoutAppraisees, AppraisalsNotSubmitted, CycleNameTaken, TemplateWithoutKras, TemplateKraNotInCompany, TemplateCriteriaNotInCompany, TemplateLineRepeated, TemplateWeightageOutOfRange, KraWeightageNotHundred, CriteriaWeightageNotHundred, TemplateTitleTaken, AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, KybNotApproved, BankAccountNameTaken, AccountClosed, CurrencyNotHeld, NothingToSend, AlreadyRecorded, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, ParentCostCenterNotInCompany, ParentCostCenterIsLedger, RootCostCenterIsLedger, CostCenterNameTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, CriteriaNameTaken, EmployeeGradeNameTaken, FeedbackCycleCompleted, FeedbackForOneself, ReviewerNotInCompany, ReviewerHasLeft, FeedbackRatingsDontMatchCriteria, FeedbackRatingOutOfRange, PromotedEmployeeNotInCompany, PromotedEmployeeHasLeft, NewDesignationNotInCompany, DesignationUnchanged, PromotionNotYetDue, SeparatedEmployeeNotInCompany, SeparationAlreadyOpen, TransferredEmployeeNotInCompany, TransferredEmployeeHasLeft, NewDepartmentNotInCompany, DepartmentUnchanged, TransferNotYetDue, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, FiscalYearEndsBeforeStart, FiscalYearWrongLength, FiscalYearOverlaps, FiscalYearNameTaken, GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, GoalIsGroup, GoalNotGroup, ParentGoalNotGroup, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, JournalEntryTooFewLines, LineAccountNotInCompany, LineAccountIsGroup, LineCostCenterNotInCompany, LineCostCenterIsGroup, LineWithoutAmount, LineDebitAndCredit, JournalEntryUnbalanced, PostingDateOutsideFiscalYear, KraTitleTaken, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AccountNotGroup, AppraisalNotDraft, AppraisalCycleNotNotStarted, AppraisalTemplateNotActive, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BankTransactionNotPending, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, CostCenterNotGroup, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeFeedbackCriteriaNotActive, EmployeeGradeNotActive, EmployeePerformanceFeedbackNotDraft, EmployeePromotionNotDraft, EmployeeSeparationNotPending, EmployeeTransferNotDraft, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, FiscalYearNotActive, GoalNotPending, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, JournalEntryNotDraft, KraNotActive, ShiftTypeNotActive, AppraisalNotFound, AppraisalCycleNotFound, AppraisalTemplateNotFound, BankAccountNotFound, BankTransactionNotFound, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, KraNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { ParentAccountNotInCompany, ParentAccountIsLedger, RootAccountIsLedger, RootTypeMissing, RootTypeNotParents, AccountHasChildren, AccountNameTaken, AppraisedEmployeeNotInCompany, AppraisedEmployeeHasLeft, AppraisalCycleCompleted, AppraisalTemplateNotInCompany, AppraisalAlreadyExists, NotRatedManually, ScoresDontMatchKras, KraScoreOutOfRange, SelfRatingsDontMatchCriteria, SelfRatingOutOfRange, CycleEndsBeforeStart, AppraiseeNotInCompany, AppraiseeHasLeft, AppraiseeTemplateNotInCompany, AppraiseeListedTwice, CycleWithoutAppraisees, AppraisalsNotSubmitted, CycleNameTaken, TemplateWithoutKras, TemplateKraNotInCompany, TemplateCriteriaNotInCompany, TemplateLineRepeated, TemplateWeightageOutOfRange, KraWeightageNotHundred, CriteriaWeightageNotHundred, TemplateTitleTaken, AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, AttendanceOnLeave, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, AttendanceRequestOverlaps, KybNotApproved, BankAccountNameTaken, AccountClosed, CurrencyNotHeld, NothingToSend, AlreadyRecorded, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, ParentCostCenterNotInCompany, ParentCostCenterIsLedger, RootCostCenterIsLedger, CostCenterNameTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, CriteriaNameTaken, EmployeeGradeNameTaken, FeedbackCycleCompleted, FeedbackForOneself, ReviewerNotInCompany, ReviewerHasLeft, FeedbackRatingsDontMatchCriteria, FeedbackRatingOutOfRange, PromotedEmployeeNotInCompany, PromotedEmployeeHasLeft, NewDesignationNotInCompany, DesignationUnchanged, PromotionNotYetDue, SeparatedEmployeeNotInCompany, SeparationAlreadyOpen, TransferredEmployeeNotInCompany, TransferredEmployeeHasLeft, NewDepartmentNotInCompany, DepartmentUnchanged, TransferNotYetDue, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, FiscalYearEndsBeforeStart, FiscalYearWrongLength, FiscalYearOverlaps, FiscalYearNameTaken, GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, GoalIsGroup, GoalNotGroup, ParentGoalNotGroup, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, JournalEntryTooFewLines, LineAccountNotInCompany, LineAccountIsGroup, LineCostCenterNotInCompany, LineCostCenterIsGroup, LineWithoutAmount, LineDebitAndCredit, JournalEntryUnbalanced, PostingDateOutsideFiscalYear, KraTitleTaken, AllocateeNotInCompany, AllocateeHasLeft, AllocationTypeNotInCompany, AllocationEndsBeforeStart, AllocationOverlaps, LeaveWithoutPayNotAllocated, NoLeavesAllocated, AllocationExceedsPeriod, ApplicantNotInCompany, ApplicantHasLeft, ApplicationTypeNotInCompany, LeaveEndsBeforeStart, LeaveBeforeJoining, NoAllocationCovers, LeaveAllHolidays, InsufficientLeaveBalance, LeaveOverlaps, LeaveTooLong, LeaveDayAttended, LeaveTypeNameTaken, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AccountNotGroup, AppraisalNotDraft, AppraisalCycleNotNotStarted, AppraisalTemplateNotActive, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BankTransactionNotPending, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, CostCenterNotGroup, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeFeedbackCriteriaNotActive, EmployeeGradeNotActive, EmployeePerformanceFeedbackNotDraft, EmployeePromotionNotDraft, EmployeeSeparationNotPending, EmployeeTransferNotDraft, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, FiscalYearNotActive, GoalNotPending, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, JournalEntryNotDraft, KraNotActive, LeaveAllocationNotDraft, LeaveApplicationNotOpen, LeaveTypeNotActive, ShiftTypeNotActive, AppraisalNotFound, AppraisalCycleNotFound, AppraisalTemplateNotFound, BankAccountNotFound, BankTransactionNotFound, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, KraNotFound, LeaveTypeNotFound, NotAllowed, IdempotencyConflict };

@@ -1,8 +1,10 @@
 // Scaffolded from blueprint/things/appraisal/verbs/self-rate.ts. Yours from now on.
-import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { BigDecimal, Effect } from "effect";
+import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/appraisal/self-rate.handler.ts";
+import { Appraisal } from "../../blueprint/things/appraisal/thing.ts";
+import { finalOf, inRating, matchesOnce, r2, rateLines, ratingScoreOf, type RatingLine } from "../appraisal-math.ts";
 
 const { SelfRatingsDontMatchCriteria, SelfRatingOutOfRange } = Errors.declared;
 
@@ -48,34 +50,38 @@ const { SelfRatingsDontMatchCriteria, SelfRatingOutOfRange } = Errors.declared;
  *   once it answers, it writes AppraisalSelfRated: appraisal from the answer;
  *   the call is the span appraisal.self-rate, and its commit appraisal.self-rate.commit.
  */
-const selfRate: Handler = (_payload, { steps, move }) =>
+const selfRate: Handler = ({ appraisal, ratings }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span appraisal.self-rate.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
 
-    // SelfRatingsDontMatchCriteria: exit 49, AP-009.
-    if (yield* Handlers.blank<boolean>("refuse SelfRatingsDontMatchCriteria when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SelfRatingsDontMatchCriteria was refused"));
+    // Step load: database, span appraisal.self-rate.load. The runtime read the appraisal and hands it in.
+    const held = yield* steps.load(Effect.succeed(subject));
+    if (!held) return yield* Effect.die(new Error(`appraisal ${appraisal} was read and then not found`));
+    const lines = held["selfRatings"] as ReadonlyArray<RatingLine>;
+
+    // SelfRatingsDontMatchCriteria: exit 49, AP-009. Each of the appraisal's criteria once.
+    if (!matchesOnce(ratings.map((r) => r.criteria), lines.map((l) => l.criteria))) {
+      yield* Effect.logInfo("the self ratings don't name each of the appraisal's criteria once");
       return yield* new SelfRatingsDontMatchCriteria({});
     }
 
-    // SelfRatingOutOfRange: exit 50, AP-010.
-    if (yield* Handlers.blank<boolean>("refuse SelfRatingOutOfRange when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SelfRatingOutOfRange was refused"));
+    // SelfRatingOutOfRange: exit 50, AP-010. HRMS's Rating field holds 0 to 1.
+    if (ratings.some((r) => !inRating(r.rating))) {
+      yield* Effect.logInfo("a self rating isn't between 0 and 1");
       return yield* new SelfRatingOutOfRange({});
     }
 
-    // Step update: database, span appraisal.self-rate.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span appraisal.self-rate.update. The ratings in the appraisal's order; the self score
+    // and the final score follow.
+    const selfRatings = rateLines(lines, ratings.map((r) => ({ criteria: r.criteria, rating: r2(r.rating) })));
+    const selfScore = ratingScoreOf(selfRatings);
+    const finalScore = finalOf(held["totalScore"] as BigDecimal.BigDecimal, selfScore, held["avgFeedbackScore"] as BigDecimal.BigDecimal);
+    yield* steps.update(records.update(Appraisal, appraisal, { selfRatings, selfScore, finalScore } as never));
 
     // The move selfRate, from draft, to draft.
     yield* move();
 
-    return {
-      appraisal: yield* Handlers.blank("appraisal, an appraisal.id"),
-      selfScore: yield* Handlers.blank("selfScore, an appraisal.selfScore"),
-      finalScore: yield* Handlers.blank("finalScore, an appraisal.finalScore"),
-    };
+    return { appraisal, selfScore, finalScore };
   });
 
 export default selfRate;

@@ -2,10 +2,10 @@
 goal: 17
 title: the superagent, an always-on agent for any job, built on Orthograph
 milestone: "Goal 17: the superagent"
-release: beta           # K42: the beta is every framework piece the superagent proves
+release: null           # parked by K44
 branch: goal/superagent
 base: main
-status: running        # ready | running | landing | done | parked
+status: parked         # ready | running | landing | done | parked
 lead:
   harness: claude      # claude | amp | codex | opencode, set by the lead when it starts
   model: claude-opus-5-5  # the model id it runs on
@@ -35,6 +35,10 @@ slices:
   - "15 · The launch: real sign-in, teams, a live deploy, a sandbox and a model off the Mac (after 14)"
 ---
 # Goal 17: the superagent
+
+> **Parked by K44** (25 November 2026, `design/decisions/K44-two-builds.md`). Two things are built now, the Orthograph alpha
+> (by Goal 18) and Capxul. This goal stops where it stands: its open pull requests stay open as they are, nobody merges
+> them, and its claims on the board are released. The notes below are K42's and stand for when it resumes.
 
 > **An app goal under K42, and the first** (23 November 2026, `design/decisions/K42-goals-are-agents.md`). It goes
 > before Capxul, because once it works its coding agent helps build Capxul. It takes most framework pieces the two
@@ -622,6 +626,10 @@ The rules every goal shares. Where they and this file disagree, `AGENTS.md` wins
 - **Limits.** No cloud and no keys, except what Aaron's standing yes covers (GOAL17-standing-yes): VibeProxy and the Cloudflare keys already on hand, within the daily cap. A new credential still waits for his written yes. Stop every process you start, by its id, before you report.
 
 ## Where it stands
+
+25 November 2026: parked by K44, with Goal 17's work as it stood on `goal/superagent` at midnight
+(446fb6dd). Nothing of it is deleted; its 11 claims on the board are released by K44. The history
+below is from before K44, and the branch's own copy of this brief has the latest of it.
 
 23 November 2026. Slice 1 is on `main` (#515), and K40 is decided (#529). The lead is Claude Code on `claude-opus-5-5`.
 The brief, K39, K40 and GOAL17-model-endpoint reached this branch by #578: real model runs go through VibeProxy, with

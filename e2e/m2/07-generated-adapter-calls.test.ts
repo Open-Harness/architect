@@ -347,3 +347,130 @@ describe("07 a call step reaches a generated adapter in a world", () => {
     nothingRunning(root);
   });
 });
+
+// ---- refusal codes and exits across generated adapters (snag #1012) ----
+
+/** A copy of acme with these adapters generated, installed and mounted under their own names, each `written` edit applied to its `src/written.ts` before generating; no app verbs. */
+const bare = (adapters: Readonly<Record<string, ((written: string) => string) | null>>): App => {
+  const copy = copyOf(acme);
+  apps.push(copy);
+  const { root } = copy;
+  const scope = join(root, "node_modules/@orthograph");
+  rmSync(scope);
+  mkdirSync(scope);
+  for (const entry of readdirSync(join(acme, "node_modules/@orthograph"))) symlinkSync(join(acme, "node_modules/@orthograph", entry), join(scope, entry));
+  mkdirSync(join(root, ".specs"));
+  mkdirSync(join(root, "blueprint/adapters"), { recursive: true });
+  const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { dependencies: Record<string, string> };
+  for (const [name, edit] of Object.entries(adapters)) {
+    writeFileSync(join(root, ".specs", `${name}.json`), JSON.stringify(spec(name[0]!.toUpperCase() + name.slice(1), "none", "quotes")));
+    ortho(root, "new", "adapter", name, "--from-openapi", join(root, ".specs", `${name}.json`));
+    if (edit !== null) {
+      const file = join(root, "plugins", name, "src/written.ts");
+      const before = readFileSync(file, "utf8");
+      const after = edit(before);
+      expect(after, `${file}: the edit changed nothing`).not.toBe(before);
+      writeFileSync(file, after);
+    }
+    symlinkSync(join(root, "plugins", name), join(scope, name));
+    pkg.dependencies[`@orthograph/${name}`] = "0.0.0";
+    writeFileSync(join(root, `blueprint/adapters/${name}.ts`), mountOf(name));
+  }
+  writeFileSync(join(root, "package.json"), JSON.stringify(pkg, null, 2));
+  return copy;
+};
+const SCAFFOLDED_CODE = "export const code: string | undefined = undefined;";
+const codeOf = (code: string) => (written: string) => written.replace(SCAFFOLDED_CODE, `export const code: string | undefined = ${JSON.stringify(code)};`);
+/** The prefix of each refusal code the generated model gives the four errors named with `prefix` (`OptionalApiFailure` …), from its `refusals`. */
+const codesOf = (root: string, prefix: string) => {
+  const { refusals } = JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")) as { refusals: Record<string, string> };
+  return Object.fromEntries(FOUR.map((f) => [`${prefix}${f}`, refusals[`${prefix}${f}`]?.split("-")[0]]));
+};
+
+describe("07 two generated adapters whose names share their first two letters (snag #1012)", () => {
+  it("control: mounted together with neither setting a code, ortho generate refuses, naming the clash and `code`", () => {
+    const { root } = bare({ open: null, optional: null });
+    const said = run(root, "generate");
+    expect(said.status, said.out).not.toBe(0);
+    expect(said.out).toMatch(/optional and open .*OP-.*`code`|open and optional .*OP-.*`code`/);
+  });
+
+  it("one setting a code in its scaffolded src/written.ts mounts beside the other: its four errors take that prefix, the other's keep the default", () => {
+    const { root } = bare({ open: null, optional: codeOf("OQ") });
+    ortho(root, "generate");
+    expect(codesOf(root, "Optional"), "the refusals of generated/model/model.json").toEqual({ OptionalApiFailure: "OQ", OptionalInputRefused: "OQ", OptionalAnswerRefused: "OQ", OptionalUnreachable: "OQ" });
+    expect(codesOf(root, "Open")).toEqual({ OpenApiFailure: "OP", OpenInputRefused: "OP", OpenAnswerRefused: "OP", OpenUnreachable: "OP" });
+  });
+});
+
+/**
+ * `rate.both`, whose steps call `rates` and `fx-rates`, listing both adapters' eight errors. `setting` replaces the `exit`
+ * line fx-rates' scaffolded `src/written.ts` has, as `codeOf` does for `code`, or is appended when it has none.
+ */
+const EXIT_LINE = /^export const exit\b.*$/m;
+const both = (setting: string | null): App => {
+  const app = bare({ rates: null, "fx-rates": setting === null ? null : (written) => (EXIT_LINE.test(written) ? written.replace(EXIT_LINE, setting) : `${written}\n${setting}\n`) });
+  const { root } = app;
+  const errors = ["Rates", "FxRates"].flatMap((p) => FOUR.map((f) => `${p}${f}`));
+  mkdirSync(join(root, "blueprint/things/rate/verbs"), { recursive: true });
+  writeFileSync(join(root, "blueprint/things/rate/thing.ts"), THING);
+  writeFileSync(join(root, "blueprint/things/rate/verbs/both.ts"), `import { Blueprint } from "orthograph";
+import { ${errors.slice(0, 4).join(", ")} } from "@orthograph/rates";
+import { ${errors.slice(4).join(", ")} } from "@orthograph/fx-rates";
+import rates from "../../../adapters/rates.ts";
+import fx from "../../../adapters/fx-rates.ts";
+import { Rate } from "../thing.ts";
+
+export default Blueprint.operation(Rate, {
+  description: "Ask both mounts for a rate.",
+  payload: { pair: Blueprint.text({ max: 20 }), amount: Blueprint.uint(32) },
+  answer: { rate: Blueprint.text({ max: 40 }) },
+  errors: [${errors.join(", ")}],
+  allowed: [Blueprint.anyone],
+  steps: { price: Blueprint.step.call(rates.calls.quotes.get), backup: Blueprint.step.call(fx.calls.quotes.get) },
+});
+`);
+  return app;
+};
+/** Each of an adapter's four errors' exit in the generated model, by error name. */
+const exitsOf = (root: string, prefix: string) => {
+  const { things } = JSON.parse(readFileSync(join(root, "generated/model/model.json"), "utf8")) as { things: Record<string, { errors?: Record<string, { exit: number }> }> };
+  return Object.fromEntries(FOUR.map((f) => [`${prefix}${f}`, Object.values(things).find((t) => t.errors?.[`${prefix}${f}`] !== undefined)?.errors?.[`${prefix}${f}`]?.exit]));
+};
+/** A refusal line that names both adapters (`rates`, not only inside `fx-rates`) and the setting that fixes it. */
+const namesTheFix = (out: string) => out.split("\n").some((l) => l.includes("fx-rates") && /(^|[^-\w])rates\b/.test(l) && l.includes("src/written.ts") && /\bexit\b/.test(l));
+
+// G16-adapter-mounts call 1 (#1012, the lead's call): an adapter's four exits are one base set by hand beside `code` in its
+// src/written.ts (`export const exit = <base>;`), the four at base to base+3; unset, 81 to 84.
+describe("07 one operation calls two generated adapters (snag #1012)", () => {
+  it("with fx-rates' exit base set to 85 in its src/written.ts, the operation generates: rates keeps 81 to 84, fx-rates takes 85 to 88", () => {
+    const { root } = both("export const exit: number | undefined = 85;");
+    ortho(root, "generate");
+    expect(exitsOf(root, "Rates")).toEqual({ RatesApiFailure: 81, RatesInputRefused: 82, RatesAnswerRefused: 83, RatesUnreachable: 84 });
+    expect(exitsOf(root, "FxRates")).toEqual({ FxRatesApiFailure: 85, FxRatesInputRefused: 86, FxRatesAnswerRefused: 87, FxRatesUnreachable: 88 });
+  });
+
+  // Neither set, the two bases are equal; at 83, fx-rates' 83 to 86 overlap rates' 81 to 84 on two exits only.
+  for (const [what, setting] of [["with neither setting an exit base", null], ["with fx-rates' base at 83, overlapping rates' 81 to 84", "export const exit: number | undefined = 83;"]] as const) {
+    it(`${what}, generate refuses the clash, naming both adapters and the setting in src/written.ts that fixes it`, () => {
+      const { root } = both(setting);
+      const said = run(root, "generate");
+      expect(said.status, said.out).not.toBe(0);
+      expect(namesTheFix(said.out), `a line naming rates, fx-rates, src/written.ts and exit:\n${said.out}`).toBe(true);
+    });
+  }
+
+  // The refusal names the base or the exit that leaves the range. 120 is past it; 117 is inside it, but its fourth exit,
+  // 120, is not: the four must fit. Both land on exits the runtime keeps (0 to 4, 120 to 125), refused even without a
+  // range check, so each edge also needs a base whose four exits leave only past it and are none the runtime keeps: 126
+  // (126 to 129) past the top, -4 (-4 to -1) below the bottom. A build that checks one edge only fails one of them.
+  for (const [base, out] of [[120, 120], [117, 120], [126, 126], [-4, -4]] as const) {
+    it(`an exit base whose four exits leave 5 to 119 (${base}) is refused, naming the adapter and the setting`, () => {
+      const { root } = both(`export const exit: number | undefined = ${base};`);
+      const said = run(root, "generate");
+      expect(said.status, said.out).not.toBe(0);
+      const names = new RegExp(`(?<!\\d)(?:${base}|${out})(?!\\d)`);
+      expect(said.out.split("\n").some((l) => l.includes("fx-rates") && l.includes("src/written.ts") && /\bexit\b/.test(l) && names.test(l)), said.out).toBe(true);
+    });
+  }
+});

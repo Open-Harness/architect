@@ -86,7 +86,8 @@ describe("an agent's key at its rate-limit boundary (review of #297, round 2)", 
     const seen = kinds([...serial, ...burst]);
     expect(seen.filter((k) => k.startsWith("person")), seen.join(" ")).toEqual([]);
     expect(seen[0], "the first reads as an agent").toBe("agent");
-    expect(new Set(seen), "past the boundary it is no one, never a person").toEqual(new Set(["agent", "anonymous"]));
+    // Whether a key has a boundary at all is auth-keys.test.ts's question (#449). Here, whatever the plugin does at one, a read that fails is no one, never a person.
+    expect([...new Set(seen)].filter((k) => k !== "agent" && k !== "anonymous"), "only an agent, or no one").toEqual([]);
   });
 
   it("a key whose mark cannot be read is no one, and one with no mark is a person by key", { timeout: 30_000 }, async () => {
