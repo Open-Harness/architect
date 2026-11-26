@@ -4,8 +4,18 @@ import { Context, type Effect } from "effect";
 import type { AnyErrorClass, InstanceOf, Thing, Unique } from "orthograph";
 import type { Entry } from "#modules/journal/types.js";
 
-/** A thing's fields, decoded: what a handler stores. */
-export type FieldsOf<T extends Thing> = Omit<InstanceOf<T>, "state">;
+/** A thing's `Blueprint.optional` fields: those whose schema's key is optional. */
+type OptionalKeys<T extends Thing> = {
+  [K in keyof T["fields"]]: T["fields"][K]["value"]["schema"]["~type.optionality"] extends "optional" ? K : never;
+}[keyof T["fields"]];
+
+/**
+ * A thing's fields, decoded: what a handler stores. A `Blueprint.optional` field may be left out, never written as `undefined`
+ * (exact optional properties); every other field is required (snag #1044).
+ */
+export type FieldsOf<T extends Thing> = {
+  readonly [K in keyof InstanceOf<T> as K extends "state" | OptionalKeys<T> ? never : K]: InstanceOf<T>[K];
+} & { readonly [K in keyof InstanceOf<T> as K extends Exclude<OptionalKeys<T>, "state"> ? K : never]?: InstanceOf<T>[K] };
 
 /** One stored instance: its fields, decoded, and its machine state when it has one. */
 export type Instance = { readonly [field: string]: unknown; readonly state?: string };

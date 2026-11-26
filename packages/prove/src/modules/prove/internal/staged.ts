@@ -14,10 +14,16 @@ import { proveReport } from "./structured.ts";
 const answers = (url: string): Effect.Effect<boolean> =>
   Effect.promise(() => fetch(`${url}/api/auth/ok`, { signal: AbortSignal.timeout(15_000) }).then((r) => r.status !== 404, () => false));
 
-export const provedAt = (model: Model, project: Project, url: string, label: string, only: string | undefined, facts?: Facts): Effect.Effect<Report, ProveFailed> =>
+/**
+ * The journeys named in `only` (every one when it is empty), each once and in file order; the first name that is no journey is refused
+ * before the address is asked anything. Every chosen journey runs, a failing one too, and the verdict is all of theirs (CX-staging).
+ */
+export const provedAt = (model: Model, project: Project, url: string, label: string, only: ReadonlyArray<string>, facts?: Facts): Effect.Effect<Report, ProveFailed> =>
   Effect.gen(function* () {
-    const journeys = only === undefined ? project.journeys : project.journeys.filter((journey) => journey.name === only);
-    if (journeys.length === 0) return yield* new ProveFailed({ message: `no journey named "${only}"` });
+    const unknown = only.find((name) => !project.journeys.some((journey) => journey.name === name));
+    if (unknown !== undefined) return yield* new ProveFailed({ message: `no journey named "${unknown}"` });
+    const journeys = only.length === 0 ? project.journeys : project.journeys.filter((journey) => only.includes(journey.name));
+    if (journeys.length === 0) return yield* new ProveFailed({ message: "the project declares no journeys" });
     if (!(yield* answers(url))) return yield* new ProveFailed({ message: `nothing answers as the project's server at ${url} (${label}): it was not deployed, or it is not up` });
     const [took, runs] = yield* Effect.timed(Effect.forEach(journeys, (journey, i) => Journeys.run(project, url, journey, i, "sign-up", facts)));
     const done = journeyLines(runs, new Map(), false, model, false);

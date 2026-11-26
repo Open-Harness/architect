@@ -1,0 +1,1 @@
+src/modules/records/insert-optional.test.ts > Records.insert's fields: a Blueprint.optional field may be left out (snag #1044) > compiles with no cast: every optional kind left out, set, or falsy; a thing with no optional field; no state; updates of any subset
