@@ -69,13 +69,12 @@ const rowIn = (path: string): Row | undefined => {
   const parent = tree.get(parts.slice(0, -1).join(" "));
   return parent?.subcommands.find((s) => s.names.includes(parts[parts.length - 1] ?? ""));
 };
-const parentOf = (path: string): Page | undefined => tree.get(path.split(" ").slice(0, -1).join(" "));
 const nameOf = (path: string) => path.split(" ").slice(-1)[0] ?? path;
 const bareName = (r: Row) => (r.names[0] ?? "").replace(/^--/, "");
 /** A page printed by a formatter wraps and pads: compare its words, not its spacing. */
 const flat = (text: string) => text.replace(/\s+/g, " ").trim();
 /** Two descriptions are twins when they read the same: case, punctuation and spacing aside ("Checks the blueprint." and "checks the blueprint!"). */
-const gist = (text: string, _name: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const gist = (text: string, _name: string): string => text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const commands = () => [...tree.keys()].filter((k) => k !== "");
 
 describe("ortho --help reaches every command", () => {
