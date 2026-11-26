@@ -13,7 +13,7 @@
 //  (c) NO LIVE PAGE STILL SAYS THE SUITE IS NOT RUN ON `main`: the climb's `NOT_RUN_ON_MAIN` is empty, its dashboard README says nothing of it, and e2e/on-chain's README says its job runs on `main`.
 // Run on main for the first time (26 November 2026, Anvil 1.9, four cores, 11m 31s), the on-chain ratchet had four reds no list held, from two stale checks, not chain bugs. 02's baseline is the
 // retired goal/stage-1: listed in e2e/on-chain/expected-failing/ under Snag #1096. 04-m6-10-values-refused's fixture named an id prefix no thing owns: the author fixed the fixture, and it is green.
-// Two lines of 05's list pass now and are the builder's to remove. The job may shard the ratchet (a matrix whose shards cover 1 to N) and may skip a pull request that affected.sh says leaves the
+// Two lines of 05's list pass now and are the builder's to remove. The job may skip a pull request that affected.sh says leaves the
 // e2e project alone, so it need not be a bottleneck (Aaron, 26 November); every push to main runs it whole. Each red line here names a file a -build branch may edit.
 // The marking is the slice's only claim about #784. A builder who instead fixes the four bugs has to change this check's author first (they are the same slice: the author then pins each bug with
 // a failing check, as #784's Fix says, and drops (b)); nothing here stops a fix.
@@ -118,12 +118,12 @@ type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-ex
 export const OUTPUTS = ["docs_only", "fast", "affected_e2e", "affected_prove"] as const;
 export type Outputs = Readonly<Record<(typeof OUTPUTS)[number], "true" | "false">>;
 export interface Event { readonly name: string; readonly event: "pull_request" | "push"; readonly base?: string; readonly ref?: string }
-export interface Scenario extends Event { readonly result: "success" | "failure"; readonly outputs: Outputs; readonly shard?: number }
+export interface Scenario extends Event { readonly result: "success" | "failure"; readonly outputs: Outputs }
 
 const JOB = "e2e-on-chain";
 const RATCHET = "e2e:on-chain-ratchet";
 
-/** The steps of the on-chain job that run for one event, in order, each with the env it would see; `undefined` when the job itself does not run. `matrix` is in the context only when the job has a strategy. */
+/** The steps of the on-chain job that run for one event, in order, each with the env it would see; `undefined` when the job itself does not run. */
 export const stepsThatRun = (workflow: Json, s: Scenario): ReadonlyArray<Json> | undefined => {
   const job: Json | undefined = workflow.jobs?.[JOB];
   if (job === undefined) return undefined;
@@ -134,7 +134,6 @@ export const stepsThatRun = (workflow: Json, s: Scenario): ReadonlyArray<Json> |
       changes: { result: s.result, outputs: { ...s.outputs } },
     },
     env: {},
-    ...(job.strategy === undefined ? {} : { matrix: { shard: s.shard ?? null } }),
   };
   const withEnv = (...envs: ReadonlyArray<Json | undefined>): Context => {
     const env: Record<string, string> = {};
@@ -191,12 +190,6 @@ export const rule = (event: Event["event"], a: Pick<Scenario, "result" | "output
   return "run";
 };
 const said = (a: Pick<Scenario, "result" | "outputs">) => `changes ${a.result}, ${OUTPUTS.map((k) => `${k}=${a.outputs[k]}`).join(" ")}`;
-/** The shards the job's matrix runs, or undefined when it has none. */
-const shardsOf = (workflow: Json): ReadonlyArray<unknown> | undefined => {
-  const strategy = workflow.jobs?.[JOB]?.strategy;
-  if (strategy === undefined) return undefined;
-  return Array.isArray(strategy?.matrix?.shard) ? strategy.matrix.shard : [];
-};
 
 const RATCHET_RUN = "pnpm nx run e2e:on-chain-ratchet --outputStyle=static";
 const keysOf = (o: unknown) => (typeof o === "object" && o !== null ? Object.keys(o) : []);
@@ -212,15 +205,7 @@ export const shapeProblems = (workflow: Json): ReadonlyArray<string> => {
   for (const k of extra(workflow.on?.pull_request, ["types"])) out.push(`the pull_request trigger has \`${k}\`, which can keep a pull request into main from running it`);
   const job: Json | undefined = workflow.jobs?.[JOB];
   if (job === undefined) return out;
-  for (const k of extra(job, ["name", "needs", "if", "runs-on", "timeout-minutes", "env", "steps", "strategy"])) out.push(`the job has \`${k}\`, which this check does not allow`);
-  const shards = shardsOf(workflow);
-  if (job.strategy !== undefined) {
-    for (const k of extra(job.strategy, ["matrix", "fail-fast"])) out.push(`the job's strategy has \`${k}\`, which this check does not allow`);
-    for (const k of extra(job.strategy?.matrix, ["shard"])) out.push(`the job's matrix has \`${k}\`, not only shard`);
-    const n = shards?.length ?? 0;
-    const want = Array.from({ length: n }, (_, i) => i + 1);
-    if (n === 0 || !sameJson([...(shards ?? [])].sort((a, b) => Number(a) - Number(b)), want)) out.push(`the matrix's shards are ${JSON.stringify(shards)}, not 1 to N, each once`);
-  }
+  for (const k of extra(job, ["name", "needs", "if", "runs-on", "timeout-minutes", "env", "steps"])) out.push(`the job has \`${k}\`, which this check does not allow`);
   if (job["runs-on"] !== "ubuntu-latest") out.push(`the job runs on ${JSON.stringify(job["runs-on"])}, not ubuntu-latest`);
   for (const k of extra(job.env, ["SKIP"])) out.push(`the job's env sets ${k}`);
   const steps: ReadonlyArray<Json> = Array.isArray(job.steps) ? job.steps : [];
@@ -237,14 +222,13 @@ export const shapeProblems = (workflow: Json): ReadonlyArray<string> => {
   const ratchets = steps.filter((step) => typeof step.run === "string" && step.run.includes("on-chain-ratchet"));
   if (ratchets.length !== 1) out.push(`${ratchets.length} steps name the ratchet, not one`);
   for (const r of ratchets) {
-    const want = shards === undefined ? RATCHET_RUN : `${RATCHET_RUN} -- --shard=\${{ matrix.shard }}/${shards.length}`;
-    if (String(r.run).trim() !== want) out.push(`the ratchet step runs \`${String(r.run).trim()}\`, not exactly \`${want}\`${shards === undefined ? "" : " (one shard of the matrix's N each)"}`);
+    if (String(r.run).trim() !== RATCHET_RUN) out.push(`the ratchet step runs \`${String(r.run).trim()}\`, not exactly \`${RATCHET_RUN}\``);
     if (!sameJson(r.env, { ORTHO_CHAIN_EVM_ANVIL: "1" })) out.push(`the ratchet step's env is ${JSON.stringify(r.env)}, not exactly {"ORTHO_CHAIN_EVM_ANVIL":"1"}`);
   }
   return out;
 };
 
-/** The verdict on a workflow: for each event, each answer `changes` can give and each shard, what must happen. One line per way it is wrong (with the first case it is wrong in); an expression the evaluator cannot read is one too. */
+/** The verdict on a workflow: for each event, each answer `changes` can give, what must happen. One line per way it is wrong (with the first case it is wrong in); an expression the evaluator cannot read is one too. */
 export const workflowProblems = (workflow: Json): ReadonlyArray<string> => {
   const found = new Map<string, string[]>();
   const add = (key: string, when: string) => found.set(key, [...(found.get(key) ?? []), when]);
@@ -252,10 +236,10 @@ export const workflowProblems = (workflow: Json): ReadonlyArray<string> => {
     for (const a of answers(ev.event)) {
       const must = rule(ev.event, a);
       if (must === "either") continue;
-      for (const shard of shardsOf(workflow) ?? [undefined]) {
-        const when = `${said(a)}${shard === undefined ? "" : `, shard ${String(shard)}`}`;
+      {
+        const when = said(a);
         try {
-          const steps = stepsThatRun(workflow, { ...ev, ...a, ...(shard === undefined ? {} : { shard: Number(shard) }) });
+          const steps = stepsThatRun(workflow, { ...ev, ...a });
           if (must === "run") for (const p of problemsOf(steps)) add(`${ev.name}: ${p}`, when);
           else if (steps?.some((step) => typeof step.run === "string" && step.run.includes(RATCHET))) add(`${ev.name}: the ratchet runs on a docs-only run, which passes without its steps`, when);
         } catch (e) { add(`${ev.name}: ${(e as Error).message}`, when); }
@@ -270,6 +254,43 @@ export const workflowProblems = (workflow: Json): ReadonlyArray<string> => {
 };
 
 const ci = (): Json => parse(read(".github/workflows/ci.yml")) as Json;
+const project = (): Json => JSON.parse(read("e2e/project.json")) as Json;
+
+// The evaluator above judges what the job's own conditions mean. Two hostile passes showed it can't judge what the job trusts (the jobs that feed it, the
+// nx target it names, the triggers, every other step's script), so the job and those parts are also held to approved shapes, word for word:
+// e2e/m1/48-g18-9-chain-basics.approved.json, which holds today's job without its env, the `ready` step's script, `changes`'s outputs, the
+// pull request trigger's types and the nx target. SKIP is one of two approved expressions; the evaluator, on planted copies below, shows each means
+// what the rule says. Sharding is not offered here: a matrix on this required job would rename its check, and the target cannot pass vitest a shard
+// (nx adds the flag to every command, so `rm` gets it). The e2e-m1 shape (a shard job, a gate, the reports merged) is its own slice.
+const APPROVED = JSON.parse(read("e2e/m1/48-g18-9-chain-basics.approved.json")) as { job: Json; readyRun: string; changes: Json; prTypes: ReadonlyArray<string>; target: Json };
+export const SKIP_RUN =
+  "!((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/on-chain')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true')";
+export const SKIP_GATED = `${SKIP_RUN} || (github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_e2e == 'false')`;
+export const SKIPS = [`\${{ ${SKIP_RUN} }}`, `\${{ ${SKIP_GATED} }}`];
+const canon = (v: unknown): string => (Array.isArray(v) ? `[${v.map(canon).join(",")}]` : typeof v === "object" && v !== null ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canon((v as Json)[k])}`).join(",")}}` : JSON.stringify(v));
+const differs = (a: Json | undefined, b: Json) => [...new Set([...keysOf(a), ...keysOf(b)])].filter((k) => canon(a?.[k]) !== canon(b[k]));
+
+/** The job, word for word, and what it trusts. One line per part that is not the approved one. */
+export const exactProblems = (workflow: Json, proj: Json): ReadonlyArray<string> => {
+  const out: string[] = [];
+  const job: Json | undefined = workflow.jobs?.[JOB];
+  if (job === undefined) return ["the workflow has no job e2e-on-chain"];
+  const { env, ...rest } = job;
+  const off = differs(rest, APPROVED.job);
+  if (off.length > 0) out.push(`the job e2e-on-chain is not the approved job: its ${off.join(", ")} differ (e2e/m1/48-g18-9-chain-basics.approved.json)`);
+  if (canon(keysOf(env)) !== canon(["SKIP"]) || !SKIPS.includes(String(env?.SKIP))) out.push("the job's env is not exactly SKIP, set to one of the two approved expressions (SKIPS in this check)");
+  for (const [k, v] of Object.entries((workflow.jobs ?? {}) as Json)) if (k !== JOB && (k.includes("on-chain") || String((v as Json)?.name ?? "").includes("on-chain"))) out.push(`another job, ${k}, is named for the on-chain suite`);
+  for (const k of extra(workflow, ["name", "on", "permissions", "concurrency", "jobs"])) out.push(`the workflow has \`${k}\` at its top`);
+  for (const k of extra(workflow.on, ["push", "pull_request"])) out.push(`the workflow runs on \`${k}\` too`);
+  const branches: ReadonlyArray<unknown> = Array.isArray(workflow.on?.push?.branches) ? workflow.on.push.branches : [];
+  if (!branches.includes("main") || branches.some((b) => String(b).startsWith("!"))) out.push(`the push trigger's branches are ${JSON.stringify(branches)}: main, and no pattern that takes a branch out`);
+  if (canon(workflow.on?.pull_request) !== canon({ types: APPROVED.prTypes })) out.push(`the pull request trigger is ${JSON.stringify(workflow.on?.pull_request)}, not ${JSON.stringify({ types: APPROVED.prTypes })}`);
+  const ready = workflow.jobs?.ready;
+  if (canon(ready?.outputs) !== canon({ draft: "${{ steps.live.outputs.draft }}" }) || ready?.steps?.[0]?.id !== "live" || ready?.steps?.[0]?.run !== APPROVED.readyRun) out.push("the ready job, which says whether a run is a draft, is not the approved one");
+  if (canon(workflow.jobs?.changes?.outputs) !== canon(APPROVED.changes)) out.push("the changes job's outputs are not the approved ones");
+  if (canon(proj.targets?.["on-chain-ratchet"]) !== canon(APPROVED.target)) out.push("e2e/project.json's target on-chain-ratchet is not the approved one");
+  return out;
+};
 
 // A workflow, written small, to plant wrong jobs in. `skip` is the job's env.SKIP expression; `rest` replaces the other steps' fields.
 const guard = (skip: string) => `\${{ ${skip} }}`;
@@ -325,9 +346,10 @@ describe("the evaluator reads what the workflow means (its own controls)", () =>
 });
 
 describe("(a) the on-chain suite runs on main: the job `e2e-on-chain` in .github/workflows/ci.yml", () => {
-  const all = workflowProblems(ci());
-  const shape = shapeProblems(ci());
+  const all = [...exactProblems(ci(), project()), ...workflowProblems(ci())];
+  const shape = [...shapeProblems(ci()), ...exactProblems(ci(), project())];
   const about = (prefix: string) => [...shape, ...all.filter((p) => p.startsWith(prefix))];
+  const evaluated = (prefix: string) => [...shapeProblems(ci()), ...workflowProblems(ci()).filter((p) => p.startsWith(prefix))];
   it("runs the ratchet, with Anvil and the whole history, on a pull request into main", () => {
     expect(about(`${EVENTS.prMain.name}:`), "the job's steps for a pull request into main").toEqual([]);
   });
@@ -335,8 +357,8 @@ describe("(a) the on-chain suite runs on main: the job `e2e-on-chain` in .github
     expect(about(`${EVENTS.pushMain.name}:`), "the job's steps for a push to main").toEqual([]);
   });
   it("still runs it for the goal's own branch (a pull request into goal/on-chain, a push to it)", () => {
-    expect(about(`${EVENTS.prGoal.name}:`), "pull request into goal/on-chain").toEqual([]);
-    expect(about(`${EVENTS.pushGoal.name}:`), "push to goal/on-chain").toEqual([]);
+    expect(evaluated(`${EVENTS.prGoal.name}:`), "pull request into goal/on-chain").toEqual([]);
+    expect(evaluated(`${EVENTS.pushGoal.name}:`), "push to goal/on-chain").toEqual([]);
   });
   it("passes without its steps on a docs-only run, for main and for goal/on-chain", () => {
     expect(all.filter((p) => p.includes("on a docs-only run"))).toEqual([]);
@@ -346,6 +368,46 @@ describe("(a) the on-chain suite runs on main: the job `e2e-on-chain` in .github
   });
   it("has the whole verdict empty: no event, no step, no condition is wrong", () => {
     expect(all).toEqual([]);
+  });
+});
+
+describe("(a) the exact judge is fair: today's workflow with an approved SKIP, and each wrong part (planted copies)", () => {
+  const planted = (skip: string, edit: (w: Json, p: Json) => void = () => {}): readonly [Json, Json] => {
+    const w = ci();
+    const p = project();
+    w.jobs[JOB].env = { SKIP: skip };
+    edit(w, p);
+    return [w, p] as const;
+  };
+  it.each(SKIPS)("passes today's workflow with SKIP %s, and the evaluator agrees it does what the rule says", (skip) => {
+    const [w, p] = planted(skip);
+    expect([...exactProblems(w, p), ...workflowProblems(w)]).toEqual([]);
+  });
+  const step = (w: Json, needle: RegExp): Json => (w.jobs[JOB].steps as Json[]).find((x) => needle.test(`${x.uses ?? ""} ${x.run ?? ""} ${x.name ?? ""}`)) as Json;
+  it.each([
+    ["a01 SKIP that also skips goal- branches", (w: Json) => { w.jobs[JOB].env.SKIP = SKIPS[0]?.replace(" }}", " || startsWith(github.head_ref, 'goal-') }}"); }],
+    ["a02 SKIP that skips every pull request on GitHub", (w: Json) => { w.jobs[JOB].env.SKIP = SKIPS[0]?.replace(" }}", " || (github.event_name == 'pull_request' && github.ref != '') }}"); }],
+    ["a03 the job's if without !cancelled()", (w: Json) => { w.jobs[JOB].if = "${{ needs.ready.outputs.draft == 'false' }}"; }],
+    ["a04 the job's if with success()", (w: Json) => { w.jobs[JOB].if = "${{ needs.ready.outputs.draft == 'false' && success() }}"; }],
+    ["a05 the nx target neutered", (_: Json, p: Json) => { p.targets["on-chain-ratchet"].options.commands = ["echo skipped; exit 0"]; }],
+    ["a06 a step that replaces pnpm", (w: Json) => { const s = step(w, /docker/); s.run = `${s.run}\nsudo ln -sf /bin/true "$(command -v pnpm)"`; }],
+    ["a07 a step that deletes the suite", (w: Json) => { step(w, /anvil --version/).run = "anvil --version && rm -rf e2e/on-chain/*.test.ts"; }],
+    ["a08 a second checkout, of another branch, in other case", (w: Json) => { (w.jobs[JOB].steps as Json[]).push({ if: "env.SKIP != 'true'", uses: "Actions/checkout@v7.0.1", with: { "fetch-depth": 0, ref: "goal/stage-1" } }); }],
+    ["a24 a second Foundry, in other case, on nightly", (w: Json) => { (w.jobs[JOB].steps as Json[]).push({ if: "env.SKIP != 'true'", uses: "Foundry-rs/foundry-toolchain@v1.9.2", with: { version: "nightly-2020" } }); }],
+    ["a09 pull requests only when closed", (w: Json) => { w.on.pull_request.types = ["closed"]; }],
+    ["a10 push branches with !main", (w: Json) => { w.on.push.branches = [...w.on.push.branches, "!main"]; }],
+    ["a11 changes forcing affected_e2e false on pull requests", (w: Json) => { w.jobs.changes.outputs.affected_e2e = "${{ github.event_name == 'pull_request' && 'false' || 'true' }}"; }],
+    ["a21 ready saying draft on a push", (w: Json) => { w.jobs.ready.steps[0].run = String(w.jobs.ready.steps[0].run).replace("else\n  draft=false", "else\n  draft=true"); }],
+    ["a12 the job renamed, a gate in its name that only echoes", (w: Json) => { w.jobs["e2e-on-chain-real"] = w.jobs[JOB]; w.jobs[JOB] = { name: "e2e-on-chain", "runs-on": "ubuntu-latest", steps: [{ run: "echo ok" }] }; }],
+    ["a23 a workflow env", (w: Json) => { w.env = { NODE_OPTIONS: "--require=/dev/null/x" }; }],
+    ["a13 a timeout of a minute", (w: Json) => { w.jobs[JOB]["timeout-minutes"] = 1; }],
+    ["a matrix on the job", (w: Json) => { w.jobs[JOB].strategy = { matrix: { shard: [1, 2, 3] } }; }],
+    ["the ratchet with || true", (w: Json) => { step(w, /e2e:on-chain-ratchet/).run = "pnpm nx run e2e:on-chain-ratchet --outputStyle=static || true"; }],
+    ["Anvil off on the ratchet step", (w: Json) => { step(w, /e2e:on-chain-ratchet/).env = { ORTHO_CHAIN_EVM_ANVIL: "0" }; }],
+    ["a SKIP gated on affected_prove", (w: Json) => { w.jobs[JOB].env.SKIP = SKIPS[1]?.replace("affected_e2e", "affected_prove"); }],
+  ] as const)("catches %s", (_, edit) => {
+    const [w, p] = planted(SKIPS[0] ?? "", edit as (w: Json, p: Json) => void);
+    expect([...exactProblems(w, p), ...workflowProblems(w)].length).toBeGreaterThan(0);
   });
 });
 
@@ -404,21 +466,11 @@ describe("(a) the judge is fair: what it passes and what it catches (planted wor
   caught("a step with a working-directory", small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { "working-directory": "/tmp" })), /`working-directory`/);
   caught("two ratchet steps", small(GOOD_SKIP, (x) => [...x, { if: "env.SKIP != 'true'", run: "pnpm nx run e2e:on-chain-ratchet --outputStyle=static || true" }]), /2 steps name the ratchet/);
   caught("the job's env setting Anvil off", { ...small(GOOD_SKIP), jobs: { [JOB]: { ...small(GOOD_SKIP).jobs[JOB], env: { SKIP: guard(GOOD_SKIP), ORTHO_CHAIN_EVM_ANVIL: "0" } } } }, /job's env sets ORTHO_CHAIN_EVM_ANVIL/);
-  // Sharding and path gating are allowed (Aaron, 26 November: CI must not become a bottleneck), within the rule: every push to main runs it, whole.
-  const SHARDED = (n: number, shards: ReadonlyArray<number>, run = `pnpm nx run e2e:on-chain-ratchet --outputStyle=static -- --shard=\${{ matrix.shard }}/${n}`): Json => {
-    const wf = small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { run }));
-    return { ...wf, jobs: { [JOB]: { ...wf.jobs[JOB], strategy: { "fail-fast": false, matrix: { shard: shards } } } } };
-  };
+  // Path gating is allowed (Aaron, 26 November: CI must not become a bottleneck), within the rule: every push to main runs it, whole. Sharding is its own slice.
   const GATED = (extraSkip: string) => small(`${GOOD_SKIP} || (${extraSkip})`);
-  it("passes the ratchet in three shards that cover 1 to 3", () => expect(workflowProblems(SHARDED(3, [1, 2, 3]))).toEqual([]));
   it("passes a pull request skipped when affected.sh says the e2e project is not affected", () =>
     expect(workflowProblems(GATED("github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_e2e == 'false'"))).toEqual([]));
-  caught("shards that leave one out (1 and 2 of 3)", SHARDED(3, [1, 2]), /not exactly .*--shard=\$\{\{ matrix\.shard \}\}\/2|not 1 to N/);
-  caught("a shard run twice", SHARDED(2, [1, 1, 2], "pnpm nx run e2e:on-chain-ratchet --outputStyle=static -- --shard=${{ matrix.shard }}/2"), /not 1 to N/);
-  caught("a shard 0", SHARDED(3, [0, 1, 2]), /not 1 to N/);
-  caught("a matrix whose ratchet does not shard (the whole suite N times)", SHARDED(2, [1, 2], "pnpm nx run e2e:on-chain-ratchet --outputStyle=static"), /one shard of the matrix's N each/);
-  caught("a shard flag with no matrix", small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { run: "pnpm nx run e2e:on-chain-ratchet --outputStyle=static -- --shard=${{ matrix.shard }}/3" })), /not exactly/);
-  caught("a matrix on another key", { ...small(GOOD_SKIP), jobs: { [JOB]: { ...small(GOOD_SKIP).jobs[JOB], strategy: { matrix: { os: ["a"] } } } } }, /not only shard|not 1 to N/);
+  caught("a matrix on the job (a shard each)", { ...small(GOOD_SKIP, patch(/e2e:on-chain-ratchet/, { run: "pnpm nx run e2e:on-chain-ratchet --outputStyle=static -- --shard=${{ matrix.shard }}/3" })), jobs: { [JOB]: { ...small(GOOD_SKIP).jobs[JOB], strategy: { matrix: { shard: [1, 2, 3] } } } } }, /`strategy`/);
   caught("a skip on affected_prove, the wrong project's output", GATED("github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_prove == 'false'"), /a pull request into main: no step .*affected_e2e=true affected_prove=false/);
   caught("a skip on affected_e2e that also skips a push to main", GATED("needs.changes.outputs.affected_e2e == 'false' || needs.changes.outputs.fast == 'true'"), /a push to main: no step/);
   caught("a skip on fast", GATED("needs.changes.outputs.fast == 'true'"), /a pull request into main: no step .*fast=true/);
@@ -432,62 +484,38 @@ describe("(a) the judge is fair: what it passes and what it catches (planted wor
 });
 
 // ---- (b) the relayer is marked experimental, where a person meets it ----
+// Two hostile passes showed that free prose can't be judged by a list of words: every list had a synonym, a pronoun, a lookalike letter or a hidden
+// element past it. So each place holds the marking word for word (the builder copies it from here), in ASCII, once; and outside the marking, the
+// place says nothing more on the subject (TOPIC, below). What TOPIC can't name is left to the 🔍 review, which reads these four places whole.
 
-/** `experimental`, said of the thing and not denied. */
-const SAYS = /(?<!\bnot\s)(?<!\bno\s)(?<!\bnon-)(?<!\bun)\bexperimental\b/i;
-export const says = (s: string) => SAYS.test(s);
-/** What a reader sees: HTML and MDX comments and fenced code blocks taken out. */
-export const visible = (s: string) => s.replace(/<!--[\s\S]*?-->/g, "").replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, "").replace(/^([ \t]*(?:\*[ \t]*)?)(```|~~~)[\s\S]*?^\1\2[^\n]*$/gm, "");
-/** Words that take the marking back: it was, it is no longer, it is fixed, it is ready. */
-const CONDITION = /\b(?:until|once|when|if|after)\s+(?:#784|the (?:bugs?|limits?|fixes?)|they|it)\b[^.;!?]{0,30}?\b(?:is|are|have been|has been)\s+(?:fixed|solved|resolved|closed|removed)\b/gi;
-/** Text with its conditions taken out ("until #784 is fixed" says nothing about now). */
-export const unconditioned = (t: string) => t.replace(CONDITION, "");
-/** A sentence that says #784's limits are gone: it names the relayer, #784, its bugs or limits, and calls them removed, solved, fixed, resolved, gone or closed, or the relayer ready or safe for production. A condition ("until #784 is fixed", "once the bugs are solved") is not a claim, and is taken out first. */
-export const saysGone = (text: string): string | undefined => {
-  const SUBJECT = /\brelayer\b|#784\b|\bbugs?\b|\blimits?\b|\bfindings?\b|\bsnag\b/i;
-  const CLAIM = /\b(?:removed|solved|fixed|resolved|gone|closed|lifted)\b|\bready for (?:production|use)\b|\bproduction[- ]ready\b|\bsafe (?:for production|to use)\b|\buse it freely\b|\bnothing blocks it\b/i;
-  return visible(text).split(/[.;!?]\s|\n\s*\n|\|/).map((x) => x.replace(CONDITION, "")).find((x) => SUBJECT.test(x) && CLAIM.test(x))?.trim();
-};
-/** A count of the bugs, which goes stale when #784 grows (it did: a fourth came in its first comment). */
-export const COUNTS = /\b(?:one|two|three|four|five|six|\d+)\s+(?:open\s+)?(?:bugs|limits|findings)\b/i;
-export const DENIES = /\bno longer\b|\b(?:never|isn['’]t|is not|not)\b[^.;]{0,20}\bexperimental\b|\b(?:was|were|formerly)\b[^.;]{0,30}\bexperimental\b|\bproduction[- ]ready\b|\bsafe for production\b|#784\W{0,3}(?:is |was |has been )?(?:now )?(?:fixed|closed|resolved)\b|\b(?:fixed|closed|resolved) (?:in|by) #784/i;
+/** The relayer README's first paragraph, word for word. */
+export const MARK_README =
+  "**Experimental** in the alpha (#784): a first receipt is treated as final, so a reorg is missed; a fill is broadcast before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list; a failed first arm leaves the transaction in flight, so its nonce can block later ones. #784 holds the list as it stands.";
+/** The line the doc comment of `export class Relayer` carries, word for word. */
+export const MARK_DOC = " * @experimental The bugs in #784 are open: read it before you rely on the relayer.";
+/** The canon page's row for the relayer, word for word. */
+export const MARK_PAGE_ROW = "| the relayer | experimental (#784) | M6.07 |";
+/** The status row's item and the sentence its notes carry about #784, word for word. */
+export const MARK_ITEM = "Relayer (experimental) and follower: both actors are on `main`, and the relayer has reorg and ordering bugs";
+export const MARK_NOTES =
+  "snag #784 blocks it, so it stays building until the fixes and an app's journeys prove it: a first receipt is treated as final so a reorg is missed, a fill is broadcast before it is stored so a restart may sign a second transaction at one nonce, a resumed transaction drops its access list, and a failed first arm leaves the transaction in flight so its nonce can block later ones";
 
-/** A README's opening: its title is skipped, and it runs to the first table or the second heading. */
-const opening = (readme: string): string => {
-  const lines = readme.split("\n");
+/** Outside the marking, a judged place says nothing more on the subject: no #784, no state or readiness, no limits or bugs, no strike-through, entity, tag or hidden text. */
+export const TOPIC =
+  /#784|experiment|\bstable\b|production|graduat|patch|\bfix(?:ed|es)?\b|\bsolved\b|resolved|removed|addressed|dealt with|\bhistory\b|works now|ship it|\blimits?\b|\bbugs?\b|out of date|outdated|\bignore\b|obsolete|no longer (?:experimental|true|open|appl)|not any ?more|~~|&#|&[a-z]+;|<\/?[a-z]|\bhidden\b|\bsnag\b|\bsorted\b|\bresolv/i;
+const NOT_ASCII = /[^\x09\x0a\x0d\x20-\x7e]/;
+const once = (text: string, mark: string) => text.split(mark).length - 1;
+const topicOf = (text: string) => TOPIC.exec(text)?.[0];
+
+export const readmeProblems = (readme: string): ReadonlyArray<string> => {
   const out: string[] = [];
-  let started = false;
-  for (const line of lines) {
-    if (/^# /.test(line) && !started) { started = true; continue; }
-    if (/^\|/.test(line) || (started && /^#{1,6} /.test(line))) break;
-    out.push(line);
-  }
-  return out.join("\n");
-};
-/** What the README says under a heading that has the word in it: where a longer account of the limits may sit. */
-const sectionsNamingIt = (readme: string): string => {
-  const parts = readme.split(/^(?=#{2,6} )/m);
-  return parts.filter((p) => /^#{2,6} .*experimental/i.test(p)).join("\n");
-};
-/** The four limits #784 names (three in its body, one in its first comment), each by what a reader would look for. */
-export const LIMITS: ReadonlyArray<readonly [string, RegExp]> = [
-  ["a first receipt is final, so a reorg is missed", /\ba reorg is missed\b/i],
-  ["a fill is sent before it is stored, so a restart may sign a second transaction at one nonce", /\bfill\b[^.;]{0,80}\bbefore it is stored\b[^.;]{0,40}\ba restart may sign a second transaction at one nonce\b/i],
-  ["a resumed transaction drops its access list", /\ba resumed transaction drops its access list\b/i],
-  ["a failed first arm leaves the transaction in flight, so its nonce can block later ones", /\bfirst arm\b[^.;]{0,80}\bin flight\b[^.;]{0,80}\bblock later\b/i],
-];
-export const readmeProblems = (raw: string): ReadonlyArray<string> => {
-  const readme = visible(raw);
-  const block = `${opening(readme)}\n${sectionsNamingIt(readme)}`;
-  const out: string[] = [];
-  const first = opening(readme).trim().split(/\n\s*\n/)[0] ?? "";
-  if (!says(opening(readme)) || !/^\*\*Experimental\*\* in the alpha\b/.test(first)) out.push("the README's opening does not say the relayer is experimental: its first paragraph does not begin `**Experimental** in the alpha`");
-  if (DENIES.test(unconditioned(block))) out.push(`the opening takes the marking back: ${DENIES.exec(unconditioned(block))?.[0]}`);
-  const gone = saysGone(readme);
-  if (gone !== undefined) out.push(`the README says #784's limits are gone: ${gone.slice(0, 100)}`);
-  if (COUNTS.test(block)) out.push(`the opening counts the bugs (${COUNTS.exec(block)?.[0]}); name #784's list instead`);
-  if (!/#784\b/.test(block)) out.push("the opening (or its experimental section) does not name #784");
-  for (const [what, pattern] of LIMITS) if (!pattern.test(block)) out.push(`the opening (or its experimental section) does not say: ${what}`);
+  const body = readme.replace(/^# [^\n]*\n/, "");
+  const first = body.trim().split(/\n\s*\n/)[0] ?? "";
+  if (first.trim() !== MARK_README) out.push("the README's first paragraph is not the marking, word for word (MARK_README in this check)");
+  if (once(readme, MARK_README) > 1) out.push("the README holds the marking more than once");
+  if (NOT_ASCII.test(readme)) out.push(`the README holds a character outside ASCII: ${JSON.stringify(NOT_ASCII.exec(readme)?.[0])}`);
+  const said = topicOf(readme.replace(MARK_README, ""));
+  if (said !== undefined) out.push(`the README says more on the subject outside the marking: "${said}"`);
   return out;
 };
 
@@ -501,66 +529,63 @@ export const docOf = (source: string, name: string): string => {
   return start < 0 ? "" : before.slice(start);
 };
 export const docProblems = (source: string): ReadonlyArray<string> => {
-  const whole = docOf(source, "Relayer");
-  const doc = visible(whole);
   const out: string[] = [];
   const declared = source.match(/^export class Relayer\b/gm)?.length ?? 0;
   if (declared !== 1) out.push(`the source has ${declared} lines \`export class Relayer\`, not one (one may sit inside a comment)`);
-  if (whole === "") out.push("`export class Relayer` has no doc comment right above it");
-  const tag = /^\s*\*\s*@experimental\b(.*)$/m.exec(doc);
-  if (tag === null) out.push("the Relayer's doc comment has no `@experimental` tag");
-  if (!/#784\b/.test(tag?.[1] ?? "")) out.push("the Relayer's doc comment does not name #784 on its `@experimental` line");
-  if (DENIES.test(unconditioned(doc))) out.push(`the Relayer's doc comment takes the marking back: ${DENIES.exec(unconditioned(doc))?.[0]}`);
-  const gone = saysGone(doc.replace(/^\s*\/?\*+\/?/gm, ""));
-  if (gone !== undefined) out.push(`the Relayer's doc comment says #784's limits are gone: ${gone.slice(0, 100)}`);
-  if (COUNTS.test(doc)) out.push(`the Relayer's doc comment counts the bugs (${COUNTS.exec(doc)?.[0]}); name #784 instead`);
+  const doc = docOf(source, "Relayer");
+  if (doc === "") return [...out, "`export class Relayer` has no doc comment right above it"];
+  const lines = doc.split("\n");
+  if (lines.filter((l) => l === MARK_DOC).length !== 1) out.push("the Relayer's doc comment does not carry the marking line once, word for word (MARK_DOC in this check)");
+  if (/^\s*\*?\s*(?:```|~~~)/m.test(doc)) out.push("the Relayer's doc comment has a code fence, which an editor shows as code, not as a tag");
+  if (NOT_ASCII.test(doc)) out.push(`the Relayer's doc comment holds a character outside ASCII: ${JSON.stringify(NOT_ASCII.exec(doc)?.[0])}`);
+  const rest = lines.filter((l) => l !== MARK_DOC).join("\n");
+  if (/^\s*\*\s*@\w/m.test(rest)) out.push(`the Relayer's doc comment has another tag: ${/^\s*\*\s*(@\w+)/m.exec(rest)?.[1]}`);
+  const said = topicOf(rest);
+  if (said !== undefined) out.push(`the Relayer's doc comment says more on the subject outside the marking: "${said}"`);
   return out;
 };
 
-/** The canon page: the lines about the relayer (a table row or a sentence) say it is experimental, and none says it is not written or comes later. */
-export const pageProblems = (raw: string): ReadonlyArray<string> => {
-  const page = visible(raw);
-  // The units a reader takes in at once: each table row, and each paragraph or bullet (a bullet wraps over lines, so "Not the relayer ... come later" is one unit).
+/** Words that say the relayer is not built yet. */
+const STALE = /not written|not yet|to be (?:done|written|built)|comes? later|\blater\b|\bplanned\b|\bscheduled\b|\bunwritten\b|\bpending\b|\bupcoming\b|\btbd\b|not built|^\W*Not the relayer/i;
+export const pageProblems = (page: string): ReadonlyArray<string> => {
+  const out: string[] = [];
+  if (/\bhidden\b|<details|display:\s*none|~~/i.test(page)) out.push(`the page hides or strikes text: ${/\bhidden\b|<details|display:\s*none|~~/i.exec(page)?.[0]}`);
+  if (page.split("\n").filter((l) => l === MARK_PAGE_ROW).length !== 1) out.push("the page does not hold the relayer's row once, word for word (MARK_PAGE_ROW in this check)");
+  // The units a reader takes in at once: each table row, and each paragraph or bullet (a bullet wraps over lines).
   const units: string[] = [];
   let block: string[] = [];
   const flush = () => { if (block.length > 0) units.push(block.join(" ")); block = []; };
   for (const l of page.split("\n")) {
-    if (l.trim() === "" || /^\|/.test(l) || /^\s*(?:[-*]|\d+\.)\s/.test(l) || /^#{1,6}\s/.test(l)) flush();
-    if (/^\|/.test(l)) units.push(l);
+    if (l.trim() === "" || l.startsWith("|") || /^\s*(?:[-*]|\d+\.)\s/.test(l) || /^#{1,6}\s/.test(l)) flush();
+    if (l.startsWith("|")) units.push(l);
     else if (l.trim() !== "") block.push(l);
   }
   flush();
-  const lines = units.filter((l) => /\brelayer\b/i.test(l));
-  const out: string[] = [];
-  if (lines.length === 0) return ["the page does not mention the relayer"];
-  const cellsOf = (l: string) => l.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim());
-  if (!lines.some((l) => /^\|/.test(l) && /\brelayer\b/i.test(cellsOf(l)[0] ?? "") && /^experimental\b/i.test(cellsOf(l)[1] ?? ""))) out.push("no table row about the relayer says it is experimental: no row names the relayer in its first cell with a status that begins `experimental`");
-  for (const l of lines) if (/not written|not yet|to be (?:done|written|built)|comes? later|\blater\b|\bplanned\b|not built|^\W*Not the relayer/i.test(l)) out.push(`a line about the relayer still says it is not built: ${l.trim().slice(0, 90)}`);
-  for (const l of lines) if (DENIES.test(unconditioned(l))) out.push(`a line about the relayer takes the marking back: ${l.trim().slice(0, 90)}`);
-  for (const l of units.filter((u) => /\brelayer\b|#784\b/i.test(u))) { const gone = saysGone(l); if (gone !== undefined) out.push(`a line about the relayer says #784's limits are gone: ${gone.slice(0, 90)}`); }
+  for (const u of units.filter((x) => /\brelayer\b|#784/i.test(x) && x !== MARK_PAGE_ROW)) {
+    const said = topicOf(u) ?? STALE.exec(u)?.[0];
+    if (said !== undefined) out.push(`a line about the relayer, besides its row, says more on the subject: "${said}" in ${u.trim().slice(0, 80)}`);
+    if (NOT_ASCII.test(u)) out.push(`a line about the relayer holds a character outside ASCII: ${u.trim().slice(0, 80)}`);
+  }
   return out;
 };
 
-/** The status page's row for the relayer and the follower: its item says experimental, its notes name #784, and it stays in the alpha. */
-export const rowProblems = (status: string): ReadonlyArray<string> => {
-  const rows = status.split("\n").filter((l) => /^\|\s*relayer-follower\s*\|/.test(l));
-  if (rows.length > 1) return [`the status page has ${rows.length} rows \`relayer-follower\`, not one`];
-  const row = visible(status).split("\n").find((l) => /^\|\s*relayer-follower\s*\|/.test(l));
-  if (row === undefined) return ["the status page has no row `relayer-follower`"];
-  const cells = row.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim());
+/** The status row, read the way the board reads it (tools/github/board.mjs's parseBoard), so a cell split can't differ. */
+export const rowProblems = (status: string, parseBoard: (text: string) => { rows: ReadonlyArray<Json>; errors: ReadonlyArray<string> }): ReadonlyArray<string> => {
   const out: string[] = [];
-  if (cells.length !== 10) out.push(`the row has ${cells.length} cells, not 10`);
-  const [, item = "", stage = "", , release = "", milestone = ""] = cells;
-  if (stage !== "building") out.push(`the row's status is "${stage}", not "building": #784 keeps it at building until the fixes and an app's journeys prove it`);
-  const notes = cells.at(-1) ?? "";
-  if (!says(item) || !/\bRelayer \(experimental\)/.test(item)) out.push("the row's item does not say experimental: it does not name `Relayer (experimental)`");
-  const goneRow = saysGone(item) ?? saysGone(notes);
-  if (goneRow !== undefined) out.push(`the row says #784's limits are gone: ${goneRow.slice(0, 90)}`);
-  if (DENIES.test(unconditioned(item)) || DENIES.test(unconditioned(notes))) out.push(`the row takes the marking back: ${DENIES.exec(unconditioned(item))?.[0] ?? DENIES.exec(unconditioned(notes))?.[0]}`);
-  if (!/#784 blocks it\b/.test(notes)) out.push("the row's notes do not say #784 blocks it");
-  if (!/\brelayer\b/i.test(item)) out.push("the row's item does not name the relayer");
-  if (!/#784\b/.test(notes)) out.push("the row's notes do not name #784");
-  if (release !== "preview" || milestone !== "alpha") out.push(`the row leaves the alpha (release "${release}", milestone "${milestone}")`);
+  const raw = status.split("\n").filter((l) => /^\s*\|\s*relayer-follower\s*\|/.test(l));
+  if (raw.length !== 1) return [`the status page has ${raw.length} rows with the id relayer-follower, not one`];
+  if (NOT_ASCII.test(raw[0] ?? "")) out.push(`the row holds a character outside ASCII: ${JSON.stringify(NOT_ASCII.exec(raw[0] ?? "")?.[0])}`);
+  const { rows, errors } = parseBoard(status);
+  const row = rows.find((r) => r.id === "relayer-follower");
+  for (const e of errors.filter((x) => /relayer-follower/.test(x))) out.push(`the board refuses the row: ${e}`);
+  if (row === undefined) return [...out, "the board reads no row `relayer-follower`"];
+  if (row.item !== MARK_ITEM) out.push("the row's item is not the marking, word for word (MARK_ITEM in this check)");
+  if (row.stage !== "building") out.push(`the row's stage is "${row.stage}", not "building": #784 keeps it at building until the fixes and an app's journeys prove it`);
+  if (row.release !== "preview" || row.milestone !== "alpha") out.push(`the row leaves the alpha (release "${row.release}", milestone "${row.milestone}")`);
+  const notes = String(row.evidence ?? "");
+  if (once(notes, MARK_NOTES) !== 1) out.push("the row's notes do not carry the #784 sentence once, word for word (MARK_NOTES in this check)");
+  const said = topicOf(notes.replace(MARK_NOTES, ""));
+  if (said !== undefined) out.push(`the row's notes say more on the subject outside the marking: "${said}"`);
   return out;
 };
 
@@ -568,6 +593,7 @@ const READMES = "packages/host-cloudflare/src/modules/relayer/README.md";
 const SERVICE = "packages/host-cloudflare/src/modules/relayer/service.ts";
 const PAGE = "docs/canon/chains-and-wallets.mdx";
 const STATUS = "docs/canon/status.md";
+const board = async () => (await import(join(repo, "tools/github/board.mjs"))) as { parseBoard: (text: string) => { rows: ReadonlyArray<Json>; errors: ReadonlyArray<string> } };
 
 describe("(b) the relayer is marked experimental, where a person meets it", () => {
   it("opens its module README with the word, #784 and its four limits", () => {
@@ -579,8 +605,8 @@ describe("(b) the relayer is marked experimental, where a person meets it", () =
   it("says it on the canon's chains-and-wallets page, where it lists what is built, and no longer says the relayer is not written", () => {
     expect(pageProblems(read(PAGE))).toEqual([]);
   });
-  it("says it in the status page's row, in the item a reader sees, with #784 in its notes, and the row stays in the alpha", () => {
-    expect(rowProblems(read(STATUS))).toEqual([]);
+  it("says it in the status page's row, in the item a reader sees, with #784 in its notes, and the row stays in the alpha", async () => {
+    expect(rowProblems(read(STATUS), (await board()).parseBoard)).toEqual([]);
   });
   it("marks something that is there: the relayer is exported from the host's front door", () => {
     expect(read("packages/host-cloudflare/src/index.ts")).toMatch(/export \{ Relayer \}/);
@@ -588,140 +614,166 @@ describe("(b) the relayer is marked experimental, where a person meets it", () =
 });
 
 describe("(b) the judges are fair: what they pass and what they catch (planted files)", () => {
-  const readme = (extra: string, limits = "A first receipt is final, so a reorg is missed (#784); a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list; a failed first arm leaves the transaction in flight, so its nonce can block later ones.") =>
-    `# relayer\n\n**Experimental** in the alpha. ${limits}${extra}\n\n| Method | What it does |\n|---|---|\n| \`relay\` | sends |\n\nLater paragraphs.\n`;
-  it("passes a README that does it right", () => expect(readmeProblems(readme(""))).toEqual([]));
-  it("passes the limits in a section headed with the word, when the opening says it", () => {
-    const text = `# relayer\n\n**Experimental** in the alpha, see #784.\n\n## Experimental: what is wrong\n\nA reorg is missed; a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list; a failed first arm leaves the transaction in flight, so its nonce can block later ones.\n\n| a |\n`;
-    expect(readmeProblems(text)).toEqual([]);
-  });
-  const caughtReadme = (name: string, text: string, expected: RegExp) => it(`catches ${name}`, () => {
-    const found = readmeProblems(text);
-    expect(found.join("\n")).toMatch(expected);
-  });
-  caughtReadme("a README that says nothing", `# relayer\n\nThe Durable Object.\n\n| a |\n`, /does not say the relayer is experimental/);
-  caughtReadme("'not experimental'", readme("").replace("**Experimental** in the alpha", "This is not experimental"), /does not say the relayer is experimental/);
-  caughtReadme("'unexperimental' and 'non-experimental'", readme("").replace("**Experimental**", "It is non-experimental, unexperimental"), /does not say the relayer is experimental/);
-  caughtReadme("the word only below the table", `# relayer\n\nThe Durable Object. #784 A reorg, a fill before a restart, an access list.\n\n| a |\n|---|\n\nExperimental.\n`, /does not say the relayer is experimental/);
-  caughtReadme("the word only in a later section not named with it", `# relayer\n\nThe Durable Object. #784 A reorg, a fill before a restart, an access list.\n\n## Notes\n\nIt is experimental.\n`, /does not say the relayer is experimental/);
-  caughtReadme("no #784", readme("").replace("(#784)", ""), /does not name #784/);
-  caughtReadme("a different issue number", readme("").replace("#784", "#78"), /does not name #784/);
-  caughtReadme("no reorg", readme("", "A first receipt is final (#784); a fill is sent before it is stored, so a restart may sign twice; an access list is dropped."), /reorg is missed/);
-  caughtReadme("no fill and restart", readme("", "A reorg is missed (#784); a resumed transaction drops its access list."), /second transaction at one nonce/);
-  caughtReadme("a fill with no restart", readme("", "A reorg is missed (#784); a fill is a thing; an access list is dropped."), /second transaction at one nonce/);
-  caughtReadme("no access list", readme("", "A reorg is missed (#784); a fill is sent before it is stored, so a restart may sign twice."), /access list/);
-  // The hostile pass (26 November 2026): each wrong README below passed the first judge, and is planted here.
-  caughtReadme("B01 the past tense, and the limits said fixed", `# relayer\n\nIt was experimental until #784 closed. The old limits are fixed: a reorg is no longer missed, a fill is no longer broadcast before it is stored so a restart cannot double-sign, and a resumed transaction keeps its access list.\n\n| a |\n`, /does not say the relayer is experimental/);
-  caughtReadme("B02 the marking only in an HTML comment", `# relayer\n\n<!-- **Experimental** in the alpha (#784): a reorg is missed; a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list. -->\n\nThe Durable Object.\n\n| a |\n`, /does not say the relayer is experimental/);
-  caughtReadme("B03 'isn't experimental and is never experimental'", readme("").replace("**Experimental** in the alpha.", "The relayer isn't experimental and is never experimental (#784 closed)."), /does not say the relayer is experimental|takes the marking back/);
-  caughtReadme("B04 the follower marked, the relayer called ready", readme("").replace("**Experimental** in the alpha.", "The follower is **experimental** in the alpha; the relayer is production-ready."), /does not say the relayer is experimental|takes the marking back/);
-  caughtReadme("a good opening that then says it is fixed", readme(" #784 is fixed now."), /takes the marking back/);
-  // The lead's review of #1095 (26 November 2026): P1 to P4 passed the second judge; each is planted with its siblings.
-  caughtReadme("P1 a later sentence that says the limits were removed", readme("\n\nThese limits were all removed in 0.1.0-next.3, so it is ready for production use."), /limits are gone/);
-  caughtReadme("P1' the bugs solved, in the opening", readme(" All of #784's bugs are solved now."), /limits are gone/);
-  caughtReadme("P1'' far below the table", `${readme("")}\n## Notes\n\nThe relayer is safe to use: #784 was resolved.\n`, /limits are gone/);
-  caughtReadme("the fourth limit left out", readme("", "A first receipt is final, so a reorg is missed (#784); a fill is sent before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list."), /in flight/);
-  caughtReadme("a count of the bugs", readme(" Three bugs are open."), /counts the bugs/);
-  it("passes a condition, which is not a claim (\"until #784 is fixed\")", () => expect(readmeProblems(readme(" It stays so until #784 is fixed."))).toEqual([]));
-  caughtReadme("the limits only far below the opening", `# relayer\n\nExperimental, #784.\n\n| a |\n|---|\n\nA reorg is missed; a fill before a restart; an access list is dropped.\n`, /does not say: a first receipt/);
+  const README = `# relayer\n\n${MARK_README}\n\n\`Relayer\`, the Durable Object that holds one relayer key.\n\n| Method | What it does |\n|---|---|\n| \`relay\` | sends |\n\nLater paragraphs.\n`;
+  it("passes a README that does it right", () => expect(readmeProblems(README)).toEqual([]));
+  const add = (extra: string) => README.replace(MARK_README, `${MARK_README}${extra}`);
+  const caughtReadme = (name: string, text: string) => it(`catches ${name}`, () => expect(readmeProblems(text).length, readmeProblems(text).join("\n")).toBeGreaterThan(0));
+  for (const [name, text] of [
+    ["a README that says nothing", `# relayer\n\nThe Durable Object.\n\n| a |\n`],
+    ["'not experimental'", README.replace("**Experimental** in the alpha", "This is not experimental")],
+    ["the word only below the table", README.replace(`${MARK_README}\n\n`, "") + `\n${MARK_README}\n`],
+    ["the fourth limit left out", README.replace("; a failed first arm leaves the transaction in flight, so its nonce can block later ones", "")],
+    ["another issue number", README.replace("(#784)", "(#78)")],
+    ["the marking twice", add(`\n\n${MARK_README}`)],
+    // The first hostile pass (B01 to B04) and the review (P1):
+    ["B01 the past tense", README.replace(MARK_README, "It was experimental until #784 closed. The old limits are fixed.")],
+    ["B02 the marking only in an HTML comment", README.replace(MARK_README, `<!-- ${MARK_README} -->`)],
+    ["B04 the follower marked, the relayer called ready", add(" The follower is experimental; the relayer is production-ready.")],
+    ["P1 a later sentence that says the limits were removed", README.replace("Later paragraphs.", "These limits were all removed in 0.1.0-next.3, so it is ready for production use.")],
+    // The second hostile pass (b01 to b29):
+    ["b01 'these limits are history now'", add(" These limits are history now.")],
+    ["b02 '#784 has been dealt with'", add(" #784 has been dealt with.")],
+    ["b03 'all four are patched'", add(" All four are patched.")],
+    ["b04 'it works now; ship it'", add(" It works now; ship it.")],
+    ["b27 'all of them were fixed in next.3'", add(" All of them were fixed in next.3.")],
+    ["b05 a zero-width space in 'fixed'", add(" #784 is fix​ed.")],
+    ["b06 a Cyrillic letter in 'not'", add(" The relayer is nоt experimental any more.")],
+    ["b07 an HTML entity", add(" #784 is fix&#101;d.")],
+    ["b08 the marking struck through", README.replace(MARK_README, `~~${MARK_README}~~ Not any more.`)],
+    ["b09 the marking moved into the past", README.replace("**Experimental** in the alpha (#784): a first", "**Experimental** in the alpha before 0.1.0-next.3, which addressed every limit #784 listed. In next.2: a first")],
+    ["b10 the limits as a hypothetical", add(" That is what would happen without the patch in 0.1.0-next.3, which ships with the alpha.")],
+    ["b20 the opening in <details>", README.replace(MARK_README, `<details>\n\n${MARK_README}\n\n</details>`)],
+    ["b24 an 'Update' paragraph", README.replace("Later paragraphs.", "**Update:** the relayer has graduated; #784 is history.")],
+    ["b29 a link that says closed", add(" See [#784 (closed)](https://example.invalid).")],
+  ] as const) caughtReadme(name, text);
 
   const service = (doc: string, name = "Relayer") => `import x from "y";\n\n${doc}\nexport class ${name} extends DurableObject {}\n`;
-  const GOOD_DOC = "/**\n * The relayer's Durable Object.\n *\n * @experimental The bugs in #784 are open.\n */";
+  const GOOD_DOC = `/**\n * The relayer's Durable Object.\n *\n${MARK_DOC}\n */`;
   it("passes a doc comment that does it right", () => expect(docProblems(service(GOOD_DOC))).toEqual([]));
-  const caughtDoc = (name: string, text: string, expected: RegExp) => it(`catches ${name}`, () => expect(docProblems(text).join("\n")).toMatch(expected));
-  caughtDoc("no doc comment", service(""), /has no doc comment/);
-  caughtDoc("a line comment, not a doc comment", service("// @experimental #784"), /has no doc comment/);
-  caughtDoc("a doc comment without the tag", service("/**\n * Experimental (#784).\n */"), /no `@experimental` tag/);
-  caughtDoc("the tag in the middle of a sentence, not as a tag", service("/**\n * Use @experimental sparingly (#784).\n */"), /no `@experimental` tag/);
-  caughtDoc("the tag with no issue", service("/**\n * @experimental\n */"), /does not name #784/);
-  caughtDoc("the tag on the follower and not the relayer", `${service(GOOD_DOC, "Follower")}\n${service("/** The relayer. */")}`, /no `@experimental` tag/);
-  caughtDoc("C01 the tag that says it no longer applies", service("/**\n * @experimental No longer: fixed in #784, safe for production.\n */"), /takes the marking back/);
-  caughtDoc("C02 the tag inside a code fence", service("/**\n * ```\n * @experimental (#784)\n * ```\n */"), /no `@experimental` tag/);
-  caughtDoc("C03 a good class in a block comment above the real one", `/*\n${GOOD_DOC}\nexport class Relayer {}\n*/\n${service("/** The relayer. */")}`, /2 lines `export class Relayer`/);
-  caughtDoc("P2 the tag that says the bugs are solved", service("/**\n * @experimental #784: all three bugs are now solved, use it freely.\n */"), /limits are gone/);
-  caughtDoc("P2' the tag, then a line that says it is fixed", service("/**\n * @experimental (#784)\n * The relayer is fixed and ready for production.\n */"), /limits are gone/);
-  caughtDoc("a count of the bugs on the tag", service("/**\n * @experimental Three bugs are open (#784).\n */"), /counts the bugs/);
-  caughtDoc("#784 named elsewhere in the comment, not on the tag", service("/**\n * The relayer (#784).\n * @experimental\n */"), /on its `@experimental` line/);
-  caughtDoc("a comment with another statement between it and the class", `${GOOD_DOC}\nconst x = 1;\nexport class Relayer {}\n`, /has no doc comment/);
+  const withDoc = (lines: string) => service(GOOD_DOC.replace(" */", `${lines}\n */`));
+  const caughtDoc = (name: string, text: string) => it(`catches ${name}`, () => expect(docProblems(text).length, docProblems(text).join("\n")).toBeGreaterThan(0));
+  for (const [name, text] of [
+    ["no doc comment", service("")],
+    ["a line comment, not a doc comment", service("// @experimental #784")],
+    ["a doc comment without the tag", service("/**\n * Experimental (#784).\n */")],
+    ["the tag with no issue", service("/**\n * @experimental\n */")],
+    ["the tag on the follower and not the relayer", `${service(GOOD_DOC, "Follower")}\n${service("/** The relayer. */")}`],
+    ["a comment with another statement between it and the class", `${GOOD_DOC}\nconst x = 1;\nexport class Relayer {}\n`],
+    ["C01 the tag that says it no longer applies", service("/**\n * @experimental No longer: fixed in #784, safe for production.\n */")],
+    ["C02 the tag inside a code fence", service(`/**\n * \`\`\`\n${MARK_DOC}\n * \`\`\`\n */`)],
+    ["C03 a good class in a block comment above the real one", `/*\n${GOOD_DOC}\nexport class Relayer {}\n*/\n${service("/** The relayer. */")}`],
+    ["P2 the tag that says the bugs are solved", service("/**\n * @experimental #784: all three bugs are now solved, use it freely.\n */")],
+    ["b11 'patched; it is stable'", withDoc(" * The bugs in #784 are patched; it is stable.")],
+    ["b12 no-break characters, 'production-ready'", service(GOOD_DOC.replace(MARK_DOC, " * @experimental #784 — no longer; production‑ready."))],
+    ["b13 a @stable tag after it", withDoc(" * @stable Since 0.1.0-next.3.")],
+    ["b25 a @remarks that says ignore the tag", withDoc(" * @remarks Ignore the tag above: it is out of date.")],
+    ["b28 'well, were: all of them fixed'", withDoc(" * Well, were: all of them fixed in next.3.")],
+  ] as const) caughtDoc(name, text);
 
-  const row = (item: string, notes: string, release = "preview", milestone = "alpha") =>
-    `| id | Item |\n|---|---|\n| relayer-follower | ${item} | building | framework | ${release} | ${milestone} | none | \`a\` | wallets-keys | ${notes} |\n`;
-  it("passes a row that does it right", () => expect(rowProblems(row("Relayer (experimental) and follower: both actors are on `main`", "snag #784 blocks it"))).toEqual([]));
-  const caughtRow = (name: string, text: string, expected: RegExp) => it(`catches ${name}`, () => expect(rowProblems(text).join("\n")).toMatch(expected));
-  caughtRow("an item that does not say it", row("Relayer and follower", "experimental, #784"), /item does not say experimental/);
-  caughtRow("'not experimental'", row("Relayer and follower, not experimental", "#784"), /item does not say experimental/);
-  caughtRow("the word in the notes only", row("Relayer and follower", "the relayer is experimental, #784"), /item does not say experimental/);
-  caughtRow("an item that marks the follower and not the relayer", row("Follower (experimental)", "#784"), /does not name the relayer/);
-  caughtRow("no #784 in the notes", row("Relayer (experimental) and follower", "snag open"), /do not name #784/);
-  caughtRow("a row that leaves the alpha", row("Relayer (experimental) and follower", "#784", "1.0", "getting paid"), /leaves the alpha/);
-  caughtRow("a row that is gone", `| id |\n|---|\n| other | a |\n`, /no row `relayer-follower`/);
-  caughtRow("E01 'no longer experimental'", row("Relayer (no longer experimental) and follower", "snag #784 blocks it"), /item does not say experimental|takes the marking back/);
-  caughtRow("E02 a good row in a comment, the real row unmarked", `<!--\n${row("Relayer (experimental) and follower", "snag #784 blocks it")}-->\n${row("Relayer and follower", "snag #784 blocks it")}`, /2 rows|item does not say/);
-  caughtRow("E03 notes that say #784 is fixed", row("Relayer (experimental) and follower", "snag #784 is fixed and closed, so nothing blocks it"), /takes the marking back|do not say #784 blocks it/);
-  caughtRow("P3 the status moved from building to proved", `| id | Item |\n|---|---|\n| relayer-follower | Relayer (experimental) and follower | proved | framework | preview | alpha | none | \`a\` | wallets-keys | snag #784 blocks it |\n`, /not "building"/);
-  caughtRow("P3' the status moved to done", `| id | Item |\n|---|---|\n| relayer-follower | Relayer (experimental) and follower | done | framework | preview | alpha | none | \`a\` | wallets-keys | snag #784 blocks it |\n`, /not "building"/);
-  caughtRow("notes that say the bugs were solved", row("Relayer (experimental) and follower", "snag #784 blocks it; its bugs were all solved"), /limits are gone/);
-  caughtRow("two rows", `${row("Relayer (experimental) and follower", "snag #784 blocks it")}${row("Relayer and follower", "x")}`, /2 rows/);
-  caughtRow("a row with a cell too few", `| relayer-follower | Relayer (experimental) | building | #784 |\n`, /cells, not 10/);
+  const BOARD_HEAD = "## 2. The capability map\n\n| id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |\n|---|---|---|---|---|---|---|---|---|---|\n";
+  const row = (item = MARK_ITEM, stage = "building", notes = `#679 (\`Follower\`, on \`main\`); ${MARK_NOTES}; #700 (fees are not bumped)`, release = "preview", milestone = "alpha") =>
+    `${BOARD_HEAD}| relayer-follower | ${item} | ${stage} | framework | ${release} | ${milestone} | none | \`packages/host-cloudflare\` | none | ${notes} |\n\n## 3. Next\n`;
+  const rowsOf = (text: string) => async () => rowProblems(text, (await board()).parseBoard);
+  it("passes a row that does it right", async () => expect(await rowsOf(row())()).toEqual([]));
+  const caughtRow = (name: string, text: string) => it(`catches ${name}`, async () => { const p = await rowsOf(text)(); expect(p.length, p.join("\n")).toBeGreaterThan(0); });
+  for (const [name, text] of [
+    ["an item that does not say it", row("Relayer and follower: both actors are on `main`, and the relayer has reorg and ordering bugs")],
+    ["E01 'no longer experimental'", row(MARK_ITEM.replace("(experimental)", "(no longer experimental)"))],
+    ["E02 a good row in a comment, the real row unmarked", `<!--\n${row()}-->\n${row("Relayer and follower: both")}`],
+    ["E03 notes that say #784 is fixed", row(MARK_ITEM, "building", "snag #784 is fixed and closed, so nothing blocks it")],
+    ["P3 the status moved from building to proved", row(MARK_ITEM, "built")],
+    ["a row that leaves the alpha", row(MARK_ITEM, "building", undefined, "1.0", "getting paid")],
+    ["a row that is gone", `${BOARD_HEAD}| other | Other: a | building | framework | preview | alpha | none | \`a\` | x | y |\n`],
+    ["the notes without the fourth bug", row(MARK_ITEM, "building", `#679; ${MARK_NOTES.replace(", and a failed first arm leaves the transaction in flight so its nonce can block later ones", "")}`)],
+    ["b14 'all patched since next.3' inside the #784 sentence", row(MARK_ITEM, "building", `${MARK_NOTES.replace("drops its access list", "drops its access list, all patched since next.3")}`)],
+    ["b26 'all of them fixed in next.3' outside it", row(MARK_ITEM, "building", `${MARK_NOTES}; all of them fixed in next.3; slices M6.07`)],
+    ["b15 an item that says production-ready", row(`${MARK_ITEM}, the relayer now production‑ready`)],
+    ["b22 an escaped pipe that moves the stage", row(`${MARK_ITEM}\\| built`, "building")],
+  ] as const) caughtRow(name, text);
 
-  const page = (rows: string) => `# chains\n\n## Status\n\n| Part | Status |\n|---|---|\n${rows}\n`;
-  it("passes a page that does it right", () => expect(pageProblems(page("| the relayer: nonces, rebroadcast | experimental (#784) |\n| the follower | proved |"))).toEqual([]));
-  const caughtPage = (name: string, text: string, expected: RegExp) => it(`catches ${name}`, () => expect(pageProblems(text).join("\n")).toMatch(expected));
-  caughtPage("a page with no relayer", page("| the follower | proved |"), /does not mention the relayer/);
-  caughtPage("the relayer's row without the word", page("| the relayer | proved |"), /no table row about the relayer says it is experimental/);
-  caughtPage("the word in a sentence, not in a table row", `${page("| the relayer | proved |")}\nThe relayer is experimental.\n`, /no table row about the relayer says/);
-  caughtPage("the word on the follower's row", page("| the relayer | proved |\n| the follower | experimental |"), /no table row about the relayer says/);
-  caughtPage("a stale 'not written' row next to a good one", page("| the relayer | experimental |\n| the relayer and the follower | not written | planned |"), /still says it is not built/);
-  caughtPage("a stale bullet that wraps, with 'come later' on its second line", `${page("| the relayer | experimental |")}\n- **Not the relayer or the follower.** One relayer actor that submits (M6.07) and one follower\n  that turns logs into events (M6.09) come later, on the same port.\n`, /still says it is not built/);
-  caughtPage("D01 a bullet 'not yet written, to be done'", `${page("| the relayer | experimental (#784) |")}\n- **Not the relayer.** One relayer actor is not yet written; it is to be done in M6.07.\n`, /still says it is not built/);
-  caughtPage("D02 'no longer experimental (#784 fixed)'", page("| the relayer | no longer experimental (#784 fixed) |"), /no table row about the relayer says|takes the marking back/);
-  caughtPage("D03 the good row in an MDX comment", page("{/*\n| the relayer | experimental (#784) |\n*/}\n| the relayer | built, production-ready |"), /no table row about the relayer says/);
-  caughtPage("D04 the good row in a code fence", `${page("| the relayer | built |")}\n\n\`\`\`\n| the relayer | experimental |\n\`\`\`\n`, /no table row about the relayer says/);
-  caughtPage("P4 a sentence that the relayer is ready, its bugs solved", `${page("| the relayer | experimental (#784) |")}\nThe relayer is ready for production use; its bugs were all solved.\n`, /limits are gone/);
-  caughtPage("P4' a row note that #784 is resolved", page("| the relayer | experimental (#784 resolved) |"), /limits are gone|takes the marking back/);
-  caughtPage("a stale sentence 'come later'", `${page("| the relayer | experimental |")}\n- **Not the relayer.** One relayer actor comes later.\n`, /still says it is not built/);
+  const page = (rows: string, extra = "") => `# chains\n\n## Status\n\n| Part | Status | Where |\n|---|---|---|\n${rows}\n| the follower | built | M6.09 |\n| the follower, corrections, the relayer | specified | M6.07, M6.09 |\n${extra}`;
+  it("passes a page that does it right", () => expect(pageProblems(page(MARK_PAGE_ROW))).toEqual([]));
+  const caughtPage = (name: string, text: string) => it(`catches ${name}`, () => expect(pageProblems(text).length, pageProblems(text).join("\n")).toBeGreaterThan(0));
+  for (const [name, text] of [
+    ["a page with no relayer row", page("")],
+    ["the relayer's row without the word", page("| the relayer | proved | M6.07 |")],
+    ["the word in a sentence, not in its row", page("| the relayer | proved | M6.07 |", "\nThe relayer is experimental.\n")],
+    ["a stale 'not written' row next to the good one", page(`${MARK_PAGE_ROW}\n| the relayer and the follower | not written | planned |`)],
+    ["a stale bullet that wraps", page(MARK_PAGE_ROW, "\n- **Not the relayer or the follower.** One relayer actor that submits (M6.07) and one follower\n  that turns logs into events (M6.09) come later.\n")],
+    ["D01 'not yet written, to be done'", page(MARK_PAGE_ROW, "\n- **Not the relayer.** One relayer actor is not yet written; it is to be done in M6.07.\n")],
+    ["D02 'no longer experimental (#784 fixed)'", page("| the relayer | no longer experimental (#784 fixed) | M6.07 |")],
+    ["D03 the good row in an MDX comment", page(`{/*\n${MARK_PAGE_ROW}\n*/}\n| the relayer | built, production-ready | M6.07 |`)],
+    ["P4 a sentence that the relayer is ready, its bugs solved", page(MARK_PAGE_ROW, "\nThe relayer is ready for production use; its bugs were all solved.\n")],
+    ["b16 the good row in a hidden div", page("| the relayer | built, stable | M6.07 |", `\n<div hidden>\n\n${MARK_PAGE_ROW}\n\n</div>\n`)],
+    ["b17 'unwritten, scheduled'", page(`${MARK_PAGE_ROW}\n| the relayer and the follower | unwritten, scheduled | M6.07, M6.09 |`)],
+    ["b18 a bullet that says its limits are history", page(MARK_PAGE_ROW, "\n- **The relayer is experimental (#784).** Its limits are history since next.3; it works now.\n")],
+    ["b19 the cell that calls it just a label", page("| the relayer | experimental (#784), which is just a label now: all four are patched | M6.07 |")],
+    ["b21 a third cell that says gone", page("| the relayer | experimental (#784) | gone since next.3 |")],
+    ["b23 'was experimental'", page(MARK_PAGE_ROW, "\n- The relayer was experimental.\n")],
+  ] as const) caughtPage(name, text);
 });
 
 // ---- (c) no live page says the suite is not run on main ----
 
-export const STALE_README = /not (?:yet )?(?:be )?run on `?main`?|only on `?goal\/on-chain`?|until Goal 18's slice 9/i;
-/** The README's line naming the job says it runs into `main` and on a push to `main`, and takes neither back. */
-export const onChainReadmeSays = (l: string) => /into `main`/.test(l) && /push to `main`/.test(l) && !/\b(?:never|not|no longer)\b[^.;:]{0,40}`?main\b/i.test(l);
+/** e2e/on-chain's README: the line naming the job, word for word (the author wrote it in this pull request; a builder may not edit e2e/). */
+export const MARK_ONCHAIN = [
+  "- `nx run e2e:on-chain-ratchet` is what CI's job `e2e-on-chain` runs on every pull request into `main` or `goal/on-chain` and every push to `main`",
+  "  (Goal 18's slice 9 turns it on for `main`): green while every failure is listed.",
+].join("\n");
+export const onChainReadmeProblems = (readme: string): ReadonlyArray<string> => {
+  const out: string[] = [];
+  if (once(readme, MARK_ONCHAIN) !== 1) out.push("e2e/on-chain's README does not hold the line naming the job once, word for word (MARK_ONCHAIN in this check)");
+  const other = readme.replace(MARK_ONCHAIN, "").split("\n").filter((l) => /\bmain\b/.test(l));
+  if (other.length > 0) out.push(`e2e/on-chain's README says more about main: ${other[0]?.trim().slice(0, 90)}`);
+  return out;
+};
+/** The climb: it names the suite once, in ALPHA_SUITES, and nothing in it marks a suite not run on main. */
+export const climbProblems = (source: string): ReadonlyArray<string> => {
+  const out: string[] = [];
+  if (/NOT_RUN_ON_MAIN/.test(source)) out.push("tools/github/climb.mjs still has NOT_RUN_ON_MAIN");
+  const named = source.match(/["'`]on-chain["'`]/g)?.length ?? 0;
+  if (named !== 1 || !/export const ALPHA_SUITES = \[[^\]]*"on-chain"[^\]]*\]/.test(source)) out.push(`tools/github/climb.mjs names "on-chain" ${named} times, not once, in ALPHA_SUITES`);
+  if (/not run on main|slice 9|run on main/i.test(source)) out.push(`tools/github/climb.mjs still says: ${/not run on main|slice 9|run on main/i.exec(source)?.[0]}`);
+  return out;
+};
+/** The climb dashboard's README: once the suite runs like the others, it has nothing to say about it. */
+export const dashboardProblems = (readme: string): ReadonlyArray<string> => (/on-chain/i.test(readme) ? [`the climb dashboard's README still speaks of the on-chain suite: ${readme.split("\n").find((l) => /on-chain/i.test(l))?.trim().slice(0, 90)}`] : []);
 
-describe("(c) the judges are fair (planted lines)", () => {
-  it("passes the right words", () => {
-    expect(STALE_README.test("- **What the tests leave out:** The grid's reds live in a file.")).toBe(false);
-    expect(onChainReadmeSays("- `nx run e2e:on-chain-ratchet` is what CI runs on every pull request into `main` or `goal/on-chain` and every push to `main` (job `e2e-on-chain`): green")).toBe(true);
-  });
+describe("(c) the judges are fair (planted files)", () => {
+  const CLIMB = 'export const ALPHA_SUITES = ["m0", "m1", "on-chain", "grid"];\nexport const NOT_ALPHA = ["m1/40.test.ts"];\nconst status = (s, v) => `${v} green`;\n';
+  it("passes a climb that does it right", () => expect(climbProblems(CLIMB)).toEqual([]));
   it.each([
-    "`e2e/on-chain` is not run on `main`, so its green files rest on their lists alone.",
-    "CI runs that suite only on goal/on-chain, so its green files rest on their lists alone.",
-    "kept, but CI runs that suite only on `goal/on-chain` until Goal 18's slice 9",
-    "the suite is not yet run on main",
-  ])("catches a stale dashboard line: %s", (l) => expect(STALE_README.test(l)).toBe(true));
+    ["today's NOT_RUN_ON_MAIN", `${CLIMB}export const NOT_RUN_ON_MAIN = ["on-chain"];\n`],
+    ["F01 an empty list pushed to later", `${CLIMB}export const NOT_RUN_ON_MAIN = [];\nNOT_RUN_ON_MAIN.push("on-chain");\n`],
+    ["c01 the same list under another name", `${CLIMB}const NOT_YET = ["on-chain"];\n`],
+    ["c08 the suite named in the status code", CLIMB.replace("`${v} green`", "s === \"on-chain\" ? 'not run on main' : `${v} green`")],
+  ])("catches %s", (_, text) => expect(climbProblems(text).length).toBeGreaterThan(0));
+  it("passes a dashboard README that says nothing of it", () => expect(dashboardProblems("- **What the tests leave out:** The grid's reds live in a file.")).toEqual([]));
   it.each([
-    "- `nx run e2e:on-chain-ratchet` is what CI runs on every pull request into `goal/on-chain`, never on `main` (job `e2e-on-chain`)",
-    "- `nx run e2e:on-chain-ratchet` is what CI runs on every pull request into `goal/on-chain` (job `e2e-on-chain`), not on `main`",
-    "- runs on every pull request into `main` (job `e2e-on-chain`), and not on a push to `main`",
-    "- runs on every push to `main` (job `e2e-on-chain`)",
-  ])("catches an on-chain README line that does not say it: %s", (l) => expect(onChainReadmeSays(l)).toBe(false));
-  it("reads past a comment: a stale line inside <!-- --> is not seen, and a good one there does not count", () => {
-    expect(STALE_README.test(visible("<!-- not run on main -->\nok"))).toBe(false);
-  });
+    "`e2e/on-chain`'s lists are kept, but CI runs that suite only on `goal/on-chain` until Goal 18's slice 9",
+    "`e2e/on-chain` isn't run on `main` yet",
+    "CI skips `e2e/on-chain` on main",
+    "CI doesn't run `e2e/on-chain` on `main`;",
+    "`e2e/on-chain` is never run on `main`.",
+  ])("catches a stale dashboard line: %s", (l) => expect(dashboardProblems(`- **What the tests leave out:** ${l} The grid.`).length).toBeGreaterThan(0));
+  const ONCHAIN = `# e2e/on-chain\n\nThe ratchet.\n\n${MARK_ONCHAIN}\n- \`nx run e2e:on-chain\` is the done check.\n`;
+  it("passes an on-chain README that does it right", () => expect(onChainReadmeProblems(ONCHAIN)).toEqual([]));
+  it.each([
+    ["today's line", ONCHAIN.replace(MARK_ONCHAIN, "- `nx run e2e:on-chain-ratchet` is what CI runs on every pull request into `goal/on-chain` (job `e2e-on-chain`): green")],
+    ["F05 'never on main'", ONCHAIN.replace("into `main` or `goal/on-chain`", "into `goal/on-chain`, never on `main`")],
+    ["c06 another line that takes it back", `${ONCHAIN}- Until Goal 18's next slice, CI does not run this suite on \`main\`.\n`],
+    ["c07 'would run', 'today it is off'", ONCHAIN.replace("runs on every", "would run on every")],
+  ])("catches %s", (_, text) => expect(onChainReadmeProblems(text).length).toBeGreaterThan(0));
 });
 
 describe("(c) no live page still says the on-chain suite is not run on main", () => {
-  it("the climb counts it as run: `NOT_RUN_ON_MAIN` is empty", async () => {
-    const climb = (await import(join(repo, "tools/github/climb.mjs"))) as { NOT_RUN_ON_MAIN?: unknown };
-    expect(climb.NOT_RUN_ON_MAIN, "the suites the climb still marks not run on main, as the module exports them").toEqual([]);
+  it("the climb counts it as run: on-chain is named once, in ALPHA_SUITES, and nothing marks it not run on main", () => {
+    expect(climbProblems(read("tools/github/climb.mjs"))).toEqual([]);
   });
   it("the climb dashboard's README does not say the suite is not run on main", () => {
-    const stale = STALE_README.test(visible(read("tools/github/climb-dashboard/README.md")));
-    expect(stale, "tools/github/climb-dashboard/README.md still says the suite is not run on main").toBe(false);
+    expect(dashboardProblems(read("tools/github/climb-dashboard/README.md"))).toEqual([]);
   });
   it("e2e/on-chain's README says its CI job runs on main", () => {
-    const lines = read("e2e/on-chain/README.md").split("\n").filter((l) => l.includes("e2e-on-chain"));
-    expect(lines.length, "the README names the job").toBeGreaterThan(0);
-    expect(lines.some((l) => onChainReadmeSays(l)), `the lines naming the job: ${lines.join(" / ")}`).toBe(true);
+    expect(onChainReadmeProblems(read("e2e/on-chain/README.md"))).toEqual([]);
   });
 });

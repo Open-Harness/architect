@@ -1,0 +1,96 @@
+{
+  "job": {
+    "name": "${{ needs.ready.outputs.draft != 'false' && 'e2e-on-chain (draft)' || 'e2e-on-chain' }}",
+    "needs": [
+      "ready",
+      "changes"
+    ],
+    "if": "${{ needs.ready.outputs.draft == 'false' && !cancelled() }}",
+    "runs-on": "ubuntu-latest",
+    "timeout-minutes": 20,
+    "steps": [
+      {
+        "if": "env.SKIP == 'true'",
+        "run": "echo \"A docs-only pull request, or one that is not for this gate, where this job passes without its steps (design/decisions/CI-drafts-race.md, CI-docs-fast-path.md).\""
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "uses": "actions/checkout@v7.0.1",
+        "with": {
+          "fetch-depth": 0
+        }
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "uses": "pnpm/action-setup@v6.1.0"
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "uses": "actions/setup-node@v7.1.0",
+        "with": {
+          "node-version": 24,
+          "cache": "pnpm"
+        }
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "run": "pnpm install --frozen-lockfile"
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "name": "No Docker on the PATH",
+        "run": "sudo rm -f \"$(command -v docker)\"\n! command -v docker\n"
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "uses": "actions/cache@v6.1.0",
+        "with": {
+          "path": "~/.cache/orthograph/otelcol-contrib",
+          "key": "otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}"
+        }
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "uses": "foundry-rs/foundry-toolchain@v1.9.2",
+        "with": {
+          "version": "v1.8.6"
+        }
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "run": "anvil --version"
+      },
+      {
+        "if": "env.SKIP != 'true'",
+        "run": "pnpm nx run e2e:on-chain-ratchet --outputStyle=static",
+        "env": {
+          "ORTHO_CHAIN_EVM_ANVIL": "1"
+        }
+      }
+    ]
+  },
+  "readyRun": "if [[ \"$EVENT\" == pull_request ]]; then\n  # Three tries: should the API fail, every job skips and the pull request waits for a rerun.\n  for try in 1 2 3; do\n    draft=$(gh api \"repos/$REPO/pulls/$PR\" --jq .draft) && break\n    [[ \"$try\" == 3 ]] && exit 1\n    sleep 5\n  done\nelse\n  draft=false\nfi\necho \"draft=$draft\" >> \"$GITHUB_OUTPUT\"\necho \"payload draft: $PAYLOAD_DRAFT; live draft: $draft\"\n",
+  "changes": {
+    "docs_only": "${{ steps.diff.outputs.docs_only }}",
+    "fast": "${{ steps.diff.outputs.fast }}",
+    "affected_e2e": "${{ steps.aff.outputs.affected_e2e || 'true' }}",
+    "affected_prove": "${{ steps.aff.outputs.affected_prove || 'true' }}"
+  },
+  "prTypes": [
+    "opened",
+    "synchronize",
+    "reopened",
+    "ready_for_review"
+  ],
+  "target": {
+    "executor": "nx:run-commands",
+    "options": {
+      "parallel": false,
+      "commands": [
+        "mkdir -p tmp && rm -f tmp/on-chain-report.json tmp/on-chain-errors.json",
+        "RATCHET_ERRORS_FILE=tmp/on-chain-errors.json vitest run --root e2e --config vitest.on-chain.config.ts on-chain --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/on-chain-report.json; node e2e/ratchet/check.ts tmp/on-chain-report.json e2e/on-chain/expected-failing tmp/on-chain-errors.json"
+      ]
+    },
+    "cache": false
+  }
+}
