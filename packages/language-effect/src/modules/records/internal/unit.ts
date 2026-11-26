@@ -6,7 +6,7 @@ import { orderSteps, type Step } from "./order.ts";
 import { holderOf, indexHeld } from "./holder.ts";
 import { listerOf } from "./list.ts";
 import { inScope, rowOf, ruleKey, rulesOf } from "./unique.ts";
-import type { Instance, NamedRule, Store, Unit, Violation, Write } from "../types.ts";
+import type { Instance, NamedRule, RowRead, Store, Unit, Violation, Write } from "../types.ts";
 
 type Held = { thing: Thing; id: string; kind: "insert" | "update"; version: number; fields: Record<string, unknown>; state: string | undefined };
 
@@ -24,10 +24,16 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
     };
     const seen = (thing: Thing) => read.get(thing) ?? read.set(thing, new Map()).get(thing)!;
 
+    // #1045: every row found by its id counts as read, at the version found; the commit carries them, and the store refuses it when one moved on.
+    const found: Array<RowRead> = [];
     const load = (thing: Thing, id: string) =>
       Effect.gen(function* () {
         const cache = seen(thing);
-        if (!cache.has(id)) cache.set(id, yield* store.find(thing, id));
+        if (!cache.has(id)) {
+          const stored = yield* store.find(thing, id);
+          cache.set(id, stored);
+          if (stored !== undefined) found.push({ thing, id, version: stored.version });
+        }
         return cache.get(id);
       });
 
@@ -122,6 +128,7 @@ export const makeUnit = (store: Store["Service"], given?: ReadonlyArray<NamedRul
       setState: (thing, id, state) => change(thing, id, {}, state),
       check,
       lists: lister.lists,
+      reads: Effect.sync((): ReadonlyArray<RowRead> => [...found]),
       writes: Effect.suspend(() => {
         const ordered = orderSteps(stepsOf(), rules);
         if (!Array.isArray(ordered)) {
