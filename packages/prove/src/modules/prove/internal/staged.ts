@@ -4,6 +4,7 @@ import type { Model } from "@orthograph/compiler";
 import { Journeys } from "#modules/journeys/service.js";
 import type { Facts, Project } from "#modules/journeys/types.js";
 import { ProveFailed, type Report } from "../types.ts";
+import { chosen, noJourney, unknownOf } from "./only.ts";
 import { journeyLines } from "./report.ts";
 import { proveReport } from "./structured.ts";
 
@@ -20,9 +21,9 @@ const answers = (url: string): Effect.Effect<boolean> =>
  */
 export const provedAt = (model: Model, project: Project, url: string, label: string, only: ReadonlyArray<string>, facts?: Facts): Effect.Effect<Report, ProveFailed> =>
   Effect.gen(function* () {
-    const unknown = only.find((name) => !project.journeys.some((journey) => journey.name === name));
-    if (unknown !== undefined) return yield* new ProveFailed({ message: `no journey named "${unknown}"` });
-    const journeys = only.length === 0 ? project.journeys : project.journeys.filter((journey) => only.includes(journey.name));
+    const unknown = unknownOf(project, only);
+    if (unknown !== undefined) return yield* new ProveFailed({ message: noJourney(unknown) });
+    const journeys = only.length === 0 ? project.journeys : chosen(project, only).journeys;
     if (journeys.length === 0) return yield* new ProveFailed({ message: "the project declares no journeys" });
     if (!(yield* answers(url))) return yield* new ProveFailed({ message: `nothing answers as the project's server at ${url} (${label}): it was not deployed, or it is not up` });
     const [took, runs] = yield* Effect.timed(Effect.forEach(journeys, (journey, i) => Journeys.run(project, url, journey, i, "sign-up", facts)));

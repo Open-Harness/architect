@@ -20,6 +20,7 @@ import { emptyWorld } from "./internal/empty-world.ts";
 import { proveReport } from "./internal/structured.ts";
 import { detail, headline, narrowed } from "./internal/changed-run.ts";
 import { provedAt } from "./internal/staged.ts";
+import { chosen, noJourney } from "./internal/only.ts";
 
 const failed = (e: { readonly message: string }) => new ProveFailed({ message: e.message });
 
@@ -57,12 +58,14 @@ export const Prove: ProveApi = {
         const lines = [...said, ...unfinishedIn(loaded), "prove ✔"];
         return { lines, passed: true, structured: proveReport([], 0, 0, lines, true, report), ...(say === undefined ? {} : { said: said.length }) };
       }
-      const journeys = only === undefined ? project.journeys : project.journeys.filter((journey) => journey.name === only);
-      if (journeys.length === 0 && !(empty && only === undefined) && !(judging !== undefined && judging.size > 0)) return yield* new ProveFailed({ message: `no journey named "${only}"` });
+      // `--only` names a journey by its declared name or by its file, as `ortho brief` lists it; the run's files stay in step with its journeys.
+      const picked = only === undefined ? project : chosen(project, [only]);
+      const journeys = picked.journeys;
+      if (journeys.length === 0 && !(empty && only === undefined) && !(judging !== undefined && judging.size > 0)) return yield* new ProveFailed({ message: noJourney(only ?? "") });
       const bodies = handlerHashes(root, model);
       const world = empty ? yield* emptyWorld(root, model) : root;
       const stand = yield* standWorld({ root, world, model, port, empty, env });
-      const [took, done] = yield* Effect.timed(exercise(model, { ...project, journeys }, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging, stand.stands));
+      const [took, done] = yield* Effect.timed(exercise(model, picked, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging, stand.stands, only !== undefined));
       // A run with a failing journey proves nothing: its operations are recorded as judged and not passed (D2 #80).
       if (stamp !== undefined) {
         yield* Impact.record(root, model, done.judged, judging === undefined ? done.results : done.results.filter((r) => judging.has(r.operation)));
@@ -72,7 +75,9 @@ export const Prove: ProveApi = {
         }, stamp);
       }
       const verdict = closing(done);
-      const lines = [...said, ...stand.notes, ...unfinishedIn(loaded), ...done.journeys.lines, ...done.evals.lines, verdict.line];
+      // A run of one journey says what it left out, and that coverage is the whole run's to judge: never a failure of the journey that ran.
+      const partial = only === undefined || empty ? [] : [`ran ${journeys.length} of ${project.journeys.length} journeys (--only): coverage is judged by the whole run, ortho prove${done.evals.unjudged > 0 ? `; ${done.evals.unjudged} operation${done.evals.unjudged === 1 ? "" : "s"} above not reached in full by this one` : ""}`];
+      const lines = [...said, ...stand.notes, ...unfinishedIn(loaded), ...done.journeys.lines, ...done.evals.lines, ...partial, verdict.line];
       const seconds = Math.round(Duration.toMillis(took)) / 1000;
       return { lines, passed: verdict.passed, structured: proveReport(done.journeys.details, done.evals.failed, seconds, lines, verdict.passed, report), ...(say === undefined ? {} : { said: said.length }) };
     }),

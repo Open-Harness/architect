@@ -34,6 +34,8 @@ export const exercise = (
   judging?: ReadonlySet<string>,
   /** The address of each stand-in the world's prove started, by mount: where a journey's `Stand.command` goes. */
   stands?: Readonly<Record<string, string>>,
+  /** `prove --only`: the run left journeys out, so an operation's coverage gap is said and not judged (it is no failure of the journeys that ran). */
+  partial = false,
 ): Effect.Effect<Exercised> =>
   Effect.gen(function* () {
     const bodies = handlers ?? handlerHashes(project.root, model);
@@ -45,7 +47,7 @@ export const exercise = (
     const rooted = new Set(roots.map((r) => r.traceId));
     const traces = roots.length === 0 ? first : yield* collector.traces(calls.map((c) => ({ trace: c.trace, parent: c.parent, rooted: rooted.has(c.trace), mayBeEmpty: noSpanExpected(c) })));
     const journeys = journeyLines(runs, traces, empty, model);
-    if (empty) return { journeys, evals: { lines: [], failed: 0 }, verdicts: [], judged: [], results: [], failedTraces: journeys.failedTraces };
+    if (empty) return { journeys, evals: { lines: [], failed: 0, unjudged: 0 }, verdicts: [], judged: [], results: [], failedTraces: journeys.failedTraces };
     // The tools list is not an operation's call: no eval reads it, and it has no operation span to find.
     const evidence = Evals.gather(calls.filter((c) => c.tools !== true && c.clock !== true && c.stand !== true), traces);
     const everything = Evals.judge(project, evidence);
@@ -55,7 +57,7 @@ export const exercise = (
     const named = calls.filter((c) => verdicts.some((v) => v.failures.some((f) => f.startsWith(`${Evals.where(c)}:`))));
     const failedTraces = [...journeys.failedTraces, ...named.map((c) => ({ trace: c.trace, what: `${c.journey} "${c.step}"` }))]
       .filter((f, i, all) => all.findIndex((o) => o.trace === f.trace) === i);
-    const evals = evalLines(judging === undefined ? model : { ...model, operations: Object.fromEntries(Object.entries(model.operations).filter(([name]) => judging.has(name))) }, verdicts);
+    const evals = evalLines(judging === undefined ? model : { ...model, operations: Object.fromEntries(Object.entries(model.operations).filter(([name]) => judging.has(name))) }, verdicts, partial);
     const results = proofVerdicts(project, runs, traces, judged, bodies);
     return { journeys, evals: { ...evals, lines: [...evals.lines, ...(judging === undefined ? optionalStepLines(model, runs, evidence) : [])] }, verdicts, judged, results, failedTraces };
   });

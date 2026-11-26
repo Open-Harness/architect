@@ -81,7 +81,7 @@ const prove = Command.make(
     port: Flag.Int("port").pipe(Flag.withDefault(0), Flag.withDescription("The local port for the app under proof; 0 picks a free one")),
     empty: Flag.Boolean("empty").pipe(Flag.withDefault(false), Flag.withDescription("Run the journeys on the scaffolded handlers, recording no verdict")),
     // The journeys to judge, by name: any number of times with `--env staging` (CX-staging), at most once with `--env local`.
-    only: Flag.String("only").pipe(Flag.atLeast(0), Flag.withDescription("Run only the journey with this declared name; repeat it to name several with --env staging")),
+    only: Flag.String("only").pipe(Flag.atLeast(0), Flag.withDescription("Run only this journey, named by its declared name or by its file as ortho brief lists it; repeat it to name several with --env staging")),
     // Only the journeys a change since the last proof's record touches; everything, saying why, when it cannot tell (ST1.23).
     changed: Flag.Boolean("changed").pipe(Flag.withDefault(false), Flag.withDescription("Run only the journeys a change since the last proof touches")),
     // The run as data (per journey, per step: verdict, expected, got, handler and declaration files; totals; timings).

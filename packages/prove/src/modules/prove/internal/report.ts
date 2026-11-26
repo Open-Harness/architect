@@ -126,26 +126,34 @@ export const journeyLines = (runs: ReadonlyArray<JourneyRun>, traces: ReadonlyMa
   return { lines, failed, failedTraces, details };
 };
 
-export const evalLines = (model: Model, verdicts: ReadonlyArray<Verdict>) => {
+/**
+ * Each operation's evals, then the run's own. A `partial` run left journeys out (`--only`), so what it did not reach says nothing about
+ * the app: an operation's coverage gap is printed as not judged, with what the run did not reach, and is never counted as failing.
+ */
+export const evalLines = (model: Model, verdicts: ReadonlyArray<Verdict>, partial = false) => {
   const lines: Array<string> = [];
   let failed = 0;
+  let unjudged = 0;
+  const left = (v: Verdict) => partial && v.eval === "coverage" && v.failures.length > 0;
   for (const op of Object.keys(model.operations)) {
     const mine = verdicts.filter((v) => v.operation === op);
     for (const v of mine) {
       if (v.failures.length === 0) lines.push(`${op} ${v.eval} ✔${v.notes.length ? ` ${v.notes.join("; ")}` : ""}`);
-      for (const f of v.failures) lines.push(`${op} ${v.eval} ✘ ${f}`);
+      for (const f of v.failures) lines.push(left(v) ? `${op} ${v.eval} not judged: ${f}` : `${op} ${v.eval} ✘ ${f}`);
     }
-    const bad = mine.filter((v) => v.failures.length > 0).length;
+    const bad = mine.filter((v) => v.failures.length > 0 && !left(v)).length;
+    const judged = mine.length - mine.filter(left).length;
     const timing = mine.find((v) => v.eval === "performance")?.notes[0];
-    lines.push((bad === 0 ? `${op} ${mine.length} evals ✔` : `${op} ${bad} of ${mine.length} evals ✘`) + (timing ? ` ${timing}` : ""));
+    lines.push((bad === 0 ? `${op} ${judged} evals ✔${judged < mine.length ? ", coverage not judged" : ""}` : `${op} ${bad} of ${mine.length} evals ✘`) + (timing ? ` ${timing}` : ""));
     failed += bad;
+    unjudged += mine.filter(left).length;
   }
   for (const v of verdicts.filter((x) => x.operation === undefined)) {
     lines.push(`${v.eval} ${v.failures.length === 0 ? "✔" : "✘"} ${v.notes.join("; ")}`);
     for (const f of v.failures) lines.push(`${v.eval} ✘ ${f}`);
     if (v.failures.length > 0) failed++;
   }
-  return { lines, failed };
+  return { lines, failed, unjudged };
 };
 
 /** Optional paths are counted from successful journey calls that actually ran the handler. */
