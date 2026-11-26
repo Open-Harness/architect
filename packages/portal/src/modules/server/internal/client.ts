@@ -1,5 +1,5 @@
 // `/portal` and under it: the prebuilt client's files, from the Worker's static assets. A file of the client's namespace is served as it is; every
-// other path is a route, and is the client's shell, which draws the page itself.
+// other path is a route, and is the client's shell, which draws the page itself. With no client installed, every screen is 501, not in this release.
 import { Effect } from "effect";
 import type { PortalAssets } from "../types.ts";
 
@@ -16,10 +16,23 @@ const insideOf = (pathname: string): string => {
   return rest === "" ? "/" : rest;
 };
 
-const notInstalled = () => new Response("The portal's client is not installed in this Worker: it has no static assets.", { status: 404, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } });
+/** What the screens say when no client is installed (a published `@orthograph/portal` has none, K44 call 2): not in this release. */
+const MESSAGE = "The portal's screens are not in this release (Preview). Its data is at /_portal/v1/blueprint.";
+
+/** An API client asks for JSON over HTML; a browser, or a request with no `accept`, gets the page. */
+const wantsJson = (accept: string | null): boolean => accept !== null && accept.includes("application/json") && !accept.includes("text/html");
+
+const notInThisRelease = (request: Request): Response => {
+  const json = wantsJson(request.headers.get("accept"));
+  const body = json ? JSON.stringify({ _tag: "NotInThisRelease", message: MESSAGE }) : `<!doctype html><title>Portal</title><p>${MESSAGE}</p>`;
+  return new Response(request.method === "HEAD" ? null : body, {
+    status: 501,
+    headers: { "content-type": json ? "application/json" : "text/html; charset=utf-8", "cache-control": "no-store" },
+  });
+};
 
 export const client = (assets: PortalAssets | undefined, request: Request): Effect.Effect<Response> => {
-  if (assets === undefined) return Effect.succeed(notInstalled());
+  if (assets === undefined) return Effect.succeed(notInThisRelease(request));
   const url = new URL(request.url);
   const inside = insideOf(url.pathname);
   const ask = (path: string) => Effect.promise(() => assets.fetch(new Request(new URL(path, url.origin), { method: request.method, headers: request.headers })));

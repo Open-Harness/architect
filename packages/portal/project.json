@@ -29,7 +29,14 @@
         "command": "tsc -p {projectRoot}/tsconfig.build.json"
       },
       "dependsOn": [
-        "^build"
+        {
+          "target": "build",
+          "projects": [
+            "logbook",
+            "services",
+            "orthograph"
+          ]
+        }
       ],
       "cache": true,
       "inputs": [
