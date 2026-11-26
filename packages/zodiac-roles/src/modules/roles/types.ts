@@ -30,10 +30,12 @@ export type BudgetParam = number | readonly [input: number, component: number];
  * An Org Budget: one role, held by its members, that may call one function of one contract, within an allowance
  * (`P/budget-permissions.ts:113-263`, CX-bridge-rails "Who signs: every payout is on a budget").
  *
- * A scoped parameter (the amount, the recipient, the token) is a static type (`address`, `uint<N>`, `int<N>`, `bool`,
- * `bytes<N>`), at its own place: two never share one. Every other input or field is passed unchecked; it may be static,
- * `bytes` or `string`. A tuple input must hold a scoped field and only such components. Arrays and nested tuples are
- * not supported. Anything else is refused as a `configuration` `ChainFault`, and so is a recipient list that is empty.
+ * The amount is a `uint<N>` and the recipient and the token are `address`es, each at a place of its own: two never share
+ * one. A place is a top-level input or a field of a tuple input. Every other input or field is passed unchecked; it may be a
+ * static type (`address`, `bool`, `uint<N>`, `int<N>`, `bytes<N>`), `bytes` or `string`. A tuple input must hold a scoped
+ * field, and only such components. Arrays (of any size) and tuples inside tuples are not supported, scoped or not. The
+ * members may be none (the implementation assigns them in a call of its own) but not the same one twice; the recipients
+ * must be one or more, each once; a limit must be below 2^256 - 1. Anything else is refused as a `configuration` `ChainFault`.
  */
 export interface OrgBudget {
   /** The role's key, a `bytes32`. */

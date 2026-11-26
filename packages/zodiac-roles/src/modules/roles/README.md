@@ -13,8 +13,10 @@
   `And(LessThan(limit + 1), WithinAllowance(key))`, or `WithinAllowance(key)` with no limit; the recipient `EqualTo`, or an
   `Or` of them; the token `EqualTo`; every other input or field `Pass`, `Static` or `Dynamic` as its type is; a tuple holding
   scoped fields a `Matches` of its own. Listed breadth first, an `And` or an `Or` with paramType None (Integrity refuses
-  anything else). Refused as `configuration`: a parameter `fn` does not have; a scoped parameter that is not static; two on
-  one place; an array or a nested tuple anywhere; a tuple input with nothing scoped in it; an empty recipient list.
+  anything else). Refused as `configuration`: a parameter `fn` does not have; an amount that is not a `uint<N>`, a recipient
+  or a token that is not an `address`; two on one place; an array (of any size) or a tuple inside a tuple anywhere; a tuple
+  input with nothing scoped in it; no recipients, a recipient or a member listed twice; a limit of 2^256 - 1. No members is
+  allowed: the implementation assigns them in a call of its own.
 - `execTransactionWithRole`: a Call (operation 0), `shouldRevert` true unless given.
 - `allowance`: `allowances(key)` read over the chain port. Roles stores a `maxRefill` of 0 as `type(uint128).max`.
 - `accrued`: Roles' own accrual. Before a whole period has passed since `timestamp`, the balance; then the balance plus

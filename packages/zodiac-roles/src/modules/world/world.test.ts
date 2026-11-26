@@ -8,7 +8,7 @@ import { Effect } from "effect";
 import type { Address } from "@orthograph/chain-evm/device";
 import { expect, test } from "vitest";
 import { checksum, encode, fn, hex, keccak, word } from "../roles/internal/fixtures/evm.ts";
-import { anvilGate as gate, modifierAbi, run, topicOf, world } from "../roles/internal/fixtures/world.ts";
+import { anvilGate as gate, attempt, modifierAbi, run, topicOf, world } from "../roles/internal/fixtures/world.ts";
 import { ZodiacWorld } from "./service.ts";
 
 const canonical = {
@@ -34,6 +34,11 @@ test.skipIf(gate)("install puts the factory and the Roles 2.1.1 mastercopy, with
     const one = checksum("0x0000000000000000000000000000000000000001");
     const read = (item: typeof modifierAbi.owner) => w.read(canonical.mastercopy.address, item).pipe(Effect.map(([address]) => address));
     expect([yield* read(modifierAbi.owner), yield* read(modifierAbi.avatar), yield* read(modifierAbi.target)]).toEqual([one, one, one]);
+    // Not to be set up again: the mastercopy's initialiser ran in its constructor (InvalidInitialization, Roles 2.1.1's own).
+    const setUp = yield* encode(fn("setUp", [["bytes", "initParams"]]), [hex(word(1n), word(1n), word(1n))]);
+    expect(yield* attempt(w, w.deployer.address, { to: canonical.mastercopy.address, data: setUp, value: 0n })).toMatchObject({
+      _tag: "ChainRefusal", name: "InvalidInitialization",
+    });
     // The world's clock is left as it was: a few seconds of blocks, no jump.
     expect((yield* w.now) - before).toBeLessThan(60n);
   })), 30_000);
@@ -76,4 +81,16 @@ test.skipIf(gate)("the installed factory deploys a working modifier from the ins
     const proxy = checksum(`0x${proxyTopic.slice(26)}`);
     const read = (item: typeof modifierAbi.owner) => w.read(proxy, item).pipe(Effect.map(([address]) => address));
     expect([yield* read(modifierAbi.owner), yield* read(modifierAbi.avatar), yield* read(modifierAbi.target)]).toEqual([owner, avatar, target].map(checksum));
+  })), 30_000);
+
+test.skipIf(gate)("a chain that has Roles and its libraries but not the factory gets the factory", () =>
+  run(Effect.gen(function* () {
+    const source = yield* chainOf;
+    yield* ZodiacWorld.install(source.anvil.rpcUrl);
+    const w = yield* chainOf;
+    for (const { address } of [canonical.mastercopy, canonical.integrity, canonical.packer]) {
+      yield* w.rpc("anvil_setCode", [address, yield* source.codeOf(address)]);
+    }
+    expect(yield* ZodiacWorld.install(w.anvil.rpcUrl)).toEqual(installed);
+    for (const { address, code } of Object.values(canonical)) expect(yield* w.codeHash(address)).toBe(code);
   })), 30_000);

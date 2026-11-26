@@ -81,7 +81,27 @@ const scoped = async (of: OrgBudget) => {
   const scope = calls.filter((call) => call.name === "scopeFunction");
   expect(scope.length).toBe(1);
   const [role, scopedTarget, scopedSelector, conditions, options] = scope[0]!.args as [Hex, Address, Hex, ReadonlyArray<Flat>, number];
+  integral(conditions);
   return { role, target: scopedTarget, selector: scopedSelector, conditions, options };
+};
+/**
+ * Integrity's rules (Roles 2.1.1, Integrity.sol), on every list a check scopes, before the tree collapses anything: the
+ * root is the calldata's Matches, node 0, its own parent; every other node's parent comes before it and the parents never go
+ * back (breadth first), so every node hangs off the root; an And or an Or has paramType None and a child at least; a Pass,
+ * an EqualTo, a LessThan or a WithinAllowance has no child; a Matches has one child for each input or component.
+ */
+const integral = (conditions: ReadonlyArray<Flat>) => {
+  expect(conditions[0]).toEqual({ parent: 0, paramType: 5, operator: 5, compValue: "0x" });
+  const children = (index: number) => conditions.filter((child, i) => i > 0 && child.parent === index).length;
+  conditions.forEach((flat, index) => {
+    if (index > 0) expect(flat.parent).toBeLessThan(index);
+    if (index > 1) expect(flat.parent).toBeGreaterThanOrEqual(conditions[index - 1]!.parent);
+    if (flat.operator === 1 || flat.operator === 2) {
+      expect(flat.paramType).toBe(0);
+      expect(children(index)).toBeGreaterThan(0);
+    }
+    if ([0, 16, 18, 28].includes(flat.operator)) expect(children(index)).toBe(0);
+  });
 };
 
 describe("the calls", () => {
@@ -115,73 +135,92 @@ describe("the calls", () => {
 });
 
 describe("the conditions", () => {
-  test("breadth-first, under the calldata's Matches, an And or an Or with paramType None", async () => {
-    for (const of of [budget, { ...budget, fn: send, amount: { param: [0, 3] as const, limit: 5n }, recipients: { param: [0, 1] as const, anyOf: [alice, bob] }, token: { param: [0, 2] as const, address: usdc } }]) {
-      const { conditions } = await scoped(of);
-      expect(conditions[0]).toMatchObject({ parent: 0, paramType: 5, operator: 5 });
-      conditions.forEach((flat, index) => {
-        if (index > 0) expect(flat.parent).toBeLessThan(index);
-        if (index > 1) expect(flat.parent).toBeGreaterThanOrEqual(conditions[index - 1]!.parent);
-        if (flat.operator === 1 || flat.operator === 2) expect(flat.paramType).toBe(0);
-      });
-    }
-  });
-
-  test("transfer: the recipient one of three, the amount at most 60 and within the allowance", async () => {
-    expect(treeOf((await scoped(budget)).conditions)).toEqual(calldata(
-      any(equalTo(alice), equalTo(bob), equalTo(carol)), all(lessThan(61n), withinAllowance),
-    ));
-  });
-
-  test("the amount first, a string passed unchecked, the recipient last: each condition at its own parameter", async () => {
-    expect(treeOf((await scoped({ ...budget, fn: payOut, amount: { param: 0, limit: 10n ** 18n + 1n }, recipients: { param: 2, anyOf: [bob] } })).conditions)).toEqual(calldata(
-      all(lessThan(10n ** 18n + 2n), withinAllowance), passDynamic, equalTo(bob),
-    ));
-  });
-
-  test("a limit of 0 is a limit; with no limit, the allowance alone; recipients anyone pass", async () => {
-    expect(treeOf((await scoped({ ...budget, amount: { param: 1, limit: 0n } })).conditions)).toEqual(calldata(
-      any(equalTo(alice), equalTo(bob), equalTo(carol)), all(lessThan(1n), withinAllowance),
-    ));
-    expect(treeOf((await scoped({ ...budget, amount: { param: 1 }, recipients: "anyone" })).conditions)).toEqual(calldata(pass, withinAllowance));
-  });
-
-  test("V3 send's shape: the item's fields scoped inside its tuple, the token exactly, the rest passed", async () => {
-    const of: OrgBudget = {
-      ...budget, fn: send, amount: { param: [0, 3], limit: 60n }, recipients: { param: [0, 1], anyOf: [alice, bob] }, token: { param: [0, 2], address: usdc },
-    };
-    expect(treeOf((await scoped(of)).conditions)).toEqual(calldata(node(3, 5, "0x", [
-      pass, any(equalTo(alice), equalTo(bob)), equalTo(usdc), all(lessThan(61n), withinAllowance), passDynamic,
-    ])));
-  });
-
-  test("a token as a parameter of the function itself", async () => {
-    const pull = fn("pull", [["address", "token"], ["address", "to"], ["uint256", "value"]]);
-    expect(treeOf((await scoped({ ...budget, fn: pull, token: { param: 0, address: usdc }, recipients: "anyone", amount: { param: 2 } })).conditions)).toEqual(calldata(
-      equalTo(usdc), pass, withinAllowance,
-    ));
+  const pull = fn("pull", [["address", "token"], ["address", "to"], ["uint256", "value"]]);
+  // A tuple at input 1, and a function with two tuples, the scoped fields in the second.
+  const small = [["bool", "flag"], ["address", "to"], ["uint128", "value"], ["bytes32", "ref"], ["int256", "delta"]].map(([type, name]) => ({ type, name }));
+  const later = fn("later", [["uint256", "nonce"], ["tuple", "item", small as never]]);
+  const two = [["address", "to"], ["uint64", "value"]].map(([type, name]) => ({ type, name }));
+  const pair = fn("pair", [["tuple", "first", two as never], ["tuple", "second", two as never]]);
+  const many = Array.from({ length: 10 }, (_, i) => `0x${(0xa000 + i).toString(16).padStart(40, "0")}` as Address);
+  const cases: ReadonlyArray<readonly [string, OrgBudget, Tree]> = [
+    ["transfer: the recipient one of three, the amount at most 60 and within the allowance", budget,
+      calldata(any(equalTo(alice), equalTo(bob), equalTo(carol)), all(lessThan(61n), withinAllowance))],
+    ["the amount first, a string passed unchecked, the recipient last", { ...budget, fn: payOut, amount: { param: 0, limit: 10n ** 18n + 1n }, recipients: { param: 2, anyOf: [bob] } },
+      calldata(all(lessThan(10n ** 18n + 2n), withinAllowance), passDynamic, equalTo(bob))],
+    ["a limit of 0 is a limit", { ...budget, amount: { param: 1, limit: 0n } },
+      calldata(any(equalTo(alice), equalTo(bob), equalTo(carol)), all(lessThan(1n), withinAllowance))],
+    ["the largest limit there can be", { ...budget, amount: { param: 1, limit: 2n ** 256n - 2n }, recipients: "anyone" },
+      calldata(pass, all(lessThan(2n ** 256n - 1n), withinAllowance))],
+    ["no limit: the allowance alone; recipients anyone pass", { ...budget, amount: { param: 1 }, recipients: "anyone" },
+      calldata(pass, withinAllowance)],
+    ["one recipient", { ...budget, recipients: { param: 0, anyOf: [carol] } },
+      calldata(equalTo(carol), all(lessThan(61n), withinAllowance))],
+    ["ten recipients", { ...budget, recipients: { param: 0, anyOf: many } },
+      calldata(any(...many.map(equalTo)), all(lessThan(61n), withinAllowance))],
+    ["V3 send's shape: the item's fields scoped inside its tuple, the token exactly, the rest passed",
+      { ...budget, fn: send, amount: { param: [0, 3], limit: 60n }, recipients: { param: [0, 1], anyOf: [alice, bob] }, token: { param: [0, 2], address: usdc } },
+      calldata(node(3, 5, "0x", [pass, any(equalTo(alice), equalTo(bob)), equalTo(usdc), all(lessThan(61n), withinAllowance), passDynamic]))],
+    ["a token as an input of the function itself, with a limit and listed recipients", { ...budget, fn: pull, token: { param: 0, address: usdc }, recipients: { param: 1, anyOf: [alice, bob] }, amount: { param: 2, limit: 9n } },
+      calldata(equalTo(usdc), any(equalTo(alice), equalTo(bob)), all(lessThan(10n), withinAllowance))],
+    ["a token as an input, recipients anyone, a limit", { ...budget, fn: pull, token: { param: 0, address: usdc }, recipients: "anyone", amount: { param: 2, limit: 9n } },
+      calldata(equalTo(usdc), pass, all(lessThan(10n), withinAllowance))],
+    ["a tuple at input 1, its uint128 amount and its other kinds of field passed", { ...budget, fn: later, amount: { param: [1, 2], limit: 5n }, recipients: { param: [1, 1], anyOf: [alice] } },
+      calldata(pass, node(3, 5, "0x", [pass, equalTo(alice), all(lessThan(6n), withinAllowance), pass, pass]))],
+    ["two tuples, a field scoped in each: each in its own tuple", { ...budget, fn: pair, amount: { param: [1, 1] }, recipients: { param: [0, 0], anyOf: [bob] } },
+      calldata(node(3, 5, "0x", [equalTo(bob), pass]), node(3, 5, "0x", [pass, withinAllowance]))],
+  ];
+  test.each(cases)("%s", async (_name, of, tree) => {
+    expect(treeOf((await scoped(of)).conditions)).toEqual(tree);
   });
 });
 
 describe("what a budget may not be", () => {
   const array = fn("batch", [["address[]", "to"], ["uint256", "value"]]);
+  const fixed = fn("fixed", [["uint256[2]", "values"], ["address", "to"], ["uint256", "value"]]);
   const nested = fn("nested", [["tuple", "outer", [{ type: "tuple", name: "inner", components: [{ type: "uint256", name: "v" }] }] as never], ["address", "to"]]);
+  const withArray = fn("withArray", [["tuple", "item", [{ type: "address", name: "to" }, { type: "uint256", name: "value" }, { type: "address[]", name: "also" }] as never]]);
+  const withTuple = fn("withTuple", [["tuple", "item", [{ type: "address", name: "to" }, { type: "uint256", name: "value" }, { type: "tuple", name: "more", components: [{ type: "uint256", name: "v" }] }] as never]]);
+  const withString = fn("withString", [["tuple", "item", [{ type: "address", name: "to" }, { type: "uint256", name: "value" }, { type: "string", name: "memo" }] as never]]);
   const bare = fn("bare", [["tuple", "item", [{ type: "uint256", name: "v" }] as never], ["address", "to"], ["uint256", "value"]]);
+  const blob = fn("blob", [["bytes", "data"], ["address", "to"], ["uint256", "value"]]);
+  const kinds = fn("kinds", [["int256", "delta"], ["bytes32", "ref"], ["address", "to"], ["uint256", "value"], ["bool", "flag"]]);
+  const pull = fn("pull", [["address", "token"], ["address", "to"], ["uint256", "value"]]);
   test.each([
     ["a parameter the function does not have", { ...budget, amount: { param: 2, limit: 60n } }],
     ["a recipient parameter the function does not have", { ...budget, recipients: { param: 5, anyOf: [alice] } }],
+    ["a token parameter the function does not have", { ...budget, token: { param: 2, address: usdc } }],
     ["a field the tuple does not have", { ...budget, fn: send, amount: { param: [0, 9] }, recipients: "anyone" }],
     ["a field of an input that is not a tuple", { ...budget, amount: { param: [1, 0] } }],
+    ["a whole tuple scoped as an amount", { ...budget, fn: send, amount: { param: 0 }, recipients: "anyone" }],
     ["a scoped string", { ...budget, fn: payOut, amount: { param: 1 }, recipients: { param: 2, anyOf: [alice] } }],
+    ["a scoped top-level bytes", { ...budget, fn: blob, amount: { param: 0 }, recipients: { param: 1, anyOf: [alice] } }],
     ["a scoped bytes field", { ...budget, fn: send, amount: { param: [0, 4] }, recipients: "anyone" }],
+    ["a scoped string field", { ...budget, fn: withString, amount: { param: [0, 2] }, recipients: { param: [0, 0], anyOf: [alice] } }],
+    ["an amount that is not a uint (an int256)", { ...budget, fn: kinds, amount: { param: 0 }, recipients: { param: 2, anyOf: [alice] } }],
+    ["an amount that is not a uint (a bool)", { ...budget, fn: kinds, amount: { param: 4 }, recipients: { param: 2, anyOf: [alice] } }],
+    ["a recipient that is not an address (a bytes32)", { ...budget, fn: kinds, amount: { param: 3 }, recipients: { param: 1, anyOf: [alice] } }],
+    ["a token that is not an address (a uint256)", { ...budget, fn: kinds, amount: { param: 3 }, recipients: { param: 2, anyOf: [alice] }, token: { param: 3, address: usdc } }],
     ["an array input", { ...budget, fn: array, amount: { param: 1 }, recipients: "anyone" }],
     ["a scoped array", { ...budget, fn: array, amount: { param: 1 }, recipients: { param: 0, anyOf: [alice] } }],
-    ["a nested tuple", { ...budget, fn: nested, amount: { param: [0, 0] }, recipients: { param: 1, anyOf: [alice] } }],
+    ["a fixed-size array input", { ...budget, fn: fixed, amount: { param: 2 }, recipients: { param: 1, anyOf: [alice] } }],
+    ["a nested tuple, scoped", { ...budget, fn: nested, amount: { param: [0, 0] }, recipients: { param: 1, anyOf: [alice] } }],
+    ["an unscoped array field beside scoped ones", { ...budget, fn: withArray, amount: { param: [0, 1] }, recipients: { param: [0, 0], anyOf: [alice] } }],
+    ["an unscoped tuple field beside scoped ones", { ...budget, fn: withTuple, amount: { param: [0, 1] }, recipients: { param: [0, 0], anyOf: [alice] } }],
     ["a tuple input with nothing scoped in it", { ...budget, fn: bare, amount: { param: 2 }, recipients: { param: 1, anyOf: [alice] } }],
     ["the amount and the recipient on one parameter", { ...budget, recipients: { param: 1, anyOf: [alice] } }],
     ["the token and the recipient on one field", { ...budget, fn: send, amount: { param: [0, 3] }, recipients: { param: [0, 1], anyOf: [alice] }, token: { param: [0, 1], address: usdc } }],
+    ["the token and the amount on one parameter", { ...budget, fn: pull, amount: { param: 0 }, recipients: "anyone", token: { param: 0, address: usdc } }],
+    ["the token and the amount on one field", { ...budget, fn: send, amount: { param: [0, 3] }, recipients: "anyone", token: { param: [0, 3], address: usdc } }],
     ["an empty recipient list", { ...budget, recipients: { param: 0, anyOf: [] } }],
+    ["a recipient listed twice", { ...budget, recipients: { param: 0, anyOf: [alice, bob, alice] } }],
+    ["a member listed twice", { ...budget, members: [m1, m2, m1] }],
+    ["a limit of 2^256 - 1, which no LessThan can hold", { ...budget, amount: { param: 1, limit: 2n ** 256n - 1n } }],
   ] as ReadonlyArray<readonly [string, OrgBudget]>)("refused: %s", async (_name, wrong) => {
     expect(await fails(Roles.budgetCalls(modifier, wrong))).toMatchObject({ _tag: "ChainFault", kind: "configuration" });
+  });
+
+  test("a budget with no members: the allowance and the scope, no assignRoles", async () => {
+    const calls = await decoded(await run(Roles.budgetCalls(modifier, { ...budget, members: [] })));
+    expect(calls.map((call) => call.name)).toEqual(["setAllowance", "scopeTarget", "scopeFunction"]);
   });
 });
