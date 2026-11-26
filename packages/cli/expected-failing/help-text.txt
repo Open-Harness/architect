@@ -1,0 +1,102 @@
+# Goal 18, slice 7 (#1065): a description on every `ortho` command, flag and argument, read from the CLI's own help data. Red until main.ts describes each, and `ortho secrets set --help` answers instead of being refused by the value guard (src/modules/secrets/internal/argv.ts).
+test/help-text.test.ts > every command says what it does > `ortho add --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add adapter --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add adapter` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add feature --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add feature` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add journey --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add journey` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add journeys --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add journeys` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add operation --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add operation` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add projection --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add projection` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add read --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add read` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add thing --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho add thing` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho add` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho brief --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho brief` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho build --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho build` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho check --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho check` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho dev --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho dev` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho env --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho env destroy --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho env destroy` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho env down --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho env down` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho env status --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho env status` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho env up --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho env up` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho env` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho generate --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho generate` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho impact --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho impact` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho model --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho model` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho new --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho new adapter --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho new adapter` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho new` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho promote --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho promote` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho prove --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho prove` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho publish --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho publish` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho secrets --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho secrets set --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho secrets set` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho secrets` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho telemetry --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho telemetry trace --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho telemetry trace` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho telemetry` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho version --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho version` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho watch --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho watch` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho worlds --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho worlds reap --help` says what it does on its own page
+test/help-text.test.ts > every command says what it does > `ortho worlds reap` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > `ortho worlds` has a description in its parent's list
+test/help-text.test.ts > every command says what it does > describes every command found by walking, the ones not in the inventory too
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add adapter` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add feature` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add journey` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add journeys` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add operation` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add projection` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add read` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho add thing` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho brief` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho build` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho check` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho dev` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho env destroy` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho env down` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho env status` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho env up` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho generate` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho impact` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho model` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho new adapter` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho promote` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho prove` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho publish` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho secrets set` declares the flags and arguments it declares today
+test/help-text.test.ts > every flag and argument says what it is for > `ortho secrets set` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho secrets` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho telemetry trace` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho version` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho watch` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > `ortho worlds reap` describes each of its flags and arguments, on the page a person reads
+test/help-text.test.ts > every flag and argument says what it is for > describes every flag and argument found by walking, the ones not in the inventory too
+test/help-text.test.ts > ortho --help reaches every command > `ortho secrets set --help` answers with its usage and exits 0

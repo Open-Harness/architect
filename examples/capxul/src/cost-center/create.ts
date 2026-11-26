@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/cost-center/verbs/create.ts. Yours from now on.
 import { Effect, Match } from "effect";
-import type { InstanceOf } from "orthograph";
 import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler, Outcome } from "../../generated/api/src/cost-center/create.handler.ts";
@@ -76,15 +75,14 @@ const create: Handler = ({ company, costCenterName, parentCostCenter, isGroup },
     }
 
     // Step insert: database, span cost-center.create.insert. A name already used is the runtime's refusal
-    // (oneNamePerCompany). A root's parent is left out and stored empty; the cast is only because `InstanceOf` types
-    // every field as required.
+    // (oneNamePerCompany). A root's parent is left out and stored empty.
     yield* steps.insert(
       records.insert(CostCenter, {
         id,
         company,
         costCenterName,
         ...(parentCostCenter !== undefined ? { parentCostCenter } : {}),
-      } as Omit<InstanceOf<typeof CostCenter>, "state">),
+      }),
     );
 
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.
