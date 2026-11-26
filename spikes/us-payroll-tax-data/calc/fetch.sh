@@ -33,7 +33,9 @@ f8f05eda8025bc8b80b7dee5fa9a69af04e2c32b3320386ace7027b5fc6d635e  il-700t.pdf
 d63c2828c91a0aaa0d3c80e9e97b13f173aee00573d77c2e3cb54895c481ea58  ga-sep.pdf
 SUMS
 for f in *.pdf; do pdftotext -layout "$f" "${f%.pdf}.txt" || echo "unreadable: $f"; done
-# Not fetched by this script, read by hand: Delaware's Employer's Guide section 17 (revenue.delaware.gov answers
+# Not fetched by this script, read by hand: Delaware's Employer's Guide section 17,
+# https://revenue.delaware.gov/employers-guide-withholding-regulations-employers-duties/ (an HTML page, so no stable
+# sha256; its tax computation table is headed "Effective January 1, 2025"; the site answers
 # "Request Rejected" to curl; read through a web fetch tool on 26 November 2026), and NJ-WT page 25, which is an
 # image with no text layer (rendered with pdftoppm -f 25 -l 25 nj-njwt.pdf and read by eye).
 # Our own converter, run in isolated mode on their data (data only, no code of theirs).

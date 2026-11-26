@@ -121,7 +121,9 @@ the YAML to one JSON with our own script), then `node calc/run.ts <scratch>` and
 ## The decision it supports
 
 Slice 9's tax data comes from open-withholding, imported, never hand-typed. The calculation stays Capxul's own, as
-CX-payroll-tax point 7 says. The spike supports this, and the lead decides it.
+CX-payroll-tax point 7 says. The spike supports this, and the lead decides it. A pinned, build-time import of
+CC0 data is not the outside payroll-tax provider point 7 rules out: nothing is called at run time, and the rows become
+Capxul's own. That reading is flagged for Aaron's call.
 
 - **How Capxul imports it.** A build-time importer reads open-withholding's `data/us/<state>/<year>/*.yaml` at a pinned
   commit and writes Capxul's dated rate rows. Each row carries:
@@ -131,8 +133,10 @@ CX-payroll-tax point 7 says. The spike supports this, and the lead decides it.
   - its citation (document, URL, retrieval date, sha256);
   - the upstream commit.
 
-  The same importer checks every figure us-payroll-tax-tables also carries and stops on any disagreement, which a
-  person then settles. Capxul's journeys are written by an author from the publications' own examples, as
+  The same importer checks every figure us-payroll-tax-tables also carries. The two overlap only on federal and FICA,
+  California's annual tables, New York and New Jersey (plus the other states' annual figures this spike did not
+  compare). The importer keeps a recorded list of settled disagreements, each with its ruling and evidence (the eight
+  in finding 3 to start), and stops only on a new one, which a person then settles. Capxul's journeys are written by an author from the publications' own examples, as
   CX-payroll-tax point 5 says, so the imported rows are checked by the publications and not by the importer.
   open-withholding's `methods/` specs are reference only: Capxul writes each method in Effect.
 - **Refresh.** When a new tax year publishes (Pub 15-T in December, most states in December and January) or mid-year
@@ -143,9 +147,11 @@ CX-payroll-tax point 7 says. The spike supports this, and the lead decides it.
     a NOTICE as a courtesy.
   - Its code is MIT. Capxul takes none of it, so nothing is owed; reading the method specs creates no obligation.
   - us-payroll-tax-tables' data is CC BY 4.0, which an AGPL-3.0 project can use. Used only as a check at import, it is
-    not redistributed and nothing is owed. If any of its rows ship in Capxul (WA Cares, for instance), attribution is
-    required. Capxul would put "US payroll tax tables by PayStub Desk (paystubdesk.com), licensed under CC BY 4.0;
-    modified" in a NOTICE and in each such row's citation.
+    not redistributed and nothing is owed. That holds only if the importer fetches the second source at build time
+    and never commits it, or a snapshot of it, into Capxul. If any of its rows ship in Capxul (WA Cares, for instance),
+    attribution is required. Capxul would put "US payroll tax tables by PayStub Desk (https://paystubdesk.com), from
+    https://github.com/Nyaksik/us-payroll-tax-tables at ab663307, licensed under CC BY 4.0
+    (https://creativecommons.org/licenses/by/4.0/); modified." in a NOTICE and in each such row's citation.
 - **Days saved.** My estimate, not measured.
   - By hand: federal and FICA/FUTA about 2 days. California, New York, New Jersey and Massachusetts are tables per
     frequency with their own methods, about 2 days each. Delaware, Illinois and Georgia are about 1 day each. SDI and
@@ -155,6 +161,9 @@ CX-payroll-tax point 7 says. The spike supports this, and the lead decides it.
   - With the import: an importer and the cross-source diff, about 2 to 3 days once. Each year's refresh shrinks to
     re-import plus new journeys, about 3 to 5 days in place of most of the first effort.
   - The calculation methods and the author's journeys are needed either way, so they are not counted as saved.
+  - Not in that figure, and recurring: settling each new disagreement between the sources, rewriting the importer
+    when either project changes its schema, and transcribing by hand when upstream is late with a new tax year
+    (Pub 15-T lands in December, for pay from 1 January).
 
 ## Open risks
 
@@ -170,4 +179,10 @@ CX-payroll-tax point 7 says. The spike supports this, and the lead decides it.
   not just the URL.
 - **The payroll professional's review** (CX-payroll-tax point 8) is still needed before real wages. Open data moves the
   typing, not the responsibility.
-- **Scope.** This spike checked federal and 10 states. The other 31 income-taxing states and DC were not checked.
+- **Upstream changes and lateness.** Either project can change its schema, which means rewriting the importer, or
+  publish a new tax year after the first payroll of January needs it. Capxul then transcribes that year's changes by
+  hand until upstream catches up.
+- **Scope.** This spike checked federal and 10 states. Seven of the 10 tax wages (CA, NY, DE, NJ, IL, MA, GA), so
+  34 income-taxing states and DC were not checked. Nine states levy no tax on wage income, so for them it is SUTA (and
+  any paid-leave premium) only: AK, FL, NH, NV, SD, TN, TX, WA and WY. FL, TX and WA were checked, and the other six
+  were not.
