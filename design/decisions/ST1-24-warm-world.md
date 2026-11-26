@@ -12,6 +12,7 @@
   world answers `/_world/health`, and nothing under `src`, `blueprint` or `generated/server` (not wrangler's `.wrangler` output) is
   newer than dev's start, and the list and contents of those files are what dev began with (a hash taken at dev's start, so an added, deleted or renamed file counts too). A record whose process is gone (dev killed) is ignored, and prove starts its own world. A prove with
   `--empty`, a chosen `--port`, or a model whose plugins run on a device (they need a chain of their own) never reuses.
+  (Superseded by G16-adapter-mounts call 3, 25 November 2026: a model with a process stand-in never reuses either.)
   When it reuses it prints `prove: reusing the world of ortho dev at <url>` first, in its text and in the report's `lines`.
 - **Isolation is a reset before the run**, not a store per run: `POST /_world/reset` (host-cloudflare, `world`) empties every table
   of the default database and of each declared store, and prove empties the collector's folder. Nothing a run, or the developer,
