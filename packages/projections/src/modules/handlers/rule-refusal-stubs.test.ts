@@ -9,7 +9,7 @@ import type { Model } from "@orthograph/compiler";
 import { renderJourneyStubs } from "./service.ts";
 
 const repo = resolve(import.meta.dirname, "../../../../..");
-const modelOf = (example: string) => JSON.parse(execFileSync(process.execPath, [join(repo, "packages/compiler/src/main.ts"), join(repo, "examples", example)], { encoding: "utf8" })) as Model;
+const modelOf = (example: string) => JSON.parse(execFileSync(process.execPath, [join(repo, "packages/compiler/src/main.ts"), join(repo, "examples", example)], { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 })) as Model;
 const pluggedIn = modelOf("plugged-in");
 
 describe("a journey stub for each refusal a rule gives", () => {
@@ -43,8 +43,23 @@ describe("a journey stub for each refusal a rule gives", () => {
     expect(stub("handle-claim-refused-handle-already-owned")).toContain(" *   handle.oneNamePerPerson: ");
   });
 
-  it("writes none for the runtime's other refusals: NotAllowed, the machine's and a missing record have their own stubs or none", () => {
-    const refused = stubs.map((s) => s.path).filter((p) => p.includes("-refused-"));
-    expect(refused.some((p) => /not-allowed|idempotency-conflict|not-from/.test(p))).toBe(false);
+  it("stubs a rule on another thing, importing the error from that thing, and leaves a refusal's fields as a blank", () => {
+    const capxul = modelOf("capxul");
+    // Every operation that can break a rule of a thing other than its own, with the error that rule gives.
+    const cross = Object.values(capxul.operations).flatMap((op) => Object.entries(op.invariants ?? {}).flatMap(([error, rule]) => {
+      const thing = rule.slice(0, rule.lastIndexOf("."));
+      return op.from.kind === "app" && thing !== op.thing ? [{ op, error, rule, thing }] : [];
+    }));
+    expect(cross.length, "capxul no longer has an operation that can break another thing's rule: the fixture moved").toBeGreaterThan(0);
+    for (const { op, error, rule, thing } of cross) {
+      const kebab = error.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+      const content = renderJourneyStubs(capxul, op.thing).find((s) => s.path === `blueprint/journeys/${op.thing}-${op.verb}-refused-${kebab}.ts`)?.content ?? "";
+      expect(content, `${op.name} has no stub for ${error}`).toContain(`import { ${error} } from "../things/${thing}/errors.ts";`);
+      expect(content).toContain(` *   ${rule}: `);
+      const fields = Object.keys(capxul.things[thing]?.errors[error]?.fields ?? {});
+      expect(content).toContain(fields.length ? `refuses(${error}, Blueprint.todo("${error}'s fields: ${fields.join(", ")}")),` : `refuses(${error}),`);
+    }
+    const all = Object.keys(capxul.things).flatMap((thing) => renderJourneyStubs(capxul, thing).map((s) => s.path));
+    expect(new Set(all).size).toBe(all.length);
   });
 });
