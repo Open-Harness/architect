@@ -111,7 +111,7 @@ built in `examples/capxul/blueprint/things/`.
 
 ### Optional
 
-16. **`payroll-tax-us`** (optional, one per jurisdiction; a Capxul that runs payroll mounts at least one). United States
+16. **`payroll-tax-us`** (optional, one per jurisdiction; payroll runs with none, and then a slip has no tax lines). United States
     payroll tax as dated rows (CX-payroll-tax). 9 (4): Income Tax Slab (and Other Charges, Taxable Salary Slab),
     Employee Tax Exemption Category, Sub Category, Declaration and Proof Submission, with their lines.
 17. **`selling`**. Quotes and orders before an invoice. 26 (13): Quotation, Sales Order, Sales Person, Sales Partner,
@@ -172,8 +172,11 @@ removes a mount file and rebuilds.
 
 Two **contracts filled at build time** (gap 3) complete them: a piece declares a slot in its own rules that another
 piece may fill. `payroll` declares *the tax on a slip*, filled by `payroll-tax-us`; `ledger` declares *a check before a
-posting*, filled by `budgets`; `payments` declares *a rail*, filled by `bridge` (and later a bank or the Safe). With no filler, `check` either refuses (payroll needs a tax piece) or the slot is empty
-(no budgets, no budget check).
+posting*, filled by `budgets`; `payments` declares *a rail*, filled by `bridge` (and later a bank or the Safe). A contract is required or optional. A required one with no filler is a `check` error
+(`payments` with no rail can't move money). An optional one with no filler is empty: no budgets, no budget check; no
+tax piece, a slip with no tax lines, which is right for contractors only, employees through an employer of record, or a
+country with no income tax. Where several fillers are mounted, the contract says how one is chosen: a slip's tax piece
+by the employee's place of work (CX-payroll-tax, point 1).
 
 ### Per piece
 
@@ -326,9 +329,11 @@ milestone Goal 16, `lane:goal-16` unless a running goal has it).
 3. **Contracts one piece declares and another fills at build time.** *Blocks* `payroll-tax-us` as its own piece and
    `budgets`' stop (slice 12). M1.08's needs name a plugin, not a contract several plugins can meet. Draft: "A feature
    declares a contract (an input and output schema, run in the caller's commit); another feature fills it; `check`
-   refuses a required contract with no filler or two fillers, and an optional one with none is skipped. Checks: payroll
-   with no tax piece is refused; with `payroll-tax-us` a slip carries its tax lines; with no budgets a posting is not
-   checked." Interim: payroll depends on the one United States module directly.
+   refuses a required contract with no filler, an optional one with none is skipped, and several fillers are allowed
+   only where the contract names how one is chosen per call. Checks: payments with no rail is refused; payroll with no
+   tax piece compiles and its slips have no tax lines; with `payroll-tax-us` a United States employee's slip carries its
+   tax lines; with no budgets a posting is not checked." Interim: no tax piece is mounted while the United States
+   module is paused (CX-money-global-payroll, decision 1).
 4. **`check` enforces that a piece writes only its own things.** *Doesn't block*; makes section 2's rule real. Draft:
    "A step's `writes` may name only things of its own plugin or the app's; another plugin's thing is a compile error
    naming the owner's in-commit operation to call." After gap 1.
