@@ -179,9 +179,9 @@ Aaron, 26 November 2026: "everything is on a budget. safe can do anything but ty
 
 **What limits the role.** The Org Budget scopes V3 `send`'s tuple, not a bare ERC-20 transfer. For a finite budget with
 an allowance key, the amount is `and(lteUint256(limit), withinAllowance(allowanceKey))`: `withinAllowance` caps the
-budget's total and `lteUint256` caps each single send. The token is `equalAddress(policy.tokenAddress)`, the recipient
+budget's total and `lteUint256` caps each send at the budget's limit. The token is `equalAddress(policy.tokenAddress)`, the recipient
 `recipientCondition(policy.recipients)`, and the token's approval goes only to the V3 router
-(`resolvedBudgetApprovalPermission`) (`infrastructure:packages/protocol/src/evm/budget-permissions.ts:131-155`; the
+(`resolvedBudgetApprovalPermission`) (`infrastructure:packages/protocol/src/evm/budget-permissions.ts:117-155`; the
 conditions in `zodiac-conditions.ts:86-136`). Payroll's role is similar, with `withinAllowance` but no `lteUint256`,
 and a `passStatic` recipient (`payroll-payout-role.ts:96-108`). Checked by Goal 16's lead in the implementation.
 
@@ -195,10 +195,13 @@ owner-signed `setAllowance`. When the payout settles, the buffer's excess is ref
 shows the excess beside each payout, and the owner can top the allowance up (`design/later.md` has the automatic
 credit-back). R3 still proves that nothing else in ADR-0017 M00 rests on the fiat side.
 
-**Decided where.** At prepare, before Bridge is called, Capxul reads the role's remaining allowance from the chain and
-refuses `PayoutOverBudget` (with `remaining: 0` when the budget is spent), so no transfer is made that the budget can't
-fund. If the chain still refuses leg 1 after that, a race, the outcome is known, not unknown, so it is not M2's case: the
-payout goes to a safe cancel, the Bridge transfer is canceled while it is `awaiting_funds`, and nothing is sent.
+**Decided where.** At prepare, before Bridge is called, Capxul reads the role's remaining allowance from the chain (for
+an allowance with a refill period, the balance accrued so far) and compares it with an estimate: the fixed output in
+USDC, through the lifted route table and `rates`, plus the buffer. If the estimate is over, it refuses
+`PayoutOverBudget` (with `remaining: 0` when the budget is spent), so no transfer is made that the budget can't fund. A
+quote that comes back above the remaining allowance takes the same safe cancel as a race: if the chain still refuses
+leg 1, the outcome is known, not unknown, so it is not M2's case; the Bridge transfer is canceled while it is
+`awaiting_funds`, and nothing is sent.
 
 **Recipients "anyone" widens what a member can do.** `recipientCondition` passes anything when the recipients are
 "anyone" or empty; otherwise it is an OR of fixed addresses, which `zodiac-conditions.ts:118-124` calls "the
