@@ -1,5 +1,7 @@
 # relayer
 
+**Experimental** in the alpha (#784): a first receipt is treated as final, so a reorg is missed; a fill is broadcast before it is stored, so a restart may sign a second transaction at one nonce; a resumed transaction drops its access list; a failed first arm leaves the transaction in flight, so its nonce can block later ones. #784 holds the list as it stands.
+
 `Relayer`, the Durable Object that holds one relayer key and sends every call from it, in order (M6.07; M6-chain item 12;
 `design/decisions/M6-relayer-rebroadcast.md`). One instance per key, so one per chain, named by the chain's CAIP-2 id:
 `env.RELAYER.getByName("eip155:8453")`. The key is the secret binding `RELAYER_KEY` (`0x` and 64 hex digits); it is never an

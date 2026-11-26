@@ -160,6 +160,15 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
 - **What prove does with it.** prove posts `args` as JSON to `<ORTHO_STAND_<MOUNT>>/_stand/<name>`. A 2xx JSON answer is
   the step's answer (`s.last`). A non-2xx fails the step, naming the mount, the command and the status. So does a mount with
   no stand-in running.
+- **Its edges** (#995 gap 3's checks, 25 November 2026). `args` are resolved as an operation's payload is, so a later step
+  can send what an earlier one answered (`s.last.token`), and they go once, as `application/json`, to the mount's own
+  stand-in. The step's checks judge the answer, as an operation step's do. A stand-call runs no operation, so, like a clock
+  step, it expects no span, and the compiler's journey reader skips it as it skips a clock step. A mount with no stand-in
+  running sends nothing anywhere.
+  Only a 2xx is an answer: a 3xx fails the step as a 4xx does. A failed stand-call leaves `s.last` as it was, and the
+  journey goes on, as after an operation's refusal. The address is the world's, from the stand-in prove started, never an
+  `ORTHO_STAND_<MOUNT>` in prove's own environment. The command's name goes into the path as written, dashes and all.
+  (Added from the hostile pass on #1025, 25 November 2026.)
 
 Gap 4's call, an event to an app operation, is made after gap 1's checks are clear, and is added here.
 
@@ -170,10 +179,12 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 - **Gap 5:** `packages/host-cloudflare/src/modules/inbound/rsa-door.test.ts`.
 - **Gap 1:** `e2e/m2/07-generated-adapter-calls.test.ts`.
 - **Gap 2:** `e2e/m2/10-prove-stand-ins.test.ts`.
+- **Gap 3:** `e2e/m2/09-journey-stand-calls.test.ts`.
 - The others are added here as they land.
 
 ## Supersedes
 
+- GOAL17-check-harness call 0: "a non-200 fails the step, naming the mount, the command and the answer" → "a non-2xx fails the step, naming the mount, the command and the status"
 - ST1-24-warm-world: "or a model whose plugins run on a device (they need a chain of their own) never reuses" → "a model whose plugins run on a device, or a model with a process stand-in, never reuses"
 - G16-adapter-mounts call 1, as merged in #1003: "`apiKey`, when its description declares any security scheme" → "`apiKey`, when its description requires security"
 - G16-adapter-mounts call 1, as merged in #1010: "and an app can't set `code` on a generated file" → "unless the plugin's scaffolded `src/written.ts` exports a `code`, which the generated `thing.ts` reads"

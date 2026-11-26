@@ -737,6 +737,91 @@
       },
       "earlier": []
     },
+    "CG-001": {
+      "name": "ParentCustomerGroupNotInCompany",
+      "owner": "customer-group",
+      "from": "blueprint/things/customer-group/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentCustomerGroupNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CG-002": {
+      "name": "ParentCustomerGroupIsLedger",
+      "owner": "customer-group",
+      "from": "blueprint/things/customer-group/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentCustomerGroupIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "CG-003": {
+      "name": "CustomerGroupRootExists",
+      "owner": "customer-group",
+      "from": "blueprint/things/customer-group/errors.ts",
+      "fields": {
+        "root": {
+          "value": "id",
+          "prefix": "cgr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CustomerGroupRootExists"
+        }
+      },
+      "earlier": []
+    },
+    "CG-004": {
+      "name": "CustomerGroupNameTaken",
+      "owner": "customer-group",
+      "from": "blueprint/things/customer-group/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CustomerGroupNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "CG-900": {
+      "name": "CustomerGroupNotGroup",
+      "owner": "customer-group",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CustomerGroupNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "CG-901": {
+      "name": "CustomerGroupNotFound",
+      "owner": "customer-group",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "cgr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CustomerGroupNotFound"
+        }
+      },
+      "earlier": []
+    },
     "CO-001": {
       "name": "CompanyNameTaken",
       "owner": "company",
@@ -799,6 +884,46 @@
       "wire": {
         "effect": {
           "tag": "CompanyNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "CU-001": {
+      "name": "CustomerGroupNotInCompany",
+      "owner": "customer",
+      "from": "blueprint/things/customer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CustomerGroupNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "CU-002": {
+      "name": "CustomerGroupIsGroup",
+      "owner": "customer",
+      "from": "blueprint/things/customer/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "CustomerGroupIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "CU-900": {
+      "name": "CustomerNotActive",
+      "owner": "customer",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "CustomerNotActive"
         }
       },
       "earlier": []
@@ -3045,6 +3170,154 @@
       },
       "earlier": []
     },
+    "PY-001": {
+      "name": "PaymentAccountNotInCompany",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {
+        "side": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PaymentAccountNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PY-002": {
+      "name": "PaymentAccountIsGroup",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {
+        "side": {
+          "value": "schema"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PaymentAccountIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "PY-003": {
+      "name": "PaymentCostCenterNotInCompany",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PaymentCostCenterNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PY-004": {
+      "name": "PaymentCostCenterIsGroup",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PaymentCostCenterIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "PY-005": {
+      "name": "PartyAccountWrongType",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PartyAccountWrongType"
+        }
+      },
+      "earlier": []
+    },
+    "PY-006": {
+      "name": "PartyNotFound",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PartyNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "PY-007": {
+      "name": "PartyNotInCompany",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PartyNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "PY-008": {
+      "name": "PaidAmountZero",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PaidAmountZero"
+        }
+      },
+      "earlier": []
+    },
+    "PY-009": {
+      "name": "PaymentPostingDateOutsideFiscalYear",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {
+        "postingDate": {
+          "value": "day"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PaymentPostingDateOutsideFiscalYear"
+        }
+      },
+      "earlier": []
+    },
+    "PY-010": {
+      "name": "PartyDisabled",
+      "owner": "payment-entry",
+      "from": "blueprint/things/payment-entry/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "PartyDisabled"
+        }
+      },
+      "earlier": []
+    },
+    "PY-900": {
+      "name": "PaymentEntryNotDraft",
+      "owner": "payment-entry",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "PaymentEntryNotDraft"
+        }
+      },
+      "earlier": []
+    },
     "SA-001": {
       "name": "AssignedEmployeeNotInCompany",
       "owner": "salary-structure-assignment",
@@ -3189,6 +3462,91 @@
       "wire": {
         "effect": {
           "tag": "SalaryComponentNotActive"
+        }
+      },
+      "earlier": []
+    },
+    "SG-001": {
+      "name": "ParentSupplierGroupNotInCompany",
+      "owner": "supplier-group",
+      "from": "blueprint/things/supplier-group/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentSupplierGroupNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SG-002": {
+      "name": "ParentSupplierGroupIsLedger",
+      "owner": "supplier-group",
+      "from": "blueprint/things/supplier-group/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "ParentSupplierGroupIsLedger"
+        }
+      },
+      "earlier": []
+    },
+    "SG-003": {
+      "name": "SupplierGroupRootExists",
+      "owner": "supplier-group",
+      "from": "blueprint/things/supplier-group/errors.ts",
+      "fields": {
+        "root": {
+          "value": "id",
+          "prefix": "sgr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SupplierGroupRootExists"
+        }
+      },
+      "earlier": []
+    },
+    "SG-004": {
+      "name": "SupplierGroupNameTaken",
+      "owner": "supplier-group",
+      "from": "blueprint/things/supplier-group/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SupplierGroupNameTaken"
+        }
+      },
+      "earlier": []
+    },
+    "SG-900": {
+      "name": "SupplierGroupNotGroup",
+      "owner": "supplier-group",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SupplierGroupNotGroup"
+        }
+      },
+      "earlier": []
+    },
+    "SG-901": {
+      "name": "SupplierGroupNotFound",
+      "owner": "supplier-group",
+      "fields": {
+        "id": {
+          "value": "id",
+          "prefix": "sgr"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SupplierGroupNotFound"
         }
       },
       "earlier": []
@@ -3431,6 +3789,46 @@
       "wire": {
         "effect": {
           "tag": "SalaryStructureNotFound"
+        }
+      },
+      "earlier": []
+    },
+    "SU-001": {
+      "name": "SupplierGroupNotInCompany",
+      "owner": "supplier",
+      "from": "blueprint/things/supplier/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SupplierGroupNotInCompany"
+        }
+      },
+      "earlier": []
+    },
+    "SU-002": {
+      "name": "SupplierGroupIsGroup",
+      "owner": "supplier",
+      "from": "blueprint/things/supplier/errors.ts",
+      "fields": {},
+      "wire": {
+        "effect": {
+          "tag": "SupplierGroupIsGroup"
+        }
+      },
+      "earlier": []
+    },
+    "SU-900": {
+      "name": "SupplierNotActive",
+      "owner": "supplier",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SupplierNotActive"
         }
       },
       "earlier": []
