@@ -14,6 +14,8 @@ import * as BridgeBusiness from "../../../blueprint/things/bridge-business/error
 import * as BridgeIndividual from "../../../blueprint/things/bridge-individual/errors.ts";
 import * as Company from "../../../blueprint/things/company/errors.ts";
 import * as CostCenter from "../../../blueprint/things/cost-center/errors.ts";
+import * as Customer from "../../../blueprint/things/customer/errors.ts";
+import * as CustomerGroup from "../../../blueprint/things/customer-group/errors.ts";
 import * as Department from "../../../blueprint/things/department/errors.ts";
 import * as Designation from "../../../blueprint/things/designation/errors.ts";
 import * as Employee from "../../../blueprint/things/employee/errors.ts";
@@ -42,12 +44,15 @@ import * as Kra from "../../../blueprint/things/kra/errors.ts";
 import * as LeaveAllocation from "../../../blueprint/things/leave-allocation/errors.ts";
 import * as LeaveApplication from "../../../blueprint/things/leave-application/errors.ts";
 import * as LeaveType from "../../../blueprint/things/leave-type/errors.ts";
+import * as PaymentEntry from "../../../blueprint/things/payment-entry/errors.ts";
 import * as PayrollEntry from "../../../blueprint/things/payroll-entry/errors.ts";
 import * as PayrollPeriod from "../../../blueprint/things/payroll-period/errors.ts";
 import * as SalaryComponent from "../../../blueprint/things/salary-component/errors.ts";
 import * as SalaryStructure from "../../../blueprint/things/salary-structure/errors.ts";
 import * as SalaryStructureAssignment from "../../../blueprint/things/salary-structure-assignment/errors.ts";
 import * as ShiftType from "../../../blueprint/things/shift-type/errors.ts";
+import * as Supplier from "../../../blueprint/things/supplier/errors.ts";
+import * as SupplierGroup from "../../../blueprint/things/supplier-group/errors.ts";
 import * as UsWithholding from "@capxul/payroll-tax-us/blueprint/things/us-withholding/errors.js";
 
 /** Every refusal's code, its exit for the CLI and its HTTP status: one row each, read by the CLI, HTTP and MCP. */
@@ -110,6 +115,12 @@ export const refusals = {
   ParentCostCenterIsLedger: { code: "CC-002", exit: 42, status: 422 },
   RootCostCenterIsLedger: { code: "CC-003", exit: 43, status: 422 },
   CostCenterNameTaken: { code: "CC-004", exit: 44, status: 422 },
+  CustomerGroupNotInCompany: { code: "CU-001", exit: 41, status: 422 },
+  CustomerGroupIsGroup: { code: "CU-002", exit: 42, status: 422 },
+  ParentCustomerGroupNotInCompany: { code: "CG-001", exit: 41, status: 422 },
+  ParentCustomerGroupIsLedger: { code: "CG-002", exit: 42, status: 422 },
+  CustomerGroupRootExists: { code: "CG-003", exit: 43, status: 422 },
+  CustomerGroupNameTaken: { code: "CG-004", exit: 44, status: 422 },
   DepartmentNameTaken: { code: "DE-001", exit: 41, status: 422 },
   DesignationNameTaken: { code: "DS-001", exit: 41, status: 422 },
   EmployeeAlreadyHired: { code: "EM-001", exit: 41, status: 422 },
@@ -209,6 +220,16 @@ export const refusals = {
   LeaveTooLong: { code: "LP-010", exit: 50, status: 422 },
   LeaveDayAttended: { code: "LP-011", exit: 51, status: 422 },
   LeaveTypeNameTaken: { code: "LT-001", exit: 41, status: 422 },
+  PaymentAccountNotInCompany: { code: "PY-001", exit: 41, status: 422 },
+  PaymentAccountIsGroup: { code: "PY-002", exit: 42, status: 422 },
+  PaymentCostCenterNotInCompany: { code: "PY-003", exit: 43, status: 422 },
+  PaymentCostCenterIsGroup: { code: "PY-004", exit: 44, status: 422 },
+  PartyAccountWrongType: { code: "PY-005", exit: 45, status: 422 },
+  PartyNotFound: { code: "PY-006", exit: 46, status: 422 },
+  PartyNotInCompany: { code: "PY-007", exit: 47, status: 422 },
+  PaidAmountZero: { code: "PY-008", exit: 48, status: 422 },
+  PaymentPostingDateOutsideFiscalYear: { code: "PY-009", exit: 49, status: 422 },
+  PartyDisabled: { code: "PY-010", exit: 50, status: 422 },
   PayrollEndsBeforeStart: { code: "PE-001", exit: 41, status: 422 },
   PayableAccountNotInCompany: { code: "PE-002", exit: 42, status: 422 },
   PayableAccountIsGroup: { code: "PE-003", exit: 43, status: 422 },
@@ -241,6 +262,12 @@ export const refusals = {
   AssignedStructureNotSubmitted: { code: "SA-006", exit: 46, status: 422 },
   ShiftTypeNameTaken: { code: "SH-001", exit: 41, status: 422 },
   ShiftStartsWhenItEnds: { code: "SH-002", exit: 42, status: 422 },
+  SupplierGroupNotInCompany: { code: "SU-001", exit: 41, status: 422 },
+  SupplierGroupIsGroup: { code: "SU-002", exit: 42, status: 422 },
+  ParentSupplierGroupNotInCompany: { code: "SG-001", exit: 41, status: 422 },
+  ParentSupplierGroupIsLedger: { code: "SG-002", exit: 42, status: 422 },
+  SupplierGroupRootExists: { code: "SG-003", exit: 43, status: 422 },
+  SupplierGroupNameTaken: { code: "SG-004", exit: 44, status: 422 },
   AmountNegative: { code: "UW-001", exit: 41, status: 422 },
   AmountFractional: { code: "UW-002", exit: 42, status: 422 },
   AmountNotANumber: { code: "UW-003", exit: 43, status: 422 },
@@ -258,6 +285,8 @@ export const refusals = {
   BridgeIndividualNotStarted: { code: "KC-900", exit: 40, status: 409 },
   CompanyNotActive: { code: "CO-900", exit: 40, status: 409 },
   CostCenterNotGroup: { code: "CC-900", exit: 40, status: 409 },
+  CustomerNotActive: { code: "CU-900", exit: 40, status: 409 },
+  CustomerGroupNotGroup: { code: "CG-900", exit: 40, status: 409 },
   DepartmentNotActive: { code: "DE-900", exit: 40, status: 409 },
   DesignationNotActive: { code: "DS-900", exit: 40, status: 409 },
   EmployeeNotActive: { code: "EM-900", exit: 40, status: 409 },
@@ -286,12 +315,15 @@ export const refusals = {
   LeaveAllocationNotDraft: { code: "LL-900", exit: 40, status: 409 },
   LeaveApplicationNotOpen: { code: "LP-900", exit: 40, status: 409 },
   LeaveTypeNotActive: { code: "LT-900", exit: 40, status: 409 },
+  PaymentEntryNotDraft: { code: "PY-900", exit: 40, status: 409 },
   PayrollEntryNotDraft: { code: "PE-900", exit: 40, status: 409 },
   PayrollPeriodNotActive: { code: "PP-900", exit: 40, status: 409 },
   SalaryComponentNotActive: { code: "SC-900", exit: 40, status: 409 },
   SalaryStructureNotDraft: { code: "SS-900", exit: 40, status: 409 },
   SalaryStructureAssignmentNotDraft: { code: "SA-900", exit: 40, status: 409 },
   ShiftTypeNotActive: { code: "SH-900", exit: 40, status: 409 },
+  SupplierNotActive: { code: "SU-900", exit: 40, status: 409 },
+  SupplierGroupNotGroup: { code: "SG-900", exit: 40, status: 409 },
   AccountNotFound: { code: "AC-901", exit: 4, status: 404 },
   AppraisalNotFound: { code: "AP-901", exit: 4, status: 404 },
   AppraisalCycleNotFound: { code: "CY-901", exit: 4, status: 404 },
@@ -302,6 +334,7 @@ export const refusals = {
   BridgeIndividualNotFound: { code: "KC-901", exit: 4, status: 404 },
   CompanyNotFound: { code: "CO-901", exit: 4, status: 404 },
   CostCenterNotFound: { code: "CC-901", exit: 4, status: 404 },
+  CustomerGroupNotFound: { code: "CG-901", exit: 4, status: 404 },
   DepartmentNotFound: { code: "DE-901", exit: 4, status: 404 },
   DesignationNotFound: { code: "DS-901", exit: 4, status: 404 },
   EmployeeNotFound: { code: "EM-901", exit: 4, status: 404 },
@@ -311,6 +344,7 @@ export const refusals = {
   KraNotFound: { code: "KR-901", exit: 4, status: 404 },
   LeaveTypeNotFound: { code: "LT-901", exit: 4, status: 404 },
   SalaryStructureNotFound: { code: "SS-901", exit: 4, status: 404 },
+  SupplierGroupNotFound: { code: "SG-901", exit: 4, status: 404 },
   NotAllowed: { code: "AR-001", exit: 3, status: 403 },
   IdempotencyConflict: { code: "AR-002", exit: 120, status: 409 },
 } as const;
@@ -432,6 +466,18 @@ ErrorNames.name(CostCenter.RootCostCenterIsLedger, "RootCostCenterIsLedger");
 export class RootCostCenterIsLedger extends Schema.TaggedError<RootCostCenterIsLedger>()("RootCostCenterIsLedger", { code: Schema.Literal(refusals.RootCostCenterIsLedger.code), ...wireStruct(CostCenter.RootCostCenterIsLedger.fields).fields }, { httpApiStatus: refusals.RootCostCenterIsLedger.status }) { static readonly code = refusals.RootCostCenterIsLedger.code; }
 ErrorNames.name(CostCenter.CostCenterNameTaken, "CostCenterNameTaken");
 export class CostCenterNameTaken extends Schema.TaggedError<CostCenterNameTaken>()("CostCenterNameTaken", { code: Schema.Literal(refusals.CostCenterNameTaken.code), ...wireStruct(CostCenter.CostCenterNameTaken.fields).fields }, { httpApiStatus: refusals.CostCenterNameTaken.status }) { static readonly code = refusals.CostCenterNameTaken.code; }
+ErrorNames.name(Customer.CustomerGroupNotInCompany, "CustomerGroupNotInCompany");
+export class CustomerGroupNotInCompany extends Schema.TaggedError<CustomerGroupNotInCompany>()("CustomerGroupNotInCompany", { code: Schema.Literal(refusals.CustomerGroupNotInCompany.code), ...wireStruct(Customer.CustomerGroupNotInCompany.fields).fields }, { httpApiStatus: refusals.CustomerGroupNotInCompany.status }) { static readonly code = refusals.CustomerGroupNotInCompany.code; }
+ErrorNames.name(Customer.CustomerGroupIsGroup, "CustomerGroupIsGroup");
+export class CustomerGroupIsGroup extends Schema.TaggedError<CustomerGroupIsGroup>()("CustomerGroupIsGroup", { code: Schema.Literal(refusals.CustomerGroupIsGroup.code), ...wireStruct(Customer.CustomerGroupIsGroup.fields).fields }, { httpApiStatus: refusals.CustomerGroupIsGroup.status }) { static readonly code = refusals.CustomerGroupIsGroup.code; }
+ErrorNames.name(CustomerGroup.ParentCustomerGroupNotInCompany, "ParentCustomerGroupNotInCompany");
+export class ParentCustomerGroupNotInCompany extends Schema.TaggedError<ParentCustomerGroupNotInCompany>()("ParentCustomerGroupNotInCompany", { code: Schema.Literal(refusals.ParentCustomerGroupNotInCompany.code), ...wireStruct(CustomerGroup.ParentCustomerGroupNotInCompany.fields).fields }, { httpApiStatus: refusals.ParentCustomerGroupNotInCompany.status }) { static readonly code = refusals.ParentCustomerGroupNotInCompany.code; }
+ErrorNames.name(CustomerGroup.ParentCustomerGroupIsLedger, "ParentCustomerGroupIsLedger");
+export class ParentCustomerGroupIsLedger extends Schema.TaggedError<ParentCustomerGroupIsLedger>()("ParentCustomerGroupIsLedger", { code: Schema.Literal(refusals.ParentCustomerGroupIsLedger.code), ...wireStruct(CustomerGroup.ParentCustomerGroupIsLedger.fields).fields }, { httpApiStatus: refusals.ParentCustomerGroupIsLedger.status }) { static readonly code = refusals.ParentCustomerGroupIsLedger.code; }
+ErrorNames.name(CustomerGroup.CustomerGroupRootExists, "CustomerGroupRootExists");
+export class CustomerGroupRootExists extends Schema.TaggedError<CustomerGroupRootExists>()("CustomerGroupRootExists", { code: Schema.Literal(refusals.CustomerGroupRootExists.code), ...wireStruct(CustomerGroup.CustomerGroupRootExists.fields).fields }, { httpApiStatus: refusals.CustomerGroupRootExists.status }) { static readonly code = refusals.CustomerGroupRootExists.code; }
+ErrorNames.name(CustomerGroup.CustomerGroupNameTaken, "CustomerGroupNameTaken");
+export class CustomerGroupNameTaken extends Schema.TaggedError<CustomerGroupNameTaken>()("CustomerGroupNameTaken", { code: Schema.Literal(refusals.CustomerGroupNameTaken.code), ...wireStruct(CustomerGroup.CustomerGroupNameTaken.fields).fields }, { httpApiStatus: refusals.CustomerGroupNameTaken.status }) { static readonly code = refusals.CustomerGroupNameTaken.code; }
 ErrorNames.name(Department.DepartmentNameTaken, "DepartmentNameTaken");
 export class DepartmentNameTaken extends Schema.TaggedError<DepartmentNameTaken>()("DepartmentNameTaken", { code: Schema.Literal(refusals.DepartmentNameTaken.code), ...wireStruct(Department.DepartmentNameTaken.fields).fields }, { httpApiStatus: refusals.DepartmentNameTaken.status }) { static readonly code = refusals.DepartmentNameTaken.code; }
 ErrorNames.name(Designation.DesignationNameTaken, "DesignationNameTaken");
@@ -630,6 +676,26 @@ ErrorNames.name(LeaveApplication.LeaveDayAttended, "LeaveDayAttended");
 export class LeaveDayAttended extends Schema.TaggedError<LeaveDayAttended>()("LeaveDayAttended", { code: Schema.Literal(refusals.LeaveDayAttended.code), ...wireStruct(LeaveApplication.LeaveDayAttended.fields).fields }, { httpApiStatus: refusals.LeaveDayAttended.status }) { static readonly code = refusals.LeaveDayAttended.code; }
 ErrorNames.name(LeaveType.LeaveTypeNameTaken, "LeaveTypeNameTaken");
 export class LeaveTypeNameTaken extends Schema.TaggedError<LeaveTypeNameTaken>()("LeaveTypeNameTaken", { code: Schema.Literal(refusals.LeaveTypeNameTaken.code), ...wireStruct(LeaveType.LeaveTypeNameTaken.fields).fields }, { httpApiStatus: refusals.LeaveTypeNameTaken.status }) { static readonly code = refusals.LeaveTypeNameTaken.code; }
+ErrorNames.name(PaymentEntry.PaymentAccountNotInCompany, "PaymentAccountNotInCompany");
+export class PaymentAccountNotInCompany extends Schema.TaggedError<PaymentAccountNotInCompany>()("PaymentAccountNotInCompany", { code: Schema.Literal(refusals.PaymentAccountNotInCompany.code), ...wireStruct(PaymentEntry.PaymentAccountNotInCompany.fields).fields }, { httpApiStatus: refusals.PaymentAccountNotInCompany.status }) { static readonly code = refusals.PaymentAccountNotInCompany.code; }
+ErrorNames.name(PaymentEntry.PaymentAccountIsGroup, "PaymentAccountIsGroup");
+export class PaymentAccountIsGroup extends Schema.TaggedError<PaymentAccountIsGroup>()("PaymentAccountIsGroup", { code: Schema.Literal(refusals.PaymentAccountIsGroup.code), ...wireStruct(PaymentEntry.PaymentAccountIsGroup.fields).fields }, { httpApiStatus: refusals.PaymentAccountIsGroup.status }) { static readonly code = refusals.PaymentAccountIsGroup.code; }
+ErrorNames.name(PaymentEntry.PaymentCostCenterNotInCompany, "PaymentCostCenterNotInCompany");
+export class PaymentCostCenterNotInCompany extends Schema.TaggedError<PaymentCostCenterNotInCompany>()("PaymentCostCenterNotInCompany", { code: Schema.Literal(refusals.PaymentCostCenterNotInCompany.code), ...wireStruct(PaymentEntry.PaymentCostCenterNotInCompany.fields).fields }, { httpApiStatus: refusals.PaymentCostCenterNotInCompany.status }) { static readonly code = refusals.PaymentCostCenterNotInCompany.code; }
+ErrorNames.name(PaymentEntry.PaymentCostCenterIsGroup, "PaymentCostCenterIsGroup");
+export class PaymentCostCenterIsGroup extends Schema.TaggedError<PaymentCostCenterIsGroup>()("PaymentCostCenterIsGroup", { code: Schema.Literal(refusals.PaymentCostCenterIsGroup.code), ...wireStruct(PaymentEntry.PaymentCostCenterIsGroup.fields).fields }, { httpApiStatus: refusals.PaymentCostCenterIsGroup.status }) { static readonly code = refusals.PaymentCostCenterIsGroup.code; }
+ErrorNames.name(PaymentEntry.PartyAccountWrongType, "PartyAccountWrongType");
+export class PartyAccountWrongType extends Schema.TaggedError<PartyAccountWrongType>()("PartyAccountWrongType", { code: Schema.Literal(refusals.PartyAccountWrongType.code), ...wireStruct(PaymentEntry.PartyAccountWrongType.fields).fields }, { httpApiStatus: refusals.PartyAccountWrongType.status }) { static readonly code = refusals.PartyAccountWrongType.code; }
+ErrorNames.name(PaymentEntry.PartyNotFound, "PartyNotFound");
+export class PartyNotFound extends Schema.TaggedError<PartyNotFound>()("PartyNotFound", { code: Schema.Literal(refusals.PartyNotFound.code), ...wireStruct(PaymentEntry.PartyNotFound.fields).fields }, { httpApiStatus: refusals.PartyNotFound.status }) { static readonly code = refusals.PartyNotFound.code; }
+ErrorNames.name(PaymentEntry.PartyNotInCompany, "PartyNotInCompany");
+export class PartyNotInCompany extends Schema.TaggedError<PartyNotInCompany>()("PartyNotInCompany", { code: Schema.Literal(refusals.PartyNotInCompany.code), ...wireStruct(PaymentEntry.PartyNotInCompany.fields).fields }, { httpApiStatus: refusals.PartyNotInCompany.status }) { static readonly code = refusals.PartyNotInCompany.code; }
+ErrorNames.name(PaymentEntry.PaidAmountZero, "PaidAmountZero");
+export class PaidAmountZero extends Schema.TaggedError<PaidAmountZero>()("PaidAmountZero", { code: Schema.Literal(refusals.PaidAmountZero.code), ...wireStruct(PaymentEntry.PaidAmountZero.fields).fields }, { httpApiStatus: refusals.PaidAmountZero.status }) { static readonly code = refusals.PaidAmountZero.code; }
+ErrorNames.name(PaymentEntry.PaymentPostingDateOutsideFiscalYear, "PaymentPostingDateOutsideFiscalYear");
+export class PaymentPostingDateOutsideFiscalYear extends Schema.TaggedError<PaymentPostingDateOutsideFiscalYear>()("PaymentPostingDateOutsideFiscalYear", { code: Schema.Literal(refusals.PaymentPostingDateOutsideFiscalYear.code), ...wireStruct(PaymentEntry.PaymentPostingDateOutsideFiscalYear.fields).fields }, { httpApiStatus: refusals.PaymentPostingDateOutsideFiscalYear.status }) { static readonly code = refusals.PaymentPostingDateOutsideFiscalYear.code; }
+ErrorNames.name(PaymentEntry.PartyDisabled, "PartyDisabled");
+export class PartyDisabled extends Schema.TaggedError<PartyDisabled>()("PartyDisabled", { code: Schema.Literal(refusals.PartyDisabled.code), ...wireStruct(PaymentEntry.PartyDisabled.fields).fields }, { httpApiStatus: refusals.PartyDisabled.status }) { static readonly code = refusals.PartyDisabled.code; }
 ErrorNames.name(PayrollEntry.PayrollEndsBeforeStart, "PayrollEndsBeforeStart");
 export class PayrollEndsBeforeStart extends Schema.TaggedError<PayrollEndsBeforeStart>()("PayrollEndsBeforeStart", { code: Schema.Literal(refusals.PayrollEndsBeforeStart.code), ...wireStruct(PayrollEntry.PayrollEndsBeforeStart.fields).fields }, { httpApiStatus: refusals.PayrollEndsBeforeStart.status }) { static readonly code = refusals.PayrollEndsBeforeStart.code; }
 ErrorNames.name(PayrollEntry.PayableAccountNotInCompany, "PayableAccountNotInCompany");
@@ -694,6 +760,18 @@ ErrorNames.name(ShiftType.ShiftTypeNameTaken, "ShiftTypeNameTaken");
 export class ShiftTypeNameTaken extends Schema.TaggedError<ShiftTypeNameTaken>()("ShiftTypeNameTaken", { code: Schema.Literal(refusals.ShiftTypeNameTaken.code), ...wireStruct(ShiftType.ShiftTypeNameTaken.fields).fields }, { httpApiStatus: refusals.ShiftTypeNameTaken.status }) { static readonly code = refusals.ShiftTypeNameTaken.code; }
 ErrorNames.name(ShiftType.ShiftStartsWhenItEnds, "ShiftStartsWhenItEnds");
 export class ShiftStartsWhenItEnds extends Schema.TaggedError<ShiftStartsWhenItEnds>()("ShiftStartsWhenItEnds", { code: Schema.Literal(refusals.ShiftStartsWhenItEnds.code), ...wireStruct(ShiftType.ShiftStartsWhenItEnds.fields).fields }, { httpApiStatus: refusals.ShiftStartsWhenItEnds.status }) { static readonly code = refusals.ShiftStartsWhenItEnds.code; }
+ErrorNames.name(Supplier.SupplierGroupNotInCompany, "SupplierGroupNotInCompany");
+export class SupplierGroupNotInCompany extends Schema.TaggedError<SupplierGroupNotInCompany>()("SupplierGroupNotInCompany", { code: Schema.Literal(refusals.SupplierGroupNotInCompany.code), ...wireStruct(Supplier.SupplierGroupNotInCompany.fields).fields }, { httpApiStatus: refusals.SupplierGroupNotInCompany.status }) { static readonly code = refusals.SupplierGroupNotInCompany.code; }
+ErrorNames.name(Supplier.SupplierGroupIsGroup, "SupplierGroupIsGroup");
+export class SupplierGroupIsGroup extends Schema.TaggedError<SupplierGroupIsGroup>()("SupplierGroupIsGroup", { code: Schema.Literal(refusals.SupplierGroupIsGroup.code), ...wireStruct(Supplier.SupplierGroupIsGroup.fields).fields }, { httpApiStatus: refusals.SupplierGroupIsGroup.status }) { static readonly code = refusals.SupplierGroupIsGroup.code; }
+ErrorNames.name(SupplierGroup.ParentSupplierGroupNotInCompany, "ParentSupplierGroupNotInCompany");
+export class ParentSupplierGroupNotInCompany extends Schema.TaggedError<ParentSupplierGroupNotInCompany>()("ParentSupplierGroupNotInCompany", { code: Schema.Literal(refusals.ParentSupplierGroupNotInCompany.code), ...wireStruct(SupplierGroup.ParentSupplierGroupNotInCompany.fields).fields }, { httpApiStatus: refusals.ParentSupplierGroupNotInCompany.status }) { static readonly code = refusals.ParentSupplierGroupNotInCompany.code; }
+ErrorNames.name(SupplierGroup.ParentSupplierGroupIsLedger, "ParentSupplierGroupIsLedger");
+export class ParentSupplierGroupIsLedger extends Schema.TaggedError<ParentSupplierGroupIsLedger>()("ParentSupplierGroupIsLedger", { code: Schema.Literal(refusals.ParentSupplierGroupIsLedger.code), ...wireStruct(SupplierGroup.ParentSupplierGroupIsLedger.fields).fields }, { httpApiStatus: refusals.ParentSupplierGroupIsLedger.status }) { static readonly code = refusals.ParentSupplierGroupIsLedger.code; }
+ErrorNames.name(SupplierGroup.SupplierGroupRootExists, "SupplierGroupRootExists");
+export class SupplierGroupRootExists extends Schema.TaggedError<SupplierGroupRootExists>()("SupplierGroupRootExists", { code: Schema.Literal(refusals.SupplierGroupRootExists.code), ...wireStruct(SupplierGroup.SupplierGroupRootExists.fields).fields }, { httpApiStatus: refusals.SupplierGroupRootExists.status }) { static readonly code = refusals.SupplierGroupRootExists.code; }
+ErrorNames.name(SupplierGroup.SupplierGroupNameTaken, "SupplierGroupNameTaken");
+export class SupplierGroupNameTaken extends Schema.TaggedError<SupplierGroupNameTaken>()("SupplierGroupNameTaken", { code: Schema.Literal(refusals.SupplierGroupNameTaken.code), ...wireStruct(SupplierGroup.SupplierGroupNameTaken.fields).fields }, { httpApiStatus: refusals.SupplierGroupNameTaken.status }) { static readonly code = refusals.SupplierGroupNameTaken.code; }
 ErrorNames.name(UsWithholding.AmountNegative, "AmountNegative");
 export class AmountNegative extends Schema.TaggedError<AmountNegative>()("AmountNegative", { code: Schema.Literal(refusals.AmountNegative.code), ...wireStruct(UsWithholding.AmountNegative.fields).fields }, { httpApiStatus: refusals.AmountNegative.status }) { static readonly code = refusals.AmountNegative.code; }
 ErrorNames.name(UsWithholding.AmountFractional, "AmountFractional");
@@ -715,6 +793,8 @@ export class BridgeBusinessNotStarted extends Schema.TaggedError<BridgeBusinessN
 export class BridgeIndividualNotStarted extends Schema.TaggedError<BridgeIndividualNotStarted>()("BridgeIndividualNotStarted", { code: Schema.Literal(refusals.BridgeIndividualNotStarted.code), ...{ state: Schema.Literals(["started", "approved", "rejected"]) } }, { httpApiStatus: refusals.BridgeIndividualNotStarted.status }) { static readonly code = refusals.BridgeIndividualNotStarted.code; }
 export class CompanyNotActive extends Schema.TaggedError<CompanyNotActive>()("CompanyNotActive", { code: Schema.Literal(refusals.CompanyNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.CompanyNotActive.status }) { static readonly code = refusals.CompanyNotActive.code; }
 export class CostCenterNotGroup extends Schema.TaggedError<CostCenterNotGroup>()("CostCenterNotGroup", { code: Schema.Literal(refusals.CostCenterNotGroup.code), ...{ state: Schema.Literals(["group", "ledger"]) } }, { httpApiStatus: refusals.CostCenterNotGroup.status }) { static readonly code = refusals.CostCenterNotGroup.code; }
+export class CustomerNotActive extends Schema.TaggedError<CustomerNotActive>()("CustomerNotActive", { code: Schema.Literal(refusals.CustomerNotActive.code), ...{ state: Schema.Literals(["active", "disabled"]) } }, { httpApiStatus: refusals.CustomerNotActive.status }) { static readonly code = refusals.CustomerNotActive.code; }
+export class CustomerGroupNotGroup extends Schema.TaggedError<CustomerGroupNotGroup>()("CustomerGroupNotGroup", { code: Schema.Literal(refusals.CustomerGroupNotGroup.code), ...{ state: Schema.Literals(["group", "ledger"]) } }, { httpApiStatus: refusals.CustomerGroupNotGroup.status }) { static readonly code = refusals.CustomerGroupNotGroup.code; }
 export class DepartmentNotActive extends Schema.TaggedError<DepartmentNotActive>()("DepartmentNotActive", { code: Schema.Literal(refusals.DepartmentNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DepartmentNotActive.status }) { static readonly code = refusals.DepartmentNotActive.code; }
 export class DesignationNotActive extends Schema.TaggedError<DesignationNotActive>()("DesignationNotActive", { code: Schema.Literal(refusals.DesignationNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.DesignationNotActive.status }) { static readonly code = refusals.DesignationNotActive.code; }
 export class EmployeeNotActive extends Schema.TaggedError<EmployeeNotActive>()("EmployeeNotActive", { code: Schema.Literal(refusals.EmployeeNotActive.code), ...{ state: Schema.Literals(["active", "left"]) } }, { httpApiStatus: refusals.EmployeeNotActive.status }) { static readonly code = refusals.EmployeeNotActive.code; }
@@ -743,12 +823,15 @@ export class KraNotActive extends Schema.TaggedError<KraNotActive>()("KraNotActi
 export class LeaveAllocationNotDraft extends Schema.TaggedError<LeaveAllocationNotDraft>()("LeaveAllocationNotDraft", { code: Schema.Literal(refusals.LeaveAllocationNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted"]) } }, { httpApiStatus: refusals.LeaveAllocationNotDraft.status }) { static readonly code = refusals.LeaveAllocationNotDraft.code; }
 export class LeaveApplicationNotOpen extends Schema.TaggedError<LeaveApplicationNotOpen>()("LeaveApplicationNotOpen", { code: Schema.Literal(refusals.LeaveApplicationNotOpen.code), ...{ state: Schema.Literals(["open", "approved", "rejected", "cancelled"]) } }, { httpApiStatus: refusals.LeaveApplicationNotOpen.status }) { static readonly code = refusals.LeaveApplicationNotOpen.code; }
 export class LeaveTypeNotActive extends Schema.TaggedError<LeaveTypeNotActive>()("LeaveTypeNotActive", { code: Schema.Literal(refusals.LeaveTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.LeaveTypeNotActive.status }) { static readonly code = refusals.LeaveTypeNotActive.code; }
+export class PaymentEntryNotDraft extends Schema.TaggedError<PaymentEntryNotDraft>()("PaymentEntryNotDraft", { code: Schema.Literal(refusals.PaymentEntryNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted", "cancelled"]) } }, { httpApiStatus: refusals.PaymentEntryNotDraft.status }) { static readonly code = refusals.PaymentEntryNotDraft.code; }
 export class PayrollEntryNotDraft extends Schema.TaggedError<PayrollEntryNotDraft>()("PayrollEntryNotDraft", { code: Schema.Literal(refusals.PayrollEntryNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted", "accrued"]) } }, { httpApiStatus: refusals.PayrollEntryNotDraft.status }) { static readonly code = refusals.PayrollEntryNotDraft.code; }
 export class PayrollPeriodNotActive extends Schema.TaggedError<PayrollPeriodNotActive>()("PayrollPeriodNotActive", { code: Schema.Literal(refusals.PayrollPeriodNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.PayrollPeriodNotActive.status }) { static readonly code = refusals.PayrollPeriodNotActive.code; }
 export class SalaryComponentNotActive extends Schema.TaggedError<SalaryComponentNotActive>()("SalaryComponentNotActive", { code: Schema.Literal(refusals.SalaryComponentNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.SalaryComponentNotActive.status }) { static readonly code = refusals.SalaryComponentNotActive.code; }
 export class SalaryStructureNotDraft extends Schema.TaggedError<SalaryStructureNotDraft>()("SalaryStructureNotDraft", { code: Schema.Literal(refusals.SalaryStructureNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted", "cancelled"]) } }, { httpApiStatus: refusals.SalaryStructureNotDraft.status }) { static readonly code = refusals.SalaryStructureNotDraft.code; }
 export class SalaryStructureAssignmentNotDraft extends Schema.TaggedError<SalaryStructureAssignmentNotDraft>()("SalaryStructureAssignmentNotDraft", { code: Schema.Literal(refusals.SalaryStructureAssignmentNotDraft.code), ...{ state: Schema.Literals(["draft", "submitted", "cancelled"]) } }, { httpApiStatus: refusals.SalaryStructureAssignmentNotDraft.status }) { static readonly code = refusals.SalaryStructureAssignmentNotDraft.code; }
 export class ShiftTypeNotActive extends Schema.TaggedError<ShiftTypeNotActive>()("ShiftTypeNotActive", { code: Schema.Literal(refusals.ShiftTypeNotActive.code), ...{ state: Schema.Literals(["active"]) } }, { httpApiStatus: refusals.ShiftTypeNotActive.status }) { static readonly code = refusals.ShiftTypeNotActive.code; }
+export class SupplierNotActive extends Schema.TaggedError<SupplierNotActive>()("SupplierNotActive", { code: Schema.Literal(refusals.SupplierNotActive.code), ...{ state: Schema.Literals(["active", "disabled"]) } }, { httpApiStatus: refusals.SupplierNotActive.status }) { static readonly code = refusals.SupplierNotActive.code; }
+export class SupplierGroupNotGroup extends Schema.TaggedError<SupplierGroupNotGroup>()("SupplierGroupNotGroup", { code: Schema.Literal(refusals.SupplierGroupNotGroup.code), ...{ state: Schema.Literals(["group", "ledger"]) } }, { httpApiStatus: refusals.SupplierGroupNotGroup.status }) { static readonly code = refusals.SupplierGroupNotGroup.code; }
 export class AccountNotFound extends Schema.TaggedError<AccountNotFound>()("AccountNotFound", { code: Schema.Literal(refusals.AccountNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.AccountNotFound.status }) { static readonly code = refusals.AccountNotFound.code; }
 export class AppraisalNotFound extends Schema.TaggedError<AppraisalNotFound>()("AppraisalNotFound", { code: Schema.Literal(refusals.AppraisalNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.AppraisalNotFound.status }) { static readonly code = refusals.AppraisalNotFound.code; }
 export class AppraisalCycleNotFound extends Schema.TaggedError<AppraisalCycleNotFound>()("AppraisalCycleNotFound", { code: Schema.Literal(refusals.AppraisalCycleNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.AppraisalCycleNotFound.status }) { static readonly code = refusals.AppraisalCycleNotFound.code; }
@@ -759,6 +842,7 @@ export class BridgeBusinessNotFound extends Schema.TaggedError<BridgeBusinessNot
 export class BridgeIndividualNotFound extends Schema.TaggedError<BridgeIndividualNotFound>()("BridgeIndividualNotFound", { code: Schema.Literal(refusals.BridgeIndividualNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.BridgeIndividualNotFound.status }) { static readonly code = refusals.BridgeIndividualNotFound.code; }
 export class CompanyNotFound extends Schema.TaggedError<CompanyNotFound>()("CompanyNotFound", { code: Schema.Literal(refusals.CompanyNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.CompanyNotFound.status }) { static readonly code = refusals.CompanyNotFound.code; }
 export class CostCenterNotFound extends Schema.TaggedError<CostCenterNotFound>()("CostCenterNotFound", { code: Schema.Literal(refusals.CostCenterNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.CostCenterNotFound.status }) { static readonly code = refusals.CostCenterNotFound.code; }
+export class CustomerGroupNotFound extends Schema.TaggedError<CustomerGroupNotFound>()("CustomerGroupNotFound", { code: Schema.Literal(refusals.CustomerGroupNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.CustomerGroupNotFound.status }) { static readonly code = refusals.CustomerGroupNotFound.code; }
 export class DepartmentNotFound extends Schema.TaggedError<DepartmentNotFound>()("DepartmentNotFound", { code: Schema.Literal(refusals.DepartmentNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.DepartmentNotFound.status }) { static readonly code = refusals.DepartmentNotFound.code; }
 export class DesignationNotFound extends Schema.TaggedError<DesignationNotFound>()("DesignationNotFound", { code: Schema.Literal(refusals.DesignationNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.DesignationNotFound.status }) { static readonly code = refusals.DesignationNotFound.code; }
 export class EmployeeNotFound extends Schema.TaggedError<EmployeeNotFound>()("EmployeeNotFound", { code: Schema.Literal(refusals.EmployeeNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.EmployeeNotFound.status }) { static readonly code = refusals.EmployeeNotFound.code; }
@@ -768,6 +852,7 @@ export class InterviewRoundNotFound extends Schema.TaggedError<InterviewRoundNot
 export class KraNotFound extends Schema.TaggedError<KraNotFound>()("KraNotFound", { code: Schema.Literal(refusals.KraNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.KraNotFound.status }) { static readonly code = refusals.KraNotFound.code; }
 export class LeaveTypeNotFound extends Schema.TaggedError<LeaveTypeNotFound>()("LeaveTypeNotFound", { code: Schema.Literal(refusals.LeaveTypeNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.LeaveTypeNotFound.status }) { static readonly code = refusals.LeaveTypeNotFound.code; }
 export class SalaryStructureNotFound extends Schema.TaggedError<SalaryStructureNotFound>()("SalaryStructureNotFound", { code: Schema.Literal(refusals.SalaryStructureNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.SalaryStructureNotFound.status }) { static readonly code = refusals.SalaryStructureNotFound.code; }
+export class SupplierGroupNotFound extends Schema.TaggedError<SupplierGroupNotFound>()("SupplierGroupNotFound", { code: Schema.Literal(refusals.SupplierGroupNotFound.code), ...{ id: Schema.String } }, { httpApiStatus: refusals.SupplierGroupNotFound.status }) { static readonly code = refusals.SupplierGroupNotFound.code; }
 export class NotAllowed extends Schema.TaggedError<NotAllowed>()("NotAllowed", { code: Schema.Literal(refusals.NotAllowed.code), ...{} }, { httpApiStatus: refusals.NotAllowed.status }) { static readonly code = refusals.NotAllowed.code; }
 export class IdempotencyConflict extends Schema.TaggedError<IdempotencyConflict>()("IdempotencyConflict", { code: Schema.Literal(refusals.IdempotencyConflict.code), ...{} }, { httpApiStatus: refusals.IdempotencyConflict.status }) { static readonly code = refusals.IdempotencyConflict.code; }
 
@@ -837,6 +922,12 @@ export const declared = {
   ParentCostCenterIsLedger: CostCenter.ParentCostCenterIsLedger,
   RootCostCenterIsLedger: CostCenter.RootCostCenterIsLedger,
   CostCenterNameTaken: CostCenter.CostCenterNameTaken,
+  CustomerGroupNotInCompany: Customer.CustomerGroupNotInCompany,
+  CustomerGroupIsGroup: Customer.CustomerGroupIsGroup,
+  ParentCustomerGroupNotInCompany: CustomerGroup.ParentCustomerGroupNotInCompany,
+  ParentCustomerGroupIsLedger: CustomerGroup.ParentCustomerGroupIsLedger,
+  CustomerGroupRootExists: CustomerGroup.CustomerGroupRootExists,
+  CustomerGroupNameTaken: CustomerGroup.CustomerGroupNameTaken,
   DepartmentNameTaken: Department.DepartmentNameTaken,
   DesignationNameTaken: Designation.DesignationNameTaken,
   EmployeeAlreadyHired: Employee.EmployeeAlreadyHired,
@@ -936,6 +1027,16 @@ export const declared = {
   LeaveTooLong: LeaveApplication.LeaveTooLong,
   LeaveDayAttended: LeaveApplication.LeaveDayAttended,
   LeaveTypeNameTaken: LeaveType.LeaveTypeNameTaken,
+  PaymentAccountNotInCompany: PaymentEntry.PaymentAccountNotInCompany,
+  PaymentAccountIsGroup: PaymentEntry.PaymentAccountIsGroup,
+  PaymentCostCenterNotInCompany: PaymentEntry.PaymentCostCenterNotInCompany,
+  PaymentCostCenterIsGroup: PaymentEntry.PaymentCostCenterIsGroup,
+  PartyAccountWrongType: PaymentEntry.PartyAccountWrongType,
+  PartyNotFound: PaymentEntry.PartyNotFound,
+  PartyNotInCompany: PaymentEntry.PartyNotInCompany,
+  PaidAmountZero: PaymentEntry.PaidAmountZero,
+  PaymentPostingDateOutsideFiscalYear: PaymentEntry.PaymentPostingDateOutsideFiscalYear,
+  PartyDisabled: PaymentEntry.PartyDisabled,
   PayrollEndsBeforeStart: PayrollEntry.PayrollEndsBeforeStart,
   PayableAccountNotInCompany: PayrollEntry.PayableAccountNotInCompany,
   PayableAccountIsGroup: PayrollEntry.PayableAccountIsGroup,
@@ -968,6 +1069,12 @@ export const declared = {
   AssignedStructureNotSubmitted: SalaryStructureAssignment.AssignedStructureNotSubmitted,
   ShiftTypeNameTaken: ShiftType.ShiftTypeNameTaken,
   ShiftStartsWhenItEnds: ShiftType.ShiftStartsWhenItEnds,
+  SupplierGroupNotInCompany: Supplier.SupplierGroupNotInCompany,
+  SupplierGroupIsGroup: Supplier.SupplierGroupIsGroup,
+  ParentSupplierGroupNotInCompany: SupplierGroup.ParentSupplierGroupNotInCompany,
+  ParentSupplierGroupIsLedger: SupplierGroup.ParentSupplierGroupIsLedger,
+  SupplierGroupRootExists: SupplierGroup.SupplierGroupRootExists,
+  SupplierGroupNameTaken: SupplierGroup.SupplierGroupNameTaken,
   AmountNegative: UsWithholding.AmountNegative,
   AmountFractional: UsWithholding.AmountFractional,
   AmountNotANumber: UsWithholding.AmountNotANumber,
@@ -975,4 +1082,4 @@ export const declared = {
 } as const;
 
 /** The wire class of each refusal, by name. */
-export const wire = { ParentAccountNotInCompany, ParentAccountIsLedger, RootAccountIsLedger, RootTypeMissing, RootTypeNotParents, AccountHasChildren, AccountNameTaken, AppraisedEmployeeNotInCompany, AppraisedEmployeeHasLeft, AppraisalCycleCompleted, AppraisalTemplateNotInCompany, AppraisalAlreadyExists, NotRatedManually, ScoresDontMatchKras, KraScoreOutOfRange, SelfRatingsDontMatchCriteria, SelfRatingOutOfRange, CycleEndsBeforeStart, AppraiseeNotInCompany, AppraiseeHasLeft, AppraiseeTemplateNotInCompany, AppraiseeListedTwice, CycleWithoutAppraisees, AppraisalsNotSubmitted, CycleNameTaken, TemplateWithoutKras, TemplateKraNotInCompany, TemplateCriteriaNotInCompany, TemplateLineRepeated, TemplateWeightageOutOfRange, KraWeightageNotHundred, CriteriaWeightageNotHundred, TemplateTitleTaken, AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, AttendanceOnLeave, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, AttendanceRequestOverlaps, KybNotApproved, BankAccountNameTaken, AccountClosed, CurrencyNotHeld, NothingToSend, AlreadyRecorded, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, ParentCostCenterNotInCompany, ParentCostCenterIsLedger, RootCostCenterIsLedger, CostCenterNameTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, CriteriaNameTaken, EmployeeGradeNameTaken, FeedbackCycleCompleted, FeedbackForOneself, ReviewerNotInCompany, ReviewerHasLeft, FeedbackRatingsDontMatchCriteria, FeedbackRatingOutOfRange, PromotedEmployeeNotInCompany, PromotedEmployeeHasLeft, NewDesignationNotInCompany, DesignationUnchanged, PromotionNotYetDue, SeparatedEmployeeNotInCompany, SeparationAlreadyOpen, TransferredEmployeeNotInCompany, TransferredEmployeeHasLeft, NewDepartmentNotInCompany, DepartmentUnchanged, TransferNotYetDue, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, FiscalYearEndsBeforeStart, FiscalYearWrongLength, FiscalYearOverlaps, FiscalYearNameTaken, GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, GoalIsGroup, GoalNotGroup, ParentGoalNotGroup, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, JournalEntryTooFewLines, LineAccountNotInCompany, LineAccountIsGroup, LineCostCenterNotInCompany, LineCostCenterIsGroup, LineWithoutAmount, LineDebitAndCredit, JournalEntryUnbalanced, PostingDateOutsideFiscalYear, KraTitleTaken, AllocateeNotInCompany, AllocateeHasLeft, AllocationTypeNotInCompany, AllocationEndsBeforeStart, AllocationOverlaps, LeaveWithoutPayNotAllocated, NoLeavesAllocated, AllocationExceedsPeriod, ApplicantNotInCompany, ApplicantHasLeft, ApplicationTypeNotInCompany, LeaveEndsBeforeStart, LeaveBeforeJoining, NoAllocationCovers, LeaveAllHolidays, InsufficientLeaveBalance, LeaveOverlaps, LeaveTooLong, LeaveDayAttended, LeaveTypeNameTaken, PayrollEndsBeforeStart, PayableAccountNotInCompany, PayableAccountIsGroup, PayableAccountHasType, PayrollCostCenterNotInCompany, PayrollCostCenterIsGroup, NoEmployeesFound, SalarySlipExists, NoAssignmentAtStart, AccrualOutsideFiscalYear, PayrollPeriodEndsBeforeStart, PayrollPeriodOverlaps, PayrollPeriodNameTaken, ComponentAccountNotInCompany, ComponentAccountIsGroup, SalaryComponentTaken, StructureWithoutEarnings, StructureComponentNotInCompany, StructureComponentWrongType, StructureLineWithoutAmount, StructureComponentRepeated, StructureNetPayNegative, StructureInUse, SalaryStructureNameTaken, AssignedEmployeeNotInCompany, AssignedEmployeeHasLeft, AssignmentExists, AssignmentBeforeJoining, AssignedStructureNotInCompany, AssignedStructureNotSubmitted, ShiftTypeNameTaken, ShiftStartsWhenItEnds, AmountNegative, AmountFractional, AmountNotANumber, WorkStateUnknown, AccountNotGroup, AppraisalNotDraft, AppraisalCycleNotNotStarted, AppraisalTemplateNotActive, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BankTransactionNotPending, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, CostCenterNotGroup, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeFeedbackCriteriaNotActive, EmployeeGradeNotActive, EmployeePerformanceFeedbackNotDraft, EmployeePromotionNotDraft, EmployeeSeparationNotPending, EmployeeTransferNotDraft, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, FiscalYearNotActive, GoalNotPending, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, JournalEntryNotDraft, KraNotActive, LeaveAllocationNotDraft, LeaveApplicationNotOpen, LeaveTypeNotActive, PayrollEntryNotDraft, PayrollPeriodNotActive, SalaryComponentNotActive, SalaryStructureNotDraft, SalaryStructureAssignmentNotDraft, ShiftTypeNotActive, AccountNotFound, AppraisalNotFound, AppraisalCycleNotFound, AppraisalTemplateNotFound, BankAccountNotFound, BankTransactionNotFound, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, CostCenterNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, KraNotFound, LeaveTypeNotFound, SalaryStructureNotFound, NotAllowed, IdempotencyConflict };
+export const wire = { ParentAccountNotInCompany, ParentAccountIsLedger, RootAccountIsLedger, RootTypeMissing, RootTypeNotParents, AccountHasChildren, AccountNameTaken, AppraisedEmployeeNotInCompany, AppraisedEmployeeHasLeft, AppraisalCycleCompleted, AppraisalTemplateNotInCompany, AppraisalAlreadyExists, NotRatedManually, ScoresDontMatchKras, KraScoreOutOfRange, SelfRatingsDontMatchCriteria, SelfRatingOutOfRange, CycleEndsBeforeStart, AppraiseeNotInCompany, AppraiseeHasLeft, AppraiseeTemplateNotInCompany, AppraiseeListedTwice, CycleWithoutAppraisees, AppraisalsNotSubmitted, CycleNameTaken, TemplateWithoutKras, TemplateKraNotInCompany, TemplateCriteriaNotInCompany, TemplateLineRepeated, TemplateWeightageOutOfRange, KraWeightageNotHundred, CriteriaWeightageNotHundred, TemplateTitleTaken, AttendeeNotInCompany, AttendeeHasLeft, AttendanceBeforeJoining, AttendanceAlreadyMarked, AttendanceOnLeave, RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, AttendanceRequestOverlaps, KybNotApproved, BankAccountNameTaken, AccountClosed, CurrencyNotHeld, NothingToSend, AlreadyRecorded, BranchNameTaken, KybAlreadyStarted, KycAlreadyStarted, CompanyNameTaken, CompanyAbbrTaken, ParentCostCenterNotInCompany, ParentCostCenterIsLedger, RootCostCenterIsLedger, CostCenterNameTaken, CustomerGroupNotInCompany, CustomerGroupIsGroup, ParentCustomerGroupNotInCompany, ParentCustomerGroupIsLedger, CustomerGroupRootExists, CustomerGroupNameTaken, DepartmentNameTaken, DesignationNameTaken, EmployeeAlreadyHired, DepartmentNotInCompany, DesignationNotInCompany, JoinedBeforeBorn, RelievedBeforeJoined, CriteriaNameTaken, EmployeeGradeNameTaken, FeedbackCycleCompleted, FeedbackForOneself, ReviewerNotInCompany, ReviewerHasLeft, FeedbackRatingsDontMatchCriteria, FeedbackRatingOutOfRange, PromotedEmployeeNotInCompany, PromotedEmployeeHasLeft, NewDesignationNotInCompany, DesignationUnchanged, PromotionNotYetDue, SeparatedEmployeeNotInCompany, SeparationAlreadyOpen, TransferredEmployeeNotInCompany, TransferredEmployeeHasLeft, NewDepartmentNotInCompany, DepartmentUnchanged, TransferNotYetDue, EmploymentTypeNameTaken, SanctionedOverClaimed, ExpenseTypeNotInCompany, ClaimNotDraft, ClaimantNotActive, EmployeeNotInCompany, ClaimHasNoExpenses, ExpenseTypeTaken, FiscalYearEndsBeforeStart, FiscalYearWrongLength, FiscalYearOverlaps, FiscalYearNameTaken, GoalCycleCompleted, GoalEmployeeNotInCompany, GoalOwnerHasLeft, GoalKraNotInAppraisal, ParentGoalMismatch, ProgressOutOfRange, GoalIsGroup, GoalNotGroup, ParentGoalNotGroup, HolidayDateTaken, HolidayOutsideList, HolidayListNameTaken, HolidayListEndsBeforeStart, ApplicantRejected, RoundNotInCompany, InterviewEndsBeforeStart, InterviewerNotInCompany, InterviewerHasLeft, InterviewAlreadyScheduled, FeedbackGiverNotInterviewer, FeedbackBeforeInterview, FeedbackAlreadyGiven, RoundNameTaken, RoundInterviewerNotInCompany, RoundInterviewerHasLeft, OpeningClosed, OfferNotAccepted, OfferDesignationNotInCompany, OfferAlreadyMade, OpeningWithoutVacancies, JournalEntryTooFewLines, LineAccountNotInCompany, LineAccountIsGroup, LineCostCenterNotInCompany, LineCostCenterIsGroup, LineWithoutAmount, LineDebitAndCredit, JournalEntryUnbalanced, PostingDateOutsideFiscalYear, KraTitleTaken, AllocateeNotInCompany, AllocateeHasLeft, AllocationTypeNotInCompany, AllocationEndsBeforeStart, AllocationOverlaps, LeaveWithoutPayNotAllocated, NoLeavesAllocated, AllocationExceedsPeriod, ApplicantNotInCompany, ApplicantHasLeft, ApplicationTypeNotInCompany, LeaveEndsBeforeStart, LeaveBeforeJoining, NoAllocationCovers, LeaveAllHolidays, InsufficientLeaveBalance, LeaveOverlaps, LeaveTooLong, LeaveDayAttended, LeaveTypeNameTaken, PaymentAccountNotInCompany, PaymentAccountIsGroup, PaymentCostCenterNotInCompany, PaymentCostCenterIsGroup, PartyAccountWrongType, PartyNotFound, PartyNotInCompany, PaidAmountZero, PaymentPostingDateOutsideFiscalYear, PartyDisabled, PayrollEndsBeforeStart, PayableAccountNotInCompany, PayableAccountIsGroup, PayableAccountHasType, PayrollCostCenterNotInCompany, PayrollCostCenterIsGroup, NoEmployeesFound, SalarySlipExists, NoAssignmentAtStart, AccrualOutsideFiscalYear, PayrollPeriodEndsBeforeStart, PayrollPeriodOverlaps, PayrollPeriodNameTaken, ComponentAccountNotInCompany, ComponentAccountIsGroup, SalaryComponentTaken, StructureWithoutEarnings, StructureComponentNotInCompany, StructureComponentWrongType, StructureLineWithoutAmount, StructureComponentRepeated, StructureNetPayNegative, StructureInUse, SalaryStructureNameTaken, AssignedEmployeeNotInCompany, AssignedEmployeeHasLeft, AssignmentExists, AssignmentBeforeJoining, AssignedStructureNotInCompany, AssignedStructureNotSubmitted, ShiftTypeNameTaken, ShiftStartsWhenItEnds, SupplierGroupNotInCompany, SupplierGroupIsGroup, ParentSupplierGroupNotInCompany, ParentSupplierGroupIsLedger, SupplierGroupRootExists, SupplierGroupNameTaken, AmountNegative, AmountFractional, AmountNotANumber, WorkStateUnknown, AccountNotGroup, AppraisalNotDraft, AppraisalCycleNotNotStarted, AppraisalTemplateNotActive, AttendanceNotMarked, AttendanceRequestNotDraft, BankAccountNotOpen, BankTransactionNotPending, BranchNotActive, BridgeBusinessNotStarted, BridgeIndividualNotStarted, CompanyNotActive, CostCenterNotGroup, CustomerNotActive, CustomerGroupNotGroup, DepartmentNotActive, DesignationNotActive, EmployeeNotActive, EmployeeFeedbackCriteriaNotActive, EmployeeGradeNotActive, EmployeePerformanceFeedbackNotDraft, EmployeePromotionNotDraft, EmployeeSeparationNotPending, EmployeeTransferNotDraft, EmploymentTypeNotActive, ExpenseNotActive, ExpenseClaimNotDraft, ExpenseClaimTypeNotActive, FiscalYearNotActive, GoalNotPending, HolidayNotActive, HolidayListNotActive, InterviewNotPending, InterviewFeedbackNotGiven, InterviewRoundNotActive, JobApplicantNotOpen, JobOfferNotAwaiting, JobOpeningNotOpen, JournalEntryNotDraft, KraNotActive, LeaveAllocationNotDraft, LeaveApplicationNotOpen, LeaveTypeNotActive, PaymentEntryNotDraft, PayrollEntryNotDraft, PayrollPeriodNotActive, SalaryComponentNotActive, SalaryStructureNotDraft, SalaryStructureAssignmentNotDraft, ShiftTypeNotActive, SupplierNotActive, SupplierGroupNotGroup, AccountNotFound, AppraisalNotFound, AppraisalCycleNotFound, AppraisalTemplateNotFound, BankAccountNotFound, BankTransactionNotFound, BridgeBusinessNotFound, BridgeIndividualNotFound, CompanyNotFound, CostCenterNotFound, CustomerGroupNotFound, DepartmentNotFound, DesignationNotFound, EmployeeNotFound, ExpenseClaimTypeNotFound, InterviewNotFound, InterviewRoundNotFound, KraNotFound, LeaveTypeNotFound, SalaryStructureNotFound, SupplierGroupNotFound, NotAllowed, IdempotencyConflict };

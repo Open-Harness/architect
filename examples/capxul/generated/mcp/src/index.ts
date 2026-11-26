@@ -47,6 +47,13 @@ import { declaration as companyCreate } from "../../api/src/company/create.ts";
 import { declaration as companyGet } from "../../api/src/company/get.ts";
 import { declaration as costCenterCreate } from "../../api/src/cost-center/create.ts";
 import { declaration as costCenterGet } from "../../api/src/cost-center/get.ts";
+import { declaration as customerBalance } from "../../api/src/customer/balance.ts";
+import { declaration as customerCreate } from "../../api/src/customer/create.ts";
+import { declaration as customerDisable } from "../../api/src/customer/disable.ts";
+import { declaration as customerEnable } from "../../api/src/customer/enable.ts";
+import { declaration as customerGet } from "../../api/src/customer/get.ts";
+import { declaration as customerGroupCreate } from "../../api/src/customer-group/create.ts";
+import { declaration as customerGroupGet } from "../../api/src/customer-group/get.ts";
 import { declaration as departmentCreate } from "../../api/src/department/create.ts";
 import { declaration as departmentGet } from "../../api/src/department/get.ts";
 import { declaration as designationCreate } from "../../api/src/designation/create.ts";
@@ -138,6 +145,10 @@ import { declaration as leaveApplicationGet } from "../../api/src/leave-applicat
 import { declaration as leaveApplicationReject } from "../../api/src/leave-application/reject.ts";
 import { declaration as leaveTypeCreate } from "../../api/src/leave-type/create.ts";
 import { declaration as leaveTypeGet } from "../../api/src/leave-type/get.ts";
+import { declaration as paymentEntryCancel } from "../../api/src/payment-entry/cancel.ts";
+import { declaration as paymentEntryCreate } from "../../api/src/payment-entry/create.ts";
+import { declaration as paymentEntryGet } from "../../api/src/payment-entry/get.ts";
+import { declaration as paymentEntrySubmit } from "../../api/src/payment-entry/submit.ts";
 import { declaration as payrollEmployeeDetailList } from "../../api/src/payroll-employee-detail/list.ts";
 import { declaration as payrollEntryCreate } from "../../api/src/payroll-entry/create.ts";
 import { declaration as payrollEntryGet } from "../../api/src/payroll-entry/get.ts";
@@ -163,6 +174,13 @@ import { declaration as salaryStructureAssignmentList } from "../../api/src/sala
 import { declaration as salaryStructureAssignmentSubmit } from "../../api/src/salary-structure-assignment/submit.ts";
 import { declaration as shiftTypeCreate } from "../../api/src/shift-type/create.ts";
 import { declaration as shiftTypeGet } from "../../api/src/shift-type/get.ts";
+import { declaration as supplierBalance } from "../../api/src/supplier/balance.ts";
+import { declaration as supplierCreate } from "../../api/src/supplier/create.ts";
+import { declaration as supplierDisable } from "../../api/src/supplier/disable.ts";
+import { declaration as supplierEnable } from "../../api/src/supplier/enable.ts";
+import { declaration as supplierGet } from "../../api/src/supplier/get.ts";
+import { declaration as supplierGroupCreate } from "../../api/src/supplier-group/create.ts";
+import { declaration as supplierGroupGet } from "../../api/src/supplier-group/get.ts";
 import { declaration as usWithholdingCompute } from "../../api/src/us-withholding/compute.ts";
 
 /** One tool per operation and read, named as the operation is. */
@@ -214,6 +232,13 @@ export const catalog = {
   "company.get": { description: "Read one company by its id: companyName, abbr, country, defaultCurrency, owner, state.", operation: companyGet, states: ["active"] },
   "cost-center.create": { description: "Add a cost center to a company, under a group or as a root. Refuses CostCenterNameTaken when another cost center holds this company and cost center name.", operation: costCenterCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"CostCenterCreated"} },
   "cost-center.get": { description: "Read one cost-center by its id: company, costCenterName, parentCostCenter, state.", operation: costCenterGet, states: ["group","ledger"] },
+  "customer.balance": { description: "A customer's balance on a day, from the ledger lines posted with it as their party.", operation: customerBalance, states: ["active","disabled"] },
+  "customer.create": { description: "Add a customer to a company.", operation: customerCreate, states: ["active","disabled"], move: {"key":"create","from":[],"to":["active"],"emits":"CustomerCreated"} },
+  "customer.disable": { description: "Disable a customer: no payment from it can be submitted until it is enabled again.", operation: customerDisable, states: ["active","disabled"], move: {"key":"disable","from":["active"],"to":["disabled"],"emits":"CustomerDisabled"} },
+  "customer.enable": { description: "Enable a disabled customer again.", operation: customerEnable, states: ["active","disabled"], move: {"key":"enable","from":["disabled"],"to":["active"],"emits":"CustomerEnabled"} },
+  "customer.get": { description: "Read one customer by its id: company, customerName, customerType, customerGroup, state.", operation: customerGet, states: ["active","disabled"] },
+  "customer-group.create": { description: "Add a customer group to a company, under a group or as its one root. Refuses CustomerGroupNameTaken when another customer group holds this company and customer group name.", operation: customerGroupCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"CustomerGroupCreated"} },
+  "customer-group.get": { description: "Read one customer-group by its id: company, customerGroupName, parentCustomerGroup, state.", operation: customerGroupGet, states: ["group","ledger"] },
   "department.create": { description: "Add a department to a company. Refuses DepartmentNameTaken when another department holds this company and department name.", operation: departmentCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"DepartmentCreated"} },
   "department.get": { description: "Read one department by its id: company, departmentName, state.", operation: departmentGet, states: ["active"] },
   "designation.create": { description: "Add a job title to a company. Refuses DesignationNameTaken when another designation holds this company and designation name.", operation: designationCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"DesignationCreated"} },
@@ -305,6 +330,10 @@ export const catalog = {
   "leave-application.reject": { description: "Reject a leave, marking none of its days.", operation: leaveApplicationReject, states: ["open","approved","rejected","cancelled"], move: {"key":"reject","from":["open"],"to":["rejected"],"emits":"LeaveApplicationRejected"} },
   "leave-type.create": { description: "Add a kind of leave a company gives. Refuses LeaveTypeNameTaken when another leave type holds this company and leave type name.", operation: leaveTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"LeaveTypeCreated"} },
   "leave-type.get": { description: "Read one leave-type by its id: company, leaveTypeName, maxContinuousDaysAllowed, isLwp, includeHoliday, state.", operation: leaveTypeGet, states: ["active"] },
+  "payment-entry.cancel": { description: "Cancel a submitted payment, posting a reversing ledger line for each it posted.", operation: paymentEntryCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"PaymentEntryCancelled"} },
+  "payment-entry.create": { description: "Draft a payment received from a party or paid to one, with no invoice: an advance.", operation: paymentEntryCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"PaymentEntryDrafted"} },
+  "payment-entry.get": { description: "Read one payment-entry by its id: company, paymentType, postingDate, partyType, party, paidFrom, paidTo, paidAmount, costCenter, state.", operation: paymentEntryGet, states: ["draft","submitted","cancelled"] },
+  "payment-entry.submit": { description: "Submit a payment, posting the party's ledger line and the bank's.", operation: paymentEntrySubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"PaymentEntrySubmitted"} },
   "payroll-employee-detail.list": { description: "List payroll-employee-details, oldest first, 100 to a page, filtered by payrollEntry.", operation: payrollEmployeeDetailList },
   "payroll-entry.create": { description: "Draft a payroll entry for a span of days, filled with the company's employees to pay.", operation: payrollEntryCreate, states: ["draft","submitted","accrued"], move: {"key":"create","from":[],"to":["draft"],"emits":"PayrollEntryDrafted"} },
   "payroll-entry.get": { description: "Read one payroll-entry by its id: company, postingDate, startDate, endDate, costCenter, payrollPayableAccount, numberOfEmployees, state.", operation: payrollEntryGet, states: ["draft","submitted","accrued"] },
@@ -330,5 +359,12 @@ export const catalog = {
   "salary-structure-assignment.submit": { description: "Submit an assignment, so payroll pays the employee by its structure from its day on.", operation: salaryStructureAssignmentSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"SalaryStructureAssignmentSubmitted"} },
   "shift-type.create": { description: "Add a working shift to a company, from its start time to its end time. Refuses ShiftTypeNameTaken when another shift type holds this company and shift type name.", operation: shiftTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ShiftTypeCreated"} },
   "shift-type.get": { description: "Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.", operation: shiftTypeGet, states: ["active"] },
+  "supplier.balance": { description: "A supplier's balance on a day, from the ledger lines posted with it as their party.", operation: supplierBalance, states: ["active","disabled"] },
+  "supplier.create": { description: "Add a supplier to a company.", operation: supplierCreate, states: ["active","disabled"], move: {"key":"create","from":[],"to":["active"],"emits":"SupplierCreated"} },
+  "supplier.disable": { description: "Disable a supplier: no payment to it can be submitted until it is enabled again.", operation: supplierDisable, states: ["active","disabled"], move: {"key":"disable","from":["active"],"to":["disabled"],"emits":"SupplierDisabled"} },
+  "supplier.enable": { description: "Enable a disabled supplier again.", operation: supplierEnable, states: ["active","disabled"], move: {"key":"enable","from":["disabled"],"to":["active"],"emits":"SupplierEnabled"} },
+  "supplier.get": { description: "Read one supplier by its id: company, supplierName, supplierType, supplierGroup, state.", operation: supplierGet, states: ["active","disabled"] },
+  "supplier-group.create": { description: "Add a supplier group to a company, under a group or as its one root. Refuses SupplierGroupNameTaken when another supplier group holds this company and supplier group name.", operation: supplierGroupCreate, states: ["group","ledger"], move: {"key":"create","from":[],"to":["group","ledger"],"emits":"SupplierGroupCreated"} },
+  "supplier-group.get": { description: "Read one supplier-group by its id: company, supplierGroupName, parentSupplierGroup, state.", operation: supplierGroupGet, states: ["group","ledger"] },
   "us-withholding.compute": { description: "Work out one pay's US tax lines from its wage, frequency, pay date, work state, wages so far this year and W-4.", operation: usWithholdingCompute },
 } as const satisfies { readonly [name: string]: McpEntry };

@@ -152,6 +152,24 @@ CREATE TABLE "cost-center" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "cost-center_oneNamePerCompany" ON "cost-center" ("company", "costCenterName");
+CREATE TABLE "customer" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "customerName" TEXT NOT NULL,
+  "customerType" TEXT NOT NULL,
+  "customerGroup" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "customer-group" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "customerGroupName" TEXT NOT NULL,
+  "parentCustomerGroup" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "customer-group_oneNamePerCompany" ON "customer-group" ("company", "customerGroupName");
 CREATE TABLE "department" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,
@@ -296,6 +314,8 @@ CREATE TABLE "gl-entry" (
   "postingDate" TEXT NOT NULL,
   "debit" TEXT NOT NULL,
   "credit" TEXT NOT NULL,
+  "partyType" TEXT,
+  "party" TEXT,
   "voucherType" TEXT NOT NULL,
   "voucherId" TEXT NOT NULL,
   "isCancelled" INTEGER NOT NULL,
@@ -456,6 +476,20 @@ CREATE TABLE "leave-type" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "leave-type_oneNamePerCompany" ON "leave-type" ("company", "leaveTypeName");
+CREATE TABLE "payment-entry" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "paymentType" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "partyType" TEXT NOT NULL,
+  "party" TEXT NOT NULL,
+  "paidFrom" TEXT NOT NULL,
+  "paidTo" TEXT NOT NULL,
+  "paidAmount" TEXT NOT NULL,
+  "costCenter" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "payroll-employee-detail" (
   "id" TEXT PRIMARY KEY,
   "payrollEntry" TEXT NOT NULL,
@@ -559,6 +593,24 @@ CREATE TABLE "shift-type" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "shift-type_oneNamePerCompany" ON "shift-type" ("company", "shiftTypeName");
+CREATE TABLE "supplier" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "supplierName" TEXT NOT NULL,
+  "supplierType" TEXT NOT NULL,
+  "supplierGroup" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "supplier-group" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "supplierGroupName" TEXT NOT NULL,
+  "parentSupplierGroup" TEXT,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "supplier-group_oneNamePerCompany" ON "supplier-group" ("company", "supplierGroupName");
 CREATE TABLE "us-withholding" (
   "id" TEXT PRIMARY KEY,
   "version" INTEGER NOT NULL DEFAULT 0

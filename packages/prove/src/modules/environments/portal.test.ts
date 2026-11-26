@@ -119,7 +119,7 @@ describe("/portal on an environment", () => {
     expect((await fetch(`${staging.url}/_portal/v1/traces/abc`)).status).toBe(404);
     expect((await fetch(`${staging.url}/portal`, { method: "POST", body: "{}" })).status).toBe(405);
     expect(JSON.stringify(await (await fetch(`${staging.url}/_portal/v1/blueprint`)).json())).toContain("Spend from what is left");
-    // `/portal` is the client's shell when the revision shipped one (a machine without it says so), a route under it is the same shell, and
+    // `/portal` is the client's shell when the revision shipped one (a machine without it says the screens are not in this release), a route under it is the same shell, and
     // the logbook's address stays with the Worker.
     const shell = await fetch(`${staging.url}/portal`);
     const page = await shell.text();
@@ -129,7 +129,10 @@ describe("/portal on an environment", () => {
       expect(page, "the shell holds none of the page").not.toContain("data-portal=");
       expect(await (await fetch(`${staging.url}/portal/operations/allowance.spend`)).text()).toBe(page);
       expect((await fetch(`${staging.url}/portal/assets/missing.js`)).status).toBe(404);
-    } else expect(page).toContain("not installed");
+    } else {
+      expect(shell.status).toBe(501);
+      expect(page).toContain("not in this release");
+    }
     for (const body of [page, JSON.stringify(await (await fetch(`${staging.url}/_portal/v1/blueprint`)).json())]) expect(body).not.toContain(String(PORTS.logbook));
   });
 

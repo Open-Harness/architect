@@ -71,7 +71,7 @@ Taken from ERPNext's own shape at `a6f54f9c` (the commit `examples/capxul/doctyp
    stablecoins out, and the accounting standards board's proposal to call some of them cash equivalents has no final
    standard yet (*unsure* how to classify it, question 6). Keeping them apart costs nothing at a rate of one.
 2. **An account has one currency** (ERPNext's `account_currency`), set when it is made and fixed once it has lines: the
-   Safe's account is USDC, the Bridge account is what Bridge holds, a UK bank account is pounds.
+   Safe's account is USDC, the Bridge account is what Bridge holds (Superseded by CX-bridge-rails, 26 November 2026: Bridge holds nothing; there is no Bridge account balance), a UK bank account is pounds.
 3. **A company has one reporting currency** (ERPNext's `default_currency`), any asset. Every report is in it. US
    dollars are the default (decision 3). Today's companies, in USDC, stay valid as companies reporting in USDC.
 4. **Every ledger line carries two amounts** (ERPNext's GL Entry): `debit` and `credit` in the company's currency, and
@@ -103,7 +103,7 @@ Taken from ERPNext's own shape at `a6f54f9c` (the commit `examples/capxul/doctyp
    record reverses on the first day of the next period (*a choice*). It is an operation a person or agent calls.
 9. **The Safe and Bridge.** The Safe holds USDC on chain: one USDC account per Safe (slice 2). By CX-bridge's reading,
    Bridge lands deposits as USDC in custody and sends from it, so the company's Bridge account is a USDC account too
-   (*unsure*, question 7). A pound account at a bank outside Bridge is a pound account, fed by statements.
+   (*unsure*, question 7) (Superseded by CX-bridge-rails, 26 November 2026: Bridge lands deposits in the company's Safe and payouts are paid from it, so there is no Bridge USDC account). A pound account at a bank outside Bridge is a pound account, fed by statements.
 10. **What of ERPNext's shape is taken:** Account's currency, Company's currency and its two gain-or-loss accounts, GL
     Entry's account-currency pair, Journal Entry Account's rate and account-currency amounts, Payment Entry's two sides
     and base amounts, Currency Exchange, Pegged Currencies, Exchange Rate Revaluation. **Not yet:** the transaction
@@ -201,7 +201,7 @@ For an accountant or lawyer who knows US companies with people abroad.
 6. How should a small US company classify USDC it holds: cash, cash equivalent, or another financial asset? Does the
    pending stablecoin guidance change that for 2026 or 2027?
 7. When Capxul serves Bridge to customers, whose asset is the balance at Bridge, the customer's or Capxul's, and is it
-   dollars or USDC on the customer's books?
+   dollars or USDC on the customer's books? (Superseded by CX-bridge-rails, 26 November 2026: answered by Aaron, "its never in bridge its in the safe which is self custodial".)
 8. For a company reporting in US dollars, which exchange-rate source is acceptable for period-end revaluation and for a
    payment booked without a receipt?
 9. Does paying contractors in USDC change any US or local reporting, compared with paying in money?
