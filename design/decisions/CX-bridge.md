@@ -3,7 +3,7 @@
 **Decided 25 November 2026** by Goal 16's Bridge checks author, with Goal 16's lead (thread
 T-01a2093c-8643-7794-9ce7-5dbc110ce4aa), under Aaron's calls in CX-grill: Capxul serves Bridge through its own Bridge
 account, with no bring-your-own account (section 4); paid services are built now and switched on later (section 4);
-money is held in base units (section 3); and every company uses one dollar asset, USDC (section 3). This is the first
+money is held in base units (section 3); and every company uses one dollar asset, USDC (Superseded by CX-money-global-payroll, 26 November 2026: "a company keeps its books in its own currency") (section 3). This is the first
 author pull request of #716's second half. It settles #912's checksum part.
 
 ## Bridge's description, as read
@@ -90,7 +90,7 @@ ERPNext's Bank Transaction (`erpnext/accounts/doctype/bank_transaction`), per co
   Bridge lands a deposit as USDC in Capxul's custody and sends a transfer from it (Superseded by CX-bridge-rails,
   26 November 2026: Bridge holds nothing; a deposit lands in the company's Safe and a transfer is paid from it).
   `currency` is the account's, the one
-  the money moved in at the bank. Unlike ERPNext's, the two amounts are not in the row's `currency`: an EUR account's
+  the money moved in at the bank. Unlike ERPNext's, the two amounts are not in the row's `currency` (Superseded by CX-money-global-payroll, 26 November 2026: "The account's own amount is added beside them"): an EUR account's
   rows hold USDC too.
 - **Bridge's amounts** are decimal strings in dollars. A virtual account's activity is "a dollar denominated string", and
   a transfer's amount is "in the fiat currency to which the source currency is pegged". Bridge's examples use up to six

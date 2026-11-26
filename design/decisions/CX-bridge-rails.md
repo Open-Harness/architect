@@ -12,7 +12,7 @@ implementation in `Xelmar-tech/infrastructure`. **That repository was not read i
 was refused permission to attach it. So everything said here about how money moves comes from Bridge's public
 documentation (the appendix cites each page), and section 2 turns the implementation's claims, as the brief states them,
 into checks the implementation must pass before anything is lifted. It coordinates with CX-crypto-accounting (#1144):
-the Bridge lines its section 8 drafted are applied here, in the same words, so that record need not carry them.
+#1144 dropped the Bridge lines its section 8 drafted, so this record owns every Bridge correction.
 
 ## In short
 
@@ -259,9 +259,10 @@ the file it lifted from, once read.
 
 ## 4. What changes in CX-bridge and the Capxul things
 
-Applied in this pull request (comments and a dated note only; no handler, journey or check changes):
+Applied in this pull request (comments and dated notes only; no handler, journey or check changes):
 
-- CX-bridge keeps its words and gains a note beside the custody sentence.
+- CX-bridge keeps its words and gains a note beside the custody sentence; CX-money-global-payroll gains three notes.
+- `assets/usdc.ts`'s comment says USDC is held in the company's Safe.
 - Five comments are rewritten: `bank-account/verbs/open.ts`, `bank-transaction/thing.ts`, `bank-transaction/verbs/land.ts`,
   `bank-transaction/verbs/send.ts` and `plugins/bridge/src/stand-in/webhooks.ts`.
 
@@ -280,9 +281,9 @@ Proposed, for the slices below and their authors and builders:
 - CX-composable-pieces: `bridge-accounts` depends on the Safe's piece (`onchain-pay`); the rails line reads "Bridge's
   payouts are funded by the Safe". Not applied here: it is the pieces designer's live file, and its words wait on
   question 1.
-- CX-money-global-payroll (#1121, not yet on `goal/capxul`): item 9 ("By CX-bridge's reading, Bridge lands deposits as
-  USDC in custody") and its question 7 are answered by Aaron's words; its proposed `usdc.ts` comment, "USDC, held in a
-  Safe or at Bridge", should read "USDC, held in the company's Safe". Left to that record's author.
+- CX-money-global-payroll (#1121, now on `goal/capxul`), a dated record, keeps its words and gains notes beside item 2's
+  "the Bridge account is what Bridge holds", item 9 and question 7, which Aaron's words answer. Its `usdc.ts` comment,
+  "USDC, held in a Safe or at Bridge", is rewritten to the company's Safe.
 
 ## 5. The lift plan
 
@@ -328,6 +329,8 @@ on #995.
 - examples/capxul/plugins/bridge/src/stand-in/webhooks.ts: "to Capxul's custody as USDC" → "to the company's Safe as USDC"
 - examples/capxul/blueprint/things/bank-transaction/thing.ts: "Bridge lands a deposit as USDC and sends a transfer from it" → "Bridge lands a deposit in the company's Safe as USDC, and a transfer out is paid from the Safe"
 - examples/capxul/blueprint/things/bank-transaction/verbs/send.ts: "Bridge makes the transfer (`POST /v0/transfers`, from Capxul's" → "Bridge makes the transfer (`POST /v0/transfers`) from the company's Safe"
+- examples/capxul/blueprint/assets/usdc.ts: "USDC, held in a Safe or at Bridge" → "USDC, held in the company's Safe (never at Bridge: CX-bridge-rails)"
+- design/decisions/CX-money-global-payroll.md: "the Bridge account is what Bridge holds" → "Bridge holds nothing; there is no Bridge account balance"
 
 ## Appendix: sources
 

@@ -52,7 +52,7 @@ amount: Blueprint.money.of(Allowance.fields.token),    // in an operation, event
   - a field that is not an `account()`.
 
   For now only an `account()` field holds an asset, read as a token contract. The compiler cannot tell a token from a
-  wallet, so `money.of(member)` compiles, and the journeys catch it. A per-row currency is later (`design/later.md`).
+  wallet, so `money.of(member)` compiles, and the journeys catch it. A per-row currency is later (Superseded by CX-money-global-payroll, 26 November 2026: "A per-row currency is built for Capxul (#882, CX-money-global-payroll)") (`design/later.md`).
   No name is ever written as a string. `money.of(x, { signed, bits })` takes the same options as `money` (item 4).
 - **Which row's token.** Every `money.of` in an operation, its answer, its event or its error counts the token of the
   row the operation acts on, as that row stands once the move has run. So `grant`, which makes the row, counts the
