@@ -47,5 +47,6 @@
   "m1/45-m1-51-nothing-sent.test.ts": 51.3,
   "m1/46-snag-988-refused-payload.test.ts": 0.8,
   "m1/47-g18-5-publishing.test.ts": 37.3,
-  "m1/48-g18-9-chain-basics.test.ts": 1.0
+  "m1/48-g18-9-chain-basics.test.ts": 1.0,
+  "m1/49-g18-8-portal-without-screens.test.ts": 42
 }
