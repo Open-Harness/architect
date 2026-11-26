@@ -14,7 +14,7 @@ and an organisation and its Safe are linked by an ordinary field (`K25-the-bluep
 are spent against an Org Budget, a Zodiac Roles 2.1.1 role the company's Safe grants, used by a member through
 `execTransactionWithRole` from the member's own Safe, the owners can do anything directly, and over budget is refused
 `PayoutOverBudget { remaining }` at prepare (CX-bridge-rails, #1149,
-`goal-16/bridge-rails-design:design/decisions/CX-bridge-rails.md:169-204`); the Safe comes before Bridge (same file,
+`design/decisions/CX-bridge-rails.md:169-204`); the Safe comes before Bridge (same file,
 `:327-329,410-411`); staging runs on Base Sepolia with test USDC (the conductor, 26 November 2026).
 
 **The prior art.** This thread cannot attach `Xelmar-tech/infrastructure` (the conductor's answer: it is not added).
