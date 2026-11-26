@@ -131,14 +131,38 @@ describe("every command and flag it shows exists", () => {
     tree = await walk();
   }, 240_000);
 
-  /** Longest command path in `ortho --help` that starts the words, and the words left over. `ortho new app` is slice 6's, allowed by name. */
-  const resolveCommand = (words: ReadonlyArray<string>) => {
+  /**
+   * A fence line read as the parser reads it: the longest run of leading words that is a command in `ortho --help` (`ortho new
+   * app`, slice 6's, is allowed by name, with its one name), then the rest in order. A flag that takes a value takes the next
+   * word; every other word is a positional argument, and a command takes no more of them than it declares. So
+   * `ortho env frobnicate` (a group, no arguments) and `ortho prove staging` (a leaf, none) are wrong, as readmes.test.ts reads them.
+   */
+  const judge = (line: string): { readonly path: string; readonly wrong: ReadonlyArray<string> } => {
+    const words = line.split(/\s+/).slice(1).filter((w) => w !== "" && !/^[<[{]/.test(w));
+    let path = "";
     for (let n = Math.min(words.length, 3); n >= 1; n--) {
-      const path = words.slice(0, n).join(" ");
-      const known = tree.get(path) ?? (path === "new app" ? ({ flags: [], subcommands: [] } as unknown as Page) : undefined);
-      if (known) return { path, rest: words.slice(n), page: known };
+      const candidate = words.slice(0, n).join(" ");
+      if (tree.has(candidate) || (candidate === "new app" && !tree.has("new app"))) { path = candidate; break; }
     }
-    return undefined;
+    if (path === "") return { path, wrong: [`${line}  (no such command)`] };
+    const page = tree.get(path);
+    const args = path === "new app" && page === undefined ? 1 : (page?.args.length ?? 0);
+    const flags = page?.flags ?? [];
+    const wrong: string[] = [];
+    let positional = 0;
+    const rest = words.slice(path.split(" ").length);
+    for (let i = 0; i < rest.length; i++) {
+      const w = rest[i] ?? "";
+      if (!w.startsWith("-")) { positional++; continue; }
+      const f = w.split("=")[0] ?? w;
+      if (["--log-level", "--completions"].includes(f)) { if (!w.includes("=")) i++; continue; }
+      if (["--help", "-h", "--version", "-v", "--wizard"].includes(f)) continue;
+      const flag = flags.find((x) => x.names.includes(f));
+      if (flag === undefined && !(path === "new app" && page === undefined)) wrong.push(`${line}  (${f})`);
+      if (flag?.takesValue && !w.includes("=")) i++;
+    }
+    if (positional > args) wrong.push(`${line}  (\`ortho ${path}\` takes ${args} argument(s), and ${positional} were given)`);
+    return { path, wrong };
   };
 
   it("shows at least one `ortho` command", () => {
@@ -147,20 +171,14 @@ describe("every command and flag it shows exists", () => {
 
   it("each `ortho <command>` is a command `ortho --help` lists", () => {
     expect(page, "docs/canon/getting-started.mdx does not exist").not.toBe("");
-    const unknown = lines.filter((l) => /^ortho\s/.test(l)).filter((l) => !resolveCommand(l.split(/\s+/).slice(1).filter((w) => !w.startsWith("-"))));
+    // A word after a command that is neither a flag, a flag's value nor one of its declared arguments is an unknown subcommand.
+    const unknown = lines.filter((l) => /^ortho\s/.test(l)).flatMap((l) => judge(l).wrong.filter((w) => !/\(--?[\w-]+\)$/.test(w)));
     expect(unknown).toEqual([]);
   });
 
   it("each `--flag` after it is one that command has, or a global one", () => {
     expect(page, "docs/canon/getting-started.mdx does not exist").not.toBe("");
-    const wrong: string[] = [];
-    for (const l of lines.filter((x) => /^ortho\s/.test(x))) {
-      const words = l.split(/\s+/).slice(1);
-      const found = resolveCommand(words.filter((w) => !w.startsWith("-")));
-      if (!found || found.path === "new app") continue;
-      const has = found.page.flags.flatMap((f) => f.names);
-      for (const w of words.filter((x) => x.startsWith("--"))) if (!["--help", "--version", "--log-level"].includes(w.split("=")[0] ?? w) && !has.includes(w.split("=")[0] ?? w)) wrong.push(`${l}  (${w})`);
-    }
+    const wrong = lines.filter((l) => /^ortho\s/.test(l)).flatMap((l) => judge(l).wrong.filter((w) => /\(--?[\w-]+\)$/.test(w)));
     expect(wrong).toEqual([]);
   });
 });
