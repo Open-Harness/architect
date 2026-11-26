@@ -125,6 +125,37 @@ Each round:
 
 ## Where it stands
 
+**26 November 2026, about 21:40 UTC: the handoff.** The week's usage is nearly spent, so the goal pauses here and can be
+resumed in any harness with the start line above. What it leaves:
+
+- **Landed on `main`:** slices 1, 2 and 4 to 10. Slice 5, publishing (#1083, #1086, #1090). Slice 6, `ortho new app` and
+  `npm create orthograph` (#1082, #1108, #1087). Slice 7, getting started (#1111, #1139, #1152, #1153, #1189). Slice 8, the
+  portal without its screens (#1098, #1114). Slice 9, the chain basics (#1095, #1104). Slice 10, the starter's sign-in
+  fixes (#1081, #1084). Also the CI speed-up (#1092), the stale-test fix (#910) and the attribution rule (#1191).
+- **Slice 11, the acceptance check:** #1145 (checks). Its author is merging `main` in and marking it ready. Next: a 🔍
+  on the delta, then merge when CI is green. Whatever its `expected-failing/` list still names after that is the slice's
+  remaining build work, a `-build` branch by a different agent.
+- **Slice 12, publishing under `next`: blocked on Aaron.** The 14 packages are at `0.1.0-next.1`, and
+  `tools/e2e/starter.sh` names them in publishing order. Layer 1's check 01 already publishes them to a local Verdaccio,
+  makes an app, checks it and proves it. None of the names is on npm yet. Aaron's part: the npm organisation
+  `orthograph`, the unscoped names `orthograph` and `create-orthograph`, and an npm automation token saved as the
+  repository secret `NPM_TOKEN`. Then a hand-run `publish` workflow, still to be written, publishes under `next` after
+  the acceptance check passes, and the acceptance check runs again against npm.
+- **Slice 13, the climb:** the script and kit are in (#1075). Still to do: the planned series, and the nightly refresh as a
+  scheduled task.
+- **Open, this goal's:** #1212 (the decision register gains K46 and K47; next free K48), merge when CI is green. #909
+  (faster M1 checks 29 and 30, a draft since 24 November), to finish or close. Snag #1130's follow-up, the fixed
+  `pause(n)` waits in three world tests, is written as a brief on the issue, for any harness.
+- **Known stale words, small fixes:** `docs/canon/getting-started.mdx`'s status table and note still call
+  `ortho new app` planned. `docs/canon/status.md` still marks `actions` spiked, though M1.22 landed
+  (`examples/acme/generated/actions/`). Both are for the next status pass.
+- **Not claimed: the UI pieces (K29, ST1.25 and ST1.26).** These are the headless components that replaced hooks. The
+  actions under them are built. Their five checks are written and red (`e2e/ui-layer/expected-failing/04` to `08`).
+  `@orthograph/web`, the generator and `generated/web/` are not built. Goal 5 owned them and is parked. Proposed to
+  Aaron as its own lane for the beta, after the alpha publishes.
+- **Waiting on Aaron:** the npm names and token (above); the UI pieces lane; and Capxul's open decisions, which are
+  listed in `16-capxul.md`.
+
 26 November 2026: led from Claude Code (Claude Opus 5.5) since this morning. Slices 1, 2 and 4 are closed on GitHub (#719, #720, #1062). Slice 13's script and kit merged (#1075), and the dashboard was made again in this account from the kit: https://claude.ai/artifact/TdjaPiom3zeWDzSLBUDdhv. Authors are writing the checks for slice 5 (publishing), slice 6 (`ortho new app`) and slice 10 (the starter's #446 and #449); builders follow each red check.
 
 25 November 2026: given the alpha by K44 (slices 4 to 12), and waiting for a lead. Aaron starts it with the line above.
