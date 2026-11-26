@@ -1,0 +1,5 @@
+$ capxul budget spend --budget bud_7 --to 0x51…c2 --amount 400 --reason "Design work, March"
+tried      would pass · 600 USDC left after this
+sign with  ada, from the local keystore? yes
+submitted  0x9f3c…e1
+confirmed  3 blocks · spend spd_31 is in the books

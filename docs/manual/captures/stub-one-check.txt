@@ -1,0 +1,3 @@
+$ ortho check
+[20:03:16.709] ERROR (#2): TypeError: Cannot read properties of undefined (reading 'service')
+exit 1

@@ -1,0 +1,28 @@
+<div class="player" id="player">
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+      <div class="sheet"></div>
+      <div class="frame"><i></i><i></i><i></i><i></i></div>
+      <div class="rail">
+        <span class="mark">Orthograph</span>
+        <span class="steps" id="steps"></span>
+        <span id="railsrc"></span>
+      </div>
+      <div id="scenes"></div>
+      <div class="prog"><i id="prog"></i></div>
+      <div class="block"><span class="sheetno" id="sheetno">Sheet 01</span><span class="name" id="sheetname"></span><span id="filmtitle"></span></div>
+    </div>
+    <button class="bigplay" id="bigplay" type="button" aria-label="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l16 9-16 9z"/></svg></button>
+  </div>
+  <div class="controls">
+    <button id="play" type="button">Play</button>
+    <span class="time" id="time">0:00 / 0:00</span>
+    <span class="scrubwrap"><input class="scrub" id="scrub" type="range" min="0" max="100" step="0.05" value="0" aria-label="Position in the film"></span>
+    <button id="cc" type="button" aria-pressed="true">Captions</button>
+    <button id="full" type="button">Full screen</button>
+  </div>
+  <p class="about" id="sound" role="status" hidden>The narration could not be loaded, so the film is playing without sound. The captions carry every word.</p>
+  <p class="caption" id="caption" aria-live="off"></p>
+  <ol class="chapters" id="chapters"></ol>
+  <p class="about"><span id="about"></span> Space plays and pauses; the arrow keys step five seconds.</p>
+</div>

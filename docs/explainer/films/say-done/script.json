@@ -1,0 +1,167 @@
+{
+ "title": "Say what done means",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Agree",
+  "Stub",
+  "Write",
+  "Fail",
+  "Read"
+ ],
+ "about": "Every line of code in this film is read from examples/plugged-in, and every line of terminal output is replayed from docs/manual/captures, recorded by running the commands for real.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "scenes": [
+  {
+   "id": "why",
+   "title": "Done, before the work",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "An agent can write a handler in minutes. So the question is never, can it build this. The question is, how will you know it's right."
+    },
+    {
+     "id": "a2",
+     "text": "The answer is to say what done means before anyone builds. And to have someone else say it.",
+     "gap": 0.6
+    },
+    {
+     "id": "a3",
+     "text": "In Orthograph, done is a journey: a short story, told through real calls to the real system."
+    },
+    {
+     "id": "a4",
+     "text": "One agent writes the journeys. We call it the author. A different agent builds until they pass, and it may not change them."
+    }
+   ]
+  },
+  {
+   "id": "stubs",
+   "title": "Stubs, made while planning",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "s1",
+     "text": "Here's the app we build across this series: Plugged In. A person claims a name, and gets a public page of links."
+    },
+    {
+     "id": "s2",
+     "text": "The stubs are made while planning, before anyone builds. The designer picks one thing: the handle."
+    },
+    {
+     "id": "s3",
+     "text": "And runs one command. ortho add journeys handle.",
+     "say": "And runs one command. Ortho, add journeys, handle."
+    },
+    {
+     "id": "s4",
+     "text": "Seven files appear. One for each path through the handle's states, one for each role, and one for each error an operation declares."
+    },
+    {
+     "id": "s5",
+     "text": "Look inside one. A stranger tries to release a name that isn't theirs. The stub already knows who may call, and that this caller must be refused."
+    },
+    {
+     "id": "s6",
+     "text": "What it can't know, it leaves blank. And ortho check lists every blank as a question, with its file and its line.",
+     "say": "What it can't know, it leaves blank. And ortho check lists every blank as a question, with its file and its line."
+    }
+   ]
+  },
+  {
+   "id": "story",
+   "title": "A journey reads as a story",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "j1",
+     "text": "The author fills the blanks, and writes the stories the stubs couldn't guess. This is the one you read."
+    },
+    {
+     "id": "j2",
+     "text": "Claim a handle. Eight steps, and each one is a sentence. A name nobody has claimed does not resolve. Aaron claims the free name. Aaron cannot claim a second name while he holds one.",
+     "gap": 0.6
+    },
+    {
+     "id": "j3",
+     "text": "Under each sentence is a call, and then what must be true afterwards. The answer. The event. The state. The spans in the trace."
+    },
+    {
+     "id": "j4",
+     "text": "You don't check the code. You read the sentences, and say yes, or no, or you've missed one."
+    }
+   ]
+  },
+  {
+   "id": "red",
+   "title": "Red on purpose",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "r1",
+     "text": "Now the author has to prove something odd: that its journeys can fail."
+    },
+    {
+     "id": "r2",
+     "text": "ortho prove, with the flag empty, runs every journey on handlers that do nothing.",
+     "say": "Ortho prove, with the flag empty, runs every journey on handlers that do nothing."
+    },
+    {
+     "id": "r3",
+     "text": "Seven journeys. Fifty-six steps. Fifty of them red.",
+     "gap": 0.7
+    },
+    {
+     "id": "r4",
+     "text": "That's the result you want. A check that can't fail proves nothing."
+    },
+    {
+     "id": "r5",
+     "text": "And every red line says what it expected. Expected: refused, with profile not found. Got: failed, with five hundred."
+    },
+    {
+     "id": "r6",
+     "text": "Six steps are green already, marked proved by the description. The blueprint says who may call, so the runtime refuses a stranger before any handler runs. Nobody has to build those."
+    }
+   ]
+  },
+  {
+   "id": "read",
+   "title": "What you hold now",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "e1",
+     "text": "So before a single handler exists, you hold two things. The stories, which you agreed. And a red run, which shows they bite."
+    },
+    {
+     "id": "e2",
+     "text": "Three things go wrong here. A journey that's green on the empty run, and isn't proved by the description, can't fail. Send it back."
+    },
+    {
+     "id": "e3",
+     "text": "An author who is also the builder writes down what the code does, not what you meant. Use two sessions."
+    },
+    {
+     "id": "e4",
+     "text": "And be plain about this one: nothing in Orthograph enforces that split for you yet. It's a way of working, and you keep it by how you hand out the work.",
+     "gap": 0.7
+    },
+    {
+     "id": "e5",
+     "text": "Next: a builder gets one brief, and climbs."
+    }
+   ]
+  }
+ ]
+}
