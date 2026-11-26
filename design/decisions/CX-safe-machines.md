@@ -479,23 +479,26 @@ own refusal; its handle, name and logo errors belong to the company, not its Saf
 
 CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten on their issues:
 
-- **S1 · The Safes opened and claimed** (#1168), no chain: `personal-safe` with `open` and `claim`, and `company-safe`
-  with `begin`. Done when, in `prove`: opening twice gives one Safe (`SafeAlreadyOpen`); an unclaimed Safe has no
-  address; a claim gives the address of Capxul's own fixed vector, and the same person and signer always give the same
-  address, another signer another; a second claim is `PersonalSafeNotUnclaimed`; a proof from another key is
-  `SignerNotProven`; a stranger's claim is `NotAllowed`; a company Safe begun by a founder with a claimed Safe has the
-  vector's address, which changes with the founder's Safe and nothing else; a founder with no claimed Safe is
-  `FounderNotReady`; a second company Safe is `CompanySafeExists`; an agent opens a Safe through MCP. Its claim journeys
-  wait on J1 (#1190) to run; the rest does not. It still unblocks Bridge R1.
-- **S3 · The Safes on chain** (#1170): `personal-safe`'s `send`, `observe`, `recover`, `rotate` and `correct`;
-  `company-safe`'s `prepare`, `authorize`, `send`, `observe`, `recover` and `resume`; `safe-transaction`; `openFor` and
-  the waiting payout advanced by a claim. It is more than a day's work, so the lead may cut it in two at the line
-  between the person's Safe with `safe-transaction` and the company's setup; the checks are listed in that order on the
-  issue.
+- **S1 · A person's Safe opened and claimed** (#1168), no chain: `personal-safe` with `open`, its read, and `claim`.
+  `open` and the read land first; `claim` lands as a second pair on the same issue once J1 (#1190) is in, since its
+  journeys need a signature. Done when, in `prove`: opening twice gives one Safe (`SafeAlreadyOpen`); an unclaimed Safe
+  has no address; a claim gives the address of Capxul's own fixed vector, and the same person and signer always give the
+  same address, another signer another; a second claim is `PersonalSafeNotUnclaimed`; a proof from another key is
+  `SignerNotProven`; a stranger's claim is `NotAllowed`; an agent opens a Safe through MCP.
+- **C1 · A company's Safe begun** (#1195), no chain: `company-safe` with `begin` and its read. Done when, in `prove`:
+  a company Safe begun by a founder with a claimed Safe has the vector's address, which changes with the founder's Safe
+  and nothing else; a founder with no claimed Safe is `FounderNotReady`; a second one is `CompanySafeExists`; a stranger
+  is `NotAllowed`. Needs S1's `claim`. It unblocks Bridge R1, the company's Safe address as a fact (CX-bridge-rails
+  `:402`).
+- **S3a · A person's Safe on chain, and Safe transactions** (#1170): `personal-safe`'s `send`, `observe`, `recover`,
+  `rotate` and `correct`; `safe-transaction`; `openFor` and the waiting payout advanced by a claim. Needs S2.
+- **S3b · A company's Safe set up** (#1196): `company-safe`'s `prepare`, `authorize`, `send`, `observe`, `recover`
+  and `resume`, and a director added after `ready`. Needs C1, and S3a's send and fence. CX-safe's S4 (the budget) now
+  needs S3b.
 - **S2, S4, S5 and P1** keep their words; "a counterfactual Safe" in S2's check reads "a claimed Safe not yet deployed,
   or a begun company Safe".
 - **J1 · a journey's actor signs** (#1190): `s.<actor>.signs(template)`, a framework gap Goal 16 claims (K42: no running
-  goal holds it). S1's claim journeys and S3's need it.
+  goal holds it). S1's claim journeys and S3a's need it.
 
 ## For Aaron
 
@@ -515,8 +518,8 @@ CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten o
 - design/decisions/CX-safe.md: "Capxul lifts this. Each environment has its own bootstrap key" → "Capxul does not lift this (CX-safe-machines): no environment has a bootstrap key unless Aaron says yes"
 - design/decisions/CX-safe.md: "The initializer is the implementation's, byte for byte" → "The initializer has the implementation's shape, with MultiSend delegatecalling `SafeModuleSetup.enableModules`; matching its bytes is not a goal"
 - design/decisions/CX-safe.md: "the prediction matches the implementation's formula on a fixed vector" → "the prediction matches Capxul's own fixed vector, confirmed against the factory on Anvil"
-- design/decisions/CX-safe.md: "**S1 · The Safes recorded** (#1168) | the `safe` thing; `safe.record` for a person and a company" → "**S1 · The Safes opened and claimed** (#1168) | `personal-safe`'s `open` and `claim`; `company-safe`'s `begin`"
-- design/decisions/CX-safe.md: "`safe.claim`, `safe-transaction`, a company's Safe deployed on its first spend, a director added" → "the two machines' chain moves, `safe-transaction`, a company's Safe set up, a director added"
+- design/decisions/CX-safe.md: "**S1 · The Safes recorded** (#1168) | the `safe` thing; `safe.record` for a person and a company" → "**S1 · A person's Safe opened and claimed** (#1168) | `personal-safe`'s `open`, its read and `claim`; a company's Safe is begun by C1"
+- design/decisions/CX-safe.md: "`safe.claim`, `safe-transaction`, a company's Safe deployed on its first spend, a director added" → "S3a: a person's Safe on chain and `safe-transaction`; S3b: a company's Safe set up, a director added"
 - design/decisions/CX-safe.md: "a person's Safe has the address of a vector worked out with the implementation's own formula for a fixed salt nonce and owner" → "a claimed person's Safe has the address of Capxul's own fixed vector"
 - design/decisions/CX-safe.md: "a person claims their Safe holding USDC, it reads `claimed` with their key its only owner, and they pay a supplier on their one signature" → "a claimed person's Safe holding USDC deploys on its first spend, paying a supplier on their one signature"
 - design/decisions/CX-safe.md: "the bootstrap key is used by the claim and by no other operation" → "no operation uses a key of Capxul's"
