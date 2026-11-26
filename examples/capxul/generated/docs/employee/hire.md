@@ -121,6 +121,12 @@ Starts from the world `a leave application`.
 - **Ada sends Bo's hiring again under its request key, and gets him back.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
 - **Ada sends Bo's hiring again, to find him.** `ada` (role company.owner) calls and sends company the world's company, person the cast's bo person, firstName `Bo Mwangi`, gender `Male`, dateOfBirth `1990-07-01`, dateOfJoining `2026-02-01`, department the world's department, designation the world's designation, with the request key `hire-bo`, and gets back an answer matching `^emp_[0-9a-z]+$`.
 
+### run a payroll
+
+Starts from the world `an outside cost center`.
+
+- **Ada hires Dee, joining on Wednesday 8 April.** `ada` (role company.owner) calls and sends company the world's company, person the cast's dee person, firstName `Dee Otieno`, gender `Female`, dateOfBirth `1996-05-21`, dateOfJoining `2026-04-08`, department the world's department, designation the world's designation, and is answered.
+
 ## How to call
 
 ```sh

@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/account/verbs/create.ts. Yours from now on.
 import { Effect, Match } from "effect";
-import type { InstanceOf } from "orthograph";
 import { Records } from "@orthograph/language-effect";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler, Outcome } from "../../generated/api/src/account/create.handler.ts";
@@ -103,8 +102,7 @@ const create: Handler = ({ company, accountName, parentAccount, isGroup, rootTyp
     const reportType = root === "Income" || root === "Expense" ? "Profit and Loss" : "Balance Sheet";
 
     // Step insert: database, span account.create.insert. A name already used is the runtime's refusal
-    // (oneNamePerCompany). An optional field not given is left out and stored empty; the cast is only because
-    // `InstanceOf` types every field as required.
+    // (oneNamePerCompany). An optional field not given is left out and stored empty.
     yield* steps.insert(
       records.insert(Account, {
         id,
@@ -114,7 +112,7 @@ const create: Handler = ({ company, accountName, parentAccount, isGroup, rootTyp
         reportType,
         ...(parentAccount !== undefined ? { parentAccount } : {}),
         ...(accountType !== undefined ? { accountType } : {}),
-      } as Omit<InstanceOf<typeof Account>, "state">),
+      }),
     );
 
     // The move create: one branch per outcome. A new outcome won't compile until it has its branch.

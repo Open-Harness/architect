@@ -1,7 +1,5 @@
 # slice 4 (M6.11): needs ortho generate to succeed on a chain project. Comes off when that slice's builder turns it green.
-on-chain/05-m6-11-lock-chain-wire.test.ts > a changed shape keeps the code and moves the old wire identity to earlier > a change that leaves the signature alone (a field renamed's type kept) is not a new identity: the same signature stays current and nothing moves
 on-chain/05-m6-11-lock-chain-wire.test.ts > a changed shape keeps the code and moves the old wire identity to earlier > adding a field: AL-001 keeps its code, takes the new signature, and the old one is in earlier
 on-chain/05-m6-11-lock-chain-wire.test.ts > a changed shape keeps the code and moves the old wire identity to earlier > retyping a field: the old identity is in earlier
 on-chain/05-m6-11-lock-chain-wire.test.ts > a changed shape keeps the code and moves the old wire identity to earlier > two changes in a row leave both old identities, the older first
 on-chain/05-m6-11-lock-chain-wire.test.ts > the lock of a chain project holds the Solidity wire of what the chain raises > AllowanceExceeded is AL-001 with its signature; the runtime's chain refusals are AR-001 and AR-003 to AR-006; the machine's has a wire of its own name
-on-chain/05-m6-11-lock-chain-wire.test.ts > the lock of a chain project holds the Solidity wire of what the chain raises > generating again, unchanged, changes the lock not at all

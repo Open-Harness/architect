@@ -1,22 +1,27 @@
 // Run by `nx run e2e:test` (node --test): the staging workflow is what its header says, judged by `workflow.mjs`, and the judge fails each planted wrong workflow. The real workflow is never
 // run here; it deploys, so it runs only by hand (`.github/workflows/staging.yml`).
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, test } from "node:test";
-import { problems } from "./workflow.mjs";
+import { after, describe, test } from "node:test";
+import { parse } from "yaml";
+import { RUNS, STORY, judgedProblems } from "./runs.mjs";
+import { evaluate, problems, shape, walk } from "./workflow.mjs";
 
 const real = readFileSync(join(import.meta.dirname, "../../.github/workflows/staging.yml"), "utf8");
 const said = (source) => problems(source).join("\n");
 /** The real workflow with one thing replaced; throws when the thing is not there, so a plant that matches nothing is not a pass. */
 const swap = (from, to) => {
+  if (from instanceof RegExp) { const t = real.replace(from, to); assert.notEqual(t, real, `the workflow has nothing matching ${from} to plant over`); return t; }
   assert.ok(real.includes(from), `the workflow has no ${JSON.stringify(from)} to plant over`);
   return real.replace(from, to);
 };
 const TOKEN = "CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}";
 const DESTROY_HEAD = "        id: destroy\n";
-const UP = "        id: up\n        continue-on-error: true\n        run: $ORTHO env up staging --run \"$RUN\" --root examples/plugged-in\n        env:\n          ";
-const UPLOAD = "          path: |\n            tmp/staging/plan.json\n            tmp/staging/story.txt\n            tmp/staging/verdict.txt\n            tmp/staging/during-run.json\n            tmp/staging/after-run.json\n";
+const UP = "        id: up\n        continue-on-error: true\n        run: $ORTHO env up staging --run \"$RUN\" --root \"$ROOT\"\n        env:\n          ";
+const UPLOAD = "          path: |\n            tmp/staging/journeys.txt\n            tmp/staging/plan.json\n            tmp/staging/story.txt\n            tmp/staging/story.json\n            tmp/staging/verdict.txt\n            tmp/staging/during-run.json\n            tmp/staging/after-run.json\n";
 const MKDIR = "mkdir -p \"$EVIDENCE/private\"\n";
 
 describe("the staging workflow", () => {
@@ -32,7 +37,29 @@ describe("the judge fails each planted wrong workflow", () => {
     ["a pull_request trigger", () => swap("on:\n  workflow_dispatch:", "on:\n  pull_request:\n  workflow_dispatch:"), /starts on/],
     ["a schedule", () => swap("on:\n  workflow_dispatch:", "on:\n  schedule:\n    - cron: '0 3 * * *'\n  workflow_dispatch:"), /starts on/],
     ["no workflow_dispatch at all", () => swap("on:\n  workflow_dispatch:", "on:\n  push:"), /starts on/],
-    ["an input on the dispatch (the run is named by its id)", () => swap("on:\n  workflow_dispatch:", "on:\n  workflow_dispatch:\n    inputs:\n      run:\n        type: string"), /takes no inputs/],
+    // ---- the run chosen at dispatch (CX-staging): one choice input, the runs in runs.mjs, Plugged In's story by default ----
+    ["a second input on the dispatch (the run is named by its id)", () => swap("    inputs:\n", "    inputs:\n      run:\n        type: string\n"), /exactly one input, app/],
+    ["no input on the dispatch", () => swap(/    inputs:\n      app:\n[\s\S]*?required: true\n/, ""), /exactly one input, app/],
+    ["the app typed as free text (what is typed would reach a script)", () => swap("        type: choice\n", "        type: string\n"), /not a choice/],
+    ["a root typed at dispatch", () => swap("    inputs:\n", "    inputs:\n      root:\n        type: string\n        default: examples/plugged-in\n"), /exactly one input, app/],
+    ["a run offered that runs.mjs does not hold", () => swap("          - capxul\n", "          - capxul\n          - acme\n"), /not a choice of exactly/],
+    ["capxul not offered", () => swap("          - capxul\n", ""), /not a choice of exactly/],
+    ["the runs offered in another order", () => swap("          - plugged-in\n          - capxul\n", "          - capxul\n          - plugged-in\n"), /not a choice of exactly/],
+    ["capxul by default (a dispatch with nothing chosen would not be today's run)", () => swap("        default: plugged-in\n", "        default: capxul\n"), /default is "capxul"/],
+    ["no default", () => swap("        default: plugged-in\n", ""), /default is undefined/],
+    ["the input not required", () => swap("        required: true\n", "        required: false\n"), /required/],
+    ["no select step", () => swap("        id: select\n", "        id: chosen\n"), /no step with id select/],
+    ["select after the plan", () => swap(/(      # The run the dispatch chose[\s\S]*?APP: \$\{\{ inputs\.app \}\}\n\n)([\s\S]*?)(      # What the account holds before)/, "$2$1$3"), /not in the order/],
+    ["select that writes a root it was given, not runs.mjs's", () => swap('node e2e/staging/runs.mjs select "$APP" "$EVIDENCE/journeys.txt" >> "$GITHUB_ENV"', 'echo "ROOT=examples/$APP" >> "$GITHUB_ENV"'), /select: its script/],
+    ["select that may fail quietly", () => swap("        id: select\n", "        id: select\n        continue-on-error: true\n"), /select: continue-on-error/],
+    ["the app input spliced into select's script", () => swap('select "$APP"', 'select "${{ inputs.app }}"'), /select: its script/],
+    ["another step writing GITHUB_ENV (NODE_OPTIONS for up)", () => swap('$ORTHO env up staging --plan --run "$RUN" --root "$ROOT" > "$EVIDENCE/plan.json"\n', '$ORTHO env up staging --plan --run "$RUN" --root "$ROOT" > "$EVIDENCE/plan.json"\n          echo "NODE_OPTIONS=--require ./x.js" >> "$GITHUB_ENV"\n'), /writes \$GITHUB_ENV/],
+    ["the plan on a typed root", () => swap('--plan --run "$RUN" --root "$ROOT"', '--plan --run "$RUN" --root examples/plugged-in'), /plan: its script/],
+    ["up on a typed root (Capxul's run would deploy Plugged In)", () => swap('env up staging --run "$RUN" --root "$ROOT"', 'env up staging --run "$RUN" --root examples/plugged-in'), /up: its script/],
+    ["destroy on another root than up's", () => swap('env destroy staging --run "$RUN" --root "$ROOT"', 'env destroy staging --run "$RUN" --root examples/plugged-in'), /destroy: its script/],
+    ["the story with the one journey typed (Capxul's list never runs)", () => swap('"${only[@]}"', '--only "a person claims a page and shares it"'), /story: its script/],
+    ["the story with no guard against an empty list (an empty list proves every journey)", () => swap('          test "${#only[@]}" -gt 0\n', ""), /story: its script/],
+    ["the story that takes only the first journey", () => swap('"${only[@]}"', '"${only[0]}" "${only[1]}"'), /story: its script/],
     // ---- destroy and the listing always run ----
     ["destroy that does not always run", () => swap(`${DESTROY_HEAD}        if: always()\n`, DESTROY_HEAD), /destroy: its `if` is undefined/],
     ["destroy that runs only when the story passed", () => swap(`${DESTROY_HEAD}        if: always()\n`, `${DESTROY_HEAD}        if: success()\n`), /destroy: its `if`/],
@@ -43,7 +70,7 @@ describe("the judge fails each planted wrong workflow", () => {
     ["destroy that continues on error (a failed destroy is swallowed)", () => swap(`${DESTROY_HEAD}        if: always()\n`, `${DESTROY_HEAD}        if: always()\n        continue-on-error: true\n`), /destroy: continue-on-error/],
     ["destroy that is a dry run", () => swap('$ORTHO env destroy staging --run "$RUN"', '$ORTHO env destroy staging --plan --run "$RUN"'), /destroy: its script/],
     ["destroy that only echoes", () => swap('run: $ORTHO env destroy staging --run "$RUN"', 'run: echo $ORTHO env destroy staging --run "$RUN"'), /destroy: its script/],
-    ["destroy that hides its failure", () => swap('$ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n', '$ORTHO env destroy staging --run "$RUN" --root examples/plugged-in || true\n'), /destroy: its script|hides a failure/],
+    ["destroy that hides its failure", () => swap('$ORTHO env destroy staging --run "$RUN" --root "$ROOT"\n', '$ORTHO env destroy staging --run "$RUN" --root "$ROOT" || true\n'), /destroy: its script|hides a failure/],
     ["no destroy step", () => swap("id: destroy", "id: destroyed"), /no step with id destroy/],
     ["the listing after destroy that does not always run", () => swap("        id: after\n        if: always()\n", "        id: after\n"), /after: its `if`/],
     ["the judgement that does not always run", () => swap("        id: judge\n        if: always()\n", "        id: judge\n"), /judge: its `if`/],
@@ -56,11 +83,11 @@ describe("the judge fails each planted wrong workflow", () => {
     ["a judgement that is skipped when up failed", () => swap("        id: judge\n        if: always()\n", "        id: judge\n        if: always() && steps.up.outcome == 'success'\n"), /judge: its `if`/],
     // ---- up, the story, the order ----
     ["up that never runs", () => swap("        id: up\n", "        id: up\n        if: false\n"), /up: its `if`/],
-    ["up that hides its failure", () => swap('--run "$RUN" --root examples/plugged-in\n        env:\n          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n\n      # While', '--run "$RUN" --root examples/plugged-in || true\n        env:\n          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n\n      # While'), /up: its script|hides a failure/],
+    ["up that hides its failure", () => swap('--run "$RUN" --root "$ROOT"\n        env:\n          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n\n      # While', '--run "$RUN" --root "$ROOT" || true\n        env:\n          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n\n      # While'), /up: its script|hides a failure/],
     ["up that only echoes", () => swap('run: $ORTHO env up staging --run "$RUN"', 'run: echo $ORTHO env up staging --run "$RUN"'), /up: its script/],
     ["no continue-on-error on up (a failed up would stop the job before destroy only if destroy were not always)", () => swap("        id: up\n        continue-on-error: true\n", "        id: up\n"), /up: continue-on-error/],
     ["a story that runs another environment", () => swap("prove --env staging", "prove --env local"), /story: its script/],
-    ["a story that hides its failure", () => swap('; exit "${PIPESTATUS[0]}"\n\n      # Destroy', "\n\n      # Destroy"), /story: its script/],
+    ["a story that hides its failure", () => swap('; exit "${PIPESTATUS[0]}"\n\n      # The story judged', "\n\n      # The story judged"), /story: its script/],
     ["a story that never runs", () => swap("        id: story\n        continue-on-error: true\n        if: steps.up.outcome == 'success'\n", "        id: story\n        continue-on-error: true\n        if: false\n"), /story: its `if`/],
     ["no step ids on up and the story (their outcomes would be empty)", () => swap("        id: up\n", "").replace("        id: story\n", ""), /no step with id up/],
     ["destroy before the story", () => swap("      - name: the story\n", `      - name: destroy early\n        id: destroy\n        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n        env:\n          ${TOKEN}\n          CLOUDFLARE_ACCOUNT_ID: \${{ vars.CLOUDFLARE_ACCOUNT_ID }}\n      - name: the story\n`).replace("      - name: destroy\n        id: destroy\n", "      - name: destroy\n        id: destroyed\n"), /not in the order|no step with id destroy/],
@@ -113,7 +140,7 @@ describe("the judge fails each planted wrong workflow", () => {
     ["the subdomain step that may fail quietly", () => swap("        id: subdomain\n", "        id: subdomain\n        continue-on-error: true\n"), /subdomain: continue-on-error/],
     ["the token on the plan", () => swap("        id: plan\n", `        id: plan\n        env:\n          ${TOKEN}\n`), /plan: its env/],
     ["the token on the judgement", () => swap("          UP: ${{ steps.up.outcome }}\n\n      # The run's own", `          UP: \${{ steps.up.outcome }}\n          ${TOKEN}\n\n      # The run's own`), /judge: its env/],
-    ["destroy without the token", () => swap(`${DESTROY_HEAD}        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n        env:\n          ${TOKEN}\n`, `${DESTROY_HEAD}        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root examples/plugged-in\n        env:\n          X: y\n`), /destroy: its env/],
+    ["destroy without the token", () => swap(`${DESTROY_HEAD}        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root "$ROOT"\n        env:\n          ${TOKEN}\n`, `${DESTROY_HEAD}        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root "$ROOT"\n        env:\n          X: y\n`), /destroy: its env/],
     ["the account id taken from a secret", () => swap("CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}", "CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"), /secrets\.CLOUDFLARE_ACCOUNT_ID|env is/],
     ["another secret", () => swap("        id: plan\n", "        id: plan\n        env:\n          X: ${{ secrets.ANTHROPIC_API_KEY }}\n"), /secrets\.ANTHROPIC_API_KEY/],
     ["every secret dumped as JSON", () => swap("        id: plan\n", "        id: plan\n        env:\n          DUMP: ${{ toJSON(secrets) }}\n"), /toJSON\(secrets\)/],
@@ -163,4 +190,166 @@ describe("the judge fails each planted wrong workflow", () => {
       assert.match(found, say);
     });
   }
+});
+
+// ---- CX-staging, check 1: the workflow takes the run's root and its journeys, and by default runs exactly today's commands ----
+// The steps that call `ortho` are run as the runner runs them (`bash -e`, GitHub's shell for a step with no `shell:`; $GITHUB_ENV read between steps), with $ORTHO a stand-in that writes down its arguments and prints a plan.
+// Nothing reaches the cloud: no credential is given and no step but select, plan, up, the story and destroy is run.
+const repo = join(import.meta.dirname, "../..");
+const scratch = mkdtempSync(join(tmpdir(), "ortho-staging-run-"));
+after(() => rmSync(scratch, { recursive: true, force: true }));
+const RUN_ID = "77";
+/**
+ * Today's four commands, as `.github/workflows/staging.yml` on main (a8294d08) ran them for Plugged In: the default run must be these, argument for argument, with one addition, `--report <file>` on
+ * the story, which only writes prove's report for the step that checks the list was judged (CX-staging). Its path is written `<report>` here.
+ */
+const TODAY = [
+  ["env", "up", "staging", "--plan", "--run", RUN_ID, "--root", "examples/plugged-in"],
+  ["env", "up", "staging", "--run", RUN_ID, "--root", "examples/plugged-in"],
+  ["prove", "--env", "staging", "--run", RUN_ID, "--root", "examples/plugged-in", "--only", "a person claims a page and shares it", "--report", "<report>"],
+  ["env", "destroy", "staging", "--run", RUN_ID, "--root", "examples/plugged-in"],
+];
+let n = 0;
+/** The `ortho` calls the workflow in `source` makes for a dispatch choosing `app` (undefined: the input's default, as a dispatch with nothing chosen). */
+const calls = (source, app) => {
+  const dir = join(scratch, String(n++));
+  const fake = join(dir, "ortho.mjs"), log = join(dir, "calls.jsonl");
+  spawnSync("mkdir", ["-p", dir]);
+  writeFileSync(fake, `import { appendFileSync } from "node:fs";\nconst args = process.argv.slice(2);\nappendFileSync(${JSON.stringify(log)}, JSON.stringify(args) + "\\n");\nif (args.includes("--plan")) console.log(JSON.stringify({ prefix: "ortho-x-stg-${RUN_ID}" }));\n`);
+  const doc = parse(source);
+  const chosen = app ?? doc.on.workflow_dispatch.inputs.app.default;
+  const files = { GITHUB_ENV: join(dir, "env"), GITHUB_OUTPUT: join(dir, "output") };
+  for (const f of Object.values(files)) writeFileSync(f, "");
+  const env = { PATH: process.env.PATH, HOME: process.env.HOME, ...files, RUN: RUN_ID, ORTHO: `${process.execPath} ${fake}`, EVIDENCE: join(dir, "evidence") };
+  const exits = {};
+  for (const id of ["select", "plan", "up", "story", "destroy"]) {
+    const step = doc.jobs.staging.steps.find((s) => s.id === id);
+    const own = Object.fromEntries(Object.entries(step?.env ?? {}).map(([k, v]) => [k, v === "${{ inputs.app }}" ? chosen : "not-used-here"]));
+    for (const line of readFileSync(files.GITHUB_ENV, "utf8").split("\n").filter(Boolean)) { const at = line.indexOf("="); env[line.slice(0, at)] = line.slice(at + 1); }
+    exits[id] = spawnSync("bash", ["-e", "-c", String(step?.run ?? "exit 3")], { cwd: repo, env: { ...env, ...own }, encoding: "utf8" }).status;
+  }
+  const made = (existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [])
+    .map((args) => args.map((a, i) => (args[i - 1] === "--report" && a === join(env.EVIDENCE, "story.json") ? "<report>" : a)));
+  return { made, exits };
+};
+const onlys = (args) => args.flatMap((a, i) => (args[i - 1] === "--only" ? [a] : []));
+
+describe("CX-staging 1: the run's root and journeys come from the run chosen, and the default is today's run", () => {
+  test("a dispatch with nothing chosen runs exactly today's four commands for Plugged In's one story", () => {
+    const ran = calls(real);
+    assert.deepEqual(ran.exits, { select: 0, plan: 0, up: 0, story: 0, destroy: 0 });
+    assert.deepEqual(ran.made, TODAY);
+  });
+  test("choosing plugged-in is the same run", () => assert.deepEqual(calls(real, "plugged-in").made, TODAY));
+  test("choosing capxul plans, deploys, proves and destroys examples/capxul, and the story names every journey of its list, each with its own --only, in order, apostrophes and commas intact", () => {
+    const { made, exits } = calls(real, "capxul");
+    assert.deepEqual(exits, { select: 0, plan: 0, up: 0, story: 0, destroy: 0 });
+    assert.deepEqual(made.map((a) => a.slice(0, 2)), [["env", "up"], ["env", "up"], ["prove", "--env"], ["env", "destroy"]]);
+    for (const a of made) assert.equal(a[a.indexOf("--root") + 1], "examples/capxul");
+    assert.deepEqual(onlys(made[2]), RUNS.capxul.journeys);
+    assert.ok(onlys(made[2]).includes("bridge: a bank account, end to end") && onlys(made[2]).includes("branch names are the company's"));
+    assert.deepEqual(made[2].filter((a) => !RUNS.capxul.journeys.includes(a)), ["prove", "--env", "staging", "--run", RUN_ID, "--root", "examples/capxul", ...RUNS.capxul.journeys.map(() => "--only"), "--report", "<report>"]);
+  });
+  test("an app that is not a run stops at select, and the story would refuse to prove an empty list", () => {
+    const { made, exits } = calls(real, "nonesuch");
+    assert.equal(exits.select, 2);
+    assert.notEqual(exits.story, 0);
+    assert.equal(made.some((a) => a[0] === "prove"), false);
+  });
+  for (const [name, make] of [
+    ["the names unquoted (split at their spaces)", () => swap('"${only[@]}"', "${only[@]}")],
+    ["only the first journey proved", () => swap('"${only[@]}"', '"${only[@]:0:2}"')],
+    ["the root typed", () => swap('env up staging --run "$RUN" --root "$ROOT"', 'env up staging --run "$RUN" --root examples/plugged-in')],
+  ]) {
+    test(`the commands differ when ${name}`, () => {
+      const t = make();
+      const plugged = calls(t).made, capxul = calls(t, "capxul").made;
+      assert.ok(JSON.stringify(plugged) !== JSON.stringify(TODAY) || JSON.stringify(onlys(capxul[2] ?? [])) !== JSON.stringify(RUNS.capxul.journeys) || capxul.some((a) => a[a.indexOf("--root") + 1] !== "examples/capxul"), name);
+    });
+  }
+  test("the default run is the first of runs.mjs, and it is Plugged In's one story", () => {
+    assert.deepEqual(Object.entries(RUNS)[0], ["plugged-in", { root: "examples/plugged-in", journeys: [STORY] }]);
+  });
+});
+
+// ---- CX-staging, check 5: one up, one destroy, and a run that fails part way still destroys ----
+describe("CX-staging 5: the run's shape, whatever step fails", () => {
+  test("the real workflow: one up and one destroy whatever fails; nothing is made when select, the plan or the first listing fails; the job fails on any failure", () => {
+    assert.deepEqual(shape(real), []);
+    const clean = walk(real);
+    assert.deepEqual([clean.failed, clean.ups, clean.proves, clean.destroys], [false, 1, 1, 1]);
+    const upFailed = walk(real, new Set(["up"]));
+    assert.deepEqual([upFailed.failed, upFailed.ups, upFailed.proves, upFailed.destroys], [true, 1, 0, 1]);
+    assert.ok(upFailed.ran.includes("after") && upFailed.ran.includes("judge") && upFailed.ran.includes("up and the story must have passed"));
+    const storyFailed = walk(real, new Set(["story"]));
+    assert.deepEqual([storyFailed.failed, storyFailed.ups, storyFailed.proves, storyFailed.destroys], [true, 1, 1, 1]);
+    const planFailed = walk(real, new Set(["plan"]));
+    assert.deepEqual([planFailed.failed, planFailed.ups, planFailed.destroys], [true, 0, 1]);
+  });
+  test("the condition reader: GitHub's implicit success(), and status functions", () => {
+    const at = (failed, outcomes = {}) => ({ failed, outcomes: new Map(Object.entries(outcomes)) });
+    assert.equal(evaluate(undefined, at(true)), false);
+    assert.equal(evaluate("always()", at(true)), true);
+    assert.equal(evaluate("steps.up.outcome == 'success'", at(true, { up: "success" })), false);
+    assert.equal(evaluate("steps.up.outcome == 'success'", at(false, { up: "success" })), true);
+    assert.equal(evaluate("always() && (steps.up.outcome == 'failure' || steps.story.outcome == 'failure')", at(false, { up: "success", story: "failure" })), true);
+    assert.equal(evaluate("!always()", at(false)), false);
+    assert.throws(() => evaluate("contains(github.ref, 'x')", at(false)));
+  });
+  const UP_STEP = '      - name: up\n        id: up\n';
+  for (const [name, make, say] of [
+    ["destroy only when up passed (a failed up leaves what it made)", () => swap("        id: destroy\n        if: always()\n", "        id: destroy\n        if: steps.up.outcome == 'success'\n"), /when up fails, destroy runs 0/],
+    ["destroy on success() (a failed listing while up skips it)", () => swap("        id: destroy\n        if: always()\n", "        id: destroy\n        if: success()\n"), /when during fails, destroy runs 0/],
+    ["destroy with no if", () => swap("        id: destroy\n        if: always()\n", "        id: destroy\n"), /destroy runs 0/],
+    ["up that runs even when the plan failed", () => swap("        id: up\n", "        id: up\n        if: always()\n"), /when plan fails, up still runs/],
+    ["up again when the first up failed", () => swap("      # While it is up:", `      - name: up again\n        id: up2\n        if: steps.up.outcome == 'failure'\n        run: $ORTHO env up staging --run "$RUN" --root "$ROOT"\n\n      # While it is up:`), /when up fails, up runs 2/],
+    ["a second destroy", () => swap("      # The listing after destroy", `      - name: destroy again\n        id: destroy2\n        if: always()\n        run: $ORTHO env destroy staging --run "$RUN" --root "$ROOT"\n\n      # The listing after destroy`), /destroy runs 2/],
+    ["no step that fails the job after a failed story", () => swap("        if: always() && (steps.up.outcome == 'failure' || steps.story.outcome == 'failure')\n", "        if: always() && steps.up.outcome == 'failure'\n"), /when story fails, the job passes/],
+    ["a judgement that may fail quietly", () => swap("        id: judge\n        if: always()\n", "        id: judge\n        if: always()\n        continue-on-error: true\n"), /when judge fails, the job passes/],
+    ["a destroy the walk cannot read", () => swap("        id: destroy\n        if: always()\n", "        id: destroy\n        if: contains(github.ref, 'always()')\n"), /cannot be read/],
+    ["up renamed away from its step (no up at all)", () => swap(UP_STEP, "      - name: up\n        id: up\n        if: false\n"), /one up/],
+  ]) {
+    test(`the shape judge fails ${name}`, () => {
+      const found = shape(make()).join("\n");
+      assert.notEqual(found, "", `nothing was wrong with: ${name}`);
+      assert.match(found, say);
+    });
+  }
+});
+
+// ---- CX-staging: the story judged exactly the run's list (read from prove's own report) ----
+describe("CX-staging: the story's report holds every journey of the list, once, and no other", () => {
+  const list = "a\nb, c\nd's\n";
+  const report = (names) => JSON.stringify({ journeys: names.map((name) => ({ name, verdict: "pass" })) });
+  test("the right report passes", () => assert.deepEqual(judgedProblems(list, report(["a", "b, c", "d's"])), []));
+  for (const [name, text, say] of [
+    ["one journey left out (a prove that kept only the last --only)", report(["d's"]), /never judged "a"/],
+    ["a name split at its comma", report(["a", "b", " c", "d's"]), /never judged "b, c"/],
+    ["a journey not on the list", report(["a", "b, c", "d's", "e"]), /judged "e", which the run does not list/],
+    ["a journey judged twice", report(["a", "a", "b, c", "d's"]), /more than once/],
+    ["no report (prove refused or crashed)", "", /no --report document/],
+    ["a report with no journeys", "{}", /no list of journeys/],
+  ]) test(`fails ${name}`, () => assert.match(judgedProblems(list, text).join("\n"), say));
+  test("the command: exit 0 on the right report, 1 naming the missing one", () => {
+    const dir = mkdtempSync(join(scratch, "judged-"));
+    writeFileSync(join(dir, "list"), list);
+    writeFileSync(join(dir, "ok.json"), report(["a", "b, c", "d's"]));
+    writeFileSync(join(dir, "short.json"), report(["a"]));
+    const run = (f) => spawnSync(process.execPath, [join(import.meta.dirname, "runs.mjs"), "judged", join(dir, "list"), join(dir, f)], { encoding: "utf8" });
+    assert.equal(run("ok.json").status, 0);
+    const short = run("short.json");
+    assert.deepEqual([short.status, /never judged "b, c"/.test(short.stderr)], [1, true]);
+  });
+  test("the step runs whenever the story ran, pass or fail, and fails the job when the list was not judged", () => {
+    assert.ok(walk(real, new Set(["story"])).ran.includes("judged"));
+    assert.ok(!walk(real, new Set(["up"])).ran.includes("judged"));
+    const w = walk(real, new Set(["judged"]));
+    assert.deepEqual([w.failed, w.destroys], [true, 1]);
+  });
+  for (const [name, make] of [
+    ["the step skipped when the story failed", () => swap("if: always() && steps.story.outcome != 'skipped'", "if: steps.story.outcome == 'success'")],
+    ["the step allowed to fail", () => swap("        id: judged\n", "        id: judged\n        continue-on-error: true\n")],
+    ["no report written by the story", () => swap(' --report "$EVIDENCE/story.json"', "")],
+    ["the step gone", () => swap("        id: judged\n", "        id: judgd\n")],
+  ]) test(`the workflow judge fails ${name}`, () => assert.notEqual(said(make()), ""));
 });

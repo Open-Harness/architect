@@ -245,3 +245,11 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
   that makes a move; and a check that every waiting state has a way out. The worked design is
   `docs/explainer/films/capxul-lite/app/`. **Decide before** ST3.06 (collecting owners' approvals), which K46 takes for
   a thing that asks, and before M6.17 deploys a contract outside a world. Ranking it is Goal 18's.
+
+## From #995's stand-ins (Goal 16, 25 November 2026)
+
+- **Stand-ins under `ortho dev`.** Today only a world prove starts runs a mount's process stand-in (G16-adapter-mounts
+  call 3), so a generated call in `ortho dev`'s world fails on the missing `<MOUNT>_BASE_URL`. Dev's world would start the
+  stand-ins too, and `Warm.reset` would restart them so a reused world starts with fresh stand-in state; prove could then
+  reuse a warm world for a model with stand-ins. **Trigger:** a developer needs a generated call to answer under `ortho dev`.
+  Check 10's world-of-its-own test counts stand-in starts assuming dev starts none; its author changes that count then.

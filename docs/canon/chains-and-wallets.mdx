@@ -386,8 +386,6 @@ key the app itself holds, as a `keystore` signer, and never put its secret in a 
   a contract is the contract's, behind `IAccessControl`.
 - **Not an adapter.** A wallet's browser extension is an outside system, reached inside the browser signer; a separate
   `eip1193` adapter is not built ([plugins](plugins.mdx)).
-- **Not the relayer or the follower.** One relayer actor that submits for many signers (M6.07) and one follower that turns
-  logs into events (M6.09) come later, on the same port.
 - **Not a stand-in.** Anvil is a real chain running locally, not our own fake of one ([stand-ins](stand-ins.mdx)).
 - **Not `viem` in your handler.** `viem` is confined to `@orthograph/chain-evm`, and a lint rule keeps it there. A wallet
   imports `@orthograph/chain-evm/device`, the package without `Anvil` and so with no `node:` import, which a browser or a
@@ -415,7 +413,8 @@ key the app itself holds, as a `keystore` signer, and never put its secret in a 
 | SIWE linking | `challenge`, `complete`, `link` | planned, M2.13 |
 | chain stores, `runs` worked out, `refusals.lock` | `packages/orthograph/src/modules/stores/types.ts:19` | planned, M6.10 |
 | `language-solidity`, no longer a placeholder | `packages/language-solidity/src/index.ts:1` | planned, M6.11 |
-| the relayer and the follower | not written | planned, M6.07, M6.09 |
+| the relayer | experimental (#784) | M6.07 |
+| the follower | `packages/host-cloudflare/src/modules/follower/service.ts:20` | built, M6.09 |
 
 ## Status
 

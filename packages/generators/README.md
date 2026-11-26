@@ -1,3 +1,3 @@
 # @orthograph/generators
 
-The Nx plugin: scaffolds and sync generators. Arrives in layer 1; see the package map in `docs/canon/status.md`.
+The Nx plugin: scaffolds and sync generators. Built; what each part does and how far it goes is in the package map in `docs/canon/status.md`.

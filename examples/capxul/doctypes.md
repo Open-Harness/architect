@@ -472,33 +472,33 @@ Salary structures, pay runs, slips, benefits and tax. Slice 9.
 | Employee Benefit Claim | thing | SUB | 13 | `hrms/hrms/payroll/doctype/employee_benefit_claim/employee_benefit_claim.json` |  |
 | Employee Incentive | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_incentive/employee_incentive.json` |  |
 | Employee Other Income | thing | SUB | 7 | `hrms/hrms/payroll/doctype/employee_other_income/employee_other_income.json` |  |
-| Employee Tax Exemption Category | thing |  | 2 | `hrms/hrms/payroll/doctype/employee_tax_exemption_category/employee_tax_exemption_category.json` | India's income-tax exemption shape; slice 9 decides how to generalise it |
+| Employee Tax Exemption Category | thing |  | 2 | `hrms/hrms/payroll/doctype/employee_tax_exemption_category/employee_tax_exemption_category.json` | India's income-tax exemption shape: not taken until a jurisdiction needs it (CX-payroll-tax); for the United States, the withholding certificate (Form W-4) takes the Declaration's place |
 | Employee Tax Exemption Declaration | thing | SUB | 9 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration/employee_tax_exemption_declaration.json` | as above |
 | Employee Tax Exemption Proof Submission | thing | SUB | 11 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission/employee_tax_exemption_proof_submission.json` | as above |
 | Employee Tax Exemption Sub Category | thing |  | 3 | `hrms/hrms/payroll/doctype/employee_tax_exemption_sub_category/employee_tax_exemption_sub_category.json` | as above |
 | Gratuity | thing | SUB | 19 | `hrms/hrms/payroll/doctype/gratuity/gratuity.json` |  |
 | Gratuity Rule | thing |  | 5 | `hrms/hrms/payroll/doctype/gratuity_rule/gratuity_rule.json` |  |
 | Income Tax Slab | thing | SUB | 8 | `hrms/hrms/payroll/doctype/income_tax_slab/income_tax_slab.json` | a progressive tax table; check against each country payroll supports |
-| Payroll Entry | thing | SUB FX | 26 | `hrms/hrms/payroll/doctype/payroll_entry/payroll_entry.json` |  |
-| Payroll Period | thing |  | 3 | `hrms/hrms/payroll/doctype/payroll_period/payroll_period.json` |  |
+| Payroll Entry | thing | SUB FX | 26 | `hrms/hrms/payroll/doctype/payroll_entry/payroll_entry.json` | draft, submitted, accrued: company, typed first and last day, posting day, cost center, payable account (a ledger with no type). Create fills in the company's employees still at work with a submitted assignment; submit makes a draft slip each; submit-slips submits them and posts one accrual journal entry. Cancelling comes later (CX-payroll) |
+| Payroll Period | thing |  | 3 | `hrms/hrms/payroll/doctype/payroll_period/payroll_period.json` | per company: name, first and last day, no overlap with the company's other periods. Its sub-periods come with tax, 9b (CX-payroll) |
 | Payroll Settings | settings |  | 15 | `hrms/hrms/payroll/doctype/payroll_settings/payroll_settings.json` |  |
 | Retention Bonus | thing | SUB | 10 | `hrms/hrms/payroll/doctype/retention_bonus/retention_bonus.json` |  |
-| Salary Component | thing |  | 25 | `hrms/hrms/payroll/doctype/salary_component/salary_component.json` |  |
-| Salary Slip | thing | SUB FX | 62 | `hrms/hrms/payroll/doctype/salary_slip/salary_slip.json` |  |
-| Salary Structure | thing | SUB | 17 | `hrms/hrms/payroll/doctype/salary_structure/salary_structure.json` |  |
-| Salary Structure Assignment | thing | SUB | 17 | `hrms/hrms/payroll/doctype/salary_structure_assignment/salary_structure_assignment.json` |  |
+| Salary Component | thing |  | 25 | `hrms/hrms/payroll/doctype/salary_component/salary_component.json` | per company: name, earning or deduction, default amount, the ledger it is booked to. Formulas, conditions and the tax and benefit flags come later (CX-payroll) |
+| Salary Slip | thing | SUB FX | 62 | `hrms/hrms/payroll/doctype/salary_slip/salary_slip.json` | made and submitted only by its payroll entry, so no machine: its status is Draft or Submitted. Its lines are Salary Slip Detail, copied from its structure; every line pays in full until payment days (9c) (CX-payroll) |
+| Salary Structure | thing | SUB | 17 | `hrms/hrms/payroll/doctype/salary_structure/salary_structure.json` | draft, submitted, cancelled: per company, its lines fixed amounts with no formulas; no net pay below nothing on submit; can't be cancelled while used (CX-payroll) |
+| Salary Structure Assignment | thing | SUB | 17 | `hrms/hrms/payroll/doctype/salary_structure_assignment/salary_structure_assignment.json` | draft, submitted, cancelled: employee, submitted structure, typed first day; one submitted per employee and day; not before joining; not for a leaver (CX-payroll) |
 | Salary Withholding | thing | SUB | 13 | `hrms/hrms/payroll/doctype/salary_withholding/salary_withholding.json` |  |
 | Employee Benefit Application Detail | line |  | 4 | `hrms/hrms/payroll/doctype/employee_benefit_application_detail/employee_benefit_application_detail.json` |  |
 | Employee Cost Center | line |  | 2 | `hrms/hrms/payroll/doctype/employee_cost_center/employee_cost_center.json` |  |
-| Employee Tax Exemption Declaration Category | line |  | 4 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration_category/employee_tax_exemption_declaration_category.json` |  |
-| Employee Tax Exemption Proof Submission Detail | line |  | 6 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission_detail/employee_tax_exemption_proof_submission_detail.json` |  |
+| Employee Tax Exemption Declaration Category | line |  | 4 | `hrms/hrms/payroll/doctype/employee_tax_exemption_declaration_category/employee_tax_exemption_declaration_category.json` | a line of Employee Tax Exemption Declaration; as above |
+| Employee Tax Exemption Proof Submission Detail | line |  | 6 | `hrms/hrms/payroll/doctype/employee_tax_exemption_proof_submission_detail/employee_tax_exemption_proof_submission_detail.json` | a line of Employee Tax Exemption Proof Submission; as above |
 | Gratuity Applicable Component | line |  | 1 | `hrms/hrms/payroll/doctype/gratuity_applicable_component/gratuity_applicable_component.json` |  |
 | Gratuity Rule Slab | line |  | 3 | `hrms/hrms/payroll/doctype/gratuity_rule_slab/gratuity_rule_slab.json` |  |
 | Income Tax Slab Other Charges | line |  | 4 | `hrms/hrms/payroll/doctype/income_tax_slab_other_charges/income_tax_slab_other_charges.json` |  |
-| Payroll Employee Detail | line |  | 5 | `hrms/hrms/payroll/doctype/payroll_employee_detail/payroll_employee_detail.json` |  |
+| Payroll Employee Detail | line |  | 5 | `hrms/hrms/payroll/doctype/payroll_employee_detail/payroll_employee_detail.json` | written by the entry's create, in hiring order (CX-payroll) |
 | Payroll Period Date | line |  | 2 | `hrms/hrms/payroll/doctype/payroll_period_date/payroll_period_date.json` |  |
 | Salary Component Account | line |  | 2 | `hrms/hrms/payroll/doctype/salary_component_account/salary_component_account.json` |  |
-| Salary Detail | line |  | 22 | `hrms/hrms/payroll/doctype/salary_detail/salary_detail.json` |  |
+| Salary Detail | line |  | 22 | `hrms/hrms/payroll/doctype/salary_detail/salary_detail.json` | a structure's lines; a slip's are a second thing, Salary Slip Detail, so each has one parent (CX-payroll) |
 | Salary Slip Leave | line |  | 6 | `hrms/hrms/payroll/doctype/salary_slip_leave/salary_slip_leave.json` |  |
 | Salary Slip Timesheet | line |  | 2 | `hrms/hrms/payroll/doctype/salary_slip_timesheet/salary_slip_timesheet.json` |  |
 | Salary Withholding Cycle | line |  | 4 | `hrms/hrms/payroll/doctype/salary_withholding_cycle/salary_withholding_cycle.json` |  |
