@@ -1,14 +1,16 @@
-// Check 47 (Goal 18, slice 8, K44 call 2, issue #1066): the portal ships without its screens, and says so. The alpha's portal answers
+// Check 49 (Goal 18, slice 8, K44 call 2, issue #1066): the portal ships without its screens, and says so. The alpha's portal answers
 // its server and its blueprint feed as today; asking for the screens says plainly that they are not in this release, not a 404 and not
 // a crash; and nothing a published package builds from needs the HeroUI Pro licence. The requirements, one describe each:
 //   A  the screens: with no client installed (what a published `@orthograph/portal` is: no `dist/client`), every GET under `/portal`
-//      is 501 `text/html` saying "not in this release" and naming Preview (`portal-screens.ts`, the top, holds the surface);
+//      is 501 saying "not in this release" and naming Preview: `text/html` to a browser, a JSON `{ _tag: "NotInThisRelease" }` to an
+//      API client (`portal-screens.ts`, the top, holds the surface);
 //   B  the data and the rules of reading, as today: blueprint, snapshot, an unknown data path, a POST (controls: they pass today);
 //   C  in a real world on workerd, from a project whose installed `@orthograph/portal` has no `dist/client`, with the licence token
 //      unset: `ortho build` exits 0 and ships no client, the feed answers, and A holds over HTTP;
 //   D  the licence: building any package that is published builds no package that needs HeroUI Pro (the `build` task graph of every
-//      public package, read from nx, holds no project that declares `@heroui-pro/*`), and the published `@orthograph/portal` tarball
-//      holds no client and depends on no UI package.
+//      public package, read from nx, holds no project that declares `@heroui-pro/*`), and the `@orthograph/portal` tarball, packed by
+//      pnpm from a checkout where the licensed client was built (its files where nx says the `client` target writes them), holds no
+//      client and no page source, and its published manifest depends on no UI package.
 // What a builder owes: a client that is not installed answers A (`packages/portal/src/modules/server/internal/client.ts`'s 404 becomes
 // the notice), and `portal`'s build stops depending on `portal-ui` (the client build, which needs the licence, is a target that no
 // package's `build` waits for). A built client, where CI has one, is still served at `/portal` (checks 21 and 27 keep passing).
@@ -20,28 +22,41 @@ import { join } from "node:path";
 import { Effect, Exit, Scope } from "effect";
 import { PortalServer } from "@orthograph/portal/server";
 import { Worlds } from "@orthograph/prove";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { freePort } from "./clients.ts";
-import { feed, methods, screens, seenOf, blueprint, things, type Ask, type Seen } from "./portal-screens.ts";
+import { API, BROWSER, feed, methods, screens, screensForApi, seenOf, blueprint, things, type Ask, type Seen } from "./portal-screens.ts";
 import { acme, copyOf, repo } from "./support.ts";
 
 // ---- the portal's server in this process: today's, a correct stand-in, and the plants ----
 
 /** The real server, as a Worker holds it with no client installed (`env` has no `PORTAL_ASSETS`), or with one (`assets`). */
-const real = (assets?: { fetch: (request: Request) => Promise<Response> }): Ask => async (path, method = "GET") =>
-  seenOf(await Effect.runPromise(PortalServer.serve(blueprint, new Request(`http://portal${path}`, { method }), assets === undefined ? {} : { PORTAL_ASSETS: assets })));
+const real = (assets?: { fetch: (request: Request) => Promise<Response> }): Ask => async (path, method = "GET", accept) =>
+  seenOf(await Effect.runPromise(PortalServer.serve(blueprint, new Request(`http://portal${path}`, { method, headers: accept === undefined ? {} : { accept } }), assets === undefined ? {} : { PORTAL_ASSETS: assets })));
 
 const NOTICE = "<!doctype html><title>Portal</title><p>The portal's screens are not in this release (Preview). Its data is at /_portal/v1/blueprint.</p>";
 const notice = (over: Partial<Seen> = {}): Seen => ({ status: 501, type: "text/html; charset=utf-8", body: NOTICE, etag: null, allow: null, ...over });
+const MESSAGE = "The portal's screens are not in this release (Preview). Its data is at /_portal/v1/blueprint.";
+const apiNotice = (over: Partial<Seen> = {}, body: unknown = { _tag: "NotInThisRelease", message: MESSAGE }): Seen =>
+  ({ status: 501, type: "application/json", body: JSON.stringify(body), etag: null, allow: null, ...over });
+/** Whether a request asks for JSON over HTML, as a server reading `accept` would decide. */
+const wantsJson = (accept: string | undefined) => accept !== undefined && accept.includes("application/json") && !accept.includes("text/html");
 const isScreen = (path: string) => path === "/portal" || path.startsWith("/portal/");
 /** A correct stand-in: the real data, and the notice for the screens (using nothing a handler cannot reach: the request's path and method). */
-const correct: Ask = (path, method = "GET") => method === "GET" && isScreen(path) ? Promise.resolve(notice()) : real()(path, method);
+const correct: Ask = (path, method = "GET", accept) =>
+  method === "GET" && isScreen(path) ? Promise.resolve(wantsJson(accept) ? apiNotice() : notice()) : real()(path, method, accept);
 /** A plant: the correct stand-in with one answer changed. `change` returns undefined to leave an answer as it is. */
-const plant = (change: (path: string, method: string) => Seen | undefined): Ask => async (path, method = "GET") => change(path, method) ?? correct(path, method);
+const plant = (change: (path: string, method: string, accept: string | undefined) => Seen | undefined): Ask => async (path, method = "GET", accept) =>
+  change(path, method, accept) ?? correct(path, method, accept);
+/** A plant on the API client's answers only. */
+const plantApi = (change: (path: string) => Seen | undefined): Ask => plant((p, m, a) => m === "GET" && isScreen(p) && wantsJson(a) ? change(p) : undefined);
 
-describe("47 A: asking for the screens says they are not in this release", () => {
+describe("49 A: asking for the screens says they are not in this release", () => {
   it("with no client installed, every request for a screen is 501, as HTML, saying so and naming the release", async () => {
     expect(await screens(real()), "today a missing client is a 404 \"not installed\" text").toEqual([]);
+  });
+
+  it("with no client installed, an API client's request for a screen is 501 JSON NotInThisRelease, saying so and naming the release", async () => {
+    expect(await screensForApi(real()), "today a missing client is a 404 \"not installed\" text, whatever is asked").toEqual([]);
   });
 
   it("the client a build installed, where CI has one, is still served at /portal (checks 21 and 27 keep passing)", async () => {
@@ -55,7 +70,7 @@ describe("47 A: asking for the screens says they are not in this release", () =>
   });
 });
 
-describe("47 B: the data and the rules of reading are as today", () => {
+describe("49 B: the data and the rules of reading are as today", () => {
   it("the blueprint (ETag the digest, the model's things), the snapshot and an unknown data path answer as they do now", async () => {
     expect(await feed(real())).toEqual([]);
   });
@@ -64,9 +79,10 @@ describe("47 B: the data and the rules of reading are as today", () => {
   });
 });
 
-describe("47 controls: each judge passes a correct stand-in and names each planted wrong answer", () => {
-  it("a correct stand-in passes all three judges", async () => {
+describe("49 controls: each judge passes a correct stand-in and names each planted wrong answer", () => {
+  it("a correct stand-in passes all four judges", async () => {
     expect(await screens(correct)).toEqual([]);
+    expect(await screensForApi(correct)).toEqual([]);
     expect(await feed(correct)).toEqual([]);
     expect(await methods(correct)).toEqual([]);
     expect(things.length, "the blueprint has things to compare").toBeGreaterThan(1);
@@ -76,7 +92,7 @@ describe("47 controls: each judge passes a correct stand-in and names each plant
     ["a 404 (today's)", plant((p) => isScreen(p) ? notice({ status: 404 }) : undefined), /status 404, not 501/],
     ["a 200 page", plant((p) => isScreen(p) ? notice({ status: 200 }) : undefined), /status 200, not 501/],
     ["a 500", plant((p) => isScreen(p) ? notice({ status: 500 }) : undefined), /status 500, not 501/],
-    ["a crash (throws)", async (p, m) => { if (isScreen(p)) throw new Error("boom"); return correct(p, m); }, /threw/],
+    ["a crash (throws)", async (p, m, a) => { if (isScreen(p)) throw new Error("boom"); return correct(p, m, a); }, /threw/],
     ["the notice for /portal only, a 404 below it", plant((p) => isScreen(p) && p !== "/portal" ? notice({ status: 404 }) : undefined), /GET \/portal\/things\/allowance: status 404/],
     ["the notice below /portal only, a 404 at the root", plant((p) => p === "/portal" ? notice({ status: 404 }) : undefined), /GET \/portal: status 404/],
     ["the notice for pages only, a 404 for client files", plant((p) => p.startsWith("/portal/assets/") ? notice({ status: 404 }) : undefined), /assets\/index-4f2a9c\.js: status 404/],
@@ -85,12 +101,41 @@ describe("47 controls: each judge passes a correct stand-in and names each plant
     ["plain text", plant((p) => isScreen(p) ? notice({ type: "text/plain" }) : undefined), /not text\/html/],
     ["JSON", plant((p) => isScreen(p) ? notice({ type: "application/json" }) : undefined), /not text\/html/],
     ["a body that does not say it", plant((p) => isScreen(p) ? notice({ body: "<p>Preview only.</p>" }) : undefined), /does not say "not in this release"/],
+    ["JSON to the browser too (the API's answer for both)", plant((p) => isScreen(p) ? apiNotice() : undefined), /not text\/html/],
+    ["the notice to the API client only, a 404 to the browser", plant((p, _m, a) => isScreen(p) && !wantsJson(a) ? notice({ status: 404 }) : undefined), /a browser's GET \/portal: status 404/],
     ["a body that names no release", plant((p) => isScreen(p) ? notice({ body: "<p>The screens are not in this release.</p>" }) : undefined), /does not name the release/],
     ["a body that names only a version", plant((p) => isScreen(p) ? notice({ body: "<p>The screens are not in this release (0.1.0-next.1).</p>" }) : undefined), /does not name the release/],
     ["the old text", plant((p) => isScreen(p) ? notice({ body: `${NOTICE} The portal's client is not installed in this Worker.` }) : undefined), /old "client is not installed"/],
     ["an empty body", plant((p) => isScreen(p) ? notice({ body: "" }) : undefined), /does not say/],
   ];
-  it.each(wrongScreens)("screens: %s is named", async (_name, ask, expected) => {
+
+  const wrongApi: ReadonlyArray<readonly [string, Ask, RegExp]> = [
+    ["a 404 (today's)", plantApi(() => apiNotice({ status: 404 })), /status 404, not 501/],
+    ["a 200", plantApi(() => apiNotice({ status: 200 })), /status 200, not 501/],
+    ["a 500", plantApi(() => apiNotice({ status: 500 })), /status 500, not 501/],
+    ["a crash (throws)", async (p, m, a) => { if (isScreen(p) && wantsJson(a)) throw new Error("boom"); return correct(p, m, a); }, /threw/],
+    ["the page's HTML to the API client (the browser's answer for both)", plantApi(() => notice()), /not application\/json/],
+    ["JSON labelled text/html", plantApi(() => apiNotice({ type: "text/html" })), /not application\/json/],
+    ["the notice for the root only, a 404 below it", plantApi((p) => p === "/portal" ? undefined : apiNotice({ status: 404 })), /GET \/portal\/things\/allowance: status 404/],
+    ["a 404 for client files only", plantApi((p) => p.startsWith("/portal/assets/") ? apiNotice({ status: 404 }) : undefined), /assets\/index-4f2a9c\.js: status 404/],
+    ["another tag", plantApi(() => apiNotice({}, { _tag: "NotFound", message: MESSAGE })), /_tag "NotFound", not "NotInThisRelease"/],
+    ["no tag", plantApi(() => apiNotice({}, { message: MESSAGE })), /_tag undefined/],
+    ["no message", plantApi(() => apiNotice({}, { _tag: "NotInThisRelease" })), /no message string/],
+    ["a message that is not a string", plantApi(() => apiNotice({}, { _tag: "NotInThisRelease", message: [MESSAGE] })), /no message string/],
+    ["a message that does not say it", plantApi(() => apiNotice({}, { _tag: "NotInThisRelease", message: "Preview only." })), /does not say "not in this release"/],
+    ["a message that names no release", plantApi(() => apiNotice({}, { _tag: "NotInThisRelease", message: "The screens are not in this release." })), /does not name the release/],
+    ["the words outside the message only", plantApi(() => apiNotice({}, { _tag: "NotInThisRelease", message: "No.", note: MESSAGE })), /does not say "not in this release"/],
+    ["a list, not an object", plantApi(() => apiNotice({}, [{ _tag: "NotInThisRelease", message: MESSAGE }])), /not a JSON object/],
+    ["null", plantApi(() => apiNotice({}, null)), /not a JSON object/],
+    ["an empty body", plantApi(() => apiNotice({ body: "" })), /not a JSON object/],
+    ["the old text as JSON", plantApi(() => apiNotice({}, { _tag: "NotInThisRelease", message: `${MESSAGE} The client is not installed.` })), /old "client is not installed"/],
+  ];
+  it.each(wrongApi)("screens (an API client): %s is named", async (_name, ask, expected) => {
+    const problems = await screensForApi(ask);
+    expect(problems.length, "a wrong answer passed the API judge").toBeGreaterThan(0);
+    expect(problems.join("\n")).toMatch(expected);
+  });
+  it.each(wrongScreens)("screens (a browser): %s is named", async (_name, ask, expected) => {
     const problems = await screens(ask);
     expect(problems.length, "a wrong answer passed the screens judge").toBeGreaterThan(0);
     expect(problems.join("\n")).toMatch(expected);
@@ -109,7 +154,7 @@ describe("47 controls: each judge passes a correct stand-in and names each plant
     ["an unknown data path that is the notice", plant((p) => p === "/_portal/v1/no-such-thing" ? notice() : undefined), /an unknown data path: status 501/],
     ["an unknown data path that is a 200", plant((p) => p === "/_portal/v1/no-such-thing" ? json({ _tag: "NotFound" }) : undefined), /an unknown data path: status 200/],
     ["an unknown data path that is a 404 with no tag", plant((p) => p === "/_portal/v1/no-such-thing" ? json({}, { status: 404 }) : undefined), /not \{ _tag: "NotFound" \}/],
-    ["a feed that throws", async (p, m) => { if (p.startsWith("/_portal/")) throw new Error("boom"); return correct(p, m); }, /threw/],
+    ["a feed that throws", async (p, m, a) => { if (p.startsWith("/_portal/")) throw new Error("boom"); return correct(p, m, a); }, /threw/],
   ];
   it.each(wrongFeed)("feed: %s is named", async (_name, ask, expected) => {
     const problems = await feed(ask);
@@ -169,7 +214,7 @@ const fresh = () => {
   return copy;
 };
 
-describe("47 C: a built and running project, with no client installed and no licence", () => {
+describe("49 C: a built and running project, with no client installed and no licence", () => {
   it("`ortho build` with the token unset exits 0 and ships no client", { timeout: 300_000 }, () => {
     const copy = fresh();
     try {
@@ -183,22 +228,34 @@ describe("47 C: a built and running project, with no client installed and no lic
     } finally { copy.remove(); }
   });
 
-  it("the world answers the feed as today, and the screens say they are not in this release (over HTTP)", { timeout: 300_000 }, async () => {
-    delete process.env[KEY]; // each test file runs in its own process: nothing outside this file sees the change
-    const copy = fresh();
+  describe("in a world on workerd", () => {
     const scope = Effect.runSync(Scope.make());
-    try {
+    let copy: ReturnType<typeof fresh> | undefined;
+    let url = "";
+    beforeAll(async () => {
+      delete process.env[KEY]; // each test file runs in its own process: nothing outside this file sees the change
+      copy = fresh();
       const world = await Effect.runPromise(Effect.gen(function* () {
-        return yield* Worlds.start({ root: copy.root, port: yield* Effect.promise(freePort), name: "g18-portal-no-screens" });
+        return yield* Worlds.start({ root: copy!.root, port: yield* Effect.promise(freePort), name: "g18-portal-no-screens" });
       }).pipe(Effect.onError(() => Scope.close(scope, Exit.void)), Scope.provide(scope)));
-      const ask: Ask = async (path, method = "GET") => seenOf(await fetch(`${world.url}${path}`, { method }));
+      url = world.url;
+    }, 300_000);
+    afterAll(async () => {
+      await Effect.runPromise(Scope.close(scope, Exit.void));
+      copy?.remove();
+    }, 120_000);
+    const ask: Ask = async (path, method = "GET", accept) => seenOf(await fetch(`${url}${path}`, { method, headers: accept === undefined ? {} : { accept } }));
+
+    it("the world answers the feed and the rules of reading as today (over HTTP)", async () => {
       expect(await feed(ask), "the feed, over HTTP").toEqual([]);
       expect(await methods(ask), "the rules of reading, over HTTP").toEqual([]);
-      expect(await screens(ask), "the screens, over HTTP").toEqual([]);
-    } finally {
-      await Effect.runPromise(Scope.close(scope, Exit.void));
-      copy.remove();
-    }
+    });
+    it("a browser's request for the screens says they are not in this release (over HTTP)", async () => {
+      expect(await screens(ask), "the screens to a browser, over HTTP").toEqual([]);
+    });
+    it("an API client's request for the screens says they are not in this release (over HTTP)", async () => {
+      expect(await screensForApi(ask), "the screens to an API client, over HTTP").toEqual([]);
+    });
   });
 });
 
@@ -225,7 +282,51 @@ const buildGraph = (projects: ReadonlyArray<string>): ReadonlyArray<string> => {
   return Object.keys((JSON.parse(readFileSync(file, "utf8")) as { tasks: { tasks: Record<string, unknown> } }).tasks.tasks);
 };
 
-describe("47 D: nothing a published package builds from needs the HeroUI Pro licence", () => {
+/** Where nx says the portal's licensed `client` target writes (its `outputs`), relative to the package: none when there is no such target. */
+const clientOutputs = (): ReadonlyArray<string> => {
+  const project = JSON.parse(readFileSync(join(portalPackage, "project.json"), "utf8")) as { targets?: Record<string, { outputs?: ReadonlyArray<string> }> };
+  return (project.targets?.client?.outputs ?? []).map((o) => o.replace(/^\{projectRoot\}\//, "")).filter((o) => !o.startsWith("{"));
+};
+const versions = Object.fromEntries(manifests.map((m) => [m.manifest.name, (m.manifest as Manifest & { version?: string }).version ?? "0.0.0"]));
+
+/**
+ * The portal packed as a publish packs it: built with `nx run portal:build` (licence unset), copied to a folder of its own beside a client
+ * as `portal:client` leaves it (a licensed checkout: index.html, a script and a sheet, at the target's outputs), its `workspace:` links
+ * written as the linked package's version (what pnpm's publish writes; outside the workspace pnpm cannot resolve them), and `pnpm pack`ed.
+ * The tarball is read with `tar`, never from the command that made it.
+ */
+const pack = () => {
+  const built = spawnSync(nx, ["run", "portal:build", "--excludeTaskDependencies"], { cwd: repo, encoding: "utf8", env: { ...unlicensed(), NX_DAEMON: "false", FORCE_COLOR: "0", NO_COLOR: "1" }, maxBuffer: 64 * 1024 * 1024 });
+  expect(built.status, `nx run portal:build: ${built.stdout}${built.stderr}`.slice(-1500)).toBe(0);
+  const parent = mkdtempSync(join(realpathSync(tmpdir()), "ortho-g18-8-pack-"));
+  spare.push(parent);
+  const folder = join(parent, "portal");
+  cpSync(portalPackage, folder, { recursive: true, filter: (from) => !from.split("/").includes("node_modules") });
+  const manifest = JSON.parse(readFileSync(join(folder, "package.json"), "utf8")) as Record<string, unknown>;
+  for (const field of FIELDS) {
+    const deps = manifest[field] as Record<string, string> | undefined;
+    for (const [name, range] of Object.entries(deps ?? {})) if (range.startsWith("workspace:")) deps![name] = versions[name] ?? "0.0.0";
+  }
+  writeFileSync(join(folder, "package.json"), JSON.stringify(manifest, null, 2));
+  const planted: string[] = [];
+  for (const root of clientOutputs()) {
+    for (const [file, text] of [["index.html", "<!doctype html><script type=\"module\" src=\"/portal/assets/index-4f2a9c.js\"></script>"], ["assets/index-4f2a9c.js", "export {};"], ["assets/index-4f2a9c.css", "body{}"]] as const) {
+      mkdirSync(join(folder, root, file, ".."), { recursive: true });
+      writeFileSync(join(folder, root, file), text);
+      planted.push(`${root}/${file}`);
+    }
+  }
+  const out = join(parent, "out");
+  mkdirSync(out);
+  const done = spawnSync("pnpm", ["pack", "--pack-destination", out], { cwd: folder, encoding: "utf8", env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
+  expect(done.status, `pnpm pack: ${done.stdout}${done.stderr}`.slice(-1500)).toBe(0);
+  const tgz = join(out, readdirSync(out).find((f) => f.endsWith(".tgz"))!);
+  const files = spawnSync("tar", ["-tzf", tgz], { encoding: "utf8" }).stdout.split("\n").filter(Boolean).map((f) => f.replace(/^package\//, "")).sort();
+  const published = JSON.parse(spawnSync("tar", ["-xOzf", tgz, "package/package.json"], { encoding: "utf8" }).stdout) as Manifest;
+  return { files, manifest: published, planted };
+};
+
+describe("49 D: nothing a published package builds from needs the HeroUI Pro licence", () => {
   it("the oracle is real: portal-ui declares the licensed package, and the portal is among the published packages", () => {
     expect(licensed, "the packages that declare @heroui-pro/*").toContain("portal-ui");
     expect(published.map((m) => m.manifest.name)).toContain("@orthograph/portal");
@@ -243,17 +344,25 @@ describe("47 D: nothing a published package builds from needs the HeroUI Pro lic
     expect(pulled, "K44 call 2: building a package that ships needs no licence, so no `build` here may wait for a package that needs it").toEqual([]);
   });
 
-  it("the published portal package ships no client, and no UI package is among what it depends on, peers or offers", () => {
-    const portal = published.find((m) => m.manifest.name === "@orthograph/portal")!.manifest;
-    for (const field of ["dependencies", "peerDependencies", "optionalDependencies"] as const) {
-      const names = Object.keys(portal[field] ?? {});
-      expect(names.filter((n) => UI.test(n)), `portal's ${field}`).toEqual([]);
-    }
-    const packed = spawnSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: portalPackage, encoding: "utf8", env: { ...process.env, npm_config_update_notifier: "false" } });
-    expect(packed.status, packed.stderr).toBe(0);
-    const files = (JSON.parse(packed.stdout) as Array<{ files: Array<{ path: string }> }>)[0]!.files.map((f) => f.path);
-    expect(files.filter((f) => f.startsWith("dist/client")), "the tarball's client files").toEqual([]);
-    expect(files.filter((f) => /\.(tsx|css|html)$/.test(f) || f.startsWith("src/")), "the tarball's page sources").toEqual([]);
+  describe("the portal's tarball, packed by pnpm from a checkout where the licensed client was built", () => {
+    /** What pnpm puts in `@orthograph/portal`'s tarball: its files (without `package/`) and its manifest as published. Packed once. */
+    let tarball: { readonly files: ReadonlyArray<string>; readonly manifest: Manifest; readonly planted: ReadonlyArray<string> } | undefined;
+    beforeAll(() => { tarball = pack(); }, 300_000);
+
+    it("holds the server and the feed: its built entry files, as a publish builds them", () => {
+      expect(tarball!.files, "pnpm's tarball").toEqual(expect.arrayContaining(["package.json", "dist/index.js", "dist/server.js"]));
+      expect(tarball!.manifest.name).toBe("@orthograph/portal");
+    });
+
+    it("holds no screens: no client file, no page and no page source, and its published manifest needs no UI package", () => {
+      expect(tarball!.planted.length, "a client was planted where nx says `portal:client` writes it").toBeGreaterThan(0);
+      const roots = clientOutputs();
+      const screensIn = tarball!.files.filter((f) => roots.some((r) => f === r || f.startsWith(`${r}/`)) || /(^|\/)index\.html$/.test(f) || /\.(tsx|jsx|css)$/.test(f) || f.startsWith("src/"));
+      expect(screensIn, "K44 call 2: the portal's tarball carries the screens").toEqual([]);
+      for (const field of ["dependencies", "peerDependencies", "optionalDependencies"] as const) {
+        expect(Object.keys(tarball!.manifest[field] ?? {}).filter((n) => UI.test(n)), `the published manifest's ${field}`).toEqual([]);
+      }
+    });
   });
 
   describe("controls: the graph judge sees a licensed task, and the manifest judge a UI dependency", () => {
