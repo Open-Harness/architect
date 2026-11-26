@@ -831,6 +831,45 @@ jobs:
         env:
           ORTHO_CHAIN_EVM_ANVIL: "1"
 
+  # Goal 16's journeys (slice 13, K44 section 3): `ortho prove` on `examples/capxul`, every journey and its evals, in `--env local`.
+  # It fails on any red (prove exits 1, or 2 when it couldn't run). For pull requests into goal/capxul and into main. On any other
+  # pull request or push, and on a docs-only pull request, the job runs and passes without its steps, so it keeps the shape of a
+  # required job (CI-drafts-race.md, CI-docs-fast-path.md) though it is not one yet. It is goal/capxul's own suite, so the fast
+  # gate runs it (CI-integration.md, B1), and it does not ask `affected`: capxul reaches `ortho` through the command line, not an
+  # import. No Collector cache: `--env local` records no telemetry, so prove never fetches it. No secret and no `id-token`.
+  e2e-capxul:
+    name: ${{ needs.ready.outputs.draft != 'false' && 'e2e-capxul (draft)' || 'e2e-capxul' }}
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SKIP: ${{ !(github.event_name == 'pull_request' && (github.base_ref == 'goal/capxul' || github.base_ref == 'main')) || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+    steps:
+      - if: env.SKIP == 'true'
+        run: echo "A docs-only pull request, or one that is not for this gate, where this job passes without its steps (design/decisions/CI-drafts-race.md, CI-docs-fast-path.md)."
+      - if: env.SKIP != 'true'
+        uses: actions/checkout@v7.0.1
+      - if: env.SKIP != 'true'
+        uses: pnpm/action-setup@v6.1.0
+      - if: env.SKIP != 'true'
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: env.SKIP != 'true'
+        run: pnpm install --frozen-lockfile
+      # No Docker (K10 section 8): every service is a process. The runner image carries Docker, so take it off the PATH and
+      # let a step that still reaches for it fail here.
+      - if: env.SKIP != 'true'
+        name: No Docker on the PATH
+        run: |
+          sudo rm -f "$(command -v docker)"
+          ! command -v docker
+      - if: env.SKIP != 'true'
+        name: Prove Capxul
+        run: node packages/cli/src/main.ts prove --root examples/capxul
+
   # Goal 6's done check, begun (`design/goals/06-portal.md`): the new portal's checks, starting with the theme's. Not a required
   # check yet, so a red run does not block; slice 2 puts the rest of the portal checks behind it. Skipped on a docs-only pull
   # request, where a skip counts as passed. Should `changes` itself fail, this runs.
