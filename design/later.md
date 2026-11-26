@@ -237,3 +237,11 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
 ## From the actions projection (Goal 5 lead, 23 November 2026)
 
 - **A `retrySafe` predicate per operation** (`decisions/WEB-actions-projection.md`, call 5). A generated action never names `retrySafe`. An operation whose payload carries its own idempotency key could emit it as a predicate on the input (`spikes/agent-native-compat` finding 5). **Trigger:** the model can say an operation carries its own key.
+
+## From #995's stand-ins (Goal 16, 25 November 2026)
+
+- **Stand-ins under `ortho dev`.** Today only a world prove starts runs a mount's process stand-in (G16-adapter-mounts
+  call 3), so a generated call in `ortho dev`'s world fails on the missing `<MOUNT>_BASE_URL`. Dev's world would start the
+  stand-ins too, and `Warm.reset` would restart them so a reused world starts with fresh stand-in state; prove could then
+  reuse a warm world for a model with stand-ins. **Trigger:** a developer needs a generated call to answer under `ortho dev`.
+  Check 08's world-of-its-own test counts stand-in starts assuming dev starts none; its author changes that count then.

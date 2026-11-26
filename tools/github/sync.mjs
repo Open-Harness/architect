@@ -24,7 +24,8 @@
 // A row adopts an existing issue (`issue #531` in its Evidence cell) and folds duplicates into it (`folds #533`);
 // docs/canon/status.md's column legend says how. Writes are paced (pace.mjs) and a rate-limit refusal is waited out.
 //
-// It needs `gh`, signed in with the `repo` scope (in CI, GH_TOKEN). It never deletes anything. Run one at a time: two
+// It needs `gh`, signed in with the `repo` scope (in CI, GH_TOKEN). It never deletes an issue, label or milestone; it removes only a blocked-by link between two of a goal's own slices that
+// the brief no longer gives (K44). Run one at a time: two
 // runs at once can both create the same issue, so the workflow (.github/workflows/goals.yml) runs it in one queue.
 import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
@@ -121,9 +122,11 @@ for (const s of sources) {
 }
 
 // Until a goal lands, its lead keeps its own lines on the goal branch: its status, its lead and "Where it stands". So
-// those come from the brief on that branch when the branch has one, even when main has the rest of the brief.
+// those come from the brief on that branch when the branch has one, even when main has the rest of the brief. A goal
+// parked on main stays parked: parking a stopped goal is the framework goal's call (K42, section 7; K44), and a branch
+// whose lead stopped can't show it running.
 for (const g of goals) {
-  if (!g.branch || g.ref) continue;
+  if (!g.branch || g.ref || g.status === "parked") continue;
   const spec = `origin/${g.branch}:${g.brief}`;
   if (spawnSync("git", ["cat-file", "-e", spec]).status !== 0) continue;
   const r = readGoal(g.brief, git("show", spec));

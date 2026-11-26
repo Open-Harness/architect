@@ -60,7 +60,7 @@ job is already red.
 
 What is judged only by the first live run, not offline: that `up` deploys what its plan says (the listing judge,
 `made`) and that `destroy` touches only its own run (`untouched`). A build whose real `up` or `destroy` differs from
-its `--plan` passes check 47 and fails there.
+its `--plan` passes check 50 and fails there.
 
 ## 4. Open: two calls for Aaron
 
@@ -78,8 +78,8 @@ These are not decided here, and nothing in this change depends on them:
 | Check | File |
 |---|---|
 | 1. the workflow takes a root and a list; the default is today's run | `e2e/staging/workflow.test.mjs` (`workflow.mjs`) |
-| 2. several `--only`, each run and reported, one failing fails the run | `e2e/m1/47-cx-staging-capxul.test.ts` |
-| 3. Capxul's plan with no credential and no network; destroy removes what up made | `e2e/m1/47-cx-staging-capxul.test.ts` |
+| 2. several `--only`, each run and reported, one failing fails the run | `e2e/m1/50-cx-staging-capxul.test.ts` |
+| 3. Capxul's plan with no credential and no network; destroy removes what up made | `e2e/m1/50-cx-staging-capxul.test.ts` |
 | 4. Capxul's list by name, held to the journey files | `e2e/staging/runs.test.mjs` |
 | 5. one up, one destroy, a failed run still destroys | `e2e/staging/workflow.test.mjs` (`shape`) |
 

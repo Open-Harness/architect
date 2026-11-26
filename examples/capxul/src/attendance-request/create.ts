@@ -5,7 +5,11 @@ import { AttendanceRequest } from "../../blueprint/things/attendance-request/thi
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/attendance-request/create.handler.ts";
 
-const { RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining } = Errors.declared;
+const { RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining, AttendanceRequestOverlaps } = Errors.declared;
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+/** Two ranges share a day when one's last day is on or after the other's first and its first on or before the other's last. */
+const overlaps = (a: { readonly [field: string]: unknown }, from: string, to: string) => (a["toDate"] as string) >= from && (a["fromDate"] as string) <= to;
 
 /**
  * attendance-request.create: Ask for an employee to be marked at work, from one day to another, and why.
@@ -58,11 +62,17 @@ const create: Handler = ({ company, employee, fromDate, toDate, reason }, { step
     const records = yield* Records;
 
     // Step load: database, span attendance-request.create.load. The runtime read the employee for the role check and
-    // hands it in, so this step only takes it; a missing one never reaches here.
-    const requester = yield* steps.load(Effect.succeed(refs.employee));
+    // hands it in; this step lists the employee's other requests.
+    const { requester, theirs } = yield* steps.load(
+      Effect.gen(function* () {
+        const theirs = yield* records.list({ ...all, thing: AttendanceRequest, where: { employee } });
+        return { requester: refs.employee, theirs: theirs.items };
+      }),
+    );
     if (!requester) return yield* Effect.die(new Error(`employee ${employee} was read for the role check and then not found`));
 
-    // Refusal order (errors.ts): RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining.
+    // Refusal order (errors.ts): RequesterNotInCompany, RequesterHasLeft, RequestEndsBeforeStart, RequestBeforeJoining,
+    // AttendanceRequestOverlaps.
     // RequesterNotInCompany: exit 41, AQ-001.
     if (requester["company"] !== company) {
       yield* Effect.logInfo("the employee works for another company");
@@ -87,6 +97,13 @@ const create: Handler = ({ company, employee, fromDate, toDate, reason }, { step
     if (fromDate < dateOfJoining) {
       yield* Effect.logInfo("the request starts before the employee joined");
       return yield* new RequestBeforeJoining({ dateOfJoining });
+    }
+
+    // AttendanceRequestOverlaps: exit 45, AQ-005. A draft or approved request of the employee shares a day with this
+    // one; a rejected one doesn't (CX-leave, call 6).
+    if (theirs.some((r) => (r.state === "draft" || r.state === "approved") && overlaps(r, fromDate, toDate))) {
+      yield* Effect.logInfo("a draft or approved request of the employee shares a day with this one");
+      return yield* new AttendanceRequestOverlaps({});
     }
 
     // Step insert: database, span attendance-request.create.insert.

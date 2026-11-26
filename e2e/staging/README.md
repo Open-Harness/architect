@@ -85,5 +85,5 @@ pins it with no cloud: the address is the run's Worker (`<prefix>-worker`, check
 The dispatch's `app` input chooses a run from [`runs.mjs`](runs.mjs): `plugged-in`, the default, is the story alone and makes exactly the commands this workflow made before it took an input;
 `capxul` is Goal 16's finish line, its journeys listed by name part by part (the books, HR, payroll, KYC and KYB, the bank account). [`runs.test.mjs`](runs.test.mjs) holds each list to the
 journey files, so a renamed journey fails there. `workflow.test.mjs` runs the select, plan, up, story and destroy steps with a stand-in `ortho` for both runs, and walks the job with each step
-failing in turn (`shape`: one up, one destroy, a failed run still destroys). Check 47 ([`e2e/m1/47-cx-staging-capxul.test.ts`](../m1/47-cx-staging-capxul.test.ts)) pins several `--only` and
+failing in turn (`shape`: one up, one destroy, a failed run still destroys). Check 50 ([`e2e/m1/50-cx-staging-capxul.test.ts`](../m1/50-cx-staging-capxul.test.ts)) pins several `--only` and
 Capxul's plan. Where the Bridge journeys run, and any new secret, wait on Aaron (`design/decisions/CX-staging.md`, section 4).

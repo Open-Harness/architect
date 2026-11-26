@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { readGoal, splitFrontMatter } from "./frontmatter.mjs";
 import { ISSUE_TYPES, LABELS, unwrap, goalBody, goalMarker, goalView, plan, sliceMarker } from "./plan.mjs";
+import { laneLabel } from "./boardPlan.mjs";
 
 const brief = `---
 goal: 6
@@ -125,6 +126,55 @@ test("a slice's order becomes a blocked-by link, made once", () => {
   assert.deepEqual(goal.slices[1], { number: "2", title: "The checks", after: ["1"] });
   const fresh = plan({ goals: [goal], state: empty, briefUrl: url }).filter((s) => s.do === "addBlockedBy");
   assert.deepEqual(fresh.map((s) => [s.issue, s.blocker]), [["slice 6.2", "slice 6.1"]]);
+});
+
+test("a link between two slices that the brief no longer orders is removed before any is added", () => {
+  const text = brief.replace('  - "2 · The checks (after 1)"', '  - "2 · The checks"\n  - "3 · The docs (after 2)"').replace('"1 · The theme"', '"1 · The theme (after 3)"');
+  const { goal } = readGoal("design/goals/06-portal.md", text);
+  const state = {
+    labels: LABELS,
+    milestones: [],
+    issues: [
+      { number: 11, title: "Goal 6 · 1 · The theme", body: sliceMarker(6, 1), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [] },
+      { number: 12, title: "Goal 6 · 2 · The checks", body: sliceMarker(6, 2), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [11, 20, 21] },
+      { number: 13, title: "Goal 6 · 3 · The docs", body: sliceMarker(6, 3), labels: ["kind:slice"], milestone: goal.milestone, blockedBy: [12] },
+      { number: 20, title: "a snag", body: "", state: "open", labels: ["kind:snag"] },
+      { number: 21, title: "Goal 7 · 1 · Another goal's slice", body: sliceMarker(7, 1), state: "open", labels: ["kind:slice"] },
+    ],
+  };
+  const links = plan({ goals: [goal], state, briefUrl: url }).filter((s) => /BlockedBy$/.test(s.do)).map((s) => [s.do, s.issue, s.blocker]);
+  assert.deepEqual(links, [["removeBlockedBy", 12, 11], ["addBlockedBy", 11, 13]], "the stale 2-after-1 goes first; the snag's link and another goal's slice stay");
+});
+
+test("every label fits GitHub's limits: a name of at most 50 characters, a description of at most 100", () => {
+  for (const l of [...LABELS, laneLabel("goal-123")]) {
+    assert.ok(l.name.length <= 50, l.name);
+    assert.ok(l.description.length <= 100, `${l.name}: ${l.description.length} characters`);
+  }
+});
+
+test("a parked goal's own plan carries `parked`; its snags, a shared, claimed or board issue never do, and it comes off on resuming", () => {
+  const parkedGoal = readGoal("design/goals/06-portal.md", brief.replace("status: ready", "status: parked")).goal;
+  const other = readGoal("design/goals/07-x.md", brief.replace("goal: 6", "goal: 7").replace('"Goal 6: the new portal"', '"Goal 7: x"')).goal;
+  const issues = [
+    { number: 50, title: "a slice", body: "", state: "open", labels: ["kind:slice", "goal-6"] },
+    { number: 51, title: "shared with a running goal", body: "", state: "open", labels: ["kind:snag", "goal-6", "goal-7"] },
+    { number: 52, title: "a board row", body: "", state: "open", labels: ["kind:capability", "goal-6"] },
+    { number: 53, title: "claimed by a running goal", body: "", state: "open", labels: ["kind:snag", "goal-6", "lane:goal-7"] },
+    { number: 54, title: "closed", body: "", state: "closed", labels: ["kind:slice", "goal-6"] },
+    { number: 55, title: "a pull request", body: "", state: "open", pullRequest: true, labels: ["goal-6"] },
+    { number: 56, title: "its own snag", body: "", state: "open", labels: ["kind:snag", "goal-6"] },
+    { number: 57, title: "a slice filed in a running goal's milestone", body: "", state: "open", labels: ["kind:slice", "goal-6"], milestone: "Goal 7: x" },
+    { number: 58, title: "its goal issue", body: "", state: "open", labels: ["kind:goal", "goal-6"], milestone: "Goal 6: the new portal" },
+  ];
+  const parkedSteps = (goals, list) => plan({ goals, state: { labels: LABELS, milestones: [], issues: list }, briefUrl: url }).filter((s) => s.do === "setParked").map((s) => [s.number, s.parked]);
+  assert.deepEqual(parkedSteps([parkedGoal, other], issues), [[50, true], [58, true]], "a snag stays in view for the framework goal to sort");
+  const resumed = readGoal("design/goals/06-portal.md", brief).goal;
+  assert.deepEqual(parkedSteps([resumed, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [[50, false]], "it comes off when the goal resumes");
+  assert.deepEqual(parkedSteps([parkedGoal, other], [{ ...issues[0], labels: [...issues[0].labels, "parked"] }]), [], "made once");
+  const closedWhileParked = { ...issues[0], state: "closed", labels: [...issues[0].labels, "parked"] };
+  assert.deepEqual(parkedSteps([parkedGoal, other], [closedWhileParked]), [[50, false]], "a closed slice comes back to the main views");
+  assert.deepEqual(parkedSteps([resumed, other], [closedWhileParked]), [[50, false]], "and after its goal resumes");
 });
 
 test("the goal page: the plain card, the progress, what is stuck and on whom, and where it stands", () => {

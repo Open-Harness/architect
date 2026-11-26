@@ -141,6 +141,9 @@ Already closed since the test drive: uniqueness over two fields is built, `Bluep
 
 ## 4. Capxul's first feature, for M7.11
 
+(Superseded by K44, 25 November 2026: Capxul's path starts with the books, HR and payroll; getting paid on chain is
+Goal 16's slice 2, later with the chain.)
+
 **The call: one person gets paid.** It is Aaron's of 20 November ("build first: one person getting paid: Account,
 Party, Invoice, Payment, Ledger entry"), cut to its floor:
 
