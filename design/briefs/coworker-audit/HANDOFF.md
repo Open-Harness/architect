@@ -8,7 +8,7 @@ that audited Coworker (pull request #1179). Read this file first, then `AGENTS.m
 Paste this as the opening message:
 
 > You lead the Coworker experiment. In `Open-Harness/orthograph`, read `AGENTS.md` and
-> `design/briefs/coworker-audit/HANDOFF.md` (on branch `design/coworker-audit` until #1179 merges, then on `main`),
+> `design/briefs/coworker-audit/HANDOFF.md` (on branch `design/coworker-audit`),
 > and run it. Start with step 0.
 
 ## What Aaron decided
@@ -205,9 +205,11 @@ Still holding, from `AGENTS.md`:
 
 ## What happens to the other pieces
 
-- **Pull request #1179 (the audit)** passed its review. It lands into `main` after #1100 merges; the designer's
-  session does that.
-- **Decision record K47** ("Coworker as a third build") is drafted and held by Goal 18's lead until Aaron confirms.
+- **Pull request #1179 (the audit)** passed its review, then was closed unmerged on 26 November by Goal 18's lead,
+  because Aaron asked for no open pull requests while K47 waits. Its branch, `design/coworker-audit`, is kept and the
+  pull request is listed in #1218; reopening it resumes it.
+- **Decision record K47** ("Coworker as a third build") is drafted in `k47-draft.md` beside this file, and its id is
+  held by Goal 18's lead until Aaron confirms.
   Its screens call must be rewritten for decision 3 above before it lands. Aaron's choice of a fast experiment may
   change its scope, so ask him before landing it.
 - **Lifting the result into `main`:**
