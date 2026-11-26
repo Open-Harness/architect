@@ -1,0 +1,48 @@
+<title>The Orthograph Manual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* One reading column, the films' own ink. A chapter opens with its film; everything in a box was recorded or quoted, and says which. */
+:root {
+  --bg: #f6f8fb; --panel: #ffffff; --panel2: #eef2f8; --rule: #d5dde9; --ink: #0c1a2c; --text2: #41526a; --muted: #6a7b93;
+  --blue: #0b63b8; --amber: #a35a00; --amberbg: #fff3df; --green: #0c7a4c; --greenbg: #e2f6ec; --red: #b3261e;
+  --term: #0e1c30; --termink: #dbe6f5; --termmuted: #8ea3c0; --termok: #54d898; --termno: #ff8080; --termcmd: #62c6ff;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; --mono: "JetBrains Mono", Menlo, Consolas, monospace; --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #08111f; --panel: #0e1c30; --panel2: #13253e; --rule: #25395a; --ink: #e9f0fa; --text2: #a9bcd6; --muted: #7d92ae;
+  --blue: #62c6ff; --amber: #ffb55c; --amberbg: #2a2010; --green: #54d898; --greenbg: #0f2a22; --red: #ff8080;
+  --term: #050c17; --termink: #dbe6f5; --termmuted: #8ea3c0; --termok: #54d898; --termno: #ff8080; --termcmd: #62c6ff; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #08111f; --panel: #0e1c30; --panel2: #13253e; --rule: #25395a; --ink: #e9f0fa; --text2: #a9bcd6; --muted: #7d92ae;
+  --blue: #62c6ff; --amber: #ffb55c; --amberbg: #2a2010; --green: #54d898; --greenbg: #0f2a22; --red: #ff8080;
+  --term: #050c17; --termink: #dbe6f5; --termmuted: #8ea3c0; --termok: #54d898; --termno: #ff8080; --termcmd: #62c6ff; color-scheme: dark; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 880px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; }
+.wrap > *, section > *, header > * { min-width: 0; }
+header, section { display: flex; flex-direction: column; gap: 16px; }
+section { margin-top: 40px; padding-top: 22px; border-top: 2px solid var(--ink); }
+h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.08; font-weight: 600; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h2 { font-size: clamp(26px, 4vw, 32px); line-height: 1.15; font-weight: 600; letter-spacing: -0.012em; margin: 0; text-wrap: balance; }
+h3 { font: 600 19px var(--label); text-transform: uppercase; letter-spacing: 0.14em; color: var(--blue); margin: 18px 0 0; }
+p { margin: 0; max-width: 68ch; } .lede { font-size: 20px; color: var(--text2); }
+ul, ol { margin: 0; padding-left: 22px; max-width: 70ch; display: flex; flex-direction: column; gap: 8px; } li > .file { margin-top: 10px; max-width: none; }
+code { font-family: var(--mono); font-size: 0.88em; overflow-wrap: anywhere; } b { font-weight: 600; }
+a { color: var(--blue); text-underline-offset: 3px; } a:focus-visible, video:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.eyebrow { font: 600 17px var(--label); text-transform: uppercase; letter-spacing: 0.16em; color: var(--blue); }
+nav { display: flex; flex-wrap: wrap; gap: 6px 10px; } nav a { font-size: 15px; padding: 5px 12px; border: 1px solid var(--rule); background: var(--panel); text-decoration: none; color: var(--ink); } nav a:hover { border-color: var(--blue); }
+.st, .file figcaption em { font: 600 13px var(--label); font-style: normal; text-transform: uppercase; letter-spacing: 0.12em; padding: 1px 8px; border: 1px solid currentColor; white-space: nowrap; }
+.run { color: var(--green); background: var(--greenbg); } .is, .can { color: var(--blue); background: var(--panel2); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 15px; color: var(--text2); } .legend span { display: inline-flex; gap: 8px; align-items: center; }
+.stands { border-left: 3px solid var(--amber); background: var(--amberbg); padding: 12px 16px; font-size: 16px; max-width: none; }
+.canon { border-bottom: 1px dotted var(--blue); } .canon i { font: 600 12px var(--label); font-style: normal; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-left: 6px; white-space: nowrap; }
+.film { margin: 0; } .film video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #08111f; border: 1px solid var(--rule); } .film figcaption { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+.file { margin: 0; background: var(--panel); border: 1px solid var(--rule); }
+.file figcaption { display: flex; flex-wrap: wrap; overflow-wrap: anywhere; justify-content: space-between; align-items: center; gap: 4px 12px; padding: 7px 14px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 13px; color: var(--muted); }
+pre.code { margin: 0; padding: 12px 0; overflow-x: auto; font-family: var(--mono); font-size: 14px; line-height: 1.7; font-variant-ligatures: none; tab-size: 2; }
+pre.code .ln { display: block; padding: 0 16px; white-space: pre; min-width: max-content; }
+pre.code.plain { background: var(--panel); border: 1px solid var(--rule); }
+pre.term { background: var(--term); color: var(--termink); } pre.term .cmd { color: var(--termcmd); } pre.term .ok { color: var(--termok); } pre.term .no { color: var(--termno); }
+.tablewrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; font-size: 15.5px; background: var(--panel); } th, td { border: 1px solid var(--rule); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { font: 600 14px var(--label); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); background: var(--panel2); }
+</style>

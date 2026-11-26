@@ -1,0 +1,7 @@
+$ curl -i -X POST http://127.0.0.1:4517/profile/get -H 'content-type: application/json' -d '{"handle":"firstpage"}'
+HTTP/1.1 200 OK
+Content-Length: 33
+Content-Type: application/json
+x-trace-id: 4d5e5c10469e77fc8c70ef6ee538573c
+
+{"handle":"firstpage","links":[]}

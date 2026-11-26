@@ -1,0 +1,149 @@
+{
+ "title": "Run it, break it, read the trace",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Run",
+  "Break",
+  "Trace",
+  "Rule",
+  "Decide"
+ ],
+ "about": "Every line of code in this film is read from examples/plugged-in, and every line of terminal output is replayed from docs/manual/captures, recorded by running the commands for real.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "scenes": [
+  {
+   "id": "run",
+   "title": "Run it",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "r1",
+     "text": "Everything is green. So you try it yourself, and something looks wrong."
+    },
+    {
+     "id": "r2",
+     "text": "ortho dev runs the app on your machine, with a local world. No cloud account.",
+     "say": "Ortho dev runs the app on your machine, with a local world. No cloud account."
+    },
+    {
+     "id": "r3",
+     "text": "Plugged In has no screens yet. So we use the command line tool that was generated from the blueprint."
+    },
+    {
+     "id": "r4",
+     "text": "Aaron claims a name: first page. It answers with a handle's id."
+    }
+   ]
+  },
+  {
+   "id": "break",
+   "title": "Break it",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "k1",
+     "text": "Then he claims a second name.",
+     "gap": 0.7
+    },
+    {
+     "id": "k2",
+     "text": "Refused. A code, HN-002, and a name: handle already owned.",
+     "say": "Refused. A code, H N zero zero two, and a name: handle already owned."
+    },
+    {
+     "id": "k3",
+     "text": "Is that a bug? You don't have to know. You say what you saw: I asked for a second name, and it said no. And you hand that to your agent."
+    }
+   ]
+  },
+  {
+   "id": "trace",
+   "title": "Read the trace",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "t1",
+     "text": "The agent doesn't guess, and it doesn't open the handler. It makes the same call again, and keeps one thing from the answer: the trace's id, in a header."
+    },
+    {
+     "id": "t2",
+     "text": "Then one command. ortho telemetry trace, with that id.",
+     "say": "Then one command. Ortho, telemetry, trace, with that id."
+    },
+    {
+     "id": "t3",
+     "text": "The trace is everything that one call did. Read the first line. The operation. How long it took. And the word refused, with the refusal's name."
+    },
+    {
+     "id": "t4",
+     "text": "The next line is the cause. A rule, by its name in the blueprint: one name per person."
+    },
+    {
+     "id": "t5",
+     "text": "And look at what's missing. The record step ran. There is no commit. The rule was checked after the work, and before anything was saved."
+    },
+    {
+     "id": "t6",
+     "text": "Beside it, a call that was answered. Its last step is the commit."
+    }
+   ]
+  },
+  {
+   "id": "rule",
+   "title": "The line that gave it",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "u1",
+     "text": "So the refusal didn't come from the handler at all. It came from six lines of blueprint."
+    },
+    {
+     "id": "u2",
+     "text": "A person holds one claimed name at a time. Unique on the owner, while the handle is claimed. Refuse with: handle already owned."
+    },
+    {
+     "id": "u3",
+     "text": "From what you saw on screen, to the line that gave it, in two commands."
+    }
+   ]
+  },
+  {
+   "id": "decide",
+   "title": "Yours to decide",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "v1",
+     "text": "Now the question is yours, and it's a real one. Should a person hold only one name?"
+    },
+    {
+     "id": "v2",
+     "text": "If yes, the app is right, and the message needs work. If no, you change the rule, and that's a later chapter."
+    },
+    {
+     "id": "v3",
+     "text": "Two things to watch for. Refused means a declared answer, with a code. A defect is the server failing, and it's marked as one. Don't read one as the other."
+    },
+    {
+     "id": "v4",
+     "text": "And if an explanation doesn't name a line of the blueprint, ask for the trace.",
+     "gap": 0.6
+    },
+    {
+     "id": "v5",
+     "text": "Two parts are missing today. No command signs a test person in to a local app, so the recording asks the local world's own door. And the generated tool doesn't print the trace's id."
+    }
+   ]
+  }
+ ]
+}

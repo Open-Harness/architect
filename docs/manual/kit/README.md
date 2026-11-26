@@ -8,6 +8,7 @@ kit the milestones plan (M3.12) is parked. Until then, copy it in:
 
 ```sh
 cp docs/manual/kit/AGENTS.md <your app>/AGENTS.md
+mkdir -p <your app>/.agents
 cp -r docs/manual/kit/skills <your app>/.agents/skills
 ```
 

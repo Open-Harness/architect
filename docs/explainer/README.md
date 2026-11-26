@@ -1,6 +1,6 @@
 # The explainer films
 
-Three narrated films about Orthograph, for developers. All are code: the pictures are a web page drawn frame by frame,
+Six narrated films about Orthograph, for developers. All are code: the pictures are a web page drawn frame by frame,
 the voice is synthesised from a script, and every scene is timed by the words the voice actually spoke.
 
 | Film | Folder | What it is |
@@ -8,6 +8,14 @@ the voice is synthesised from a script, and every scene is timed by the words th
 | **How Orthograph works** (5:25) | `films/how-it-works/` | What runs today, shown on Plugged In. One operation, `handle.claim`, through the loop. |
 | **Capxul Lite: Describe It** | `films/capxul-describe/` | Part one of the design, on a stripped-back Capxul: the problem, the system, where each thing lives, who is who, rules, events, one sealed spend followed through, and a proposal that waits for its owners. |
 | **Capxul Lite: What Falls Out** | `films/capxul-runs/` | Part two: the contract, the server and its two actors, the ways in, the app, a journey run on screen, a rule change as a published version, and the environments it runs in. |
+
+The manual's films, one for each chapter of `docs/manual/chapters/`, share `films/manual/` (their data loader and scene kit):
+
+| Film | Folder | Chapter |
+|---|---|---|
+| **Say what done means** | `films/say-done/` | 4: stubs made while planning, a journey read as a story, and a first run that is red on purpose |
+| **Build until green** | `films/build-green/` | 5: one brief, one handler, three rungs from red to green |
+| **Run it, break it, read the trace** | `films/read-trace/` | 7: a refusal followed from the terminal to the rule that gave it |
 
 ## The rule each film keeps
 
@@ -23,6 +31,10 @@ it appears. Output that was designed, not recorded, is labelled so on screen, an
 into what runs today, what is decided, and what is proposed. They replace one earlier film of eight minutes, recut after its
 first viewing; `films/capxul-lite/board/board.html` has the notes and the decisions that led here.
 
+**The manual's films invent nothing either.** Code is read from `examples/plugged-in` and terminal output is replayed from
+`docs/manual/captures/`, which `docs/manual/capture.sh` records. The second film's climb is a replay, and says so: one
+handler put at three points, and the real run recorded at each.
+
 ## What is where
 
 | Path | What it is |
@@ -32,6 +44,7 @@ first viewing; `films/capxul-lite/board/board.html` has the notes and the decisi
 | `films/<film>/data.mjs` | what the film quotes: it reads files, and hands them to the scenes |
 | `films/how-it-works/captures/` | recorded output of `ortho` on Plugged In |
 | `films/capxul-lite/app/` | the Capxul Lite design both films quote: blueprint, a Solidity handler, a journey, and sketches of what falls out |
+| `films/manual/data.mjs`, `films/manual/kit.js` | what the manual's three films quote, and the scene helpers they share |
 | `films/capxul-lite/kit.js` | scene helpers both films share; a script names it under `uses` |
 | `films/capxul-lite/supplement/` | the docs page for both films; it quotes the same files |
 | `films/capxul-lite/board/board.html` | the design board written after the first viewing: the notes on the film, the next step, every problem found and what was proposed for it. One file, published as it is |

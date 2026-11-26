@@ -22,9 +22,9 @@ It is arranged, by three things:
 
 | Role | May touch | Is given | Is checked by |
 |---|---|---|---|
-| designer | the plan and the blueprint | the problem, in the owner's words | the owner reads the blueprint, and `ortho check` passes |
-| author | journeys and nothing else | the blueprint, and one operation or one finding | its journeys fail on empty handlers, and each failure names what was expected |
-| builder | the one handler its brief names | one brief, from `ortho brief` | the journeys that call the operation pass, and `ortho check` passes |
+| designer | the plan, the blueprint and the journey stubs | the problem, in the owner's words | the owner reads the blueprint, and every blank `ortho check` lists is a question the owner has seen |
+| author | journeys and their starting worlds, and nothing else | the blueprint, and one operation or one finding | each journey step fails on empty handlers or is marked proved by the description, and each failure names what was expected |
+| builder | the one handler its brief names | one brief, from `ortho brief` | `ortho prove` and `ortho check` pass, each run whole, with no flags |
 | reviewer | nothing: it reads | the change and the brief it was made from | it wrote none of what it reviews |
 | spike | throwaway code under `spikes/` | one question | one page with the answer and what was tried |
 
@@ -35,11 +35,11 @@ matters is that the builder of a handler never wrote, and cannot edit, the journ
 
 | When | You | You read |
 |---|---|---|
-| Something new is wanted | say the problem to a **designer** | the blueprint it changed, and the blanks `ortho check` lists as questions |
+| Something new is wanted | say the problem to a **designer** | the blueprint it changed, the journey stubs it added, and the blanks `ortho check` lists as questions |
 | You are unsure it can work | give a **spike** one question | one page: the answer, and what is still at risk |
-| The description is agreed | ask an **author** for the journeys | the journeys, as stories, and a first run that is red on purpose |
+| The description is agreed | ask an **author** to fill the journey stubs the designer left | the journeys, as stories, and a first run that is red on purpose |
 | The journeys are agreed | hand a **builder** one brief at a time | which journeys are green, and what is still red |
-| A change is ready | give it to a **reviewer** that wrote none of it | its findings, and what `ortho impact` says the change touched |
+| A change is ready | give it to a **reviewer** that wrote none of it | its findings, and what `ortho impact` says went stale since the last full proof on that machine |
 
 You never have to read a handler to do any of this. If you find you must, something is in the code that belongs in the
 blueprint, and that is the finding.
@@ -53,8 +53,10 @@ must pass. Hand it over as it is. A builder given only its brief has no room to 
 ## The climb
 
 Building is climbing. The builder runs the journeys, reads the first failure, fixes the handler, and runs them again.
-`ortho prove --only` runs one journey, `ortho prove` runs them all, and `ortho prove --empty` runs them on empty
-handlers, which is how an author shows a journey can fail. You watch one number go down: the steps that are still red.
+`ortho prove --only "<journey's name>"` runs one journey, by the name it declares. `ortho prove` runs them all, and only
+that run means done: a green run of one journey still ends in a failing line, because the operations it never reached
+fail coverage. `ortho prove --empty` runs them on empty handlers, which is how an author shows a journey can fail. You
+watch one number go down: the steps that are still red.
 
 ## When it goes wrong
 
@@ -69,6 +71,9 @@ handlers, which is how an author shows a journey can fail. You watch one number 
 ## What Orthograph does not do for you yet
 
 - It does not put the kit into a new app.
+- The journey commands are rough, and are being fixed (26 November 2026). `ortho add journeys <thing>` writes no stub for a
+  refusal that a rule gives. `ortho check` lists a blank only under `blueprint/`. The add commands write journeys to
+  `blueprint/journeys/`, and Plugged In keeps its own in `journeys/`; both are read.
 - It has no command that starts an agent in a role, or that stops a builder editing a journey. This repository enforces
   that for itself in its own CI; an app has to keep the rule by how it hands out work.
 - It has no board of work that many agents build from. That is designed, and not built.

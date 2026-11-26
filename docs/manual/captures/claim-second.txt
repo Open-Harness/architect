@@ -1,0 +1,3 @@
+$ plugged-in handle claim --name secondpage
+[HN-002] HandleAlreadyOwned
+exit 12
