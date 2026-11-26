@@ -1,0 +1,3 @@
+# #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/deployment/deployment.test.ts > SafeDeployment, Safe 1.4.1 with the 4337 module v0.3.0 > is the whole deployment, at the canonical checksummed addresses
+src/modules/deployment/deployment.test.ts > SafeDeployment, Safe 1.4.1 with the 4337 module v0.3.0 > the proxy creation code is SafeProxy 1.4.1's, pinned (infrastructure:P/safe-contracts.ts:59-69)

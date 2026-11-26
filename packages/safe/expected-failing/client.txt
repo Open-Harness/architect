@@ -1,0 +1,13 @@
+# #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/client/client.test.ts > SafeCalls, the Safe's own call data > approveHash, swapOwner and addOwnerWithThreshold
+src/modules/client/client.test.ts > SafeCalls, the Safe's own call data > execTransaction carries every field but the nonce, in Safe's order, then the signatures
+src/modules/client/client.test.ts > on Anvil, a SafeTx's digest is the Safe's getTransactionHash > for a call with data at a later nonce
+src/modules/client/client.test.ts > on Anvil, a SafeTx's digest is the Safe's getTransactionHash > for a delegatecall with every gas and refund field set
+src/modules/client/client.test.ts > on Anvil, a SafeTx's digest is the Safe's getTransactionHash > for a payment at nonce 0
+src/modules/client/client.test.ts > on Anvil, approveHash > an owner approves a SafeTx's hash, then anyone executes it on that approval; an unapproved one is refused GS025
+src/modules/client/client.test.ts > on Anvil, execTransaction sent by someone who is not an owner > a SafeTx signed by someone who is not an owner is refused GS026
+src/modules/client/client.test.ts > on Anvil, execTransaction sent by someone who is not an owner > a replayed SafeTx is refused GS026, typed, before anything is sent
+src/modules/client/client.test.ts > on Anvil, execTransaction sent by someone who is not an owner > no signatures at all is refused GS020
+src/modules/client/client.test.ts > on Anvil, execTransaction sent by someone who is not an owner > pays on the owner's signature and moves the nonce on by one
+src/modules/client/client.test.ts > on Anvil, swapOwner through a SafeTx > swaps the owner for a new one; a swap naming the wrong previous owner fails inside, refused GS013
+src/modules/client/client.test.ts > on Anvil, the reads > owners, threshold and nonce of a new Safe, and again after an owner is added at threshold 2

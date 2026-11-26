@@ -1,0 +1,15 @@
+# #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/address/address.test.ts > the initializer, the implementation's setup call (infrastructure:P/organization-safe.ts:44-71) > an owner written in lower case gives the same initializer
+src/modules/address/address.test.ts > the initializer, the implementation's setup call (infrastructure:P/organization-safe.ts:44-71) > for owner A it is setup([owner], 1, SafeModuleSetup, enableModules([4337 module]), 4337 module, no payment), byte for byte
+src/modules/address/address.test.ts > the initializer, the implementation's setup call (infrastructure:P/organization-safe.ts:44-71) > for owner B it is setup([owner], 1, SafeModuleSetup, enableModules([4337 module]), 4337 module, no payment), byte for byte
+src/modules/address/address.test.ts > the initializer, the implementation's setup call (infrastructure:P/organization-safe.ts:44-71) > its keccak-256 for 'owner A, salt nonce 0' is the vector's
+src/modules/address/address.test.ts > the initializer, the implementation's setup call (infrastructure:P/organization-safe.ts:44-71) > its keccak-256 for 'owner B, salt nonce 0' is the vector's
+src/modules/address/address.test.ts > the predicted address, CREATE2 from the factory > an owner written in lower case predicts the same address
+src/modules/address/address.test.ts > the predicted address, CREATE2 from the factory > for 'owner A, salt nonce 0' it is the vector's address, checksummed
+src/modules/address/address.test.ts > the predicted address, CREATE2 from the factory > for 'owner A, salt nonce 1' it is the vector's address, checksummed
+src/modules/address/address.test.ts > the predicted address, CREATE2 from the factory > for 'owner B, salt nonce 0' it is the vector's address, checksummed
+src/modules/address/address.test.ts > the predicted address, CREATE2 from the factory > for 'owner B, salt nonce 2^255 + 7' it is the vector's address, checksummed
+src/modules/address/address.test.ts > the salt, keccak256(encodePacked(keccak256(initializer), saltNonce)) > for 'owner A, salt nonce 0' it is the vector's
+src/modules/address/address.test.ts > the salt, keccak256(encodePacked(keccak256(initializer), saltNonce)) > for 'owner A, salt nonce 1' it is the vector's
+src/modules/address/address.test.ts > the salt, keccak256(encodePacked(keccak256(initializer), saltNonce)) > for 'owner B, salt nonce 0' it is the vector's
+src/modules/address/address.test.ts > the salt, keccak256(encodePacked(keccak256(initializer), saltNonce)) > for 'owner B, salt nonce 2^255 + 7' it is the vector's

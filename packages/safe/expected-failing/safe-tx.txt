@@ -1,0 +1,11 @@
+# #1161 (A3, the safe adapter): the checks, red until the build lands. Clears with the goal-16/safe-adapter-build pull request.
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.call, a transaction that pays nobody for gas > fills value and operation with 0, and every gas and refund field with 0 or the zero address
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.call, a transaction that pays nobody for gas > keeps the value and operation it is given, and the nonce as given
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for a delegatecall
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for another Safe
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for another chain id
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for empty data
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for every gas and refund field set
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for the base transaction on Base Sepolia
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.digest, the EIP-712 hash a Safe's getTransactionHash returns > for the next nonce
+src/modules/safe-tx/safe-tx.test.ts > SafeTx.typedData > is the SafeTx type, a domain of the chain id and the Safe alone, and the nonce in the message
