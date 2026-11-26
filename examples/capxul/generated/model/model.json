@@ -103591,6 +103591,142 @@
           ]
         },
         {
+          "title": "a wage that isn't a number is refused, naming the wage",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "abc",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNotANumber",
+              "fields": {
+                "figure": "wage"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a negative year to date is refused, naming the year to date",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "1500000000",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "-1",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNegative",
+              "fields": {
+                "figure": "yearToDate"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a year to date that isn't whole base units is refused, naming the year to date",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "1500000000",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "3000000000.25",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountFractional",
+              "fields": {
+                "figure": "yearToDate"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a year to date that isn't a number is refused, naming the year to date",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "TX",
+              "yearToDate": "ten",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "AmountNotANumber",
+              "fields": {
+                "figure": "yearToDate"
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
           "title": "a work state that isn't one of the fifty or DC is refused, naming it",
           "call": {
             "actor": "ada",
@@ -103651,9 +103787,37 @@
               "value": []
             }
           ]
+        },
+        {
+          "title": "DC is a work state as the fifty are",
+          "call": {
+            "actor": "ada",
+            "operation": "us-withholding.compute",
+            "payload": {
+              "wage": "0",
+              "frequency": "biweekly",
+              "payDate": "2026-12-04",
+              "workState": "DC",
+              "yearToDate": "0",
+              "w4": {
+                "filingStatus": "single",
+                "step2": false,
+                "step3Credits": "0",
+                "step4aOtherIncome": "0",
+                "step4bDeductions": "0",
+                "step4cExtraWithholding": "0"
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": []
+            }
+          ]
         }
       ],
-      "sourceHash": "a27421e10a36733db6198f24d13bbc4cb32f0a67cbeeb3db944772fedad9ead4"
+      "sourceHash": "9fe3aab78cc46c50a2a9644f9232e196df14ff7dd73ec3d83179a2e9c8ac78de"
     },
     "journeys/transfer-an-employee.ts": {
       "name": "transfer an employee",
