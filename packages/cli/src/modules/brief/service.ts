@@ -9,6 +9,12 @@ const forbidden = [
 const EVALS = ["answer shape", "declared errors", "machine path", "events", "who may call", "steps", "performance", "coverage", "explainability"];
 
 const of: BriefApi["of"] = (model, name, journeys): Briefed => {
+  // An operation with a blank is not in the model's operations until it is filled (#742): say that, and which blanks, not "no such operation".
+  const blank = model.blankOperations?.[name];
+  if (blank && blank.kind !== "operation") return { unknown: `${name} is a read, which has no handler to brief, and it still has ${blank.blanks.length} blank${blank.blanks.length === 1 ? "" : "s"} in ${blank.file}` };
+  if (blank) {
+    return { unknown: [`${name} has no brief yet: it still has ${blank.blanks.length} blank${blank.blanks.length === 1 ? "" : "s"} in ${blank.file}`, ...blank.blanks.map((b) => `  ${b}`), `Fill ${blank.blanks.length === 1 ? "it" : "them"}, then run ortho brief ${name} again.`].join("\n") };
+  }
   const op = model.operations[name];
   if (!op || op.kind !== "operation") return { unknown: `${name} is not an operation with a handler: ${Object.values(model.operations).filter((o) => o.kind === "operation").map((o) => o.name).join(", ")}` };
   const thing = model.things[op.thing]!;

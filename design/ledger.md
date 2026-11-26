@@ -586,7 +586,7 @@ they are closed. The unowned items for each page are in section 1, not repeated 
 | id | item | source | status | slice |
 |---|---|---|---|---|
 | `BLU-01` | An operation that still has a blank is dropped from the model, so an unfinished model looks smaller instead of unfinished; the design also wants an `implementation: missing \| scaffold \| written` marker per operation, which M1.03 does not name. **(high)** | design/frame/delta.md:28<br>design/frame/README.md:221<br>design/briefs/F4-portal-plan-and-state.md:76 | open | M1.03 |
-| `BLU-02` | Journeys live in two places: prove reads both `blueprint/journeys/` and the root `journeys/`, acme keeps its journeys at the root, while `forman add journey` and the canon use `blueprint/journeys/`. **(high)** | packages/prove/src/modules/journeys/internal/load.ts:35-36<br>canon note on blueprint.mdx (PR #38) | open | M1.03 |
+| `BLU-02` | Journeys live in two places: prove reads both `blueprint/journeys/` and the root `journeys/`, acme keeps its journeys at the root, while `forman add journey` and the canon use `blueprint/journeys/`. **(high)** `ADD-journey-places` (26 November 2026): the taught place is `blueprint/journeys/`, every command reads both, and the examples stay at the root until a journey author moves them. | packages/prove/src/modules/journeys/internal/load.ts:35-36<br>canon note on blueprint.mdx (PR #38) | open | M1.03 |
 | `BLU-04` | The model leaves out journeys, starting worlds and role rules, so agents and projections cannot see them; the frame's "where today falls short" list repeats this with several other gaps that have their own slices. **(high)** | design/frame/delta.md:27<br>design/frame/README.md:221 | open | M1.03 |
 
 <details><summary>Closed: 1 fixed or superseded</summary>
