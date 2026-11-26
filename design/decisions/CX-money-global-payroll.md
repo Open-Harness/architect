@@ -11,11 +11,11 @@ paying contractors abroad: one form on file (the W-8BEN), nothing withheld, noth
 contractors need a W-9 and a yearly 1099. Only American employees need a US payroll tax engine. Employees abroad go
 through an employer of record, which employs them locally for the customer.
 
-Aaron decides seven things (section 7): start payroll with contractors on the main path, with the US tax engine
-built alongside in its own lane; let the books hold several currencies, reopening "assume dollars"; pick the default reporting
-currency, dollars or USDC; take exchange rates from each payment for now; record employers of record by hand for now;
-decide whether Capxul pays contractors itself before Bridge's slice; and have a professional answer section 6 before
-real money moves.
+Aaron decided seven things on 26 November (section 7): payroll starts with contractors on the main path, with the US
+tax engine built alongside in its own lane; the books hold several currencies, reopening "assume dollars"; a company
+reports in US dollars by default, with USDC its own asset; exchange rates come from each payment and by hand for now;
+employers of record are recorded by hand for now; contractors are recorded first and paid through Bridge and the Safe
+when their slices come; and a professional answers section 6 before real money moves.
 
 Outside sources are data, read on 26 November 2026 and cited by link; the detail is in the appendix. **This is not
 legal or tax advice.** Each point marked *unsure* is one the sources didn't settle; section 6 words them for a
@@ -72,8 +72,8 @@ Taken from ERPNext's own shape at `a6f54f9c` (the commit `examples/capxul/doctyp
    standard yet (*unsure* how to classify it, question 6). Keeping them apart costs nothing at a rate of one.
 2. **An account has one currency** (ERPNext's `account_currency`), set when it is made and fixed once it has lines: the
    Safe's account is USDC, the Bridge account is what Bridge holds, a UK bank account is pounds.
-3. **A company has one reporting currency** (ERPNext's `default_currency`), any asset. Every report is in it. Which
-   asset is the default is decision 3. Today's companies, in USDC, stay valid as companies reporting in USDC.
+3. **A company has one reporting currency** (ERPNext's `default_currency`), any asset. Every report is in it. US
+   dollars are the default (decision 3). Today's companies, in USDC, stay valid as companies reporting in USDC.
 4. **Every ledger line carries two amounts** (ERPNext's GL Entry): `debit` and `credit` in the company's currency, and
    `debitInAccountCurrency` and `creditInAccountCurrency` in the account's. Lines balance in the company's currency. An
    account's balance is read in its own currency, a report in the company's. ERPNext's third pair (transaction
@@ -273,7 +273,7 @@ Live docs:
 - `examples/capxul/doctypes.md`: "pegged_currencies.json` | money-units question (CX-grill §3) |" → "pegged_currencies.json` | in `rates` (CX-money-global-payroll) |"
 - `examples/capxul/blueprint/assets/usdc.ts`: "The one dollar asset every Capxul company keeps its books in, for now" → "USDC, held in a Safe or at Bridge, its own asset beside US dollars (CX-money-global-payroll)"
 - `docs/canon/status.md`: "| books | none | `packages/orthograph/src/modules/values`" → "| books | goal-16 | `packages/orthograph/src/modules/values`"
-- `docs/canon/status.md`: "deferred by Aaron's call of 24 November 2026: every Capxul amount is USDC for now (`CX-grill.md`, section 3, #926); unclaimed while parked, its checks draft #923; `M6-money.md` leaves a per-row currency for later; 35 doctypes carry exchange rates; base units stand, and a mismatch is Orthograph's money-units question (`CX-grill.md`, section 3); after M6.10" → "unparked and claimed by CX-money-global-payroll; its checks draft #923, rewritten to it; `M6-money.md`'s per-row currency is built here; 35 doctypes carry exchange rates; after M6.10"
+- `docs/canon/status.md`: "deferred by Aaron's call of 24 November 2026: every Capxul amount is USDC for now (`CX-grill.md`, section 3, #926); unclaimed while parked, its checks draft #923; `M6-money.md` leaves a per-row currency for later; 35 doctypes carry exchange rates; base units stand, and a mismatch is Orthograph's money-units question (`CX-grill.md`, section 3); after M6.10" → "unparked and claimed by CX-money-global-payroll; its checks draft #923, rewritten to it; `M6-money.md`'s per-row currency is to be built here; 35 doctypes carry exchange rates; after M6.10"
 
 Dated records, each gaining "(Superseded by CX-money-global-payroll, <date>)" beside the words:
 
