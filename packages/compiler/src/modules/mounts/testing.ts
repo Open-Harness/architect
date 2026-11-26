@@ -88,6 +88,7 @@ export const books = (change: Partial<Record<Exclude<Name, "ledger" | "crm">, Pl
       // A struct holding the set and a reference to it, a struct inside a struct, a list of structs, and plain ones beside them.
       line: Blueprint.value(Schema.Struct({ kind: VoucherType.schema, against: Voucher.schema, note: Schema.String })),
       deep: Blueprint.value(Schema.Struct({ inner: Schema.Struct({ kind: VoucherType.schema }) })),
+      deeper: Blueprint.value(Schema.Struct({ a: Schema.Struct({ b: Schema.Struct({ kind: VoucherType.schema }) }) })),
       lines: Blueprint.list(Blueprint.value(Schema.Struct({ kind: VoucherType.schema, note: Schema.String }))),
       plainLine: Blueprint.value(Schema.Struct({ note: Schema.String })),
       plainLines: Blueprint.list(Blueprint.value(Schema.Struct({ note: Schema.String }))),

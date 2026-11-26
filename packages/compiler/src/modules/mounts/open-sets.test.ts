@@ -141,6 +141,7 @@ describe("#1132: an open set holds the members of the features that add to it", 
     // Only the fields that hold a set are named, each with its model: `note` is plain text and isn't.
     expect(payload?.["line"]?.value, "a struct").toEqual({ type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)), against: expect.objectContaining(reference(VOUCHERS)) } });
     expect(payload?.["deep"]?.value, "a struct inside a struct").toEqual({ type: "schema", struct: { inner: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } } });
+    expect(payload?.["deeper"]?.value, "three structs deep").toEqual({ type: "schema", struct: { a: { type: "schema", struct: { b: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } } } } });
     expect(payload?.["lines"]?.value, "a list of structs").toEqual({ type: "schema", format: "list", fields: ["kind", "note"], item: { type: "schema", struct: { kind: expect.objectContaining(choice(VOUCHERS)) } } });
     expect(payload?.["plainLine"]?.value, "a struct holding no set").toEqual({ type: "schema" });
     // With invoicing mounted, the member it adds is in the struct's field too.

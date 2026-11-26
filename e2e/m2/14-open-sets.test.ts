@@ -7,7 +7,7 @@
 // (its own member: Lead): a set is its owner's and its export's, so the two never share a member. The app owns two open sets itself,
 // `Channel` (Web, Phone) and `Tag` (no member). The app mounts the ledger, payments, parties and the crm; invoicing is installed and never
 // mounted. The app's own `posting` thing holds a voucher type, a reference to a voucher and to a party, the crm's party type and a channel;
-// `posting.record` takes those, an optional tag, a list of voucher types, a struct holding one and a list of such structs. The real command generates the app; a world runs it over
+// `posting.record` takes those, an optional tag, a list of voucher types, a list of voucher references, a struct holding a voucher type and a reference, and a list of structs. The real command generates the app; a world runs it over
 // local D1, and ada calls it through the API, MCP and the generated CLI. The generated SDK is called on its own, with nothing listening.
 // Once the world has stopped, its D1 file is read.
 //
@@ -102,11 +102,12 @@ export const Posting = Blueprint.thing({ description: "A posting the app keeps."
   "blueprint/things/posting/verbs/record.ts": `import { Blueprint, Schema } from "orthograph";
 import { Posting } from "../thing.ts";
 import { Tag } from "../../../values/channels.ts";
-import { VoucherType } from "@fixture/ledger/blueprint/values/ledger.js";
+import { Voucher, VoucherType } from "@fixture/ledger/blueprint/values/ledger.js";
 export default Blueprint.operation(Posting, {
   description: "Record a posting.",
   payload: { posting: Blueprint.id("pst"), tag: Blueprint.optional(Tag), kinds: Blueprint.list(VoucherType),
-    line: Blueprint.value(Schema.Struct({ kind: VoucherType.schema, note: Schema.String })),
+    line: Blueprint.value(Schema.Struct({ kind: VoucherType.schema, against: Voucher.schema, note: Schema.String })),
+    refs: Blueprint.list(Voucher),
     lines: Blueprint.list(Blueprint.value(Schema.Struct({ kind: VoucherType.schema }))),
     voucherType: Posting.fields.voucherType, voucher: Posting.fields.voucher, party: Posting.fields.party, contactType: Posting.fields.contactType, channel: Posting.fields.channel },
   answer: { posting: Posting.fields.id },
@@ -183,6 +184,7 @@ const membersAt = (property: unknown, root: unknown, shape: boolean | "list" | "
     if (shape === "structs" && (outer?.["type"] !== "array" || ["prefixItems", "additionalItems", "contains", "anyOf", "oneOf", "allOf", "not"].some((k) => outer !== undefined && k in outer))) return `the list is loosened: ${JSON.stringify(outer)}`;
     const object = resolved(shape === "structs" ? outer?.["items"] : outer, root);
     if (["anyOf", "oneOf", "allOf", "not"].some((k) => object !== undefined && k in object)) return `the struct is loosened: ${JSON.stringify(object)}`;
+    if (!Array.isArray(object?.["required"]) || !(object["required"] as ReadonlyArray<unknown>).includes("kind")) return `the struct's kind isn't required: ${JSON.stringify(object)}`;
     return membersAt((object?.["properties"] as Record<string, unknown> | undefined)?.["kind"], root, false);
   }
   const outer = resolved(property, root);
@@ -270,10 +272,10 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         const post = sender(url, ada);
         let n = 0;
         const next = () => `pst_${String(++n)}`;
-        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string; tag?: string; kinds?: ReadonlyArray<string>; line?: object; lines?: ReadonlyArray<object> } = {}) =>
-          post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], line: { kind: "Journal Entry", note: "n" }, lines: [{ kind: "Journal Entry" }], ...more });
+        const record = (kind: string, v: unknown, party: unknown, more: { contactType?: string; channel?: string; tag?: string; kinds?: ReadonlyArray<string>; line?: object; lines?: ReadonlyArray<object>; refs?: ReadonlyArray<object> } = {}) =>
+          post("posting/record", { posting: next(), voucherType: kind, voucher: v, party, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], line: { kind: "Journal Entry", against: voucher("Journal Entry"), note: "n" }, lines: [{ kind: "Journal Entry" }], refs: [voucher("Journal Entry")], ...more });
         const api = {
-          payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Contra Entry"], line: { kind: "Payment Entry", note: "a mounted feature's member, in a struct" }, lines: [{ kind: "Payment Entry" }, { kind: "Contra Entry" }] }),
+          payment: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Contra Entry"], line: { kind: "Payment Entry", against: voucher("Payment Entry"), note: "a mounted feature's member, in a struct" }, lines: [{ kind: "Payment Entry" }, { kind: "Contra Entry" }], refs: [voucher("Payment Entry")] }),
           journal: await record("Journal Entry", voucher("Journal Entry", "j_1"), { kind: "Supplier", id: "s_1" }, { channel: "Phone" }),
           unmountedKind: await record("Sales Invoice", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }),
           unmountedRef: await record("Payment Entry", voucher("Sales Invoice"), { kind: "Customer", id: "c_1" }),
@@ -294,9 +296,11 @@ describe("14 an open set holds the mounted features' members, at every door, on 
           // A set with no member takes nothing.
           emptySet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { tag: "Anything" }),
           listBare: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: "Payment Entry" as never }),
-          structUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Sales Invoice", note: "n" } }),
+          structUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Sales Invoice", against: voucher("Payment Entry"), note: "n" } }),
+          structUnmountedRef: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Journal Entry", against: voucher("Sales Invoice"), note: "n" } }),
+          refsUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { refs: [voucher("Payment Entry"), voucher("Sales Invoice")] }),
           structsUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { lines: [{ kind: "Payment Entry" }, { kind: "Sales Invoice" }] }),
-          structOtherSet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Customer", note: "n" } }),
+          structOtherSet: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { line: { kind: "Customer", against: voucher("Payment Entry"), note: "n" } }),
           listUnmounted: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { kinds: ["Payment Entry", "Sales Invoice"] }),
           noSuchChannel: await record("Payment Entry", voucher("Payment Entry"), { kind: "Customer", id: "c_1" }, { channel: "Fax" }),
         };
@@ -310,13 +314,13 @@ describe("14 an open set holds the mounted features' members, at every door, on 
         };
         const tool = (await rpc("tools/list", {})).result?.tools?.find((t) => t.name === "posting.record");
         const mcpCall = async (kind: string, contactType = "Lead") =>
-          (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" }, contactType, channel: "Web", kinds: [kind], line: { kind, note: "n" }, lines: [{ kind }] } })).result;
+          (await rpc("tools/call", { name: "posting.record", arguments: { posting: next(), voucherType: kind, voucher: voucher(kind), party: { kind: "Customer", id: "c_1" }, contactType, channel: "Web", kinds: [kind], line: { kind, against: voucher(kind), note: "n" }, lines: [{ kind }], refs: [voucher(kind)] } })).result;
         // The crm's set is another set of the same name: the ledger's member is not one of it.
         const mcp = { tool, accepted: await mcpCall("Payment Entry"), refused: await mcpCall("Sales Invoice"), otherSameName: await mcpCall("Payment Entry", "Customer") };
-        const cli = (kind: string, contactType = "Lead") => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }), "--contactType", contactType, "--channel", "Web", "--kinds", JSON.stringify([kind]), "--line", JSON.stringify({ kind, note: "n" }), "--lines", JSON.stringify([{ kind }]));
+        const cli = (kind: string, contactType = "Lead", lineKind = kind) => acmeCli(root, url, ada, "posting", "record", "--posting", next(), "--voucherType", kind, "--voucher", JSON.stringify(voucher(kind)), "--party", JSON.stringify({ kind: "Customer", id: "c_1" }), "--contactType", contactType, "--channel", "Web", "--kinds", JSON.stringify([kind]), "--line", JSON.stringify({ kind: lineKind, against: voucher(kind), note: "n" }), "--lines", JSON.stringify([{ kind }]), "--refs", JSON.stringify([voucher(kind)]));
         const help = acmeCli(root, url, ada, "posting", "record", "--help");
         // The accepted call is a mounted feature's member: a CLI that knows only the owner's own members would refuse it.
-        return { api, mcp, cli: { help, accepted: cli("Payment Entry"), refused: cli("Sales Invoice"), otherSameName: cli("Payment Entry", "Customer") } };
+        return { api, mcp, cli: { help, accepted: cli("Payment Entry"), refused: cli("Sales Invoice"), otherSameName: cli("Payment Entry", "Customer"), inLine: cli("Payment Entry", "Lead", "Sales Invoice") } };
       });
     })));
     nothingRunning(root);
@@ -325,11 +329,12 @@ describe("14 an open set holds the mounted features' members, at every door, on 
     // and fails only for want of a server.
     writeFileSync(join(root, "sdk-probe.ts"), `import { Effect, Exit, Cause } from "effect";
 import * as Sdk from "./generated/sdk/src/index.ts";
-const base = { posting: "pst_99", voucher: { kind: "Payment Entry", id: "v_1" }, party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], line: { kind: "Journal Entry", note: "n" }, lines: [{ kind: "Journal Entry" }] };
+const base = { posting: "pst_99", voucher: { kind: "Payment Entry", id: "v_1" }, party: { kind: "Customer", id: "c_1" }, contactType: "Lead", channel: "Web", kinds: ["Journal Entry"], line: { kind: "Journal Entry", against: { kind: "Journal Entry", id: "v_1" }, note: "n" }, lines: [{ kind: "Journal Entry" }], refs: [{ kind: "Journal Entry", id: "v_1" }] };
 const tag = (over: object) => Effect.runPromiseExit(Sdk.posting.record({ ...base, voucherType: "Payment Entry", ...over } as never).pipe(Effect.provide(Sdk.layer("http://127.0.0.1:9", "t"))))
   .then((exit) => Exit.isSuccess(exit) ? "sent and answered" : String((Cause.squash(exit.cause) as { _tag?: unknown })?._tag ?? Cause.pretty(exit.cause)));
-Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" }), tag({ voucher: { kind: "Sales Invoice", id: "v_1" } }), tag({ kinds: ["Sales Invoice"] }), tag({ line: { kind: "Sales Invoice", note: "n" } }), tag({ lines: [{ kind: "Sales Invoice" }] })])
-  .then(([accepted, unmounted, otherSameName, unmountedKind, unmountedInList, inStruct, inStructs]) => console.log(JSON.stringify({ accepted, unmounted, otherSameName, unmountedKind, unmountedInList, inStruct, inStructs })));
+Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: "Customer" }), tag({ voucher: { kind: "Sales Invoice", id: "v_1" } }), tag({ kinds: ["Sales Invoice"] }), tag({ line: { kind: "Sales Invoice", against: { kind: "Journal Entry", id: "v_1" }, note: "n" } }), tag({ lines: [{ kind: "Sales Invoice" }] }),
+  tag({ line: { kind: "Journal Entry", against: { kind: "Sales Invoice", id: "v_1" }, note: "n" } }), tag({ refs: [{ kind: "Sales Invoice", id: "v_1" }] })])
+  .then(([accepted, unmounted, otherSameName, unmountedKind, unmountedInList, inStruct, inStructs, refInStruct, inRefs]) => console.log(JSON.stringify({ accepted, unmounted, otherSameName, unmountedKind, unmountedInList, inStruct, inStructs, refInStruct, inRefs })));
 `);
     const probe = spawnSync(process.execPath, [join(root, "sdk-probe.ts")], { cwd: root, encoding: "utf8", timeout: 120_000 });
     const sdk = JSON.parse(probe.stdout.trim().split("\n").pop() || "{}") as Record<string, string>;
@@ -339,13 +344,15 @@ Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: 
     expect(sdk["unmountedInList"], "the SDK refuses Sales Invoice in a list").toBe("InvalidPayload");
     expect(sdk["inStruct"], "the SDK refuses Sales Invoice in a struct").toBe("InvalidPayload");
     expect(sdk["inStructs"], "the SDK refuses Sales Invoice in a list of structs").toBe("InvalidPayload");
+    expect(sdk["refInStruct"], "the SDK refuses Sales Invoice as a reference's kind in a struct").toBe("InvalidPayload");
+    expect(sdk["inRefs"], "the SDK refuses Sales Invoice in a list of references").toBe("InvalidPayload");
     expect(sdk["accepted"], "the SDK sends Payment Entry (and finds no server)").not.toBe("InvalidPayload");
     expect(sdk["accepted"]).not.toBe(undefined);
 
     // The API: a member of the set, the owner's or a mounted feature's, is taken; anything else is refused before the handler runs.
     expect(got.api.payment.status, JSON.stringify(got.api.payment.body)).toBe(200);
     expect(got.api.journal.status, JSON.stringify(got.api.journal.body)).toBe(200);
-    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "listBare", "structUnmounted", "structsUnmounted", "structOtherSet", "listUnmounted", "noSuchChannel"] as const) {
+    for (const key of ["unmountedKind", "unmountedRef", "noSuchKind", "noSuchParty", "otherSetKind", "otherSetRef", "declarationShape", "emptyId", "ledgerPartyAsContact", "contactAsParty", "idNotText", "caseKind", "caseRef", "paddedKind", "emptySet", "listBare", "structUnmounted", "structUnmountedRef", "refsUnmounted", "structsUnmounted", "structOtherSet", "listUnmounted", "noSuchChannel"] as const) {
       expect(got.api[key], `${key}: ${JSON.stringify(got.api[key].body)}`).toMatchObject({ status: 400, body: { _tag: "InvalidPayload" } });
     }
 
@@ -360,6 +367,11 @@ Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: 
     expect(got.mcp.accepted?.isError, JSON.stringify(got.mcp.accepted)).not.toBe(true);
     expect(got.mcp.refused?.isError, JSON.stringify(got.mcp.refused)).toBe(true);
     expect(JSON.stringify(got.mcp.refused)).toContain("InvalidPayload");
+    // A reference inside the struct, and a list of references, are judged the same way.
+    const lineObject = resolved(input.properties?.["line"], input);
+    expect(membersAt((lineObject?.["properties"] as Record<string, unknown> | undefined)?.["against"], input, true), "line.against's kinds").toEqual(VOUCHERS);
+    expect(membersAt(resolved(input.properties?.["refs"], input)?.["items"], input, true), "refs' kinds").toEqual(VOUCHERS);
+    expect(resolved(input.properties?.["refs"], input)?.["type"], "refs is a list").toBe("array");
     expect(got.mcp.otherSameName?.isError, `MCP refuses the ledger's Customer as the crm's party type: ${JSON.stringify(got.mcp.otherSameName)}`).toBe(true);
     expect(JSON.stringify(got.mcp.otherSameName)).toContain("InvalidPayload");
 
@@ -379,6 +391,11 @@ Promise.all([tag({}), tag({ voucherType: "Sales Invoice" }), tag({ contactType: 
     expect(got.cli.accepted.status, got.cli.accepted.stderr).toBe(0);
     expect(got.cli.refused.status, "the CLI's call with an unmounted feature's member is refused").not.toBe(0);
     expect(got.cli.otherSameName.status, "the CLI's call with the ledger's Customer as the crm's party type is refused").not.toBe(0);
+    // Each refused for its member, at the field that holds it, not for anything else.
+    expect(got.cli.refused.stderr, "the refusal names the payload's schema").toMatch(/SchemaError|InvalidPayload/);
+    expect(got.cli.otherSameName.stderr, "refused at contactType").toMatch(/(SchemaError|InvalidPayload)[\s\S]*contactType/);
+    expect(got.cli.inLine.status, "the CLI's call whose only unmounted member is inside --line is refused").not.toBe(0);
+    expect(got.cli.inLine.stderr, "refused at line.kind").toMatch(/(SchemaError|InvalidPayload)[\s\S]*line[\s\S]*kind/);
 
     // Only the accepted calls wrote: the API's two, MCP's one and the CLI's one.
     const rows = postingsOf(root, name);
