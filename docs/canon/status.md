@@ -137,8 +137,8 @@ journeys find a hole.
 
 ### App UI (built as an app needs it)
 
-The UI is pieces, not hooks (K29, K41 clash 2): one UI SDK piece per operation, in place of the React hooks ST1.01
-once planned.
+The UI is a generated piece per operation (K29, K41 clash 2) and a generated reference per thing (K46), in place of the
+hand-written React hooks ST1.01 once planned. The reference is decided and has no row yet.
 
 | id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
 |---|---|---|---|---|---|---|---|---|---|

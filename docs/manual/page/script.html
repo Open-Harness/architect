@@ -1,0 +1,14 @@
+<script>
+// Captions for each film: a WebVTT file, published as plain text, turned into a caption track the viewer can switch on.
+(() => {
+  const seconds = (stamp) => stamp.split(":").reduce((sum, part) => sum * 60 + parseFloat(part), 0);
+  document.querySelectorAll("video[data-captions]").forEach((video) => {
+    fetch(video.dataset.captions).then((r) => (r.ok ? r.text() : "")).then((text) => {
+      const cues = [...text.matchAll(/(\d\d:\d\d:\d\d\.\d\d\d) --> (\d\d:\d\d:\d\d\.\d\d\d)\n([^\n]+)/g)];
+      if (!cues.length) return;
+      const track = video.addTextTrack("captions", "English", "en");
+      cues.forEach(([, from, to, words]) => track.addCue(new VTTCue(seconds(from), seconds(to), words)));
+    }).catch(() => {});
+  });
+})();
+</script>

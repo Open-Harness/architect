@@ -1,0 +1,2 @@
+$ ortho dev --port 4517
+running at http://127.0.0.1:4517  (world at http://127.0.0.1:4517/_world, wrangler output in examples/plugged-in/.ortho/dev/wrangler.log)
