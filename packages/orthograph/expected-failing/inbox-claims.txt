@@ -1,0 +1,6 @@
+# #1165 (Goal 16, E1, events in from the chain, design/decisions/CX-events-in.md): orthograph/server's Inbox, host-cloudflare's Inboxes and Blueprint.on over an adapter event are not built yet. Clears with the E1 build (goal-16/events-in-build).
+src/modules/events/inbox-claims.test.ts > events in from the chain (E1, CX-events-in): claims when passes overlap > a claimer renews its lease every half lease: a hop that runs past 30 s keeps its row, a second pass takes nothing, and its end delivers it once
+src/modules/events/inbox-claims.test.ts > events in from the chain (E1, CX-events-in): claims when passes overlap > a stale claimer is refused: its lease ran out and another took the row, so whatever it comes back with, the row stays as the new claimer left it
+src/modules/events/inbox-claims.test.ts > events in from the chain (E1, CX-events-in): claims when passes overlap > a stale claimer's success after the new claimer finished changes nothing either
+src/modules/events/inbox-claims.test.ts > events in from the chain (E1, CX-events-in): claims when passes overlap > a typed failure with no _tag is a refusal all the same, its outcome "Refused"
+src/modules/events/inbox-claims.test.ts > events in from the chain (E1, CX-events-in): claims when passes overlap > two passes at once never run one row twice: each row runs once, whichever pass takes it
