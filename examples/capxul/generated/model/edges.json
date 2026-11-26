@@ -2730,6 +2730,31 @@
     "kind": "allowed-by"
   },
   {
+    "from": "personal-safe.get",
+    "to": "personal-safe",
+    "kind": "reads"
+  },
+  {
+    "from": "personal-safe.get",
+    "to": "personal-safe.holder",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "personal-safe.list",
+    "to": "personal-safe",
+    "kind": "reads"
+  },
+  {
+    "from": "personal-safe.open",
+    "to": "personal-safe",
+    "kind": "acts-on"
+  },
+  {
+    "from": "personal-safe.open",
+    "to": "personal-safe.PersonalSafeOpened",
+    "kind": "emits"
+  },
+  {
     "from": "salary-component.create",
     "to": "salary-component",
     "kind": "acts-on"
