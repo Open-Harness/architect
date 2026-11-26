@@ -14,7 +14,8 @@
     "effect": "4.1.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20261101.1"
+    "@cloudflare/workers-types": "5.20261101.1",
+    "viem": "2.57.20"
   },
   "bin": {
     "capxul": "./generated/cli/src/main.ts"

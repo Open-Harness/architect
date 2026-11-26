@@ -3193,6 +3193,56 @@
       },
       "earlier": []
     },
+    "SF-001": {
+      "name": "SafeAlreadyRecorded",
+      "owner": "safe",
+      "from": "blueprint/things/safe/errors.ts",
+      "fields": {
+        "saltNonce": {
+          "value": "uint",
+          "bits": 256
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SafeAlreadyRecorded"
+        }
+      },
+      "earlier": []
+    },
+    "SF-002": {
+      "name": "FounderHasNoSafe",
+      "owner": "safe",
+      "from": "blueprint/things/safe/errors.ts",
+      "fields": {
+        "company": {
+          "value": "id",
+          "prefix": "com"
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "FounderHasNoSafe"
+        }
+      },
+      "earlier": []
+    },
+    "SF-900": {
+      "name": "SafeNotCounterfactual",
+      "owner": "safe",
+      "fields": {
+        "state": {
+          "value": "text",
+          "max": 64
+        }
+      },
+      "wire": {
+        "effect": {
+          "tag": "SafeNotCounterfactual"
+        }
+      },
+      "earlier": []
+    },
     "SH-001": {
       "name": "ShiftTypeNameTaken",
       "owner": "shift-type",

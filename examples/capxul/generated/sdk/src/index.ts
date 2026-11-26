@@ -48,6 +48,7 @@ export * as leaveType from "./leave-type/index.ts";
 export * as payrollEmployeeDetail from "./payroll-employee-detail/index.ts";
 export * as payrollEntry from "./payroll-entry/index.ts";
 export * as payrollPeriod from "./payroll-period/index.ts";
+export * as safe from "./safe/index.ts";
 export * as salaryComponent from "./salary-component/index.ts";
 export * as salaryDetail from "./salary-detail/index.ts";
 export * as salarySlip from "./salary-slip/index.ts";
@@ -101,6 +102,7 @@ export type { LeaveType, LeaveTypeState, LeaveTypeCreated } from "./leave-type/t
 export type { PayrollEmployeeDetail } from "./payroll-employee-detail/types.ts";
 export type { PayrollEntry, PayrollEntryState, PayrollEntryDrafted, PayrollEntrySubmitted, SalarySlipsSubmitted } from "./payroll-entry/types.ts";
 export type { PayrollPeriod, PayrollPeriodState, PayrollPeriodCreated } from "./payroll-period/types.ts";
+export type { Safe, SafeState, CompanySafeRecorded, PersonalSafeRecorded } from "./safe/types.ts";
 export type { SalaryComponent, SalaryComponentState, SalaryComponentCreated } from "./salary-component/types.ts";
 export type { SalaryDetail } from "./salary-detail/types.ts";
 export type { SalarySlip } from "./salary-slip/types.ts";

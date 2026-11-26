@@ -224,6 +224,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: 5.20261101.1
         version: 5.20261101.1
+      viem:
+        specifier: 2.57.20
+        version: 2.57.20(@typescript/typescript6@6.0.2)(zod@4.6.7)
 
   examples/plugged-in:
     dependencies:

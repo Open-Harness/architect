@@ -440,6 +440,11 @@
     "kind": "refers"
   },
   {
+    "from": "safe.company",
+    "to": "company.id",
+    "kind": "refers"
+  },
+  {
     "from": "salary-component.company",
     "to": "company.id",
     "kind": "refers"
@@ -2531,6 +2536,46 @@
   },
   {
     "from": "payroll-period.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "safe.get",
+    "to": "safe",
+    "kind": "reads"
+  },
+  {
+    "from": "safe.get",
+    "to": "safe.holder",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "safe.get",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
+    "from": "safe.record",
+    "to": "safe",
+    "kind": "acts-on"
+  },
+  {
+    "from": "safe.record",
+    "to": "safe.PersonalSafeRecorded",
+    "kind": "emits"
+  },
+  {
+    "from": "safe.record-company",
+    "to": "safe",
+    "kind": "acts-on"
+  },
+  {
+    "from": "safe.record-company",
+    "to": "safe.CompanySafeRecorded",
+    "kind": "emits"
+  },
+  {
+    "from": "safe.record-company",
     "to": "company.owner",
     "kind": "allowed-by"
   },
