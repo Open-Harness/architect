@@ -300,7 +300,7 @@ The table is grouped by kind, not in run order; the graph below is the order.
 | **G18-sign** (Snag #1166) | EIP-712 typed-data signing in `packages/wallets` (M6.15) | Goal 18's | nothing | the signer signs a SafeTx's typed data and the digest matches | no |
 | **G18-client** (Snag #1167) | a Safe's `GS0xx` reverts decoded typed through the contract client (M6.14), if `Abi.refusal` cannot | Goal 18's | nothing | a planted `GS026` reaches the caller as a typed refusal | no |
 | **G18-relayer** (#784) | the relayer's four bugs, pinned against check 48 | Goal 18's | check 48's author first | as #784 says | no |
-| **P1 · The sponsored path** (#1174) | production's path (CX-bridge-rails `:125-126`): Capxul's calls as sponsored ERC-4337 UserOperations through the Safe 4337 module, a bundler and a paymaster on Base Sepolia, an owner Safe acting through its module | new files in `packages/safe/` (a `user-operation` module), Capxul's environment for staging | S3, S4; who pays the gas (For Aaron, 1); a bundler and paymaster credential for staging, which is Aaron's | a claim, an owner-approved payment and a budget send each land on Base Sepolia as a sponsored UserOperation with the same journeys' results as in a world | no |
+| **P1 · The sponsored path** (#1174) | production's path (CX-bridge-rails `:125-126`): Capxul's calls as sponsored ERC-4337 UserOperations through the Safe 4337 module, a bundler and a paymaster on Base Sepolia, an owner Safe acting through its module | new files in `packages/safe/` (a `user-operation` module), Capxul's environment for staging | S3, S4; who pays the gas (For Aaron, 1) (Superseded by CX-safe-machines, 26 November 2026.); a bundler and paymaster credential for staging, which is Aaron's | a claim, an owner-approved payment and a budget send each land on Base Sepolia as a sponsored UserOperation (Superseded by CX-safe-machines, 26 November 2026.) with the same journeys' results as in a world | no |
 
 (For the Safe's units, this order is superseded by CX-safe-machines section 5's graph, 26 November 2026.)
 
@@ -389,7 +389,7 @@ word in the blueprint yet (`CX-composable-pieces.md:520-521`); S4 meets it first
 ## For Aaron
 
 1. **Who pays the gas on Base?** Capxul's transactions go as sponsored UserOperations, as your implementation does. I
-   recommend Capxul sponsors them, for claims, deploys, Safe transactions and payouts: a cost of Capxul's, small on
+   recommend Capxul sponsors them, for claims, deploys, Safe transactions and payouts (Superseded by CX-safe-machines, 26 November 2026.): a cost of Capxul's, small on
    Base. The other choice is each company paying for its own, which needs ETH in every Safe before it can spend. The
    conductor is bringing this to you; proceeding on Capxul paying.
 2. **Is it all right that Capxul's bootstrap key owns a person's Safe until they claim it?** I recommend yes, as your

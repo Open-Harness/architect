@@ -177,6 +177,7 @@ stateDiagram-v2
   claimed --> claimed: observe (nothing at the address yet)
   claimed --> deployed: observe (code and the expected owner already there)
   claimed --> deploying: send (the first spend)
+  claimed --> deployed: send (code already there)
   deploying --> deploying: observe or recover, outcome still unknown
   deploying --> deployed: observe or recover, the Safe's code and owner seen
   deploying --> claimed: observe or recover, the send proven dead
@@ -190,7 +191,7 @@ export const machine = Blueprint.machine(PersonalSafe, {
   moves: {
     open: { from: [], to: "unclaimed", emits: Events.PersonalSafeOpened },
     claim: { from: ["unclaimed"], to: "claimed", emits: Events.PersonalSafeClaimed },
-    send: { from: ["claimed"], to: "deploying", emits: Events.PersonalSafeDeploySent },
+    send: { from: ["claimed"], to: ["deploying", "deployed"], emits: Events.PersonalSafeDeploySent },
     observe: {
       from: ["claimed", "deploying"], to: ["claimed", "deploying", "deployed"], emits: Events.PersonalSafeObserved,
     },
@@ -284,12 +285,18 @@ signature. Four rules:
    by a timeout or a node's error. This is the implementation's rule: "The send fence: it can stop a send that has not
    started; it cannot recall bytes in flight" (`infrastructure:S/reads/setups.ts:48-65`), and a failed or unknown send
    is one recorded value, `submission_unknown`, that only a check resolves (`S/writes/authorizations.ts:217-258`).
-4. **A new signature after a send proven dead reuses the Safe nonce.** The spend is signed again for the same Safe
-   nonce as the dead one, which never executed, so if the old submission comes back late, at most one of the two can
-   execute the spend: the second is refused by the Safe (`GS026`), and its factory call by the factory or the EntryPoint,
-   since the address has code. Sending the same bytes again is harmless for the same reason, the Safe nonce and CREATE2.
-   Under 4337 the paymaster's sponsorship has a window too: after it closes, a resend is rejected by the bundler, which
-   is still safe, and the send is then proven dead once `validUntil` has passed.
+4. **A new signature after a send proven dead reuses the dead one's nonce.** Which nonce depends on the path:
+   - **In production**, through the Safe 4337 module, the guard is the EntryPoint's nonce for the Safe, not the Safe's
+     own: the new UserOperation reuses the dead one's EntryPoint nonce (its key and sequence), so if the old one comes
+     back late, at most one of the two is executed, and the other is refused by the EntryPoint (its `initCode` too,
+     since the address has code). The old one is proven dead only once its `validUntil` has passed with no receipt, and
+     the paymaster's sponsorship window can close a resend earlier: the bundler rejects it, which is still safe.
+   - **In a world**, the spend is the Safe's own `execTransaction` with `safeTxGas` 0 and `gasPrice` 0, so a failing
+     inner call reverts the whole transaction (`GS013`) and uses no Safe nonce. The new signature is for the same Safe
+     nonce, so a late old one and the new one cannot both execute: the second is refused `GS026`, and its factory call
+     reverts, since the address has code.
+
+   Sending the same bytes again is harmless for the same reason: that nonce, and CREATE2.
 
 **Refusals, from every state.** `—` is the machine's own refusal, generated, `PersonalSafeNotUnclaimed { state }` (exit
 40, code 900): named after the first state, it covers every move from a wrong state. `rotate`, which makes no move, has
@@ -410,8 +417,9 @@ export const machine = Blueprint.machine(CompanySafe, {
       by: Blueprint.time.after("nextCheckAt", "0 seconds"), // fired by the keeper, K1; each observe rewrites nextCheckAt, which re-arms it
     },
     recover: {
-      from: ["processing", "ready", "rechecking"], to: ["processing", "attention", "ready", "rechecking"],
-      emits: Events.CompanySafeRecovered, by: Blueprint.time.every("1 minute"), // fired by the keeper, K1
+      from: ["processing", "attention", "ready", "rechecking"], to: ["processing", "attention", "ready", "rechecking"],
+      emits: Events.CompanySafeRecovered,
+      by: Blueprint.time.after("nextCheckAt", "90 seconds"), // K1; fires only when a due observe has not run
     },
     resume: { from: ["attention", "failed"], to: ["awaiting", "processing", "rechecking"], emits: Events.CompanySafeResumed },
   },
@@ -428,7 +436,7 @@ export const machine = Blueprint.machine(CompanySafe, {
 | `authorize` | `submitAuthorization`'s admit and `acceptAuthorization` (`S/operations/submit-authorization.ts:22-59`, `S/writes/authorizations.ts:114-194`) | the founder | Payload: the signature. Admitted only if it recovers to the founder Safe's signer (`SignerMismatch`), the preparation is unexpired and is the one stored (`StalePreparation`), and the hash is bound to no other company (`HashBoundElsewhere`). Binds the submission, mints `sendToken`, and sets `nextCheckAt` to now. A replay of the same signed bootstrap answers as accepted and changes nothing. Emits `CompanySafeBootstrapAuthorized { safe, submission }`. |
 | `send` | `checkSendFence`, the send, `recordSendOutcome` (`S/reads/setups.ts:48-65`, `S/writes/authorizations.ts:217-258`) | the system, right after `authorize` | The send fence: refused `SendFenced { reason }` unless the generation, `sendToken` and submission hash match and the setup is not completed. Broadcasts the signed bytes, then records the outcome in its commit: acknowledged sets `acknowledgedAt`; failed or unknown, one value, sets `issue: submission_unknown`. Either way it clears `sendToken`, so one authorization is broadcast once from `send`; a crash after the broadcast and before the commit leaves `sendToken` set, so a retried `send` broadcasts the same bytes again, which is harmless only because the Safe's nonce and CREATE2 let them land once; the check already scheduled by `authorize` settles what happened. Emits `CompanySafeBootstrapSent { safe, outcome }`. |
 | `observe` | `claimCheck`, `observe`, `applyObservation` (`S/operations/observe.ts:29-56`, `S/writes/observations.ts:72-212`) | time, at `nextCheckAt` | Reads the chain and applies the policy below. A check is capped at 45 seconds; a timeout is a retryable provider failure (`S/external/bootstraps.ts:100-162`). An observation from another generation is stale and writes nothing. Emits `CompanySafeObserved { safe, observation, issue }`, and on the first `ready` or the first `failed` it is the setup's transition event. |
-| `recover` | `recover`, `recoverDuePage` (`S/operations/recover.ts:26-42`, `S/writes/checks.ts:245-292`) | time, every minute | For a setup whose check is overdue by more than 90 seconds: adds one to `abandonedChecks` and checks again now; at three it halts, to `attention` (or stays `ready` if proven) with `issue: worker_failed` and `nextCheckAt` cleared. Emits `CompanySafeRecovered { safe, abandonedChecks }`. |
+| `recover` | `recover`, `recoverDuePage` (`S/operations/recover.ts:26-42`, `S/writes/checks.ts:245-292`) | time, 90 seconds after `nextCheckAt` | Fires only when the `observe` due at `nextCheckAt` has not run (an `observe` that runs writes `nextCheckAt` anew, which moves this due on too), so it stops by itself once the proof is final, or the setup is parked or halted, since each clears `nextCheckAt`. It adds one to `abandonedChecks` and sets `nextCheckAt` to now, which fires `observe` again; at three it halts, to `attention` (or stays `ready` if proven) with `issue: worker_failed` and `nextCheckAt` cleared. The 90 seconds is the implementation's lease (`LEASE_MS`). Emits `CompanySafeRecovered { safe, abandonedChecks }`. |
 | `resume` | `resume` (`S/writes/resumes.ts:41-145`) | the founder, or an operator | No submission and the founder's facts still hold → `awaiting`; a submission not proven → `processing`; a proof on record → `rechecking`. Adds one to `generation`, clears the counters and `parkedAt`, and checks now. Emits `CompanySafeResumed { safe, generation }`. |
 
 Not lifted: `get`, `get-proof-receipt` and `list-mine` are reads; `load-authorization-context` is internal to
@@ -466,7 +474,7 @@ the current run and the observation:
 | Observation | Becomes |
 |---|---|
 | `verified` | `ready`; the first one sets `completedAt` and is the `ready` event; checked again in 60 seconds |
-| `sameProof` | `ready`; checked again in 60 seconds unless `final` |
+| `sameProof` | `ready`; checked again in 60 seconds unless `final`. A final proof clears `nextCheckAt`, so neither `observe` nor `recover` fires again until a correction or `resume` |
 | `orphaned` | `rechecking`, `issue: bootstrap_reorg`, `generation` + 1, the proof marked `orphaned` |
 | definitive | `failed`; the first one sets `failedAt` and is the `failed` event. `failed` is final for that authorization: Capxul never sends it, or a new one, again by itself. `resume` from `failed` only checks the same submission again (a reorg can change what the chain shows); setting the company's Safe up afresh after a definitive failure is not designed here (`design/later.md`) |
 | `pending` | still `processing` (or `rechecking`) while the run is under two minutes old; then `attention`, `issue: receipt_unresolved` if the send was acknowledged, else `submission_unknown`; a proven setup stays `ready` |
@@ -537,20 +545,19 @@ CX-safe's table (`CX-safe.md:289-304`) stands except for these rows, rewritten o
   now needs S3b, under Supersedes.
 - **S2** (#1169) keeps its shape, and needs E2 as well as E1; its money arrives at a claimed person's Safe not yet deployed, or at a begun company
   Safe, not at "a counterfactual Safe" (under Supersedes; #1169 rewritten).
-- **S4, S5 and P1** keep their words, except that S4 needs S3b, not S3.
+- **S4 and S5** keep their words, except that S4 needs S3b, not S3 (#1171 rewritten).
+- **P1 · the sponsored path** (#1174) no longer carries a claim, which sends nothing, nor a bootstrap `swapOwner`,
+  which no longer exists. It covers a person's first spend, which deploys their Safe; a company's setup; an
+  owner-approved payment; and a budget send, each a sponsored UserOperation on Base Sepolia. It needs S3a, S3b and S4.
+  Under Supersedes; #1174 rewritten.
 - **K1 · time-fired moves run (the keeper)** (#1199): the keeper that fires a move declared `by:
   Blueprint.time.after(field, span)` or `.every(span)`, once per due instant, as counted work. Goal 16 claims it (the
   conductor, 26 November 2026; `docs/canon/status.md:182` had `world-clock-keeper` spiked and claimed by none). Every
   time-fired move here runs on that keeper, over M8.07's durable timers, and needs no workflow (the conductor's call).
-  The rule they rely on is K1's (`design/decisions/CX-keeper.md`, calls 3 to 5, on `goal-16/keeper-check`): after every
-  committed move the keeper's row for each timed move is worked out again from the record; an `after(field, span)` row
-  is due at the field plus the span, re-armed when a self-move writes the field forward, never armed twice for one due,
-  and dropped when the thing leaves the move's `from` states or the field is empty; `"0 seconds"` is allowed for
-  `after` (the compiler's change is K1's builder's); an `every` row is due at the first period strictly after the last
-  one fired. A firing the machine or a rule refuses writes nothing and is not retried. So every time-fired move here
-  writes `nextCheckAt` forward in its own commit whenever it stays in a `from` state, and parking and the halt clear it.
-  None of them has a data refusal of its own, so a refused firing could only be a defect, which leaves the row waiting
-  for the thing's next committed move. S3a and S3b need it.
+  They follow K1's re-arming rule as `design/decisions/CX-keeper.md` (calls 3 to 5) states it, not restated here. What
+  this decision adds is that every `after` move here is keyed on `nextCheckAt`: each move that stays in a `from` state
+  writes it forward in its own commit, and a final proof (company `observe` in `ready`), parking and the halt clear it,
+  which stops both `observe` and `recover`. None of them has a data refusal of its own. S3a and S3b need it.
 - **E2 · events in, wired** (#1201): the durable D1 store for the inbox, `FOLLOWER_SINK` bound to `Inboxes.sink` in the
   generated world, and an Anvil run end to end with a reorg. It needs E1. S2 needs E1 and E2. E1's own paths gain
   `packages/host-cloudflare/src/modules/events/` (CX-events-in, #1178), under Supersedes.
@@ -631,3 +638,6 @@ graph LR
 - design/decisions/CX-safe.md: "USDC sent to a counterfactual Safe's address is recorded once on that Safe," → "USDC sent to a claimed person's Safe not yet deployed, or to a begun company Safe, is recorded once on that Safe,"
 - design/decisions/CX-safe.md: "journeys | S3, A4 |" → "journeys | S3b, A4 |"
 - design/decisions/CX-safe.md: "new files in `packages/orthograph/src/modules/{events,plugins}/` and its wiring" → "new files in `packages/orthograph/src/modules/{events,plugins}/` and `packages/host-cloudflare/src/modules/events/`, and its wiring (CX-events-in)"
+- design/decisions/CX-safe.md: "| S3, S4; who pays the gas (For Aaron, 1)" → "| S3a, S3b, S4; who pays the gas (For Aaron, 1)"
+- design/decisions/CX-safe.md: "a claim, an owner-approved payment and a budget send each land on Base Sepolia as a sponsored UserOperation" → "a person's first spend (which deploys their Safe), a company's setup, an owner-approved payment and a budget send each land on Base Sepolia as a sponsored UserOperation"
+- design/decisions/CX-safe.md: "for claims, deploys, Safe transactions and payouts" → "for deploys, a company's setup, Safe transactions and payouts"
