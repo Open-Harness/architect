@@ -1,0 +1,217 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.260
+Plugged In is green on your machine.
+
+2
+00:00:02.260 --> 00:00:04.056
+Nobody else can reach it.
+
+3
+00:00:04.456 --> 00:00:08.616
+To give it a real address, something has to be made in a cloud account you pay for.
+
+4
+00:00:08.616 --> 00:00:11.172
+You want to see what, before it is made.
+
+5
+00:00:11.572 --> 00:00:13.692
+Staging is one short file in the blueprint.
+
+6
+00:00:13.692 --> 00:00:17.244
+One server, one database, and real sign-in.
+
+7
+00:00:17.644 --> 00:00:20.404
+It also needs a value for every secret the app declares.
+
+8
+00:00:20.404 --> 00:00:21.724
+So we ask.
+
+9
+00:00:21.724 --> 00:00:23.472
+Plugged In declares none.
+
+10
+00:00:25.072 --> 00:00:28.412
+A staging in the cloud is made for one run, and you name the run.
+
+11
+00:00:28.412 --> 00:00:29.985
+Here it is demo1.
+
+12
+00:00:30.385 --> 00:00:33.285
+We run ortho env up staging, with the word plan.
+
+13
+00:00:33.285 --> 00:00:36.129
+It prints what would be made, and touches nothing.
+
+14
+00:00:36.529 --> 00:00:37.169
+Three things.
+
+15
+00:00:37.169 --> 00:00:37.909
+The server.
+
+16
+00:00:37.909 --> 00:00:38.909
+Its database.
+
+17
+00:00:38.909 --> 00:00:41.561
+And a namespace that belongs to the server.
+
+18
+00:00:41.961 --> 00:00:43.541
+Every name starts with one prefix:
+
+19
+00:00:43.541 --> 00:00:46.139
+the app, the environment, and the run.
+
+20
+00:00:46.539 --> 00:00:48.939
+The prefix is also how a run is cleaned up.
+
+21
+00:00:48.939 --> 00:00:52.255
+Destroy, with the word plan, prints the same three.
+
+22
+00:00:53.855 --> 00:00:56.615
+What runs in staging must be the file that was proved.
+
+23
+00:00:56.615 --> 00:00:59.040
+So it is built once, from a commit.
+
+24
+00:00:59.440 --> 00:01:01.000
+Ortho build prints two things:
+
+25
+00:01:01.000 --> 00:01:04.157
+the commit, cut short, and a fingerprint of the file.
+
+26
+00:01:04.557 --> 00:01:06.942
+Those two are what you will ask any address for.
+
+27
+00:01:07.342 --> 00:01:09.642
+And it will not build from work that is not committed.
+
+28
+00:01:09.642 --> 00:01:12.536
+It refuses, and says to commit first.
+
+29
+00:01:14.136 --> 00:01:18.458
+Before the account comes into it, the same file runs as staging on your machine.
+
+30
+00:01:18.858 --> 00:01:21.338
+Ortho env up staging, with a port and no run.
+
+31
+00:01:21.338 --> 00:01:23.298
+It starts, and it stays up.
+
+32
+00:01:23.698 --> 00:01:25.214
+Then we ask it what it is running.
+
+33
+00:01:25.814 --> 00:01:26.554
+The same commit.
+
+34
+00:01:26.554 --> 00:01:27.634
+The same fingerprint.
+
+35
+00:01:27.634 --> 00:01:29.468
+Then env down stops it.
+
+36
+00:01:31.068 --> 00:01:31.948
+Now the real one.
+
+37
+00:01:31.948 --> 00:01:34.490
+The same command, without the word plan.
+
+38
+00:01:34.890 --> 00:01:35.350
+It stops.
+
+39
+00:01:35.350 --> 00:01:40.944
+It names two values from your cloud account that are not set, and it says no connection was made.
+
+40
+00:01:41.344 --> 00:01:42.604
+Those values are yours.
+
+41
+00:01:42.604 --> 00:01:44.684
+You set them where the command runs.
+
+42
+00:01:44.684 --> 00:01:46.984
+Keeping them from an agent is practice.
+
+43
+00:01:46.984 --> 00:01:49.410
+The framework only never prints them.
+
+44
+00:01:49.810 --> 00:01:51.430
+Other things stop early too.
+
+45
+00:01:51.430 --> 00:01:54.470
+A run name with a capital letter is refused.
+
+46
+00:01:54.470 --> 00:01:57.830
+Proving a staging asks where your account puts its servers.
+
+47
+00:01:57.830 --> 00:02:02.032
+And promote asks for a logbook, which Plugged In does not have.
+
+48
+00:02:02.432 --> 00:02:03.472
+One honest note.
+
+49
+00:02:03.472 --> 00:02:05.972
+There is no real deployment in this film.
+
+50
+00:02:05.972 --> 00:02:10.492
+It waits on a cloud credential we do not have yet, and it will be recorded then.
+
+51
+00:02:10.492 --> 00:02:13.669
+Everything you saw ran with no cloud account.
+
+52
+00:02:14.269 --> 00:02:17.149
+So this is the path to a real address, and not yet an address.
+
+53
+00:02:17.149 --> 00:02:18.109
+Next:
+
+54
+00:02:18.109 --> 00:02:18.845
+watch it.

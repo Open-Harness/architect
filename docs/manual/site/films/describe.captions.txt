@@ -1,0 +1,241 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.100
+The plan page is agreed, as far as it goes.
+
+2
+00:00:03.100 --> 00:00:04.360
+It names a wallet.
+
+3
+00:00:04.360 --> 00:00:06.116
+It still has doubts on it.
+
+4
+00:00:06.516 --> 00:00:08.136
+Now the page becomes a blueprint.
+
+5
+00:00:08.136 --> 00:00:12.078
+And what you haven't decided must not get decided on the way.
+
+6
+00:00:12.478 --> 00:00:14.498
+The designer doesn't start from an empty file.
+
+7
+00:00:14.498 --> 00:00:16.798
+It runs ortho add thing, wallet.
+
+8
+00:00:16.798 --> 00:00:19.698
+Then ortho add operation, wallet.
+
+9
+00:00:19.698 --> 00:00:20.592
+open.
+
+10
+00:00:20.992 --> 00:00:22.372
+The framework writes the frame.
+
+11
+00:00:22.372 --> 00:00:25.559
+Seven files for the thing, one for the operation.
+
+12
+00:00:25.959 --> 00:00:27.259
+None of them holds a decision.
+
+13
+00:00:27.259 --> 00:00:31.480
+Where a decision goes, there is a blank, and the blank says what is missing.
+
+14
+00:00:33.080 --> 00:00:34.385
+Now run ortho check.
+
+15
+00:00:34.785 --> 00:00:36.265
+The wallet has seven blanks.
+
+16
+00:00:36.265 --> 00:00:37.565
+Each one is a line:
+
+17
+00:00:37.565 --> 00:00:40.132
+a file, a line number, and the question.
+
+18
+00:00:40.732 --> 00:00:41.672
+What a wallet is.
+
+19
+00:00:41.672 --> 00:00:42.452
+Its states.
+
+20
+00:00:42.452 --> 00:00:44.052
+Who holds a role on it.
+
+21
+00:00:44.052 --> 00:00:45.556
+And four about opening one.
+
+22
+00:00:45.956 --> 00:00:47.156
+The model says it shorter.
+
+23
+00:00:47.156 --> 00:00:51.839
+The wallet is listed with no states, and two lines say what is unfinished.
+
+24
+00:00:53.439 --> 00:00:56.119
+Two of the seven are already answered on the plan page.
+
+25
+00:00:56.119 --> 00:00:59.698
+So the designer fills those two, in the page's words.
+
+26
+00:01:00.098 --> 00:01:00.958
+What a wallet is:
+
+27
+00:01:00.958 --> 00:01:03.844
+a handle's money, one for each claimed handle.
+
+28
+00:01:04.244 --> 00:01:04.884
+And its states:
+
+29
+00:01:04.884 --> 00:01:07.191
+opening, open, frozen, closed.
+
+30
+00:01:07.591 --> 00:01:08.091
+Check again.
+
+31
+00:01:08.091 --> 00:01:09.175
+Five blanks.
+
+32
+00:01:09.775 --> 00:01:11.115
+The designer stops there.
+
+33
+00:01:11.115 --> 00:01:14.495
+Who may open a wallet depends on a question you haven't answered.
+
+34
+00:01:14.495 --> 00:01:16.059
+So it stays a blank.
+
+35
+00:01:17.659 --> 00:01:19.099
+The check has a second complaint.
+
+36
+00:01:19.099 --> 00:01:20.839
+Drift, eight files.
+
+37
+00:01:20.839 --> 00:01:23.964
+The blueprint changed, so what was made from it is stale.
+
+38
+00:01:24.364 --> 00:01:25.727
+So run ortho generate.
+
+39
+00:01:25.727 --> 00:01:27.565
+It doesn't wait for the blanks.
+
+40
+00:01:27.965 --> 00:01:31.425
+The wallet gets its types, its page of docs and its table.
+
+41
+00:01:31.425 --> 00:01:35.917
+The unfinished operation is left out, and no handler is written for it.
+
+42
+00:01:36.317 --> 00:01:36.837
+Check again.
+
+43
+00:01:36.837 --> 00:01:37.517
+Types pass.
+
+44
+00:01:37.517 --> 00:01:38.617
+Rules pass.
+
+45
+00:01:38.617 --> 00:01:39.777
+Drift passes.
+
+46
+00:01:39.777 --> 00:01:42.177
+And check still fails, on five blanks.
+
+47
+00:01:42.177 --> 00:01:43.081
+That is right.
+
+48
+00:01:44.681 --> 00:01:47.421
+You read two changed lines, and a list of questions.
+
+49
+00:01:47.421 --> 00:01:50.892
+The count should go down only when you decide something.
+
+50
+00:01:51.292 --> 00:01:53.332
+Generate too early, and it goes wrong.
+
+51
+00:01:53.332 --> 00:01:59.115
+With the states still blank, generate wrote a types file that doesn't compile, and check said so.
+
+52
+00:01:59.515 --> 00:02:01.655
+And the check can't tell a decision from a guess.
+
+53
+00:02:01.655 --> 00:02:06.228
+When the count drops, ask which line of the plan each answer came from.
+
+54
+00:02:06.628 --> 00:02:07.708
+One honest note.
+
+55
+00:02:07.708 --> 00:02:11.348
+The recording filled those two blanks itself, in the plan's words.
+
+56
+00:02:11.348 --> 00:02:13.588
+No agent was filmed designing.
+
+57
+00:02:13.588 --> 00:02:15.608
+And leaving blanks is our practice.
+
+58
+00:02:15.608 --> 00:02:17.681
+Nothing enforces it yet.
+
+59
+00:02:18.281 --> 00:02:18.681
+Next:
+
+60
+00:02:18.681 --> 00:02:19.803
+say what done means.

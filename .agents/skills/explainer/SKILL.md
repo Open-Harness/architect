@@ -65,6 +65,15 @@ tools, the shared kit and the shared `app/` are read-only for it, and a helper i
 - Building a film needs Python with `kokoro-onnx` and `faster-whisper`, the voice model's two files, `ffmpeg` and
   Playwright. CI has none of them, and `out/` is never committed.
 
+## A series of films
+
+The manual's films are a series (`docs/manual/spine.json` names them). They share `films/manual/data.mjs`, which reads
+`docs/manual/captures/` and the example, and `films/manual/kit.js`, whose `Kit.who` says who acts on a sheet and whose
+`Kit.stand` marks what runs today, what is practice and what is missing. Each script carries a `pictures` key: one sentence
+per scene on what its sheet shows, and `pictures.carries`, the one picture that returns across sheets. A scene agent is
+given the series' common brief and one film. Renders run one after another; two at once on four cores halve both.
+`docs/manual/films.mjs` makes the page's 720p copies, posters and captions. The `manual` skill has the rest.
+
 ## What to tell Aaron
 
 Write it to be listened to. Say what each film shows, and say plainly what you could not check: nobody has listened

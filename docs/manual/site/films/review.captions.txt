@@ -1,0 +1,249 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:01.920
+A change has come back.
+
+2
+00:00:01.920 --> 00:00:04.920
+You asked for two small things about claiming a name:
+
+3
+00:00:04.920 --> 00:00:08.058
+a plainer description, and a tighter time budget.
+
+4
+00:00:08.458 --> 00:00:09.518
+Nine files changed.
+
+5
+00:00:09.518 --> 00:00:11.835
+You should not have to read nine files.
+
+6
+00:00:12.235 --> 00:00:13.775
+So the change goes to a reviewer:
+
+7
+00:00:13.775 --> 00:00:15.858
+an agent that wrote none of it.
+
+8
+00:00:16.258 --> 00:00:17.498
+It is given two things.
+
+9
+00:00:17.498 --> 00:00:20.278
+The change, and the brief the change was made from.
+
+10
+00:00:20.278 --> 00:00:23.107
+Here, the brief is your two sentences.
+
+11
+00:00:23.507 --> 00:00:24.307
+It touches nothing.
+
+12
+00:00:24.307 --> 00:00:27.234
+It reads, it runs commands, and it reports.
+
+13
+00:00:28.834 --> 00:00:33.550
+The reviewer starts with the blueprint's part of the change, because that is the part you will read.
+
+14
+00:00:33.950 --> 00:00:35.610
+Two lines out, two lines in.
+
+15
+00:00:35.610 --> 00:00:36.530
+The description.
+
+16
+00:00:36.530 --> 00:00:37.770
+And the budget:
+
+17
+00:00:37.770 --> 00:00:40.721
+a hundred and fifty milliseconds becomes a hundred.
+
+18
+00:00:41.121 --> 00:00:42.781
+Then every file the change touched.
+
+19
+00:00:42.781 --> 00:00:44.141
+One is the blueprint's.
+
+20
+00:00:44.141 --> 00:00:45.719
+Eight are generated.
+
+21
+00:00:46.119 --> 00:00:46.759
+No handler.
+
+22
+00:00:46.759 --> 00:00:47.819
+No journey.
+
+23
+00:00:47.819 --> 00:00:49.619
+And nobody reads the eight:
+
+24
+00:00:49.619 --> 00:00:53.100
+a check will say whether they are exactly what the blueprint makes.
+
+25
+00:00:54.700 --> 00:00:55.100
+Next:
+
+26
+00:00:54.960 --> 00:00:56.220
+how far does the change reach?
+
+27
+00:00:56.220 --> 00:00:57.660
+One command says:
+
+28
+00:00:57.660 --> 00:00:59.010
+ortho impact.
+
+29
+00:00:59.410 --> 00:01:02.630
+It compares with the record the last full proof left on this machine.
+
+30
+00:01:02.630 --> 00:01:03.950
+Before the change:
+
+31
+00:01:03.950 --> 00:01:07.276
+nothing stale, and seven operations proven.
+
+32
+00:01:07.876 --> 00:01:11.076
+With the change in place, it names the declaration that changed:
+
+33
+00:01:11.076 --> 00:01:11.996
+handle.
+
+34
+00:01:11.996 --> 00:01:14.596
+claim, its budget and its description.
+
+35
+00:01:14.996 --> 00:01:16.576
+And it names what that unproved.
+
+36
+00:01:16.576 --> 00:01:18.156
+One operation is stale.
+
+37
+00:01:18.156 --> 00:01:19.657
+The other six stand.
+
+38
+00:01:21.257 --> 00:01:23.357
+A report that says it passes is a claim.
+
+39
+00:01:23.357 --> 00:01:26.052
+So the reviewer runs the whole proof itself.
+
+40
+00:01:26.452 --> 00:01:27.592
+Seven journeys pass.
+
+41
+00:01:27.592 --> 00:01:31.452
+And claim's performance line is now measured against the new budget:
+
+42
+00:01:31.452 --> 00:01:33.082
+a hundred milliseconds.
+
+43
+00:01:33.482 --> 00:01:34.082
+Then the check.
+
+44
+00:01:34.082 --> 00:01:35.082
+Drift passes.
+
+45
+00:01:35.082 --> 00:01:38.989
+That one line is why nobody read the eight generated files.
+
+46
+00:01:39.389 --> 00:01:40.629
+Ask impact once more.
+
+47
+00:01:40.629 --> 00:01:41.569
+Nothing stale.
+
+48
+00:01:41.569 --> 00:01:44.001
+Seven proven, as before the change.
+
+49
+00:01:45.601 --> 00:01:48.521
+You read four lines of blueprint, and the reviewer's findings.
+
+50
+00:01:48.521 --> 00:01:52.676
+A finding names a file, a line, and what would make it right.
+
+51
+00:01:53.076 --> 00:01:58.972
+When a change arrives before generate was run, the check fails, and names every file that is behind.
+
+52
+00:01:59.372 --> 00:02:05.032
+When an operation goes stale and no line says what changed, the code moved and the blueprint did not.
+
+53
+00:02:05.032 --> 00:02:07.782
+That is when the reviewer reads the handler.
+
+54
+00:02:08.182 --> 00:02:09.762
+And ask impact before you prove.
+
+55
+00:02:09.762 --> 00:02:13.840
+A full proof writes a new record, and after it nothing is stale.
+
+56
+00:02:14.240 --> 00:02:14.920
+Honest notes.
+
+57
+00:02:14.920 --> 00:02:16.120
+This was staged:
+
+58
+00:02:16.120 --> 00:02:20.060
+the recording made the change, and no reviewer was filmed reading it.
+
+59
+00:02:20.060 --> 00:02:22.160
+And no command checks who wrote what.
+
+60
+00:02:22.160 --> 00:02:23.615
+That is practice.
+
+61
+00:02:24.215 --> 00:02:24.615
+Next:
+
+62
+00:02:24.595 --> 00:02:26.756
+run the app, break it, and read the trace.

@@ -46,15 +46,19 @@ from and the specimen Aaron agreed the voice and look on (26 November 2026).
 | `captures/` | the recordings, committed. Each opens with the command that was run; `plan-page.txt` is a page an agent drew, and opens with a line saying so |
 | `check.mjs` | fails when a role's words differ, a written command is not in the command line's recorded tree (`captures/cli.json`), a chapter quotes a line that was not recorded, or a chapter is not in the spine or does not end with its two closing sections. CI runs it in the `e2e-m0` job |
 | `cli-tree.mjs` | records that tree from the command line's own `--help` |
-| `build.mjs`, `page/` | the manual as one page, `out/manual.html`, with each film at the head of its chapter |
+| `build.mjs`, `page/` | the manual as one page: `site/index.html` (committed, opens in a browser) and `out/manual.html` (the same page as an artifact's body) |
+| `films.mjs`, `site/films/` | each film as the page plays it: a 720p copy, a poster and its captions, made from the renders and committed |
 | `kit/` | the agent kit, and `roles.json`, the one place a role's limits are written |
 
 ```sh
 docs/manual/capture.sh          # when ortho's output or the example changed: needs Node 24 and an installed workspace
 docs/manual/capture.sh climb    # one section only (a file in record/): the other recordings are kept
 node docs/manual/check.mjs
+node docs/manual/films.mjs       # after a film is rendered
 node docs/manual/build.mjs
 ```
+
+Open `docs/manual/site/index.html` to read the manual. The `manual` skill (`.agents/skills/manual/`) is how a chapter is made.
 
 A recording carries ids and timings of its own run, and a last line `exit N` is the recorder's, not the command's. After `capture.sh`, the check names each chapter line that no longer
 matches, and the films pick the new recordings up when they are next built.

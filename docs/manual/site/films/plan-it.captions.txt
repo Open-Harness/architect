@@ -1,0 +1,189 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:06.241
+Before anything is described to the framework, you talk the system through, until it fits on one page.
+
+2
+00:00:06.641 --> 00:00:08.741
+It starts with one sentence, in your words.
+
+3
+00:00:08.741 --> 00:00:11.999
+Here is a real one, for the next stage of Plugged In.
+
+4
+00:00:12.399 --> 00:00:14.519
+People should be able to pay each other by name.
+
+5
+00:00:14.519 --> 00:00:18.608
+A handle gets a wallet, and anyone can send money to that name.
+
+6
+00:00:19.008 --> 00:00:20.488
+That is all the designer is given.
+
+7
+00:00:20.488 --> 00:00:22.779
+That, and the app as it stands.
+
+8
+00:00:24.379 --> 00:00:28.565
+The first thing a designer does is say your idea back, as strongly as it can.
+
+9
+00:00:28.965 --> 00:00:31.405
+A claimed name becomes a place money can be sent.
+
+10
+00:00:31.405 --> 00:00:34.057
+Every claimed handle has one wallet.
+
+11
+00:00:34.457 --> 00:00:36.017
+And it says what the idea is not.
+
+12
+00:00:36.017 --> 00:00:36.957
+Not a bank.
+
+13
+00:00:36.957 --> 00:00:37.817
+Not a checkout.
+
+14
+00:00:37.817 --> 00:00:39.082
+Not an exchange.
+
+15
+00:00:39.482 --> 00:00:40.462
+Then it draws the system:
+
+16
+00:00:40.462 --> 00:00:42.802
+the things, and the states each can be in.
+
+17
+00:00:42.802 --> 00:00:43.622
+A wallet.
+
+18
+00:00:43.622 --> 00:00:44.462
+A payment.
+
+19
+00:00:44.462 --> 00:00:45.531
+A withdrawal.
+
+20
+00:00:47.131 --> 00:00:47.811
+Then, the rules.
+
+21
+00:00:47.811 --> 00:00:50.004
+What must stay true, in your language.
+
+22
+00:00:50.404 --> 00:00:52.540
+A name has at most one open wallet.
+
+23
+00:00:52.940 --> 00:00:56.440
+Money sent to a name reaches the person who held it when it was sent.
+
+24
+00:00:56.440 --> 00:00:58.042
+Never a later one.
+
+25
+00:00:58.442 --> 00:01:00.742
+You might never have said that second rule aloud.
+
+26
+00:01:00.742 --> 00:01:05.382
+It decides what happens when a name changes hands with a payment on its way.
+
+27
+00:01:05.382 --> 00:01:07.616
+That is what the page is for.
+
+28
+00:01:09.216 --> 00:01:12.149
+Two parts of the page are where real systems go wrong.
+
+29
+00:01:12.549 --> 00:01:14.009
+The first is anything that waits.
+
+30
+00:01:14.009 --> 00:01:18.309
+On the page, it's a thing in a state, and it says what it is waiting for.
+
+31
+00:01:18.309 --> 00:01:21.666
+A wallet, opening, waits for the money provider.
+
+32
+00:01:22.066 --> 00:01:25.206
+The second is every place two records of one fact must agree.
+
+33
+00:01:25.206 --> 00:01:29.017
+The app's balance, and the money the provider really holds.
+
+34
+00:01:30.617 --> 00:01:33.117
+A plan is finished when it says what it doesn't know.
+
+35
+00:01:33.517 --> 00:01:34.197
+Seven doubts.
+
+36
+00:01:34.197 --> 00:01:36.837
+Each one is a question, and each is sorted.
+
+37
+00:01:36.837 --> 00:01:38.637
+Try it in throwaway code.
+
+38
+00:01:38.637 --> 00:01:40.807
+Or leave it blank, for you to decide.
+
+39
+00:01:41.207 --> 00:01:42.827
+And it asks one question first.
+
+40
+00:01:42.827 --> 00:01:47.315
+Is this real money, and if so, who holds it while it sits in a wallet?
+
+41
+00:01:47.715 --> 00:01:48.615
+One honest note.
+
+42
+00:01:48.615 --> 00:01:51.355
+This page is real, and it is half a session.
+
+43
+00:01:51.355 --> 00:01:55.322
+The owner hasn't answered yet, so nothing on it is decided.
+
+44
+00:01:55.922 --> 00:01:57.322
+No command runs any of this.
+
+45
+00:01:57.322 --> 00:01:59.202
+It's how we plan, and it is practice.
+
+46
+00:01:59.202 --> 00:02:00.302
+Next:
+
+47
+00:02:00.302 --> 00:02:02.026
+the doubts become spikes.

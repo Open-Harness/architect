@@ -11,4 +11,13 @@
     }).catch(() => {});
   });
 })();
+
+// The contents rail marks the chapter on screen.
+(() => {
+  const links = new Map([...document.querySelectorAll(".toc a[data-to]")].map((a) => [a.dataset.to, a]));
+  const seen = [...links.keys()].map((id) => document.getElementById(id)).filter(Boolean);
+  if (!("IntersectionObserver" in window) || !seen.length) return;
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) { links.forEach((a) => a.classList.remove("here")); links.get(e.target.id)?.classList.add("here"); } }), { rootMargin: "0px 0px -70% 0px" });
+  seen.forEach((el) => io.observe(el));
+})();
 </script>

@@ -1,7 +1,9 @@
-// Builds the manual as one page: node docs/manual/build.mjs  ->  docs/manual/out/manual.html
+// Builds the manual as one page: node docs/manual/build.mjs  ->  docs/manual/site/index.html (a whole page, committed, to open
+// from the repository) and docs/manual/out/manual.html (the same page as an artifact's body, beside site/films/).
 // The page is the markdown in this folder, in the order spine.json gives: the opening, each chapter in its part (one that is
-// not written is shown in its place), then the reference. A chapter's `Film:` line becomes a player under its first paragraph. It looks for <film>-720.mp4 and <film>.captions.txt beside the page (a 720p encode of the
-// render, and its captions as WebVTT text); they are published with the page and are not in the repository.
+// not written is shown in its place), then the reference. A chapter's `Film:` line becomes a player under its first paragraph,
+// from site/films/<film>.mp4 (a 720p encode of the render), <film>.jpg (its poster) and <film>.captions.txt (WebVTT as text).
+// `node docs/manual/films.mjs` makes those three from the renders in docs/explainer/out/.
 // Run check.mjs first: this trusts every quote the chapters make.
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -30,7 +32,7 @@ function block(info, body) {
   const rows = shown.map((l) => (l.startsWith("$ ") ? `<b>${esc(l)}</b>` : mark(l))).join("\n");
   const all = capture ? read(`captures/${capture[1]}`).replace(/\n$/, "").split("\n").length : 0;
   const from = capture ? `recorded · captures/${capture[1]}${shown.length < all ? ` · ${shown.length} of its ${all} lines` : ""}` : source ? `quoted · ${source[1]} · lines ${source[2]} to ${source[3]}` : "";
-  return `<figure><pre>${rows}</pre><figcaption>${from}</figcaption></figure>`;
+  return `<figure class="rec"><figcaption><span class="kind">${capture ? "recorded" : "quoted"}</span><span>${esc(from.replace(/^(recorded|quoted) · /, ""))}</span></figcaption><pre>${rows}</pre></figure>`;
 }
 
 function page(text, { level = 2, id, film } = {}) {
@@ -67,25 +69,39 @@ function page(text, { level = 2, id, film } = {}) {
   return { title, html: out.join("\n") };
 }
 
-const film = (name) => !existsSync(join(here, "out", `${name}-720.mp4`)) ? `<p class="lede" style="font-size:16px">The film of this chapter is still being made.</p>` : `<figure class="film"><video controls preload="metadata" playsinline src="${name}-720.mp4" data-captions="${name}.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>`;
+const words = (n) => ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"][n] ?? String(n);
+const film = (name) => !existsSync(join(here, "site/films", `${name}.mp4`))
+  ? `<p class="soon">The film of this chapter is still being made.</p>`
+  : `<figure class="film"><video controls preload="none" playsinline poster="films/${name}.jpg" src="films/${name}.mp4" data-captions="films/${name}.captions.txt"></video><figcaption>The film of this chapter. Its voice is synthesised, and nobody has listened to it yet.</figcaption></figure>`;
 const spine = JSON.parse(read("spine.json")), all = spine.parts.flatMap((p) => p.chapters), last = all[all.length - 1].n;
+const partNames = ["one", "two", "three", "four", "five"];
 const chapter = (c, part) => {
-  const id = "chapter-" + c.n, head = `<div class="block"><span>Chapter</span><b>${c.n} of ${last} · ${esc(part)}</b><span>Asks</span><b>${esc(c.question)}</b>${c.file ? "" : "<span>Stands</span><b>not written yet</b>"}</div>`;
-  if (!c.file) return `<section class="chapter unwritten" id="${id}">${head}<h2>${esc(c.title)}</h2></section>`;
-  return `<section class="chapter">${head}${page(read(c.file), { id, film }).html}</section>`;
+  const id = "chapter-" + c.n, num = String(c.n).padStart(2, "0");
+  const head = `<header class="opener"><span class="num">${num}</span><span class="of">${esc(part)}</span></header>`;
+  if (!c.file) return `<section class="chapter unwritten" id="${id}">${head}<h2>${esc(c.title)}</h2><p class="ask">${esc(c.question)}</p></section>`;
+  const body = page(read(c.file), { id, film }).html.replace(/(<h2 id="[^"]+">[^<]*<\/h2>)/, `$1<p class="ask">${esc(c.question)}</p>`);
+  return `<section class="chapter" id="${id}-wrap">${head}${body}</section>`;
 };
 const opening = page(read(spine.opening.file), { id: "opening", film });
-const contents = `<nav><a href="#opening">Why this exists</a>${spine.parts.map((p) => `<span>${esc(p.title)}</span>${p.chapters.map((c) => `<a href="#chapter-${c.n}"${c.file ? "" : ' class="unwritten"'}>${c.n} · ${esc(c.title)}</a>`).join("")}`).join("")}<span>Reference</span>${spine.reference.map((r) => `<a href="#${slug(r.title)}">${esc(r.title)}</a>`).join("")}</nav>`;
+const navlink = (to, n, t, cls = "") => `<a href="#${to}" data-to="${to}"${cls ? ` class="${cls}"` : ""}>${n ? `<i>${n}</i>` : ""}<span>${esc(t)}</span></a>`;
+const contents = `<nav class="toc" aria-label="Contents"><p class="toc-title">The manual</p>${navlink("opening", "", spine.opening.title)}${spine.parts.map((p, k) => `<p class="toc-part">Part ${partNames[k]} · ${esc(p.title)}</p>${p.chapters.map((c) => navlink("chapter-" + c.n, c.n, c.title, c.file ? "" : "unwritten")).join("")}`).join("")}<p class="toc-part">Reference</p>${spine.reference.map((r) => navlink(slug(r.title), "", r.title)).join("")}</nav>`;
+const written = all.filter((c) => c.file).length, filmed = [spine.opening, ...all].filter((c) => existsSync(join(here, "site/films", `${c.film}.mp4`))).length;
 
-const body = `<main>
-<div class="block"><span>Manual</span><b>Orthograph, built with your agents</b><span>App</span><b>Plugged In, examples/plugged-in</b><span>Written</span><b>${all.filter((c) => c.file).length} of ${last} chapters</b></div>
-<section class="chapter" style="border:0;margin:0;padding:0">${opening.html}</section>
+const body = `<div class="shell">
 ${contents}
-${spine.parts.map((p) => `<p class="part">${esc(p.title)}</p>\n${p.chapters.map((c) => chapter(c, p.title)).join("\n")}`).join("\n")}
-<p class="part">Reference</p>
+<main>
+<header class="mast"><p class="eyebrow">Orthograph · the manual</p><h1>Build a real thing, with your agents</h1>
+<p class="sub">For the person who directs the work and reads the blueprint. One small app, Plugged In, from the first conversation about it to a change made months later, in ${words(last)} chapters, each with a film.</p>
+<p class="facts"><span>${words(written)} of ${words(last)} chapters written</span><span>${words(filmed)} films</span><span>every command recorded on <code>examples/plugged-in</code></span></p></header>
+<section class="chapter first">${opening.html}</section>
+${spine.parts.map((p, k) => `<div class="part"><span>Part ${partNames[k]}</span><h2 class="part-title">${esc(p.title)}</h2></div>\n${p.chapters.map((c) => chapter(c, `Part ${partNames[k]} · ${p.title}`)).join("\n")}`).join("\n")}
+<div class="part"><span>At the back</span><h2 class="part-title">Reference</h2></div>
 ${spine.reference.map((r) => `<section class="chapter reference">${page(read(r.file), { id: slug(r.title), film }).html}</section>`).join("\n")}
-</main>`;
+</main>
+</div>`;
 
-mkdirSync(join(here, "out"), { recursive: true });
-writeFileSync(join(here, "out/manual.html"), read("page/head.html") + body + "\n" + read("page/script.html"));
-console.log(`built docs/manual/out/manual.html: ${all.filter((c) => c.file).length} of ${last} chapters written, ${(Buffer.byteLength(body) / 1024).toFixed(0)} KB`);
+const head = read("page/head.html"), script = read("page/script.html");
+mkdirSync(join(here, "out"), { recursive: true }); mkdirSync(join(here, "site"), { recursive: true });
+writeFileSync(join(here, "out/manual.html"), head + body + "\n" + script);
+writeFileSync(join(here, "site/index.html"), `<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n${head}</head>\n<body>\n${body}\n${script}</body></html>\n`);
+console.log(`built docs/manual/site/index.html and out/manual.html: ${written} of ${last} chapters written, ${filmed} films, ${(Buffer.byteLength(body) / 1024).toFixed(0)} KB`);

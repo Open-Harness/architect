@@ -1,0 +1,225 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:01.620
+Everything is green.
+
+2
+00:00:01.620 --> 00:00:04.340
+So you try it yourself, and something looks wrong.
+
+3
+00:00:04.740 --> 00:00:07.900
+ortho dev runs the app on your machine, with a local world.
+
+4
+00:00:07.900 --> 00:00:09.455
+No cloud account.
+
+5
+00:00:09.855 --> 00:00:11.675
+Plugged In has no screens yet.
+
+6
+00:00:11.675 --> 00:00:15.799
+So we use the command line tool that was generated from the blueprint.
+
+7
+00:00:16.199 --> 00:00:17.119
+Aaron claims a name:
+
+8
+00:00:17.119 --> 00:00:17.959
+first page.
+
+9
+00:00:17.959 --> 00:00:20.110
+It answers with a handle's id.
+
+10
+00:00:21.710 --> 00:00:23.179
+Then he claims a second name.
+
+11
+00:00:23.879 --> 00:00:24.559
+Refused.
+
+12
+00:00:24.559 --> 00:00:27.119
+A code, HN-002, and a name:
+
+13
+00:00:27.119 --> 00:00:28.698
+handle already owned.
+
+14
+00:00:29.098 --> 00:00:29.758
+Is that a bug?
+
+15
+00:00:29.758 --> 00:00:30.798
+You don't have to know.
+
+16
+00:00:30.798 --> 00:00:32.118
+You say what you saw:
+
+17
+00:00:32.118 --> 00:00:34.458
+I asked for a second name, and it said no.
+
+18
+00:00:34.458 --> 00:00:36.497
+And you hand that to your agent.
+
+19
+00:00:38.097 --> 00:00:40.717
+The agent doesn't guess, and it doesn't open the handler.
+
+20
+00:00:40.717 --> 00:00:44.537
+It makes the same call again, and keeps one thing from the answer:
+
+21
+00:00:44.537 --> 00:00:46.797
+the trace's id, in a header.
+
+22
+00:00:47.197 --> 00:00:47.997
+Then one command.
+
+23
+00:00:47.997 --> 00:00:50.746
+ortho telemetry trace, with that id.
+
+24
+00:00:51.146 --> 00:00:53.186
+The trace is everything that one call did.
+
+25
+00:00:53.186 --> 00:00:54.806
+Start at the top span.
+
+26
+00:00:54.806 --> 00:00:55.986
+The operation.
+
+27
+00:00:55.986 --> 00:00:57.286
+How long it took.
+
+28
+00:00:57.286 --> 00:01:00.112
+And the word refused, with the refusal's name.
+
+29
+00:01:00.512 --> 00:01:01.692
+The next line is the cause.
+
+30
+00:01:01.692 --> 00:01:03.892
+A rule, by its name in the blueprint:
+
+31
+00:01:03.892 --> 00:01:05.653
+one name per person.
+
+32
+00:01:06.053 --> 00:01:07.033
+And look at what's missing.
+
+33
+00:01:07.033 --> 00:01:08.673
+The record step ran.
+
+34
+00:01:08.673 --> 00:01:09.893
+There is no commit.
+
+35
+00:01:09.893 --> 00:01:13.795
+The rule was checked after the work, and before anything was saved.
+
+36
+00:01:14.195 --> 00:01:15.815
+Beside it, a call that was answered.
+
+37
+00:01:15.815 --> 00:01:17.863
+Its last step is the commit.
+
+38
+00:01:19.463 --> 00:01:21.723
+So the refusal didn't come from the handler at all.
+
+39
+00:01:21.723 --> 00:01:24.142
+It came from six lines of blueprint.
+
+40
+00:01:24.542 --> 00:01:26.822
+A person holds one claimed name at a time.
+
+41
+00:01:26.822 --> 00:01:29.522
+Unique on the owner, while the handle is claimed.
+
+42
+00:01:29.522 --> 00:01:30.742
+Refuse with:
+
+43
+00:01:30.742 --> 00:01:32.073
+handle already owned.
+
+44
+00:01:32.473 --> 00:01:36.200
+From what you saw on screen, to the line that gave it, in two commands.
+
+45
+00:01:37.800 --> 00:01:40.280
+Now the question is yours, and it's a real one.
+
+46
+00:01:40.280 --> 00:01:42.546
+Should a person hold only one name?
+
+47
+00:01:42.946 --> 00:01:45.766
+If yes, the app is right, and the message needs work.
+
+48
+00:01:45.766 --> 00:01:49.042
+If no, you change the rule, and that's a later chapter.
+
+49
+00:01:49.442 --> 00:01:50.762
+Two things to watch for.
+
+50
+00:01:50.762 --> 00:01:53.702
+Refused means a declared answer, with a code.
+
+51
+00:01:53.702 --> 00:01:57.162
+A defect is the server failing, and it's marked as one.
+
+52
+00:01:57.162 --> 00:01:59.193
+Don't read one as the other.
+
+53
+00:01:59.593 --> 00:02:03.709
+And if an explanation doesn't name a line of the blueprint, ask for the trace.
+
+54
+00:02:04.309 --> 00:02:05.689
+Two parts are missing today.
+
+55
+00:02:05.689 --> 00:02:12.189
+No command signs a test person in to a local app, so the recording asks the local world's own door.
+
+56
+00:02:12.189 --> 00:02:15.668
+And the generated tool doesn't print the trace's id.

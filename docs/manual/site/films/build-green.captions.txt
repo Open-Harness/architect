@@ -1,0 +1,273 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.907
+The journeys are agreed, and they're red.
+
+2
+00:00:02.907 --> 00:00:03.906
+Now someone builds.
+
+3
+00:00:04.306 --> 00:00:05.246
+You don't write a task.
+
+4
+00:00:05.246 --> 00:00:08.166
+You run ortho brief, with the name of one operation:
+
+5
+00:00:08.166 --> 00:00:09.006
+handle.
+
+6
+00:00:09.006 --> 00:00:09.784
+claim.
+
+7
+00:00:10.184 --> 00:00:12.844
+The brief is everything a builder needs, and nothing else.
+
+8
+00:00:12.844 --> 00:00:14.504
+The one file to write.
+
+9
+00:00:14.504 --> 00:00:15.784
+The files to read.
+
+10
+00:00:15.784 --> 00:00:17.381
+What the handler must do.
+
+11
+00:00:17.781 --> 00:00:19.061
+The paths it must not touch:
+
+12
+00:00:19.061 --> 00:00:21.951
+the blueprint, the journeys, anything generated.
+
+13
+00:00:22.351 --> 00:00:23.231
+And what done means:
+
+14
+00:00:23.231 --> 00:00:25.271
+prove passes, and check passes.
+
+15
+00:00:25.271 --> 00:00:27.514
+Hand it over exactly as printed.
+
+16
+00:00:29.114 --> 00:00:31.214
+The builder doesn't start from an empty file.
+
+17
+00:00:31.214 --> 00:00:33.814
+Generate has already written a scaffold:
+
+18
+00:00:33.814 --> 00:00:36.892
+the frame, with a blank where the behaviour goes.
+
+19
+00:00:37.292 --> 00:00:37.912
+First run.
+
+20
+00:00:37.912 --> 00:00:39.732
+It proves only the one journey:
+
+21
+00:00:39.732 --> 00:00:40.754
+claim a handle.
+
+22
+00:00:41.154 --> 00:00:43.614
+Four of eight steps pass before a line is written.
+
+23
+00:00:43.614 --> 00:00:46.530
+Those are the steps that never needed this handler.
+
+24
+00:00:46.930 --> 00:00:50.850
+And one of the failures names the blank the handler reached, and the file it's in.
+
+25
+00:00:50.850 --> 00:00:52.746
+That's where the builder goes.
+
+26
+00:00:54.346 --> 00:00:55.286
+So it writes the work.
+
+27
+00:00:55.286 --> 00:00:57.206
+Two records, saved together:
+
+28
+00:00:57.206 --> 00:00:59.282
+the handle, and its public page.
+
+29
+00:00:59.682 --> 00:01:00.222
+Prove again.
+
+30
+00:01:00.222 --> 00:01:01.463
+Still four of eight.
+
+31
+00:01:02.063 --> 00:01:02.903
+The number didn't move.
+
+32
+00:01:02.903 --> 00:01:03.883
+But read the reasons.
+
+33
+00:01:03.883 --> 00:01:04.723
+Before:
+
+34
+00:01:04.723 --> 00:01:05.743
+the server died.
+
+35
+00:01:05.743 --> 00:01:06.503
+Now:
+
+36
+00:01:06.503 --> 00:01:08.531
+answered, without making its move.
+
+37
+00:01:08.931 --> 00:01:11.851
+The handler saved the records and forgot to change the state.
+
+38
+00:01:11.851 --> 00:01:14.071
+So there's no event, and no state.
+
+39
+00:01:14.071 --> 00:01:16.311
+The failure says exactly that.
+
+40
+00:01:16.711 --> 00:01:18.431
+This is what climbing looks like.
+
+41
+00:01:18.431 --> 00:01:20.611
+Not every rung turns a light green.
+
+42
+00:01:20.611 --> 00:01:23.434
+But every rung changes what fails first.
+
+43
+00:01:25.034 --> 00:01:25.554
+One line:
+
+44
+00:01:25.554 --> 00:01:26.459
+make the move.
+
+45
+00:01:26.859 --> 00:01:27.399
+Prove again.
+
+46
+00:01:27.399 --> 00:01:28.293
+Eight of eight.
+
+47
+00:01:28.993 --> 00:01:30.073
+But look at the last line.
+
+48
+00:01:30.073 --> 00:01:32.593
+Prove is still red, with five failing.
+
+49
+00:01:32.593 --> 00:01:36.548
+One journey doesn't reach every operation, so coverage fails.
+
+50
+00:01:36.948 --> 00:01:38.708
+Green on one journey is not done.
+
+51
+00:01:38.708 --> 00:01:40.735
+The builder runs the whole proof.
+
+52
+00:01:41.135 --> 00:01:41.895
+Seven journeys.
+
+53
+00:01:41.895 --> 00:01:43.215
+Fifty-six steps.
+
+54
+00:01:43.215 --> 00:01:45.915
+Nine evals for each of seven operations.
+
+55
+00:01:45.915 --> 00:01:47.155
+Prove passes.
+
+56
+00:01:47.155 --> 00:01:48.624
+Then check passes.
+
+57
+00:01:50.224 --> 00:01:51.404
+You read none of that code.
+
+58
+00:01:51.404 --> 00:01:55.492
+You read one line for each journey, and the last line of the full run.
+
+59
+00:01:55.892 --> 00:01:59.652
+When a builder says a journey is wrong, it stops, and tells the author.
+
+60
+00:01:59.652 --> 00:02:02.758
+It doesn't edit the story, and it doesn't work round it.
+
+61
+00:02:03.158 --> 00:02:08.031
+When a handler starts deciding things the blueprint never said, that's a finding for review.
+
+62
+00:02:08.431 --> 00:02:09.491
+One honest note.
+
+63
+00:02:09.491 --> 00:02:11.411
+What you just watched is a replay.
+
+64
+00:02:11.411 --> 00:02:15.631
+We put one handler at three points, and recorded the real run at each.
+
+65
+00:02:15.631 --> 00:02:18.021
+No agent was filmed writing it.
+
+66
+00:02:18.621 --> 00:02:20.961
+The loop is real, and an agent can run it alone.
+
+67
+00:02:20.961 --> 00:02:22.021
+Next:
+
+68
+00:02:22.021 --> 00:02:24.486
+run the app, break it, and read the trace.
