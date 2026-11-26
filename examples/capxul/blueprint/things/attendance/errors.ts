@@ -1,9 +1,10 @@
 import { Blueprint } from "orthograph";
 import { Day } from "../../values/employee.ts";
+import { LeaveApplication } from "../leave-application/thing.ts";
 
 // Refusals that depend on data. The machine's own refusal is generated and never written here.
 // When several apply, `attendance.mark` refuses AttendeeNotInCompany, then AttendeeHasLeft, then
-// AttendanceBeforeJoining; AttendanceAlreadyMarked is the rule's, refused at commit.
+// AttendanceBeforeJoining, then AttendanceOnLeave; AttendanceAlreadyMarked is the rule's, refused at commit.
 /** The employee named works for another company. Capxul's own refusal: HRMS copies `company` from the employee (`fetch_from`). */
 export class AttendeeNotInCompany extends Blueprint.error({}, { exit: 41 }) {}
 /**
@@ -18,3 +19,9 @@ export class AttendeeHasLeft extends Blueprint.error({}, { exit: 42 }) {}
 export class AttendanceBeforeJoining extends Blueprint.error({ dateOfJoining: Day }, { exit: 43 }) {}
 /** HRMS's `validate_duplicate_record`: an employee is marked once a day. */
 export class AttendanceAlreadyMarked extends Blueprint.error({ attendanceDate: Day }, { exit: 44 }) {}
+/**
+ * HRMS's `check_leave_record`: an approved leave application of the employee covers the day, holidays inside it
+ * included. HRMS rewrites the status to On Leave; Capxul refuses, so On Leave is marked only by the leave's approval
+ * (`decisions/CX-leave.md`, call 5). It carries the application.
+ */
+export class AttendanceOnLeave extends Blueprint.error({ leaveApplication: LeaveApplication.fields.id }, { exit: 45 }) {}

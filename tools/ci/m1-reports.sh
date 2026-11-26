@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Join the e2e-m1 shards' reports into the one report and hook-error file the ratchet reads (design/decisions/CI-speed.md).
-# Each shard runs a quarter of e2e/m1 and uploads `m1-report.json` (vitest's JSON report) and `m1-errors.json`
+# Each shard runs its share of e2e/m1 (tools/ci/m1-shards.sh) and uploads `m1-report.json` (vitest's JSON report) and `m1-errors.json`
 # (e2e/ratchet/reporter.ts's hook errors); download-artifact puts each shard's pair in its own folder under <dir>.
 #   tools/ci/m1-reports.sh <dir> <shards> <files> <out>
 # Writes <out>/m1-report.json (every shard's test files) and <out>/m1-errors.json (every shard's hook and unhandled

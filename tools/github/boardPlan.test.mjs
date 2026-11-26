@@ -18,7 +18,7 @@ test("from nothing: the lane label, every milestone, an issue per row in the fir
   assert.ok(secrets.body.startsWith(itemMarker("secrets")) && secrets.body.includes("**Touches:** `packages/host-cloudflare`"));
   assert.equal(issues.find((s) => s.key === "item gap-node-host").milestone, NOT_YET_NEEDED);
   assert.equal(issues.find((s) => s.key === "item gap-node-host").type, "Gap");
-  assert.deepEqual(issues.find((s) => s.key === "item reports").labels, ["kind:capability", "release:1.0"]);
+  assert.deepEqual(issues.find((s) => s.key === "item reports").labels, ["kind:capability", "release:beta"]);
   assert.deepEqual(steps.filter((s) => s.do === "closeIssue").map((s) => s.issue), ["item things"], "a built row's issue is closed");
 });
 
@@ -52,7 +52,7 @@ test("a built row reopened when its stage goes back, and a stray copy or an outs
 });
 
 test("the beta label says the beta of K42, and the board's kind has a label and an issue type", () => {
-  assert.equal(LABELS.find((l) => l.name === "release:beta").description, "Ships in the beta: the framework the superagent proves (K42)");
+  assert.equal(LABELS.find((l) => l.name === "release:beta").description, "Ships in the beta: the framework Capxul's books, HR and payroll prove (K44)");
   assert.ok(LABELS.some((l) => l.name === "kind:capability"));
   assert.equal(typeOf("capability", { ownerType: "User" }), "Task");
 });
@@ -61,6 +61,12 @@ test("a milestone's due date is written when it differs, and not for 'Not yet ne
   const state = { ...empty, milestones: [{ number: 1, title: "Capxul: the books", description: "x", dueOn: "2026-12-01" }] };
   const steps = boardPlan({ rows: [], state, statusUrl: url, typeOf, due: { "Capxul: the books": "2026-12-01", "Capxul: banking": "2026-12-09", [NOT_YET_NEEDED]: "2027-01-01" } });
   assert.deepEqual(steps.filter((s) => s.do === "setMilestoneDue"), [{ do: "setMilestoneDue", title: "Capxul: banking", day: "2026-12-09" }]);
+});
+
+test("a board milestone left with no dated row loses its old due date (K45)", () => {
+  const state = { ...empty, milestones: [{ number: 7, title: "Superagent: launch", description: "x", dueOn: "2026-12-20" }, { number: 8, title: "Capxul: the books", description: "x", dueOn: null }] };
+  const steps = boardPlan({ rows: [], state, statusUrl: url, typeOf, due: {} });
+  assert.deepEqual(steps.filter((s) => s.do === "setMilestoneDue"), [{ do: "setMilestoneDue", title: "Superagent: launch", day: null }]);
 });
 
 test("a milestone that gets a due date says it is a forecast, and has the note only then", () => {

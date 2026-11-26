@@ -1,6 +1,6 @@
 {
   "name": "@orthograph/wallets",
-  "version": "0.0.0",
+  "version": "0.1.0-next.1",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -31,8 +31,8 @@
     "effect": "4.1.4"
   },
   "peerDependencies": {
-    "orthograph": "0.0.0",
-    "@orthograph/language-effect": "0.0.0"
+    "orthograph": "workspace:^",
+    "@orthograph/language-effect": "workspace:^"
   },
   "devDependencies": {
     "orthograph": "workspace:*",
@@ -42,6 +42,7 @@
     "dist"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "next"
   }
 }

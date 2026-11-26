@@ -1,0 +1,12 @@
+// Journey-author file: a starting world is made by declared operations, never by hand (D2 #4).
+import { Blueprint } from "orthograph";
+import { owner } from "../things/company/roles.ts";
+import create from "../things/kra/verbs/create.ts";
+
+/** From a new hire: Ada has added the KRA Quality to Acme Trading. */
+export default Blueprint.startingWorld("a kra", {
+  from: "a new hire",
+  cast: { ada: owner },
+  makes: (s) => [s.ada.run(create, { company: s.world.company, title: "Quality" })],
+  gives: (s) => ({ kra: s.last.kra }),
+});

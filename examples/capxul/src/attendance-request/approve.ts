@@ -4,7 +4,11 @@ import { Days } from "orthograph";
 import { Ids, Records } from "@orthograph/language-effect";
 import { Attendance } from "../../blueprint/things/attendance/thing.ts";
 import { oneAttendancePerDay } from "../../blueprint/things/attendance/invariants.ts";
+import { LeaveApplication } from "../../blueprint/things/leave-application/thing.ts";
 import type { Handler } from "../../generated/api/src/attendance-request/approve.handler.ts";
+
+// Every matching row counts as read at commit; the limit is set so the page holds them all.
+const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
 /**
  * attendance-request.approve: Approve a request, marking each of its days.
@@ -49,18 +53,23 @@ const approve: Handler = ({ attendanceRequest }, { steps, move, subject }) =>
     const records = yield* Records;
 
     // Step load: database, span attendance-request.approve.load. The runtime read the request for its role and state
-    // checks and hands it in; this step finds each of its days' attendance through oneAttendancePerDay. The employee
+    // checks and hands it in; this step finds each of its days' attendance through oneAttendancePerDay, skipping
+    // the days an approved leave covers. The employee
     // isn't judged again: a request opened before they left can still be approved (CX-expense-leavers).
     const { request, days } = yield* steps.load(
       Effect.gen(function* () {
         if (!subject) return yield* Effect.die(new Error(`attendance request ${attendanceRequest} was checked and then not found`));
         const fromDate = subject["fromDate"] as string;
         const employee = subject["employee"] as string;
-        const all = Array.from({ length: Days.between(fromDate, subject["toDate"] as string) + 1 }, (_, k) => Days.add(fromDate, k));
-        const held = yield* Effect.forEach(all, (day) =>
+        // A day an approved leave of the employee covers, holidays inside it too, is skipped (should_mark_attendance).
+        const leaves = yield* records.list({ ...all, thing: LeaveApplication, where: { employee }, state: "approved" });
+        const onLeave = (day: string) => leaves.items.some((a) => (a["fromDate"] as string) <= day && day <= (a["toDate"] as string));
+        const every = Array.from({ length: Days.between(fromDate, subject["toDate"] as string) + 1 }, (_, k) => Days.add(fromDate, k));
+        const marking = every.filter((day) => !onLeave(day));
+        const held = yield* Effect.forEach(marking, (day) =>
           records.findBy(oneAttendancePerDay, { employee: employee as never, attendanceDate: day as never }),
         );
-        return { request: subject, days: all.map((day, i) => ({ day, held: held[i] })) };
+        return { request: subject, days: marking.map((day, i) => ({ day, held: held[i] })) };
       }),
     );
 

@@ -51,7 +51,7 @@ meetups, mixers and workshops, "a really undecided thing". (Answered by CX-grill
    - **The network:** undecided. It becomes a grill when Capxul reaches the CRM. (Superseded by CX-grill, 23 November
      2026: the network is dropped for now.)
 3. **The order:** the books, HR, payroll, then the CRM. Bridge and the paid services come alongside the books, because
-   money moving between an account and a bank goes through them. The first feature stays Goal 16's (`M7-capxul.md`,
+   money moving between an account and a bank goes through them. (Superseded by K44, 25 November 2026: the books, HR and payroll come first, and getting paid on chain comes later with the chain.) The first feature stays Goal 16's (`M7-capxul.md`,
    section 4; its slice 2), read as the books' first slice: a sales invoice with a pay link, the payment that settles it, and the
    ledger lines it posts.
 4. **Where it is built:** in this repository, on `goal/capxul`. The app goes in `examples/capxul/` and its plugins in

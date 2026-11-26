@@ -1,5 +1,6 @@
 // What GitHub should hold, worked out from the goal briefs (K33), and the steps that get it there from what it holds.
 // Pure: no I/O. `sync.mjs` reads the briefs and GitHub, calls `plan`, and applies the steps.
+import { BOARD_KINDS } from "./board.mjs";
 
 export const LABELS = [
   ["kind:goal", "5319e7", "A goal: one lead, one branch, one done check, one milestone (K32, K33)"],
@@ -10,7 +11,7 @@ export const LABELS = [
   ["kind:capability", "0052cc", "A row of the capability map in docs/canon/status.md: one item, written by the board sync (K42)"],
   ["kind:decision", "0e8a16", "A call to be made; closed by the pull request that records it in design/decisions/"],
   ["release:preview", "bfd4f2", "Ships in the preview (K28)"],
-  ["release:beta", "bfd4f2", "Ships in the beta: the framework the superagent proves (K42)"],
+  ["release:beta", "bfd4f2", "Ships in the beta: the framework Capxul's books, HR and payroll prove (K44)"],
   ["release:1.0", "bfd4f2", "Ships in 1.0 (K28)"],
   ["role:lead", "ededed", "Opened by a goal's lead"],
   ["role:author", "ededed", "Journeys and checks, written first (the author skill)"],
@@ -24,6 +25,7 @@ export const LABELS = [
   ["harness:opencode", "f9d0c4", "Worked in OpenCode"],
   ["blocked", "b60205", "Waiting on something outside its goal; the body says what"],
   ["needs-aaron", "e99695", "Only Aaron can unblock it: money, a credential, production, or the goal itself"],
+  ["parked", "d4c5f9", "A parked goal's open goal issue or slice: hidden from the board's views, never closed (K45)"],
 ].map(([name, color, description]) => ({ name, color, description }));
 
 // A kind is its own issue type in an organization (Aaron, 2A); a person's repository has only the native three, so
@@ -210,6 +212,17 @@ export const plan = ({ goals, state, briefUrl, migrate = false }) => {
 
     // "Blocked by" links for the order the brief gives (`(after 4)`); asks and snags are linked by hand (the skill).
     const ref = (n) => byMarker(sliceMarker(g.number, n), "kind:slice") ?? null;
+    // A link between two of this goal's slices that the brief no longer gives goes first, so a reordered brief never
+    // leaves a stale link or makes a cycle. Links to anything else (a snag, an ask, another goal's slice) stay.
+    const sliceAt = new Map(g.slices.map((s) => [ref(s.number)?.number, s.number]).filter(([n]) => n !== undefined));
+    for (const s of g.slices) {
+      const issue = ref(s.number);
+      for (const n of issue?.blockedBy ?? []) {
+        const a = sliceAt.get(n);
+        if (a === undefined || (s.after ?? []).includes(a)) continue;
+        steps.push({ do: "removeBlockedBy", issue: issue.number, blocker: n, title: `slice ${g.number}.${s.number} no longer after ${a}` });
+      }
+    }
     for (const s of g.slices) {
       for (const a of s.after ?? []) {
         if (!g.slices.some((x) => x.number === a)) continue;
@@ -218,6 +231,26 @@ export const plan = ({ goals, state, briefUrl, migrate = false }) => {
         steps.push({ do: "addBlockedBy", issue: issue ? issue.number : `slice ${g.number}.${s.number}`, blocker: blocker ? blocker.number : `slice ${g.number}.${a}`, title: `slice ${g.number}.${s.number} after ${a}` });
       }
     }
+  }
+
+  // K45: a parked goal's own plan, its open goal issue and slices, carries `parked`, so the board's views leave it out;
+  // nothing is closed, and the label comes off when the goal resumes or the issue closes, so finished work stays in the
+  // main views. Its snags, asks and decisions stay in view for the
+  // framework goal to sort (K44's alpha takes some), and so does anything a running goal shares, claims or files in its
+  // own milestone. A board row and a pull request are never parked.
+  const parked = new Set(goals.filter((g) => g.status === "parked").map((g) => g.number));
+  const running = new Set(goals.filter((g) => g.status !== "parked").map((g) => g.number));
+  const parkedMilestones = new Set(goals.filter((g) => parked.has(g.number)).map((g) => g.milestone));
+  for (const i of state.issues) {
+    if (i.pullRequest || i.trusted === false) continue;
+    const open = !i.state || i.state === "open";
+    const of = (prefix) => i.labels.filter((l) => new RegExp(`^${prefix}\\d+$`).test(l)).map((l) => Number(l.slice(prefix.length)));
+    const goalsOf = of("goal-");
+    const ownPlan = i.labels.includes("kind:goal") || i.labels.includes("kind:slice");
+    const inOwnMilestone = !i.milestone || parkedMilestones.has(i.milestone);
+    const want = open && ownPlan && inOwnMilestone && !i.labels.some((l) => BOARD_KINDS.includes(l)) && goalsOf.length > 0 && goalsOf.every((n) => parked.has(n)) && !of("lane:goal-").some((n) => running.has(n));
+    const has = i.labels.includes("parked");
+    if (want !== has) steps.push({ do: "setParked", number: i.number, parked: want, title: `#${i.number} ${want ? "parked" : "no longer parked"}` });
   }
 
   if (migrate) {

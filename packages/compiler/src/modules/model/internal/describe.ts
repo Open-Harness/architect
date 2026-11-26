@@ -220,7 +220,8 @@ export const describe = (layout: Layout, before: Lock = EMPTY_LOCK, mounts: Read
   }
 
   const refusals = withReadNotServed(refusalsOf(things, problems, hasChain), operations);
-  problems.push(...exitClashes(things), ...operationExitClashes(things, operations), ...notFoundShapes(things));
+  const written = new Map([...layout.things].flatMap(([n, t]) => (t.written === undefined ? [] : [[n, t.written] as const])));
+  problems.push(...exitClashes(things, written), ...operationExitClashes(things, operations, written), ...notFoundShapes(things));
   const values = Object.fromEntries([...layout.values].sort(([a], [b]) => a.localeCompare(b)).map(([n, v]) => [n, metaOf(v.meta, `${layout.valueFiles.get(n) ?? "blueprint/values"}: value ${n}`, undefined, names, problems)]));
   const secrets = secretsOf(layout, problems);
   const environments = environmentsOf(layout, problems, tokensUsed(things, operations), secrets);

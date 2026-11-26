@@ -4,7 +4,7 @@ import { owner } from "../things/company/roles.ts";
 import open from "../things/bank-account/verbs/open.ts";
 import close from "../things/bank-account/verbs/close.ts";
 
-/** From two bank accounts: Ada has closed Operating and opened a new US dollar account under its name. */
+/** From two bank accounts: Ada has closed Operating and opened a new US dollar account under its name. Payroll, in euros, stays open. */
 export default Blueprint.startingWorld("a reopened account", {
   from: "two bank accounts",
   cast: { ada: owner },
@@ -21,5 +21,6 @@ export default Blueprint.startingWorld("a reopened account", {
     bankName: s.last.bankName,
     accountNumber: s.last.accountNumber,
     routingNumber: s.last.routingNumber,
+    payroll: s.world.payroll,
   }),
 });

@@ -26,6 +26,8 @@ export interface ThingFiles {
   /** Its folder, as messages name it: `blueprint/things/<name>`, or `<package>/blueprint/things/<thing>`. */
   readonly base: string;
   readonly from: FromModel;
+  /** A generated adapter's `<package>/src/written.ts`, where its errors' exit base is set: what an exit refusal tells the author to change. */
+  readonly written?: string;
   thing?: Thing;
   machine?: Machine;
   readonly events: Map<string, Event>;
