@@ -13,14 +13,14 @@ Film.scene("stubs", {
       #scene-stubs .app .says { font-size: 32px; color: var(--text2); }
       #scene-stubs .hand { left: 940px; top: 290px; width: 884px; height: 330px; padding: 26px 32px; } #scene-stubs .hand .when { font-size: 40px; font-weight: 500; line-height: 1.2; margin-top: 4px; } #scene-stubs .hand .when span { color: var(--text2); }
       #scene-stubs .hand .one { display: flex; align-items: center; gap: 18px; margin-top: 34px; font-size: 30px; color: var(--text2); } #scene-stubs .hand .one .chip { font-size: 30px; padding: 8px 20px; }
-      #scene-stubs .group { position: absolute; left: 1150px; border-left: 3px solid var(--cyan); padding-left: 22px; display: flex; flex-direction: column; justify-content: center; } #scene-stubs .group b { font-size: 30px; font-weight: 500; } #scene-stubs .group .lbl { color: var(--cyan); }
+      #scene-stubs .group { position: absolute; left: 1262px; border-left: 3px solid var(--cyan); padding-left: 22px; display: flex; flex-direction: column; justify-content: center; } #scene-stubs .group b { font-size: 34px; font-weight: 500; } #scene-stubs .group .lbl { color: var(--cyan); }
       #scene-stubs #stub-ed .code.small { line-height: 28px; } #scene-stubs #stub-ed .ln { transition: none; }
     </style>
     <div class="head"><div class="eyebrow">Stubs</div><div class="hl">Stubs, made while planning.</div></div>
     ${Local.who("designer", "the designer")}
     <div class="kbox app intro"><div class="lbl">the app, across this series</div><div class="kbig">Plugged In</div><div class="things">${things.map((t) => `<span class="chip thing" data-thing="${t}">${t}</span>`).join("")}</div><div class="says">a name, and a public page of links</div></div>
     <div class="kbox hand intro"><div class="lbl">the stubs are made</div><div class="when">while planning, <span class="before">before anyone builds</span></div><div class="one">${Kit.who("designer", "the designer")}<span>picks one thing</span><span class="chip given">handle</span></div></div>
-    ${Kit.term(D, { id: "stub-run", cap: "stubs", x: 96, y: 290, w: 1010, h: 356 })}
+    ${Kit.term(D, { id: "stub-run", cap: "stubs", x: 96, y: 290, w: 1130, h: 410, size: 25 })}
     ${Kit.ed(D, { id: "stub-ed", text: stub.text, path: stub.path, x: 96, y: 262, w: 1728, to: 18, size: "small", tag: '<span class="tag">a stub, as it was written</span>' })}
     ${Kit.term(D, { id: "stub-check", cap: "stubs-check", x: 96, y: 752, w: 1728, h: 214, keep: block() })}
     ${Kit.stand("real", "recorded on examples/plugged-in")}`;

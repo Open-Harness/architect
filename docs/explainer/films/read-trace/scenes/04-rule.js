@@ -7,12 +7,12 @@ Film.scene("rule", {
     if (!rows[from - 1].startsWith("//") || to - from + 1 !== 6) throw new Error("the rule is no longer six lines under its comment");
     const code = (/\[[A-Z]+-\d+\]/.exec(D.cap["claim-second"].out) ?? [])[0]; if (!code) throw new Error("the refusal's code is gone from the recording");
     return `${Kit.css}${Loc.css}<style>
-      #scene-rule .from { left: 96px; top: 262px; display: flex; gap: 20px; align-items: center; } #scene-rule .from .chip { font-family: var(--sans); font-size: 28px; padding: 9px 22px; } #scene-rule .from .was { position: relative; color: var(--muted); }
+      #scene-rule .from { left: 96px; top: 262px; display: flex; gap: 20px; align-items: center; } #scene-rule .from .chip { font-family: var(--sans); font-size: 28px; padding: 9px 22px; } #scene-rule .from .was { position: relative; color: var(--text2); }
       #scene-rule .from .was u { position: absolute; left: 12px; right: 12px; top: 52%; height: 2px; background: var(--paper); transform-origin: 0 50%; } #scene-rule .from .is { color: var(--paper); border-color: var(--paper); } #scene-rule .from .lbl { font-size: 22px; }
       #scene-rule #ru-ed .code { font-size: 28px; line-height: 48px; }
       #scene-rule .stops { left: 96px; top: 800px; width: 1728px; display: flex; align-items: center; } #scene-rule .stop { flex: none; padding: 12px 24px; border: 1.5px solid var(--rule2); font-size: 30px; color: var(--muted); background: rgba(14,28,48,.9); white-space: nowrap; }
       #scene-rule .stop b { font-family: var(--mono); font-weight: 400; font-size: .86em; } #scene-rule .leg { flex: 1; height: 2px; background: var(--rule2); transform-origin: 0 50%; }
-      #scene-rule .two { left: 96px; top: 892px; font-size: 26px; color: var(--cyan); }
+      #scene-rule .two { left: 96px; top: 884px; width: 1728px; text-align: center; font-size: 30px; color: var(--cyan); }
     </style>
     <div class="head"><div class="eyebrow">The line that gave it</div><div class="hl">Six lines of blueprint said no.</div></div>
     <div class="lwho">${Kit.who("you")}${Kit.who("agent", "your agent")}</div>

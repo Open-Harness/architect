@@ -22,7 +22,7 @@ Film.scene("trace", {
     ${Kit.term(D, { id: "tr-trace", cap: "trace-refused", x: 96, y: 526, w: 1100, h: 452, keep: keepB, title: "the refused call", tag: `<span class="tag">${all.filter(keepB).length} of its ${all.length} lines</span>` })}
     <div class="abs all hidden0"><div class="lbl cy">the trace</div><div class="kbig">Everything that one call did.</div></div>
     <div class="abs after hidden0"><div class="lbl cy">the rule was checked</div>after the work,<br>before anything was saved</div>
-    ${Kit.term(D, { id: "tr-ans", cap: "trace-answered", x: 1236, y: 262, w: 588, h: 272, keep: keepC, size: 19, title: "an answered call", tag: `<span class="tag">3 of its ${rowsC.length} lines</span>` })}`;
+    ${Kit.term(D, { id: "tr-ans", cap: "trace-answered", x: 1236, y: 262, w: 588, h: 250, keep: keepC, size: 19, title: "an answered call", tag: `<span class="tag">3 of its ${rowsC.length} lines</span>` })}`;
   },
   build(s) {
     const c = s.cue, A = s.$("#tr-http"), B = s.$("#tr-trace"), C = s.$("#tr-ans");
@@ -41,7 +41,7 @@ Film.scene("trace", {
     s.in(B, c("t2") - 0.1, { y: 16 });
     const up = c("t2", "$") + 0.05;
     s.run(B, c("t2", "ortho"), { type: c("t2", "$") - c("t2", "ortho") - 0.2, at: c("t3") + 0.1, each: 0.13 });
-    s.out(A, up - 0.15, { dur: 0.3 }); s.to(B, { y: -264, height: 546, duration: 0.55, ease: "power2.inOut" }, up);
+    s.out(A, up - 0.15, { dur: 0.3 }); s.to(B, { y: -264, height: 520, duration: 0.55, ease: "power2.inOut" }, up);
     s.in(".all", c("t3", "everything"), { x: 16, y: 0 });
     Loc.light(s, first, c("t3", "first line"));
     [[op, n1, "operation"], [ms, n2, "how long"], [ref, n3, "refused"]].forEach(([m, n, word]) => { s.to(m, { color: "#62c6ff", duration: 0.3 }, c("t3", word)); s.in(n, c("t3", word), { y: 6, dur: 0.35 }); });

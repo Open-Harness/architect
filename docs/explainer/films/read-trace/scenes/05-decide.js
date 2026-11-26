@@ -4,9 +4,9 @@ Film.scene("decide", {
   html: () => `${Kit.css}${Loc.css}<style>
       #scene-decide .ask { left: 96px; top: 262px; font-size: 58px; font-weight: 500; letter-spacing: -.015em; line-height: 1.15; }
       #scene-decide .way { top: 400px; width: 852px; height: 122px; } #scene-decide .way.yes { left: 96px; } #scene-decide .way.nay { left: 972px; } #scene-decide .way .lbl { font-size: 24px; color: var(--paper); } #scene-decide .way div:last-child { font-size: 30px; color: var(--text2); }
-      #scene-decide .kind { top: 566px; width: 852px; height: 150px; } #scene-decide .kind.ref { left: 96px; border-color: var(--cyan); } #scene-decide .kind.def { left: 972px; border-color: var(--red); }
+      #scene-decide .kind { top: 566px; width: 800px; height: 150px; } #scene-decide .kind.ref { left: 96px; border-color: var(--cyan); } #scene-decide .kind.def { left: 1024px; border-color: var(--red); }
       #scene-decide .kind .word { font-family: var(--mono); font-size: 36px; } #scene-decide .kind.ref .word { color: var(--cyan); } #scene-decide .kind.def .word { color: var(--red); } #scene-decide .kind .means { font-size: 28px; color: var(--text2); margin-top: 6px; }
-      #scene-decide .neq { left: 912px; top: 612px; width: 60px; text-align: center; font-size: 44px; color: var(--paper); }
+      #scene-decide .neq { left: 896px; top: 606px; width: 128px; text-align: center; font-size: 44px; color: var(--paper); }
       #scene-decide .askfor { left: 96px; top: 772px; font-size: 36px; } #scene-decide .askfor span { color: var(--text2); }
     </style>
     <div class="head"><div class="eyebrow">Yours to decide</div><div class="hl">Now the question is yours.</div></div>
@@ -25,8 +25,8 @@ Film.scene("decide", {
     const c = s.cue, stands = s.$$(".kstand");
     s.in(".head", s.start + 0.3); s.in(".lwho", s.start + 0.5, { y: 0 });
     s.in(".ask", c("v1", "Should") - 0.1, { y: 14 });
-    s.draw(".b0, .b1", c("v2") - 0.1, 0.4); s.in(".yes", c("v2", "yes"), { y: 10 }); s.draw(".b2", c("v2", "If no") - 0.1, 0.4); s.in(".nay", c("v2", "If no"), { y: 10 });
-    s.to(".way, .ink", { opacity: 0.45, duration: 0.4 }, c("v3") - 0.1);
+    s.draw(".b1", c("v2") - 0.1, 0.4); s.in(".yes", c("v2", "yes"), { y: 10 }); s.draw(".b0, .b2", c("v2", "If no") - 0.1, 0.4); s.in(".nay", c("v2", "If no"), { y: 10 });
+    s.to(".way, .ink", { opacity: 0.62, duration: 0.4 }, c("v3") - 0.1);
     s.in(".ref", c("v3", "Refused"), { y: 10 }); s.in(".def", c("v3", "defect"), { y: 10 }); s.in(".neq", c("v3", "Don't"), { y: 0, scale: 1.4 });
     s.in(".askfor", c("v4", "explanation"), { y: 10 }); s.to(".askfor", { color: "#62c6ff", duration: 0.3 }, c("v4", "ask"));
     s.fromTo(stands, { autoAlpha: 0 }, { autoAlpha: 0, duration: 0.01 }, s.start);
