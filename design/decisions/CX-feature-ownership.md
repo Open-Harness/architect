@@ -16,19 +16,26 @@ judged a second time in payroll, and every later feature that posts would do the
 ## The calls
 
 1. **Who owns a thing.** A thing a feature's mount brings (`blueprint/things/` of its package, renamed for the mount) is that mount's:
-   its owner is the feature, known by its mount's name. Each mount is its own feature, so a package mounted twice is two owners. The
-   app's own things are the app's. The app is no feature: it composes the features it mounts and depends on all of them.
+   its owner is the feature, known by its mount's name. A plugin is mounted once today (`M1-plugins.md`: a second mount of one
+   descriptor is refused, and mounting twice waits for per-mount error names), so who owns the things of a plugin mounted twice waits
+   with mounting twice itself. The app's own
+   things are the app's. The app is no feature: it composes the features it mounts and depends on all of them.
 2. **What writes a thing.** In the model's words, per operation: its move writes its subject (a move from no state creates it, any other
    moves it); a `database` step writes the things its `writes` names, or its subject when it names none; `writes: []` writes nothing,
    and so do `wait`, `call` and gap 1's `operation` steps (the operation a step runs writes what its own declaration writes). Every
    operation counts, whoever runs it: a person or an agent, the keeper (a move made by time), the runtime on an event (`on:`), or
-   another operation inside its commit (gap 1). An operation a feature adds to another feature's thing, by a folder of verbs with no
+   another operation inside its commit (gap 1). The model declares no workflow today, so these (a caller's operation, the keeper's
+   move, `on:` and an inner step) are every form the rule covers; a workflow's steps join them when one exists. It holds wherever the
+   operation runs: on the server, on the caller's device (`runs: "client"`, which only a plugin supplies) or on a chain (an operation of
+   a thing in a chain store, which a feature may bring). An operation a feature adds to another feature's thing, by a folder of verbs with no
    `thing.ts` (`M1-plugins.md`), is that feature's, whosever thing it is declared on.
 3. **The rule.** An operation of a feature may write only that feature's things. The compiler refuses any other write, so
    `ortho check`, `ortho generate` and every command that compiles refuse the project. The app's operations may write any thing, its
-   own or a feature's, and the app may still add verbs to a feature's thing (`M1-plugins.md`, unchanged). The draft's "may name only
-   things of its own plugin or the app's" is read that way: an app step names any thing, a plugin step only its plugin's. A feature
-   can't name an app's thing at all, since a package never imports the app that mounts it.
+   own or a feature's, and the app may still add verbs to a feature's thing (`M1-plugins.md`, unchanged). Plainly: an app step names any
+   thing, and a plugin step names only its own plugin's things. A feature can't name an app's thing at all, since a package never
+   imports the app that mounts it. Gap 4's draft in `CX-composable-pieces.md` (section 5, on `goal/capxul`) says "A step's `writes` may
+   name only things of its own plugin or the app's", which reads as if a plugin step may name the app's things; `goal/capxul` should
+   take this call's words when it next changes that record.
 4. **The allowed way is the owner's operation, run inside the commit** (gap 1, `Blueprint.step.operation`). Running another feature's
    operation is no write by the feature that runs it: the inner operation's writes are its owner's, judged where it is declared. So a
    feature's own operation that writes another's thing is refused once, at its own file, however it is run, and the operation that
@@ -45,7 +52,10 @@ judged a second time in payroll, and every later feature that posts would do the
    that thing, `move <key>` and `step <key>`, its move first and then its steps in the order declared, joined by " and ". Then either `Run one of <owner>'s operations that write it inside this
    commit instead, as a step (Blueprint.step.operation): <operations>`, listing every operation of the owner's mount in the model that
    writes the thing by any way of call 2 (a caller's, the keeper's, the runtime's), joined by ", " in plain code-unit order (one the
-   app's mount omits isn't in the model, so it isn't offered, and the writer's own operations never are), or, when there
+   app's mount omits isn't in the model, so it isn't offered, and the writer's own operations never are). An operation that runs on the
+   caller's device or on a chain can't run another inside its commit (`CX-inner-operations.md`, call 4), so for one of those the
+   sentence is instead `Call one of <owner>'s operations that write it instead, on its own: <operation> runs on the caller's device`
+   (or `on a chain`) `, where an operation can't run another inside its commit (CX-inner-operations, call 4): <operations>`. Or, when there
    is none, `<owner> offers no operation that writes it to run inside this commit (Blueprint.step.operation): ask its owner for one`.
    Every name is the model's: the mount's name and the thing's and operation's names under it. Every mounted feature is judged against
    every other, whatever order they are mounted in or need each other. An installed feature that isn't mounted is never read, and an
@@ -59,11 +69,11 @@ in the app. The model gains no field for this: an operation's `from` and a thing
 
 ## Checks
 
-- `packages/compiler/src/modules/mounts/ownership-refused.test.ts` (14): each way of writing, refused with call 6's sentence word for
-  word; a first-mounted feature writing a later one's thing; a feature that doesn't need the owner; an unmounted feature; other mount
+- `packages/compiler/src/modules/mounts/ownership-refused.test.ts` (15): each way of writing, refused with call 6's sentence word for
+  word, wherever it runs (the server, the caller's device, a chain); a first-mounted feature writing a later one's thing; a feature that doesn't need the owner; an unmounted feature; other mount
   names; omitted operations of the owner.
 - `packages/compiler/src/modules/mounts/ownership.test.ts` (6): a feature's own writes by every way, reads and links, the app's writes,
-  the allowed way and an omitted writer compile, each beside the one wrong write, refused. The scratch books are `mounts/ownership-testing.ts`.
+  the allowed way and an omitted writer compile (a narrowed one is still refused), each beside the one wrong write, refused. The scratch books are `mounts/ownership-testing.ts`.
 - `e2e/m2/16-feature-ownership.test.ts` (m2 check 16): the `ortho check` and `ortho generate` doors, in a copy of acme with two
   installed feature packages.
 
@@ -72,7 +82,7 @@ acme's generated files don't move (the checks build their own scratch books), so
 ## Known limits of the checks
 
 - A thing an adapter brings (its errors' things) isn't judged: no operation writes one in any check, and this record says nothing of it.
-- A package mounted twice isn't judged: call 1 makes each mount its own owner, but no check mounts one package twice.
+- A package mounted twice isn't judged: it is refused today, and waits with mounting twice (call 1).
 - Whether a feature may run an operation of a feature it doesn't need is gap 1's (its draft: "an operation of a piece it depends on"),
   not judged here.
 

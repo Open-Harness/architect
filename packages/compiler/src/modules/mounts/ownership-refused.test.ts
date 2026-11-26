@@ -21,7 +21,7 @@ const namedAt = async (exit: ReturnType<typeof modelExit>, where: string) => {
 /** The blueprint is refused, and the problems naming the file are exactly `want`, word for word, in any order. */
 const refusedWith = async (exit: ReturnType<typeof modelExit>, pkg: Name, path: string, ...want: ReadonlyArray<string>) => {
   const { problems, named } = await namedAt(exit, at(pkg, path));
-  expect([...named].sort(), `the problems naming ${at(pkg, path)}; all of them were:\n${problems.join("\n")}`).toEqual([...want].sort());
+  expect([...named].sort(), `the problems naming ${at(pkg, path)} are, word for word:\n${[...want].sort().join("\n")}\nAll of them were:\n${problems.join("\n")}`).toEqual([...want].sort());
 };
 
 /** Payroll's refusal of a write to the ledger's line, under the mounts' own names. */
@@ -159,5 +159,22 @@ describe("#1134: the compiler refuses a feature writing another feature's thing"
     const l = c.ledger;
     const one: AppSpec = { mounts: MOUNTED, edits: { ledger: (p) => [l.reverse, l.archive, l.touch, l.sweep, l.submit].map((o) => p.omit(o)) }, plant: onLine({ accrue: operation(l.GlEntry, { move: l.glMachine.moves.post }) }) };
     await refusedWith(modelExit(c, one), "payroll", ACCRUE, refusal({ ...line(ACCRUE, "gl-entry.accrue", ["move post"]), offers: ["gl-entry.post"] }));
+  });
+
+  it("refuses a write wherever the writing operation runs: on the caller's device, and on a chain, each pointed to the owner's operation on its own", async () => {
+    const b = books();
+    const local = "things/gl-entry/verbs/local.js";
+    const seize = "things/vault/verbs/seize.js";
+    const plant = {
+      payroll: [
+        // On the device: allowed to anyone, as a client operation must be, its step naming the line.
+        file(local, { default: operation(b.ledger.GlEntry, { runs: "client", allowed: [Blueprint.anyone], steps: { save: Blueprint.step.database({ writes: [b.ledger.GlEntry] }) } }) }),
+        // On a chain: a verb payroll adds to the ledger's vault, opening one by the vault's own move.
+        file(seize, { default: b.ledger.onVault(b.ledger.vaultMachine.moves.open) }),
+      ],
+    };
+    const exit = modelExit(b, { mounts: MOUNTED, plant });
+    await refusedWith(exit, "payroll", local, refusal({ ...line(local, "gl-entry.local", ["step save"]), runs: "client" }));
+    await refusedWith(exit, "payroll", seize, refusal({ ...line(seize, "vault.seize", ["move open"]), thing: "vault", offers: ["vault.open"], runs: "chain" }));
   });
 });

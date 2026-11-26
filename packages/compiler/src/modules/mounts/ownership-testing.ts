@@ -28,10 +28,14 @@ const id = (prefix: string) => Blueprint.id(prefix);
 const memo = Blueprint.text({ max: 100 });
 
 /** One operation with the parts a check varies; the rest is what every scratch operation has. */
-export const operation = (thing: Thing, spec: { readonly move?: unknown; readonly steps?: Readonly<Record<string, Step>>; readonly allowed?: ReadonlyArray<unknown>; readonly on?: ReadonlyArray<unknown> }) =>
+export const operation = (thing: Thing, spec: {
+  readonly move?: unknown; readonly steps?: Readonly<Record<string, Step>>; readonly allowed?: ReadonlyArray<unknown>; readonly on?: ReadonlyArray<unknown>;
+  readonly runs?: "client"; readonly payload?: Readonly<Record<string, unknown>>;
+}) =>
   Blueprint.operation(thing, {
     description: "A scratch operation.",
-    payload: { id: (thing.fields as { readonly id: never }).id },
+    payload: (spec.payload ?? { id: (thing.fields as { readonly id: never }).id }) as never,
+    ...(spec.runs ? { runs: spec.runs } : {}),
     answer: {},
     allowed: (spec.allowed ?? [Blueprint.signedIn]) as never,
     ...(spec.move ? { move: spec.move as never } : {}),
@@ -70,8 +74,16 @@ export const books = () => {
     notFrom: { exit: 71 },
   });
   const Account = Blueprint.thing({ description: "An account in the chart.", fields: { id: id("acc"), memo }, code: "AC" });
+  // A vault on a chain, in a store the ledger brings: its operations run on the chain, as one contract (K25).
+  const vaultStore = Blueprint.store.chain.evm();
+  const Vault = Blueprint.thing({ description: "Money the company holds on a chain.", fields: { id: id("vlt"), safe: Blueprint.account() }, lives: vaultStore } as never) as unknown as Thing<{ readonly id: any; readonly safe: any }>;
+  const VaultOpened = Blueprint.event({ id: Vault.fields.id, safe: Vault.fields.safe });
+  const vaultMachine = Blueprint.machine(Vault, { states: ["open"], moves: { open: { from: [], to: "open", emits: VaultOpened } }, notFrom: { exit: 74 } });
+  const holder = Blueprint.role(Vault, { who: Vault.fields.safe });
+  /** An operation on the vault: on a chain, allowed to who signs, its payload naming the vault and its Safe. */
+  const onVault = (move?: unknown) => operation(Vault, { payload: { id: Vault.fields.id, safe: Vault.fields.safe }, allowed: [holder], ...(move ? { move } : {}) });
   const ledger = {
-    GlEntry, Posted, Reversed, Archived, glMachine, JournalEntry, Drafted, Submitted, jeMachine, Account,
+    GlEntry, Posted, Reversed, Archived, glMachine, JournalEntry, Drafted, Submitted, jeMachine, Account, vaultStore, Vault, VaultOpened, vaultMachine, holder, onVault,
     post: operation(GlEntry, { move: glMachine.moves.post, steps: { lines: Blueprint.step.database() } }),
     reverse: operation(GlEntry, { move: glMachine.moves.reverse }),
     // The ledger writes its line by every way too: the keeper's move, a bare step, and a step the runtime runs on its own event.
@@ -82,6 +94,7 @@ export const books = () => {
     preview: operation(GlEntry, { steps: { look: Blueprint.step.database({ writes: [] }) } }),
     draft: operation(JournalEntry, { move: jeMachine.moves.draft }),
     submit: operation(JournalEntry, { move: jeMachine.moves.submit, steps: { lines: Blueprint.step.database({ writes: [JournalEntry, GlEntry] }) } }),
+    open: onVault(vaultMachine.moves.open),
   };
 
   // ---- payroll: its own things, written by every way a feature has ----
@@ -149,6 +162,12 @@ const baseFiles = (b: Books, verbs: ReturnType<Books["payrollVerbs"]>): Record<N
       file("things/journal-entry/verbs/draft.js", { default: l.draft }),
       file("things/journal-entry/verbs/submit.js", { default: l.submit }),
       file("things/account/thing.js", { Account: l.Account }),
+      file("stores/vault.js", { default: l.vaultStore }),
+      file("things/vault/thing.js", { Vault: l.Vault }),
+      file("things/vault/events.js", { VaultOpened: l.VaultOpened }),
+      file("things/vault/machine.js", { machine: l.vaultMachine }),
+      file("things/vault/roles.js", { holder: l.holder }),
+      file("things/vault/verbs/open.js", { default: l.open }),
     ],
     payroll: [
       file("things/salary-slip/thing.js", { SalarySlip: p.SalarySlip }),
@@ -247,6 +266,8 @@ export interface Refusal {
   readonly owner: string;
   /** Every operation of the owner's mount, in the model, that writes the thing. */
   readonly offers: ReadonlyArray<string>;
+  /** Where the writing operation runs, when not on the server: there it can't run another inside its commit (CX-inner-operations, call 4). */
+  readonly runs?: "client" | "chain";
 }
 
 /** The whole refusal, word for word, as CX-feature-ownership call 6 says it: built from the fixture, never read from what it judges. */
@@ -254,5 +275,8 @@ export const refusal = (r: Refusal): string =>
   `blueprint/features/${r.mount}.ts: ${at(r.pkg, r.path)}: the feature ${r.feature} writes ${r.thing} in ${r.operation} (${r.how.join(" and ")}), ` +
   `and ${r.thing} is the feature ${r.owner}'s: a feature writes only its own things. ` +
   (r.offers.length > 0
-    ? `Run one of ${r.owner}'s operations that write it inside this commit instead, as a step (Blueprint.step.operation): ${[...r.offers].sort().join(", ")}`
+    ? r.runs === undefined
+      ? `Run one of ${r.owner}'s operations that write it inside this commit instead, as a step (Blueprint.step.operation): ${[...r.offers].sort().join(", ")}`
+      : `Call one of ${r.owner}'s operations that write it instead, on its own: ${r.operation} runs ${r.runs === "client" ? "on the caller's device" : "on a chain"}, ` +
+        `where an operation can't run another inside its commit (CX-inner-operations, call 4): ${[...r.offers].sort().join(", ")}`
     : `${r.owner} offers no operation that writes it to run inside this commit (Blueprint.step.operation): ask its owner for one`);

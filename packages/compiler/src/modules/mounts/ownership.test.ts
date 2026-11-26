@@ -5,7 +5,7 @@
 // the scratch books are ./ownership-testing.ts. Written by the checks author for Goal 16; the builder never edits this file and only removes
 // lines from `expected-failing/ownership.txt`.
 import { describe, expect, it } from "vitest";
-import { Blueprint } from "orthograph";
+import { Blueprint, Via } from "orthograph";
 import { MOUNTED, at, books, file, innerStep, modelExit, modelOf, operation, problemsOf, type AppSpec } from "./ownership-testing.ts";
 
 /** The problems naming `where`, of a blueprint that must be refused. */
@@ -84,17 +84,21 @@ describe("#1134: a feature writes its own things, reads anyone's, and writes ano
     const b = books();
     const mounts = { books: "ledger", wages: "payroll" } as const;
     const m = await modelOf(b, { mounts });
-    expect(Object.keys(m.things).filter((t) => t.startsWith("books-") || t.startsWith("wages-")).sort()).toEqual(["books-account", "books-gl-entry", "books-journal-entry", "wages-payroll-entry", "wages-salary-slip"]);
+    expect(Object.keys(m.things).filter((t) => t.startsWith("books-") || t.startsWith("wages-")).sort()).toEqual(["books-account", "books-gl-entry", "books-journal-entry", "books-vault", "wages-payroll-entry", "wages-salary-slip"]);
     const wrong = books();
     await refusedAt([wrong, { mounts, verbs: wrong.payrollVerbs({ settle: { post: Blueprint.step.database({ writes: [wrong.ledger.GlEntry] }) } }) }], at("payroll", "things/salary-slip/verbs/settle.js"));
   });
 
-  it("never judges an operation the app's mount omits: it isn't in the app; kept, the same operation is refused", async () => {
+  it("never judges an operation the app's mount omits: it isn't in the app; kept, or only narrowed, the same operation is refused", async () => {
     const b = books();
     const verbs = b.payrollVerbs({ submit: { post: Blueprint.step.database({ writes: [b.ledger.GlEntry] }) } });
     const m = await modelOf(b, { mounts: MOUNTED, verbs, edits: { payroll: (p) => [p.omit(verbs.submit)] } });
     expect(m.operations["salary-slip.submit"]).toBeUndefined();
     const wrong = books();
     await refusedAt([wrong, { mounts: MOUNTED, verbs: wrong.payrollVerbs({ submit: { post: Blueprint.step.database({ writes: [wrong.ledger.GlEntry] }) } }) }], at("payroll", "things/salary-slip/verbs/submit.js"));
+    // Narrowed to fewer ways in, it is still in the app, and still refused.
+    const narrowed = books();
+    const nv = narrowed.payrollVerbs({ submit: { post: Blueprint.step.database({ writes: [narrowed.ledger.GlEntry] }) } });
+    await refusedAt([narrowed, { mounts: MOUNTED, verbs: nv, edits: { payroll: (p) => [p.narrow(nv.submit, { via: [Via.session] })] } }], at("payroll", "things/salary-slip/verbs/submit.js"));
   });
 });
