@@ -43,6 +43,14 @@ describe("a Safe's address, worked out the factory's way", () => {
     );
   });
 
+  it("agrees with @orthograph/safe's own vector (A3, #1182), which the factory also gives", () => {
+    const owner = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+    const init = Uint8Array.from(initializer(owner).slice(2).match(/../g)!.map((p) => parseInt(p, 16)));
+    expect(Buffer.from(keccak_256(init)).toString("hex")).toBe("2f1fd6d9e6a82b264a7f081fc81baddb2d1f74b5a977dfc77e996d73d21fe90e");
+    expect(predictAddress(owner, 0n)).toBe("0x925d0B0F1AE3B4Be9C3A831100b6bdF711dB4Bc9");
+    expect(predictAddress(owner, 1n)).toBe("0x8fC4AF618430430a01522137f6d0b5930446c39B");
+  });
+
   it("names the local bootstrap key's address on the local chain", () => {
     expect(localBootstrap).toBe(`eip155:31337:${BOOTSTRAP}`);
   });
