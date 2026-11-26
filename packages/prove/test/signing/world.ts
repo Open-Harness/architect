@@ -16,6 +16,12 @@ import { Blueprint } from "orthograph";
 // ---- EIP-191 and EIP-55, written out ------------------------------------------------------------------------------
 const hex = (bytes: Uint8Array) => Buffer.from(bytes).toString("hex");
 
+/** EIP-191's digest of a text message: keccak-256 of the prefix, the UTF-8 byte length and the bytes. */
+const digestOf = (message: string) => {
+  const text = new TextEncoder().encode(message);
+  return keccak_256(new Uint8Array([...new TextEncoder().encode(`\x19Ethereum Signed Message:\n${text.length}`), ...text]));
+};
+
 /** EIP-55: the address with each letter upper case where the keccak of its lower-case hex has a nibble of 8 or more. */
 export const checksum = (address: string): string => {
   const lower = address.replace(/^0x/, "").toLowerCase();
@@ -26,8 +32,7 @@ export const checksum = (address: string): string => {
 /** Who signed `message` (EIP-191 `personal_sign`, UTF-8), as a checksummed address; `undefined` for a signature that is no signature. */
 export const recover = (message: string, signature: string): string | undefined => {
   if (!/^0x[0-9a-fA-F]{130}$/.test(signature)) return undefined;
-  const text = new TextEncoder().encode(message);
-  const digest = keccak_256(new Uint8Array([...new TextEncoder().encode(`\x19Ethereum Signed Message:\n${text.length}`), ...text]));
+  const digest = digestOf(message);
   const v = Number.parseInt(signature.slice(130, 132), 16);
   const bit = v >= 27 ? v - 27 : v;
   if (bit !== 0 && bit !== 1) return undefined;
@@ -37,6 +42,16 @@ export const recover = (message: string, signature: string): string | undefined 
   } catch {
     return undefined;
   }
+};
+
+/**
+ * The signature a key must give for `message`: EIP-191 `personal_sign`, RFC 6979 and low s (noble's defaults, as every
+ * Ethereum signer gives), `v` 27 or 28. Made here from the key itself, so a signature is judged whole, byte for byte.
+ */
+export const reference = (message: string, secret: string): string => {
+  const digest = digestOf(message);
+  const signed = secp256k1.sign(digest, secret.replace(/^0x/, ""));
+  return `0x${signed.r.toString(16).padStart(64, "0")}${signed.s.toString(16).padStart(64, "0")}${(27 + signed.recovery).toString(16)}`;
 };
 
 // ---- the declarations the journeys call ----------------------------------------------------------------------------
@@ -60,7 +75,7 @@ export interface World {
   /** Each claim the world was handed: the text it rebuilt, the signature, and who it recovered. */
   readonly claims: ReadonlyArray<{ readonly safe: string; readonly text: string; readonly signature: string; readonly by: string }>;
   /** Every request the world got: its path and body, as sent. */
-  readonly requests: ReadonlyArray<{ readonly path: string; readonly body: string }>;
+  readonly requests: ReadonlyArray<{ readonly path: string; readonly body: string; readonly headers: string }>;
   readonly close: () => Promise<void>;
 }
 
@@ -77,7 +92,7 @@ export const startWorld = async (): Promise<World> => {
   const server = createServer((request, response) => {
     void bodyOf(request).then((body) => {
       const path = (request.url ?? "").split("?")[0]!;
-      requests.push({ path, body });
+      requests.push({ path, body, headers: JSON.stringify(request.headers) });
       const json = (status: number, answer: unknown) => response.writeHead(status, { "content-type": "application/json" }).end(JSON.stringify(answer));
       const asked = (body === "" ? {} : JSON.parse(body)) as Record<string, unknown>;
       if (path === "/_world/cast") {
@@ -86,7 +101,8 @@ export const startWorld = async (): Promise<World> => {
           const person = `per_${word()}`;
           const token = `tok_${word()}`;
           people.set(token, person);
-          castAs.set(name, person);
+          // The first cast under a name is the one kept: a later run of the same journey index is other people again.
+          if (!castAs.has(name)) castAs.set(name, person);
           return [name, { person, token, email: `${name}@world.test`, password: "world-password" }];
         })));
       }

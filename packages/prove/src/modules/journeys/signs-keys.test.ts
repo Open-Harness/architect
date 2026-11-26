@@ -13,12 +13,13 @@ import { describe, expect, it } from "vitest";
 import { journeyLines } from "#modules/prove/internal/report.js";
 import { signing, wire } from "../../../test/signing/journeys.ts";
 
-const { made, said, ran, world, started } = signing();
+const { made, said, ran, world, started, addedGlobals } = signing();
 
 const repo = resolve(import.meta.dirname, "../../../../..");
-// Not walked: git's objects, package stores and other agents' worktrees (none is written by a run). A `node_modules` is
-// walked into its `.cache` only, where a builder might keep a cache.
-const SKIP = new Set([".git", ".pnpm-store", "worktrees", "pnpm"]);
+// Not walked: git's objects and other agents' worktrees, which a run never writes. Everything else is, `node_modules` too.
+const SKIP = new Set([".git", "worktrees"]);
+/** Where a run could write: the repository, the home folder and every temporary folder. */
+const ROOTS = [repo, homedir(), tmpdir(), "/tmp", "/var/tmp", "/dev/shm"];
 /** Every file under `root` written since the runs began, up to a few megabytes each. */
 const writtenSince = (root: string, since: number): ReadonlyArray<string> => {
   const out: Array<string> = [];
@@ -26,9 +27,8 @@ const writtenSince = (root: string, since: number): ReadonlyArray<string> => {
     if (depth > 12) return;
     let entries: ReadonlyArray<string> = [];
     try { entries = readdirSync(dir); } catch { return; }
-    const modules = dir.endsWith("node_modules");
     for (const name of entries) {
-      if (SKIP.has(name) || (modules && name !== ".cache")) continue;
+      if (SKIP.has(name)) continue;
       const path = join(dir, name);
       let stat;
       try { stat = lstatSync(path); } catch { continue; }
@@ -48,6 +48,20 @@ const formsOf = (secret: Redacted.Redacted<string>) => {
   const bytes = Buffer.from(hex, "hex");
   return [hex, bytes.toString("base64").replace(/=+$/, ""), bytes.toString("base64url"), [...bytes].join(","), BigInt(`0x${hex}`).toString()];
 };
+/**
+ * Every text a value holds, however deep: strings, numbers and bigints as text, bytes as hex and as a list of numbers, and a
+ * `Redacted` opened, since one kept where it should not be is a key kept.
+ */
+const textsIn = (value: unknown, seen = new Set<unknown>()): ReadonlyArray<string> => {
+  if (typeof value === "string") return [value];
+  if (typeof value === "number" || typeof value === "bigint") return [value.toString()];
+  if (typeof value !== "object" || value === null || seen.has(value)) return [];
+  seen.add(value);
+  if (Redacted.isRedacted(value)) return textsIn(Redacted.value(value), seen);
+  if (value instanceof Uint8Array) return [Buffer.from(value).toString("hex"), [...value].join(",")];
+  const inner = value instanceof Map ? [...value.entries()] : value instanceof Set ? [...value] : Reflect.ownKeys(value).map((k) => (value as Record<string | symbol, unknown>)[k]);
+  return inner.flatMap((v) => textsIn(v, seen));
+};
 const holds = (text: string, forms: ReadonlyArray<string>) => forms.some((form) => text.toLowerCase().includes(form.toLowerCase()));
 /** The forms of every key made, once the runs are done; there must be keys to look for, or every check below is hollow. */
 const keys = async () => {
@@ -63,14 +77,14 @@ describe("no key is ever shown (CX-journey-signs, call 5)", () => {
     expect(made.length, "keys made with Keys.generate during the runs").toBeGreaterThanOrEqual(7);
   });
 
-  it("no key is in a run, prove's printed lines, its structured details, or any request the world got", async () => {
+  it("no key is anywhere in a run (Redacted or bytes too), prove's printed lines, its structured details, or any request the world got, headers too", async () => {
     const forms = await keys();
     const all = await ran();
     const printed = journeyLines(all, new Map());
-    const texts = [JSON.stringify(all, wire), printed.lines.join("\n"), JSON.stringify(printed.details, wire), ...world().requests.map((r) => `${r.path} ${r.body}`)];
+    const texts = [JSON.stringify(all, wire), ...textsIn(all), printed.lines.join("\n"), ...textsIn(printed.details), ...world().requests.map((r) => `${r.path} ${r.headers} ${r.body}`)];
     expect(texts.filter((t) => holds(t, forms)).map((t) => t.slice(0, 120)), "texts that hold a key").toEqual([]);
     // A key is 64 hex digits; nothing in a run is that long but a signature (130) and nothing that short is a key's (traces are 32).
-    expect(texts.flatMap((t) => t.match(/(?<![0-9a-fA-F])(0x)?[0-9a-fA-F]{64}(?![0-9a-fA-F])/g) ?? []), "runs of exactly 64 hex digits").toEqual([]);
+    expect([JSON.stringify(all, wire), printed.lines.join("\n")].flatMap((t) => t.match(/(?<![0-9a-fA-F])(0x)?[0-9a-fA-F]{64}(?![0-9a-fA-F])/g) ?? []), "runs of exactly 64 hex digits").toEqual([]);
   });
 
   it("no key was printed or logged, at any log level", async () => {
@@ -78,14 +92,15 @@ describe("no key is ever shown (CX-journey-signs, call 5)", () => {
     expect(said.filter((t) => holds(t, forms)).map((t) => t.slice(0, 120)), "lines printed or logged that hold a key").toEqual([]);
   });
 
-  it("no key is in the process's environment, where a child process would inherit it", async () => {
+  it("no key is in the process's environment, where a child process would inherit it, nor on anything the runs left on globalThis", async () => {
     const forms = await keys();
     expect(Object.entries(process.env).filter(([, v]) => v !== undefined && holds(v, forms)).map(([k]) => k), "variables that hold a key").toEqual([]);
+    expect(addedGlobals().flatMap((v) => textsIn(v)).filter((t) => holds(t, forms)).length, "texts on globals the runs added that hold a key").toBe(0);
   });
 
-  it("no key was written to a file, in the repository, the home folder or the system's temporary folder", async () => {
+  it("no key was written to a file, in the repository (node_modules too), the home folder or any temporary folder", async () => {
     const forms = await keys();
-    const files = [...new Set([...writtenSince(repo, started()), ...writtenSince(homedir(), started()), ...writtenSince(tmpdir(), started())])];
+    const files = [...new Set(ROOTS.flatMap((root) => writtenSince(root, started())))];
     const holding = files.filter((file) => { try { return holds(readFileSync(file, "latin1"), forms); } catch { return false; } });
     expect(holding, "files written during the runs that hold a key").toEqual([]);
   });

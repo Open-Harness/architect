@@ -34,7 +34,8 @@ s.step("the claim names ada",
    string. The call is a plain description, `{ kind:
    "sign-call", actor, message }`, where `message` is the template's parts in order, each a string or a ref
    (`ReadonlyArray<string | Ref>`); `prove` resolves the parts with `Scripting.resolve` and joins them, each part as
-   `String(part)`. A ref the world never gave fails the step, naming its path (`message: nothing at last.nope`), and
+   `String(part)` (a number or bigint as its digits, an object as `String` gives it), and signs the result as it is: no
+   trimming, no newline or Unicode normalising. A ref the world never gave fails the step, naming its path (`message: nothing at last.nope`), and
    nothing is signed. A cast member with no key (the system, a service, the keeper) fails the step, naming them and that
    they have no key.
 
@@ -44,7 +45,7 @@ s.step("the claim names ada",
 2. **It answers `{ message, signature, signer }`,** which a later step reads as `s.last`: `message` is the exact text
    signed, exactly, each part as its text (spaces and newlines as written); `signature` is EIP-191 `personal_sign`, `0x` and
    130 lower-case hex digits, its last byte the `v` of 27 or 28 (`1b`, `1c`) that `ecrecover` and a Safe read as a key's
-   signature; `signer` is the address that
+   signature, and low `s`: exactly what the key gives under RFC 6979, as every Ethereum signer does; `signer` is the address that
    signed, EIP-55 checksummed (`Held.address`, as `packages/wallets` answers it). Signing is deterministic (RFC 6979,
    as `wallets`' signer already is): one key and one text give one signature, so a replayed claim under its request key
    carries the same proof and is no `IdempotencyConflict`. The step's checks (`expect`) read that
@@ -52,9 +53,11 @@ s.step("the claim names ada",
 3. **`s.<name>.signer` is the address of the cast member's key,** a ref known from the journey's start, before they
    sign: a step may put it in a payload (a Safe's owner) or a check may compare against it, as above. Its path is
    `cast.<name>.signer`.
-4. **The key.** Each person in a journey's cast (not the system, a service or the keeper) has one key for that journey:
+4. **The key.** Each person in a journey's cast (not the system, a service or the keeper) has one key for that journey
+   run:
    the same key for every `signs` of theirs in it and in its starting worlds' `makes`, and another key for the same name
-   in another journey, as each journey has its own people. It is a world key: made by `prove` for that run from chain-evm's `Keys.generate` (the platform's
+   in another journey, as each journey has its own people; a second run of the same journey (another `ortho prove` in
+   one process) is other people again, with new keys, never a cache. It is a world key: made by `prove` for that run from chain-evm's `Keys.generate` (the platform's
    random source, `Redacted` from its first line), never a real key and never one read from the environment. It signs
    through `packages/wallets`' public API: `Server.keystore({ secret, chain })` holds it, and the signer's own `sign`
    makes the EIP-191 signature, so the secret only ever leaves as signatures. A signing step needs no chain: a world
@@ -82,10 +85,13 @@ s.step("the claim names ada",
   `Server.keystore` and chain-evm's public `Keys`, changing neither. A key per journey per person keeps journeys apart
   as their people are.
 
+## A way in
+
+`s.ada.via(Via.key).signs(...)` is ada signing, with her own key: a way in is how a call reaches the server, and a
+signature reaches none.
+
 ## Not done here
 
 - **EIP-712 typed data** (`s.<name>.signsTyped({ domain, types, primaryType, message })`) is left until S3 needs it
   (#1166): `wallets`' public `Signer` signs EIP-191 only, so typed data needs a change inside `packages/wallets`, which
   is Goal 18's and goes to it as a Snag when S3 asks. Not checked.
-- **An agent's or a key's way in** (`s.ada.via(Via.key).signs`) signs with the same person's key: a way in is how a
-  call reaches the server, and a signature reaches none.

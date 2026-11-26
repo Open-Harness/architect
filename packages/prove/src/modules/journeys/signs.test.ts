@@ -4,12 +4,12 @@
 // The journeys and the fake world are in `test/signing/`: the world makes the ids, so no journey file can hold the text, and
 // recovers the signer itself (noble's secp256k1, EIP-191). Every expected text, id and address comes from what the world made
 // or from that recovery, never from the answer judged. `signs-keys.test.ts` judges that no key is ever shown.
-import { Effect } from "effect";
+import { Effect, Redacted } from "effect";
 import { describe, expect, it } from "vitest";
 import { Keys } from "@orthograph/chain-evm/device";
 import { journeyLines } from "#modules/prove/internal/report.js";
 import { addressesIn, answerOf, recordOf, RUN, signing, SIGNS, stepOf, wire } from "../../../test/signing/journeys.ts";
-import { checksum, recover } from "../../../test/signing/world.ts";
+import { checksum, recover, reference } from "../../../test/signing/world.ts";
 
 const { made, ran, world, personsIn, safeOf, claimTextOf } = signing();
 const runAt = async (index: number) => (await ran())[index]!;
@@ -78,11 +78,11 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     expect(recover("hello, Capxul", signed.signature)).toBe(signed.signer);
   });
 
-  it("the message is the text exactly as written, each part as its text: spaces, a tab, a newline and a number kept", async () => {
+  it("the message is the text exactly as written, each part as String(part): spaces, a tab, CR LF, a trailing newline, non-ASCII, a number, a bigint, an object", async () => {
     const run = await runAt(RUN.exact);
     expect(run.stopped, `journey "${run.name}" stopped: ${run.stopped}`).toBeUndefined();
     const answer = answerOf(run, "ada signs a text with odd spaces");
-    const text = `  Capxul:\n  claim  3\t${safeOf(RUN.exact)}  `;
+    const text = `  Capxul:\r\n  claim  ${String(3)}\t${String(30n)} ${String({ a: 1 })} Ünïcødé ✓ ${safeOf(RUN.exact)}  \n`;
     expect(answer.message, "the message signed").toBe(text);
     expect(recover(text, answer.signature)).toBe(answer.signer);
     expect(stepOf(run, "ada signs a text with odd spaces")?.failures).toEqual([]);
@@ -99,6 +99,14 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     expect(wanted, "and a real address").toMatch(/^0x[0-9a-fA-F]{40}$/);
   });
 
+  it("a way in changes nothing: ada signing by her key's way in is ada, with her own key", async () => {
+    const run = await runAt(RUN.exact);
+    const by = recordOf(run, "ada signs by her key's way in");
+    expect(by?.actor, "the cast member recorded").toBe("ada");
+    expect(answerOf(run, "ada signs by her key's way in").signer, "the signer").toBe(answerOf(run, "ada signs a text with odd spaces").signer);
+    expect(stepOf(run, "ada signs by her key's way in")?.failures).toEqual([]);
+  });
+
   it("a starting world whose sign names a ref the world never gave stops the journey, naming the world and the ref", async () => {
     const run = await runAt(RUN.onNothing);
     expect(run.stopped, `journey "${run.name}"`).toMatch(/^starting world a claim of nothing: .*\bnothing at world\.nope\b/);
@@ -106,12 +114,15 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     expect(JSON.stringify(run, wire), "no signature in the run").not.toMatch(NO_SIGNATURE);
   });
 
-  it("a cast member with no key, the system, cannot sign: the step fails, naming them, and nothing is signed", async () => {
-    const run = await runAt(RUN.keyless);
+  it.each([
+    ["the system", RUN.keyless, "the system tries to sign", "sys"],
+    ["the keeper", RUN.keeper, "the keeper tries to sign", "keeper"],
+  ] as const)("a cast member with no key, %s, cannot sign: the step fails, naming them, and nothing is signed", async (_, index, title, name) => {
+    const run = await runAt(index);
     expect(run.stopped, `journey "${run.name}" stopped: ${run.stopped}`).toBeUndefined();
-    const failures = stepOf(run, "the system tries to sign")?.failures ?? [];
-    expect(failures, `journey "${run.name}" step "the system tries to sign"`).toHaveLength(1);
-    expect(failures[0], "the failure names the cast member and that it holds no key").toMatch(/\bsys\b.*\bno key\b/);
+    const failures = stepOf(run, title)?.failures ?? [];
+    expect(failures, `journey "${run.name}" step "${title}"`).toHaveLength(1);
+    expect(failures[0], "the failure names the cast member and that it holds no key").toMatch(new RegExp(`\\b${name}\\b.*\\bno key\\b`));
     expect(JSON.stringify(run, wire), "no signature in the run").not.toMatch(NO_SIGNATURE);
   });
 
@@ -122,12 +133,20 @@ describe("a journey's cast member signs a message with run-time ids (CX-journey-
     expect(again.steps.flatMap((s) => s.failures), `journey "${again.name}", run again`).toEqual([]);
   });
 
-  it("every key that signs is a world key prove made for the run, through Keys.generate: a fixed or real key is none of them", async () => {
+  it("a second prove run of the same journey, under the same index, is other people with other keys", async () => {
+    const [first, repeat] = [await runAt(RUN.claims), await runAt(RUN.repeat)];
+    expect(repeat.steps.flatMap((s) => s.failures), `journey "${repeat.name}", its second run`).toEqual([]);
+    for (const step of ["ada signs the claim", "bo signs too"]) expect(answerOf(repeat, step).signer, step).not.toBe(answerOf(first, step).signer);
+  });
+
+  it("every signature is a world key's, made through Keys.generate, and is byte for byte the reference signature of that key over its message", async () => {
     const all = await ran();
-    const signers = new Set(all.flatMap((run) => run.calls.filter((c) => SIGNS.has(c.step) && c.status === 200).map((c) => (c.body as { signer: string }).signer)));
-    expect(signers.size, "the signers of the passing journeys' sign steps").toBeGreaterThanOrEqual(4);
-    const addresses = new Set<string>(await Promise.all(made.map((secret) => Effect.runPromise(Keys.fromSecret(secret).pipe(Effect.map((k) => k.address))))));
-    expect([...signers].filter((s) => !addresses.has(s)), "signers whose key prove did not make with Keys.generate").toEqual([]);
+    const signed = all.flatMap((run) => run.calls.filter((c) => SIGNS.has(c.step) && c.status === 200).map((c) => c.body as { message: string; signature: string; signer: string }));
+    expect(new Set(signed.map((a) => a.signer)).size, "the signers of the sign steps").toBeGreaterThanOrEqual(4);
+    const keyOf = new Map<string, string>(await Promise.all(made.map((secret) => Effect.runPromise(Keys.fromSecret(secret).pipe(Effect.map((k) => [k.address, Redacted.value(secret)] as const))))));
+    expect(signed.filter((a) => !keyOf.has(a.signer)).map((a) => a.signer), "signers whose key prove did not make with Keys.generate").toEqual([]);
+    // EIP-191, RFC 6979, low s and v 27 or 28: what the key itself gives, not merely a signature that recovers.
+    expect(signed.filter((a) => keyOf.has(a.signer) && a.signature !== reference(a.message, keyOf.get(a.signer)!)).map((a) => a.signature), "signatures that are not the reference").toEqual([]);
   });
 
   it("a sign step asks the world nothing: the world got the cast, the clock, and the journeys' own calls only", async () => {

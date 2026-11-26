@@ -5,7 +5,7 @@
 // The surface (`s.<name>.signs`, `s.<name>.signer`) is reached through `Signing`, so this compiles before the builder adds it.
 import { Effect, type Redacted, References } from "effect";
 import { afterAll, beforeAll, expect } from "vitest";
-import { Blueprint, expect as check } from "orthograph";
+import { Blueprint, expect as check, Via } from "orthograph";
 import { Keys } from "@orthograph/chain-evm/device";
 import { Journeys } from "../../src/modules/journeys/service.ts";
 import type { CallRecord, JourneyRun } from "../../src/modules/journeys/types.ts";
@@ -20,7 +20,7 @@ const as = (actor: unknown) => actor as Signing;
 const ada = Blueprint.signedIn;
 
 // ---- the journeys, in the order they run (a run's index is its place here) -------------------------------------------
-const aSafe = Blueprint.startingWorld("a safe", { cast: { ada }, makes: (s) => [s.ada.run(open, {})], gives: (s) => ({ safe: s.last.safe, count: 3 }) });
+const aSafe = Blueprint.startingWorld("a safe", { cast: { ada }, makes: (s) => [s.ada.run(open, {})], gives: (s) => ({ safe: s.last.safe, count: 3, big: 30n, thing: { a: 1 } }) });
 /** A world that begins from `a safe`: ada signs the claim in `makes`, then claims with `s.last`, and the world gives who it recovered. */
 const aClaimedSafe = Blueprint.startingWorld("a claimed safe", {
   from: "a safe", cast: { ada },
@@ -73,26 +73,37 @@ const JOURNEYS = [
     cast: { ada, sys: Blueprint.system },
     steps: (s) => [s.step("the system tries to sign", as(s.sys).signs("hello, Capxul"))],
   }),
+  Blueprint.journey("the keeper has no key", {
+    cast: { ada, keeper: Blueprint.keeper },
+    steps: (s) => [s.step("the keeper tries to sign", as(s.keeper).signs("hello, Capxul"))],
+  }),
   Blueprint.journey("a journey on a world that signed nothing", {
     cast: { ada }, starts: "a claim of nothing",
     steps: (s) => [s.step("ada signs once the world has claimed nothing", as(s.ada).signs("hello, Capxul"))],
   }),
-  /** The exact text: spaces, a tab and a newline kept as written, a number ref read as its text; and a sign step's check that must fail. */
+  /**
+   * The exact text: spaces, a tab, CR LF and a trailing newline kept as written, non-ASCII kept, and each part read as its text (`String`): a
+   * number, a bigint and an object; a sign step's check that must fail; and ada signing by her key's way in, with her own key.
+   */
   Blueprint.journey("the exact text, and a check that reads it", {
     cast: { ada, bo: ada }, starts: "a safe",
     steps: (s) => [
-      s.step("ada signs a text with odd spaces", as(s.ada).signs`  Capxul:\n  claim  ${s.world.count}\t${s.world.safe}  `, check((a) => a.signer).toBe(as(s.ada).signer)),
+      s.step("ada signs a text with odd spaces", as(s.ada).signs`  Capxul:\r\n  claim  ${s.world.count}\t${s.world.big} ${s.world.thing} Ünïcødé ✓ ${s.world.safe}  \n`, check((a) => a.signer).toBe(as(s.ada).signer)),
+      s.step("ada signs by her key's way in", as(s.ada.via(Via.key)).signs("hello, Capxul"), check((a) => a.signer).toBe(as(s.ada).signer)),
       s.step("a sign step's check that must fail", as(s.ada).signs("hello, Capxul"), check((a) => a.signer).toBe(as(s.bo).signer)),
     ],
   }),
 ] as const;
-export const RUN = { claims: 0, another: 1, otherText: 2, unsaid: 3, again: 4, onClaimed: 5, keyless: 6, onNothing: 7, exact: 8 } as const;
+export const RUN = { claims: 0, another: 1, otherText: 2, unsaid: 3, again: 4, onClaimed: 5, keyless: 6, keeper: 7, onNothing: 8, exact: 9, repeat: 10 } as const;
+/** Each run's journey index: the last is the first journey run again under its own index, as a second `ortho prove` in one process would. */
+const INDEX = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0] as const;
 
 /** Every sign step's title: what has no span of its own. */
 export const SIGNS = new Set([
   "ada signs the claim", "ada signs again, with the same key", "bo signs too", "ada signs the claim again, as parts", "bo signs ada's claim text",
   "ada signs a claim for bo", "ada signs a claim of nothing", "ada signs once the world has claimed", "the system tries to sign",
   "ada signs once the world has claimed nothing", "ada signs a text with odd spaces", "a sign step's check that must fail",
+  "ada signs by her key's way in", "the keeper tries to sign",
 ]);
 
 const project = {
@@ -109,9 +120,10 @@ export const signing = () => {
   const made: Array<Redacted.Redacted<string>> = [];
   const said: Array<string> = [];
   const undo: Array<() => void> = [];
-  const state = { world: undefined as World | undefined, started: 0, runs: [] as ReadonlyArray<JourneyRun> };
+  const state = { world: undefined as World | undefined, started: 0, runs: [] as ReadonlyArray<JourneyRun>, globals: new Set<string | symbol>() };
   beforeAll(async () => {
     state.started = Date.now();
+    state.globals = new Set(Reflect.ownKeys(globalThis));
     const original = Keys.generate;
     (Keys as { generate: typeof Keys.generate }).generate = Effect.tap(original, (secret) => Effect.sync(() => { made.push(secret); }));
     undo.push(() => { (Keys as { generate: typeof Keys.generate }).generate = original; });
@@ -137,7 +149,7 @@ export const signing = () => {
   const ran = async () => {
     if (state.runs.length === 0) {
       const out: Array<JourneyRun> = [];
-      for (const [index, journey] of JOURNEYS.entries()) out.push(await runOf(journey, index));
+      for (const [at, journey] of [...JOURNEYS, claims0].entries()) out.push(await runOf(journey, INDEX[at]!));
       state.runs = out;
     }
     return state.runs;
@@ -147,7 +159,9 @@ export const signing = () => {
   const personsIn = (index: number) => ({ ada: world().castAs.get(`j${index}.ada`), bo: world().castAs.get(`j${index}.bo`) });
   /** The Safe the starting world opened for a run: the one its ada opened. */
   const safeOf = (index: number) => [...world().safes].find(([, owner]) => owner === personsIn(index).ada)?.[0];
-  return { made, said, ran, world, personsIn, safeOf, claimTextOf: (index: number, who: "ada" | "bo" = "ada") => claimText(safeOf(index), personsIn(index)[who]), started: () => state.started };
+  /** What the runs left on `globalThis`: every property it did not have before them. */
+  const addedGlobals = () => Reflect.ownKeys(globalThis).filter((k) => !state.globals.has(k)).map((k) => (globalThis as Record<string | symbol, unknown>)[k]);
+  return { made, said, ran, world, personsIn, safeOf, addedGlobals, claimTextOf: (index: number, who: "ada" | "bo" = "ada") => claimText(safeOf(index), personsIn(index)[who]), started: () => state.started };
 };
 
 /** A step's own call, by its title: the record of what it did. */
