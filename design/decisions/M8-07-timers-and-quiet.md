@@ -102,7 +102,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
    the keeper (M8.10) is what makes them `{ thing, move, due }`. **Not done here:** a journey that moves time getting a world
    of its own (M8-checks call 3) and a real clock's journey being refused before it starts; both need the keeper's
    moves to matter and are M8.10's.
-9. **Handlers are given `Timers` only when some environment's clock is stepped or scaled.** The generated Worker for such a
+9. **Handlers are given `Timers` only when some environment's clock is stepped or scaled.** (Superseded by CX-keeper, 26 November 2026: or when the blueprint has a move made by time.) The generated Worker for such a
    blueprint takes its `Busy`, `Timers` and `DurableTimers` from `WorldEntry.work(env, wakes)`, picks `Timers` and `DurableTimers`
    into the handlers' services, and its `Handler` type says `Timers` is in `R`. A blueprint with no clock, or a real one,
    generates what it always did (proved below; Superseded by CX-keeper, 26 November 2026: unless it declares a move made by time), so a deployed real world still counts with `BusyLive` and has no `Timers` until

@@ -48,9 +48,12 @@ because every journey shares one world's clock.
    some environment's clock is stepped or scaled, **or** the blueprint declares a move made by time. A real-clock world of
    such a blueprint gets the generated `World` subclass with the keeper in its `wakes`, `WorldEntry.work(env, wakes)` in
    place of `BusyLive`, and the `WorldEntry.entry` that `work` rests on (each request's box; in a real world its clock is
-   the wall's and it counts nothing, M8.07 call 3). `ORTHO_CLOCKS` is untouched: M8-06 call 2 stands, a real clock is
+   the wall's and it counts nothing, M8.07 call 3). `ORTHO_CLOCKS` is untouched: M8-06 call 2's `ORTHO_CLOCKS` stands, a real clock is
    left out of it, and an environment it does not name reads as real.
-   A blueprint with no move made by time and no stepped or scaled clock generates what it did before. Check 05 judges the
+   **Handlers get `Timers` under the same gate:** the Handler type's `Timers`
+   (`projections/src/modules/api/internal/api.ts:121`, `handlers/internal/calls.ts:75`) and the server's services widen
+   with it, because the keeper's handlers need `Timers` in a real world too. A blueprint with no move made by time and no
+   stepped or scaled clock generates what it did before. Check 05 judges the
    generated Worker for a real-clock blueprint with an `after` move; `packages/projections/src/modules/server` is in
    this slice's paths. The wake runs the move in the world's own isolate, counted under the row's
    owner (M8.07 call 10), and returns once the operation's run holds its own token.
@@ -149,5 +152,7 @@ the keeper also turns.
 - design/decisions/M8-07-timers-and-quiet.md (call 9): "A blueprint with no clock, or a real one," → "A blueprint with no clock, or a real one, and no move made by time,"
 - design/decisions/M8-07-timers-and-quiet.md (call 10): "A generated Worker for a blueprint with a stepped or scaled clock" → "A generated Worker for a blueprint with a stepped or scaled clock, or with any move made by time,"
 - design/decisions/M8-06-world-holds-the-clock.md (the table): "`export default WorldEntry.entry<Env>({…})`, only when some environment is stepped or scaled" → "`export default WorldEntry.entry<Env>({…})`, when some environment is stepped or scaled or the blueprint has a move made by time; `ORTHO_CLOCKS` only for a stepped or scaled one"
+- design/decisions/M8-06-world-holds-the-clock.md (call 2): "A real clock is left out, so a blueprint that declares no clock, or a real one, generates exactly" → "A real clock is left out of `ORTHO_CLOCKS`; a blueprint with a move made by time gets the entry and the `World` subclass on a real clock too"
+- design/decisions/M8-07-timers-and-quiet.md (call 9): "Handlers are given `Timers` only when some environment's clock is stepped or scaled." → "Handlers are given `Timers` when some environment's clock is stepped or scaled, or the blueprint has a move made by time."
 - design/goals/09-time.md: "The wake route exists only when some environment declares a stepped or scaled clock" → "The wake route exists when some environment declares a stepped or scaled clock, or the blueprint declares a move made by time"
 - design/goals/09-time.md: "Widen projections' `timed` gate and register the wake kind." → "A feature that needs the route on a real clock for another reason widens the gate the same way and registers its kind."

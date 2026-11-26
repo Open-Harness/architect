@@ -248,6 +248,7 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
       const before = readFileSync(join(generated(plain.root), "generated/server/main.ts"), "utf8");
       expect(before).not.toContain("WorldEntry");
       expect(before).toContain("BusyLive");
+      expect(readFileSync(join(plain.root, "generated/api/src/sheet/join.handler.ts"), "utf8")).not.toMatch(/\bTimers\b/);
       cpSync(join(fixtures, "real-clock"), timed.root, { recursive: true });
       const main = readFileSync(join(generated(timed.root), "generated/server/main.ts"), "utf8");
       // M8-06 call 2 stands: a real clock is left out of ORTHO_CLOCKS.
@@ -256,6 +257,9 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
       expect(main, "the keeper's kind in the world's wakes").toMatch(/const wakes: WorldWakes = \{[^;]*\bkeeper\s*:/);
       expect(main, "the world's entry, in place of BusyLive").toContain("WorldEntry.work(env, wakes)");
       expect(main).not.toMatch(/\bBusyLive\b/);
+      // The entry `work` rests on (M8-06's table row, widened by CX-keeper call 1), and `Timers` in the keeper's handler type.
+      expect(main, "the world's entry").toMatch(/export default WorldEntry\.entry\b/);
+      expect(readFileSync(join(timed.root, "generated/api/src/desk/expire.handler.ts"), "utf8"), "Timers in the keeper's handler type").toMatch(/\bTimers\b/);
     } finally {
       timed.remove();
       plain.remove();

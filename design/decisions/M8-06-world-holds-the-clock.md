@@ -44,7 +44,8 @@ return Effect.runPromise(frontDoor(this.ctx.storage.sql, this.auth, request, thi
    with `ORTHO_ENVIRONMENT` (`local` when unset), so no class is generated per blueprint and `World` and `Actor` stay the
    static classes the generated Worker already re-exports. An environment that is not named, or whose entry is not a
    clock, is real. A real clock is left out, so a blueprint that declares no clock, or a real one, generates exactly
-   what it did (proved below).
+   what it did (proved below). (Superseded by CX-keeper, 26 November 2026: a blueprint with a move made by time gets the
+   `WorldEntry` entry and the `World` subclass on a real clock too; `ORTHO_CLOCKS` still leaves a real clock out.)
 3. **Each entry kind.**
 
    | Entry | How it wraps | Why |
