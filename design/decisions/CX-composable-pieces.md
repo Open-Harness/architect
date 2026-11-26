@@ -183,8 +183,8 @@ piece may fill. `payroll` declares *the tax on a slip*, filled by `payroll-tax-u
 posting*, filled by `budgets`. A contract is required or optional. A required one with no filler is a `check` error
 (none today). An optional one with no filler is empty: no budgets, no budget check; no
 tax piece, a slip with no tax lines, which is right for contractors only, employees through an employer of record, or a
-country with no income tax. For now a contract takes one filler per app: choosing among several at run time is dispatch, which
-Aaron ruled out, so a second tax country waits on a decision of its own.
+country with no income tax. For now a contract takes one filler per app, to keep it simple. Choosing among several by a
+row's data, such as each employee's place of work, is a further step that waits on a decision of its own.
 
 ### Per piece
 
@@ -201,13 +201,13 @@ link (L), in-commit call (I), event (E), adapter (A).
 | `items` | R items, prices, the price for a party; I `priceFor` | `company`, `ledger`, `tax`, `parties` L |
 | `payments` | O pay, receive, request a payment; I `settle` (a payment against an outstanding, by voucher kind and id); I `record` (a payment a rail made); E PaymentSubmitted; adds Payment Entry to *voucher type* | `ledger` I `post`, `parties` L |
 | `invoicing` | O raise, submit and cancel invoices; E InvoiceSubmitted, InvoicePaid; R statements; adds its invoices to *voucher type* | `ledger` I `post`, `payments` L, `parties` L, `items` L, `tax` I |
-| `banking` | O record a bank transaction, reconcile it; E TransactionLanded, TransactionSettled; R balances by bank account | `ledger` I, `parties` L, `payments` L (a transaction matched to a payment) |
+| `banking` | O record a bank transaction, reconcile it; I `record` a bank account (what `bridge-accounts` calls when it opens one); E TransactionLanded, TransactionSettled; R balances by bank account | `ledger` I, `parties` L, `payments` L (a transaction matched to a payment) |
 | `bridge-accounts` | O start KYC and KYB, open a bank account (making its `banking` Bank Account); E KybApproved, KycApproved, deposits and transfers; external accounts in a payee's currency and payouts, each recorded through `payments` | `company` L, `banking` I (record an account and a transaction), `payments` I `record`, `@orthograph/bridge` A |
 | `people` | R employees, departments, holidays; E EmployeeHired, EmployeeRelieved, EmployeeMoved; adds Employee to *party type* | `company` L |
 | `time` | R attendance, leave balances, days worked in a period; E LeaveApproved, AttendanceMarked | `people` L |
 | `expenses` | O claim, approve, pay; E ClaimApproved, ClaimPaid | `people` L, `ledger` I `post`, `payments` L (its payable settles there; reacts to PaymentSubmitted) |
 | `payroll` | O assign structures, run payroll, submit slips; E PayRunSubmitted; C the tax on a slip; adds its vouchers to *voucher type* | `people` L, `time` R (days, leave without pay), `ledger` I `post` (the accrual: payroll payable, party = the worker), `payments` L (the payables settle there), a tax piece C |
-| `contractors` | O record a tax form, set a payout method, pay many contractors; R a contractor's calendar-year total and the 1099-NEC figures | `parties` L (a contractor is a Supplier), `payments` I (one Payment Entry each), `bridge-accounts` I (a payout to an external account) |
+| `contractors` | O record a tax form, set a payout method, pay many contractors; R a contractor's calendar-year total and the 1099-NEC figures | `parties` L (a contractor is a Supplier), `payments` I (one Payment Entry each), `bridge-accounts` I (a payout to an external account, from slice 10; until then contractors are paid outside Capxul and recorded through `payments`, CX-money-global-payroll decision 6) |
 | `payroll-tax-us` | fills payroll's tax contract from dated rows | `payroll` L, C |
 | `selling` | O quote, order, make the invoice | `invoicing` I (make an invoice), `items`, `parties`, `tax` L |
 | `buying` | O request, quote, order, make the purchase invoice | the same as `selling` |
@@ -418,21 +418,22 @@ writes the mount file, and ends with `prove` passing everything that passed befo
 1. **`company`** first, alone: everything links to it. This move also adds `examples/capxul/plugins/*` to the workspace
    and proves the mechanics (names kept, the generated wire byte-identical).
 2. **`ledger`** and **`people`**, in parallel.
-3. **`time`**, **`performance`**, **`recruitment`** (after `people`) and **`banking`** with **`bridge-accounts`**
-   (after `ledger`), in parallel, each keeping today's names and wire. `bank-account` still links to `bridge-business`
-   after this step, so for one step `banking` needs `bridge-accounts`.
-4. **The bank-account flip,** its own G12 pair, because it changes the wire. Today `bank-account.open` takes
+3. **`time`**, **`performance`** and **`recruitment`** (after `people`), in parallel, each keeping today's names and
+   wire.
+4. **The bank-account flip, inside the app,** its own G12 pair, because it changes the wire, done before either thing
+   moves so the dependency points the final way from the start. Today `bank-account.open` takes
    `business: BridgeBusiness.fields.id`, refuses `KybNotApproved`, is allowed by `owner.of("business.company")` and its
    handler reads the Bridge business. All of that is Bridge's, so `open` becomes a `bridge-accounts` operation on
    `bridge-business` (open a bank account for an approved KYB), which calls Bridge and makes the Bank Account through
    `banking`'s in-commit `record` (until gap 1, by `writes: [BankAccount]`). `BankAccount` loses its `business` field
    and keeps company, name, currency and bank details; `bridge-accounts` keeps which Bridge account backs it. Then
-   `banking` needs no Bridge.
-5. **`expenses`** (after `people` and `ledger`; `payments` doesn't exist yet, so the payment link waits for it).
-6. **`payroll`** last of today's, after `time` and `ledger`. Its submit keeps `writes: [JournalEntry,
+   `banking` needs no Bridge, and `bridge-accounts` needs `banking`.
+5. **`banking`** (after `ledger` and the flip), then **`bridge-accounts`** (after `banking`).
+6. **`expenses`** (after `people` and `ledger`; `payments` doesn't exist yet, so the payment link waits for it).
+7. **`payroll`** last of today's, after `time` and `ledger`. Its submit keeps `writes: [JournalEntry,
    JournalEntryAccount, GLEntry]` across the boundary until gap 1 lands, then calls `ledger.post`.
 
-7. **#1116's five things:** four to `parties` and `payment-entry` to `payments`, after `ledger`.
+8. **#1116's five things:** four to `parties` and `payment-entry` to `payments`, after `ledger`.
 
 Pieces with nothing built yet (`rates`, `contractors`, `tax`, `items`, `invoicing` and the optional ones) are born as
 plugins.
@@ -446,7 +447,7 @@ its piece's folder and, at most, one mount file.
 | Lane | Pieces | Starts after |
 |---|---|---|
 | Books core | `ledger` and `rates`, then `parties`, `payments`, `contractors`, `tax`, `items`, `invoicing` | the move's step 2; gaps 1 and 2 |
-| Banking | `banking`, `bridge-accounts` | `ledger` moved |
+| Banking | `banking`, `bridge-accounts` | `ledger` moved and the bank-account flip |
 | HR | `people`, `time`, `expenses` | the move's step 2 |
 | Payroll | `payroll` | `time` moved |
 | United States payroll tax | `payroll-tax-us`, built now in a lane of its own (Aaron, 26 November 2026) | nothing; it plugs into payroll's contract when gap 3 lands |
@@ -516,6 +517,7 @@ yet, so that piece inherits the problem when it comes.
 - `design/goals/16-capxul.md`: "as a module a running Capxul mounts; off the critical path (K44). Pulls mounting a plugin into an app that already holds data (K43, section 2)" → "as an optional piece a business picks when its Capxul is built; off the critical path (K44). Adding it to a deployed Capxul is a rebuild with a forward migration (CX-composable-pieces)"
 - `design/goals/16-capxul.md`: "a module someone switches on later" → "an optional piece a business picks when its Capxul is built"
 - `docs/canon/status.md`: "so a running app can switch a plugin on after the fact (Capxul's modules, K43)" → "an app gives a mounted thing its own name (K22)"
+- `design/decisions/CX-payroll-tax.md`: "A payslip's tax lines come from the jurisdiction module for the employee's place of work" → "one tax piece per app for now; choosing one per employee waits on a decision of its own (CX-composable-pieces)"
 - `docs/canon/status.md`: "CRM: Frappe CRM's 40 doctypes, a module switched on later" → "CRM: Frappe CRM's 40 doctypes, an optional piece picked when a Capxul is built"
 - `examples/capxul/doctypes.md`: "Frappe CRM, the module switched on later. Slice 11." → "Frappe CRM, an optional piece picked when a Capxul is built (CX-composable-pieces). Slice 11."
 - `examples/capxul/doctypes.md`: "a stock module can be switched on later" → "a stock piece can be added later"
