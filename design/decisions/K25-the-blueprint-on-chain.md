@@ -118,7 +118,8 @@ written three different ways.
    - Our contract is one deployment per network, a module that any account switches on. Its rows are keyed by the
      account they act for, and it never holds the account's money: it spends from the account through the account
      adapter (on a Safe, `execTransactionFromModule`; ERC-7579 accounts later, as another adapter).
-   - An organisation that wants a Safe points at it with an ordinary field.
+   - An organisation that wants a Safe points at it with an ordinary field. (Superseded by CX-safe, 26 November 2026:
+     an organisation and its Safe are linked by an ordinary field; in Capxul the Safe's record points at its company.)
 
    ```ts
    // the safe adapter: someone else's contract

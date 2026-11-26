@@ -10,7 +10,7 @@ recommendation of each.
 **Settled before this, and not reopened:** Capxul's on-chain account is a Safe and nothing else for now
 (`CX-onchain-safe.md:17-22`); a person's account is an ordinary Safe owned by their key, at the address it will have
 once deployed, money can arrive first, and it deploys on its first pay-out (`M7-capxul.md:150-151,169-178`); a Safe is
-someone else's contract behind the `safe` adapter, and an organisation points at its Safe with an ordinary field
+someone else's contract behind the `safe` adapter, and an organisation and its Safe are linked by an ordinary field
 (`K25-the-blueprint-on-chain.md:113-121`); payouts are spent against an Org Budget, a Zodiac Roles 2.1.1 role the
 company's Safe grants, used by a member through `execTransactionWithRole` from the member's own Safe, the owners can do
 anything directly, and over budget is refused `PayoutOverBudget { remaining }` at prepare (CX-bridge-rails, #1149,
@@ -93,7 +93,9 @@ first journey step. That keeps the address a world works out identical to Base's
 typed `SafeTx` (`to`, `value`, `data`, `operation` always `Call`, the gas fields zero, `nonce`), its chain and Safe,
 and the signatures collected so far, each with its owner. Its machine: `proposed` → `signed` (the threshold reached) →
 `submitted` → `executed` or `failed` (the Safe's `ExecutionSuccess` or `ExecutionFailure` for its hash). The SafeTx
-must be signed exactly, with the chain, the Safe's address and its nonce in the domain, and the signatures packed in
+must be signed exactly: the EIP-712 domain is the chain id and the Safe's address (`verifyingContract`), and the
+nonce is a field of the `SafeTx` message, not of the domain; the digest must equal the Safe's own
+`getTransactionHash` (`spikes/safe-hats-module/script/safe.ts:57-76`). The signatures are packed in
 owner-address order; the Safe refuses reversed order, a wrong recovery value and a replay (`ST3-budgets.md:167-175`,
 `spikes/safe-hats-module/README.md:34-38`). Each owner signs by calling `sign`; the call that reaches the threshold also
 submits. No workflow: workflows are parked (K44), and nothing here waits on one, so signature collection is a thing's
@@ -110,7 +112,8 @@ balance; Capxul's row is what was granted and a read copy of what remains. Its m
 modifier) or Capxul's own deployed outside the framework (Payments), reached through adapters (section 3). The company
 does not gain a `safe` field: a company may have several Safes (`K25-the-blueprint-on-chain.md:117`), so the `safe`
 thing points at the company, and Bridge's R1 reads "the company's Safe" as its one Safe of kind `company`
-(CX-bridge-rails `:402`); a second is refused until a company needs one.
+(CX-bridge-rails `:402`); a second is refused until a company needs one. This changes K25's "an organisation that wants a
+Safe points at it" to a link either way (`K25-the-blueprint-on-chain.md:121`, under Supersedes).
 
 ## 2. How the journeys run
 
@@ -237,5 +240,7 @@ it first, and a Snag is logged then if it bites.
 
 ## Supersedes
 
-Nothing: no decided words change. `ST3-budgets.md` is not decided (`ST3-budgets.md:3-7`); its Hats recommendation is
+- design/decisions/K25-the-blueprint-on-chain.md: "An organisation that wants a Safe points at it with an ordinary field." → "An organisation and its Safe are linked by an ordinary field; in Capxul the Safe's record points at its company, since a company may have several (CX-safe)."
+
+`ST3-budgets.md` is not decided (`ST3-budgets.md:3-7`), so no words of it are superseded; its Hats recommendation is
 not taken for Capxul, and a note beside its title says so.
