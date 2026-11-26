@@ -103,7 +103,6 @@ describe("ERC20.at", () => {
       ERC20.at({ port: noPort, address: tokenB, from: alice });
       ERC20.events.Transfer(tokenA, 0n);
       for (let tick = 0; tick < 5; tick++) yield* Effect.yieldNow;
-      yield* Effect.promise(() => new Promise((resolve) => setImmediate(resolve)));
       expect(used).toEqual([]);
     })));
 });

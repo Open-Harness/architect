@@ -207,6 +207,28 @@ describe("the test token, the contract's stand-in, in a world", () => {
     })), timeout);
 });
 
+describe("the erc20 adapter on Anvil, against arguments the ABI cannot hold", () => {
+  anvil("a negative value, a value past uint256 and an address that is not 20 bytes fail as the port's error, and nothing is sent", () =>
+    inWorld((w) => Effect.gen(function* () {
+      const { address, token } = yield* deployed(w);
+      const nonce = yield* w.nonce(w.alice.address);
+      const head = yield* w.head;
+      const short = "0x1234" as Address;
+      for (const [args, label] of [
+        [{ to: w.bob.address, value: -1n }, "a negative value"],
+        [{ to: w.bob.address, value: 2n ** 256n }, "a value past uint256"],
+        [{ to: short, value: 1n }, "a short address"],
+      ] as const) {
+        const failure = yield* Effect.flip(token.transfer(args, w.alice.signer));
+        expect(failure, label).toMatchObject({ _tag: "ChainFault" });
+      }
+      expect(yield* Effect.flip(token.balanceOf({ account: short }))).toMatchObject({ _tag: "ChainFault" });
+      expect(yield* w.nonce(w.alice.address)).toBe(nonce);
+      expect(yield* w.head).toBe(head);
+      expect(yield* balanceRead(w, address, w.alice.address)).toBe(SUPPLY);
+    })), timeout);
+});
+
 describe("the erc20 adapter on Anvil, against a token that is not the test token", () => {
   anvil("reads its balances, reads no decimals it lacks, sends its transfer, and leaves its own revert the port's error", () =>
     inWorld((w) => Effect.gen(function* () {

@@ -7,7 +7,7 @@ event sources. It is written to the shape `ortho new adapter --from-abi` makes (
 
 | Path | How | What |
 |---|---|---|
-| `abi/ERC20.json` | generated | OpenZeppelin 5's `ERC20` ABI with the test token's `constructor(uint256 supply)`, and the test token's creation code |
+| `abi/ERC20.json` | generated | OpenZeppelin 5's `ERC20` ABI with the test token's `constructor(uint256 supply)`; the build adds the test token's creation code as `"bytecode"` |
 | `src/generated/ERC20.ts` | generated | `ERC20.at({ port, address, from? })`: one call per function (a read answers its type; a write prepares, simulates, signs and sends, answering the `Submission`); `ERC20.events.Transfer(address, fromBlock)`; an error class per ERC-6093 error; `ERC20.deploy(port, signer, { supply })`, the stand-in |
 | `src/generated/index.ts` | generated | `export * as ERC20`, `calls`, `standIn` |
 | `src/index.ts` | scaffold | the adapter's descriptor |
