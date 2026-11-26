@@ -56,7 +56,7 @@ rebalancing saves no minutes at all. The shards are test time; the minutes are i
 
 Rebalancing is the one thing worth having, for the wait rather than the bill (the slowest shard's tests finish 14% sooner out of sample, 20% at the ideal; about 11% of the whole job once setup is counted), and it
 stays inside `tools/ci/` and the workflow. It was not built because the bar set was minutes. If the conductor wants it for latency,
-it is a small pull request: `tools/ci/m1-shards.sh` computes the four file lists from a committed timings table, with unknown
+it is a small pull request: `tools/ci/m1-shards.sh` computes the four file lists (_Superseded by CI-m1-balance, 26 November 2026: built, with six shards_) from a committed timings table, with unknown
 files going to the lightest shard, and the job runs `vitest run <its files>` in place of `--shard`. It needs `ci.test.sh` cases and
 a refresh of the table by a script, since new checks arrive weekly.
 

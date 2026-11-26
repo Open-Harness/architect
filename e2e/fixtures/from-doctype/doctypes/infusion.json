@@ -1,0 +1,68 @@
+{
+ "doctype": "DocType",
+ "name": "Infusion",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 0,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "infusion_name",
+   "fieldtype": "Data",
+   "label": "Infusion Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "website",
+   "fieldtype": "Data",
+   "label": "Website",
+   "options": "URL"
+  },
+  {
+   "fieldname": "brew_count",
+   "fieldtype": "Int",
+   "label": "Brew Count",
+   "default": "3"
+  },
+  {
+   "fieldname": "batch_code",
+   "fieldtype": "Data",
+   "label": "Batch Code",
+   "reqd": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "kettle",
+   "fieldtype": "Link",
+   "label": "Kettle",
+   "options": "Tea Kettle"
+  },
+  {
+   "fieldname": "steps",
+   "fieldtype": "Table",
+   "label": "Steps",
+   "options": "Infusion Step",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Table",
+   "label": "Tags",
+   "options": "Infusion Tag"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Tea Master",
+   "permlevel": 0,
+   "read": 1,
+   "create": 1
+  }
+ ]
+}

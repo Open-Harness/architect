@@ -1,0 +1,98 @@
+// Links (CX-from-doctype). Tea Order links to Tea Blend, scaffolded first (an edge, kept when optional), to Tea
+// Supplier and Tea Shop, not scaffolded (ERPNext's form: the target's name, a shared `<Target>Link` value), to itself
+// (its own id, no edge) and, through a Dynamic Link, to any record. Scaffolding Tea Supplier afterwards changes no
+// file already written, shares the Tea Shop value, and makes its link back to Tea Order an edge.
+import { afterAll, describe, expect, it } from "vitest";
+import { type FieldJson, accepts, checked, cleanup, doctype, generated, headed, model, once, project, scaffolds, snapshot, textAt, thingOf, written } from "./support.ts";
+
+afterAll(cleanup);
+
+const ordered = once(() => {
+  const root = project();
+  scaffolds(root, doctype("tea_blend"), "--asset", "usdc");
+  const before = snapshot(root);
+  scaffolds(root, doctype("tea_order"));
+  return { root, wrote: written(before, root), after: snapshot(root) };
+});
+const supplied = once(() => {
+  const { root, after } = ordered();
+  const ran = scaffolds(root, doctype("tea_supplier"));
+  return { root, wrote: written(after, root), out: ran.out };
+});
+
+const order = {
+  id: { value: { type: "id", prefix: "tor" } },
+  blend: { value: { type: "id", prefix: "tbl" }, ref: "tea-blend.id", description: "Blend" },
+  secondBlend: { value: { type: "id", prefix: "tbl" }, ref: "tea-blend.id", optional: true, description: "Second Blend" },
+  supplier: { value: { type: "text", max: 140 }, named: "TeaSupplierLink", description: "Supplier (a Tea Supplier's name)" },
+  shop: { value: { type: "text", max: 140 }, optional: true, description: "Shop (a Tea Shop's name)" },
+  returnAgainst: { value: { type: "id", prefix: "tor" }, optional: true, description: "Return Against" },
+  party: { value: { type: "schema", format: "ref-any" }, description: "Party" },
+} as const;
+const supplier = {
+  id: { value: { type: "id", prefix: "tsu" } },
+  supplierName: { value: { type: "text", max: 140 }, description: "Supplier Name" },
+  shop: { value: { type: "text", max: 140 }, optional: true, description: "Shop (a Tea Shop's name)" },
+  lastOrder: { value: { type: "id", prefix: "tor" }, ref: "tea-order.id", optional: true, description: "Last Order" },
+} as const;
+const linkFiles = ["blueprint/values/tea-shop-link.ts", "blueprint/values/tea-supplier-link.ts"];
+/** The fields match exactly, except that an optional link may or may not keep its value's name (`Blueprint.optional` makes a new value). */
+const sameFields = (fields: Readonly<Record<string, FieldJson>>, expected: Readonly<Record<string, FieldJson>>, shared: Readonly<Record<string, string>>) => {
+  expect(Object.keys(fields)).toEqual(Object.keys(expected));
+  for (const [key, field] of Object.entries(expected)) {
+    const { named, ...rest } = fields[key] ?? ({} as FieldJson);
+    const kept = shared[key] !== undefined && named === shared[key] ? rest : fields[key];
+    expect(kept, key).toEqual(field);
+  }
+};
+
+describe("CX-from-doctype 04: links", () => {
+  it("writes a link value for each record type not scaffolded yet, beside the thing's files", () => {
+    const { root, wrote } = ordered();
+    const files = [...["thing.ts", "machine.ts", "events.ts", "verbs/create.ts", "verbs/save.ts", "verbs/get.ts"].map((f) => `blueprint/things/tea-order/${f}`), ...linkFiles].sort();
+    expect(wrote).toEqual(files);
+    headed(root, wrote, "tea_order.json", "Tea Order");
+  });
+
+  it("makes each kind of link its own field: an edge, an optional edge, a target's name, its own id, any record; the Dynamic Link's doctype field is dropped", () => {
+    const t = thingOf(model(ordered().root), "tea-order");
+    sameFields(t.fields, order, { shop: "TeaShopLink" });
+    expect(t.code).toBe("TO");
+  });
+
+  it("writes each link value as the target's name: text of at most 140 characters", () => {
+    const { root } = ordered();
+    for (const [at, name] of [["blueprint/values/tea-supplier-link.ts", "TeaSupplierLink"], ["blueprint/values/tea-shop-link.ts", "TeaShopLink"]] as const) {
+      expect(accepts(root, at, name, ["Leaf and Co", "x".repeat(140), "x".repeat(141), 7]), at).toEqual([true, true, false, false]);
+    }
+  });
+
+  it("scaffolds the target later without touching what was written: the earlier link stays a name, and the shared link value is kept", () => {
+    const { root, wrote } = supplied();
+    const { after } = ordered();
+    const files = ["thing.ts", "machine.ts", "events.ts", "verbs/create.ts", "verbs/save.ts", "verbs/get.ts"].map((f) => `blueprint/things/tea-supplier/${f}`).sort();
+    expect(wrote, "only Tea Supplier's own files are new; tea-shop-link.ts is shared, not written again").toEqual(files);
+    for (const path of Object.keys(after)) expect(snapshot(root)[path], path).toBe(after[path]);
+    expect(textAt(root, "blueprint/values/tea-shop-link.ts").split("\n")[0]).toBe("// Scaffolded from tea_order.json, ERPNext's Tea Order. Yours from now on.");
+  });
+
+  it("names, when it scaffolds a target, each field that still holds its name, and changes none of them", () => {
+    const { out } = supplied();
+    expect(out, "Tea Order's supplier still names a Tea Supplier by TeaSupplierLink").toMatch(/tea-order\.supplier\b[^\n]*TeaSupplierLink|TeaSupplierLink[^\n]*tea-order\.supplier\b/);
+    expect(out, "Tea Shop is not what this run scaffolds").not.toMatch(/TeaShopLink/);
+  });
+
+  it("gives the later record type the shared value and an edge back to the one already there", () => {
+    const m = model(supplied().root);
+    sameFields(thingOf(m, "tea-supplier").fields, supplier, { shop: "TeaShopLink" });
+    expect(thingOf(m, "tea-supplier").code).toBe("TS");
+    expect(thingOf(m, "tea-order").fields["supplier"]).toEqual(order.supplier);
+  });
+
+  it("type-checks and passes the rules with the three record types and their link values", () => {
+    const { root } = supplied();
+    generated(root);
+    const said = checked(root);
+    for (const line of ["types ✔", "rules ✔"]) expect(said.lines, said.out).toContain(line);
+  });
+});

@@ -1,0 +1,40 @@
+{
+ "doctype": "DocType",
+ "name": "Tea Menu Entry",
+ "module": "Tea",
+ "custom": 0,
+ "istable": 1,
+ "is_submittable": 0,
+ "fields": [
+  {
+   "fieldname": "blend",
+   "fieldtype": "Link",
+   "label": "Blend",
+   "options": "Tea Blend",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cup_price",
+   "fieldtype": "Currency",
+   "label": "Cup Price",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pot_price",
+   "fieldtype": "Currency",
+   "label": "Pot Price",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "permissions": []
+}
