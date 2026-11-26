@@ -28,9 +28,7 @@
       "options": {
         "command": "tsc -p {projectRoot}/tsconfig.build.json"
       },
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": [],
       "cache": true,
       "inputs": [
         "production",

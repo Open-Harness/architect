@@ -4,8 +4,8 @@
 (`e2e/ratchet/README.md`, `nx run e2e:on-chain-ratchet`): a failure not on `expected-failing/` fails it, and so does a listed check
 that now passes (take it off the list). Then `empty-list.mjs` fails while `expected-failing/` holds any file. So:
 
-- `nx run e2e:on-chain-ratchet` is what CI runs on every pull request into `goal/on-chain` (job `e2e-on-chain`): green while every
-  failure is listed.
+- `nx run e2e:on-chain-ratchet` is what CI's job `e2e-on-chain` runs on every pull request into `main` or `goal/on-chain` and every push to `main`
+  (Goal 18's slice 9 turns it on for `main`): green while every failure is listed.
 - `nx run e2e:on-chain` is the done check: it passes only when every check is green and the list is empty. Red today, by design.
 
 ## The checks

@@ -54,7 +54,7 @@ export const signatureHeader = (body: string, at: number, sign: (digestOf: strin
 
 /**
  * The activity a deposit to a virtual account makes, in order (Bridge's `VirtualAccountEventType`): received, sent on
- * to Capxul's custody as USDC, processed. Each is its own event, with its own id, and all carry the deposit's
+ * to the company's Safe as USDC, processed. Each is its own event, with its own id, and all carry the deposit's
  * `deposit_id`, which is what makes them one deposit.
  */
 export const depositActivity = (spec: {

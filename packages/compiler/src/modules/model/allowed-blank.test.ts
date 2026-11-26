@@ -22,7 +22,8 @@ const capxulWith = (verb: string, entries: string): string => {
   const root = mkdtempSync(join(scratch, "c-"));
   cpSync(join(capxul, "blueprint"), join(root, "blueprint"), {
     recursive: true,
-    filter: (p) => !basename(p).startsWith(".") && !["starting-worlds"].includes(basename(p)),
+    // A copy has no package.json, so a feature's mount (`blueprint/features/`) can't resolve its plugin; no case needs one.
+    filter: (p) => !basename(p).startsWith(".") && !["features", "starting-worlds"].includes(basename(p)),
   });
   const file = join(root, `blueprint/things/${verb}.ts`);
   const text = readFileSync(file, "utf8");
