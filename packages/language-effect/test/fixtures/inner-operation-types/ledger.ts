@@ -67,6 +67,14 @@ export const runSplit = Blueprint.operation(Run, {
   allowed: [Blueprint.signedIn],
   steps: { draft: Blueprint.step.operation(entryDraft) },
 });
+/** Three deep, under a step key no other operation uses: `run.close` runs `run.pay`, which runs `entry.post`, which runs `entry.draft`. */
+export const runClose = Blueprint.operation(Run, {
+  description: "Close a run by paying it.",
+  payload: { run: Run.fields.id, book: Run.fields.book, amount: Run.fields.amount },
+  answer: { run: Run.fields.id },
+  allowed: [Blueprint.signedIn],
+  steps: { wrapUp: Blueprint.step.operation(runPay) },
+});
 /** An operation of the app that no step names. */
 export const bookAudit = Blueprint.operation(Book, {
   description: "Audit a book.",
@@ -78,3 +86,5 @@ export const bookAudit = Blueprint.operation(Book, {
 
 /** A run's id, for a handler that has none in its payload: declared, never made, since this ledger is only compiled. */
 export declare const someRun: InstanceOf<typeof Run>["id"];
+/** A journal entry's id, declared the same way. */
+export declare const someEntry: InstanceOf<typeof Entry>["id"];

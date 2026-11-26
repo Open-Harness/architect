@@ -4,8 +4,9 @@
 // Every refusal an operation can make is its own (CX-inner-operations, call 2), so a handler may also refuse with one itself, at any depth,
 // and the runner of an inner step says it may fail with every refusal of the operation it runs, its inners' too.
 import { Effect } from "effect";
-import type { Handler } from "../../../src/modules/handler/types.ts";
-import { BookClosed, EntryHasNoLines, EntryUnbalanced, RunTooLarge, entryDraft, entryPost, runPay, runSplit } from "./ledger.ts";
+import { NotAllowed } from "orthograph";
+import { NotFound, NotFrom, type Handler } from "../../../src/modules/handler/types.ts";
+import { someEntry, BookClosed, EntryHasNoLines, EntryUnbalanced, RunTooLarge, entryDraft, entryPost, entrySubmit, runClose, runPay, runSplit } from "./ledger.ts";
 
 /** Hands back `run` unchanged; compiles only when each refusal given is one `run` says it may fail with (the refusals never widen what it says). */
 export const refusesWith = <A, E, R>(run: Effect.Effect<A, E, R>, ..._refusals: ReadonlyArray<NoInfer<E>>): Effect.Effect<A, E, R> => run;
@@ -73,4 +74,34 @@ export const splitRunner: Handler<typeof runSplit> = ({ run, book, amount }, { s
   Effect.gen(function* () {
     yield* refusesWith(steps.draft({ book, amount }), new BookClosed({ book }));
     return { run };
+  });
+
+/** Three deep, under a step key no other operation uses: `entry.draft`'s refusal is `run.close`'s, and its runner says so. */
+export const close: Handler<typeof runClose> = ({ run, book, amount }, { steps }) =>
+  Effect.gen(function* () {
+    if (amount === 1n) return yield* new BookClosed({ book });
+    yield* refusesWith(steps.wrapUp({ run, book, amount }), new BookClosed({ book }), new EntryHasNoLines({ entry: someEntry }), new RunTooLarge({ run }));
+    return { run };
+  });
+
+/** An operation with no step at all: its own refusal only. */
+export const submit: Handler<typeof entrySubmit> = ({ entry }) =>
+  Effect.gen(function* () {
+    if (entry === someEntry) return yield* new EntryHasNoLines({ entry });
+    return { entry };
+  });
+
+/** A runner fails with the runtime's refusals of the operation it runs too: its access, its from-check, what its payload names. */
+export const runtimeRefusals: Handler<typeof runPay> = ({ run, book, amount }, { steps }) =>
+  Effect.gen(function* () {
+    const { entry } = yield* refusesWith(steps.post({ book, amount }), new NotAllowed(), new NotFrom({ _tag: "EntryNotDraft", state: "submitted" }), new NotFound({ _tag: "BookNotFound", id: "bok_1" }));
+    return { run, entry };
+  });
+
+/** The runner's answer is the inner's declared answer, typed field by field. */
+export const answered: Handler<typeof runPay> = ({ run, book, amount }, { steps }) =>
+  Effect.gen(function* () {
+    const posted = yield* steps.post({ book, amount });
+    const entry: typeof someEntry = posted.entry;
+    return { run, entry };
   });

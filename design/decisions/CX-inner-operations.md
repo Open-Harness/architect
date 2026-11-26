@@ -34,8 +34,11 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
    scaffold's `yield* steps.draft(...)` compiles with no cast, and a handler may refuse with an inner's refusal itself.
    Nothing else widens: an error no operation declares, the refusal of an operation no step runs, the outer's own
    refusal in an inner's handler or runner (refusals go up, never down), and one sibling step's refusal in another's
-   runner all stay type errors. An inner step widens the error channel and nothing else: the answer, the runner's
-   payload and the step keys are judged as before.
+   runner all stay type errors. So do the runtime's refusals (`NotAllowed`, `<Thing>Not<State>`, `<Thing>NotFound`)
+   in the handler of an operation with no operation step: they come with an inner step, never without one. An inner
+   step widens the error channel and nothing else: the handler's answer, the runner's payload (whole, nothing added) and
+   its answer (field by field), and the step keys (a handler gets its own steps' runners, never its inners') are judged as
+   before, for an operation with steps or none.
 3. **The whole inner pipeline runs, for the same caller, inside the outer's one commit.** Its access rule (judged for the
    caller, never as system), what its payload names and `<Thing>NotFound`, its from-check, its handler, its answer's
    declaration, its move and event, and its G5 rules. It never commits on its own: its writes and journal entries join
@@ -80,7 +83,8 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
   `inner-operation-rules.test.ts`: the inner operation's own rules and its span. The scratch ledger is `handler/testing.ts`.
 - `packages/language-effect/src/modules/handler/inner-operation-types.test.ts`: the handler's error channel (call 2), judged by
   one tsc run over `test/fixtures/inner-operation-types/`: `accepts.ts` compiles with no cast, and each file in `refuses/` is
-  one of its handlers with one fault, an error on that line alone.
+  one of its handlers with one fault, an error on that line alone, three deep at most. An error anywhere outside the
+  fixture (in the framework's own types) is no clean compile.
 - `packages/compiler/src/modules/model/inner-operations.test.ts`: what the model records;
   `inner-operations-refused.test.ts`: what the compiler refuses. The scratch ledger is `model/testing.ts`.
 - `e2e/m2/13-inner-operations.test.ts` (m2 check 13): the generated server over local D1, through HTTP, read back from the D1 file.
@@ -108,3 +112,6 @@ acme's generated files don't move (the checks build their own scratch ledger), s
   two errors apart only by their fields: an error with every field of an allowed one (or with an `id` or a `state` text
   field, which `<Thing>NotFound` and `<Thing>Not<State>` carry) is let through. Each error in the fixture has a field no
   other has. Narrowing `_tag` to the class's export name is generated code's (errors/types.ts), not this slice's.
+- Extra keys on a handler's answer aren't judged by the type check: an answer returned from `Effect.gen` is inferred, and
+  tsc never checks an inferred object for excess keys, under today's `Handler` or any. The runtime refuses an answer
+  outside its declaration (`inner-operation-rules.test.ts`).
