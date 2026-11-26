@@ -44,16 +44,17 @@ from the other side: `job-offer.accept` can't move the applicant, because a hand
    `database` step or a `call` step: on an operation of a chain-stored thing (a contract reaches only its own store and
    the account adapter) and on an operation that runs on the caller's device (no store, no journal), as outer or inner.
 5. **#972 folds in, the other way round.** The applicant's own operation runs the offer's: `job-applicant.accept`
-   declares `offer: Blueprint.step.operation(jobOfferAccept)`. Its handler runs `steps.offer(...)`, which moves the
-   offer by the offer's own rules, refusals and event; the offer's move is visible to it afterwards (call 3), so it
-   still finds the offer through `job-offer.oneOfferPerApplicant` and refuses `OfferNotAccepted` unless the offer is
-   accepted; then it makes its own move, judged by the applicant's machine (a move its state doesn't allow is refused
-   with the applicant's own `NotFrom`). Both moves and both events land in one commit, or neither. No operation that
-   moves the applicant skips the offer rule, whoever calls it. `job-applicant.reject` runs `job-offer.reject` the same
-   way when the applicant has an offer, and moves alone when it has none. The two-call flow and the journey steps that
-   make it go. The offer's operations stay callable on their own. #972 closes when #1079's build lands; the recruitment
-   change is the app's, not this slice. CX-appraisals' `goal.roll-up` can fold into the child's own operations the same
-   way later.
+   declares `offer: Blueprint.step.operation(jobOfferAccept)`. Its handler first finds the applicant's offer through
+   `job-offer.oneOfferPerApplicant`. When the offer is still `awaiting`, it runs `steps.offer(...)`, which moves the offer
+   by the offer's own rules, refusals and event, visible to the handler afterwards (call 3). An offer already accepted
+   on its own is left as it is. The handler then refuses `OfferNotAccepted` unless the offer is accepted, and makes its
+   own move, judged by the applicant's machine (a move its state doesn't allow is refused with the applicant's own
+   `NotFrom`). Both moves and both events land in one commit, or neither. No operation that moves the applicant skips
+   the offer rule, whoever calls it. `job-applicant.reject` does the same with `job-offer.reject`: it runs it when the
+   applicant's offer is `awaiting`, and moves alone when there is no offer or the offer is already settled. The offer's
+   operations stay callable on their own. The two-call flow goes, and so do the journey steps that make it. #972 closes
+   when #1079's build lands; the recruitment change is the app's, not this slice. CX-appraisals' `goal.roll-up` can fold
+   into the child's own operations the same way later.
 
 ## The checks
 
