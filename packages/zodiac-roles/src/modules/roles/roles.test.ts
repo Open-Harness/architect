@@ -91,6 +91,9 @@ describe("Roles.execTransactionWithRole", () => {
   });
 });
 
+// The implementation assigns membership in a call of its own (P/roles-module.ts:199-221) and compiles a budget to
+// setAllowance and the scoping only (P/budget-permissions.ts:113-263). Here an OrgBudget names its members, so one list of
+// calls sets the whole budget up: a choice of this adapter's, not lifted.
 describe("Roles.budgetCalls", () => {
   const budget: OrgBudget = {
     roleKey, members: [member, second], target: tokenAddress, fn: transfer,
@@ -120,6 +123,8 @@ describe("Roles.budgetCalls", () => {
     expect(named("scopeTarget").map((call) => call.args)).toEqual([[roleKey, checksum(tokenAddress)]]);
     const scoped = named("scopeFunction");
     expect(scoped.map((call) => call.args.slice(0, 3))).toEqual([[roleKey, checksum(tokenAddress), selector("transfer(address,uint256)")]]);
+    // ExecutionOptions None (0): no value, no delegate call. Chosen here, not lifted: the implementation never sets it and
+    // relies on zodiac-roles-sdk's default (the conductor's reading of P/budget-permissions.ts, #1163).
     expect(scoped[0]?.args[4]).toBe(0);
     // The modifier takes the block's timestamp for a 0 (Roles 2.1.1, setAllowance).
     expect(named("setAllowance").map((call) => call.args)).toEqual([[allowanceKey, 100n, 120n, 50n, 3600n, 0n]]);
