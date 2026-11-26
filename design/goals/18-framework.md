@@ -94,7 +94,7 @@ Slices 1 and 2 are done; slice 3 is the loop that runs throughout. Slices 4 to 1
 | 10 | Framework fixes any TypeScript app hits that no goal has claimed: the starter's sign-in bugs #446 (an agent's key can mint a person's key) and #449 (API keys refused after ten calls a day) first. A gap a goal has claimed stays with that goal (K42, section 3); Capxul builds the ones it claimed | — |
 | 11 | The acceptance check: in CI, publish to a local registry, run `ortho new app`, declare one thing, generate, prove, run it and call it through the generated CLI, SDK and MCP | 5, 6 |
 | 12 | Publish under `next` with Aaron, with Gate M1 green on `main` (it doesn't wait for the portal's graphs, M1.50), then run the acceptance check against npm | 7, 8, 9, 10, 11 |
-| 13 | The climb (K45): a script in `tools/github/` that works out, for the alpha and for Capxul, each dimension day by day from `main`'s history and GitHub: the board's rows by stage, the tests passing, failing and planned, and the slices closed; and a dashboard of it, refreshed nightly | 4 |
+| 13 | The climb (K45): a script in `tools/github/` that works out, for the alpha and for Capxul, each dimension at every commit or event that moved it: the board's rows by stage from `main`; the alpha's check files green and red, from Goal 3's branch until Gate M1 reached `main`, then `main`; Capxul's journeys written on its branch; the slices closed on GitHub; later, the tests and record types planned but not written. A dashboard of it, refreshed nightly | 4 |
 
 ## The loop
 
@@ -129,7 +129,8 @@ Each round:
 Slice 4, the board re-sorted, is K45's pull request: the alpha's milestone and Capxul's path, the release rule, the 30
 rows the superagent pulled re-sorted, Goal 17's claims released, the parked goals' issues hidden by a `parked` label, and
 the Project's views; it merged as #1071. K45 adds slice 13, the climb; its dashboard is up as a claude.ai Data
-artifact, and its script and kit come in their own pull request.
+artifact. Its script and kit, `tools/github/climb.mjs` and `tools/github/climb-dashboard/`, make or refresh it in any account.
+Still to do in slice 13: the planned-but-not-written series, and the nightly refresh as a scheduled task.
 The history below is from before K44.
 
 24 November 2026, about 00:30 UTC (before K44). Running since 23 November in Claude Code, in the session that was

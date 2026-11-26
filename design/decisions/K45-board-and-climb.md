@@ -84,7 +84,7 @@ GitHub:
 - **Capabilities:** the board's rows in the lane, by stage, from `docs/canon/status.md` in git: a stacked band per stage
   that rises as rows move from provisional to built, and a line of weighted progress (`roadmap.mjs`'s `STAGE_SHARE`).
 - **Tests:** passing, failing and planned but not written. The alpha's come from its e2e suites, each file's tests less
-  its `expected-failing/` lines, so the line only climbs (the ratchet). Capxul's journeys climb the same way once Goal
+  its `expected-failing/` lines, so the line only climbs (the ratchet). (Superseded by GOAL18-climb-check-files, 25 November 2026: the alpha's unit is the check file, green while its own list is empty.) Capxul's journeys climb the same way once Goal
   16's slice 13 runs them in CI with a list of the ones still red; until then its written journeys are counted, and the
   record types its path still needs are the planned ones.
 - **Slices:** each goal's slices closed out of its slices, from the slice issues.
