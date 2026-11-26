@@ -75,7 +75,7 @@ built in `examples/capxul/blueprint/things/`.
    too. Every Payment Entry records money that moved, with its mode of payment and a reference (ERPNext's normal
    case): until Bridge and the Safe exist, the company moves it from its own bank or wallet and Capxul records it, so
    a Capxul with no Bridge and no Safe builds. A rail is a piece that moves money first and then records the Payment
-   Entry through `payments`' in-commit `record`: the Safe, and `bridge-accounts` for the bank payouts the Safe funds (CX-bridge-rails). `payments` never calls
+   Entry through `payments`' in-commit `record`: `bridge-accounts` for payouts, later the Safe (Superseded by CX-bridge-rails, 26 November 2026: the Safe, and `bridge-accounts` for the bank payouts the Safe funds). `payments` never calls
    a rail, so it needs none and no contract is filled twice.
 8. **`contractors`** (core, agreed with the money and global payroll designer). Paying people who are not employees,
    the most common case for Capxul's customers (a US company with people abroad). No ERPNext record types: a contractor
@@ -235,7 +235,7 @@ link (L), in-commit call (I), event (E), adapter (A).
 Payroll calculates gross to net and posts its accrual through `ledger.post` in its own commit (payroll payable, party
 the worker); it never writes ledger lines and never moves money. A payable is the ledger's outstanding against a party,
 not a record of its own. A rail moves money; `payments` records it and settles outstandings. The rails are
-the Safe, and `bridge-accounts` for the bank payouts the Safe funds (CX-bridge-rails); without one the company moves the money and Capxul records it. The ledger owns the lines, both amounts on each and revaluation; `rates` owns the rates.
+`bridge-accounts` and later the Safe (Superseded by CX-bridge-rails, 26 November 2026: the Safe, and `bridge-accounts` for the bank payouts the Safe funds); without one the company moves the money and Capxul records it. The ledger owns the lines, both amounts on each and revaluation; `rates` owns the rates.
 
 **Rules every contract keeps.** A piece writes only its own things, except through an in-commit call its owner offers
 (gap 4 makes `check` say so). A core piece never links to an optional one: when a core record must know about an

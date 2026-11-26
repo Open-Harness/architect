@@ -35,7 +35,7 @@ this is missing.
 | 1 | The customer's bank holds the money | The company's **Safe** holds the USDC; only its signers can move it |
 | 2 | In flight on the bank rail to Bridge's partner bank (Lead Bank for USD, Modulr for EUR, in Bridge's examples) | The Safe pays Bridge's deposit address for this transfer, on Base, through a Capxul Payment; Bridge holds it only while converting |
 | 3 | Bridge's partner bank holds the fiat, credited to the company's virtual account (`funds_received`) | Bridge has the USDC (`funds_received`), converts it and pays out on the rail (`payment_submitted`) |
-| 4 | Bridge converts and sends USDC on chain (`payment_submitted`, a preliminary hash) | The supplier's bank holds the fixed output (`payment_processed`, with an IMAD or ACH trace number); the buffer's unused part stays in **Capxul's** "Fixed Outputs Excess Funds" wallet |
+| 4 | Bridge converts and sends USDC on chain (`payment_submitted`, a preliminary hash) | The supplier's bank holds the fixed output (`payment_processed`, with an IMAD or ACH trace number); the buffer's unused part stays in **Capxul's** "Fixed Outputs Excess Funds" wallet until refunded to the Safe |
 | 5 | The USDC is in the company's **Safe**, confirmed on chain (`payment_processed`, the final hash) | If the bank returns it: Bridge holds it again (`returned`), then refunds USDC to the return address, which must be the Safe (`refunded`) |
 
 Bridge holds the money only in transit, between the bank leg and the chain leg. There is no balance at Bridge. Two
@@ -62,7 +62,7 @@ flowchart LR
     Q[Capxul: Bridge transfer,<br/>fixed output, awaiting_funds] --> S2[(Company's Safe)]
     S2 -- "Leg 1: a Capxul Payment<br/>(PaymentSent + exact Transfer)<br/>to Bridge's deposit address" --> T{{Bridge converts}}
     T -- "Leg 2: Bridge's word,<br/>held until leg 1 is proved" --> E[Supplier's bank]
-    T -. "buffer excess" .-> W[(Capxul's excess wallet)]
+    T -. "buffer excess,<br/>until refunded to the Safe" .-> W[(Capxul's excess wallet)]
     T -. "returned / undeliverable,<br/>then refunded" .-> S2
   end
 ```
@@ -75,7 +75,7 @@ flowchart LR
 2. **A virtual account.** `POST /v0/customers/{customerID}/virtual_accounts` with `source.currency` and a `destination`
    of `{ payment_rail: "base", currency, address }`. USD, EUR and GBP (Faster Payments) all settle to USDC: the Safe
    holds only USDC, ETH and cbBTC (CX-crypto-accounting). Bridge supports EUR to USDC, and the implementation funds EUR
-   payouts from USDC (va10; `infrastructure:B/banking/bank-details/external.ts:97`); its EURC default is not lifted. The
+   payouts from USDC (recording va10, and its payout route); its EURC default is not lifted. The
    answer's `source_deposit_instructions` are the bank details the company shows its customers. They are permanent; the
    implementation keeps one per party and currency, its creation key stored before the POST. **The destination is the
    company's Safe address, derived from the stored company, never from the caller.** Bridge accepts any string there, so
@@ -95,11 +95,10 @@ flowchart LR
 6. **Credited.** A deposit counts when **both** hold: Bridge has said `payment_processed` for that `deposit_id`, and the
    chain shows the exact ERC-20 `Transfer` of the net amount, of that token, to the company's Safe, in that
    `destination_tx_hash` (the implementation's `exactDepositTransfer`, through its Ponder indexer:
-   `infrastructure:B/banking/deposits/rules.ts:210-226`, `deposits/operations/credit.ts:77-93`). It confirms by inclusion in a
-   block and
-   corrects for a reorg (ADR-0018's chain-head correction) rather than waiting a fixed depth. Bridge's sandbox doesn't
-   move real tokens ("Do not assume that a blockchain testnet is used"), so staging credits against Capxul's own mint of
-   its test token, and Capxul's prove must use a chain stand-in.
+   `infrastructure:B/banking/deposits/rules.ts:210-226`, `deposits/operations/credit.ts:77-93`). It confirms by
+   inclusion in a block and corrects for a reorg (ADR-0018's chain-head correction) rather than waiting a fixed depth.
+   Bridge's sandbox doesn't move real tokens ("Do not assume that a blockchain testnet is used"), so staging credits
+   against Capxul's own mint of its test token, and Capxul's prove must use a chain stand-in.
 7. **Refunds of a deposit.** If Bridge can't deliver, it refunds the sender: `refund_in_flight`, then `refunded` or
    `refund_failed`, sometimes **without a `deposit_id`**. None puts money in the Safe; the implementation refuses a
    refund with no `deposit_id` once and raises an alert. A company can also send a deposit back within 90 days, by a
@@ -169,43 +168,57 @@ doesn't check payout minimums first: Bridge's refusal becomes `INVALID_INPUT`, a
 
 Aaron, 26 November 2026: "everything is on a budget. safe can do anything but typical is budget". So:
 
-- **A payout is spent against a budget.** The budget is the allowance the company's Safe delegates. In the
-  implementation that is an Org Budget, spent by a member through Zodiac Roles 2.1.1 `execTransactionWithRole` from the
-  member's own Safe. In Orthograph it is slice 12's budgets (M6's allowance, as in `examples/budgets`). This is the
-  normal path.
+- **A payout is spent against an Org Budget.** On chain this is the implementation's shape, lifted: a Zodiac Roles 2.1.1
+  role the company's Safe grants, used by a member through `execTransactionWithRole` from the member's own Safe, and
+  scoped to CapxulPayments V3's `send`. This is the normal path. Leg 1 stays a CapxulPayments `send`, so its proof stays
+  `PaymentSent` with the payout's `settlementId` plus the exact `Transfer` (M1, V8).
 - **The Safe's owners can do anything directly.** That is the exception path, signed by the owners' own keys (a
   person's Safe: the key that claiming installs as its only owner, approved on Capxul's page).
-- **Over budget is refused, not queued.** A payout that would take the budget below zero is refused with
-  `AllowanceExceeded` (the budgets piece's refusal, carrying what `remaining` is left). It is not held for an owner.
+- **Over budget is refused, not queued.** Capxul declares its own refusal, `PayoutOverBudget { remaining }`, in the
+  piece that prepares a payout (`bridge-accounts`), with `remaining` in USDC base units. It is not held for an owner.
 
-**Where the budget is charged.** The implementation's money canon refuses delegated fiat funding until the owner sets a
-cap, because the roles module can't limit a debit in dollars at a bank (`infrastructure:I/docs/canon/money.md:88-89,139`;
-ADR-0017 M00); that is accepted there and not built, and payouts sit behind the flag `bank-payouts`. But leg 1 of a
-payout is a USDC transfer out of the Safe (the CapxulPayments `PaymentSent` UserOperation), and an allowance on USDC can
-be limited. So the budget is charged at funding time, in USDC, for the transfer's quoted input plus its buffer, which is
-exactly what leaves the Safe. The fiat amount at the bank needs no limit of its own: it is fixed by the quote that the
-USDC pays for. The buffer's refund (above) credits the budget back.
+**What limits the role.** The Org Budget scopes V3 `send`'s tuple, not a bare ERC-20 transfer. For a finite budget with
+an allowance key, the amount is `and(lteUint256(limit), withinAllowance(allowanceKey))`: `withinAllowance` caps the
+budget's total and `lteUint256` caps each single send. The token is `equalAddress(policy.tokenAddress)`, the recipient
+`recipientCondition(policy.recipients)`, and the token's approval goes only to the V3 router
+(`resolvedBudgetApprovalPermission`) (`infrastructure:packages/protocol/src/evm/budget-permissions.ts:131-155`; the
+conditions in `zodiac-conditions.ts:86-136`). Payroll's role is similar, with `withinAllowance` but no `lteUint256`,
+and a `passStatic` recipient (`payroll-payout-role.ts:96-108`). Checked by Goal 16's lead in the implementation.
 
-**Decided twice.** First in Capxul, before Bridge is called: the payout's prepare step reads the budget's remaining and
-refuses `AllowanceExceeded` before any transfer exists, so no `awaiting_funds` transfer is left orphaned. Then on chain:
-the allowance's own check when leg 1 spends it, which is the final word if the budget moved in between (the payout then
-waits under M2 and goes to a person, since the transfer exists).
+**Where it is charged.** The implementation's money canon refuses delegated fiat funding until the owner sets a cap,
+because the roles module can't limit a debit in dollars at a bank (`infrastructure:I/docs/canon/money.md:88-89,139`;
+ADR-0017 M00); that is accepted there and not built, and payouts sit behind the flag `bank-payouts`. But leg 1 is a
+USDC `send` out of the Safe, which the role does limit. So the budget is charged at funding time, in USDC, for the
+transfer's quoted input plus its buffer, exactly what leaves the Safe. The fiat amount needs no limit of its own: the
+quote the USDC pays for fixes it. **The budget is not credited back automatically**: nothing raises an allowance but an
+owner-signed `setAllowance`. When the payout settles, the buffer's excess is refunded to the Safe; the budget's report
+shows the excess beside each payout, and the owner can top the allowance up (`design/later.md` has the automatic
+credit-back). R3 still proves that nothing else in ADR-0017 M00 rests on the fiat side.
 
-**Lifted and new.** Lifted: the Org Budget's shape and Zodiac Roles 2.1.1 as the delegation (`execTransactionWithRole`
-from the member's Safe), leg 1 as a Capxul Payment, and the flag's intent (payouts off until this works). New: charging
-the budget in USDC at funding time, the prepare-time refusal, and crediting the buffer's refund back to the budget. 
+**Decided where.** At prepare, before Bridge is called, Capxul reads the role's remaining allowance from the chain and
+refuses `PayoutOverBudget` (with `remaining: 0` when the budget is spent), so no transfer is made that the budget can't
+fund. If the chain still refuses leg 1 after that, a race, the outcome is known, not unknown, so it is not M2's case: the
+payout goes to a safe cancel, the Bridge transfer is canceled while it is `awaiting_funds`, and nothing is sent.
 
-**The USDC leg can carry the budget** (checked by Goal 16's lead in the implementation). The Org Budget scopes
-CapxulPayments V3's `send` tuple, not a bare ERC-20 transfer: its amount is `and(lteUint256(limit),
-withinAllowance(allowanceKey))`, its token `equalAddress(policy.tokenAddress)`, its recipient
-`recipientCondition(policy.recipients)`; the token's approval goes only to the V3 router
-(`resolvedBudgetApprovalPermission`) (`infrastructure:packages/protocol/src/evm/budget-permissions.ts:131-155`; payroll
-the same in `payroll-payout-role.ts:96-108`; the conditions in `zodiac-conditions.ts:86-136`). So `withinAllowance`
-caps the budget's total and `lteUint256` caps each single send. `recipientCondition` passes anything when the
-recipients are "anyone" or empty, and is otherwise an OR of fixed addresses. Bridge's deposit address can differ from
-one transfer to the next, so **a budget that funds bank payouts has recipients "anyone"**; the payee's own
-external account is checked by Capxul's payout (V7, M1), not by the role. One thing R3 still proves: that nothing else
-in ADR-0017 M00 rests on the fiat side.
+**Recipients "anyone" widens what a member can do.** `recipientCondition` passes anything when the recipients are
+"anyone" or empty; otherwise it is an OR of fixed addresses, which `zodiac-conditions.ts:118-124` calls "the
+treasury-drain boundary". Bridge's deposit address can differ from one transfer to the next, so a budget that funds bank
+payouts has recipients "anyone", and a member holding it could call `execTransactionWithRole` directly and send its USDC
+anywhere. So:
+
+- on chain, only the amount bounds such a budget;
+- a bank-payout budget is used only for bank payouts;
+- every `PaymentSent` from that role is matched to a Capxul payout by its `settlementId`, and an unmatched send raises
+  one alarm and goes to a person (V21, new in Capxul).
+
+**Separately, the accounting budget.** Slice 12's budgets are ERPNext's Budget against accounts and cost centres, kept in
+the database (CX-composable-pieces, item 22). That is a different check, made when the payout's Payment Entry posts
+(the ledger's check before a posting, which `budgets` fills). It is optional: with no `budgets` piece there is no check.
+
+**Lifted and new.** Lifted: the Org Budget's role shape and its conditions, Zodiac Roles 2.1.1 as the delegation, leg 1
+as a CapxulPayments `send`, and the flag's intent (payouts off until this works). New: charging it in USDC at funding,
+`PayoutOverBudget` at prepare, the safe cancel on a race, and matching every send from a bank-payout role (V21).
+`examples/budgets` (Goal 4's chain contract, proved by `AllowanceSpent`) is not used.
 
 ### KYC and KYB
 
@@ -241,9 +254,10 @@ reads `active` (`infrastructure:Br/customer-answers.ts:43-55`). R5 decodes both.
 
 - **Developer fee.** Capxul's own: a fixed `developer_fee` in US dollars and cents on fixed-amount transfers;
   `developer_fee_percent` on virtual accounts. Withheld from the customer's amount and "paid out monthly on the 5th of
-  each month" in USD to Capxul's fee account (`devfees`, `mins`). **Not set anywhere in the implementation.** Aaron, 26 November 2026: "yes configurable". So it is a
-  setting per company, defaulting to zero: on payouts a fixed `developer_fee` in US dollars and cents, and on virtual
-  accounts a `developer_fee_percent`, the only form Bridge takes there. R6 builds it.
+  each month" in USD to Capxul's fee account (`devfees`, `mins`). **Not set anywhere in the implementation.** Aaron, 26
+  November 2026: "yes configurable". So it is a setting per company, defaulting to zero: on payouts a fixed
+  `developer_fee` in US dollars and cents, and on virtual accounts a `developer_fee_percent`, the only form Bridge takes
+  there. R6 builds it.
 - **Bridge's own:** `exchange_fee_amount` and `gas_fee`, on each event and receipt.
 - **For the books:** a deposit's Bank Transaction is the **net that reached the Safe**, with the gross and each fee
   beside it, so the receivable it settles (the gross) and the bank line (the net) reconcile, and the fee is the
@@ -281,6 +295,7 @@ prove, in Orthograph's terms, before the lift counts.
 | V18 | An event for one company's customer never touches another's | prove | **matches** (deposits routed by `railAccountRef`; payout news must name the same transfer, customer, account and rail), but no isolation test for deposits |
 | V19 | Every recording Capxul relies on loads straight into its tests under the strict generated client | prove | **partial**: many recordings, but CI loads only b2 directly; the rest through hand-made copies |
 | V20 | Against the sandbox: customers, `simulate_kyc_approval`, USD, EUR and GBP virtual accounts, `simulate_deposit`, payouts, each compared with the stand-in | sandbox | **largely done** (va01–va12; staging b4, b5). Quirks: the sandbox completes unfunded crypto-source transfers by itself after about 30 seconds (va12); EUR and GBP deposits answer 500 (`I/docs/planning/banking/virtual-accounts-spike.md`) |
+| V21 | Every `PaymentSent` from a bank-payout budget's role is matched to a Capxul payout by `settlementId`; a send that no payout prepared raises one alarm and goes to a person | chain | **new in Capxul**, not in the implementation |
 
 ## 3. Compared with Capxul's CX-bridge and its things
 
@@ -337,11 +352,12 @@ the `infrastructure:` file it lifts from.
 | The sandbox quirks (`I/docs/planning/banking/virtual-accounts-spike.md`) | lines in the stand-in's README and its behaviour |
 | The devnet's programmable Bridge, which moves test tokens on chain, and its seeded script language (`I/packages/devnet/src/modules/bridge/README.md`, `chain.ts`) | Capxul's stand-in gains chain moves and a script, beside a chain stand-in |
 
-**Not lifted** (Convex's, or the host's): Convex operations, its scheduler, `runId` holds, 10-minute leases and the
-`railSyncState` row; the convert migrations, the hard-coded staging mint fence and the give-up divisor; the PostHog
-fields, the feature flag and the Ponder helpers; the AES secret helper (encryption at rest is the host's, K40); the
-EURC default for EUR virtual accounts (`bank-details/rules.ts:26-27`), because the Safe holds only USDC, ETH and cbBTC
-and CX-crypto-accounting covers only those three.
+**Not lifted** (Convex's, the host's, or not used): `examples/budgets` as the payout's budget, since K44 call 8 puts the
+on-chain module outside the framework when it is wanted; Convex operations, its scheduler, `runId` holds, 10-minute
+leases and the `railSyncState` row; the convert migrations, the hard-coded staging mint fence and the give-up divisor;
+the PostHog fields, the feature flag and the Ponder helpers; the AES secret helper (encryption at rest is the host's,
+K40); the EURC default for EUR virtual accounts (`bank-details/rules.ts:26-27`), because the Safe holds only USDC, ETH
+and cbBTC and CX-crypto-accounting covers only those three.
 
 **On the ADRs.** ADR-0017's only Bridge rule is that fiat custody needs its own spend authorization (delegated fiat
 caps, above). ADR-0018 adds no Bridge rule here, and no router contract is used. ADR-0025 holds the payout
@@ -368,9 +384,10 @@ Proposed, for the slices below and their authors and builders:
   rejection reasons kept.
 - The stand-in: `source_deposit_instructions` on a crypto-source transfer; fixed outputs; `return_instructions`; the
   sandbox's quirks; chain moves, after the devnet's Bridge.
-- CX-composable-pieces: `bridge-accounts` depends on the Safe's piece (`onchain-pay`) and on Capxul's Payments. Its
-  two rails lines are rewritten in this pull request (Supersedes, below) now that Aaron has said the Safe comes first;
-  its dependency table and the goal brief's slice order are the pieces designer's and the lead's to change.
+- CX-composable-pieces: `bridge-accounts` depends on the Safe's piece (`onchain-pay`) and on Capxul's Payments. Its two
+  rails lines, a dated record's, keep their words and gain a note in this pull request (Supersedes, below) now that
+  Aaron has said the Safe comes first; its dependency table and the goal brief's slice order are the pieces designer's
+  and the lead's to change.
 
 ## 5. The lift plan
 
@@ -381,13 +398,14 @@ Each slice is one branch and ends green with its check. Authors write the journe
 | R0 | Read the implementation and fill section 2 | **Done**, 26 November 2026, by Goal 16's lead (a5ad185) |
 | R1 | The company's Safe address as a fact Capxul holds (the smallest part of slice 2), and `bank-account.open` deriving the destination from it, with GBP | V1 passes in `prove`, including the check of Bridge's answered destination; an open that tries to set a destination fails |
 | R2 | Deposits in two steps: Bridge's word (`received`, gross and fees) then the chain's (`settled`, net, the exact `Transfer`, reorg-corrected); refunds | V3 to V6 pass against the stand-in and a chain stand-in; `bridge-a-deposit-lands` lands only after the chain |
-| R3 | Payouts as the lifted machine: fixed output, return address the Safe, leg 1 a Capxul Payment spent against a budget, M1, M2, M3, M5, M6, save before dispatch, `transferConflict`; `AllowanceExceeded` at prepare and on chain | V7 to V10 pass against the stand-in and a chain stand-in, including `missing_return_policy` as an alarm at once and a returned payout's USDC back in the Safe; a payout over its budget is refused `AllowanceExceeded` before Bridge is called, and an owner's direct payout needs no budget |
+| R3 | Payouts as the lifted machine: fixed output, return address the Safe, leg 1 a CapxulPayments `send` under the Org Budget's role, M1, M2, M3, M5, M6, save before dispatch, `transferConflict`; `PayoutOverBudget` at prepare; the safe cancel on a race; V21's matching | V7 to V10 pass against the stand-in and a chain stand-in, including `missing_return_policy` as an alarm at once and a returned payout's USDC back in the Safe; a payout over its budget is refused `PayoutOverBudget` before Bridge is called; a leg 1 the chain refuses ends in a safe cancel with nothing sent; a send from the role that no payout prepared raises the alarm; an owner's direct payout needs no budget |
 | R4 | Bridge's webhook door: RSA signature, journal on `event_id`, states only forward, catch-up over `webhook_events`, events for other environments ignored (#995 gaps 4 and 5) | V11 to V14 pass, with events from the stand-in signed as Bridge signs |
 | R5 | KYB and KYC states, terms, endorsements, rejection reasons | V15 passes in `prove` |
-| R6 | Fees (the developer fee as a setting per company, zero by default), the buffer's refund to the Safe on settlement (crediting the budget back), and minimums | V16 and V17 pass; the books show the fee as the company's expense, the buffer's excess recorded with its owner until it is refunded, the refund back in the Safe when the payout settles, and the net in the Safe |
+| R6 | Fees (the developer fee as a setting per company, zero by default), the buffer's refund to the Safe on settlement, and minimums | V16 and V17 pass; the books show the fee as the company's expense, the buffer's excess recorded with its owner until it is refunded, the refund back in the Safe when the payout settles, and the net in the Safe |
 | R7 | Recordings straight into the tests; the stand-in gains the devnet's chain moves and the sandbox's quirks | V18 to V20 pass in `prove`; most of V20 is recorded already, and anything the sandbox shows later is recorded here |
 
-R1 comes after the Safe's address (Aaron: "yes"). R2 and R3 need M6's chain door and Capxul's Payments on a Safe (slice 2). R4 waits on #995.
+R1 comes after the Safe's address (Aaron: "yes"). R2 and R3 need M6's chain door and Capxul's Payments on a Safe (slice
+2). R4 waits on #995.
 
 ## 6. Aaron's answers
 
@@ -398,10 +416,9 @@ Answered by Aaron, 26 November 2026:
 
 - **The Safe before Bridge:** "yes". Bridge's slices come after the Safe's.
 - **Who approves a payout:** "everything is on a budget. safe can do anything but typical is budget". Every payout is
-  spent against a budget, charged in USDC at funding; the owners can act directly; over budget is refused
-  `AllowanceExceeded` ("Who signs", above).
+  spent against an Org Budget's role, charged in USDC at funding; the owners can act directly; over budget is refused
+  `PayoutOverBudget` at prepare ("Who signs", above).
 - **The buffer's excess:** "agreed". It is refunded to the company's Safe when each payout settles.
-
 - **The developer fee:** "yes configurable". A setting per company, zero by default (Fees, above).
 
 No question is left open for Aaron.
