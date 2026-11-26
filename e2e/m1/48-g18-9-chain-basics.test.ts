@@ -11,6 +11,9 @@
 //      the canon's chains-and-wallets page says it where it lists what is built (and stops saying the relayer is "not written"), and the status page's row names it in its item. The marking is
 //      judged by what a reader of each place sees, not by one string anywhere in the file (the judges are tested against planted wrong files below).
 //  (c) NO LIVE PAGE STILL SAYS THE SUITE IS NOT RUN ON `main`: the climb's `NOT_RUN_ON_MAIN` is empty, its dashboard README says nothing of it, and e2e/on-chain's README says its job runs on `main`.
+// Run on main for the first time (26 November 2026, Anvil 1.9, four cores, 11m 31s), the on-chain ratchet had four reds no list held: two stale checks, not chain bugs (02's baseline is the
+// retired goal/stage-1; 04-m6-10-values-refused's fixture names an id prefix no thing owns). Their lines are in e2e/on-chain/expected-failing/, each with its reason, so the job is green on main
+// once this check is; two lines of 05's list pass now and are the builder's to remove.
 // The marking is the slice's only claim about #784. A builder who instead fixes the three bugs has to change this check's author first (they are the same slice: the author then pins each bug with
 // a failing check, as #784's Fix says, and drops (b)); nothing here stops a fix.
 import { readFileSync } from "node:fs";
