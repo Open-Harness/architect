@@ -21,6 +21,11 @@ sorted `id:version` text of the rows now matching the list's `where` and `state`
 table's first row's `version` to NULL, and the batch fails as a `conflict` the way a stale update does. A call that lists
 things outside the database it commits to (another declared store, or a commit to an actor) dies (`list-guard.test.ts`).
 
+It guards each row the call found by its id (#1045) the same way, after the lists and before the writes: per table, up to
+40 rows a statement (D1 binds at most 100 values), it sets `version` to NULL on a row whose version isn't the one the call
+read, and the batch fails as a `conflict`, so the call runs again. A row kept outside the database the call commits to (a
+person, an actor, another declared store) can't join the batch and goes unguarded (`read-guard.test.ts`).
+
 ## Declared stores (K3, M1.17)
 
 `StoreD1.layer({ tables, stores: [[store, env.DB_STORE]] })`: a thing that `lives` in a declared database store is read

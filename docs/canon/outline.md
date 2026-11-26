@@ -1,6 +1,6 @@
 # The canon's outline
 
-There are thirty-two concept pages and three reference pages, in the order a newcomer reads them. Each page explains
+There is one page to start from, thirty-two concept pages and three reference pages, in the order a newcomer reads them. Each page explains
 one idea, and each word in the glossary (the words in each page's `owns`; the old glossary table is a record in
 `design/history/retired-2026-11-23/docs/index.html`) has exactly one page that
 owns it. Other pages link to that page and never explain the word again.
@@ -60,6 +60,15 @@ which functions clients may reach, and how Solidity, Noir and Solana fit togethe
 on a chain. [`chains-and-wallets`](chains-and-wallets.mdx) (page 30, written with M1.39 after the layers, so numbered
 last) holds the answers and says which slice builds each. A page that touches a chain says what K7 decided and
 links there. It doesn't guess.
+
+## Start here
+
+Before the layers, one page takes a newcomer from install to a proved, running app and its generated tools. It owns no
+idea of its own: it links to the pages that do.
+
+| # | Page | Job | Owns | Questions a reader brings | Links | Milestone |
+|---|---|---|---|---|---|---|
+| 0 | `getting-started` | From an empty folder to a proved, running app, called through its generated CLI, SDK and MCP | getting started, the generated tools' variables | What do I need before I start? How do I go from nothing to a proved, running app? How do I call the app I made? Which variables do the generated tools read? | orthograph, blueprint, journeys, proof, doors, environments | the alpha (K44): Goal 18's slices 6, 7 and 11 |
 
 ## Layer 1: the shape
 
