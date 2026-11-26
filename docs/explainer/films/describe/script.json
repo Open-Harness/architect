@@ -133,7 +133,7 @@
    "lines": [
     {
      "id": "e1",
-     "text": "You read two changed lines, and a list of questions. The count goes down only when you decide something."
+     "text": "You read two changed lines, and a list of questions. The count should go down only when you decide something."
     },
     {
      "id": "e2",
@@ -158,9 +158,9 @@
  "pictures": {
   "carries": "The count of blanks, drawn as the check's own list of questions with its number above it: seven, then five, computed from describe-0-check.txt, describe-1-check.txt and describe-2-check.txt. It returns on every sheet after the first.",
   "declare": "The designer acts. A terminal replays describe-add-thing.txt and describe-add-operation.txt; beside it an editor quotes describe-0-open.ts.txt, its four Blueprint.todo lines marked as blanks.",
-  "blanks": "A terminal replays describe-0-check.txt down to its seventh blank, each line becoming one row of the list of questions under the number seven; the lower third replays the last three lines of describe-0-model.txt.",
+  "blanks": "A terminal replays describe-0-check.txt down to its seventh blank, each line becoming one row of the list of questions under the number seven; the lower third replays the wallet's line and the two unfinished lines of describe-0-model.txt.",
   "fill": "The designer acts. An editor shows describe-0-thing.ts.txt becoming describe-1-thing.ts.txt, then describe-0-machine.ts.txt becoming describe-1-machine.ts.txt, beside the Wallet line of plan-page.txt; two rows leave the list as describe-1-check.txt replays and the number becomes five.",
   "generate": "A terminal replays the drift lines of describe-1-check.txt, then describe-2-generate.txt, then describe-2-check.txt, with describe-2-handlers.txt showing no wallet folder under src; the list of five questions stays beside it, and only the final verdict is red.",
-  "read": "You act. The list of five questions stands alone; then a terminal replays the types lines of describe-early-check.txt over line nine of describe-early-types.ts.txt; Kit.stand marks add, check, model and generate as running today, the designer leaving blanks as practice, and a second kind of blank and a check that passes all but blanks as missing."
+  "read": "You act. The list of five questions stands alone; then a terminal replays the types lines of describe-early-check.txt over line nine of describe-early-types.ts.txt; Kit.stand marks add, check, model and generate as running today, the designer leaving blanks as practice, and a second kind of blank and the ready check as missing."
  }
 }

@@ -25,7 +25,7 @@ wrote blueprint/things/wallet/verbs/open.ts
 ```
 
 The first command wrote seven files and the second wrote one. None of them holds a decision. Where a decision goes,
-the frame has a blank, and the blank says in words what is missing.
+the frame has a [blank](../../canon/handlers.mdx#blanks), and the blank says in words what is missing.
 
 ```ts part capture=describe-0-open.ts.txt
 export default Blueprint.operation(Wallet, {
@@ -131,8 +131,8 @@ check ✘
 ## What you read
 
 You read the blueprint files the designer changed, which here is two lines, and the list of blanks. Each blank is
-either a question you can answer now or one of the doubts from the plan. The count is the thing to watch. It goes down
-only when you decide something.
+either a question you can answer now or one of the doubts from the plan. The count is the thing to watch. It should go
+down only when you decide something.
 
 ## When it goes wrong
 
@@ -144,7 +144,7 @@ types ✘ 1
   generated/sdk/src/wallet/types.ts:9  TS1110: Type expected.
 ```
 
-Fill a thing's states before you generate, or generate again once they are filled.
+Fill a thing's states before you generate.
 
 A designer will sometimes fill a blank the page does not answer. The check cannot tell a decision from a guess: a
 blank that is gone is simply gone. So when the count drops, ask which line of the plan each answer came from.
@@ -152,8 +152,8 @@ blank that is gone is simply gone. So when the count drops, ask which line of th
 The check fails for as long as one blank is left, and it says `check ✘` whether the blueprint is broken or only
 unfinished. Read the parts above that line. Nothing yet tells the two apart for you.
 
-Not everything undecided becomes a blank. The frame wrote the wallet's moves as an empty list and its rules as an
-empty file, and the check counts neither. What must stay true on the plan page is not in the blueprint until the
+Not everything undecided becomes a blank. The frame left the wallet's moves empty and wrote its
+[rules](../../canon/invariants.mdx) as an empty file, and the check counts neither. What must stay true on the plan page is not in the blueprint until the
 designer writes it.
 
 ## How this stands
@@ -161,6 +161,7 @@ designer writes it.
 Adding a thing and an operation, the check's list of blanks, the model's unfinished lines and generating all run
 today, and everything above was recorded on Plugged In on 26 November 2026. The two blanks were filled by the
 recording itself, in the words of the plan page; no agent was filmed designing, and the wallet was removed from the
-example afterwards. That a designer leaves a blank for what you have not decided is this repository's practice.
-Orthograph has one kind of blank today. A second kind, for a decision that is yours and not the designer's, is
-designed and not built, and so is a check that passes everything but the blanks.
+example afterwards. That a designer leaves a blank for what you have not decided, and reports the blanks to you
+as questions, is this repository's practice and not a command. Orthograph has one kind of blank today. A second kind,
+a question that carries its options for a decision not made yet, is designed and not built, and so is the ready check
+meant to go with it, a way to ask only whether any blank remains.

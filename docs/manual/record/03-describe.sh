@@ -26,7 +26,8 @@ ortho describe-2-model.txt model
 rec describe-2-handlers.txt "ls src" -- ls src
 restore
 # What goes wrong: generate run before the wallet has any state. The file it writes does not compile, and check says so.
-(cd "$app" && node "$repo/packages/cli/src/main.ts" add thing wallet > /dev/null)
+# The same first command on the clean example, recorded again under the same name: it prints the same eight lines.
+ortho describe-add-thing.txt add thing wallet
 ortho describe-early-generate.txt generate
 ortho describe-early-check.txt check
 copy describe-early-types.ts.txt generated/sdk/src/wallet/types.ts
