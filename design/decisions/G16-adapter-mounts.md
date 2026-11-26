@@ -170,7 +170,35 @@ The present HMAC form is unchanged, and a `verify` with no `scheme` is HMAC.
   `ORTHO_STAND_<MOUNT>` in prove's own environment. The command's name goes into the path as written, dashes and all.
   (Added from the hostile pass on #1025, 25 November 2026.)
 
-Gap 4's call, an event to an app operation, is made after gap 1's checks are clear, and is added here.
+### 5. An incoming event runs an app operation (gap 4)
+
+Signed off by Goal 16's lead on 26 November 2026 (#995). Gap 4 is M5.03's delivery half, built for inbound events only:
+M5-reach-out Q1 to Q5 decide the outbox, `on:`, the request key `on|<event id>|<operation>` and the `service(<mount>)`
+caller, and GOAL17-check-harness call 3 puts the drain on `Timers`. This call settles what those leave open. Move events
+stay M5.04's, and `ortho outbox redeliver` and `POST /_world/outbox/redeliver` are M5.04's too.
+
+- **The name.** A `Mount` gains `events`, its adapter's own `AdapterEvent` values, so an app writes `bridge.events.kycLink`.
+  `Blueprint.on` takes an `AdapterEvent` as well as a `Blueprint.event`; its `map` gets the decoded payload, and `meta`
+  `{ id, source: <mount>, at }` second. Two mounts of one plugin are already refused, so an event names one mount.
+- **What the compiler refuses** (Q3.4): an `on:` naming an event its mount doesn't `include`; an operation whose `allowed`
+  doesn't admit `service(<mount>)` (`Blueprint.anyone` admits it); two `on:` entries of one operation taking one event. Each
+  names the operation and what is wrong.
+- **The door.** An event some `on:` subscribes to is taken whether or not a source maps it. Its inbox row and one `_outbox`
+  row per subscribing operation (`event` `<mount>:<the event's id>`, `to` `op:<thing>.<verb>`) are one batch. A repeat
+  (`seen`) writes no outbox row, and an event no `on:` takes writes none. The superagent's sources behave as before.
+- **The delivery.** The operation runs as `{ kind: "service", mount, actor? }`, in the trace of the door's request, so its
+  journal row has that trace. A delivery due now is counted work (`Busy`) from the door's commit: the world is not quiet
+  until it has run, so a clock step, a zero step and a world's reset all wait for it. The door answers without waiting.
+- **Refusals and defects.** A refusal is `refused` with its tag after one attempt and is never retried. A defect (a `map`
+  that throws or answers a payload outside the declaration included) is retried on Q5's schedule, 1 s doubling, never more
+  than an hour between, 15 attempts, then `failed`. Every wait is `Timers`, so a stepped world steps the backoff: there is
+  no `ORTHO_OUTBOX_BACKOFF` (GOAL17-check-harness call 3), and a real world's alarm drives the same drain.
+- **What a check reads.** `GET /_world/outbox` answers `rows`, GOAL17-check-harness call 3's `OutboxRow` (`outcome` is the
+  refusal's tag or the defect's first line).
+- **Settling.** A journey's `s.clock.settle()` is `advance("0 seconds")` (GOAL17-check-harness call 3): wait until quiet,
+  move nothing, fire only what is due now. After one failed attempt it answers at once, the row `pending` and due later. A
+  delivery that never ends makes it refuse `NeverQuiet` within `ORTHO_QUIET_MS`, naming the delivery by its event and its
+  operation. `s.world.settles()` is not built: `s.world` is what the starting world gave, so a method on it is a value.
 
 ## The checks
 
@@ -180,6 +208,7 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 - **Gap 1:** `e2e/m2/07-generated-adapter-calls.test.ts`.
 - **Gap 2:** `e2e/m2/10-prove-stand-ins.test.ts`.
 - **Gap 3:** `e2e/m2/09-journey-stand-calls.test.ts`.
+- **Gap 4:** `e2e/m2/14-inbound-events-run-operations.test.ts`.
 - The others are added here as they land.
 
 ## Supersedes
@@ -189,3 +218,4 @@ Each gap's checks land on `main` as their own pull request, red, with a ratchet 
 - G16-adapter-mounts call 1, as merged in #1003: "`apiKey`, when its description declares any security scheme" → "`apiKey`, when its description requires security"
 - G16-adapter-mounts call 1, as merged in #1010: "and an app can't set `code` on a generated file" → "unless the plugin's scaffolded `src/written.ts` exports a `code`, which the generated `thing.ts` reads"
 - GOAL17-adapters-from-spec: "Declared error classes per response are not generated yet: `Blueprint.call()` is given none." → "every generated call is `Blueprint.call({ errors: [<Adapter>ApiFailure, <Adapter>InputRefused, <Adapter>AnswerRefused, <Adapter>Unreachable] })`"
+- M5-reach-out, what a journey can do: "`s.world.settles()`: until M8.07" → "`s.clock.settle()` (GOAL17-check-harness call 3; G16-adapter-mounts call 5): from M8.07"

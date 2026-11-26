@@ -292,7 +292,9 @@ M3.01 (Goal 8) owns the declaration, wake-up and replay. From the event side, se
   home) has no `pending` or `claimed` row and the Worker's `Busy` is quiet; from M8.07, it is the world's quiet (K23),
   which counts the drain as work;
   the deliveries' events are then in the step's journal, because a delivery runs in the trace of the event that caused
-  it (a child span `outbox.<to>`). Refuses `NeverSettled` after its limit, naming the rows.
+  it (a child span `outbox.<to>`). Refuses `NeverSettled` after its limit, naming the rows. _(Superseded by
+  G16-adapter-mounts call 5, 26 November 2026: the step is `s.clock.settle()`, a zero clock step, which refuses
+  `NeverQuiet` within `ORTHO_QUIET_MS`, naming the delivery.)_
 - `s.world.redeliver(event)`: redelivers the last such event to all its subscribers (Q5.3).
 - `calledBy` distinguishes the system from a service and checks the latter's mount using the principal recorded for the call.
 - Anything finer (killing a delivery, a failed row's shape) is the author's to name in `M5-checks`, as M8-checks did for
