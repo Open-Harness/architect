@@ -21,7 +21,8 @@ get il-700t.pdf https://tax.illinois.gov/content/dam/soi/en/web/tax/forms/withho
 get nj-withholdingtables.pdf https://www.nj.gov/treasury/taxation/pdf/withholdingtables.pdf
 get ga-sep.pdf https://dor.georgia.gov/document/document/2026-employers-tax-guide-updated-september-2026/download
 # Fail loudly if an agency has replaced a document since the spike read it (the first seven are the sha256s
-# open-withholding cites; Georgia's is the copy this spike read on 26 November 2026).
+# open-withholding cites; Georgia's is the copy this spike read on 26 November 2026, from an unversioned URL, so it
+# is the first to fail when Georgia revises its guide again: that failure is intended).
 sha256sum -c - <<'SUMS'
 31b3e2428628e8d2e40f6266c2c8f1b9b0b6ccd24607895f9b3be3d9d306d3fb  p15t.pdf
 b46c3622439d8521e3a0faca4cd5b5ece3451b526f65f06a5e38d5c9f804c88b  p15.pdf

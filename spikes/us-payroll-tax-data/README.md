@@ -19,7 +19,7 @@ point 8 asks for.
   - open-withholding, `https://github.com/open-withholding/open-withholding` at `4a0e67e9` (3 November 2026): data
     CC0-1.0, code MIT. It has 431 YAML parameter files, and each cites the publication with its URL, the retrieval
     date and the sha256 of the document. Its README is behind its data. The README says 141 golden fixtures and
-    state unemployment insurance (SUI) for Wisconsin and Illinois only. The repository holds 766 fixtures and SUI files
+    state unemployment insurance (SUI) for Wisconsin and Illinois only. The repository holds 766 fixture files in tests/golden (plus its README) and SUI files
     for 37 jurisdictions, all 10 in scope among them. AL, AR, AZ, DC, KS, LA, MS, NM, OK, SC and WV have no SUI file,
     and NH, NV and TN have no folder at all.
   - us-payroll-tax-tables, `https://github.com/Nyaksik/us-payroll-tax-tables` at `ab663307` (15 November 2026): data
@@ -135,8 +135,11 @@ Capxul's own. That reading is flagged for Aaron's call.
 
   The same importer checks every figure us-payroll-tax-tables also carries. The two overlap only on federal and FICA,
   California's annual tables, New York and New Jersey (plus the other states' annual figures this spike did not
-  compare). The importer keeps a recorded list of settled disagreements, each with its ruling and evidence (the eight
-  in finding 3 to start), and stops only on a new one, which a person then settles. Capxul's journeys are written by an author from the publications' own examples, as
+  compare). The importer keeps a recorded list of settled disagreements, each with its ruling and evidence: to start,
+  New York's top rates, Illinois' Line 2, California's per-period tables, Massachusetts and Delaware paid leave, and
+  Georgia's citation. Massachusetts' weekly exemption and blind exemption and WA Cares stay open until a person reads
+  the agency's text. It stops on any disagreement not on the list, and on a listed one whose figures change at a
+  refresh, which a person then settles. Capxul's journeys are written by an author from the publications' own examples, as
   CX-payroll-tax point 5 says, so the imported rows are checked by the publications and not by the importer.
   open-withholding's `methods/` specs are reference only: Capxul writes each method in Effect.
 - **Refresh.** When a new tax year publishes (Pub 15-T in December, most states in December and January) or mid-year
