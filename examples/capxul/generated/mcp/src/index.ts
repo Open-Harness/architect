@@ -138,6 +138,29 @@ import { declaration as leaveApplicationGet } from "../../api/src/leave-applicat
 import { declaration as leaveApplicationReject } from "../../api/src/leave-application/reject.ts";
 import { declaration as leaveTypeCreate } from "../../api/src/leave-type/create.ts";
 import { declaration as leaveTypeGet } from "../../api/src/leave-type/get.ts";
+import { declaration as payrollEmployeeDetailList } from "../../api/src/payroll-employee-detail/list.ts";
+import { declaration as payrollEntryCreate } from "../../api/src/payroll-entry/create.ts";
+import { declaration as payrollEntryGet } from "../../api/src/payroll-entry/get.ts";
+import { declaration as payrollEntryList } from "../../api/src/payroll-entry/list.ts";
+import { declaration as payrollEntrySubmit } from "../../api/src/payroll-entry/submit.ts";
+import { declaration as payrollEntrySubmitSlips } from "../../api/src/payroll-entry/submit-slips.ts";
+import { declaration as payrollPeriodCreate } from "../../api/src/payroll-period/create.ts";
+import { declaration as payrollPeriodGet } from "../../api/src/payroll-period/get.ts";
+import { declaration as salaryComponentCreate } from "../../api/src/salary-component/create.ts";
+import { declaration as salaryComponentGet } from "../../api/src/salary-component/get.ts";
+import { declaration as salaryDetailList } from "../../api/src/salary-detail/list.ts";
+import { declaration as salarySlipGet } from "../../api/src/salary-slip/get.ts";
+import { declaration as salarySlipList } from "../../api/src/salary-slip/list.ts";
+import { declaration as salarySlipDetailList } from "../../api/src/salary-slip-detail/list.ts";
+import { declaration as salaryStructureCancel } from "../../api/src/salary-structure/cancel.ts";
+import { declaration as salaryStructureCreate } from "../../api/src/salary-structure/create.ts";
+import { declaration as salaryStructureGet } from "../../api/src/salary-structure/get.ts";
+import { declaration as salaryStructureSubmit } from "../../api/src/salary-structure/submit.ts";
+import { declaration as salaryStructureAssignmentCancel } from "../../api/src/salary-structure-assignment/cancel.ts";
+import { declaration as salaryStructureAssignmentCreate } from "../../api/src/salary-structure-assignment/create.ts";
+import { declaration as salaryStructureAssignmentGet } from "../../api/src/salary-structure-assignment/get.ts";
+import { declaration as salaryStructureAssignmentList } from "../../api/src/salary-structure-assignment/list.ts";
+import { declaration as salaryStructureAssignmentSubmit } from "../../api/src/salary-structure-assignment/submit.ts";
 import { declaration as shiftTypeCreate } from "../../api/src/shift-type/create.ts";
 import { declaration as shiftTypeGet } from "../../api/src/shift-type/get.ts";
 
@@ -281,6 +304,29 @@ export const catalog = {
   "leave-application.reject": { description: "Reject a leave, marking none of its days.", operation: leaveApplicationReject, states: ["open","approved","rejected","cancelled"], move: {"key":"reject","from":["open"],"to":["rejected"],"emits":"LeaveApplicationRejected"} },
   "leave-type.create": { description: "Add a kind of leave a company gives. Refuses LeaveTypeNameTaken when another leave type holds this company and leave type name.", operation: leaveTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"LeaveTypeCreated"} },
   "leave-type.get": { description: "Read one leave-type by its id: company, leaveTypeName, maxContinuousDaysAllowed, isLwp, includeHoliday, state.", operation: leaveTypeGet, states: ["active"] },
+  "payroll-employee-detail.list": { description: "List payroll-employee-details, oldest first, 100 to a page, filtered by payrollEntry.", operation: payrollEmployeeDetailList },
+  "payroll-entry.create": { description: "Draft a payroll entry for a span of days, filled with the company's employees to pay.", operation: payrollEntryCreate, states: ["draft","submitted","accrued"], move: {"key":"create","from":[],"to":["draft"],"emits":"PayrollEntryDrafted"} },
+  "payroll-entry.get": { description: "Read one payroll-entry by its id: company, postingDate, startDate, endDate, costCenter, payrollPayableAccount, numberOfEmployees, state.", operation: payrollEntryGet, states: ["draft","submitted","accrued"] },
+  "payroll-entry.list": { description: "List payroll-entrys, oldest first, 50 to a page, filtered by company.", operation: payrollEntryList, states: ["draft","submitted","accrued"] },
+  "payroll-entry.submit": { description: "Submit a payroll entry, making a draft salary slip for each of its employees.", operation: payrollEntrySubmit, states: ["draft","submitted","accrued"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"PayrollEntrySubmitted"} },
+  "payroll-entry.submit-slips": { description: "Submit a payroll entry's salary slips, booking their pay in one accrual journal entry.", operation: payrollEntrySubmitSlips, states: ["draft","submitted","accrued"], move: {"key":"submitSlips","from":["submitted"],"to":["accrued"],"emits":"SalarySlipsSubmitted"} },
+  "payroll-period.create": { description: "Set up a company's payroll period. Refuses PayrollPeriodNameTaken when another payroll period holds this company and payroll period name.", operation: payrollPeriodCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"PayrollPeriodCreated"} },
+  "payroll-period.get": { description: "Read one payroll-period by its id: company, payrollPeriodName, startDate, endDate, state.", operation: payrollPeriodGet, states: ["active"] },
+  "salary-component.create": { description: "Add a part of pay, an earning or a deduction, with its default amount and the ledger it is booked to. Refuses SalaryComponentTaken when another salary component holds this company and salary component.", operation: salaryComponentCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"SalaryComponentCreated"} },
+  "salary-component.get": { description: "Read one salary-component by its id: company, salaryComponent, type, amount, account, state.", operation: salaryComponentGet, states: ["active"] },
+  "salary-detail.list": { description: "List salary-details, oldest first, 100 to a page, filtered by salaryStructure.", operation: salaryDetailList },
+  "salary-slip.get": { description: "Read one salary-slip by its id: company, employee, payrollEntry, salaryStructure, postingDate, startDate, endDate, grossPay, totalDeduction, netPay, status, journalEntry.", operation: salarySlipGet },
+  "salary-slip.list": { description: "List salary-slips, oldest first, 100 to a page, filtered by employee, payrollEntry.", operation: salarySlipList },
+  "salary-slip-detail.list": { description: "List salary-slip-details, oldest first, 100 to a page, filtered by salarySlip.", operation: salarySlipDetailList },
+  "salary-structure.cancel": { description: "Cancel a submitted salary structure no assignment or salary slip uses. Refuses SalaryStructureNameTaken when another salary structure holds this company and salary structure name.", operation: salaryStructureCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"SalaryStructureCancelled"} },
+  "salary-structure.create": { description: "Draft a salary structure with its earnings and deductions. Refuses SalaryStructureNameTaken when another salary structure holds this company and salary structure name.", operation: salaryStructureCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"SalaryStructureDrafted"} },
+  "salary-structure.get": { description: "Read one salary-structure by its id: company, salaryStructureName, totalEarning, totalDeduction, netPay, state.", operation: salaryStructureGet, states: ["draft","submitted","cancelled"] },
+  "salary-structure.submit": { description: "Submit a salary structure, so it can be assigned. Refuses SalaryStructureNameTaken when another salary structure holds this company and salary structure name.", operation: salaryStructureSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"SalaryStructureSubmitted"} },
+  "salary-structure-assignment.cancel": { description: "Cancel a submitted assignment, so payroll no longer counts it.", operation: salaryStructureAssignmentCancel, states: ["draft","submitted","cancelled"], move: {"key":"cancel","from":["submitted"],"to":["cancelled"],"emits":"SalaryStructureAssignmentCancelled"} },
+  "salary-structure-assignment.create": { description: "Assign a salary structure to an employee from a day on.", operation: salaryStructureAssignmentCreate, states: ["draft","submitted","cancelled"], move: {"key":"create","from":[],"to":["draft"],"emits":"SalaryStructureAssigned"} },
+  "salary-structure-assignment.get": { description: "Read one salary-structure-assignment by its id: company, employee, salaryStructure, fromDate, state.", operation: salaryStructureAssignmentGet, states: ["draft","submitted","cancelled"] },
+  "salary-structure-assignment.list": { description: "List salary-structure-assignments, oldest first, 50 to a page, filtered by employee.", operation: salaryStructureAssignmentList, states: ["draft","submitted","cancelled"] },
+  "salary-structure-assignment.submit": { description: "Submit an assignment, so payroll pays the employee by its structure from its day on.", operation: salaryStructureAssignmentSubmit, states: ["draft","submitted","cancelled"], move: {"key":"submit","from":["draft"],"to":["submitted"],"emits":"SalaryStructureAssignmentSubmitted"} },
   "shift-type.create": { description: "Add a working shift to a company, from its start time to its end time. Refuses ShiftTypeNameTaken when another shift type holds this company and shift type name.", operation: shiftTypeCreate, states: ["active"], move: {"key":"create","from":[],"to":["active"],"emits":"ShiftTypeCreated"} },
   "shift-type.get": { description: "Read one shift-type by its id: company, shiftTypeName, startTime, endTime, state.", operation: shiftTypeGet, states: ["active"] },
 } as const satisfies { readonly [name: string]: McpEntry };

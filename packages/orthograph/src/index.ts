@@ -82,7 +82,7 @@ export type { Role, RoleOf, ServiceRole, SignedIn, System, Narrowed, Allowed, Pr
 export type { Operation, Read, ReadAnswer, Order, Page, ListPayload, ListItem, Steps, OperationSpec, Step, CallStep, OperationStep, StepKind, Runs, TestKind, Budget, PayloadOf, AnswerOf, ErrorOf, StepsOf } from "#modules/operations/types.js";
 export type { App, AppPage, AppComponent, AppLayout, NavGroup, NavGroupSpec, AppSpec, PageSpec, ComponentSpec, Route, RouteParam, LayoutName } from "#modules/app/types.js";
 export type { Blank } from "#modules/blanks/types.js";
-export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, ToolsCall, AnyCall, Ref, Refusal, ClockCall } from "#modules/journeys/types.js";
+export type { Journey, StartingWorld, Step as JourneyStep, Call, Assertion, Script, Actor, ToolsCall, AnyCall, Ref, Refusal, ClockCall, StandCall, Json } from "#modules/journeys/types.js";
 export type { Environment, EnvironmentSpec } from "#modules/environments/types.js";
 export type { Span, TimeBy, OnCalendar, Weekday, Clock } from "#modules/time/types.js";
 export type { SecretDeclaration, SecretKind, SecretNotHanded, Made, Given, GeneratedOptions, StoredOptions } from "#modules/secrets/types.js";

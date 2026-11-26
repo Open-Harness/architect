@@ -456,6 +456,99 @@ CREATE TABLE "leave-type" (
   "version" INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX "leave-type_oneNamePerCompany" ON "leave-type" ("company", "leaveTypeName");
+CREATE TABLE "payroll-employee-detail" (
+  "id" TEXT PRIMARY KEY,
+  "payrollEntry" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "payroll-entry" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "costCenter" TEXT NOT NULL,
+  "payrollPayableAccount" TEXT NOT NULL,
+  "numberOfEmployees" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "payroll-period" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "payrollPeriodName" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "payroll-period_oneNamePerCompany" ON "payroll-period" ("company", "payrollPeriodName");
+CREATE TABLE "salary-component" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "salaryComponent" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "account" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "salary-component_oneNamePerCompany" ON "salary-component" ("company", "salaryComponent");
+CREATE TABLE "salary-detail" (
+  "id" TEXT PRIMARY KEY,
+  "salaryStructure" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "line" TEXT NOT NULL,
+  "salaryComponent" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "salary-slip" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "payrollEntry" TEXT NOT NULL,
+  "salaryStructure" TEXT NOT NULL,
+  "postingDate" TEXT NOT NULL,
+  "startDate" TEXT NOT NULL,
+  "endDate" TEXT NOT NULL,
+  "grossPay" TEXT NOT NULL,
+  "totalDeduction" TEXT NOT NULL,
+  "netPay" TEXT NOT NULL,
+  "status" TEXT NOT NULL,
+  "journalEntry" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "salary-slip-detail" (
+  "id" TEXT PRIMARY KEY,
+  "salarySlip" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "line" TEXT NOT NULL,
+  "salaryComponent" TEXT NOT NULL,
+  "amount" TEXT NOT NULL,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE "salary-structure" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "salaryStructureName" TEXT NOT NULL,
+  "totalEarning" TEXT NOT NULL,
+  "totalDeduction" TEXT NOT NULL,
+  "netPay" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "salary-structure_oneNamePerCompany" ON "salary-structure" ("company", "salaryStructureName");
+CREATE TABLE "salary-structure-assignment" (
+  "id" TEXT PRIMARY KEY,
+  "company" TEXT NOT NULL,
+  "employee" TEXT NOT NULL,
+  "salaryStructure" TEXT NOT NULL,
+  "fromDate" TEXT NOT NULL,
+  "state" TEXT,
+  "version" INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE "shift-type" (
   "id" TEXT PRIMARY KEY,
   "company" TEXT NOT NULL,

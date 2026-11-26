@@ -57,6 +57,17 @@ Starts from the world `a chart`.
 - **Expenses holds nothing.** `ada` (role company.owner) calls and sends account the world's expenses, onDay `2026-12-31`, and gets back [`0`, `0`, `0`].
 - **and Capital Stock keeps the capital the cancel left alone.** `ada` (role company.owner) calls and sends account the world's capital, onDay `2026-12-31`, and gets back [`0`, `10200000000`, `-10200000000`].
 
+### pay a month
+
+Starts from the world `a pension component`.
+
+- **Salaries holds the month's pay.** `ada` (role company.owner) calls and sends account the world's salaries, onDay `2026-03-31`, and gets back [`7000000000`, `0`, `7000000000`].
+- **not the day before.** `ada` (role company.owner) calls and sends account the world's salaries, onDay `2026-03-30`, and gets back [`0`, `0`, `0`].
+- **Expenses, two groups above, holds it too.** `ada` (role company.owner) calls and sends account the world's expenses, onDay `2026-12-31`, and gets back [`7000000000`, `0`, `7000000000`].
+- **Pension Payable owes the pension.** `ada` (role company.owner) calls and sends account the world's pension, onDay `2026-12-31`, and gets back [`0`, `300000000`, `-300000000`].
+- **Payroll Payable owes the net pay.** `ada` (role company.owner) calls and sends account the world's payable, onDay `2026-12-31`, and gets back [`0`, `6700000000`, `-6700000000`].
+- **Liabilities owes both.** `ada` (role company.owner) calls and sends account the world's liabilities, onDay `2026-12-31`, and gets back [`0`, `7000000000`, `-7000000000`].
+
 ### post a journal entry
 
 Starts from the world `a capital entry`.
@@ -70,6 +81,15 @@ Starts from the world `a capital entry`.
 - **Expenses, two groups above Rent, the same the other way.** `ada` (role company.owner) calls and sends account the world's expenses, onDay `2027-12-31`, and gets back [`200000000`, `0`, `200000000`].
 - **Assets, above Bank, too.** `ada` (role company.owner) calls and sends account the world's assets, onDay `2027-12-31`, and gets back [`0`, `200000000`, `-200000000`].
 - **Equity, whose only lines were cancelled, holds nothing.** `ada` (role company.owner) calls and sends account the world's equity, onDay `2027-12-31`, and gets back [`0`, `0`, `0`].
+
+### run a payroll
+
+Starts from the world `an outside cost center`.
+
+- **Salaries holds February, Olga's March and April: E's slips aren't booked yet.** `ada` (role company.owner) calls and sends account the world's salaries, onDay `2026-04-30`, and gets back [`19000000000`, `0`, `19000000000`].
+- **Pension Payable owes 600.** `ada` (role company.owner) calls and sends account the world's pension, onDay `2026-04-30`, and gets back [`0`, `600000000`, `-600000000`].
+- **Payroll Payable owes 18,400.** `ada` (role company.owner) calls and sends account the world's payable, onDay `2026-04-30`, and gets back [`0`, `18400000000`, `-18400000000`].
+- **and 6,700 the day before April's.** `ada` (role company.owner) calls and sends account the world's payable, onDay `2026-04-29`, and gets back [`0`, `6700000000`, `-6700000000`].
 
 ## How to call
 

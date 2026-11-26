@@ -144,6 +144,29 @@ import { get as leaveApplicationGet } from "./leave-application/get.ts";
 import { reject as leaveApplicationReject } from "./leave-application/reject.ts";
 import { create as leaveTypeCreate } from "./leave-type/create.ts";
 import { get as leaveTypeGet } from "./leave-type/get.ts";
+import { list as payrollEmployeeDetailList } from "./payroll-employee-detail/list.ts";
+import { create as payrollEntryCreate } from "./payroll-entry/create.ts";
+import { get as payrollEntryGet } from "./payroll-entry/get.ts";
+import { list as payrollEntryList } from "./payroll-entry/list.ts";
+import { submit as payrollEntrySubmit } from "./payroll-entry/submit.ts";
+import { submitSlips as payrollEntrySubmitSlips } from "./payroll-entry/submit-slips.ts";
+import { create as payrollPeriodCreate } from "./payroll-period/create.ts";
+import { get as payrollPeriodGet } from "./payroll-period/get.ts";
+import { create as salaryComponentCreate } from "./salary-component/create.ts";
+import { get as salaryComponentGet } from "./salary-component/get.ts";
+import { list as salaryDetailList } from "./salary-detail/list.ts";
+import { get as salarySlipGet } from "./salary-slip/get.ts";
+import { list as salarySlipList } from "./salary-slip/list.ts";
+import { list as salarySlipDetailList } from "./salary-slip-detail/list.ts";
+import { cancel as salaryStructureCancel } from "./salary-structure/cancel.ts";
+import { create as salaryStructureCreate } from "./salary-structure/create.ts";
+import { get as salaryStructureGet } from "./salary-structure/get.ts";
+import { submit as salaryStructureSubmit } from "./salary-structure/submit.ts";
+import { cancel as salaryStructureAssignmentCancel } from "./salary-structure-assignment/cancel.ts";
+import { create as salaryStructureAssignmentCreate } from "./salary-structure-assignment/create.ts";
+import { get as salaryStructureAssignmentGet } from "./salary-structure-assignment/get.ts";
+import { list as salaryStructureAssignmentList } from "./salary-structure-assignment/list.ts";
+import { submit as salaryStructureAssignmentSubmit } from "./salary-structure-assignment/submit.ts";
 import { create as shiftTypeCreate } from "./shift-type/create.ts";
 import { get as shiftTypeGet } from "./shift-type/get.ts";
 
@@ -193,10 +216,19 @@ const kra = Command.make("kra").pipe(Command.withSubcommands([kraCreate, kraGet]
 const leaveAllocation = Command.make("leave-allocation").pipe(Command.withSubcommands([leaveAllocationCreate, leaveAllocationGet, leaveAllocationSubmit]));
 const leaveApplication = Command.make("leave-application").pipe(Command.withSubcommands([leaveApplicationApprove, leaveApplicationCancel, leaveApplicationCreate, leaveApplicationGet, leaveApplicationReject]));
 const leaveType = Command.make("leave-type").pipe(Command.withSubcommands([leaveTypeCreate, leaveTypeGet]));
+const payrollEmployeeDetail = Command.make("payroll-employee-detail").pipe(Command.withSubcommands([payrollEmployeeDetailList]));
+const payrollEntry = Command.make("payroll-entry").pipe(Command.withSubcommands([payrollEntryCreate, payrollEntryGet, payrollEntryList, payrollEntrySubmit, payrollEntrySubmitSlips]));
+const payrollPeriod = Command.make("payroll-period").pipe(Command.withSubcommands([payrollPeriodCreate, payrollPeriodGet]));
+const salaryComponent = Command.make("salary-component").pipe(Command.withSubcommands([salaryComponentCreate, salaryComponentGet]));
+const salaryDetail = Command.make("salary-detail").pipe(Command.withSubcommands([salaryDetailList]));
+const salarySlip = Command.make("salary-slip").pipe(Command.withSubcommands([salarySlipGet, salarySlipList]));
+const salarySlipDetail = Command.make("salary-slip-detail").pipe(Command.withSubcommands([salarySlipDetailList]));
+const salaryStructure = Command.make("salary-structure").pipe(Command.withSubcommands([salaryStructureCancel, salaryStructureCreate, salaryStructureGet, salaryStructureSubmit]));
+const salaryStructureAssignment = Command.make("salary-structure-assignment").pipe(Command.withSubcommands([salaryStructureAssignmentCancel, salaryStructureAssignmentCreate, salaryStructureAssignmentGet, salaryStructureAssignmentList, salaryStructureAssignmentSubmit]));
 const shiftType = Command.make("shift-type").pipe(Command.withSubcommands([shiftTypeCreate, shiftTypeGet]));
 
 Command.make("capxul").pipe(
-  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, shiftType]),
+  Command.withSubcommands([account, appraisal, appraisalCycle, appraisalTemplate, attendance, attendanceRequest, bankAccount, bankTransaction, branch, bridgeBusiness, bridgeIndividual, company, costCenter, department, designation, employee, employeeFeedbackCriteria, employeeGrade, employeePerformanceFeedback, employeePromotion, employeeSeparation, employeeTransfer, employmentType, expense, expenseClaim, expenseClaimType, fiscalYear, glEntry, goal, holiday, holidayList, interview, interviewFeedback, interviewRound, jobApplicant, jobOffer, jobOpening, journalEntry, journalEntryAccount, kra, leaveAllocation, leaveApplication, leaveType, payrollEmployeeDetail, payrollEntry, payrollPeriod, salaryComponent, salaryDetail, salarySlip, salarySlipDetail, salaryStructure, salaryStructureAssignment, shiftType]),
   Command.run({ version: typeof ORTHO_VERSION === "string" ? ORTHO_VERSION : "0.0.0" }),
   Effect.provide(CliOutput.layer({ ...CliOutput.defaultFormatter(), formatVersion: (name, version) => `${name} ${version}` })),
   Effect.provide(Sdk.layer(process.env["CAPXUL_URL"] ?? "http://127.0.0.1:8787", process.env["CAPXUL_TOKEN"])),

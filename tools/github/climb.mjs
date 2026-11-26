@@ -24,8 +24,6 @@ import { STAGE_SHARE } from "./roadmap.mjs";
 export const ALPHA_SUITES = ["m0", "m1", "m2", "layer1", "layer2", "stage1", "on-chain", "climb", "grid"];
 /** Check files the alpha leaves out: the portal's graphs, which wait with its screens (K44, call 2; M1.50). */
 export const NOT_ALPHA = ["m1/40-m1-50-graph.test.ts"];
-/** Suites whose lists are kept but which CI does not run on main yet: the chain basics' checks, until Goal 18's slice 9. */
-export const NOT_RUN_ON_MAIN = ["on-chain"];
 /** The board was first whole on the evening of 23 November (#780, #791); its history starts there. */
 export const BOARD_WHOLE_AT = "2026-11-23T23:00:00Z";
 
@@ -147,7 +145,7 @@ const main = () => {
   points.push(...slices.points);
   const items = [
     ...today.filter((r) => lanes.has(r.id)).map((r) => ({ lane: lanes.get(r.id), dimension: "capabilities", id: r.id, name: r.name, group: r.milestone, status: r.stage })),
-    ...Object.entries(suites).map(([s, v]) => ({ lane: "alpha", dimension: "tests", id: `e2e/${s}`, name: `e2e/${s}`, group: "suite", status: `${v.red ? `${v.all - v.red} of ${v.all}` : `all ${v.all}`} check files green${NOT_RUN_ON_MAIN.includes(s) ? ", by their lists; not run on main until Goal 18's slice 9" : ""}`, green: v.all - v.red, files: v.all })),
+    ...Object.entries(suites).map(([s, v]) => ({ lane: "alpha", dimension: "tests", id: `e2e/${s}`, name: `e2e/${s}`, group: "suite", status: `${v.red ? `${v.all - v.red} of ${v.all}` : `all ${v.all}`} check files green`, green: v.all - v.red, files: v.all })),
     ...slices.items,
   ];
   const history = changesOnly(points.sort((a, b) => a.at.localeCompare(b.at))).map((p) => ({ ...p, day: p.at.slice(0, 10) }));
