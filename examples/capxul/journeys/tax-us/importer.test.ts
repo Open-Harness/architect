@@ -2,7 +2,8 @@
 // design/decisions/CX-tax-us-rows.md). Offline: the importer runs on the committed fixtures in ./fixtures/, never on
 // the network. Builders never edit this file (tools/ci/builder-paths.sh).
 //
-// The contract these checks name, in `plugins/payroll-tax-us/tools/import/run.ts` (main.ts, the entry, calls it):
+// The contract these checks name, in `plugins/payroll-tax-us/tools/import/run.ts`, imported as
+// `@capxul/payroll-tax-us/tools/import/run.ts` through the package's `./tools/*` export (main.ts, the entry, calls it):
 //
 //   importRows(options: {
 //     firstSource: { root, repository, commit },   // an open-withholding checkout: its data/us/<state>/<year>/*.yaml
@@ -42,7 +43,7 @@ import { pathToFileURL } from "node:url";
 import { Effect } from "effect";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { afterEach, describe, expect, it } from "vitest";
-import { importRows, verifyManifest } from "../../plugins/payroll-tax-us/tools/import/run.ts";
+import { importRows, verifyManifest } from "@capxul/payroll-tax-us/tools/import/run.ts";
 import { FIRST_SOURCE, SECOND_SOURCE, type Settled } from "./settled.ts";
 import { settledFixture } from "./fixtures/settled.ts";
 

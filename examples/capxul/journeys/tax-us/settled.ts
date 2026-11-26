@@ -15,9 +15,9 @@
 //   York's top rates, Illinois' Line 2) or models it differently, so no shared figure differs, and the hash alone
 //   stops the import when the second source changes what the ruling read.
 //
-// `open` entries are disagreements no person has settled from the agency's own text yet (none today; the type keeps the
-// status for the next refresh). The importer lets them pass
-// as listed, and the rows they touch say so for the payroll professional's review (CX-payroll-tax point 8).
+// `open` entries record a question the agency's text has not settled, or one only a decision can, with the evidence read
+// so far. They cover nothing, so the importer keeps stopping on the disagreements they describe until a person settles
+// them; their hash still pins the second source's figures they were written against.
 
 export interface Evidence {
   readonly document: string;
@@ -187,5 +187,50 @@ export const settled: ReadonlyArray<Settled> = [
     secondSource: { file: income, figures: ["/states/MA/0/note"], sha256: "1733e4ab121e0b4f152cc21a0425dfd982eaa5141aa2c9af60e29b2a66840aa6" },
     covers: [],
     review: false,
+  },
+  {
+    id: "oh-2025-top-base",
+    status: "settled",
+    ruling:
+      "open-withholding is right: Ohio's Optional Computer Formula (Rev. 09/25, effective 1 October 2025) prints the top bracket as (TW - 100,000) x 0.03640 + $2673.50. The base is the sum below it, 462.39 + 0.02990 x 73,950 = 2,673.495, which the formula prints rounded half up; the second source's 2673.49 rounds it down. Ohio's 2026 tables replace these only for payrolls that end on or after 1 August 2026 (see oh-august-2026-window), so this window is January to July.",
+    evidence: [
+      { document: "Employer Withholding Taxes: Optional Computer Formula (Effective October 1, 2025), Rev. 09/25", url: "https://dam.assets.ohio.gov/image/upload/tax.ohio.gov/employer_withholding/2025%20Withholding%20Tables/WHT_OptionalComputerFormula_2025.pdf", at: "page 1, the table's third row", sha256: "25fbf2b0905f52025f3306a1a4dcad3d2bf515a33afa110368533ed05910d405", read: "2026-11-26" },
+      { document: "Employer Withholding Taxes - Percentage Method (Effective October 1, 2025)", url: "https://dam.assets.ohio.gov/image/upload/tax.ohio.gov/employer_withholding/2025%20Withholding%20Tables/WHT_PercentageMethod_2025.pdf", at: "page 1, Tables 1 to 5", sha256: "b726a7db435a59f5f9239059840b478d32ea8666b9e7813bb7b342b44099e2e1", read: "2026-11-26" },
+    ],
+    secondSource: { file: income, figures: ["/states/OH/0/effectiveFrom", "/states/OH/0/brackets"], sha256: "4c86b3a16d2e0a38e5692b40f5b66f5a984484473a0854490085878d65565fe9" },
+    covers: [
+      { pointer: "/states/OH/0/brackets/single/2/1", first: "2673.50" },
+      { pointer: "/states/OH/0/brackets/married_jointly/2/1", first: "2673.50" },
+      { pointer: "/states/OH/0/brackets/head_of_household/2/1", first: "2673.50" },
+    ],
+    review: false,
+  },
+  {
+    id: "oh-august-2026-window",
+    status: "open",
+    ruling:
+      "The second source is right and open-withholding is missing a window: Ohio issued new tables, under House Bill 96, for payrolls that end on or after 1 August 2026: 1.600% to $26,050, then $416.80 plus 2.990% to $100,000, then $2,627.91 plus 3.400% (Optional Computer Formula Rev. 07/26; 416.80 + 0.0299 x 73,950 = 2,627.905, printed half up). open-withholding's oh/2025 file has no end date, so at the pinned commit (its newest, 3 November 2026) its 2025 rates run on past August. Settling it needs a decision, not a reading: a hand row typed from the formula below, from 1 August 2026, which call 5 of CX-tax-us-rows allows only for figures neither source carries; a rule for how that row ends the generated oh/2025 row; and Ohio's date is the payroll period's end, where us-withholding.compute takes the pay date.",
+    evidence: [
+      { document: "Employer Withholding Taxes: Optional Computer Formula (Effective August 1, 2026), Rev. 07/26", url: "https://dam.assets.ohio.gov/image/upload/tax.ohio.gov/employer_withholding/2026%20Withholding%20Tables/WHT_OptionalComputerFormula_2026.pdf", at: "page 1, the table (its formulas are images of text; read from the rendered page)", sha256: "c958b7cce47094d2f9e1a349ac2c070b0d3ef9eeba6d18f7f90654d42505c946", read: "2026-11-26" },
+      { document: "Employer Withholding Taxes - Percentage Method (Effective August 1, 2026)", url: "https://dam.assets.ohio.gov/image/upload/tax.ohio.gov/employer_withholding/2026%20Withholding%20Tables/WHT_PercentageMethod_2026.pdf", at: "page 1, Tables 1 to 5", sha256: "e258bb3a32c8f41ce71b03fe1ae652a34a43347918c7fd37b640d8c149d447c2", read: "2026-11-26" },
+      { document: "Ohio Department of Taxation bulletin, New Ohio Withholding Rates Effective August 1, 2026 (15 July 2026)", url: "https://content.govdelivery.com/accounts/OHTAX/bulletins/420a1ea", at: "\"for payrolls that end on or after August 1, 2026\"", read: "2026-11-26" },
+    ],
+    secondSource: { file: income, figures: ["/states/OH/1/effectiveFrom", "/states/OH/1/effectiveBy", "/states/OH/1/brackets"], sha256: "db3e9b563fb3390b175fb6ba6404e9d2865c11bc4576d86ca5211b45167b292a" },
+    covers: [],
+    review: true,
+  },
+  {
+    id: "id-2026-revision",
+    status: "open",
+    ruling:
+      "Two things differ. First, the shape: open-withholding writes Idaho's exemption as a zero-rate band (0% to $16,100 single, $32,200 married, then 5.3%), the second source as a deduction and one 5.3% bracket; the same tax either way. Second, the date: the second source puts $16,100 and $32,200 in force from 1 January 2026, open-withholding from 23 July 2026, the date in EPB00744's footer, with $15,000, $30,000 and a $3,868 allowance before it. The Tax Commission prints no effective date: its press release of 31 July 2026 and its Computing Withholding page say not to adjust back to the beginning of the year and to use the revised tables going forward. So 1 January is wrong, and neither 23 July (the footer) nor 31 July (the announcement) is a date the Commission set. Covering the shape would ship open-withholding's footer date, so this stays open until the lane picks the window's first day.",
+    evidence: [
+      { document: "EPB00744, Table for Percentage Computation Method of Withholding (07-23-2026)", url: "https://tax.idaho.gov/wp-content/uploads/pubs/EPB00744/EPB00744_07-23-2026.pdf", at: "pages 1 to 3; no effective date printed", sha256: "c52b383684af433b12eb3b712fbb0de6b61326b5061562440b43464b332cb3d8", read: "2026-11-26" },
+      { document: "Idaho State Tax Commission press release, Withholding tables updated for 2026 (31 July 2026)", url: "https://tax.idaho.gov/pressrelease/withholding-tables-updated-for-2026", at: "\"You don't need to adjust withholding back to the beginning of the year, but you should use the revised tables going forward.\"", read: "2026-11-26" },
+      { document: "Idaho State Tax Commission, Computing Withholding", url: "https://tax.idaho.gov/taxes/income-tax/withholding/computing/", at: "Effective date of withholding tables", read: "2026-11-26" },
+    ],
+    secondSource: { file: income, figures: ["/states/ID/0/effectiveFrom", "/states/ID/0/annualStandardDeduction", "/states/ID/0/brackets"], sha256: "ccc0a8ce1b290e207a90c1a6d80b042bf389bdb05085990f75f555bd0c2c35d3" },
+    covers: [],
+    review: true,
   },
 ];
