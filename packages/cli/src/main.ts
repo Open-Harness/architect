@@ -242,7 +242,7 @@ const newAdapter = Command.make(
           Effect.flatMap((lines) => Console.log(lines.join("\n"))),
           Effect.catchTag("NewRefused", (e) => fail(e.message, 2)),
         ),
-);
+).pipe(Command.withDescription("Make an adapter from a service's own API description: ortho new adapter <name> --from-openapi <file or URL>."));
 // `ortho new app <name>`: the starter project, as a folder named <name> in the working directory (the same one `npm create orthograph` makes).
 const newApp = Command.make(
   "app",
@@ -253,7 +253,7 @@ const newApp = Command.make(
       Effect.flatMap((lines) => Console.log(lines.join("\n"))),
       Effect.catchTag("AppRefused", (e) => fail(e.message, 2)),
     ),
-);
+).pipe(Command.withDescription("Make a new app, the starter project, in a folder of its name: ortho new app <name>."));
 const newCommand = Command.make("new").pipe(Command.withSubcommands([newAdapter, newApp]));
 
 const tsFiles = (dir: string): ReadonlyArray<string> =>
