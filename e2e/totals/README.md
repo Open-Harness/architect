@@ -14,7 +14,7 @@ counts are printed from facts and kept nowhere.
   matches no test is counted too, so a stale entry shows. Lines for a hook or a file that errored are not tests and are not counted.
 
 The output is a markdown heading, a sentence (`N tests in all; P pass; R expected to fail, listed in expected-failing/`) and a table of
-file, tests and expected to fail. `--suite <name>` (repeatable) names a suite with no list. CI appends the output to the e2e-m1 job's step
+file, tests and expected to fail. `--suite <name>` (repeatable) names a suite with no list. CI appends the output to the e2e-totals job's step
 summary. Nothing is written to a README, and no check compares one with it.
 
 ## Its own test

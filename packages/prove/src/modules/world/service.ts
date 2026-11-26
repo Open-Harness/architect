@@ -10,7 +10,7 @@ import { applyMigrations, bringUp, stop } from "./internal/wrangler.ts";
 
 export const Worlds: WorldsApi = {
   anyPort,
-  start: ({ root, port: asked, name, otlp, portalFeed, environment, secretEnv, chain, nonce }) =>
+  start: ({ root, port: asked, name, otlp, portalFeed, environment, secretEnv: given, chain, stands, nonce }) =>
     Effect.gen(function* () {
       const generated = resolve(root, "generated/server/wrangler.jsonc");
       if (!existsSync(generated)) return yield* new WorldFailed({ message: `${generated} is missing: run nx sync first` });
@@ -25,6 +25,9 @@ export const Worlds: WorldsApi = {
       yield* applyMigrations(config, state);
       // The chain is acquired first, so it is released last: the Worker never outlives the chain it talks to.
       const stood = chain === undefined ? undefined : yield* chain;
+      // So are the stand-ins, after the wipe so their folders under the state survive, and their addresses are the Worker's secrets.
+      const standEnv = stands === undefined ? {} : yield* stands(state);
+      const secretEnv = given === undefined && Object.keys(standEnv).length === 0 ? undefined : { ...given, ...standEnv };
       const log = join(state, "wrangler.log");
       const secret = randomBytes(32).toString("hex");
       // Port 0 asks for any free port; wrangler is told a named one, and `url` is the one it got.
