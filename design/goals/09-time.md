@@ -153,8 +153,9 @@ Parked on 23 November 2026 under K42 (`design/decisions/K42-goals-are-agents.md`
 - Small test gaps the 🔍 named and #704 lists: the order of checks inside `count.section`, a refused take releasing its
   holder, and the idle-box clear covering every unpinned box rather than only shared ones.
 
-**For Goals 8 and 10.** The wake route exists only when some environment declares a stepped or scaled clock, and
-`wakes` stays empty until a feature registers a kind. Widen projections' `timed` gate and register the wake kind.
+**For Goals 8 and 10.** The wake route exists when some environment declares a stepped or scaled clock, or the blueprint
+declares a move made by time (CX-keeper call 1 widened projections' `timed` gate and registers the keeper's kind). A
+feature that needs the route on a real clock for another reason widens the gate the same way and registers its kind.
 
 **Open slices, for the board.**
 - M8.10, the keeper. It is next, and M8.02 passes once it lands.

@@ -145,7 +145,7 @@ Capxul on Orthograph (M7.07 to M7.11). Most are None; the work board and E2B wor
 4. Proving against a deployed address (staging) has no slice.
 5. Generated screens on UI SDK have no slice, and the blueprint can't declare an approval or a hidden payload field.
 6. Stage 2 needs webhooks (M5.01, M5.03) and SIWE linking (M2.13); neither is in any goal.
-7. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike.
+7. Stage 3's signature collection and the keeper rest on workflows, which have no decision or spike. (Superseded by CX-keeper, 26 November 2026: the keeper needs only timers.)
 8. The journey language's open problems: one world per journey, comparing one answer with the last, and sending malformed payloads.
 9. Stage 3's Safe and Hats spike and stage 4's Aztec club spike don't exist, though both stages start from them.
 
