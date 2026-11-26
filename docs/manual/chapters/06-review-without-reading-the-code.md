@@ -108,8 +108,8 @@ check ✘
 
 The reviewer reports it and sends the change back. It does not run the command to tidy up.
 
-An operation goes stale and no line says what changed. We added one comment line to claim's handler, with the
-blueprint as it was.
+An operation goes stale and no line says what changed. After the proof above, we added one comment line to
+claim's handler and left the blueprint alone.
 
 ```sh capture=review-impact-handler.txt
 $ ortho impact
