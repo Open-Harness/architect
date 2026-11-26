@@ -1,6 +1,13 @@
 // Scaffolded from blueprint/things/payroll-entry/verbs/submit-slips.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Ids, Records } from "@orthograph/language-effect";
+import { FiscalYear } from "../../blueprint/things/fiscal-year/thing.ts";
+import { GLEntry } from "../../blueprint/things/gl-entry/thing.ts";
+import { JournalEntry } from "../../blueprint/things/journal-entry/thing.ts";
+import { JournalEntryAccount } from "../../blueprint/things/journal-entry-account/thing.ts";
+import { SalaryComponent } from "../../blueprint/things/salary-component/thing.ts";
+import { SalarySlip } from "../../blueprint/things/salary-slip/thing.ts";
+import { SalarySlipDetail } from "../../blueprint/things/salary-slip-detail/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/payroll-entry/submit-slips.handler.ts";
 
@@ -44,31 +51,120 @@ const { AccrualOutsideFiscalYear } = Errors.declared;
  *   once it answers, it writes SalarySlipsSubmitted: payrollEntry, journalEntry and slips from the answer;
  *   the call is the span payroll-entry.submit-slips, and its commit payroll-entry.submit-slips.commit.
  */
-const submitSlips: Handler = (_payload, { steps, move }) =>
+const submitSlips: Handler = ({ payrollEntry }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span payroll-entry.submit-slips.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
+    const all = { order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+    if (!subject) return yield* Effect.die(new Error(`payroll entry ${payrollEntry} was checked and then not found`));
+    const company = subject["company"] as string;
+    const postingDate = subject["postingDate"] as string;
+    const costCenter = subject["costCenter"] as string;
 
-    // AccrualOutsideFiscalYear: exit 50, PE-010.
-    if (yield* Handlers.blank<boolean>("refuse AccrualOutsideFiscalYear when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AccrualOutsideFiscalYear was refused"));
-      return yield* new AccrualOutsideFiscalYear({
-        postingDate: yield* Handlers.blank("AccrualOutsideFiscalYear.postingDate, a Day"),
-      });
+    // Step load: database, span payroll-entry.submit-slips.load. The entry's draft slips in the order its submit made
+    // them, each slip's lines with the account their component is booked to, and the company's fiscal years.
+    const { slips, years } = yield* steps.load(
+      Effect.gen(function* () {
+        const made = yield* records.list({ ...all, thing: SalarySlip, where: { payrollEntry }, state: undefined });
+        const slips = yield* Effect.forEach(
+          made.items.filter((s) => s["status"] === "Draft"),
+          (slip) =>
+            Effect.gen(function* () {
+              const details = yield* records.list({ ...all, thing: SalarySlipDetail, where: { salarySlip: slip["id"] }, state: undefined });
+              const lines = yield* Effect.forEach(details.items, (line) =>
+                Effect.map(records.find(SalaryComponent, line["salaryComponent"] as string), (component) => ({
+                  type: line["type"] as string,
+                  amount: line["amount"] as bigint,
+                  account: component?.["account"] as string,
+                })),
+              );
+              return { slip, lines };
+            }),
+        );
+        const years = yield* records.list({ ...all, thing: FiscalYear, where: { company }, state: undefined });
+        return { slips, years: years.items };
+      }),
+    );
+
+    // AccrualOutsideFiscalYear: exit 50, PE-010. One of the company's own years, both ends counted, before any write.
+    if (!years.some((y) => (y["yearStartDate"] as string) <= postingDate && postingDate <= (y["yearEndDate"] as string))) {
+      yield* Effect.logInfo(`${postingDate} falls in none of the company's fiscal years`);
+      return yield* new AccrualOutsideFiscalYear({ postingDate: postingDate as never });
     }
 
-    // Step accrue: database, in the store payroll-entry, salary-slip, journal-entry, journal-entry-account, gl-entry, span payroll-entry.submit-slips.accrue.
-    yield* steps.accrue(Handlers.blank("accrue: the work this step does"));
+    // HRMS's `make_accrual_jv_entry`: a debit per earning account and a credit per deduction account, each summed over
+    // every slip and in the order its account is first met, slip by slip and line by line; then the net pay credited
+    // to the payable account. An account booked both ways keeps a line each. A line of 0 is left out.
+    const totals = (type: string) => {
+      const byAccount = new Map<string, bigint>();
+      for (const { lines } of slips) for (const l of lines) if (l.type === type) byAccount.set(l.account, (byAccount.get(l.account) ?? 0n) + l.amount);
+      return [...byAccount];
+    };
+    const netPay = slips.reduce((total, { slip }) => total + (slip["netPay"] as bigint), 0n);
+    const lines = [
+      ...totals("Earning").map(([account, amount]) => ({ account, debit: amount, credit: 0n })),
+      ...totals("Deduction").map(([account, amount]) => ({ account, debit: 0n, credit: amount })),
+      { account: subject["payrollPayableAccount"] as string, debit: 0n, credit: netPay },
+    ].filter((l) => l.debit !== 0n || l.credit !== 0n);
+    const totalDebit = lines.reduce((sum, l) => sum + l.debit, 0n);
+    const totalCredit = lines.reduce((sum, l) => sum + l.credit, 0n);
+
+    // Step accrue: database, in the store payroll-entry, salary-slip, journal-entry, journal-entry-account, gl-entry,
+    // span payroll-entry.submit-slips.accrue. Snag #1079: no operation can run another, so this writes the submitted
+    // journal entry, its lines and one ledger line each itself, in the shape 7a's create and submit write them.
+    const journalEntry = yield* Ids.of(JournalEntry.fields.id);
+    yield* steps.accrue(
+      Effect.gen(function* () {
+        yield* records.insert(
+          JournalEntry,
+          {
+            id: journalEntry,
+            company: company as never,
+            postingDate: postingDate as never,
+            userRemark: `Accrual Journal Entry for salaries from ${subject["startDate"]} to ${subject["endDate"]}` as never,
+            totalDebit,
+            totalCredit,
+          },
+          "submitted",
+        );
+        for (const [i, l] of lines.entries()) {
+          const lineId = yield* Ids.of(JournalEntryAccount.fields.id);
+          yield* records.insert(JournalEntryAccount, {
+            id: lineId,
+            journalEntry,
+            line: BigInt(i + 1),
+            account: l.account as never,
+            costCenter: costCenter as never,
+            debit: l.debit,
+            credit: l.credit,
+          });
+          const glId = yield* Ids.of(GLEntry.fields.id);
+          yield* records.insert(GLEntry, {
+            id: glId,
+            company: company as never,
+            account: l.account as never,
+            costCenter: costCenter as never,
+            postingDate: postingDate as never,
+            debit: l.debit,
+            credit: l.credit,
+            voucherType: "Journal Entry",
+            voucherId: journalEntry,
+            isCancelled: false,
+          });
+        }
+        for (const { slip } of slips) yield* records.update(SalarySlip, slip["id"] as string, { status: "Submitted", journalEntry });
+      }),
+    );
 
     // The move submitSlips, from submitted, to accrued.
     yield* move();
 
     return {
-      payrollEntry: yield* Handlers.blank("payrollEntry, a payroll-entry.id"),
+      payrollEntry,
       // SalarySlipsSubmitted needs journalEntry, and only the answer can give it.
-      journalEntry: yield* Handlers.blank("journalEntry, a journal-entry.id"),
+      journalEntry,
       // SalarySlipsSubmitted needs slips, and only the answer can give it.
-      slips: yield* Handlers.blank("slips, an EmployeeCount"),
+      slips: BigInt(slips.length),
     };
   });
 

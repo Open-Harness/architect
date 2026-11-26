@@ -1,6 +1,8 @@
 // Scaffolded from blueprint/things/salary-structure/verbs/cancel.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { SalarySlip } from "../../blueprint/things/salary-slip/thing.ts";
+import { SalaryStructureAssignment } from "../../blueprint/things/salary-structure-assignment/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/salary-structure/cancel.handler.ts";
 
@@ -43,25 +45,35 @@ const { StructureInUse } = Errors.declared;
  *   once it answers, it writes SalaryStructureCancelled: salaryStructure from the answer;
  *   the call is the span salary-structure.cancel, and its commit salary-structure.cancel.commit.
  */
-const cancel: Handler = (_payload, { steps, move }) =>
+const cancel: Handler = ({ salaryStructure }, { steps, move }) =>
   Effect.gen(function* () {
-    // Step load: database, span salary-structure.cancel.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
+    const all = { order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+
+    // Step load: database, span salary-structure.cancel.load. The submitted assignments naming it, and every slip made
+    // from it, draft or submitted.
+    const { assignments, slips } = yield* steps.load(
+      Effect.all({
+        assignments: records.list({ ...all, thing: SalaryStructureAssignment, where: { salaryStructure }, state: "submitted" }),
+        slips: records.list({ ...all, thing: SalarySlip, where: { salaryStructure }, state: undefined }),
+      }),
+    );
 
     // StructureInUse: exit 47, SS-007.
-    if (yield* Handlers.blank<boolean>("refuse StructureInUse when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why StructureInUse was refused"));
+    if (assignments.items.length > 0 || slips.items.length > 0) {
+      yield* Effect.logInfo(`${assignments.items.length} submitted assignment(s) and ${slips.items.length} slip(s) use the structure`);
       return yield* new StructureInUse({});
     }
 
-    // Step update: database, span salary-structure.cancel.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span salary-structure.cancel.update. The move alone changes the structure.
+    yield* steps.update(Effect.void);
 
     // The move cancel, from submitted, to cancelled.
     yield* move();
 
     return {
-      salaryStructure: yield* Handlers.blank("salaryStructure, a salary-structure.id"),
+      salaryStructure,
     };
   });
 

@@ -1,6 +1,8 @@
 // Scaffolded from blueprint/things/salary-structure-assignment/verbs/submit.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { SalaryStructure } from "../../blueprint/things/salary-structure/thing.ts";
+import { SalaryStructureAssignment } from "../../blueprint/things/salary-structure-assignment/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/salary-structure-assignment/submit.handler.ts";
 
@@ -45,35 +47,47 @@ const { AssignmentExists, AssignedStructureNotSubmitted } = Errors.declared;
  *   once it answers, it writes SalaryStructureAssignmentSubmitted: salaryStructureAssignment from the answer;
  *   the call is the span salary-structure-assignment.submit, and its commit salary-structure-assignment.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ salaryStructureAssignment }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span salary-structure-assignment.submit.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    const all = { order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+    if (!subject) return yield* Effect.die(new Error(`assignment ${salaryStructureAssignment} was checked and then not found`));
+    const employee = subject["employee"] as string;
+    const salaryStructure = subject["salaryStructure"] as string;
+    const fromDate = subject["fromDate"] as string;
 
-    // AssignmentExists: exit 43, SA-003.
-    if (yield* Handlers.blank<boolean>("refuse AssignmentExists when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AssignmentExists was refused"));
-      return yield* new AssignmentExists({
-        fromDate: yield* Handlers.blank("AssignmentExists.fromDate, a Day"),
-      });
+    // Step load: database, span salary-structure-assignment.submit.load. The employee's submitted assignments, and the
+    // structure as it stands now.
+    const { held, structure } = yield* steps.load(
+      Effect.all({
+        held: records.list({ ...all, thing: SalaryStructureAssignment, where: { employee }, state: "submitted" }),
+        structure: records.find(SalaryStructure, salaryStructure),
+      }),
+    );
+
+    // Refusal order (errors.ts): AssignmentExists, then AssignedStructureNotSubmitted. The employee isn't judged again.
+    // AssignmentExists: exit 43, SA-003. Another submitted assignment of theirs starts that day.
+    if (held.items.some((a) => a["fromDate"] === fromDate)) {
+      yield* Effect.logInfo(`the employee already has a submitted assignment from ${fromDate}`);
+      return yield* new AssignmentExists({ fromDate: fromDate as never });
     }
 
-    // AssignedStructureNotSubmitted: exit 46, SA-006.
-    if (yield* Handlers.blank<boolean>("refuse AssignedStructureNotSubmitted when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why AssignedStructureNotSubmitted was refused"));
+    // AssignedStructureNotSubmitted: exit 46, SA-006. Cancelled since the draft was made.
+    if (!structure || structure.state !== "submitted") {
+      yield* Effect.logInfo(`the structure is ${structure?.state ?? "missing"}, not submitted`);
       return yield* new AssignedStructureNotSubmitted({});
     }
 
-    // Step update: database, span salary-structure-assignment.submit.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    // Step update: database, span salary-structure-assignment.submit.update. The move alone changes the assignment.
+    yield* steps.update(Effect.void);
 
     // The move submit, from draft, to submitted.
     yield* move();
 
     return {
-      salaryStructureAssignment: yield* Handlers.blank("salaryStructureAssignment, a salary-structure-assignment.id"),
-      employee: yield* Handlers.blank("employee, a salary-structure-assignment.employee"),
-      salaryStructure: yield* Handlers.blank("salaryStructure, a salary-structure-assignment.salaryStructure"),
+      salaryStructureAssignment,
+      employee: employee as never,
+      salaryStructure: salaryStructure as never,
     };
   });
 

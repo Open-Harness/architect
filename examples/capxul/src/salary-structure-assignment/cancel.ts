@@ -1,6 +1,5 @@
 // Scaffolded from blueprint/things/salary-structure-assignment/verbs/cancel.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
 import type { Handler } from "../../generated/api/src/salary-structure-assignment/cancel.handler.ts";
 
 /**
@@ -39,17 +38,19 @@ import type { Handler } from "../../generated/api/src/salary-structure-assignmen
  *   once it answers, it writes SalaryStructureAssignmentCancelled: salaryStructureAssignment from the answer;
  *   the call is the span salary-structure-assignment.cancel, and its commit salary-structure-assignment.cancel.commit.
  */
-const cancel: Handler = (_payload, { steps, move }) =>
+const cancel: Handler = ({ salaryStructureAssignment }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step update: database, span salary-structure-assignment.cancel.update.
-    yield* steps.update(Handlers.blank("update: the work this step does"));
+    if (!subject) return yield* Effect.die(new Error(`assignment ${salaryStructureAssignment} was checked and then not found`));
+
+    // Step update: database, span salary-structure-assignment.cancel.update. The move alone changes the assignment.
+    yield* steps.update(Effect.void);
 
     // The move cancel, from submitted, to cancelled.
     yield* move();
 
     return {
-      salaryStructureAssignment: yield* Handlers.blank("salaryStructureAssignment, a salary-structure-assignment.id"),
-      salaryStructure: yield* Handlers.blank("salaryStructure, a salary-structure-assignment.salaryStructure"),
+      salaryStructureAssignment,
+      salaryStructure: subject["salaryStructure"] as never,
     };
   });
 

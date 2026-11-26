@@ -1,6 +1,11 @@
 // Scaffolded from blueprint/things/payroll-entry/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Ids, Records } from "@orthograph/language-effect";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
+import { PayrollEmployeeDetail } from "../../blueprint/things/payroll-employee-detail/thing.ts";
+import { PayrollEntry } from "../../blueprint/things/payroll-entry/thing.ts";
+import { SalarySlip } from "../../blueprint/things/salary-slip/thing.ts";
+import { SalaryStructureAssignment } from "../../blueprint/things/salary-structure-assignment/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/payroll-entry/create.handler.ts";
 
@@ -57,57 +62,95 @@ const { PayrollEndsBeforeStart, PayableAccountNotInCompany, PayableAccountIsGrou
  *   once it answers, it writes PayrollEntryDrafted: payrollEntry and numberOfEmployees from the answer, company from the payload;
  *   the call is the span payroll-entry.create, and its commit payroll-entry.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, postingDate, startDate, endDate, costCenter, payrollPayableAccount }, { steps, move, refs, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span payroll-entry.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
+    const all = { order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
-    // PayrollEndsBeforeStart: exit 41, PE-001.
-    if (yield* Handlers.blank<boolean>("refuse PayrollEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayrollEndsBeforeStart was refused"));
-      return yield* new PayrollEndsBeforeStart({
-        startDate: yield* Handlers.blank("PayrollEndsBeforeStart.startDate, a Day"),
-      });
+    // Step load: database, span payroll-entry.create.load. The runtime read the account and the cost center and hands
+    // them in; this step reads the company's employees at work, in the order they were hired, with each one's
+    // submitted assignments and slips.
+    const { account, center, candidates } = yield* steps.load(
+      Effect.gen(function* () {
+        const working = yield* records.list({ ...all, thing: Employee, where: { company }, state: "active" });
+        const candidates = yield* Effect.forEach(working.items, (employee) =>
+          Effect.all({
+            employee: Effect.succeed(employee),
+            assignments: records.list({ ...all, thing: SalaryStructureAssignment, where: { employee: employee["id"] }, state: "submitted" }),
+            slips: records.list({ ...all, thing: SalarySlip, where: { employee: employee["id"] }, state: undefined }),
+          }),
+        );
+        return { account: refs.payrollPayableAccount, center: refs.costCenter, candidates };
+      }),
+    );
+    if (!account) return yield* Effect.die(new Error(`account ${payrollPayableAccount} was read and then not found`));
+    if (!center) return yield* Effect.die(new Error(`cost center ${costCenter} was read and then not found`));
+
+    // Refusal order (errors.ts).
+    // PayrollEndsBeforeStart: exit 41, PE-001. A one-day payroll is allowed.
+    if (endDate < startDate) {
+      yield* Effect.logInfo(`the payroll ends on ${endDate}, before it starts on ${startDate}`);
+      return yield* new PayrollEndsBeforeStart({ startDate });
     }
 
     // PayableAccountNotInCompany: exit 42, PE-002.
-    if (yield* Handlers.blank<boolean>("refuse PayableAccountNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayableAccountNotInCompany was refused"));
+    if (account["company"] !== company) {
+      yield* Effect.logInfo("the payable account belongs to another company");
       return yield* new PayableAccountNotInCompany({});
     }
 
     // PayableAccountIsGroup: exit 43, PE-003.
-    if (yield* Handlers.blank<boolean>("refuse PayableAccountIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayableAccountIsGroup was refused"));
+    if (account.state !== "ledger") {
+      yield* Effect.logInfo("the payable account is a group");
       return yield* new PayableAccountIsGroup({});
     }
 
-    // PayableAccountHasType: exit 44, PE-004.
-    if (yield* Handlers.blank<boolean>("refuse PayableAccountHasType when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayableAccountHasType was refused"));
+    // PayableAccountHasType: exit 44, PE-004. Any account type is refused.
+    if (account["accountType"] !== undefined) {
+      yield* Effect.logInfo(`the payable account has the type ${account["accountType"]}`);
       return yield* new PayableAccountHasType({});
     }
 
     // PayrollCostCenterNotInCompany: exit 45, PE-005.
-    if (yield* Handlers.blank<boolean>("refuse PayrollCostCenterNotInCompany when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayrollCostCenterNotInCompany was refused"));
+    if (center["company"] !== company) {
+      yield* Effect.logInfo("the cost center belongs to another company");
       return yield* new PayrollCostCenterNotInCompany({});
     }
 
     // PayrollCostCenterIsGroup: exit 46, PE-006.
-    if (yield* Handlers.blank<boolean>("refuse PayrollCostCenterIsGroup when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayrollCostCenterIsGroup was refused"));
+    if (center.state !== "ledger") {
+      yield* Effect.logInfo("the cost center is a group");
       return yield* new PayrollCostCenterIsGroup({});
     }
 
+    // HRMS's `fill_employee_details`: joined by the last day, a submitted assignment starting by then, and no
+    // submitted slip for these very days (`remove_payrolled_employees`).
+    const employees = candidates
+      .filter(({ employee, assignments, slips }) =>
+        (employee["dateOfJoining"] as string) <= endDate &&
+        assignments.items.some((a) => (a["fromDate"] as string) <= endDate) &&
+        !slips.items.some((s) => s["status"] === "Submitted" && s["startDate"] === startDate && s["endDate"] === endDate),
+      )
+      .map(({ employee }) => employee["id"] as string);
+
     // NoEmployeesFound: exit 47, PE-007.
-    if (yield* Handlers.blank<boolean>("refuse NoEmployeesFound when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NoEmployeesFound was refused"));
+    if (employees.length === 0) {
+      yield* Effect.logInfo("no employee of the company is to be paid for these days");
       return yield* new NoEmployeesFound({});
     }
 
     // Step insert: database, in the store payroll-entry, payroll-employee-detail, span payroll-entry.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    const numberOfEmployees = BigInt(employees.length);
+    yield* steps.insert(
+      Effect.gen(function* () {
+        yield* records.insert(PayrollEntry, { id, company, postingDate, startDate, endDate, costCenter, payrollPayableAccount, numberOfEmployees });
+        for (const employee of employees) {
+          const rowId = yield* Ids.of(PayrollEmployeeDetail.fields.id);
+          yield* records.insert(PayrollEmployeeDetail, { id: rowId, payrollEntry: id, employee: employee as never });
+        }
+      }),
+    );
 
     // The move create, to draft.
     yield* move();
@@ -115,7 +158,7 @@ const create: Handler = (_payload, { steps, move, id }) =>
     return {
       // PayrollEntryDrafted needs payrollEntry, and only the answer can give it.
       payrollEntry: id,
-      numberOfEmployees: yield* Handlers.blank("numberOfEmployees, a payroll-entry.numberOfEmployees"),
+      numberOfEmployees,
     };
   });
 
