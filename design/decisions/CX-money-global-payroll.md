@@ -44,7 +44,8 @@ deposits and state registration go to an outside service (section 4). The data f
 spike thread (session_01S8RF7BjFY75HH4qYmgBWAR, draft #1119) found
 [open-withholding](https://github.com/open-withholding/open-withholding) (data CC0, federal and all 41 income-taxing
 states plus DC for 2026, each figure cited to its publication with a hash, reproducing all 4,794 Publication 15-T
-wage-bracket cells) and a second dataset to check it against. Neither covers a company's own state unemployment rate,
+wage-bracket cells; of the income-taxing states, only 7 were checked against their own published examples, and 34 plus
+DC are unchecked) and a second dataset to check it against. Neither covers a company's own state unemployment rate,
 local taxes or reciprocity.
 
 ### (b) Contractors in the United States
