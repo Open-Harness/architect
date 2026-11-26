@@ -47,8 +47,8 @@ It's all core, no optional piece. Nothing is left for Aaron to decide.
 
 - **USDC** in the company's Safe. With no direct redemption right (Circle's terms: a holder with no Circle Mint account
   "may not redeem USDC with Circle"; Aaron: "it cant", "cant be done"), it is not a financial asset (KPMG Q8.4.10;
-  PwC 2.1.2), so not cash. Bridge never holds it: Bridge moves money in and out, and the USDC lands in the Safe (Aaron:
-  "its never in bridge its in the safe which is self custodial").
+  PwC 2.1.2), so not cash. USDC is held in the company's self-custodial Safe, never at Bridge; CX-bridge-rails corrects
+  the Bridge design (Aaron: "its never in bridge its in the safe which is self custodial").
 - **Ether**, native, in the Safe.
 - **Bitcoin**, as a wrapped token in the Safe (cbBTC or WBTC), priced at BTC/USD. Native bitcoin needs a bitcoin wallet
   outside the Safe, which is "super complicated" in Aaron's words, so it is out.
@@ -336,8 +336,8 @@ On the first draft:
 - On "If it can't [redeem directly]: USDC is probably carried at its market price": "it cant". So USDC is at fair
   value.
 - On guiding customers to a direct redemption right: "cant be done". So there is no Circle Mint path and no depeg stop.
-- On USDC at Bridge: "its never in bridge its in the safe which is self custodial". So the Safe holds the USDC, and
-  Bridge only moves money in and out.
+- On USDC at Bridge: "its never in bridge its in the safe which is self custodial". So the Safe holds the USDC;
+  CX-bridge-rails owns how Bridge works.
 - On `treasury` as an optional piece: "its part of the thing, this is onchain offchain solution". So it is core, with
   no separate piece.
 - On the defaults (FIFO, principal market, cut-off, depeg threshold, typed prices): "too complicated should jusolding
@@ -355,22 +355,14 @@ On the second draft:
 
 ## 9. What it changes
 
-Applied in this pull request:
+USDC is held in the company's self-custodial Safe, never at Bridge; CX-bridge-rails corrects the Bridge design. This
+record changes no Bridge words.
 
-- **CX-bridge**, a decided record, keeps its words and gains a superseded note. It said Bridge "lands a deposit as USDC
-  in Capxul's custody and sends a transfer from it"; the USDC lands in the company's Safe. Its Bank Transaction, which
-  holds USDC amounts, is unaffected. The Bridge checks author should confirm whether the Bridge checks (#769) assume
-  custody.
-- **Three live comments** that repeated CX-bridge are rewritten:
-  - `examples/capxul/blueprint/things/bank-account/verbs/open.ts`
-  - `examples/capxul/blueprint/things/bank-transaction/verbs/land.ts`
-  - `examples/capxul/plugins/bridge/src/stand-in/webhooks.ts`
+Not applied here, because the file isn't on `goal/capxul` yet: **CX-money-global-payroll** (#1121) gains the
+superseded note beside item 5, "USDC to US dollars is a standing row of one (ERPNext's Pegged Currencies) until a rate
+says otherwise", once it lands. Its own open question on how to classify USDC is answered here.
 
-Not applied here, because the files aren't on `goal/capxul` yet or another pull request owns them:
-
-- **CX-money-global-payroll** (#1121) gains the superseded note beside item 5, "USDC to US dollars is a standing row of
-  one (ERPNext's Pegged Currencies) until a rate says otherwise", and beside item 9's Bridge custody reading, once it
-  lands. Its own open question on how to classify USDC is answered here.
+Also unchanged:
 - **`examples/capxul/blueprint/assets/usdc.ts`**: #1121 already rewrites its comment. The ETH and wrapped-BTC asset files
   come with P5 and P3.
 - **CX-composable-pieces** needs no change of words. Its `rates` and `ledger` rows gain what section 1(d) lists when
@@ -378,10 +370,6 @@ Not applied here, because the files aren't on `goal/capxul` yet or another pull 
 
 ## Supersedes
 
-- design/decisions/CX-bridge.md: "Bridge lands a deposit as USDC in Capxul's custody and sends a transfer from it" → "Bridge lands a deposit as USDC in the company's Safe, and a transfer is paid from the Safe"
-- examples/capxul/blueprint/things/bank-account/verbs/open.ts: "landing as USDC in Capxul's custody" → "landing as USDC in the company's Safe"
-- examples/capxul/blueprint/things/bank-transaction/verbs/land.ts: "reached Capxul's custody as USDC" → "reached the company's Safe as USDC"
-- examples/capxul/plugins/bridge/src/stand-in/webhooks.ts: "to Capxul's custody as USDC" → "to the company's Safe as USDC"
 - design/decisions/CX-money-global-payroll.md: "USDC to US dollars is a standing row of one (ERPNext's Pegged Currencies) until a rate says otherwise" → "USDC to US dollars is marked each month end at Chainlink's USDC/USD price (CX-crypto-accounting)"
 
 ## Appendix: sources

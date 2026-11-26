@@ -4,7 +4,7 @@ import { machine } from "../machine.ts";
 import { Dollars } from "../../../values/bridge.ts";
 
 // AlreadyRecorded belongs to the rule in ../invariants.ts. Bridge's report that a deposit to a company's virtual account
-// reached the company's Safe as USDC (`virtual_account.activity`, type `payment_processed`). Until #995 brings Bridge's
+// reached Capxul's custody as USDC (`virtual_account.activity`, type `payment_processed`). Until #995 brings Bridge's
 // webhook door to an operation, the system makes the report (journeys/README.md, "Who speaks for Bridge"); the door's
 // event then takes its place with the same fields. The company is the account's.
 export default Blueprint.operation(BankTransaction, {
