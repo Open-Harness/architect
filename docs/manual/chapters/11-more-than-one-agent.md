@@ -13,8 +13,8 @@ that may only shrink.
 ## Every line of work has one owner
 
 We want each line of work to belong to one agent you can name. Here that owner is called a goal: one long-running
-agent that manages other agents, with a brief and a branch of its own. We asked the file that
-lists the goals which of them run.
+agent that manages other agents, with a brief of its own. We asked the file that lists the goals which of
+them run.
 
 ```sh capture=agents-goals.txt
 $ grep '^| 1' design/goals/map.md | cut -d'|' -f2,3
@@ -65,7 +65,7 @@ An app goal owns every gap it finds, big or small. Before starting one, it reads
 ```
 
 Only the second case needs a decision, and the rule names the one agent that makes it. In the
-other two an agent reads the board and carries on.
+other two an agent reads the board and knows what to do: wait, or claim it and build.
 
 ## A list that may only shrink
 
