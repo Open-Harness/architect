@@ -1,7 +1,7 @@
 # plugins
 
 Owns `Blueprint.feature`, `Blueprint.adapter` and `Blueprint.projection` (a plugin's descriptor, its package's root
-export), `Blueprint.choice`, `Blueprint.need`, `Blueprint.call`, `Blueprint.setting`, `Stand`, the ways in (`Via`),
+export), `Blueprint.choice`, `Blueprint.need`, `Blueprint.call`, `Blueprint.setting`, `Stand` (and `Stand.command`, a journey step's command to a mount's stand-in, a `StandCall`), the ways in (`Via`),
 hosts, doors and how a projection ships, and `Blueprint.use`: the mount, with its four verbs (choose, include, narrow,
 omit). Everything here is pure, frozen metadata; the compiler checks it and names it from paths
 ([`design/decisions/M1-plugins.md`](../../../../../design/decisions/M1-plugins.md)). `Mounts.picked` (on

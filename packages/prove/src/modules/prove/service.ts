@@ -62,7 +62,7 @@ export const Prove: ProveApi = {
       const bodies = handlerHashes(root, model);
       const world = empty ? yield* emptyWorld(root, model) : root;
       const stand = yield* standWorld({ root, world, model, port, empty, env });
-      const [took, done] = yield* Effect.timed(exercise(model, { ...project, journeys }, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging));
+      const [took, done] = yield* Effect.timed(exercise(model, { ...project, journeys }, stand.url, stand.collector, undefined, stand.otlp, undefined, empty, bodies, stand.device, judging, stand.stands));
       // A run with a failing journey proves nothing: its operations are recorded as judged and not passed (D2 #80).
       if (stamp !== undefined) {
         yield* Impact.record(root, model, done.judged, judging === undefined ? done.results : done.results.filter((r) => judging.has(r.operation)));
