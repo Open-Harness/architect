@@ -461,7 +461,8 @@ passes with the `oracle` runner and no key.
 - **Names come from paths and exported identifiers**; a declared name is never written as a string outside
   `generated/`.
 - **Generated files open with a `// Generated from … Do not edit.` line** (naming the blueprint or the declaration's
-  path; after a shebang when there is one) and are never edited. Scaffolds start with
+  path; after a shebang when there is one) and are never edited, except an ABI adapter's `src/generated/` written by
+  hand to `--from-abi`'s shape until its first run overwrites it (CX-from-abi). Scaffolds start with
   `// Scaffolded from <path>. Yours from now on.`
 - **Package rules** (Nx module boundaries): `blueprint` depends only on Effect; generated code imports only the
   target's runtime, `blueprint`, the host and project code; `compiler` and `generators` never run in production.

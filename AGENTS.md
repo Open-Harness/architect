@@ -80,7 +80,8 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   counted work.
 - Names come from paths and exported identifiers; a declared name is never written as a string outside `generated/`.
 - Generated files open with a `// Generated from … Do not edit.` line (naming the blueprint or the declaration's path;
-  after a shebang when there is one) and are never edited. Scaffolds start
+  after a shebang when there is one) and are never edited, except an ABI adapter's `src/generated/` written by hand to
+  `--from-abi`'s shape until its first run overwrites it (CX-from-abi). Scaffolds start
   with `// Scaffolded from <path>. Yours from now on.`
 - Package rules (Nx module boundaries): `orthograph` (the front door, the `Blueprint` API) depends only on Effect;
   generated code imports only the language's runtime, `orthograph`, the host and project code, and in `generated/web/`
@@ -90,7 +91,8 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   November 2026). A younger version needs an override: its name in `minimumReleaseAgeExclude` in
   `pnpm-workspace.yaml`, with a comment giving the reason, and a line in `design/decisions/R1-release-age.md`.
 - Inside each package, `src/` follows the six-slot module shape in `~/AGENTS.md` (`main.ts` as the only entry file;
-  `modules/<name>/{README.md,types.ts,service.ts,internal/,<name>.test.ts}`), no source file over about 250 lines.
+  `modules/<name>/{README.md,types.ts,service.ts,internal/,<name>.test.ts}`), no source file over about 250 lines; an
+  adapter generated from an ABI has `src/index.ts` as its entry and `src/generated/` beside its modules (CX-from-abi).
 
 ## Standing rules from Aaron
 

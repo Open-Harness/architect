@@ -1,0 +1,10 @@
+# Goal 16 unit A1 (#1164): red until each of packages/erc20 (A2 #1162), packages/safe (A3 #1161) and packages/zodiac-roles (A4 #1163) exists and A1's builder has regenerated it from its abi/. A package not landed yet keeps its lines.
+src/modules/abi/regenerate.test.ts > @orthograph/erc20 regenerates unchanged > has every generated file exactly as the generator makes it from its abi/
+src/modules/abi/regenerate.test.ts > @orthograph/erc20 regenerates unchanged > holds nothing in src/generated/ or abi/ that the generator doesn't make
+src/modules/abi/regenerate.test.ts > @orthograph/erc20 regenerates unchanged > is the package of that name
+src/modules/abi/regenerate.test.ts > @orthograph/safe regenerates unchanged > has every generated file exactly as the generator makes it from its abi/
+src/modules/abi/regenerate.test.ts > @orthograph/safe regenerates unchanged > holds nothing in src/generated/ or abi/ that the generator doesn't make
+src/modules/abi/regenerate.test.ts > @orthograph/safe regenerates unchanged > is the package of that name
+src/modules/abi/regenerate.test.ts > @orthograph/zodiac-roles regenerates unchanged > has every generated file exactly as the generator makes it from its abi/
+src/modules/abi/regenerate.test.ts > @orthograph/zodiac-roles regenerates unchanged > holds nothing in src/generated/ or abi/ that the generator doesn't make
+src/modules/abi/regenerate.test.ts > @orthograph/zodiac-roles regenerates unchanged > is the package of that name

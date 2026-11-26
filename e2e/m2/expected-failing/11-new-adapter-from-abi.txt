@@ -1,0 +1,7 @@
+# Goal 16 unit A1 (#1164): `ortho new adapter --from-abi` is not built yet. The check came first (the author skill); the builder takes these lines off.
+m2/11-new-adapter-from-abi.test.ts > 11 ortho new adapter --from-abi: the adapter mounts in an app > `ortho check` passes with it mounted and one call included, and the model has the mount, the call and the stand-in
+m2/11-new-adapter-from-abi.test.ts > 11 ortho new adapter --from-abi: the command > `ortho new adapter --help` lists --from-abi beside --from-openapi
+m2/11-new-adapter-from-abi.test.ts > 11 ortho new adapter --from-abi: the command > puts the generated files back when run again, and keeps the scaffolds
+m2/11-new-adapter-from-abi.test.ts > 11 ortho new adapter --from-abi: the command > refuses neither flag and both flags, exit 2, naming both, with nothing written
+m2/11-new-adapter-from-abi.test.ts > 11 ortho new adapter --from-abi: the command > refuses what can't make an adapter, exit 2, with nothing written
+m2/11-new-adapter-from-abi.test.ts > 11 ortho new adapter --from-abi: the command > writes plugins/<name>/ from the ABIs, each contract named by its file, exits 0 and says what it made last
