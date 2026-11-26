@@ -105,7 +105,7 @@ sleep a handler across a month, or refuse a move while a handler was in flight.
 9. **Handlers are given `Timers` only when some environment's clock is stepped or scaled.** The generated Worker for such a
    blueprint takes its `Busy`, `Timers` and `DurableTimers` from `WorldEntry.work(env, wakes)`, picks `Timers` and `DurableTimers`
    into the handlers' services, and its `Handler` type says `Timers` is in `R`. A blueprint with no clock, or a real one,
-   generates what it always did (proved below; superseded by CX-keeper, 26 November 2026: unless it declares a move made by time), so a deployed real world still counts with `BusyLive` and has no `Timers` until
+   generates what it always did (proved below; Superseded by CX-keeper, 26 November 2026: unless it declares a move made by time), so a deployed real world still counts with `BusyLive` and has no `Timers` until
    Goals 8 and 10 give it a reason to (the wiring is the same line).
 10. **The wake route: the world's own isolate runs it.** A generated Worker for a blueprint with a stepped or scaled clock
     (Superseded by CX-keeper, 26 November 2026: or with any move made by time, real clocks included)

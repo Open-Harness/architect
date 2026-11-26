@@ -243,16 +243,19 @@ describe("05 M8.10: the keeper fires moves made by time", () => {
     const timed = club("keeper");
     const plain = copyOf(signup);
     try {
+      // The control first, so it is proved on every run: signup declares no move made by time and no clock, so its Worker is what it
+      // always was.
+      const before = readFileSync(join(generated(plain.root), "generated/server/main.ts"), "utf8");
+      expect(before).not.toContain("WorldEntry");
+      expect(before).toContain("BusyLive");
       cpSync(join(fixtures, "real-clock"), timed.root, { recursive: true });
       const main = readFileSync(join(generated(timed.root), "generated/server/main.ts"), "utf8");
+      // M8-06 call 2 stands: a real clock is left out of ORTHO_CLOCKS.
+      expect(readFileSync(join(timed.root, "generated/server/wrangler.jsonc"), "utf8")).not.toContain("ORTHO_CLOCKS");
       expect(main, "the World subclass with its wake route").toMatch(/export class World extends \w+/);
       expect(main, "the keeper's kind in the world's wakes").toMatch(/const wakes: WorldWakes = \{[^;]*\bkeeper\s*:/);
       expect(main, "the world's entry, in place of BusyLive").toContain("WorldEntry.work(env, wakes)");
       expect(main).not.toMatch(/\bBusyLive\b/);
-      // The control: signup declares no move made by time and no clock, so its Worker is what it always was.
-      const before = readFileSync(join(generated(plain.root), "generated/server/main.ts"), "utf8");
-      expect(before).not.toContain("WorldEntry");
-      expect(before).toContain("BusyLive");
     } finally {
       timed.remove();
       plain.remove();
