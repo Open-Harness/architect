@@ -121,7 +121,7 @@ Waiting payouts are then unneeded for people with a Capxul Safe, but stay for pe
 | `signer` | `Blueprint.account()`: today's one owner | at claim; changed by `rotate` |
 | `firstOwner` | `Blueprint.account()`: the owner in the initializer, which the address commits to; never changes | at claim (the bootstrap key at open, in the bootstrap variant) |
 | `account` | `Blueprint.account()`, CAIP-10: the Safe's address on the environment's chain | at claim (at open, in the variant) |
-| `fence` | optional: the send fence (below) | by `send`; cleared by `observe` and `recover` |
+| `fenceAttempt`, `fenceTransaction`, `fenceSigned`, `fenceSentAt` | all optional: the send fence (below): an attempt id, the transaction's hash, its signed bytes, an instant | by `send`; cleared by `observe` and `recover` |
 
 Rule: `Blueprint.invariant.unique([PersonalSafe.fields.person], { refuse: SafeAlreadyOpen })`. A person's Safe has one
 owner and threshold 1, always: Capxul never adds an owner to it. So `owners` and `threshold` are not fields here, and
@@ -161,12 +161,21 @@ export const machine = Blueprint.machine(PersonalSafe, {
 
 **The moves.**
 
-- **`open`**, by the person or the system (a company paying a person who has none yet). Sets the salt nonce. Emits
-  `PersonalSafeOpened { safe, person }`.
+- **`open`**, by a signed-in person, for themselves: its payload is empty and the person is the caller, so nobody opens
+  a Safe for someone else (S1's author: a role cannot judge a `per_…` in the payload, since there is no person thing to
+  walk to, `packages/language-effect/src/modules/access/service.ts`). A second operation, **`openFor { person }`**,
+  system only, makes the same move for a person a Capxul company owes money before they have one (S3). Sets the salt
+  nonce. Emits `PersonalSafeOpened { safe, person }`.
 - **`claim`**, by the person only. Payload: the Safe, the signer's address, and a proof: an EIP-191 `personal_sign` by
   the signer of the exact text `Capxul: claim Safe <saf_…> for <per_…>`, recovered on the server (`viem`'s
-  `recoverMessageAddress`; `packages/chain-evm` already depends on `viem`, and a world key's `signMessage` signs it in a
-  journey, `packages/chain-evm/src/modules/keys/types.ts:9-10`). The proof is what stops money going to an address
+  `recoverMessageAddress`; `packages/chain-evm` already depends on `viem`). A journey cannot sign today: its payload is
+  literal data or refs resolved to recorded values (`packages/orthograph/src/modules/journeys/internal/refs.ts`), and an
+  actor has no `sign`. So unit **J1** adds one: `s.<actor>.signs(template)`, answering `{ signature, signer }`, the
+  template's refs resolved, then signed EIP-191 by the world key that cast member holds (a world key's `signMessage`,
+  `packages/chain-evm/src/modules/keys/types.ts:9-10`). The claim step reads
+  `{ safe, signer: s.last.signer, proof: s.last.signature }`. A fixed text with no ids was refused: a proof could then be
+  replayed onto another person's Safe. Taking the signer without a proof until the first spend was refused too: the
+  address would commit to a key nobody had shown they hold. The proof is what stops money going to an address
   nobody holds, from a typo or a guess. Sets `signer` and `firstOwner` to the recovered address and `account` to the
   prediction. No chain. Emits `PersonalSafeClaimed { safe, person, signer, account }`, which advances the person's
   waiting payouts.
@@ -198,8 +207,7 @@ export const machine = Blueprint.machine(PersonalSafe, {
   `recover` settles it. Emits `PersonalSafeDeployUndone { safe }`.
 
 **The send fence.** One Safe can never have two deploy transactions in flight. `send` writes, in the same commit as the
-move: `fence = { attempt, transaction, signed, sentAt }`: a fresh attempt id, the transaction's hash, its signed bytes,
-and the time. It is written **before** the transaction is broadcast, and the broadcast is a step after the commit, so a
+move, the four fence fields: a fresh attempt id, the transaction's hash, its signed bytes, and the time. It is written **before** the transaction is broadcast, and the broadcast is a step after the commit, so a
 crash between the two leaves a fence whose bytes were never sent, which `recover` sends. The machine is the fence's
 first half: `send` starts only from `claimed`, so a second `send` on a `deploying` Safe is refused by the machine before
 anything is signed. The second half is the rule that the fence is only ever cleared by `observe` or `recover` proving
