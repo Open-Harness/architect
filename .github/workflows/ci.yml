@@ -478,14 +478,15 @@ jobs:
   # (CI-drafts-race.md, CI-docs-fast-path.md) though it is not one. It is goal/capxul's own suite, so the fast gate runs it
   # (CI-integration.md, B1). It does not ask `affected`, since the checks reach `ortho` through the command line: it asks
   # `from_doctype` (tools/ci/from-doctype-paths.sh), by paths, and passes without its steps when the diff touches none of
-  # packages, examples/starter, the suite and what it shares, the install's root files or this workflow. Green, the checks
-  # take about 3 minutes (48 checks, about 30 project copies with generate, model and check); the timeout is twice the job.
+  # packages, examples/starter, the suite and what it shares, the install's root files or this workflow. Green (against a
+  # throwaway build), `e2e:from-doctype-ratchet` took 175 s on 4 cores: 52 checks, about 30 project copies with generate,
+  # model and check. With the install, the job is about 4 minutes; the timeout is twice that.
   e2e-from-doctype:
     name: ${{ needs.ready.outputs.draft != 'false' && 'e2e-from-doctype (draft)' || 'e2e-from-doctype' }}
     needs: [ready, changes]
     if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() }}
     runs-on: ubuntu-latest
-    timeout-minutes: TIMEOUT
+    timeout-minutes: 8
     env:
       SKIP: ${{ !(github.event_name == 'pull_request' && (github.base_ref == 'goal/capxul' || github.base_ref == 'main')) || (needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.from_doctype == 'false')) }}
     steps:

@@ -64,7 +64,7 @@ describe("CX-from-doctype 03: a submittable record type", () => {
     for (const option of ["Draft", "Submitted", "Paid", "Cancelled"]) expect(comments, option).toContain(option);
   });
 
-  it("leaves who may act blank per move: the rights of each ERPNext role, All among them, and cancel the manager's alone", () => {
+  it("leaves who may act blank per move: the rights of each ERPNext role at level 0, each named once, All among them, and cancel the manager's alone", () => {
     const blanks = blanksOf(model(blank().root), ["tea-invoice"]);
     expect(Object.keys(blanks)).toEqual(["tea-invoice.cancel", "tea-invoice.create", "tea-invoice.get", "tea-invoice.save", "tea-invoice.submit"]);
     whoMayAct(blanks["tea-invoice.create"], "create", "a tea invoice", "create", ["Tea Clerk", "Tea Manager"]);

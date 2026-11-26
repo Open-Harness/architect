@@ -97,6 +97,8 @@ export interface FieldJson {
   readonly optional?: boolean;
   readonly ref?: string;
   readonly named?: string;
+  /** How a list or a struct goes on the wire, when it isn't text. */
+  readonly json?: string;
   readonly description?: string;
 }
 export interface MoveJson {

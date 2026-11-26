@@ -53,9 +53,13 @@ Names: the thing's folder is the doctype's name in kebab case (`Tea Blend` → `
 (`TeaBlend`), each field the `fieldname` in camel case (`blend_name` → `blendName`). Its id prefix is the lower-case
 initials of the name's words; under three letters, the letters after the last word's initial fill it to three
 (`Tea Blend` → `tbl`, `Company` → `com`, `Sales Invoice Item` → `sii`); while that prefix is another thing's, an `x`
-is added (`Tea Menu Entry`, beside `Tea Menu`'s `tme`, → `tmex`). Its refusal `code` is the capital initials, at
+is added, whether that thing was in the project before the run (`Tea Blend Lot`, after `Tea Blend`, → `tblx`) or is
+written in the same run (`Tea Menu Entry`, beside `Tea Menu`'s `tme`, → `tmex`). The compiler does not refuse two
+things sharing an id prefix, so the command must look. Its refusal `code` is the capital initials, at
 most four (one word: its first two letters); while that code is another thing's or `AR`, the last word's next unused
-letter is added, up to four (`Infusion`, beside Invitation's `IN`, → `INF`; `Tea Shelf` beside a `TS` → `TSH`). Every
+letter is added, up to four (`Infusion`, beside Invitation's `IN`, → `INF`; `Tea Shelf` beside a `TS` → `TSH`), against
+the project's codes and the run's own (`Tea Teapot`, beside `Tea Tray`'s `TT`, → `TTE`). When every code up to four
+letters is taken, the run is refused, naming the record type and the last code it tried. Every
 file opens with `// Scaffolded from <file's name>, ERPNext's <Doctype>. Yours from now on.`, naming the doctype the
 file was made from; a link value names the doctype given to the command.
 
@@ -95,7 +99,8 @@ file was made from; a link value names the doctype given to the command.
 - **A link value**, `blueprint/values/<target>-link.ts`, exporting `<Target>Link`, is written when it is missing and
   kept when it is there (a second doctype linking to the same target shares it). Scaffolding the target later changes
   no file already written: turning a `<Target>Link` field into the target's id is a hand edit, a migration of names
-  to ids.
+  to ids. So that run prints each field that still names it (`tea-order.supplier holds a Tea Supplier's name
+  (TeaSupplierLink): change it to TeaSupplier.fields.id by hand`), and writes nothing to them.
 - **The machine.** A submittable doctype (`is_submittable: 1`) gets ERPNext's docstatus: states `draft`, `submitted`,
   `cancelled`; moves `create` (from none to `draft`), `save` (`draft` to `draft`), `submit` (`draft` to `submitted`),
   `cancel` (`submitted` to `cancelled`). Any other gets `active`, with `create` (from none) and `save` (`active` to
@@ -110,7 +115,8 @@ file was made from; a link value names the doctype given to the command.
     order (`writes: [<Thing>, <Line>...]`); the others write the thing alone (with no lines, `writes` may be left
     out: an unset `writes` is the operation's own thing, CX-takeover).
 - **The read**, `get`, by id, answering `state` and every field the thing keeps, in order.
-- **Who may act is blank.** An ERPNext role is a grant across a company; an Orthograph role is a rule on one instance,
+- **Who may act is blank.** Only permission rows at `permlevel` 0 count (a higher level guards fields, not the record),
+  and a role in two such rows is named once. An ERPNext role is a grant across a company; an Orthograph role is a rule on one instance,
   and the faithful form is a role on Company, `.of("company")` (the spike's found 6). So no role is written, and every
   operation and the read is `allowed: Blueprint.todo<never>("who may <verb> <a|an> <name in lower case>: ERPNext gives
   <right> to "<Role>", "<Role>" and "<Role>")`, on one line, naming in the JSON's order each role whose permission
@@ -130,16 +136,18 @@ sharing is a modelling call.
 Each refusal exits 2, prints its reason, and writes nothing anywhere in the project.
 
 - **A field type it doesn't know**, in the doctype or any of its tables: every such field, each as
-  `<Doctype>.<fieldname> (<fieldtype>)`. `Signature`, `Geolocation`, `Table MultiSelect`, `Duration`, `Rating`,
+  `<Doctype>.<fieldname> (<fieldtype>)`. A field it drops anyway (virtual, layout) is dropped, not refused, whatever its
+  type. `Signature`, `Geolocation`, `Table MultiSelect`, `Duration`, `Rating`,
   `Color`, `Password`, `JSON`, `Markdown Editor` and the rest are refused until a decision maps them.
 - **A record type wider than the host allows.** A thing is a table, and D1 allows 100 columns: the fields it keeps,
-  plus `state` for a doctype (each has a machine) and `version`; a line's are its fields, with `parent` and `idx`, plus
+  `id` among them, plus `state` for a doctype (each has a machine) and `version` (so 97 fields beside `id`); a line's are its fields, with `parent` and `idx`, plus
   `version`. Over 100 is refused, naming the doctype, its count and the limit (`Tea Rack Slot needs 101 columns; the
   host allows 100`, in those words). Layout fields and dropped fields don't count. This holds until wide things (#879) change how the
   host keeps a thing; then this refusal and its check change with it.
 - **A child table whose file isn't there**: the table's field, its doctype and the two paths it looked in, in full.
 - **`Currency` fields with no `--asset`**, in the doctype or its tables, naming them; and an `--asset` with no `blueprint/assets/<name>.ts`.
 - **A thing or a line already there**, naming it.
+- **No code left**: every refusal code up to four letters taken, naming the record type.
 
 ## What is left out
 

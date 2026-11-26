@@ -16,8 +16,8 @@ const ordered = once(() => {
 });
 const supplied = once(() => {
   const { root, after } = ordered();
-  scaffolds(root, doctype("tea_supplier"));
-  return { root, wrote: written(after, root) };
+  const ran = scaffolds(root, doctype("tea_supplier"));
+  return { root, wrote: written(after, root), out: ran.out };
 });
 
 const order = {
@@ -74,6 +74,12 @@ describe("CX-from-doctype 04: links", () => {
     expect(wrote, "only Tea Supplier's own files are new; tea-shop-link.ts is shared, not written again").toEqual(files);
     for (const path of Object.keys(after)) expect(snapshot(root)[path], path).toBe(after[path]);
     expect(textAt(root, "blueprint/values/tea-shop-link.ts").split("\n")[0]).toBe("// Scaffolded from tea_order.json, ERPNext's Tea Order. Yours from now on.");
+  });
+
+  it("names, when it scaffolds a target, each field that still holds its name, and changes none of them", () => {
+    const { out } = supplied();
+    expect(out, "Tea Order's supplier still names a Tea Supplier by TeaSupplierLink").toMatch(/tea-order\.supplier\b[^\n]*TeaSupplierLink|TeaSupplierLink[^\n]*tea-order\.supplier\b/);
+    expect(out, "Tea Shop is not what this run scaffolds").not.toMatch(/TeaShopLink/);
   });
 
   it("gives the later record type the shared value and an edge back to the one already there", () => {

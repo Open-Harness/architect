@@ -93,8 +93,8 @@ describe("CX-from-doctype 08: more shapes", () => {
   it("once filled, create and save take the reqd fields that aren't read only and both tables, and write the infusion and both lines in order", () => {
     const { root, count, m } = filled();
     expect(count).toBe(3);
-    const steps = { value: { type: "schema", format: "list", fields: ["kettle", "minutes"] }, description: "Steps" };
-    const tags = { value: { type: "schema", format: "list", fields: ["tag"] }, description: "Tags" };
+    const steps = { value: { type: "schema", format: "list", fields: ["kettle", "minutes"] }, json: "list", description: "Steps" };
+    const tags = { value: { type: "schema", format: "list", fields: ["tag"] }, json: "list", description: "Tags" };
     const name = { ...infusion.infusionName, ref: "infusion.infusionName" };
     const create = operationOf(m, "infusion.create");
     const save = operationOf(m, "infusion.save");

@@ -63,6 +63,12 @@
    "submit": 1
   },
   {
+   "role": "Tea Clerk",
+   "permlevel": 0,
+   "read": 1,
+   "if_owner": 1
+  },
+  {
    "role": "Tea Manager",
    "permlevel": 0,
    "read": 1,
@@ -75,6 +81,12 @@
    "role": "All",
    "permlevel": 0,
    "read": 1
+  },
+  {
+   "role": "Tea Auditor",
+   "permlevel": 1,
+   "read": 1,
+   "write": 1
   }
  ]
 }

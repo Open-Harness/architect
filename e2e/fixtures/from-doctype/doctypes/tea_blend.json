@@ -163,6 +163,12 @@
    "is_virtual": 1
   },
   {
+   "fieldname": "signature_preview",
+   "fieldtype": "Signature",
+   "label": "Signature Preview",
+   "is_virtual": 1
+  },
+  {
    "fieldname": "grade",
    "fieldtype": "Select",
    "label": "Grade",

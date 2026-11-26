@@ -89,7 +89,7 @@ describe("CX-from-doctype 02: a record type with a child table", () => {
   it("once filled, create and save take the rows as a list of the line's reqd fields that aren't read only, and write the menu and its lines", () => {
     const { root, count, m } = filled();
     expect(count, "tea blend's three blanks and tea menu's three").toBe(6);
-    const rows = { value: { type: "schema", format: "list", fields: ["blend", "cupPrice"] }, description: "Entries" };
+    const rows = { value: { type: "schema", format: "list", fields: ["blend", "cupPrice"] }, json: "list", description: "Entries" };
     const create = operationOf(m, "tea-menu.create");
     expect([create.payload, create.answer]).toEqual([{ title: { ...menu.title, ref: "tea-menu.title" }, entries: rows }, { teaMenu: menuId }]);
     const save = operationOf(m, "tea-menu.save");
