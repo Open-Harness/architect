@@ -446,6 +446,34 @@ expect "parked: a goal whose brief is gone runs its suite" 0 parked main portal_
 expect "parked: an unreadable diff runs every suite" 0 bash -c \
   "cd $pk && [ \"\$($here/parked.sh main base nowhere 2> /dev/null | grep -c '=true$')\" = 4 ]"
 expect "parked: missing arguments are a usage error" 2 "$here/parked.sh" main base
+# Which suites a path turns on, exactly: each path a suite reads outside its folder, and each shared path (the 🔍 on #1092)
+pk2=$(mktemp -d "$scratch/parked.XXXX"); git -C "$pk2" init -q -b base; git -C "$pk2" config user.email ci@example.invalid; git -C "$pk2" config user.name ci
+mkdir -p "$pk2/design/goals"; for b in 17-superagent 06-portal 05-ui-layer 09-time; do
+  { echo ---; echo "branch: goal/$b"; echo "status: parked"; echo "owns:"; echo "  - nowhere/$b/"; echo ---; } > "$pk2/design/goals/$b.md"; done
+echo a > "$pk2/a"; git -C "$pk2" add -A && git -C "$pk2" commit -qm base
+turns_on() { # <path> <the suites that run, space-separated, or "none">
+  git -C "$pk2" checkout -q base; git -C "$pk2" checkout -q -B x
+  mkdir -p "$(dirname "$pk2/$1")"; echo "$RANDOM" >> "$pk2/$1"; git -C "$pk2" add -A && git -C "$pk2" commit -qm x
+  local got; got=$(cd "$pk2" && "$here/parked.sh" main base x 2> /dev/null | sed -n 's/=true$//p' | tr '\n' ' ' | sed 's/ $//')
+  [ "${got:-none}" = "$2" ] || { echo "$1 turned on '${got:-none}', wanted '$2'"; return 1; }
+}
+for p in e2e/project.json e2e/tsconfig.json e2e/package.json pnpm-lock.yaml e2e/layer1/support.ts e2e/stage1/support.ts \
+  e2e/ratchet/check.ts .github/workflows/parked.yml tools/ci/parked.sh; do
+  expect "parked: $p is shared, so it runs every suite" 0 turns_on "$p" "superagent portal_next ui_layer m8"
+done
+expect "parked: a served-portal change runs portal-next" 0 turns_on e2e/served-portal/service.ts portal_next
+expect "parked: a new M1 check runs portal-next's parity" 0 turns_on e2e/m1/50-new.test.ts portal_next
+expect "parked: a grid change runs portal-next's grid" 0 turns_on e2e/grid/src/main.ts portal_next
+expect "parked: the old portal runs portal-next" 0 turns_on packages/portal/src/app.tsx portal_next
+expect "parked: portal-ui is not the old portal" 0 turns_on packages/portal-ui/src/a.ts none
+expect "parked: e2e/m1/clients.ts runs ui-layer and portal-next" 0 turns_on e2e/m1/clients.ts "portal_next ui_layer"
+expect "parked: e2e/m1/loop-world.ts runs ui-layer and portal-next" 0 turns_on e2e/m1/loop-world.ts "portal_next ui_layer"
+expect "parked: e2e/m1/prove-speed.ts runs superagent, portal-next and ui-layer" 0 turns_on e2e/m1/prove-speed.ts "superagent portal_next ui_layer"
+expect "parked: e2e/ports.ts runs ui-layer" 0 turns_on e2e/ports.ts ui_layer
+expect "parked: a superagent fixture runs superagent" 0 turns_on e2e/fixtures/superagent/a.json superagent
+expect "parked: an m8 config runs m8" 0 turns_on e2e/vitest.m8.config.ts m8
+expect "parked: an owned path runs its suite alone" 0 turns_on nowhere/09-time/a.ts m8
+expect "parked: a package outside every list runs none" 0 turns_on packages/prove/src/a.ts none
 
 # required-jobs: no draft run, and no stale draft payload, can pass a required check (design/decisions/CI-drafts-race.md)
 wf() { # <body of one job, its keys indented four spaces>; prints the path of a workflow holding it as job `gate`

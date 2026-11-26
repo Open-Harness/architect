@@ -17,8 +17,11 @@ Every ready pull request ran the suites of four goals that are parked (`design/g
 That is 25 runner-minutes of every pull request into `main`, four of the 26 jobs, on a repository that hits GitHub's limit of 20 jobs
 at once at peak hours (CI-speed.md). None is a required check on `main` (`CI-branch-protection.md`, `CI-main-required.md`,
 `CI-main-stage1.md`: `check`, `e2e-layer1`, `e2e-layer2`, `e2e-m0`, `builder-paths`, `portal-ui`, `e2e-m1`, `e2e-climb`, `e2e-grid`,
-`e2e-stage1`), so none could block a merge: a red one only showed. Nobody builds these goals now (K44), so a pull request rarely
-touches what they check, and when one does, it is one that changes their own paths.
+`e2e-stage1`), so none could block a merge: a red one only showed. Nobody builds these goals now (K44), so most pull requests cannot move
+them. But not only their own folders can: `e2e-portal-next`'s parity ratchet runs every check that opens a served portal (today six
+in `e2e/m1/`) against the new client and fails both ways, and its grid run is `e2e/grid` on the new client. M1 work alone moved its
+list by 52 lines on 23 November (82961c64, "Parity list: 52 lines off", check 21's twelve and check 39's forty). And every suite
+imports support from outside its folder (below). So each suite's trigger paths are what it reads, not just what its goal owns.
 
 ## The call
 
@@ -29,17 +32,28 @@ touches what they check, and when one does, it is one that changes their own pat
    - its goal is no longer parked (the brief's `status:`), or its brief is gone: then on every pull request again, with no change
      here;
    - the pull request is into its goal's branch (the brief's `branch:`), as `e2e-superagent` did on the fast gate of `goal/superagent`;
-   - the pull request changes a path the goal owns (the brief's `owns:`, `design/` left out), a path of the suite's own
-     (`e2e/fixtures/<suite>/`, `e2e/vitest.<suite>*`), or the machinery every suite shares: the workflow, `tools/ci/parked.sh`,
-     `e2e/ratchet/`, `e2e/package.json` and `pnpm-lock.yaml`.
+   - the pull request changes a path the goal owns (the brief's `owns:`, `design/` left out), a path the suite reads outside its
+     folder, or the machinery every suite shares. The suite's paths are what its files import outside its folder, at any depth
+     (read on 26 November), and for `e2e-portal-next` what its parity ratchet and grid run:
+
+     | Suite | Its paths beyond the brief's `owns:` |
+     |---|---|
+     | `e2e-superagent` | `e2e/fixtures/superagent/`, `e2e/vitest.superagent*`, `e2e/m1/prove-speed.ts` |
+     | `e2e-portal-next` | `e2e/served-portal/`, `e2e/m1/`, `e2e/grid/`, `packages/portal/` (about 8 minutes on those pull requests) |
+     | `e2e-ui-layer` | `e2e/ui-layer/`, `e2e/vitest.ui-layer*`, `e2e/m1/clients.ts`, `loop*.ts`, `packages.ts`, `projections.ts`, `prove-speed.ts`, `support.ts`, `e2e/ports.ts` |
+     | `e2e-m8` | `e2e/fixtures/m8/`, `e2e/vitest.m8*` |
+
+     Shared by all four: the workflow, `tools/ci/parked.sh`, `e2e/ratchet/`, `e2e/project.json` (it defines every ratchet target),
+     `e2e/package.json`, `e2e/tsconfig.json`, `pnpm-lock.yaml`, `e2e/layer1/` (all four import its `support.ts`) and `e2e/stage1/`
+     (three do). When a suite starts importing from somewhere new, its line in `parked.sh` gains the path.
    Never on a docs-only pull request (`tools/ci/docs-only.sh`), as before. A draft runs only the `which` job, which reads the live
    draft state from the API as `ci`'s `ready` does (CI-drafts-race).
 4. **A red night run on `main`** is a Snag in the owning goal's milestone, logged by whoever sees it first (GitHub mails the
    failure of a scheduled run to whoever last changed its schedule). When the goal starts again, its brief's `status:` brings its
    suite back to every pull request.
 
-What it gives up: a change to shared code (`packages/prove`, the generators, the CLI) that breaks a parked suite is found the next
-morning, not on its pull request. That was already so in effect, since a red non-required check never blocked a merge.
+What it gives up: a change to a package the suites run through (`packages/prove`, the generators, the CLI), outside these paths,
+that breaks a parked suite is found the next morning, not on its pull request. That was already so in effect, since a red non-required check never blocked a merge.
 
 ## Branch protection
 
@@ -51,8 +65,8 @@ name, so its protection needs no change either.
 
 - Run 45804673866's jobs, from the jobs API (`ready` 10:48:06): `e2e-superagent` 10:49:05 to 11:00:16, `e2e-portal-next` 10:49:06 to
   10:57:16, `e2e-m8` 10:49:05 to 10:53:17, `e2e-ui-layer` 10:49:05 to 10:50:48.
-- `tools/ci/ci.test.sh` holds `parked.sh`'s cases: shared code runs no suite; the goal's branch, an owned path, a suite's own path and
-  the shared ratchet run it; an owned path under `design/` does not; an unparked goal, a missing brief and an unreadable diff run it.
+- `tools/ci/ci.test.sh` holds `parked.sh`'s cases: a package outside every list runs no suite; the goal's branch, an owned path, each
+  suite's own paths (the files it imports, portal-next's checks, grid and old portal) and each shared path run the right ones; an owned path under `design/` does not; an unparked goal, a missing brief and an unreadable diff run it.
 - This change's own pull request touches `.github/workflows/parked.yml` and `tools/ci/parked.sh`, so it runs all four there.
 
 ## Undoing it
