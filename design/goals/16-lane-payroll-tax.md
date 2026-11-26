@@ -12,12 +12,13 @@ lead:
   harness: amp         # set by the lane's agent when it starts
   model:               # the model id it runs on, set by the lane's agent
   since:               # the date it started
-done_check: on goal/capxul, `node packages/cli/src/main.ts prove --root examples/capxul` passes every tax-us journey (federal and each state in scope, from the publications' worked examples), the plugin's own checks pass in CI's check job, and a payroll entry's slips carry their US tax lines (slice 8)
+done_check: on goal/capxul, `node packages/cli/src/main.ts prove --root examples/capxul` passes every tax-us journey (federal and each state in scope, from the publications' worked examples), the checks in examples/capxul/journeys/tax-us/ pass in CI's check job, and a payroll entry's slips carry their US tax lines (slice 8)
 owns:
   - examples/capxul/plugins/payroll-tax-us/
   - examples/capxul/blueprint/features/payroll-tax-us.ts
   - design/decisions/CX-tax-us-rows.md
   - examples/capxul/journeys/tax-us-*.ts
+  - examples/capxul/journeys/tax-us/
   - examples/capxul/blueprint/starting-worlds/tax-us-*.ts
   - design/goals/16-lane-payroll-tax.md
   - design/decisions/CX-tax-us-*.md
@@ -110,14 +111,21 @@ The paths in the front matter's `owns:`, and nothing else:
   starting worlds, written by its author only. They sit beside Capxul's others because `ortho prove --root
   examples/capxul` reads only the app's `journeys/` and `blueprint/starting-worlds/`. Until the pieces move lands, they
   import only `@capxul/payroll-tax-us` and `orthograph`, nothing of the app's.
-- `examples/capxul/plugins/payroll-tax-us/blueprint/journeys/`: everything else the author writes:
-  - the bulk checks too many for journeys (the 4,794 wage-bracket cells, the constructed cases);
-  - the importer's checks and their fixtures;
+- `examples/capxul/journeys/tax-us/`: everything else the author writes:
+  - the bulk checks that are too many for journeys (the 4,794 wage-bracket cells, the constructed cases), as
+    `*.test.ts`;
+  - the importer's checks, as `*.test.ts`, and their YAML and JSON fixtures;
   - the importer's list of settled disagreements, `settled.ts`, which judges the import.
+  The folder is a subfolder on purpose. Neither the compiler nor prove walks subfolders of the app's `journeys/`
+  (`packages/compiler/src/modules/source/service.ts:50-56`; `packages/prove/src/modules/journeys/internal/load.ts`). The
+  plugin's own `blueprint/journeys/` can't hold these files: the compiler imports every `.ts` and `.js` under a mounted
+  feature's blueprint (`source/internal/plugins.ts:56-60`), and a `journeys/` file whose default export isn't a
+  `Blueprint.journey` is a problem for `ortho generate` and `ortho check` (`model/internal/layout.ts:131-133`). Only
+  YAML or JSON may ever sit under the plugin's `blueprint/journeys/`.
 
 **What protects the checks.** `tools/ci/builder-paths.sh` protects only `examples/*/journeys/**` and
-`**/blueprint/journeys/**`. So a `-build` branch can't change the `tax-us-*` journeys or anything under the plugin's
-`blueprint/journeys/`. Nothing protects `examples/capxul/blueprint/starting-worlds/tax-us-*.ts` (G12 says the same of
+`**/blueprint/journeys/**`. So a `-build` branch can't change the `tax-us-*` journeys or anything in
+`examples/capxul/journeys/tax-us/`. Nothing protects `examples/capxul/blueprint/starting-worlds/tax-us-*.ts` (G12 says the same of
 every starting world). Those files are checked only by the 🔍 reviewer reading the diff, who fails a `-build` pull
 request that touches one.
 - Its own decisions, named `CX-tax-us-<slug>`.
@@ -154,8 +162,11 @@ no tax lines, which CX-composable-pieces says is valid. The piece offers one ope
 - year-to-date wages, for FICA's wage base, the additional Medicare tax's $200,000 and FUTA's $7,000.
 
 It refuses, each by name, a negative, fractional (not whole base units) or non-numeric wage or year-to-date figure, and
-a work state that isn't one of the fifty and DC. Any signed-in person may call it. Each computation it records is
-readable only by the person who made it, since nothing yet ties it to a company. Once the `company` move lands
+a work state that isn't one of the fifty and DC. A line whose amount is nothing is left out, never shown as zero, as
+CX-payroll's accrual leaves out a line of 0. Any signed-in person may call it. Each computation it records is readable
+only by the person who made it, since nothing yet ties it to a company. Slice 0 proves the framework can say that
+(a rule naming the record's creator); if it can't, that is a gap, and until it lands `compute` records nothing and
+answers only, and its journeys judge the answer. Once the `company` move lands
 (slice 7), a computation names its company, and the company's owner may call it and read it, as every Capxul record
 does. It answers with the slip's tax lines: each with its jurisdiction, its tax, the employee's or the employer's share, the
 amount, and the row and citation it was worked from. It records each computation as a thing the journey reads back, so
@@ -199,8 +210,8 @@ ending `-build` (`AGENTS.md`; `tools/ci/builder-paths.sh`). Branch names: `goal-
 - **A slice whose checks are only journeys** (`examples/capxul/journeys/tax-us-*.ts`) lands as Goal 16's slices do
   today. The check pull request merges red, since `e2e-capxul` is not a required job, and the build pull request then
   turns it green.
-- **A slice with checks under the plugin's `blueprint/journeys/`** (slices 1, 3, 5 and 6) runs those checks in CI's
-  required `check` job. There is no shrink-only ratchet list for `examples/*/plugins/*/expected-failing/`, so a red
+- **A slice with checks in `examples/capxul/journeys/tax-us/`** (slices 1, 3, 5 and 6) runs those `*.test.ts` checks
+  in the app's `test` target, in CI's required `check` job. There is no shrink-only ratchet list for `examples/*/plugins/*/expected-failing/`, so a red
   check pull request would fail a required job. Those slices land as a G12 pair (`design/decisions/G12-paired-landing.md`):
   1. the build branch is cut from the check branch, and its pull request merges into the check branch;
   2. the check pull request then merges into `goal/capxul` with everything green;
@@ -217,10 +228,10 @@ thread with its label, `thread-author`, `thread-builder`, `thread-reviewer`.
 
 | # | Slice | Needs | Done when |
 |---|---|---|---|
-| 0 | **The lane's footing.** The package `@capxul/payroll-tax-us`, its `data/` and `tools/import/` empty, its mount file, the app's dependency on it, the thing `us-withholding` and its `compute` operation. Its journeys need no rows: a negative wage, a fractional wage and an unknown work state are each refused by name, and a wage of nothing gives no lines. This proves the mechanics: the workspace line, `ortho generate` keeping every other journey's wire, and prove picking the journeys up. The author also proves that a `*.test.ts` under the plugin's `blueprint/journeys/` runs in CI's `check` job. If it doesn't, that is a Snag, and the bulk checks move into journeys | the workspace line and the app dependency (above) | the journeys are red on an empty handler, then green; `prove --root examples/capxul` passes everything it passed before |
-| 1 | **The importer.** `tools/import/main.ts` (the only entry file; Effect everywhere else) reads open-withholding's `data/us/<state>/<year>/*.yaml` at a pinned commit, cloned into a scratch folder outside the repository, and writes the dated rows (call 1). It then fetches us-payroll-tax-tables at a pinned commit into scratch, compares every figure the two share, and stops on any disagreement not in `blueprint/journeys/settled.ts`, or a listed one whose figures' sha256 changed. `settled.ts`, written by the author, starts with the spike's list, each entry with its ruling, its evidence (the publication's page) and the sha256 of the second source's figures, never the figures (CX-tax-us-rows). The settled ones: New York's top rates, Illinois' Line 2, California's per-period tables, Massachusetts and Delaware paid leave, Georgia's citation. The open ones, until the lane reads the agency's text: Massachusetts' weekly and blind exemptions, WA Cares. It also writes `data/manifest.json`. A `NOTICE` credits open-withholding (CC0, a courtesy). Rows for 2026, and 2027 once it publishes | 0 | the author's checks, in CI, offline: the importer run on a small committed fixture writes the expected rows. The fixture is a few of open-withholding's CC0 YAML files with their path and commit, plus a synthetic second source: made-up figures in its file shape, none of its real ones. A planted change to a fixture row, to a synthetic second-source figure or to the settled list stops it, with the figure named (the spike's `mutate.ts` cases, rewritten). Every committed row has its citation and commit, and matches `data/manifest.json`, so a hand edit to a row fails |
+| 0 | **The lane's footing.** The package `@capxul/payroll-tax-us`, its `data/` and `tools/import/` empty, its mount file, the app's dependency on it, the thing `us-withholding` and its `compute` operation. Its journeys need no rows: a negative wage, a fractional wage and an unknown work state are each refused by name, and a wage of nothing, with a W-4 that has no Step 4(c) extra withholding, gives no lines (a line of nothing is left out). This proves the mechanics: the workspace line, `ortho generate` keeping every other journey's wire, and prove picking the journeys up. The author also proves two things. First, that a `*.test.ts` in `examples/capxul/journeys/tax-us/` runs in the app's `test` target in CI's `check` job, while `ortho generate` and `ortho check` ignore it. Second, that the framework can make a record readable only by its creator. Each that fails is a Snag. For the first, the other route is an `e2e/tax-us/` suite with its own CI job and `expected-failing/` list | the workspace line and the app dependency (above) | the journeys are red on an empty handler, then green; `prove --root examples/capxul` passes everything it passed before |
+| 1 | **The importer.** `tools/import/main.ts` (the only entry file; Effect everywhere else) reads open-withholding's `data/us/<state>/<year>/*.yaml` at a pinned commit, cloned into a scratch folder outside the repository, and writes the dated rows (call 1). It then fetches us-payroll-tax-tables at a pinned commit into scratch, compares every figure the two share, and stops on any disagreement not in `examples/capxul/journeys/tax-us/settled.ts`, or a listed one whose figures' sha256 changed. `settled.ts`, written by the author, starts with the spike's list, each entry with its ruling, its evidence (the publication's page) and the sha256 of the second source's figures, never the figures (CX-tax-us-rows). The settled ones: New York's top rates, Illinois' Line 2, California's per-period tables, Massachusetts and Delaware paid leave, Georgia's citation. The open ones, until the lane reads the agency's text: Massachusetts' weekly and blind exemptions, WA Cares. It also writes `data/manifest.json`. A `NOTICE` credits open-withholding (CC0, a courtesy). Rows for 2026, and 2027 once it publishes | 0 | the author's checks, in CI, offline: the importer run on a small committed fixture writes the expected rows. The fixture is a few of open-withholding's CC0 YAML files with their path and commit, plus a synthetic second source: made-up figures in its file shape, none of its real ones. A planted change to a fixture row, to a synthetic second-source figure or to the settled list stops it, with the figure named (the spike's `mutate.ts` cases, rewritten). Every committed row has its citation and commit, and matches `data/manifest.json`, so a hand edit to a row fails |
 | 2 | **The withholding certificate.** Form W-4 (2020 and later) as a value with its four steps, refused when malformed (a negative credit, a status the form has none of); then, after the `people` move, a thing linked to Employee, one in force per employee from a day, kept as history. The states' own certificates join their state's slice | 0; the thing waits on the `people` move | journeys: a malformed W-4 is refused by name; the thing's journeys (after the move): a second W-4 from a later day replaces the first for pay dated after it |
-| 3 | **Federal.** Pub 15-T's percentage method for automated payroll (Worksheet 1A) for every frequency and both W-4 eras the rows hold, Social Security (6.2% to the year's wage base), Medicare (1.45%), the additional Medicare tax (0.9% over $200,000, whatever the filing status), and FUTA (6.0% on $7,000, less the credit, less a credit reduction). All employer and employee shares as their own lines | 1, 2 | journeys from Pub 15-T and Pub 15's figures; the 4,794 wage-bracket cells as the plugin's bulk check; constructed cases where no example reaches (the wage base crossed mid-period, the $200,000 crossed mid-period, a credit reduction state) |
+| 3 | **Federal.** Pub 15-T's percentage method for automated payroll (Worksheet 1A) for every frequency and both W-4 eras the rows hold, Social Security (6.2% to the year's wage base), Medicare (1.45%), the additional Medicare tax (0.9% over $200,000, whatever the filing status), and FUTA (6.0% on $7,000, less the credit, less a credit reduction). All employer and employee shares as their own lines | 1, 2 | journeys from Pub 15-T and Pub 15's figures; the 4,794 wage-bracket cells as a bulk check in `examples/capxul/journeys/tax-us/`; constructed cases where no example reaches (the wage base crossed mid-period, the $200,000 crossed mid-period, a credit reduction state) |
 | 4 | **The states with no wage income tax:** AK, FL, NH, NV, SD, TN, TX, WA, WY, each with its SUTA wage base and range, and any wage premium the state levies (Washington's paid family and medical leave; WA Cares: the lane reads the state's own text, cites it, and flags it for the professional's review) | 3 | journeys: no state income tax line for each; the employer's SUTA at a stated rate; a premium where the state levies one |
 | 5 | **California and New York,** each its own method: California's Method B with Tables 1 to 28 per frequency and its estimated-deduction allowances, SDI; New York's NYS-50-T-NYS per-period and annual methods with Method III's three top rates, and its paid family leave. New York City and Yonkers stay out (local taxes, CX-payroll-tax point 6) | 3 | California's Examples A to F, New York's examples (Example 2's two slips judged against the tables the booklet says to use, as the spike did), and constructed cases for the top brackets and the quarterly and daily tables no example reaches |
 | 6 | **The rest,** in batches of about five states, each batch its own pair of pull requests: first the spike's other checked states (DE, NJ, IL, MA, GA), then the rest of the income-taxing states and DC in the order open-withholding's data is most complete. For Massachusetts the lane reads Circular M itself, cites it, settles the weekly and blind exemptions, and flags both for the professional's review. If its harness can't reach mass.gov, the two rows stay open, and the lane says so on its lane issue | 5 | each state's printed worked examples, judged against the tables the publication says to use; New Jersey's A3, B2 and B3 as the spike found them; a constructed case per state's top bracket |
