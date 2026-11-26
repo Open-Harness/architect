@@ -9,7 +9,7 @@ recommendation of each.
 
 **Settled before this, and not reopened:** Capxul's on-chain account is a Safe and nothing else for now
 (`CX-onchain-safe.md:17-22`); from `M7-capxul.md` section 4, two facts stand, that a person's account is an ordinary
-Safe whose address is known before it is deployed, and that money can arrive there first (`M7-capxul.md:150-153,169-178`;
+Safe whose address is known before it is deployed, and that money can arrive there first (`M7-capxul.md:150-153,178-180`;
 who owns it before a claim, and when it deploys, change here, under Supersedes); a Safe is someone else's contract behind the `safe` adapter,
 and an organisation and its Safe are linked by an ordinary field (`K25-the-blueprint-on-chain.md:113-121`); payouts
 are spent against an Org Budget, a Zodiac Roles 2.1.1 role the company's Safe grants, used by a member through
@@ -216,7 +216,7 @@ What is missing, and whose it is (section 3):
 | a world with Safe's contracts at their canonical addresses | not built (M6.16's part) | S2 |
 | the `safe` adapter: the prediction; owners, threshold, nonce, `execTransaction`, `approveHash`, `swapOwner`, the SafeTx typed data, `GS0xx` reverts typed | spiked (ST3.04, `status.md:170`) | S1 (the prediction), S3 |
 | a Roles adapter and the Payments adapter | not on the board | S4 |
-| the relayer, trusted | on `main`, marked experimental, four bugs in #784 (`status.md:164`; check 48 `:7-11`) | staging, not the journeys |
+| the relayer, trusted | on `main`, marked experimental, four bugs in #784 (`status.md:164`; check 48 `:7-11`) | staging, if it uses the relayer; not the journeys |
 
 `goal/capxul` does not yet hold Goal 18's chain-basics merge (#1104, a74aa622): S2's builder merges `main` into
 `goal/capxul` first.
@@ -330,7 +330,8 @@ graph LR
 
 **What runs at once.** Now: the authors of A1, A2, A3, A4, E1 and S1, and the two Snags' authors in Goal 18. The
 builds of A2, A3, A4 and E1 at once, since none needs another; A1's build after #1087 and #1153; S1's build after A3.
-Then S2, then S3, then S4, in that order; S5 as soon as S2 and slice 7's invoices are in. A1 never blocks anything: the
+Then S2, then S3, then S4, in that order; P1 after S3 and S4, before Capxul's staging run; S5 as soon as S2 and slice
+7's invoices are in. A1 never blocks anything: the
 adapters are hand-written to its shape and regenerated once it lands. Bridge's R1 waits on S1, R2 on S2, R3 on S4
 (CX-bridge-rails `:410-411`).
 
