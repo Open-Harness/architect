@@ -29,8 +29,8 @@ head. It has no money and nothing that waits on anyone else yet; its next stage 
 plans it.
 
 Each chapter is one stage in that life, in the order it happens. It says what you do, what your agents do and what you
-read, and it ends with what goes wrong and with how that part of Orthograph stands today. A chapter that was recorded has a film of
-two or three minutes that shows the same thing happening. Three do so far.
+read, and it ends with what goes wrong and with how that part of Orthograph stands today. Each chapter has a film of two or three
+minutes that shows the same thing happening.
 
 Everything printed in a chapter was recorded from a real run, or is quoted from a file, and a check fails the manual
 if it is not. Where something does not exist yet, the chapter says so in the same voice as everything else.
@@ -50,8 +50,9 @@ are where the decisions are made that the later chapters only carry out.
 
 ## How this stands
 
-Orthograph is not finished, and neither is this manual. Four of its eleven chapters are written, and this opening. The commands in them
-run today on Plugged In. The way of working with agents that runs through all of them is how this repository builds
-Orthograph itself, every day, and it is practice: no command hands a new app its roles yet, and nothing stops an
-agent stepping outside one. Running a system in staging is still being built, and going live is not settled, so
-the chapters on those are not written.
+Orthograph is not finished, and the manual says where. All eleven chapters are written, and each says in its last
+section what runs today, what is only our practice, and what is missing. The commands in them were recorded on Plugged
+In. The way of working with agents that runs through all of them is how this repository builds Orthograph itself,
+every day, and it is practice: no command hands a new app its roles yet, and nothing stops an agent stepping outside
+one. Two chapters stop short on purpose. Planning stops at the first question its page asks the owner, and staging
+stops at the plan, because the real deployment has not been recorded yet.

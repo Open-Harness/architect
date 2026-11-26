@@ -15,18 +15,25 @@ The docs have three parts. This folder is the first.
 
 `spine.json` is the manual's order: an opening, eleven chapters in four parts, and the reference at the back.
 
-| Page | How it stands |
-|---|---|
-| [The hard part is the next morning](chapters/00-why-this-exists.md) | the opening: the problem, what Orthograph does about it, how to read the manual, the cast |
-| [1 · Plan it](chapters/01-plan-it.md) | written around a real first page an agent drew for Plugged In's next stage. The owner has not answered it yet, and it has no film |
-| [4 · Say what done means](chapters/04-say-what-done-means.md) | recorded on Plugged In. Film: `docs/explainer/films/say-done/` |
-| [5 · Build until green](chapters/05-build-until-green.md) | recorded on Plugged In; the climb is a replay of one handler at three points. Film: `docs/explainer/films/build-green/` |
-| [7 · Run it, break it, read the trace](chapters/07-run-it-and-read-the-trace.md) | recorded on Plugged In. Film: `docs/explainer/films/read-trace/` |
-| [Working with your agents](working-with-your-agents.md) | reference. The roles are this repository's own practice. Orthograph does not yet give a new app any of it |
-| [The agent kit](kit/README.md) | reference, as files to copy into an app. Nothing generates it yet (M3.12 is parked) |
+| Page | Film | Recorded by |
+|---|---|---|
+| [The hard part is the next morning](chapters/00-why-this-exists.md) | `why` | nothing: it is the argument |
+| [1 · Plan it](chapters/01-plan-it.md) | `plan-it` | `captures/plan-page.txt`, a page an agent drew |
+| [2 · Spike what you doubt](chapters/02-spike-what-you-doubt.md) | `spike` | `record/02-spike.sh` |
+| [3 · Describe it](chapters/03-describe-it.md) | `describe` | `record/03-describe.sh` |
+| [4 · Say what done means](chapters/04-say-what-done-means.md) | `say-done` | `record/04-journeys.sh`, `record/04-stub.sh` |
+| [5 · Build until green](chapters/05-build-until-green.md) | `build-green` | `record/05-climb.sh` |
+| [6 · Review without reading the code](chapters/06-review-without-reading-the-code.md) | `review` | `record/06-review.sh` |
+| [7 · Run it, break it, read the trace](chapters/07-run-it-and-read-the-trace.md) | `read-trace` | `record/07-trace.sh` |
+| [8 · Stage it](chapters/08-stage-it.md) | `stage` | `record/08-stage.sh` |
+| [9 · Watch it](chapters/09-watch-it.md) | `watch` | `record/09-watch.sh` |
+| [10 · Change it, months later](chapters/10-change-it-months-later.md) | `change` | `record/10-change.sh` |
+| [11 · More than one agent](chapters/11-more-than-one-agent.md) | `agents` | `record/11-agents.sh` |
+| [Working with your agents](working-with-your-agents.md) | none | reference |
+| [The agent kit](kit/README.md) | none | reference |
 
-Chapters 2, 3, 6 and 8 to 11 are in the spine and not written; the page shows each in its place. `plan/` holds the plan
-this order came from and the specimen Aaron agreed the voice and look on (26 November 2026).
+All eleven chapters are written. Each says in its last section how its part stands. `plan/` holds the plan this order came
+from and the specimen Aaron agreed the voice and look on (26 November 2026).
 
 ## What is where
 
