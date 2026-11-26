@@ -221,7 +221,7 @@ const addPlugin = (kind: Kind) =>
         Effect.catchTag("MountRefused", (e) => fail(e.message, 2)),
       ),
   ).pipe(Command.withDescription(ADD_PLUGIN[kind]));
-// `ortho add journeys <thing>`: a stub per path, role and declared error, writing only the ones that are missing (K16 e).
+// `ortho add journeys <thing>`: a stub per path, role, declared error and rule an operation can break, writing only the ones that are missing (K16 e).
 const addJourneys = Command.make(
   "journeys",
   { thing: Argument.String("thing").pipe(Argument.withDescription("The declared thing whose journeys are stubbed")), root: rootFlag("whose model is read") },
@@ -242,7 +242,7 @@ const addJourneys = Command.make(
       }),
       Effect.catchTags({ BlueprintInvalid: (e) => fail(e.problems.join("\n"), 2), SourceError: (e) => fail(e.message, 2) }),
     ),
-).pipe(Command.withDescription("Stub a journey for each path, role and declared error of a thing, keeping those already written"));
+).pipe(Command.withDescription("Stub a journey for each path, role, declared error and rule of a thing's operations, keeping those already written"));
 const add = Command.make("add").pipe(
   Command.withDescription("Add a declaration, a journey or a plugin to the app"),
   Command.withSubcommands([addOne("thing"), addOne("operation"), addOne("read"), addOne("journey"), addJourneys, addPlugin("feature"), addPlugin("adapter"), addPlugin("projection")]),
