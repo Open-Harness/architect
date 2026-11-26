@@ -10,7 +10,7 @@ const dir = process.argv[2];
 if (!dir) throw new Error("usage: node calc/run.ts <scratch-dir>");
 const d = new Data(`${dir}/ow.json`);
 
-let pass = 0, fail = 0, passUnofficial = 0, failUnofficial = 0;
+let pass = 0, fail = 0, passUnofficial = 0, failUnofficial = 0, passRates = 0, failRates = 0;
 const failures: string[] = [];
 for (const c of cases) {
   let got: number | string;
@@ -23,7 +23,8 @@ for (const c of cases) {
     got = c.kind === "fica-ss" ? f.ss : c.kind === "fica-medicare" ? f.medicare : f.additional;
   }
   const ok = got === c.expect || (typeof got === "number" && typeof c.expect === "number" && Math.abs(got - c.expect) < 0.005);
-  if (c.official) ok ? pass++ : fail++; else ok ? passUnofficial++ : failUnofficial++;
+  if (c.fromRates) ok ? passRates++ : failRates++;
+  else if (c.official) ok ? pass++ : fail++; else ok ? passUnofficial++ : failUnofficial++;
   if (!ok) failures.push(`${c.id}: expected ${c.expect}, got ${got}${c.printedInconsistent ? ` — publication: ${c.printedInconsistent}` : ""}${c.official ? "" : " [not read officially]"}`);
 }
 
@@ -57,6 +58,7 @@ for (const line of txt) {
 }
 
 console.log(`published worked examples read in the agencies' own documents: ${pass} pass, ${fail} fail`);
+console.log(`checks built from published rates (FICA, FUTA, no-income-tax states): ${passRates} pass, ${failRates} fail`);
 console.log(`figures as both sources cite them (agency site refused automated reading): ${passUnofficial} pass, ${failUnofficial} fail`);
 console.log(`Pub 15-T 2026 wage-bracket cells (W-4 2020+), percentage method at row middle: ${fedPass} pass, ${fedFail} fail`);
 for (const f of failures) console.log("  " + f);

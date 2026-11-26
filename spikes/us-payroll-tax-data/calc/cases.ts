@@ -8,6 +8,8 @@ export type Case = {
   kind: "state" | "federal" | "fica-ss" | "fica-medicare" | "fica-additional" | "futa";
   freq?: Freq; gross?: number; status?: string; allowances?: number; secondary?: number; fica?: number;
   ytdRetirementUsed?: number; w4?: W4; annual?: number;
+  /** Not a printed worked example: a check built from the published rates (FICA, FUTA, no-income-tax states). */
+  fromRates?: true;
   /** The publication's own arithmetic disagrees with its own tables; the expected figure is printed as is. */
   printedInconsistent?: string;
 };
@@ -71,10 +73,10 @@ export const cases: Case[] = [
   st({ id: "MA-HoH", juris: "ma", asOf: "2026-06-15", official: false, cite: `${MA}: 60,000 less 2,000 FICA less 5,400 exemptions at 5%, less $120 head of household (the other source's arithmetic)`, freq: "annually", gross: 60000, fica: 2000, status: "head_of_household", allowances: 2, expect: 2510 }),
   st({ id: "MA-wk-cell", juris: "ma", asOf: "2026-06-15", official: false, cite: `${MA}: weekly table, wages $150 to $160, one exemption, $2.93 (read at $155 with FICA at 7.65%)`, freq: "weekly", gross: 155, fica: 11.86, status: "single", allowances: 1, expect: 2.93 }),
   // States with no wage income tax.
-  ...["tx", "fl", "wa"].map((j) => st({ id: `${j.toUpperCase()}-none`, juris: j, asOf: "2026-06-15", cite: "no state income tax on wages (both sources agree)", freq: "weekly", gross: 1000, status: "single", allowances: 0, expect: "no income tax" })),
+  ...["tx", "fl", "wa"].map((j) => st({ id: `${j.toUpperCase()}-none`, juris: j, asOf: "2026-06-15", fromRates: true, cite: "no state income tax on wages (both sources agree)", freq: "weekly", gross: 1000, status: "single", allowances: 0, expect: "no income tax" })),
   // FICA and FUTA: Pub 15 prints the rates and bases, not worked figures; these apply them to one employee.
-  { id: "FICA-SS", kind: "fica-ss", juris: "federal", asOf: "2026-06-15", official: true, cite: P15, annual: 250000, expect: 11439 },
-  { id: "FICA-Med", kind: "fica-medicare", juris: "federal", asOf: "2026-06-15", official: true, cite: P15, annual: 250000, expect: 3625 },
-  { id: "FICA-Addl", kind: "fica-additional", juris: "federal", asOf: "2026-06-15", official: true, cite: P15, annual: 250000, expect: 450 },
-  { id: "FUTA", kind: "futa", juris: "federal", asOf: "2026-06-15", official: true, cite: P15, annual: 50000, expect: 42 },
+  { id: "FICA-SS", kind: "fica-ss", juris: "federal", asOf: "2026-06-15", official: true, fromRates: true, cite: P15, annual: 250000, expect: 11439 },
+  { id: "FICA-Med", kind: "fica-medicare", juris: "federal", asOf: "2026-06-15", official: true, fromRates: true, cite: P15, annual: 250000, expect: 3625 },
+  { id: "FICA-Addl", kind: "fica-additional", juris: "federal", asOf: "2026-06-15", official: true, fromRates: true, cite: P15, annual: 250000, expect: 450 },
+  { id: "FUTA", kind: "futa", juris: "federal", asOf: "2026-06-15", official: true, fromRates: true, cite: P15, annual: 50000, expect: 42 },
 ];
