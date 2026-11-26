@@ -33,7 +33,7 @@ describe("s.<name>.signs: a step's call that signs a message (CX-journey-signs, 
     const signed = call(as(s.ada).signs`Claim ${s.world.safe} for ${s.ada.person}`);
     want(signed.kind, "the call's kind").toBe("sign-call");
     want(signed.actor, "the cast member who signs").toBe("ada");
-    want(Array.isArray(signed.message), `message is the template's parts, got ${String(signed.message)}`).toBe(true);
+    want(Array.isArray(signed.message), `message is the template's parts, got a ${typeof signed.message}`).toBe(true);
     // In order, with any empty literal left out (a template's text before its first ref or after its last may be "").
     const parts = (signed.message as ReadonlyArray<unknown>).filter((p) => p !== "");
     want(parts.map((p) => (Scripting.isRef(p) ? { ref: Scripting.pathOf(p) } : p))).toEqual([
