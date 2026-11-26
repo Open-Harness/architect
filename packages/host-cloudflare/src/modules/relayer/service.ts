@@ -17,6 +17,8 @@ const invalid = (message: string) => new ChainFault({ kind: "configuration", mes
  * each instance by its chain's CAIP-2 id (`env.RELAYER.getByName("eip155:8453")`): one relayer per key, so one per chain. It keeps its
  * submissions in its own SQLite, and its alarm (every `pollIntervalMs` from `configure`, while any submission may still change) sends a
  * dropped transaction again, byte for byte, the same work `reconcile` does on call. `health` names a nonce pending past its deadline.
+ *
+ * @experimental The bugs in #784 are open: read it before you rely on the relayer.
  */
 export class Relayer extends DurableObject<RelayerEnv> implements RelayerApi {
   private readonly store = makeStore(this.ctx.storage.sql);
