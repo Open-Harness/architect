@@ -53,7 +53,11 @@ jobs:
           set -euo pipefail
           packages=(orthograph compiler language-effect chain-evm lint portal projections generators host-cloudflare logbook prove preset cli create-orthograph)
           # Every package first, so pack writes this version wherever a package names another with `workspace:`.
-          for p in "${packages[@]}"; do (cd "packages/$p" && npm pkg set version="$VERSION"); done
+          # npm checks a provenance publish against the manifest: repository.url must name this repository exactly.
+          for p in "${packages[@]}"; do
+            (cd "packages/$p" && npm pkg set version="$VERSION" repository.type=git \
+              repository.url="git+https://github.com/${GITHUB_REPOSITORY}.git" repository.directory="packages/$p")
+          done
           out="$RUNNER_TEMP/tarballs"; mkdir -p "$out"
           for p in "${packages[@]}"; do
             name=$(node -p "require('./packages/$p/package.json').name")

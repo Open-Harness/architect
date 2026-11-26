@@ -10,7 +10,8 @@ publishing (OIDC). No npm token is stored as a secret or anywhere else. The work
 
 - runs only when someone starts it from the Actions tab, and only on `main`;
 - takes the version as its input, a preview `0.1.0-next.<n>`, and gives it to every package before packing, so each
-  `workspace:` dependency is written as that exact version. The version in `package.json` on `main` is not changed by a
+  `workspace:` dependency is written as that exact version. It also sets `repository` to this repository and the
+  package's folder, since npm refuses a provenance publish whose `repository.url` does not match the workflow's repository. The version in `package.json` on `main` is not changed by a
   run: it stays the last one a pull request set;
 - packs each package with `pnpm pack`, which runs the preset's `prepack`, and publishes the tarball with `npm publish
   --tag next --access public`. npm attaches provenance itself;
