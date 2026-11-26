@@ -159,7 +159,9 @@ Each is a new outside dependency, so each is Aaron's call. None is needed for st
 - `ledger` holds an account's currency, both amounts on every line, the gain-or-loss accounts, rounding, revaluation,
   and each party's outstanding.
 - `payments` (core, below `invoicing`) holds Payment Entry, including between currencies, and settles a party's
-  outstanding. Rails (Bridge, a bank, later the Safe) fill a contract it declares.
+  outstanding. Rails fill a contract it declares: `payments`' own default rail, *recorded* (the money moved outside
+  Capxul, from the company's own bank or wallet; the entry carries the mode of payment and a reference), then Bridge,
+  and later the Safe. So a Capxul with no Bridge and no Safe builds, and section 2's step 2 is the recorded rail.
 - What is owed is the ledger's party outstanding, not a new record. In both records: payroll calculates and posts its
   accrual through `ledger.post` in its own commit; it never writes ledger lines itself and never moves money.
   `payments` moves money and settles outstandings. `ledger` owns the lines, both amounts and revaluation.
