@@ -1,5 +1,6 @@
 // Test-only creation bytecode, never shipped (tsconfig.build.json excludes this folder).
-// Safe 1.4.1: SafeL2 and SafeProxyFactory from @safe-global/safe-contracts@1.4.1's build/artifacts (LGPL-3.0). Deployed
+// Safe 1.4.1: SafeL2 and SafeProxyFactory from @safe-global/safe-contracts@1.4.1's build/artifacts, under the LGPL-3.0: its
+// notice and text are ../../../../../LICENSE-safe-contracts (packages/zodiac-roles/LICENSE-safe-contracts). Deployed
 // through the Safe singleton factory with salt 0 they land at CX-safe's pinned addresses (0x29fcB43b…C762, 0x4e1DCf7A…ec67);
 // here they are deployed plainly, since the Roles checks need a working Safe, not its address.
 // The token: packages/chain-evm/src/modules/tx/internal/anvil-token.sol, compiled with solcjs 0.8.30 --optimize --bin (as

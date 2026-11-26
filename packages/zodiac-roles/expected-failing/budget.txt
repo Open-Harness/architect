@@ -10,6 +10,6 @@ src/modules/roles/budget.test.ts > amounts over 2^53 are judged exactly: the lim
 src/modules/roles/budget.test.ts > an allowance with a refill period: what accrued is what can be spent, and not a unit more
 src/modules/roles/budget.test.ts > each send is capped at the budget's limit: the limit passes, one more is ParameterGreaterThanAllowed
 src/modules/roles/budget.test.ts > only the Safe, the modifier's owner, can change the budget
-src/modules/roles/budget.test.ts > the modifier is deployed where Roles.deploy said, for the Safe as owner, avatar and target, and the Safe has it enabled
+src/modules/roles/budget.test.ts > the modifier is deployed where ZodiacRoles.deploy said, for the Safe as owner, avatar and target, and the Safe has it enabled
 src/modules/roles/budget.test.ts > the port refuses it as the modifier's ConditionViolation, with its status and info
 src/modules/roles/budget.test.ts > the role reaches only its one function of its one target, sends no value, and only its members hold it, under its own key

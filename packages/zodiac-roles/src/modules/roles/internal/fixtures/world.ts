@@ -7,7 +7,7 @@ import { Anvil, type TestAccount } from "@orthograph/chain-evm";
 import {
   Abi, Keys, makeChainPort, type AbiFunction, type Address, type ChainError, type Hex, type Key, type TransactionReceipt,
 } from "@orthograph/chain-evm/device";
-import { Roles } from "../../service.ts";
+import { ZodiacRoles } from "../../service.ts";
 import type { ContractCall, OrgBudget } from "../../types.ts";
 import { ZodiacWorld } from "../../../world/service.ts";
 import { paymentsStandInBytecode, safeL2Bytecode, safeProxyFactoryBytecode, tokenBytecode } from "./bytecode.ts";
@@ -63,7 +63,7 @@ export const world = Effect.gen(function* () {
   const keyOf = (account: TestAccount) => Keys.fromSecret(account.privateKey);
   const [owner, member, stranger, deployer] = yield* Effect.forEach(anvil.accounts, keyOf) as Effect.Effect<[Key, Key, Key, Key], never>;
   const port = yield* makeChainPort({
-    chainId: anvil.chainId, rpcUrl: anvil.rpcUrl, pollIntervalMs: 20, receiptTimeoutMs: 5_000, refusals: Roles.refusals,
+    chainId: anvil.chainId, rpcUrl: anvil.rpcUrl, pollIntervalMs: 20, receiptTimeoutMs: 5_000, refusals: ZodiacRoles.refusals,
   });
   /** A transaction sent the port's way, followed into a block. */
   const send = (who: Key, call: { readonly to?: Address; readonly data: Hex; readonly value?: bigint }) => Effect.gen(function* () {
@@ -124,14 +124,14 @@ export const budgetWorld = (budgetFor: (ctx: {
   const transfer = (to: Address, amount: bigint) => encode(token.transfer, [to, amount]);
   yield* w.send(w.deployer, { to: tokenAddress, data: yield* transfer(safe, 100n) });
   yield* w.send(w.deployer, { to: paymentsToken, data: yield* transfer(payments, 100n) });
-  const deployment = yield* Roles.deploy({ safe, saltNonce: 1n });
+  const deployment = yield* ZodiacRoles.deploy({ safe, saltNonce: 1n });
   const deployed = yield* w.send(w.deployer, deployment.call);
   const modifier = deployment.address;
   yield* bySafe(w, safe, w.owner, { to: safe, value: 0n, data: yield* encode(safeAbi.enableModule, [modifier]) });
   const budget = budgetFor({ token: tokenAddress, member: w.member.address, payments, paymentsToken });
   const setAllowance = selector("setAllowance(bytes32,uint128,uint128,uint128,uint64,uint64)");
   const allowanceSetAt: Array<bigint> = [];
-  for (const call of yield* Roles.budgetCalls(modifier, budget)) {
+  for (const call of yield* ZodiacRoles.budgetCalls(modifier, budget)) {
     const receipt = yield* bySafe(w, safe, w.owner, call);
     if (call.data.slice(0, 10) === setAllowance) allowanceSetAt.push(yield* w.blockTime(receipt.blockNumber));
   }

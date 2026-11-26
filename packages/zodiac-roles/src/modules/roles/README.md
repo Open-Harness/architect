@@ -1,10 +1,10 @@
 # roles
 
-`Roles`: Roles 2.1.1's calls, reads and refusals for one Safe's modifier.
+`ZodiacRoles`: Roles 2.1.1's calls, reads and refusals for one Safe's modifier.
 
 - `deploy`: `ModuleProxyFactory.deployModule(ROLES_MASTERCOPY, setUp(abi.encode(safe, safe, safe)), saltNonce)`, and the
   address the factory deploys at: the EIP-1167 proxy of the mastercopy, by CREATE2 from the factory, salted with
-  `keccak256(keccak256(initializer) ++ saltNonce)`.
+  `keccak256(keccak256(initializer) ++ saltNonce)`; a salt nonce that is not a uint256 is refused.
 - `budgetCalls`: an `OrgBudget` as calls on the modifier, for the Safe (its owner) to make in the implementation's order:
   `setAllowance` (timestamp 0, so the modifier takes the block's), `scopeTarget`, `scopeFunction`, then `assignRoles`
   for each member. Every call has value 0, and the function is scoped with no value and no delegate call (ExecutionOptions
@@ -15,9 +15,10 @@
   scoped fields a `Matches` of its own. Listed breadth first, an `And` or an `Or` with paramType None (Integrity refuses
   anything else). Refused as `configuration`: a parameter `fn` does not have; an amount that is not a `uint<N>`, a recipient
   or a token that is not an `address`; two on one place; an array (of any size) or a tuple inside a tuple anywhere; a tuple
-  input with nothing scoped in it; no recipients, a recipient or a member listed twice; a limit of 2^256 - 1. No members is
+  input with nothing scoped in it; no recipients, a recipient or a member listed twice; a limit below 0 or at 2^256 - 1; an allowance whose
+  `balance`, `maxRefill` or `refill` is not a uint128 or whose `period` is not a uint64. No members is
   allowed: the implementation assigns them in a call of its own.
-- `execTransactionWithRole`: a Call (operation 0), `shouldRevert` true unless given.
+- `execTransactionWithRole`: a Call (operation 0), `shouldRevert` true unless given; a value that is not a uint256 is refused.
 - `allowance`: `allowances(key)` read over the chain port. Roles stores a `maxRefill` of 0 as `type(uint128).max`.
 - `accrued`: Roles' own accrual. Before a whole period has passed since `timestamp`, the balance; then the balance plus
   `refill` for each whole period, capped at `maxRefill`; a balance already at or over `maxRefill` stays as it is. A `timestamp` an owner set in the

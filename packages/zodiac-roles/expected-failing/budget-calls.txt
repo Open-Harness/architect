@@ -16,16 +16,25 @@ src/modules/roles/budget-calls.test.ts > the conditions > the largest limit ther
 src/modules/roles/budget-calls.test.ts > the conditions > transfer: the recipient one of three, the amount at most 60 and within the allowance
 src/modules/roles/budget-calls.test.ts > the conditions > two tuples, a field scoped in each: each in its own tuple
 src/modules/roles/budget-calls.test.ts > what a budget may not be > a budget with no members: the allowance and the scope, no assignRoles
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a balance over a uint128
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a field of an input that is not a tuple
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a field the tuple does not have
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a fixed-size array input
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a limit of 2^256 - 1, which no LessThan can hold
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a maxRefill over a uint128
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a member listed twice
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a negative balance
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a negative limit
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a negative maxRefill
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a negative period
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a negative refill
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a nested tuple, scoped
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a parameter the function does not have
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a period over a uint64
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a recipient listed twice
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a recipient parameter the function does not have
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a recipient that is not an address (a bytes32)
+src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a refill over a uint128
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped array
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped bytes field
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: a scoped string
@@ -45,3 +54,4 @@ src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the token and the amount on one field
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the token and the amount on one parameter
 src/modules/roles/budget-calls.test.ts > what a budget may not be > refused: the token and the recipient on one field
+src/modules/roles/budget-calls.test.ts > what a budget may not be > the widest allowance there can be: every field at its type's top

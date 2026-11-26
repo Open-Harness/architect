@@ -10,7 +10,7 @@ import { checksum, encode, hex, keccak, utf8, word } from "./internal/fixtures/e
 import {
   anvilGate as gate, attempt, budgetWorld, bySafe, modifierAbi, paymentsAbi, run, safeAbi, token, topicOf, type BudgetWorld,
 } from "./internal/fixtures/world.ts";
-import { Roles } from "./service.ts";
+import { ZodiacRoles } from "./service.ts";
 import type { OrgBudget } from "./types.ts";
 
 const roleKey = keccak(utf8("org-budget"));
@@ -27,14 +27,14 @@ const budgetOf = (overrides: Partial<OrgBudget> = {}) => (ctx: { readonly token:
   ...overrides,
 });
 const withRole = (w: BudgetWorld, to: Address, amount: bigint, role: Hex = roleKey) => w.transfer(to, amount).pipe(
-  Effect.flatMap((data) => Roles.execTransactionWithRole(w.modifier, { to: w.token, data, roleKey: role })));
-const typedOf = (refused: ChainError | undefined) => (refused === undefined ? undefined : Roles.refusalOf(refused) ?? refused);
+  Effect.flatMap((data) => ZodiacRoles.execTransactionWithRole(w.modifier, { to: w.token, data, roleKey: role })));
+const typedOf = (refused: ChainError | undefined) => (refused === undefined ? undefined : ZodiacRoles.refusalOf(refused) ?? refused);
 const typed = (w: BudgetWorld, from: Address, to: Address, amount: bigint, role: Hex = roleKey) =>
   withRole(w, to, amount, role).pipe(Effect.flatMap((call) => attempt(w, from, call)), Effect.map(typedOf));
 const spend = (w: BudgetWorld, to: Address, amount: bigint) => withRole(w, to, amount).pipe(Effect.flatMap((call) => w.send(w.member, call)));
-const left = (w: BudgetWorld) => Roles.allowance(w.port, w.modifier, key).pipe(Effect.map((allowance) => allowance.balance));
+const left = (w: BudgetWorld) => ZodiacRoles.allowance(w.port, w.modifier, key).pipe(Effect.map((allowance) => allowance.balance));
 
-test.skipIf(gate)("the modifier is deployed where Roles.deploy said, for the Safe as owner, avatar and target, and the Safe has it enabled", () =>
+test.skipIf(gate)("the modifier is deployed where ZodiacRoles.deploy said, for the Safe as owner, avatar and target, and the Safe has it enabled", () =>
   run(Effect.gen(function* () {
     const w = yield* budgetWorld(budgetOf());
     const created = w.deployed.logs.filter((log) => log.topics[0] === topicOf("ModuleProxyCreation(address,address)"));
@@ -49,7 +49,7 @@ test.skipIf(gate)("the modifier is deployed where Roles.deploy said, for the Saf
 test.skipIf(gate)("a send within the budget passes, pays exactly that, and the allowance reads back reduced by exactly the amount", () =>
   run(Effect.gen(function* () {
     const w = yield* budgetWorld(budgetOf());
-    const before = yield* Roles.allowance(w.port, w.modifier, key);
+    const before = yield* ZodiacRoles.allowance(w.port, w.modifier, key);
     // A maxRefill of 0 is stored as type(uint128).max (Roles 2.1.1, setAllowance), and timestamp 0 as the block's.
     expect(before).toMatchObject({ balance: 100n, refill: 0n, maxRefill: 2n ** 128n - 1n, period: 0n });
     expect(Object.keys(before).sort()).toEqual(["balance", "maxRefill", "period", "refill", "timestamp"]);
@@ -57,9 +57,9 @@ test.skipIf(gate)("a send within the budget passes, pays exactly that, and the a
     const receipt = yield* spend(w, alice, 30n);
     expect(receipt.status).toBe("success");
     expect([yield* w.balanceOf(alice), yield* w.balanceOf(w.safe)]).toEqual([30n, 70n]);
-    const after = yield* Roles.allowance(w.port, w.modifier, key);
+    const after = yield* ZodiacRoles.allowance(w.port, w.modifier, key);
     expect(after).toEqual({ ...before, balance: 70n });
-    expect(Roles.accrued(after, yield* w.now)).toBe(70n);
+    expect(ZodiacRoles.accrued(after, yield* w.now)).toBe(70n);
     // The modifier's own record of it: ConsumeAllowance(key, 30, 70), its three words unindexed.
     const consumed = receipt.logs.filter((log) =>
       log.address.toLowerCase() === w.modifier.toLowerCase() && log.topics[0] === topicOf("ConsumeAllowance(bytes32,uint128,uint128)"));
@@ -84,7 +84,7 @@ test.skipIf(gate)("the port refuses it as the modifier's ConditionViolation, wit
   run(Effect.gen(function* () {
     const w = yield* budgetWorld(budgetOf());
     const refused = yield* attempt(w, w.member.address, yield* withRole(w, alice, 61n));
-    const entry = Roles.refusals.find((item) => item.name === "ConditionViolation");
+    const entry = ZodiacRoles.refusals.find((item) => item.name === "ConditionViolation");
     expect(refused).toMatchObject({ _tag: "ChainRefusal", name: "ConditionViolation", code: entry?.code ?? "a ConditionViolation entry", args: { status: 9 } });
   })), 60_000);
 
@@ -125,7 +125,7 @@ test.skipIf(gate)("the role reaches only its one function of its one target, sen
   run(Effect.gen(function* () {
     const w = yield* budgetWorld(budgetOf());
     const call = (to: Address, data: Hex, value?: bigint) =>
-      Roles.execTransactionWithRole(w.modifier, { to, data, roleKey, ...(value === undefined ? {} : { value }) })
+      ZodiacRoles.execTransactionWithRole(w.modifier, { to, data, roleKey, ...(value === undefined ? {} : { value }) })
         .pipe(Effect.flatMap((made) => attempt(w, w.member.address, made)), Effect.map(typedOf));
     expect(yield* call(w.token, yield* encode(token.refuseEmpty, []))).toMatchObject({ _tag: "ConditionViolation", status: "FunctionNotAllowed" });
     const other = yield* w.deploy(w.deployer, tokenBytecode);
@@ -148,27 +148,27 @@ test.skipIf(gate)("an allowance with a refill period: what accrued is what can b
   run(Effect.gen(function* () {
     const w = yield* budgetWorld(budgetOf({ allowance: { key, balance: 30n, refill: 25n, maxRefill: 70n, period: 3600n } }));
     yield* spend(w, alice, 30n);
-    const spent = yield* Roles.allowance(w.port, w.modifier, key);
+    const spent = yield* ZodiacRoles.allowance(w.port, w.modifier, key);
     expect(spent).toMatchObject({ balance: 0n, refill: 25n, maxRefill: 70n, period: 3600n });
-    expect(Roles.accrued(spent, yield* w.now)).toBe(0n);
+    expect(ZodiacRoles.accrued(spent, yield* w.now)).toBe(0n);
     // Two whole periods pass: 0 + 2 × 25 = 50, under the cap of 70.
     yield* w.later(7200);
-    expect(Roles.accrued(spent, yield* w.now)).toBe(50n);
+    expect(ZodiacRoles.accrued(spent, yield* w.now)).toBe(50n);
     expect(yield* typed(w, w.member.address, alice, 51n)).toEqual({ _tag: "ConditionViolation", status: "AllowanceExceeded", info: key });
     expect(yield* typed(w, w.member.address, alice, 50n)).toBeUndefined();
     // Two more: 50 + 2 × 25 = 100, capped at 70. The limit, 60, goes through.
     yield* w.later(7200);
-    expect(Roles.accrued(spent, yield* w.now)).toBe(70n);
+    expect(ZodiacRoles.accrued(spent, yield* w.now)).toBe(70n);
     yield* spend(w, alice, 60n);
-    const after = yield* Roles.allowance(w.port, w.modifier, key);
+    const after = yield* ZodiacRoles.allowance(w.port, w.modifier, key);
     expect(after.balance).toBe(10n);
-    expect(Roles.accrued(after, yield* w.now)).toBe(10n);
+    expect(ZodiacRoles.accrued(after, yield* w.now)).toBe(10n);
   })), 60_000);
 
 test.skipIf(gate)("only the Safe, the modifier's owner, can change the budget", () =>
   run(Effect.gen(function* () {
     const w = yield* budgetWorld(budgetOf());
-    const [first] = yield* Roles.budgetCalls(w.modifier, budgetOf()({ token: w.token, member: w.stranger.address }));
+    const [first] = yield* ZodiacRoles.budgetCalls(w.modifier, budgetOf()({ token: w.token, member: w.stranger.address }));
     if (!first) return yield* Effect.fail(new Error("No budget call"));
     expect(typedOf(yield* attempt(w, w.stranger.address, first))).toEqual({ _tag: "OwnableUnauthorizedAccount", account: checksum(w.stranger.address) });
     yield* bySafe(w, w.safe, w.owner, first);
@@ -185,7 +185,7 @@ const paymentsBudget = (overrides: Partial<OrgBudget> = {}) => (ctx: { readonly 
 });
 const pay = (w: BudgetWorld, from: Address, item: { readonly recipient: Address; readonly token: Address; readonly amount: bigint }) =>
   encode(paymentsAbi.send, [{ settlementId: keccak(utf8(`settlement:${item.amount}`)), ...item }]).pipe(
-    Effect.flatMap((data) => Roles.execTransactionWithRole(w.modifier, { to: w.payments, data, roleKey })),
+    Effect.flatMap((data) => ZodiacRoles.execTransactionWithRole(w.modifier, { to: w.payments, data, roleKey })),
     Effect.flatMap((call) => attempt(w, from, call)), Effect.map(typedOf));
 
 test.skipIf(gate)("V3 send's shape: a payment to the third recipient passes, the wrong token, recipient or amount is refused", () =>
@@ -197,7 +197,7 @@ test.skipIf(gate)("V3 send's shape: a payment to the third recipient passes, the
     expect(yield* pay(w, w.member.address, { ...right, amount: 61n })).toMatchObject({ _tag: "ConditionViolation", status: "ParameterGreaterThanAllowed" });
     expect(yield* pay(w, w.member.address, right)).toBeUndefined();
     const data = yield* encode(paymentsAbi.send, [{ settlementId: keccak(utf8("settlement:1")), ...right }]);
-    yield* w.send(w.member, yield* Roles.execTransactionWithRole(w.modifier, { to: w.payments, data, roleKey }));
+    yield* w.send(w.member, yield* ZodiacRoles.execTransactionWithRole(w.modifier, { to: w.payments, data, roleKey }));
     expect([yield* w.balanceOf(carol, w.paymentsToken), yield* w.balanceOf(w.payments, w.paymentsToken)]).toEqual([30n, 70n]);
     expect(yield* left(w)).toBe(70n);
   })), 60_000);

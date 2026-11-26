@@ -9,7 +9,7 @@ import { Effect } from "effect";
 import type { Address, Hex } from "@orthograph/chain-evm/device";
 import { describe, expect, test } from "vitest";
 import { addressWord, checksum, decodeArgs, fn, keccak, selector, signatureOf, utf8, word } from "./internal/fixtures/evm.ts";
-import { Roles } from "./service.ts";
+import { ZodiacRoles } from "./service.ts";
 import type { ContractCall, OrgBudget } from "./types.ts";
 
 const modifier: Address = "0x0000000000000000000000000000000000000d01";
@@ -77,7 +77,7 @@ const budget: OrgBudget = {
   allowance: { key, balance: 100n, maxRefill: 120n, refill: 50n, period: 3600n },
 };
 const scoped = async (of: OrgBudget) => {
-  const calls = await decoded(await run(Roles.budgetCalls(modifier, of)));
+  const calls = await decoded(await run(ZodiacRoles.budgetCalls(modifier, of)));
   const scope = calls.filter((call) => call.name === "scopeFunction");
   expect(scope.length).toBe(1);
   const [role, scopedTarget, scopedSelector, conditions, options] = scope[0]!.args as [Hex, Address, Hex, ReadonlyArray<Flat>, number];
@@ -106,13 +106,13 @@ const integral = (conditions: ReadonlyArray<Flat>) => {
 
 describe("the calls", () => {
   test("every call is the Safe's to its modifier, with no value", async () => {
-    const calls = await run(Roles.budgetCalls(modifier, budget));
+    const calls = await run(ZodiacRoles.budgetCalls(modifier, budget));
     expect(calls.length).toBeGreaterThan(0);
     for (const call of calls) expect({ to: call.to, value: call.value }).toEqual({ to: modifier, value: 0n });
   });
 
   test("in the implementation's order: the allowance, the target, the function, then each member in turn", async () => {
-    const calls = await decoded(await run(Roles.budgetCalls(modifier, budget)));
+    const calls = await decoded(await run(ZodiacRoles.budgetCalls(modifier, budget)));
     expect(calls.map((call) => call.name)).toEqual(["setAllowance", "scopeTarget", "scopeFunction", "assignRoles", "assignRoles", "assignRoles"]);
     // The modifier takes the block's timestamp for a 0 (Roles 2.1.1, setAllowance).
     expect(calls[0]?.args).toEqual([key, 100n, 120n, 50n, 3600n, 0n]);
@@ -129,7 +129,7 @@ describe("the calls", () => {
   });
 
   test("an allowance with no refill sets maxRefill, refill and period to 0; amounts over 2^53 are exact", async () => {
-    const calls = await decoded(await run(Roles.budgetCalls(modifier, { ...budget, allowance: { key, balance: 10n ** 18n + 1n } })));
+    const calls = await decoded(await run(ZodiacRoles.budgetCalls(modifier, { ...budget, allowance: { key, balance: 10n ** 18n + 1n } })));
     expect(calls.filter((call) => call.name === "setAllowance").map((call) => call.args)).toEqual([[key, 10n ** 18n + 1n, 0n, 0n, 0n, 0n]]);
   });
 });
@@ -215,12 +215,27 @@ describe("what a budget may not be", () => {
     ["a recipient listed twice", { ...budget, recipients: { param: 0, anyOf: [alice, bob, alice] } }],
     ["a member listed twice", { ...budget, members: [m1, m2, m1] }],
     ["a limit of 2^256 - 1, which no LessThan can hold", { ...budget, amount: { param: 1, limit: 2n ** 256n - 1n } }],
+    ["a negative limit", { ...budget, amount: { param: 1, limit: -1n } }],
+    ["a negative balance", { ...budget, allowance: { key, balance: -1n } }],
+    ["a balance over a uint128", { ...budget, allowance: { key, balance: 2n ** 128n } }],
+    ["a negative maxRefill", { ...budget, allowance: { key, balance: 1n, maxRefill: -1n } }],
+    ["a maxRefill over a uint128", { ...budget, allowance: { key, balance: 1n, maxRefill: 2n ** 128n } }],
+    ["a negative refill", { ...budget, allowance: { key, balance: 1n, refill: -1n, period: 60n } }],
+    ["a refill over a uint128", { ...budget, allowance: { key, balance: 1n, refill: 2n ** 128n, period: 60n } }],
+    ["a negative period", { ...budget, allowance: { key, balance: 1n, refill: 1n, period: -1n } }],
+    ["a period over a uint64", { ...budget, allowance: { key, balance: 1n, refill: 1n, period: 2n ** 64n } }],
   ] as ReadonlyArray<readonly [string, OrgBudget]>)("refused: %s", async (_name, wrong) => {
-    expect(await fails(Roles.budgetCalls(modifier, wrong))).toMatchObject({ _tag: "ChainFault", kind: "configuration" });
+    expect(await fails(ZodiacRoles.budgetCalls(modifier, wrong))).toMatchObject({ _tag: "ChainFault", kind: "configuration" });
+  });
+
+  test("the widest allowance there can be: every field at its type's top", async () => {
+    const top = { key, balance: 2n ** 128n - 1n, maxRefill: 2n ** 128n - 1n, refill: 2n ** 128n - 1n, period: 2n ** 64n - 1n };
+    const calls = await decoded(await run(ZodiacRoles.budgetCalls(modifier, { ...budget, allowance: top })));
+    expect(calls[0]?.args).toEqual([key, top.balance, top.maxRefill, top.refill, top.period, 0n]);
   });
 
   test("a budget with no members: the allowance and the scope, no assignRoles", async () => {
-    const calls = await decoded(await run(Roles.budgetCalls(modifier, { ...budget, members: [] })));
+    const calls = await decoded(await run(ZodiacRoles.budgetCalls(modifier, { ...budget, members: [] })));
     expect(calls.map((call) => call.name)).toEqual(["setAllowance", "scopeTarget", "scopeFunction"]);
   });
 });
