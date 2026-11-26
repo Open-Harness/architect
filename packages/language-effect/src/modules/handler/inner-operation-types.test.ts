@@ -19,7 +19,8 @@ type Diagnostic = { readonly file: string; readonly line: number; readonly colum
 let compiled: ReadonlyArray<Diagnostic> | undefined;
 const compile = (): ReadonlyArray<Diagnostic> => (compiled ??= (() => {
   // `--pretty false`: with FORCE_COLOR (CI) tsc colours "error" and "TS" apart, and a filter on "error TS" would find nothing.
-  const result = spawnSync(join(repo, "node_modules/.bin/tsc"), ["--pretty", "false", "-p", join(fixture, "tsconfig.json")], { cwd: repo, encoding: "utf8" });
+  // `--noErrorTruncation`: a long union printed as "… 4 more …" could hide the fault's name.
+  const result = spawnSync(join(repo, "node_modules/.bin/tsc"), ["--pretty", "false", "--noErrorTruncation", "-p", join(fixture, "tsconfig.json")], { cwd: repo, encoding: "utf8" });
   const found: Array<Diagnostic> = [];
   for (const l of result.stdout.split("\n")) {
     const m = /^(.+?)\((\d+),(\d+)\): error TS\d+: (.*)$/.exec(l);
