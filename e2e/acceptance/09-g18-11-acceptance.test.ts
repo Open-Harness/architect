@@ -444,7 +444,7 @@ describe("09 the getting-started page, run as written: its steps are one input o
     for (const fine of ["export BAKERY_URL=http://127.0.0.1:8787", "export BAKERY_TOKEN=abc", "BAKERY_URL=http://127.0.0.1:8787 node generated/cli/src/main.ts system health",
       "BAKERY_URL=http://127.0.0.1:8787 BAKERY_TOKEN=abc bakery system health", "npm install -g @orthograph/cli@next", "cd bakery", "pnpm install", "pnpm ortho dev"]) expect(as(fine), fine).toBeUndefined();
     // With no app named, no variable at all is the page's to set.
-    expect(refusal("export BAKERY_URL=http://127.0.0.1:8787", undefined)).toMatch(/^it exports BAKERY_URL: a page sets no variable/);
+    expect(refusal("export BAKERY_URL=http://127.0.0.1:8787", null)).toMatch(/^it exports BAKERY_URL: a page sets no variable/);
   });
 
   it("every step runs in an empty folder against Orthograph from the local registry, and exits 0", { timeout: 30 * MIN }, async () => {

@@ -46,8 +46,9 @@ export const PREFIX = NAME?.toUpperCase().replace(/-/g, "_");
 export const proveAt = at(orthoRun("prove"));
 export const devAt = at(orthoRun("dev"));
 
-/** Why a step is not a plain command a reader types (the contract above), or undefined when it is. `name` is the app's (the page's own). */
-export const refusal = (step: string, name: string | undefined = NAME): string | undefined => {
+/** Why a step is not a plain command a reader types (the contract above), or undefined when it is. `app` is the app's name (the page's own), or null for none. */
+export const refusal = (step: string, app: string | null = NAME ?? null): string | undefined => {
+  const name = app ?? undefined;
   if (/[;|&<>()`]|\$\(/.test(step)) return "it uses the shell (`;`, `|`, `&`, a redirect, `$(…)`, backticks or parentheses)";
   // GOAL18-getting-started-acceptance and the 🔍 review of #1145: the only variables a page sets, by `export` or before a command, are
   // the app's own two, `<APP>_URL` and `<APP>_TOKEN`. Anything else (npm's or pnpm's config, PATH, HOME, NODE_*, COREPACK_*, YARN_*,
