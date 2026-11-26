@@ -17,6 +17,7 @@ owns:
   - design/decisions/M7-capxul.md
   - design/decisions/K43-capxul-core.md
   - design/goals/16-capxul.md
+  - design/goals/16-lane-payroll-tax.md
   - design/decisions/CX-grill.md
 slices:
   - "1 · Capxul's plugins mapped, the first map"
@@ -147,6 +148,16 @@ goal has claimed, and every fix reaches the alpha once it lands on `main`.
   `[goal-16 · <role> · <harness> · <model>]` (the `github` skill).
 - **Limits.** No real keys in this repository. Bridge and the paid services run against stand-ins until Capxul's own
   staging. At most $10 a day on cloud resources. Stop every process you start, by its id.
+
+## Lanes
+
+A lane is one long-running agent that builds one piece of Capxul beside this goal's own slices, in its own paths, and
+lands each slice in `goal/capxul` (Aaron, 26 November 2026). Its brief, with its paths, slices and done check, is its
+own file; its "Where it stands" is one GitHub issue, which Goal 16's lead opens.
+
+| Lane | Harness | Builds | Brief |
+|---|---|---|---|
+| US payroll tax | Amp | the `payroll-tax-us` piece: federal and state withholding, FICA, FUTA and SUTA from the publications, then the tax on a payroll slip once gap 3 lands (CX-payroll-tax) | `16-lane-payroll-tax.md` |
 
 ## Where it stands
 
