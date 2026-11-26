@@ -26,7 +26,8 @@
     "@orthograph/generators": "workspace:*",
     "@orthograph/logbook": "workspace:*",
     "@orthograph/services": "workspace:*",
-    "nx": "24.0.3"
+    "nx": "24.0.3",
+    "viem": "2.57.20"
   },
   "files": [
     "dist"
