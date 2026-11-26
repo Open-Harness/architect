@@ -169,19 +169,12 @@ export default Blueprint.journey("post a payment entry", {
         expect((p) => p.items.map(bare)).toEqual([plain(s.world.creditors, "2026-03-05", 200n * USDC, 0n, "Supplier", s.world.supplier, false)]),
       ),
       s.step(
-        "it is Creditors' only line",
-        s.ada.run(ledger, { account: s.world.creditors }),
-        expect((p) => p.items.length).toBe(1),
-        expect((p) => p.items[0].voucherId === s.world.paymentEntry).toBe(false),
+        "Bank's ledger, read by the same payment, holds the credit, with no party",
+        s.ada.run(ledger, { account: s.world.bank, voucherId: s.last.items[0].voucherId }),
+        expect((p) => p.items.map(bare)).toEqual([plain(s.world.bank, "2026-03-05", 0n, 200n * USDC, null, null, false)]),
       ),
-      s.step(
-        "and Bank's newest line is the credit, with no party, from the same payment",
-        s.ada.run(ledger, { account: s.world.bank }),
-        expect((p) => p.items.length).toBe(3),
-        expect((p) => bare(p.items[2])).toEqual(plain(s.world.bank, "2026-03-05", 0n, 200n * USDC, null, null, false)),
-        expect((p) => p.items[2].voucherId).toMatch(/^pen_[0-9a-z]+$/),
-        expect((p) => p.items[2].voucherId === s.world.paymentEntry).toBe(false),
-      ),
+      s.step("it is Creditors' only line", s.ada.run(ledger, { account: s.world.creditors }), expect((p) => p.items.length).toBe(1)),
+      s.step("and Bank holds three", s.ada.run(ledger, { account: s.world.bank }), expect((p) => p.items.length).toBe(3)),
       s.step(
         "Mara Office Rentals' balance is the advance paid, positive",
         s.ada.run(supplierBalance, { supplier: s.world.supplier, onDay: "2026-12-31" }),
@@ -270,9 +263,9 @@ export default Blueprint.journey("post a payment entry", {
 
       // A party's balance is its own: another customer of the same name doesn't count.
       s.step(
-        "Ada adds a second Kibo Stores",
+        "Ada adds a second customer of the same name",
         s.ada.run(createCustomer, { company: s.world.company, customerName: "Kibo Stores", customerType: "Company" }),
-        expect((a) => a.customer === s.world.customer).toBe(false),
+        expect((a) => a.customer).toMatch(/^cus_[0-9a-z]+$/),
       ),
       s.step(
         "and receives 70 USDC from it on 2 April",

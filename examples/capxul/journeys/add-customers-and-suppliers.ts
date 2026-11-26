@@ -42,13 +42,13 @@ export default Blueprint.journey("add customers and suppliers", {
     return [
       // Customers.
       s.step(
-        "Kibo Stores reads back an active company in Commercial",
+        "Acme Trading's customer reads back an active company in its ledger group",
         s.ada.run(getCustomer, { id: s.world.customer }),
         expect(readC).toEqual([s.world.company, "Kibo Stores", "Company", s.world.customerGroup, "active"]),
         noEvents(),
       ),
       s.step(
-        "Kampala Traders reads back in Acme Logistics, in no group",
+        "Acme Logistics' customer reads back there, in no group",
         s.ada.run(getCustomer, { id: s.world.otherCustomer }),
         expect(readC).toEqual([s.world.otherCompany, "Kampala Traders", "Company", null, "active"]),
       ),
@@ -85,7 +85,7 @@ export default Blueprint.journey("add customers and suppliers", {
         noEvents(),
       ),
       s.step(
-        "Ada adds Wanjiru Njoroge, an individual in no group",
+        "Ada adds a customer, an individual in no group",
         customer({ customerName: "Wanjiru Njoroge", customerType: "Individual" }),
         expect((a) => a.customer).toMatch(/^cus_[0-9a-z]+$/),
         emits(CustomerCreated, { customer: s.last.customer, company: s.world.company }),
@@ -98,15 +98,20 @@ export default Blueprint.journey("add customers and suppliers", {
         expect(readC).toEqual([s.world.company, "Wanjiru Njoroge", "Individual", null, "active"]),
       ),
       s.step(
-        "a second Kibo Stores is a customer of its own: two may share a name",
+        "a second customer of the same name is a customer of its own: two may share a name",
         customer({ customerName: "Kibo Stores", customerType: "Partnership", customerGroup: s.world.customerGroup }),
-        expect((a) => a.customer === s.world.customer).toBe(false),
+        expect((a) => a.customer).toMatch(/^cus_[0-9a-z]+$/),
         customers.isIn(s.last.customer, "active"),
       ),
       s.step(
         "it reads back as a partnership",
         s.ada.run(getCustomer, { id: s.last.customer }),
         expect(readC).toEqual([s.world.company, "Kibo Stores", "Partnership", s.world.customerGroup, "active"]),
+      ),
+      s.step(
+        "and the first is still a company",
+        s.ada.run(getCustomer, { id: s.world.customer }),
+        expect(readC).toEqual([s.world.company, "Kibo Stores", "Company", s.world.customerGroup, "active"]),
       ),
       s.step(
         "a new customer's balance is nothing",
@@ -157,19 +162,19 @@ export default Blueprint.journey("add customers and suppliers", {
         customers.isIn(s.world.customer, "active"),
       ),
       s.step(
-        "Kampala Traders, in Acme Logistics, is still active",
+        "Acme Logistics' customer is still active",
         s.ada.run(getCustomer, { id: s.world.otherCustomer }),
         expect((a) => a.state).toBe("active"),
       ),
 
       // Suppliers: the same rules.
       s.step(
-        "Mara Office Rentals reads back an active company in Services",
+        "Acme Trading's supplier reads back an active company in its ledger group",
         s.ada.run(getSupplier, { id: s.world.supplier }),
         expect(readS).toEqual([s.world.company, "Mara Office Rentals", "Company", s.world.supplierGroup, "active"]),
       ),
       s.step(
-        "Nile Fuel reads back in Acme Logistics, in no group",
+        "Acme Logistics' supplier reads back there, in no group",
         s.ada.run(getSupplier, { id: s.world.otherSupplier }),
         expect(readS).toEqual([s.world.otherCompany, "Nile Fuel", "Company", null, "active"]),
       ),
@@ -204,7 +209,7 @@ export default Blueprint.journey("add customers and suppliers", {
         noEvents(),
       ),
       s.step(
-        "Ada adds Otieno Plumbing, a partnership in no group",
+        "Ada adds a supplier, a partnership in no group",
         supplier({ supplierName: "Otieno Plumbing", supplierType: "Partnership" }),
         expect((a) => a.supplier).toMatch(/^sup_[0-9a-z]+$/),
         emits(SupplierCreated, { supplier: s.last.supplier, company: s.world.company }),
@@ -217,9 +222,19 @@ export default Blueprint.journey("add customers and suppliers", {
         expect(readS).toEqual([s.world.company, "Otieno Plumbing", "Partnership", null, "active"]),
       ),
       s.step(
-        "a second Mara Office Rentals is a supplier of its own",
+        "a second supplier of the same name is a supplier of its own",
         supplier({ supplierName: "Mara Office Rentals", supplierType: "Individual", supplierGroup: s.world.supplierGroup }),
-        expect((a) => a.supplier === s.world.supplier).toBe(false),
+        expect((a) => a.supplier).toMatch(/^sup_[0-9a-z]+$/),
+      ),
+      s.step(
+        "it reads back as an individual",
+        s.ada.run(getSupplier, { id: s.last.supplier }),
+        expect(readS).toEqual([s.world.company, "Mara Office Rentals", "Individual", s.world.supplierGroup, "active"]),
+      ),
+      s.step(
+        "and the first is still a company",
+        s.ada.run(getSupplier, { id: s.world.supplier }),
+        expect(readS).toEqual([s.world.company, "Mara Office Rentals", "Company", s.world.supplierGroup, "active"]),
       ),
       s.step(
         "a new supplier's balance is nothing",

@@ -42,13 +42,13 @@ export default Blueprint.journey("set up party groups", {
     return [
       // Customer groups.
       s.step(
-        "All Customer Groups reads back Acme Trading's root, a group with no parent",
+        "the root customer group reads back Acme Trading's, a group with no parent",
         s.ada.run(getCustomerGroup, { id: s.world.allCustomerGroups }),
         expect(readC).toEqual([s.world.company, "All Customer Groups", null, "group"]),
         noEvents(),
       ),
       s.step(
-        "Commercial reads back a ledger under it",
+        "the ledger customer group reads back under it",
         s.ada.run(getCustomerGroup, { id: s.world.customerGroup }),
         expect(readC).toEqual([s.world.company, "Commercial", s.world.allCustomerGroups, "ledger"]),
       ),
@@ -92,7 +92,7 @@ export default Blueprint.journey("set up party groups", {
         noEvents(),
       ),
       s.step(
-        "Ada adds Retail, a group under the root",
+        "Ada adds a group under the root",
         cg({ customerGroupName: "Retail", parentCustomerGroup: s.world.allCustomerGroups, isGroup: true }),
         expect((a) => a.customerGroup).toMatch(/^cgr_[0-9a-z]+$/),
         emits(CustomerGroupCreated, { customerGroup: s.last.customerGroup, company: s.world.company }),
@@ -106,16 +106,20 @@ export default Blueprint.journey("set up party groups", {
         noEvents(),
       ),
       s.step(
-        "Ada adds Corner Shops, a ledger under Retail, two levels below the root",
+        "Ada adds a ledger under the new group, two levels below the root",
         cg({ customerGroupName: "Corner Shops", parentCustomerGroup: s.last.customerGroup, isGroup: false }),
         customerGroups.isIn(s.last.customerGroup, "ledger"),
       ),
       s.step(
-        "it reads back a ledger under Retail, not under the root",
+        "it reads back a ledger under the new group, not under the root",
         s.ada.run(getCustomerGroup, { id: s.last.customerGroup }),
         expect((a) => [a.company, a.customerGroupName, a.state]).toEqual([s.world.company, "Corner Shops", "ledger"]),
         expect((a) => a.parentCustomerGroup).toMatch(/^cgr_[0-9a-z]+$/),
-        expect((a) => a.parentCustomerGroup === s.world.allCustomerGroups || a.parentCustomerGroup === s.world.customerGroup).toBe(false),
+      ),
+      s.step(
+        "its parent reads back as the group made before it, a group under the root",
+        s.ada.run(getCustomerGroup, { id: s.last.parentCustomerGroup }),
+        expect(readC).toEqual([s.world.company, "Retail", s.world.allCustomerGroups, "group"]),
       ),
       s.step(
         "Acme Logistics may have its own root, of the same name",
@@ -136,7 +140,7 @@ export default Blueprint.journey("set up party groups", {
         noEvents(),
       ),
       s.step(
-        "Acme Logistics may have its own Commercial, a ledger under its root",
+        "Acme Logistics may have a ledger group of the same name as Acme Trading's, under its root",
         cg({ customerGroupName: "Commercial", parentCustomerGroup: s.last.customerGroup, isGroup: false }, s.world.otherCompany),
         customerGroups.isIn(s.last.customerGroup, "ledger"),
       ),
@@ -153,21 +157,25 @@ export default Blueprint.journey("set up party groups", {
         noEvents(),
       ),
       s.step(
-        "Acme Logistics' Commercial reads back in Acme Logistics, under its own root",
+        "that ledger reads back in Acme Logistics, under its own root",
         s.ada.run(getCustomerGroup, { id: s.last.customerGroup }),
         expect((a) => [a.company, a.customerGroupName, a.state]).toEqual([s.world.otherCompany, "Commercial", "ledger"]),
         expect((a) => a.parentCustomerGroup).toMatch(/^cgr_[0-9a-z]+$/),
-        expect((a) => a.parentCustomerGroup === s.world.allCustomerGroups).toBe(false),
+      ),
+      s.step(
+        "its parent reads back as Acme Logistics' root",
+        s.ada.run(getCustomerGroup, { id: s.last.parentCustomerGroup }),
+        expect(readC).toEqual([s.world.otherCompany, "All Customer Groups", null, "group"]),
       ),
 
       // Supplier groups: the same rules.
       s.step(
-        "All Supplier Groups reads back Acme Trading's root",
+        "the root supplier group reads back Acme Trading's",
         s.ada.run(getSupplierGroup, { id: s.world.allSupplierGroups }),
         expect(readS).toEqual([s.world.company, "All Supplier Groups", null, "group"]),
       ),
       s.step(
-        "Services reads back a ledger under it",
+        "the ledger supplier group reads back under it",
         s.ada.run(getSupplierGroup, { id: s.world.supplierGroup }),
         expect(readS).toEqual([s.world.company, "Services", s.world.allSupplierGroups, "ledger"]),
       ),
@@ -191,7 +199,7 @@ export default Blueprint.journey("set up party groups", {
         noEvents(),
       ),
       s.step(
-        "Ada adds Raw Materials, a ledger under the root",
+        "Ada adds a second ledger supplier group under the root",
         sg({ supplierGroupName: "Raw Materials", parentSupplierGroup: s.world.allSupplierGroups, isGroup: false }),
         expect((a) => a.supplierGroup).toMatch(/^sgr_[0-9a-z]+$/),
         emits(SupplierGroupCreated, { supplierGroup: s.last.supplierGroup, company: s.world.company }),
@@ -210,7 +218,7 @@ export default Blueprint.journey("set up party groups", {
         noEvents(),
       ),
       s.step(
-        "a customer group's name is no supplier group's: Commercial is free here",
+        "a customer group's name is no supplier group's: it is free here",
         sg({ supplierGroupName: "Commercial", parentSupplierGroup: s.world.allSupplierGroups, isGroup: false }),
         supplierGroups.isIn(s.last.supplierGroup, "ledger"),
       ),
