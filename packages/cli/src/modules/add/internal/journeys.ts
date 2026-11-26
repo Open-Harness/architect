@@ -23,7 +23,7 @@ export const journeysOf = (model: Model, thing: string, exists: (path: string) =
   if (stubs.length === 0) {
     return new AddRefused({ message: unfinished.length > 0
       ? `${thing} has nothing to write journeys for yet: ${unfinished.join("; ")}. Fill the blanks (ortho check names each), then run this again`
-      : `${thing} has no machine, roles or declared errors to write journeys for` });
+      : `${thing} has no machine, roles or refusals to write journeys for` });
   }
   const there = stubs.filter((s) => exists(s.path)).map((s) => s.path);
   const left = unfinished.length > 0 ? `; no stubs for what is unfinished: ${unfinished.join("; ")}` : "";

@@ -348,7 +348,8 @@ const brief = Command.make(
     Compiler.model.pipe(
       Effect.provide(nodeSource(root)),
       Effect.flatMap((m) => {
-        const journeys = [...tsFiles(join(root, "blueprint/journeys")), ...tsFiles(join(root, "journeys"))]
+        // The same files the compiler, prove and check read: blueprint/journeys/, and the files directly in a root journeys/ (ADD-journey-places).
+        const journeys = [...tsFiles(join(root, "blueprint/journeys")), ...tsFiles(join(root, "journeys")).filter((f) => dirname(f) === join(root, "journeys"))]
           .map((f) => ({ path: relative(root, f), text: readFileSync(f, "utf8") }));
         const said = Brief.of(m, operation, journeys);
         return "unknown" in said ? fail(said.unknown, 2) : Effect.sync(() => process.stdout.write(said.lines.join("\n") + "\n"));

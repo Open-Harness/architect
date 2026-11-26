@@ -32,4 +32,31 @@ describe("a journey stub's blanks", () => {
     expect(said.journeyBlanks).toEqual({ "journeys/a.ts": ["the page's owner"] });
     expect(said.journeys["journeys/a.ts"]?.cast).toEqual({ visitor: { kind: "anyone" } });
   });
+
+  it("reads the steps a blank cast member is already written into, and one step left blank among written ones", () => {
+    const run = (actor: string) => ({ kind: "call", actor, operation: {}, payload: {}, request: undefined }) as never;
+    const said = stories(Blueprint.journey("half written", {
+      cast: { visitor: Blueprint.anyone, owner: Blueprint.todo("the page's owner") },
+      steps: (s) => [
+        s.step("the owner does something", (s as unknown as { readonly owner: { readonly run: (...args: ReadonlyArray<unknown>) => never } }).owner.run({ kind: "operation" }, {})),
+        Blueprint.todo("the next step"),
+        s.step("a visitor looks", run("visitor")),
+      ],
+    }));
+    expect(said.problems).toEqual([]);
+    expect(said.journeyBlanks).toEqual({ "journeys/a.ts": ["the page's owner", "the next step"] });
+    expect(said.journeys["journeys/a.ts"]?.steps.map((step) => step.title)).toEqual(["the owner does something", "a visitor looks"]);
+  });
+
+  it("lists a starting world's blank cast under the world's file, and reads the world as empty", () => {
+    const layout = {
+      things: new Map(), mounts: new Map(), journeys: new Map(),
+      startingWorlds: new Map([["w", { file: "starting-worlds/w.ts", declaration: Blueprint.startingWorld("w", { cast: Blueprint.todo("who is in the world"), makes: () => [], gives: () => ({}) }), sourceHash: undefined }]]),
+    } as never;
+    const problems: Array<string> = [];
+    const said = storiesOf(layout, {}, allowedOf(layout, new Map(), problems), problems);
+    expect(problems).toEqual([]);
+    expect(said.journeyBlanks).toEqual({ "starting-worlds/w.ts": ["who is in the world"] });
+    expect(said.startingWorlds["w"]).toMatchObject({ cast: {}, makes: [], gives: {} });
+  });
 });

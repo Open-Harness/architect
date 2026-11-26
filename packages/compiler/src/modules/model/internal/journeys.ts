@@ -111,8 +111,11 @@ export const storiesOf = (
     // A clash would let the script's own `s.clock` hide a cast member silently, so the journey is refused and its steps not read.
     const clashes = castClashes(members, file, `the journey "${j.name}"`);
     problems.push(...clashes);
-    const written: unknown = clashes.length > 0 ? [] : j.steps(Scripting.script(Object.fromEntries(Object.entries(members).filter(([, role]) => !Blanks.isBlank(role)))));
-    const declared = Blanks.isBlank(written) ? [] : written as ReturnType<typeof j.steps>;
+    // The script needs only the cast's names, so a member still blank can already be written into a step (`s.owner.run(...)`).
+    const written: unknown = clashes.length > 0 ? [] : j.steps(Scripting.script(members));
+    // One step left blank among written ones is a blank too, and the steps around it are read.
+    const all: ReadonlyArray<unknown> = Blanks.isBlank(written) ? [] : written as ReturnType<typeof j.steps>;
+    const declared = all.filter((step) => !Blanks.isBlank(step)) as ReturnType<typeof j.steps>;
     const found = [...blanksIn(j.cast), ...blanksIn(j.starts), ...blanksIn(written), ...declared.flatMap(stepBlanks)];
     if (found.length > 0) blanks[file] = found;
     const steps = declared.map((step) => {
@@ -127,15 +130,18 @@ export const storiesOf = (
 
   const startingWorlds: Record<string, StartingWorldModel> = {};
   for (const [name, { file, declaration: w, sourceHash }] of layout.startingWorlds) {
-    const cast = castOf(w.cast, file);
-    const clashes = castClashes(w.cast, file, `the starting world "${name}"`);
+    // A starting world's cast may be a blank too: it is listed under the world's file, and read as empty until filled.
+    const own: Readonly<Record<string, Allowed>> = Blanks.isBlank(w.cast) ? {} : w.cast;
+    if (blanksIn(w.cast).length > 0) blanks[file] = [...(blanks[file] ?? []), ...blanksIn(w.cast)];
+    const cast = castOf(own, file);
+    const clashes = castClashes(own, file, `the starting world "${name}"`);
     problems.push(...clashes);
-    const members = { ...w.cast };
+    const members = { ...own };
     const seen = new Set([name]);
     for (let parent = w.from; parent !== undefined && !seen.has(parent);) {
       seen.add(parent);
       const ancestor = layout.startingWorlds.get(parent)?.declaration;
-      for (const [actor, role] of Object.entries(ancestor?.cast ?? {})) members[actor] ??= role;
+      for (const [actor, role] of Object.entries(Blanks.isBlank(ancestor?.cast) ? {} : ancestor?.cast ?? {})) members[actor] ??= role;
       parent = ancestor?.from;
     }
     // A name an ancestor casts counts too: the script is not made for a cast it would refuse (the ancestor's own clash is a problem of its own).
