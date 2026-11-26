@@ -55,6 +55,8 @@ Heard through speech to text and kept as heard; "Capsule" is Capxul.
 
 ### 1. Two goals build
 
+(Superseded by K47, 26 November 2026: three goals build; Coworker is the third.)
+
 - **Goal 18, the framework goal, builds the Orthograph alpha** (`design/goals/18-framework.md`, slices 4 to 12): the npm
   preview, TypeScript end to end, with the chain basics. It works on `main` by its own pull requests. It keeps every
   job K42 gave it (K42, call 4: "a lane that should just always be running"): the board, the loop that ranks what runs
@@ -147,7 +149,7 @@ Parked means the code stays in the repository untouched and its goal stops; noth
 - **Examples:** `superagent`, `work` and `budgets`.
 - **The experiments:** the Solidity output and Foundry, the contract client, the vault's module as a framework piece, the
   Aztec club, pay by handle, workflows and agents as framework features, and the new portal.
-- **Open pull requests** of the parked goals stay open as they are, and nobody merges them; the lander doesn't land
+- **Open pull requests** of the parked goals stay open as they are, and nobody merges them (Superseded by K47, 26 November 2026, for #781 and #905: Coworker's goal lands the agent runtime and the outbox from them, in pieces); the lander doesn't land
   them. One is ready rather than a draft: #957, into `goal/superagent`.
 
 ## What was not chosen
