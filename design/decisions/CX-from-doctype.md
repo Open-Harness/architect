@@ -85,7 +85,9 @@ four (one word: its first two letters), lengthened the same way past one already
   docstatus, amounts and dates; its options are written as a comment beside the machine) and `amended_from` (amend is
   left out). A field is required when it has `reqd`, a `default`, or is a `Check`; any other is
   `Blueprint.optional(...)`, an optional link keeping its edge. Each is `Blueprint.described` with its `label` (else
-  its `fieldname`), followed by ` (ERPNext's default: <default>)` when the JSON gives one.
+  its `fieldname`), followed by ` (<a|an> <Target>'s name)` for a link to a doctype not scaffolded, and by
+  ` (ERPNext's default: <default>)` when the JSON gives one. (The model names `<Target>Link` on a required field only:
+  `Blueprint.optional` makes a new value, so the description is what says what an optional one names.)
 - **A link value**, `blueprint/values/<target>-link.ts`, exporting `<Target>Link`, is written when it is missing and
   kept when it is there (a second doctype linking to the same target shares it). Scaffolding the target later changes
   no file already written: turning a `<Target>Link` field into the target's id is a hand edit, a migration of names

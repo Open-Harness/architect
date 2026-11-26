@@ -3,7 +3,7 @@
 // (its own id, no edge) and, through a Dynamic Link, to any record. Scaffolding Tea Supplier afterwards changes no
 // file already written, shares the Tea Shop value, and makes its link back to Tea Order an edge.
 import { afterAll, describe, expect, it } from "vitest";
-import { checked, cleanup, doctype, generated, headed, model, once, project, scaffolds, snapshot, textAt, thingOf, written } from "./support.ts";
+import { type FieldJson, checked, cleanup, doctype, generated, headed, model, once, project, scaffolds, snapshot, textAt, thingOf, written } from "./support.ts";
 
 afterAll(cleanup);
 
@@ -24,18 +24,27 @@ const order = {
   id: { value: { type: "id", prefix: "tor" } },
   blend: { value: { type: "id", prefix: "tbl" }, ref: "tea-blend.id", description: "Blend" },
   secondBlend: { value: { type: "id", prefix: "tbl" }, ref: "tea-blend.id", optional: true, description: "Second Blend" },
-  supplier: { value: { type: "text", max: 140 }, named: "TeaSupplierLink", description: "Supplier" },
-  shop: { value: { type: "text", max: 140 }, named: "TeaShopLink", optional: true, description: "Shop" },
+  supplier: { value: { type: "text", max: 140 }, named: "TeaSupplierLink", description: "Supplier (a Tea Supplier's name)" },
+  shop: { value: { type: "text", max: 140 }, optional: true, description: "Shop (a Tea Shop's name)" },
   returnAgainst: { value: { type: "id", prefix: "tor" }, optional: true, description: "Return Against" },
   party: { value: { type: "schema", format: "ref-any" }, description: "Party" },
 } as const;
 const supplier = {
   id: { value: { type: "id", prefix: "tsu" } },
   supplierName: { value: { type: "text", max: 140 }, description: "Supplier Name" },
-  shop: { value: { type: "text", max: 140 }, named: "TeaShopLink", optional: true, description: "Shop" },
+  shop: { value: { type: "text", max: 140 }, optional: true, description: "Shop (a Tea Shop's name)" },
   lastOrder: { value: { type: "id", prefix: "tor" }, ref: "tea-order.id", optional: true, description: "Last Order" },
 } as const;
 const linkFiles = ["blueprint/values/tea-shop-link.ts", "blueprint/values/tea-supplier-link.ts"];
+/** The fields match exactly, except that an optional link may or may not keep its value's name (`Blueprint.optional` makes a new value). */
+const sameFields = (fields: Readonly<Record<string, FieldJson>>, expected: Readonly<Record<string, FieldJson>>, shared: Readonly<Record<string, string>>) => {
+  expect(Object.keys(fields)).toEqual(Object.keys(expected));
+  for (const [key, field] of Object.entries(expected)) {
+    const { named, ...rest } = fields[key] ?? ({} as FieldJson);
+    const kept = shared[key] !== undefined && named === shared[key] ? rest : fields[key];
+    expect(kept, key).toEqual(field);
+  }
+};
 
 describe("CX-from-doctype 04: links", () => {
   it("writes a link value for each record type not scaffolded yet, beside the thing's files", () => {
@@ -46,9 +55,7 @@ describe("CX-from-doctype 04: links", () => {
   });
 
   it("makes each kind of link its own field: an edge, an optional edge, a target's name, its own id, any record; the Dynamic Link's doctype field is dropped", () => {
-    const t = thingOf(model(ordered().root), "tea-order");
-    expect(Object.keys(t.fields)).toEqual(Object.keys(order));
-    for (const [key, field] of Object.entries(order)) expect(t.fields[key], key).toEqual(field);
+    sameFields(thingOf(model(ordered().root), "tea-order").fields, order, { shop: "TeaShopLink" });
   });
 
   it("scaffolds the target later without touching what was written: the earlier link stays a name, and the shared link value is kept", () => {
@@ -62,9 +69,7 @@ describe("CX-from-doctype 04: links", () => {
 
   it("gives the later record type the shared value and an edge back to the one already there", () => {
     const m = model(supplied().root);
-    const t = thingOf(m, "tea-supplier");
-    expect(Object.keys(t.fields)).toEqual(Object.keys(supplier));
-    for (const [key, field] of Object.entries(supplier)) expect(t.fields[key], key).toEqual(field);
+    sameFields(thingOf(m, "tea-supplier").fields, supplier, { shop: "TeaShopLink" });
     expect(thingOf(m, "tea-order").fields["supplier"]).toEqual(order.supplier);
   });
 
