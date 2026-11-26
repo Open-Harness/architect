@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vitest";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { PROXY_CREATION_CODE, checksummed, initializer, predictAddress, saltNonceOf } from "../journeys/support/safe-address.ts";
+import { SafeSettings } from "../blueprint/values/safe.ts";
 
 const hexOf = (h: string) => Buffer.from(keccak_256(Uint8Array.from(h.slice(2).match(/../g)!.map((p) => parseInt(p, 16))))).toString("hex");
 
@@ -17,6 +18,12 @@ const PER_VECTOR = 6211468206092381478509137711332152674051691941213773467810100
 describe("a Safe's address, worked out the factory's way", () => {
   it("uses the canonical factory's own proxy creation code", () => {
     expect(hexOf(PROXY_CREATION_CODE)).toBe("1856e0ee08399d74e0ea0b03adca210aeade6f748969ac023cdcb4dd62dcaf5f");
+  });
+
+  it("keeps the local environment's salt namespace and chain where CX-safe puts them", () => {
+    // blueprint/values is not protected from a builder, so this pins what the journeys' salt nonce is worked out from.
+    expect(SafeSettings.local.namespace).toBe("capxul:local:safe:v1");
+    expect(SafeSettings.local.chain).toBe("eip155:31337");
   });
 
   it("works the salt nonce out from the namespace and the person's id, never anything else", () => {

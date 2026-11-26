@@ -23,9 +23,8 @@ import type { Handler } from "../../generated/api/src/personal-safe/open.handler
  * Budget, from blueprint/things/personal-safe/verbs/open.ts: p95 150ms.
  *
  * The personal-safe's machine, from blueprint/things/personal-safe/machine.ts (▶ marks this call):
- *     from       move   to         emits
- *   ▶ (creates)  open   unclaimed  PersonalSafeOpened
- *     unclaimed  claim  claimed    PersonalSafeClaimed
+ *     from       move  to         emits
+ *   ▶ (creates)  open  unclaimed  PersonalSafeOpened
  *
  * What the runtime does, so this handler doesn't:
  *   before it runs, it refuses NotAllowed unless the caller is signed in;
