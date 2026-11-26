@@ -64,7 +64,7 @@ repository's own records and ratchet lists say so.
 |---|---|---|
 | A durable agent that survives a restart | being built | row `durable-agent-run`; draft #781 on `goal/superagent`: `agentActor` opens Pi's harness on the actor's SQLite |
 | One conversation per manager, for good | being built | the same; `Agent` thing with `lives: "actor"` is on `main` |
-| Tools from operations | decided | row `agent-tools`; K40 fix 3, M4.07; #781's README says "Tools are not wired yet" |
+| Tools from operations | being built, not wired | row `agent-tools` (building); K40 fix 3, M4.07; #781's README says "Tools are not wired yet" |
 | A manager starts a worker and hears back | being built as one fixed pattern | the superagent's main and executor, through events, seats and assignments; checks 41 to 47 red |
 | Managers above managers, to any depth | missing | no generic parent among agents; `Manager.above` is a plain field, and a manager telling a manager is one more event hop |
 | Work reaches an agent as an event, retried in order | being built | row `outbox`, provisional; draft #905 |
@@ -141,10 +141,10 @@ Ids are the ones the blueprint sketch's `GAP` blanks use.
 | `realtime`: chat and runs stream | **Work round.** Poll, as Coworker does today. Raise it as a framework question | `packages/host-cloudflare` | nobody; an Ask to Goal 18 |
 | `transcript`: Pi's turns are not readable | **Fix**, small: a read over the Agent's entries | `packages/agents` | Coworker's goal, with the runtime |
 | `waiting-list`: the Inbox | **Work round.** A plain read over Ask. K46 leaves the general form open | — | Coworker's own; a Decision issue when the general form is wanted |
-| no generated screens, no kanban | **Work round.** Keep Coworker's screens (see `README.md`, question 2) | — | Goal 5 and Goal 6 are parked |
+| no generated screens, no kanban | **Fix.** Aaron decided every screen is rebuilt on Orthograph's own layer: the piece generator, `@orthograph/web`, the reference per thing, pages and composites (`end-to-end.md`, section 6) | `packages/projections`, `packages/web`, `packages/shell` | Goal 5's slice 4 and Goal 6, parked: Coworker's goal takes what it uses |
 | sandboxes | **Wait for #781's `@orthograph/sandbox`**, or keep Coworker's Cloudflare Containers module behind the same adapter | `packages/sandbox` | unclaimed |
 | A store per tenant: Coworker gives each workspace its own Durable Object | **Work round.** Rows with a workspace id, kept apart by roles. The fix is a store per instance of a root thing, which K46 call 5 decides for a chain | `packages/host-cloudflare/src/modules/store` | unclaimed |
-| An app's own web project: no example has screens | **Fix**, small: a tag for an app's web project and its allowed imports | `.oxlintrc.json`, `examples/coworker/web` | unclaimed; Goal 5 planned `src/web/` for Plugged In and is parked |
+| An app's own screens: no example has `src/web/` | **Fix**, small if needed: scope the Effect lint rules away from an app's `src/web/` | `.oxlintrc.json`, `examples/coworker/src/web` | unclaimed; Goal 5 planned `src/web/` for Plugged In and is parked |
 | MCP servers, billing, files, search, a region per workspace | **Later.** None is needed for a manager to close its loop | — | `design/later.md`, when Aaron accepts |
 
 ## Three things found on the way

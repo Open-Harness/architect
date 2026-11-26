@@ -50,14 +50,13 @@ only when it is one `docs/screens.md` marks New or Redo, and only once the gener
 | "Waiting for an Owner", and a refusal under the field | **C** by hand, as today | **A** generated | **A** from the generated action: approval asked once, a typed refusal that writes nothing |
 | Can an agent drive the page? | **D** no | **A** UI SDK's agent bridge | **C** not the page; but every action is also an agent's tool |
 | Work thrown away later | **C** the seven adapters | **A** none | **B** less than A: an action call is where a piece later sits |
-| What it needs from the framework | an example with a web project; lists; reads fast enough to poll | the generator (checks 04 to 08), `packages/web`, pages and shell, a table and a board on UI SDK | A's needs, and the actions projection, which is there |
+| What it needs from the framework | an example with screens of its own; lists; reads fast enough to poll | the generator (checks 04 to 08), `packages/web`, pages and shell, a table and a board on UI SDK | A's needs, and the actions projection, which is there |
 | Whose paths | Coworker's own; `lists` is Capxul's by rank | Goal 5 and Goal 6, both parked: Coworker would be un-parking two goals | Coworker's own; nothing parked has to move |
 | Fits K24 ("go in all the way" on UI SDK) | **D** | **A** | **C** it says where UI SDK comes in, and when |
 | Risk | the old interfaces leak the old model into the new one | the product has no screens for months | two component libraries for a while |
 
-**Recommended then: C. Aaron chose B** (see the top of this file). It replaces what works at the speed of the back end, keeps the interface, and puts every write
-through something the framework generates and checks. B is where it ends up, one screen at a time, and no screen
-waits on it.
+**Recommended then: C, because** it replaced what works at the speed of the back end, kept the interface, and put
+every write through something the framework generates and checks. **Aaron chose B** (see the top of this file).
 
 What C changes in his code: the screens keep their components and their props. The seven `createXApi(server)`
 adapters are thrown away and written again: reads call the generated SDK, writes call generated actions. The shell's
@@ -69,42 +68,43 @@ shape is the old model's (the task page as a form, the board without a way to ad
 
 ## The folder, with the front end in it
 
+Rewritten for the option Aaron chose, B. The screens live in the app's `src/web/`, as K29 layer 4 and its check 15
+draw them ("an app's `src/web/` import `@ui-sdk/*`"). Nothing of Coworker's code moves: not Astryx, not its routes, not
+its adapters.
+
 ```text
-examples/coworker/                 one folder, two workspace projects
+examples/coworker/
   project.json                     the app: tag scope:project
   blueprint/
     values/  things/<thing>/{thing,machine,events,errors,roles}.ts  things/<thing>/verbs/<verb>.ts
     agents/                        manager.ts, worker.ts
     features/                      agents, teams, intake, tickets: the mounts
     adapters/                      github, email
-    projections/                   model, api, server, sdk, cli, mcp, actions, infra
+    app/                           app.ts, pages/<page>.ts, components/<composite>.ts (K31, K36)
+    projections/                   model, api, server, sdk, cli, mcp, actions, web, infra
     environments/  starting-worlds/
   journeys/                        the loop, an ask, mail in, an issue in …
   src/
     <thing>/<verb>.ts              handlers: Effect, the repository's rules apply
+    web/
+      pages/<page>.tsx             each screen's layout, from references and pieces
+      components/<composite>/      board, table, inbox, chat, tree, charts, editor: behaviour on UI SDK
+      theme.css                    Coworker's look on --ui-* and data-slot
   plugins/                         written here first: email, vault
   generated/                       never edited
-    model/ api/ server/ sdk/ cli/ mcp/ docs/ actions/ infra/
-    web/                           empty until the pieces generator exists
-  web/                             the front end: its own project
-    project.json                   tag scope:app-web (new): may import generated/sdk, generated/actions, react, Astryx
-    src/routes/                    his routes, kept, so his browser tests find the same pages
-    src/modules/team-*/  ui/       his screens and components, moved as they are
-    src/modules/*/internal/api.ts  the seven adapters, written again
+    model/ api/ server/ sdk/ cli/ mcp/ docs/ actions/ app/ infra/
+    web/                           the reference per thing and the piece per operation
 e2e/coworker/                      the journeys' gate, with expected-failing/
 e2e/coworker-parity/               his browser tests, ported, with expected-failing/
 ```
 
-**Two projects, one folder.** The handlers are Effect code that runs in a Worker under this repository's rules (no
-`async`, no wall clock). The screens are React with a router and a bundler, `async` throughout. One project would
-put both under one set of lint rules and one set of allowed imports. K29 draws an app's screens at `src/web/` inside
-the app; that was drawn for Plugged In's three screens, and Coworker has about 45 and 15,500 lines. So it needs a
-new tag for an app's web project, which is a small change to `.oxlintrc.json` and the first framework change the
-front end asks for. **Not checked in full:** which of the lint overrides already exempt an example's `.tsx` files.
+**One project, with its screens beside its handlers.** The handlers are Effect code under this repository's rules (no
+`async`, no wall clock). The screens are React. K29 already puts an app's screens in its own `src/web/`; what is not
+checked is whether the lint rules for Effect reach `src/web/` today. If they do, scoping them away from `src/web/` is
+the first framework change the front end asks for, a small one in `.oxlintrc.json`.
 
-**It does not change "one repository or its own".** Both projects move out together, later. If anything it
-strengthens staying: the front end's adapters are written against `generated/sdk` and `generated/actions`, which are
-regenerated in the same pull request as a blueprint change.
+**It does not change "one repository or its own".** If anything it strengthens staying: the screens are built on
+`generated/web`, regenerated in the same pull request as a blueprint change.
 
 ## Parity as the done check
 

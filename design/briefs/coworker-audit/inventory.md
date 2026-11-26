@@ -143,16 +143,20 @@ its standing from `map.md`.
 
 ### The screens
 
-| Module | Lines | What it is | Works today? | What holds it |
+Aaron decided every screen is rebuilt on Orthograph's own layer (`end-to-end.md`, section 4). So "what holds it" is
+the same for each: a page in `blueprint/app/`, generated references and pieces, and the app's own `src/web/`. The
+column says what each needs beyond that.
+
+| Module | Lines | What it is | Works today? | Rebuilt on, beyond pages, references and pieces |
 |---|---|---|---|---|
-| `team-shell` | 858 | the frame, the sidebar, search, the gate | yes; the sidebar is to change (F80) | the app's own web project, kept |
-| `team-core` | 300 | loading, polling, errors | yes; keeps nothing between pages (F18) | kept; a live read is **missing** |
-| `team-join` | 702 | signing in and joining | yes | kept |
-| `team-start` | 1,055 | creating a workspace, first set-up | yes (F79) | kept |
-| `team-home` | 793 | Home and a manager's Overview | yes | kept |
-| `team-app` | 2,250 | board, task, chat, inbox, mission, run | inbox and mission yes; board and task not as wanted | inbox and mission kept; board and task drawn again |
-| `team-build` | 4,829 | agents, skills, templates, events, sources, permissions | yes; editors not as drawn | kept where `docs/screens.md` says so |
-| `team-settings` | 4,912 | workspace settings, people, environments | yes | kept |
+| `team-shell` | 858 | the frame, the sidebar, search, the gate | yes; the sidebar is to change (F80) | the shell (`packages/shell`), a tree read for the managers |
+| `team-core` | 300 | loading, polling, errors | yes; keeps nothing between pages (F18) | `@orthograph/web`'s pending and refusal states; a live read is **missing** |
+| `team-join` | 702 | signing in and joining | yes | pieces only |
+| `team-start` | 1,055 | creating a workspace, first set-up | yes (F79) | pieces only |
+| `team-home` | 793 | Home and a manager's Overview | yes | the charts composite, counting reads |
+| `team-app` | 2,250 | board, task, chat, inbox, mission, run | inbox and mission yes; board and task not as wanted | the board, inbox, chat and editor composites; board and task drawn again first |
+| `team-build` | 4,829 | agents, skills, templates, events, sources, permissions | yes; editors not as drawn | the table and editor composites |
+| `team-settings` | 4,912 | workspace settings, people, environments | yes | the table composite |
 
 ### The older chat app (not rebuilt)
 

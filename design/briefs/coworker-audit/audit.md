@@ -7,7 +7,7 @@ that repository unless they start `packages/`, `examples/` or `design/`.
 **What was run.** The eight passes below only read. A second pass then installed and ran Coworker with every outside
 thing faked: it typechecks, builds, and all 616 fast tests pass; its browser tier ran too. `inventory.md` has the
 table, what "works" means given Coworker's own finding that a green score proved little, and every module on a line.
-Not run: real mail, a real GitHub App, real containers, any real model, staging. Pi Durable's source was not read
+Not run: real mail, a real GitHub App, real containers, any real model, staging. Pi Durable's source was not read in these eight passes; its spec and examples were read later, for `end-to-end.md`
 (its use is described from imports and the app's own docs).
 
 ## What Coworker is
@@ -24,7 +24,7 @@ Three facts shape everything below.
    `Workspace`, modules `agent`, `chat-host`, `chats`, `schedule`, `history`, `documents`, `admin`) and the manager
    product (`src/routes/_team`, objects `WorkspaceObject` and `ManagerObject`). `docs/screens.md` does not mention the
    older one. The rebuild is of the manager product.
-2. **Its own docs call what is built "a spike"** (`docs/first-principles.md`), and list 78 fixes found by using
+2. **Its own docs call what is built "a spike"** (`docs/first-principles.md`), and list 78 fixes, by its own count, found by using
    staging (`docs/findings.md`), none started. The redesign exists in docs only: `docs/model-next.md`,
    `docs/connectors.md`, `docs/screens.md`.
 3. **`docs/screens.md` is a delta, not a description.** Of 49 screens it keeps 3, adapts 27, redoes 7, adds 11 and
@@ -67,8 +67,8 @@ files, enforced by `scripts/check-ui.ts` (no raw HTML, no own CSS); Heroicons; r
 Every screen waits with a centred spinner and refuses with "<X> did not load" and the server's words. A person whose
 action is set to ask sees "Waiting for an Owner".
 
-**Live data is polling**: chat every 0.6 seconds, a run every second, the board every 3, the inbox and mission every
-5, home every 10 (`team-core/internal/use-loading.ts`). No sockets in the manager product.
+**Live data is polling**: chat every 0.6 seconds, a run every 0.8, the board every 3, the inbox and mission every 5,
+home every 10, each set by its own page through `team-core/internal/use-loading.ts`. No sockets in the manager product.
 
 **Separable: yes.** Each `team-*` module talks to the server through one interface (`createXApi(server)` in
 `internal/api.ts`, types in `types.ts`); screens take `api` or props; route files are the only composition roots.

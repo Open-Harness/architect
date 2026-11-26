@@ -53,7 +53,7 @@ with these prompts and tools (finding F23).
 | Work reaches an agent only as the hop of an event | declared on `main` (`a.on(Event, agent.operations.tell, …)`); retried and ordered delivery is draft #905 | K40 fix 3; `examples/superagent/blueprint/features/agents.ts` |
 | A turn ends and the world is told | being built: the actor commits `idled` and journals `AgentIdled` | #781 |
 | An agent kind with a "never waits" hook | on `main` as a declaration | `examples/superagent/plugins/superagent/blueprint/agents/main.ts`: `hooks: { beforeTool: "noWait" }` |
-| Tools from operations | decided, not built | K40 fix 3, M4.07; #781: "Tools are not wired yet" |
+| Tools from operations | being built, not wired (row `agent-tools`) | K40 fix 3, M4.07; #781: "Tools are not wired yet" |
 | A generated action per operation, with approval asked once | **on `main`**, for a page and for an agent in the browser | `generated/actions/`, `e2e/ui-layer` checks 01 to 03 and 09 to 13; Goal 5, parked |
 | A stand-in model | being built | `@orthograph/stand-in-model`, #781 |
 | The harness as our own package behind an Effect seam; a run record and a scorer | proposed, not built | H1, H2; Goal 10, parked |

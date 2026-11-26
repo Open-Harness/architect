@@ -80,7 +80,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
 
   <div class="note">
     <p><b>What I ran, and what I didn't.</b> The first pass only read. For this one I installed Coworker and ran it with every outside thing faked and no credential. It typechecks and builds, and <b>all 616 of its fast tests pass</b>. Its browser tests pass too, 65 of 65, and I have now seen your screens rendered.</p>
-    <p>I did not run real mail, a real GitHub App, real containers, a real model, or staging. You used staging and wrote 78 findings, and where your findings and the green tests disagree, your findings win. On the Orthograph side I ran no suite: each standing comes from the status page, the ratchet lists and the pull requests' own words.</p>
+    <p>I did not run real mail, a real GitHub App, real containers, a real model, or staging. You used staging and wrote 78 fixes, by your own count, and where your findings and the green tests disagree, your findings win. On the Orthograph side I ran no suite: each standing comes from the status page, the ratchet lists and the pull requests' own words.</p>
   </div>
 
   <h2>What you decided, and asked for</h2>
@@ -497,8 +497,8 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   <div class="cols">
     <div>
       <h3>The folder, with the front end in it</h3>
-      <figure class="file"><figcaption><span>examples/coworker/</span><span>one folder, two projects</span></figcaption><pre class="code"><span class="ln">blueprint/        things, agents, features, adapters</span><span class="ln">journeys/         the loop, an ask, mail in, an issue in</span><span class="ln">src/              handlers: Effect, the repo's rules</span><span class="ln">plugins/          written here first: email, vault</span><span class="ln">generated/        sdk, actions, server, mcp, cli, docs</span><span class="ln isnew">web/              the front end, its own project</span><span class="ln isnew">  src/routes/     your routes, kept</span><span class="ln isnew">  src/modules/    your screens and components, as they are</span><span class="ln isnew">  .../api.ts      the seven adapters, written again</span><span class="ln"> </span><span class="ln">e2e/coworker/          the journeys' gate</span><span class="ln">e2e/coworker-parity/   your browser tests, ported</span></pre></figure>
-      <p>Handlers are Effect code under this repository's rules. Screens are React. One project would put both under one set of lint rules, so it is two. That needs a tag for an app's web project: the first framework change the front end asks for. It does not change where the app lives.</p>
+      <figure class="file"><figcaption><span>examples/coworker/</span><span>one project</span></figcaption><pre class="code"><span class="ln">blueprint/        things, agents, features, adapters</span><span class="ln">blueprint/app/    pages and composites, declared</span><span class="ln">journeys/         the loop, an ask, mail in, an issue in</span><span class="ln">src/              handlers: Effect, the repo's rules</span><span class="ln isnew">src/web/pages/    each screen's layout</span><span class="ln isnew">src/web/components/  board, table, inbox, chat, tree, charts, editor</span><span class="ln isnew">src/web/theme.css your look, on our tokens</span><span class="ln">generated/web/    a hook and parts per thing, a piece per action</span><span class="ln">plugins/          written here first: email, vault</span><span class="ln"> </span><span class="ln">e2e/coworker/          the journeys' gate</span><span class="ln">e2e/coworker-parity/   your browser tests, ported</span></pre></figure>
+      <p>Your screens live in the app's own <code>src/web/</code>, where the UI layer's design already puts them. None of the old screen code moves. One thing I haven't checked: whether the repository's Effect rules reach <code>src/web/</code>. If they do, scoping them away is a small first change.</p>
     </div>
     <div>
       <h3>How "it replaces everything" is proved</h3>
@@ -514,7 +514,7 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
   </div>
 
   <h2>A first blueprint</h2>
-  <p>Thirty-two files for Coworker's core: manager, lane, task, run, ask, grant and page. <b>It does not compile, and nobody has tried.</b> An amber line is a blank: one only you can fill, or one the framework can't hold yet.</p>
+  <p>Thirty-six files for Coworker's core: manager, lane, task, run, ask, grant and page. <b>It does not compile, and nobody has tried.</b> An amber line is a blank: one only you can fill, or one the framework can't hold yet.</p>
   <div class="cols">
     <div>
       <figure class="file"><figcaption><span>blueprint/things/manager/thing.ts</span><span>a row with a parent</span></figcaption><pre class="code"><span class="ln">import { Blueprint } from &quot;orthograph&quot;;</span><span class="ln">import { Title, Note } from &quot;../../values/coworker.ts&quot;;</span><span class="ln"> </span><span class="ln"><span class="c">// A row, not an actor: managers are listed, searched and drawn as a tree. Its conversation is an Agent, which is the actor.</span></span><span class="ln">export const Manager = Blueprint.thing({</span><span class="ln">  description: &quot;A co-worker: it has a job, a mission, a board and an address, and it answers to the manager above it.&quot;,</span><span class="ln">  fields: {</span><span class="ln">    id: Blueprint.id(&quot;mgr&quot;),</span><span class="ln">    workspace: Blueprint.id(&quot;org&quot;),</span><span class="ln">    name: Title,</span><span class="ln">    job: Note,</span><span class="ln">    above: Blueprint.optional(Blueprint.id(&quot;mgr&quot;)), // empty: the root. One per workspace (first-principles 10)</span><span class="ln">    agent: Blueprint.id(&quot;agt&quot;), // its conversation, from @orthograph/agents</span><span class="ln">    mission: Blueprint.id(&quot;pge&quot;),</span><span class="ln">    address: Blueprint.text({ max: 120 }), // &lt;manager&gt;.&lt;workspace&gt;@&lt;domain&gt;</span><span class="ln">  },</span><span class="ln">  versions: { key: &quot;id&quot; }, // &quot;versions kept&quot;, and &quot;old and new side by side on the same past cases&quot; (screens.md)</span><span class="ln">  code: &quot;MG&quot;,</span><span class="ln">});</span><span class="ln isnew"><span class="c">// GAP trees: &quot;a record under a parent&quot; is provisional (status row `trees`, Capxul&#x27;s books). `above` works as a plain</span></span><span class="ln"><span class="c">// field; rolling numbers up the tree and &quot;one root per workspace&quot; as an invariant do not exist.</span></span></pre></figure>
@@ -598,13 +598,13 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
     <div>
       <h3>Everything that works, replaced</h3>
       <ol class="steps">
-        <li>Getting in.<span>Sign-in, workspaces, joining, roles, and their screens.</span></li>
-        <li>Settings and people.</li>
-        <li>The inbox.<span>It shares the ask with the agents' third slice.</span></li>
-        <li>Hearing the world.<span>The gate and GitHub from the superagent's plugins. Email written in the app.</span></li>
-        <li>Keys and the vault.</li>
-        <li>The board and the task page, drawn again.</li>
-        <li>Sandboxes, usage and billing.</li>
+        <li>One screen through the whole stack.<span>The question page: a hook and parts, a piece, a page.</span></li>
+        <li>The inbox.<span>The first shared component, and live.</span></li>
+        <li>The board, and the task page drawn again.</li>
+        <li>The chat and a thread.<span>Streamed from the agent's actor.</span></li>
+        <li>Getting in, settings and people.</li>
+        <li>Home, Overview, Usage: the charts.</li>
+        <li>Everything else on your screens list.</li>
       </ol>
     </div>
   </div>
@@ -625,8 +625,8 @@ ol.steps { margin: 0; padding-left: 24px; display: flex; flex-direction: column;
     <tr><td class="q">Deadlines, reminders, a silent run</td><td class="a">a timer fires an event</td><td class="a">timers are Capxul's by rank; the keeper is unclaimed</td></tr>
     <tr><td class="q">A workspace's own keys and vault</td><td class="a">one model per environment at first; then lift Coworker's vault as a plugin</td><td class="a">the vault goal is parked</td></tr>
     <tr><td class="q">Live updates</td><td class="a">poll, as today</td><td class="a">nobody's: a question for the framework goal</td></tr>
-    <tr><td class="q">No generated screens, no kanban</td><td class="a">keep your screens; writes through generated actions</td><td class="a">both screen goals are parked, and nothing of theirs has to move</td></tr>
-    <tr><td class="q">No example has screens of its own</td><td class="a">a tag for an app's web project</td><td class="a">unclaimed; small</td></tr>
+    <tr><td class="q">No generated screens, no kanban</td><td class="a">build them: you decided every screen is rebuilt on our own layer</td><td class="a">both screen goals are parked; Coworker takes what it uses</td></tr>
+    <tr><td class="q">No example has screens of its own</td><td class="a">screens in the app's own src/web; scope the Effect rules away if needed</td><td class="a">unclaimed; small</td></tr>
     <tr><td class="q">A store per workspace</td><td class="a">rows with a workspace id, kept apart by roles</td><td class="a">unclaimed; later</td></tr>
   </table></div>
   <p>I claimed nothing, opened no framework pull request, added no row and made no goal. If you accept this, the framework goal makes the goal.</p>

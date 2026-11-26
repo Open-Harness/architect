@@ -43,7 +43,8 @@ outside thing faked and no credential: it typechecks, it builds, and **all 616 o
 evals of that tier among them. Its browser tier passes too: **65 of 65**, with 340 screenshots, a sample of which was looked at. `inventory.md` has the table.
 
 Not run: the live tier (real mail, a real GitHub App, real containers), which needs staging and its credentials; any
-real model; and staging by hand, which Aaron did and wrote up as 78 findings. Pi Durable's source was not read. On the
+real model; and staging by hand, which Aaron did and wrote up as 78 fixes by its own count. Pi Durable's spec and examples were read in its own repository in the third
+pass, and none was run. On the
 Orthograph side no suite was run: standings come from `docs/canon/status.md`, the ratchet lists and the pull
 requests' own descriptions, and draft #781 was read in part.
 
@@ -178,7 +179,8 @@ Later, each its own slice: the agreed new screens, connectors with a view, MCP s
 
 ## The decisions only Aaron can make
 
-Batched, each with a recommendation. The board ends with the same list.
+The second pass's list, kept with what has happened to each. The current list is `end-to-end.md`, section 8, which
+the board shows.
 
 1. **Which screens are the authority?** The ones built, or the ones `docs/screens.md` agrees, with
    `docs/model-next.md` behind them. *Recommend: the built ones for everything that works, and the agreed ones for

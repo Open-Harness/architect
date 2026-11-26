@@ -24,7 +24,7 @@ a slice before it is real.
 
 Pi Durable puts a manager and its workers in **one harness**: every subagent example (21, 22, 42, 43) creates the
 child conversation in the parent's own storage, owned by a task of the parent. Ownership, abort, idle, `notify` and
-`waitForTask` all work on records inside one session. The spec says "one process writes a storage at a time", and
+`waitForTask` all work on records inside one session. Pi's README says "one process writes a storage at a time", and
 nothing in Pi connects two harnesses.
 
 Aaron wants each agent to be an actor, and the draft runtime (#781) already gives each agent its own Durable Object
@@ -52,7 +52,7 @@ The second row is example 22's background-subagent pattern with the boundary mov
 (#905), and the "document mapping names to conversations" is the `Run` row.
 
 **And one rule from Pi's own spec decides what a tool may do.** Spec section 12: "A parked call keeps its run busy:
-new messages queue and are placed after the round; Stop is the way out." Pi's advice is to wait in a background task,
+new messages queue and are placed after the round; Stop is the way out." Example 39 waits in a task of its own,
 not a tool call. K46 says the same thing from the other side: a wait is a thing's state. So:
 
 > **An agent's tool never waits for another agent or a person.** It writes a thing (starts a run, raises an ask) and
@@ -291,7 +291,7 @@ would make if Aaron accepts this.
 |---|---|---|---|---|
 | 1 | The agent runtime: `agent.tell` and `agent.close`, on Pi 1.6.0 | draft #781 | `packages/agents`, `packages/host-cloudflare/src/modules/actors` | Coworker's goal takes Goal 17's slice 9 |
 | 2 | The outbox, and an actor's own events making hops | draft #905; "an actor writes no rows yet" | `packages/host-cloudflare/src/modules/outbox` | the same |
-| 3 | Tools from operations, and an agent's own credential to call them | decided, not built | `packages/agents`, `packages/host-cloudflare/src/modules/auth` | the same |
+| 3 | Tools from operations, and an agent's own credential to call them | being built, not wired; the credential exists only in test worlds | `packages/agents`, `packages/host-cloudflare/src/modules/auth` | the same |
 | 4 | Grants: a role decided by data, and "ask" as a gate | missing | `packages/orthograph/src/modules/roles`, `packages/language-effect/src/modules/access` | Coworker's goal; asks Goal 16 first, who last touched `access` |
 | 5 | The piece generator and `@orthograph/web` | checks 04-08 red | `packages/projections`, `packages/web` | Goal 5's slice 4, parked: Coworker's goal takes it |
 | 6 | The reference per thing | decided (K46 call 9), no row | `packages/projections`, `packages/web` | Coworker's goal; a row for Goal 18 |
