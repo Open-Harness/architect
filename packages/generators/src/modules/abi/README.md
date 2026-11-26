@@ -21,7 +21,8 @@ is put back on every run; a scaffold is written once, when it is absent, and is 
 | `src/generated/<Contract>.ts` | generated | everything of one contract (below). Opens `// Generated from abi/<Contract>.json. Do not edit.` |
 | `src/generated/index.ts` | generated | `export * as <Contract> from "./<Contract>.ts";` per contract, sorted; then `calls` and `standIn` for the descriptor. Opens `// Generated from abi/. Do not edit.` |
 | `src/index.ts` | scaffold | the descriptor, `export default Blueprint.adapter({ description, calls, standIn })`, and `export * from "./generated/index.ts";`. Opens `// Scaffolded from abi/. Yours from now on.` |
-| `package.json` | scaffold | `@orthograph/<name>`, `"type": "module"`, `"orthograph": { "kind": "adapter" }`, `"exports": { ".": "./src/index.ts" }`, `effect` and `@orthograph/chain-evm` as dependencies, `orthograph` as a peer |
+| `blueprint/README.md` | scaffold | what the folder is for: an adapter adds no operations; Orthograph finds the plugin's declarations here (none yet), so a mount can read it |
+| `package.json` | scaffold | `@orthograph/<name>`, `"type": "module"`, `"orthograph": { "kind": "adapter", "blueprint": "blueprint" }`, `"exports": { ".": "./src/index.ts" }`, `effect` and `@orthograph/chain-evm` as dependencies, `orthograph` as a peer |
 
 The files are sorted by path. No header names a path outside the folder or a time, so the same ABIs from any path give the same bytes.
 
@@ -42,7 +43,7 @@ Everything it exports, for a contract `C`:
 | `Refusal` | always | the union of the contract's error classes; `never` when it declares none |
 | `Chain` | always | `{ readonly port: ChainPort; readonly address: Address; readonly from?: Address }`: where the contract is |
 | `at` | always | `at(chain)`: an object with one call per function (below) |
-| `events` | always | one typed `EventSource` per event: `events.<Event>(address: Address, fromBlock: bigint)` |
+| `events` | always | one source per event: `events.<Event>(address: Address, fromBlock: bigint)` is an `EventSource<DecodedEvent & { readonly eventName: "<Event>"; readonly args: <Event>EventArgs }>`, made by chain-evm's `makeEventSource` |
 | `deploy` | bytecode given | `deploy(port, signer, args)` (`args` only with `ConstructorArgs`): deploys, waits for the receipt and answers the `Address` |
 
 A call of `at(chain)`, for a function `f` (an overload is `f_1`, `f_2`, … everywhere: below):
@@ -62,7 +63,7 @@ A call of `at(chain)`, for a function `f` (an overload is `f_1`, `f_2`, … ever
 | Item | Type |
 |---|---|
 | a tuple parameter `p` inside a type `T` | `T` + `Pascal(p)`: `BoxedB` for `boxed(Box b)`; inside that, `BoxedBInner` |
-| a tuple output `p` of `f` | `Pascal(f)` + `Answer` + `Pascal(p)`, or `Pascal(f)` + `Answer` + its position from 1 when unnamed: `BoxedAnswer1` |
+| a tuple output `p` of `f` | `Pascal(f)` + `Answer` + `Pascal(p)`: `BoxedAnswerOut`; a lone unnamed tuple output is `Pascal(f)` + `Answer` itself |
 | an overloaded name (two or more functions, events or errors of one name) | each is `<name>_<n>`, `n` counted from 1 in ABI order; a name with one member is left as it is |
 
 ## The mapping
@@ -94,8 +95,8 @@ contracts with bytecode, or `{ kind: "stand-in", how: "none" }` when none has an
 
 - a name that isn't lower case words joined by dashes; no contract; two contracts of one name; a contract name that isn't an
   identifier starting with a capital letter (`Probe`, `ERC20`)
-- a file that is not an ABI or an artifact holding one; an item with no known `type`; a function, event or error with no name
-- a contract with no function and no event
+- a file that is not an ABI (an array of objects) or an artifact holding one; an item with no known `type`; a function, event or error with no name
+- a contract with no function and no event (a constructor, a `fallback` and a `receive` are read past: they are not calls)
 - an unnamed input of a function, event, error or constructor; an unnamed tuple component; an unnamed output of a function
   with several
 - two inputs, two outputs or two components of one name

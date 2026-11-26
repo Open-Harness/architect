@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@orthograph/chain-evm": "workspace:*",
+    "@orthograph/language-effect": "workspace:*",
     "nx": "24.0.3"
   },
   "exports": {

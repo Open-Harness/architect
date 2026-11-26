@@ -40,7 +40,7 @@ contract Probe {
         return (a + uint256(int256(b < 0 ? -b : b)), a % 2 == 1);
     }
 
-    function boxed(Box calldata b, uint256[] calldata extra) external pure returns (Box memory, uint256 total) {
+    function boxed(Box calldata b, uint256[] calldata extra) external pure returns (Box memory out, uint256 total) {
         uint256 t = b.width;
         for (uint256 i = 0; i < extra.length; i++) t += extra[i];
         return (b, t);
