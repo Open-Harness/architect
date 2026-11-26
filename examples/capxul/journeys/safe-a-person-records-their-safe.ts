@@ -11,6 +11,7 @@ import { machine } from "../blueprint/things/safe/machine.ts";
 import record from "../blueprint/things/safe/verbs/record.ts";
 import recordCompany from "../blueprint/things/safe/verbs/record-company.ts";
 import get from "../blueprint/things/safe/verbs/get.ts";
+import list from "../blueprint/things/safe/verbs/list.ts";
 import { addressProblem, localBootstrap } from "./support/safe-address.ts";
 
 const ACCOUNT = /^eip155:31337:0x[0-9a-fA-F]{40}$/;
@@ -92,9 +93,9 @@ export default Blueprint.journey("safe: a person records their safe", {
       noEvents(),
     ),
     s.step(
-      "an agent's MCP tools hold the Safe's three operations",
+      "an agent's MCP tools hold the Safe's operations and reads",
       s.bo.via(Via.agent).tools(),
-      has(record, recordCompany, get),
+      has(record, recordCompany, get, list),
     ),
   ],
 });

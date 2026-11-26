@@ -2,13 +2,14 @@
 // `s.last` is the answer of the latest call that succeeded; a refused call leaves it alone.
 // S1 of design/decisions/CX-safe.md (#1168): a company's Safe is owned by its founder's own Safe, so a company whose
 // founder has none can't have one yet. Ada has a Safe; Bo, who runs Bo Ltd, has none (`ada has a safe`).
-import { Blueprint, Via, emits, expect, noEvents, refuses } from "orthograph";
+import { Blueprint, Via, emits, expect, noEvents, refuses, spans } from "orthograph";
 import { CompanySafeRecorded, PersonalSafeRecorded } from "../blueprint/things/safe/events.ts";
 import { FounderHasNoSafe } from "../blueprint/things/safe/errors.ts";
 import { machine } from "../blueprint/things/safe/machine.ts";
 import record from "../blueprint/things/safe/verbs/record.ts";
 import recordCompany from "../blueprint/things/safe/verbs/record-company.ts";
 import get from "../blueprint/things/safe/verbs/get.ts";
+import list from "../blueprint/things/safe/verbs/list.ts";
 import { addressProblem, localBootstrap } from "./support/safe-address.ts";
 
 export default Blueprint.journey("safe: a founder without a safe is refused", {
@@ -43,8 +44,10 @@ export default Blueprint.journey("safe: a founder without a safe is refused", {
       "now Bo Ltd's Safe can be recorded",
       s.bo.run(recordCompany, { company: s.world.boCompany }),
       expect((a) => a.safe).toMatch(/^saf_[0-9a-z]+$/),
+      expect((a) => a.account).toMatch(/^eip155:31337:0x[0-9a-fA-F]{40}$/),
       emits(CompanySafeRecorded, { safe: s.last.safe, company: s.world.boCompany, account: s.last.account }),
       machine.isIn(s.last.safe, "counterfactual"),
+      spans({ present: ["safe.record-company", "safe.record-company.load", "safe.record-company.insert"] }),
     ),
     s.step(
       // Which Safe owns it is judged against Bo's own in safe-a-company-records-its-safe.ts; here, one owner that is a Safe.
@@ -53,6 +56,13 @@ export default Blueprint.journey("safe: a founder without a safe is refused", {
       expect((a) => [a.kind, a.company, a.person ?? "none", a.threshold, a.owners, a.state]).toEqual(["company", s.world.boCompany, "none", 1n, [s.last.firstOwner], "counterfactual"]),
       expect((a) => a.firstOwner === localBootstrap).toBe(false),
       expect((a) => addressProblem(a)).toBe(""),
+      noEvents(),
+    ),
+    s.step(
+      "Bo Ltd has that one Safe and no other",
+      s.bo.run(list, { company: s.world.boCompany }),
+      expect((p) => p.items.length).toBe(1),
+      expect((p) => p.items[0].kind).toBe("company"),
       noEvents(),
     ),
   ],

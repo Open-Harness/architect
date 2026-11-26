@@ -40,9 +40,9 @@ Record your own Safe, at the address it will have once deployed. Nothing is sent
 
 ### safe: a company records its safe
 
-Starts from the world `ada and bo have safes`.
+Starts from the world `three company safes`.
 
-- **Ada's first request again is the same call: her one Safe, and nothing new.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back [the world's adaSafe, the world's adaAccount].
+- **Ada's first request again, by her key, is the same call: her one Safe, and nothing new.** `ada` (signed in) calls and sends nothing, with the request key `ada-safe`, and gets back [the world's adaSafe, the world's adaAccount].
 
 ### safe: a founder without a safe is refused
 

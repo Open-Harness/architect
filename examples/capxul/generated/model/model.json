@@ -23443,6 +23443,77 @@
       },
       "hash": "f8e290004c57413a"
     },
+    "safe.list": {
+      "kind": "read",
+      "name": "safe.list",
+      "thing": "safe",
+      "verb": "list",
+      "identifier": "list",
+      "file": "blueprint/things/safe/verbs/list.ts",
+      "from": {
+        "kind": "app"
+      },
+      "description": "List safes, oldest first, 50 to a page, filtered by company.",
+      "payload": {
+        "company": {
+          "value": {
+            "type": "id",
+            "prefix": "com"
+          },
+          "optional": true,
+          "ref": "safe.company",
+          "description": "The company it is for, when it is a company's."
+        },
+        "cursor": {
+          "value": {
+            "type": "text",
+            "max": 64
+          },
+          "optional": true
+        }
+      },
+      "answer": {
+        "items": {
+          "value": {
+            "type": "schema"
+          }
+        },
+        "next": {
+          "value": {
+            "type": "schema"
+          }
+        }
+      },
+      "move": null,
+      "errors": [],
+      "breaks": [],
+      "refusals": [
+        "NotAllowed"
+      ],
+      "allowed": [
+        {
+          "kind": "role-of",
+          "role": "company.owner",
+          "path": "company"
+        }
+      ],
+      "agentTool": true,
+      "steps": {},
+      "idempotent": null,
+      "runs": "server",
+      "test": "unit",
+      "budget": {
+        "p95Ms": 80
+      },
+      "list": {
+        "where": [
+          "company"
+        ],
+        "order": "oldest",
+        "page": 50
+      },
+      "hash": "74076c9884fb804f"
+    },
     "safe.record": {
       "kind": "operation",
       "name": "safe.record",
@@ -81668,15 +81739,16 @@
           "kind": "signed-in"
         }
       },
-      "starts": "ada and bo have safes",
+      "starts": "three company safes",
       "steps": [
         {
-          "title": "Ada's first request again is the same call: her one Safe, and nothing new",
+          "title": "Ada's first request again, by her key, is the same call: her one Safe, and nothing new",
           "call": {
             "actor": "ada",
             "operation": "safe.record",
             "payload": {},
-            "request": "ada-safe"
+            "request": "ada-safe",
+            "via": "key"
           },
           "checks": [
             {
@@ -81702,7 +81774,7 @@
           ]
         },
         {
-          "title": "Ada's Safe holds the address she was given, the factory's for her id",
+          "title": "Ada's Safe holds the address her key was answered, the factory's for her id",
           "call": {
             "actor": "ada",
             "operation": "safe.get",
@@ -81727,10 +81799,61 @@
                     "person"
                   ]
                 },
+                "none",
                 {
                   "ref": [
                     "world",
                     "adaAccount"
+                  ]
+                },
+                "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                [
+                  "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+                ],
+                "1",
+                "counterfactual"
+              ]
+            },
+            {
+              "kind": "expect-equal",
+              "value": ""
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Bo's Safe holds the address his agent was answered",
+          "call": {
+            "actor": "bo",
+            "operation": "safe.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "boSafe"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                "personal",
+                {
+                  "ref": [
+                    "cast",
+                    "bo",
+                    "person"
+                  ]
+                },
+                "none",
+                {
+                  "ref": [
+                    "world",
+                    "boAccount"
                   ]
                 },
                 "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -81811,79 +81934,6 @@
           ]
         },
         {
-          "title": "Ada's agent records Acme Trading's Safe through MCP",
-          "call": {
-            "actor": "ada",
-            "operation": "safe.record-company",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "company"
-                ]
-              }
-            },
-            "request": "acme-trading-safe",
-            "via": "agent"
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^saf_[0-9a-z]+$",
-              "flags": ""
-            },
-            {
-              "kind": "expect",
-              "match": "^eip155:31337:0x[0-9a-fA-F]{40}$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "CompanySafeRecorded",
-              "fields": {
-                "safe": {
-                  "ref": [
-                    "last",
-                    "safe"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "company"
-                  ]
-                },
-                "account": {
-                  "ref": [
-                    "last",
-                    "account"
-                  ]
-                }
-              }
-            },
-            {
-              "kind": "is-in",
-              "thing": "safe",
-              "id": {
-                "ref": [
-                  "last",
-                  "safe"
-                ]
-              },
-              "state": "counterfactual"
-            },
-            {
-              "kind": "spans",
-              "present": [
-                "safe.record-company",
-                "safe.record-company.load",
-                "safe.record-company.insert"
-              ],
-              "absent": []
-            }
-          ]
-        },
-        {
           "title": "Bo can't read Acme Trading's Safe",
           "call": {
             "actor": "bo",
@@ -81891,8 +81941,8 @@
             "payload": {
               "id": {
                 "ref": [
-                  "last",
-                  "safe"
+                  "world",
+                  "tradingSafe"
                 ]
               }
             }
@@ -81909,15 +81959,40 @@
           ]
         },
         {
-          "title": "Ada reads it: Acme Trading's, owned by her own Safe alone, at the factory's address for that owner and the company's id",
+          "title": "nor list Acme Trading's Safes",
+          "call": {
+            "actor": "bo",
+            "operation": "safe.list",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "refuses",
+              "error": "NotAllowed",
+              "fields": {}
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Acme Trading's Safe holds what Ada's agent was answered: owned by her own Safe alone, at the factory's address for that owner and the company's id",
           "call": {
             "actor": "ada",
             "operation": "safe.get",
             "payload": {
               "id": {
                 "ref": [
-                  "last",
-                  "safe"
+                  "world",
+                  "tradingSafe"
                 ]
               }
             }
@@ -81934,6 +82009,12 @@
                   ]
                 },
                 "none",
+                {
+                  "ref": [
+                    "world",
+                    "tradingAccount"
+                  ]
+                },
                 {
                   "ref": [
                     "world",
@@ -81962,7 +82043,53 @@
           ]
         },
         {
-          "title": "a second Safe for Acme Trading is refused",
+          "title": "Acme Trading has that one Safe and no other",
+          "call": {
+            "actor": "ada",
+            "operation": "safe.list",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "tradingSafe"
+                    ]
+                  },
+                  "company",
+                  {
+                    "ref": [
+                      "world",
+                      "company"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "tradingAccount"
+                    ]
+                  }
+                ]
+              ]
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "Ada's agent's request again is the same call, and nothing new",
           "call": {
             "actor": "ada",
             "operation": "safe.record-company",
@@ -81973,7 +82100,76 @@
                   "company"
                 ]
               }
+            },
+            "request": "acme-trading-safe",
+            "via": "agent"
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": [
+                {
+                  "ref": [
+                    "world",
+                    "tradingSafe"
+                  ]
+                },
+                {
+                  "ref": [
+                    "world",
+                    "tradingAccount"
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "no-events"
             }
+          ]
+        },
+        {
+          "title": "Ada reads Acme Trading's Safe again, for its salt nonce",
+          "call": {
+            "actor": "ada",
+            "operation": "safe.get",
+            "payload": {
+              "id": {
+                "ref": [
+                  "world",
+                  "tradingSafe"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": {
+                "ref": [
+                  "world",
+                  "tradingAccount"
+                ]
+              }
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
+        },
+        {
+          "title": "a second Safe for Acme Trading, a new request, is refused, naming that salt nonce",
+          "call": {
+            "actor": "ada",
+            "operation": "safe.record-company",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "company"
+                ]
+              }
+            },
+            "via": "key"
           },
           "checks": [
             {
@@ -81994,73 +82190,15 @@
           ]
         },
         {
-          "title": "Ada records Acme Logistics' Safe from the command line",
-          "call": {
-            "actor": "ada",
-            "operation": "safe.record-company",
-            "payload": {
-              "company": {
-                "ref": [
-                  "world",
-                  "otherCompany"
-                ]
-              }
-            },
-            "via": "key"
-          },
-          "checks": [
-            {
-              "kind": "expect",
-              "match": "^eip155:31337:0x[0-9a-fA-F]{40}$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "CompanySafeRecorded",
-              "fields": {
-                "safe": {
-                  "ref": [
-                    "last",
-                    "safe"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "otherCompany"
-                  ]
-                },
-                "account": {
-                  "ref": [
-                    "last",
-                    "account"
-                  ]
-                }
-              }
-            },
-            {
-              "kind": "is-in",
-              "thing": "safe",
-              "id": {
-                "ref": [
-                  "last",
-                  "safe"
-                ]
-              },
-              "state": "counterfactual"
-            }
-          ]
-        },
-        {
-          "title": "Acme Logistics' Safe has the same owner, Ada's Safe, and an address of its own",
+          "title": "Acme Logistics' Safe holds what Ada's key was answered: the same owner, Ada's Safe, and an address of its own",
           "call": {
             "actor": "ada",
             "operation": "safe.get",
             "payload": {
               "id": {
                 "ref": [
-                  "last",
-                  "safe"
+                  "world",
+                  "logisticsSafe"
                 ]
               }
             }
@@ -82077,6 +82215,12 @@
                   ]
                 },
                 "none",
+                {
+                  "ref": [
+                    "world",
+                    "logisticsAccount"
+                  ]
+                },
                 {
                   "ref": [
                     "world",
@@ -82105,72 +82249,61 @@
           ]
         },
         {
-          "title": "Bo records Bo Ltd's Safe",
+          "title": "Acme Logistics has that one Safe and no other",
           "call": {
-            "actor": "bo",
-            "operation": "safe.record-company",
+            "actor": "ada",
+            "operation": "safe.list",
             "payload": {
               "company": {
                 "ref": [
                   "world",
-                  "boCompany"
+                  "otherCompany"
                 ]
               }
             }
           },
           "checks": [
             {
-              "kind": "expect",
-              "match": "^eip155:31337:0x[0-9a-fA-F]{40}$",
-              "flags": ""
-            },
-            {
-              "kind": "emits",
-              "event": "CompanySafeRecorded",
-              "fields": {
-                "safe": {
-                  "ref": [
-                    "last",
-                    "safe"
-                  ]
-                },
-                "company": {
-                  "ref": [
-                    "world",
-                    "boCompany"
-                  ]
-                },
-                "account": {
-                  "ref": [
-                    "last",
-                    "account"
-                  ]
-                }
-              }
-            },
-            {
-              "kind": "is-in",
-              "thing": "safe",
-              "id": {
-                "ref": [
-                  "last",
-                  "safe"
+              "kind": "expect-equal",
+              "value": [
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "logisticsSafe"
+                    ]
+                  },
+                  "company",
+                  {
+                    "ref": [
+                      "world",
+                      "otherCompany"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "logisticsAccount"
+                    ]
+                  }
                 ]
-              },
-              "state": "counterfactual"
+              ]
+            },
+            {
+              "kind": "no-events"
             }
           ]
         },
         {
-          "title": "Bo Ltd's Safe is owned by Bo's own Safe, not Ada's, and its address follows",
+          "title": "Bo Ltd's Safe holds what Bo was answered: owned by Bo's own Safe, not Ada's, and its address follows",
           "call": {
             "actor": "bo",
             "operation": "safe.get",
             "payload": {
               "id": {
                 "ref": [
-                  "last",
-                  "safe"
+                  "world",
+                  "boLtdSafe"
                 ]
               }
             }
@@ -82187,6 +82320,12 @@
                   ]
                 },
                 "none",
+                {
+                  "ref": [
+                    "world",
+                    "boLtdAccount"
+                  ]
+                },
                 {
                   "ref": [
                     "world",
@@ -82215,15 +82354,15 @@
           ]
         },
         {
-          "title": "Bo's own Safe holds the address he was given",
+          "title": "Bo Ltd has that one Safe and no other",
           "call": {
             "actor": "bo",
-            "operation": "safe.get",
+            "operation": "safe.list",
             "payload": {
-              "id": {
+              "company": {
                 "ref": [
                   "world",
-                  "boSafe"
+                  "boCompany"
                 ]
               }
             }
@@ -82232,26 +82371,28 @@
             {
               "kind": "expect-equal",
               "value": [
-                "personal",
-                {
-                  "ref": [
-                    "cast",
-                    "bo",
-                    "person"
-                  ]
-                },
-                {
-                  "ref": [
-                    "world",
-                    "boAccount"
-                  ]
-                },
-                "eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+                [
+                  {
+                    "ref": [
+                      "world",
+                      "boLtdSafe"
+                    ]
+                  },
+                  "company",
+                  {
+                    "ref": [
+                      "world",
+                      "boCompany"
+                    ]
+                  },
+                  {
+                    "ref": [
+                      "world",
+                      "boLtdAccount"
+                    ]
+                  }
+                ]
               ]
-            },
-            {
-              "kind": "expect-equal",
-              "value": ""
             },
             {
               "kind": "no-events"
@@ -82259,7 +82400,7 @@
           ]
         }
       ],
-      "sourceHash": "3cb6cf7d8be867103dc4aa1ad50673728f81c175faf830f221ceb07c9635f841"
+      "sourceHash": "b4dc921e5d5215a7c3ef1d7ed404c0aa0088ede2506eb41f55e503c91d9deb0f"
     },
     "journeys/safe-a-founder-without-a-safe-is-refused.ts": {
       "name": "safe: a founder without a safe is refused",
@@ -82432,6 +82573,11 @@
               "flags": ""
             },
             {
+              "kind": "expect",
+              "match": "^eip155:31337:0x[0-9a-fA-F]{40}$",
+              "flags": ""
+            },
+            {
               "kind": "emits",
               "event": "CompanySafeRecorded",
               "fields": {
@@ -82465,6 +82611,15 @@
                 ]
               },
               "state": "counterfactual"
+            },
+            {
+              "kind": "spans",
+              "present": [
+                "safe.record-company",
+                "safe.record-company.load",
+                "safe.record-company.insert"
+              ],
+              "absent": []
             }
           ]
         },
@@ -82518,9 +82673,37 @@
               "kind": "no-events"
             }
           ]
+        },
+        {
+          "title": "Bo Ltd has that one Safe and no other",
+          "call": {
+            "actor": "bo",
+            "operation": "safe.list",
+            "payload": {
+              "company": {
+                "ref": [
+                  "world",
+                  "boCompany"
+                ]
+              }
+            }
+          },
+          "checks": [
+            {
+              "kind": "expect-equal",
+              "value": 1
+            },
+            {
+              "kind": "expect-equal",
+              "value": "company"
+            },
+            {
+              "kind": "no-events"
+            }
+          ]
         }
       ],
-      "sourceHash": "c19cb8f5a545c5a1268d4ab06b7154ac1261f89e9a45f28761f2da7c86230815"
+      "sourceHash": "3f6f1f929efeb55367d0835e33e0cbfd5e40aae3b6334a7aeff9340b11accbbe"
     },
     "journeys/safe-a-person-records-their-safe.ts": {
       "name": "safe: a person records their safe",
@@ -110302,6 +110485,185 @@
         }
       }
     },
+    "acme logistics has a safe": {
+      "name": "acme logistics has a safe",
+      "file": "blueprint/starting-worlds/acme-logistics-has-a-safe.ts",
+      "from": "acme trading has a safe",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "81d4c6153682086827261ff1390d5c3b31c7bfc8fd7dd7067867b084970e9db4",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "safe.record-company",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "otherCompany"
+              ]
+            }
+          },
+          "via": "key"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "adaSafe": {
+          "ref": [
+            "world",
+            "adaSafe"
+          ]
+        },
+        "adaAccount": {
+          "ref": [
+            "world",
+            "adaAccount"
+          ]
+        },
+        "boSafe": {
+          "ref": [
+            "world",
+            "boSafe"
+          ]
+        },
+        "boAccount": {
+          "ref": [
+            "world",
+            "boAccount"
+          ]
+        },
+        "tradingSafe": {
+          "ref": [
+            "world",
+            "tradingSafe"
+          ]
+        },
+        "tradingAccount": {
+          "ref": [
+            "world",
+            "tradingAccount"
+          ]
+        },
+        "logisticsSafe": {
+          "ref": [
+            "last",
+            "safe"
+          ]
+        },
+        "logisticsAccount": {
+          "ref": [
+            "last",
+            "account"
+          ]
+        }
+      }
+    },
+    "acme trading has a safe": {
+      "name": "acme trading has a safe",
+      "file": "blueprint/starting-worlds/acme-trading-has-a-safe.ts",
+      "from": "ada and bo have safes",
+      "cast": {
+        "ada": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "0b35ef2f4468563a543c76072011d0b269a3c373f3a2d5e6a30f850850973135",
+      "makes": [
+        {
+          "actor": "ada",
+          "operation": "safe.record-company",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "company"
+              ]
+            }
+          },
+          "request": "acme-trading-safe",
+          "via": "agent"
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "adaSafe": {
+          "ref": [
+            "world",
+            "adaSafe"
+          ]
+        },
+        "adaAccount": {
+          "ref": [
+            "world",
+            "adaAccount"
+          ]
+        },
+        "boSafe": {
+          "ref": [
+            "world",
+            "boSafe"
+          ]
+        },
+        "boAccount": {
+          "ref": [
+            "world",
+            "boAccount"
+          ]
+        },
+        "tradingSafe": {
+          "ref": [
+            "last",
+            "safe"
+          ]
+        },
+        "tradingAccount": {
+          "ref": [
+            "last",
+            "account"
+          ]
+        }
+      }
+    },
     "ada and bo have safes": {
       "name": "ada and bo have safes",
       "file": "blueprint/starting-worlds/ada-and-bo-have-safes.ts",
@@ -110311,13 +110673,14 @@
           "kind": "signed-in"
         }
       },
-      "sourceHash": "58f26fe9577b04187f8de23aea41168517b68547135e89ff59c662b4669b2a3f",
+      "sourceHash": "cfaea2e3116fa3c38007e4fd12a37787eb8f447fc77fa3c831ff0d3841ddaa41",
       "makes": [
         {
           "actor": "bo",
           "operation": "safe.record",
           "payload": {},
-          "request": "bo-safe"
+          "request": "bo-safe",
+          "via": "agent"
         }
       ],
       "gives": {
@@ -110374,13 +110737,14 @@
           "kind": "signed-in"
         }
       },
-      "sourceHash": "bd82c56b63d31283d3cfe2abf8a446bcd00947c7c32a3eae44267dd63c5a6ba5",
+      "sourceHash": "6aceddd8877da5ee6bde45a2d3114ed2da26233295d9a04066f2e911f3ae4d6b",
       "makes": [
         {
           "actor": "ada",
           "operation": "safe.record",
           "payload": {},
-          "request": "ada-safe"
+          "request": "ada-safe",
+          "via": "key"
         }
       ],
       "gives": {
@@ -112208,6 +112572,112 @@
           "ref": [
             "last",
             "company"
+          ]
+        }
+      }
+    },
+    "three company safes": {
+      "name": "three company safes",
+      "file": "blueprint/starting-worlds/three-company-safes.ts",
+      "from": "acme logistics has a safe",
+      "cast": {
+        "bo": {
+          "kind": "role",
+          "role": "company.owner"
+        }
+      },
+      "sourceHash": "4421bb54b5869d0d2c8e1974bbcd05b3166707f66a2839379ebed132517dd6fb",
+      "makes": [
+        {
+          "actor": "bo",
+          "operation": "safe.record-company",
+          "payload": {
+            "company": {
+              "ref": [
+                "world",
+                "boCompany"
+              ]
+            }
+          }
+        }
+      ],
+      "gives": {
+        "company": {
+          "ref": [
+            "world",
+            "company"
+          ]
+        },
+        "otherCompany": {
+          "ref": [
+            "world",
+            "otherCompany"
+          ]
+        },
+        "boCompany": {
+          "ref": [
+            "world",
+            "boCompany"
+          ]
+        },
+        "adaSafe": {
+          "ref": [
+            "world",
+            "adaSafe"
+          ]
+        },
+        "adaAccount": {
+          "ref": [
+            "world",
+            "adaAccount"
+          ]
+        },
+        "boSafe": {
+          "ref": [
+            "world",
+            "boSafe"
+          ]
+        },
+        "boAccount": {
+          "ref": [
+            "world",
+            "boAccount"
+          ]
+        },
+        "tradingSafe": {
+          "ref": [
+            "world",
+            "tradingSafe"
+          ]
+        },
+        "tradingAccount": {
+          "ref": [
+            "world",
+            "tradingAccount"
+          ]
+        },
+        "logisticsSafe": {
+          "ref": [
+            "world",
+            "logisticsSafe"
+          ]
+        },
+        "logisticsAccount": {
+          "ref": [
+            "world",
+            "logisticsAccount"
+          ]
+        },
+        "boLtdSafe": {
+          "ref": [
+            "last",
+            "safe"
+          ]
+        },
+        "boLtdAccount": {
+          "ref": [
+            "last",
+            "account"
           ]
         }
       }
@@ -121539,6 +122009,48 @@
       ]
     },
     {
+      "id": "defect:safe.list",
+      "kind": "defect",
+      "labels": {
+        "environment": "*",
+        "operation": "safe.list",
+        "severity": "page",
+        "owner": "blueprint/things/safe/verbs/list.ts"
+      },
+      "target": 0.999,
+      "windowDays": 28,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
       "id": "defect:safe.record",
       "kind": "defect",
       "labels": {
@@ -128626,6 +129138,49 @@
       "target": 0.95,
       "windowDays": 28,
       "thresholdMs": 50,
+      "minCalls": 20,
+      "alerts": [
+        {
+          "name": "fast",
+          "burn": 14.4,
+          "windowsMs": [
+            3600000,
+            300000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "slow",
+          "burn": 6,
+          "windowsMs": [
+            21600000,
+            1800000
+          ],
+          "severity": "page"
+        },
+        {
+          "name": "ticket",
+          "burn": 1,
+          "windowsMs": [
+            259200000,
+            21600000
+          ],
+          "severity": "ticket"
+        }
+      ]
+    },
+    {
+      "id": "latency:safe.list",
+      "kind": "latency",
+      "labels": {
+        "environment": "*",
+        "operation": "safe.list",
+        "severity": "page",
+        "owner": "blueprint/things/safe/verbs/list.ts"
+      },
+      "target": 0.95,
+      "windowDays": 28,
+      "thresholdMs": 80,
       "minCalls": 20,
       "alerts": [
         {

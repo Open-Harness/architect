@@ -39,14 +39,15 @@ Read one safe by its id: kind, person, company, account, firstOwner, owners, thr
 
 ### safe: a company records its safe
 
-Starts from the world `ada and bo have safes`.
+Starts from the world `three company safes`.
 
-- **Ada's Safe holds the address she was given, the factory's for her id.** `ada` (signed in) calls and sends id the world's adaSafe, and gets back [`personal`, the cast's ada person, the world's adaAccount, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`, [`eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`], `1`, `counterfactual`] and gets back ``.
-- **Bo can't read Acme Trading's Safe.** `bo` (signed in) calls and sends id the last call's safe, and is refused with NotAllowed, AR-001.
-- **Ada reads it: Acme Trading's, owned by her own Safe alone, at the factory's address for that owner and the company's id.** `ada` (signed in) calls and sends id the last call's safe, and gets back [`company`, the world's company, `none`, the world's adaAccount, [the world's adaAccount], `1`, `counterfactual`] and gets back ``.
-- **Acme Logistics' Safe has the same owner, Ada's Safe, and an address of its own.** `ada` (signed in) calls and sends id the last call's safe, and gets back [`company`, the world's otherCompany, `none`, the world's adaAccount, [the world's adaAccount], `1`, `counterfactual`] and gets back ``.
-- **Bo Ltd's Safe is owned by Bo's own Safe, not Ada's, and its address follows.** `bo` (signed in) calls and sends id the last call's safe, and gets back [`company`, the world's boCompany, `none`, the world's boAccount, [the world's boAccount], `1`, `counterfactual`] and gets back ``.
-- **Bo's own Safe holds the address he was given.** `bo` (signed in) calls and sends id the world's boSafe, and gets back [`personal`, the cast's bo person, the world's boAccount, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`] and gets back ``.
+- **Ada's Safe holds the address her key was answered, the factory's for her id.** `ada` (signed in) calls and sends id the world's adaSafe, and gets back [`personal`, the cast's ada person, `none`, the world's adaAccount, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`, [`eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`], `1`, `counterfactual`] and gets back ``.
+- **Bo's Safe holds the address his agent was answered.** `bo` (signed in) calls and sends id the world's boSafe, and gets back [`personal`, the cast's bo person, `none`, the world's boAccount, `eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`, [`eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`], `1`, `counterfactual`] and gets back ``.
+- **Bo can't read Acme Trading's Safe.** `bo` (signed in) calls and sends id the world's tradingSafe, and is refused with NotAllowed, AR-001.
+- **Acme Trading's Safe holds what Ada's agent was answered: owned by her own Safe alone, at the factory's address for that owner and the company's id.** `ada` (signed in) calls and sends id the world's tradingSafe, and gets back [`company`, the world's company, `none`, the world's tradingAccount, the world's adaAccount, [the world's adaAccount], `1`, `counterfactual`] and gets back ``.
+- **Ada reads Acme Trading's Safe again, for its salt nonce.** `ada` (signed in) calls and sends id the world's tradingSafe, and gets back the world's tradingAccount.
+- **Acme Logistics' Safe holds what Ada's key was answered: the same owner, Ada's Safe, and an address of its own.** `ada` (signed in) calls and sends id the world's logisticsSafe, and gets back [`company`, the world's otherCompany, `none`, the world's logisticsAccount, the world's adaAccount, [the world's adaAccount], `1`, `counterfactual`] and gets back ``.
+- **Bo Ltd's Safe holds what Bo was answered: owned by Bo's own Safe, not Ada's, and its address follows.** `bo` (signed in) calls and sends id the world's boLtdSafe, and gets back [`company`, the world's boCompany, `none`, the world's boLtdAccount, the world's boAccount, [the world's boAccount], `1`, `counterfactual`] and gets back ``.
 
 ### safe: a founder without a safe is refused
 

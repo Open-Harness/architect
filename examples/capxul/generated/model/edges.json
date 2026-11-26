@@ -2555,6 +2555,16 @@
     "kind": "allowed-by"
   },
   {
+    "from": "safe.list",
+    "to": "safe",
+    "kind": "reads"
+  },
+  {
+    "from": "safe.list",
+    "to": "company.owner",
+    "kind": "allowed-by"
+  },
+  {
     "from": "safe.record",
     "to": "safe",
     "kind": "acts-on"

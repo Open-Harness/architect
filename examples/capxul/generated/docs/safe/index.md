@@ -44,5 +44,6 @@ States: counterfactual. A move from the wrong state is refused SafeNotCounterfac
 ## Operations
 
 - [safe.get](get.md): Read one safe by its id: kind, person, company, account, firstOwner, owners, threshold, saltNonce, state.
+- [safe.list](list.md): List safes, oldest first, 50 to a page, filtered by company.
 - [safe.record](record.md): Record your own Safe, at the address it will have once deployed. Nothing is sent to the chain.
 - [safe.record-company](record-company.md): Record a company's Safe, owned by its founder's own Safe, at the address it will have once deployed.
