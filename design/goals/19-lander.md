@@ -85,7 +85,7 @@ by voice (#694). Milestone `Goal 19: the lander`, label `release:beta`.
 
 ## Where it stands
 
-26 November 2026, about 14:00 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
+26 November 2026, about 15:00 UTC. The Amp lander loop (the thread in `lead:`) runs this goal, a round every 30
 minutes for Aaron. A Claude Code lead started the goal and took slice 1; the Goal 16 conductor reports that Aaron has
 said no Claude-led goal is running now.
 
@@ -100,9 +100,8 @@ said no Claude-led goal is running now.
   fixes 1, 3 and 5 for the parked owners as dated notes, and the lander closed Asks #535, #536 and #538. Goal 18's board
   sync then took #535 and #536 over as capability rows and reopened them (Snag #898). The parked goals' unfinished
   drafts (#490, #498, #497 and #708) stay on their branches.
-- **Slice 3, the landing loop, is running.** Fourteen Capxul rounds have landed. `goal/capxul` is ahead of
-  `main` by #1091 (Capxul's journeys in CI, the `e2e-capxul` job), which can land alone, and by #1078 (payroll's
-  checks, slice 9a), which waits for its build, #1102:
+- **Slice 3, the landing loop, is running.** Fifteen Capxul rounds have landed. `goal/capxul` is ahead of `main`
+  by #1078 (payroll's checks, slice 9a) and #1105 after it, which wait for #1078's build, #1102:
   - #832 brought `goal/capxul` through #786, at `1770ffad`.
   - #913 brought #787 (slice 10's Bridge build) and #911 (Goal 16's brief), at `5027d6a8`.
   - #919 brought slice 8c's holidays, at `de09a851`: #914, the checks, and #918, the handlers.
@@ -140,8 +139,14 @@ said no Claude-led goal is running now.
     CX-appraisals: a submitted appraisal still rescores) and #1088 (CX-payroll-tax: a tax module per jurisdiction,
     the United States first). The 🔍 checked every cited ERPNext and HRMS line and passed it; its one nit, a
     132-column line in CX-ledger, is Goal 16's to rewrap (#426).
+  - #1107 brought #1091, Capxul's journeys in CI (the `e2e-capxul` job), at `8d40dfdc`, cut at `d697e8ee` so #1078
+    stayed out. Merging `main` conflicted in `ci.yml`, where #1092 had moved `e2e-portal-next` and `e2e-ui-layer` into
+    the `parked` workflow; the lander kept `main`'s layout and added only the new job. #1091 had no 🔍 of its own, so
+    the lander's 🔍 reviewed its three files too and passed them, and Goal 16 was asked to post a 🔍 on every slice.
 
-  Capxul has no `prove` job in CI and no ratchet, so a checks slice lands only with its build. A 🔍 failed #919 while
+  Capxul has no ratchet, so a checks slice lands only with its build. Since #1107, `e2e-capxul` runs `prove` on
+  `examples/capxul` for pull requests into `goal/capxul` and `main`; it is not required, and it skips on push (noted
+  for Goal 18 on #718). A 🔍 failed #919 while
   it carried only #914, with `prove` ✘ and 17 failing, so #919 stayed a draft until #918 merged. #929 was cut before
   #924 for the same reason. Goal 16 also lands its framework slices in `main` itself: #915 (the Dates checks) turned
   `main` red at `bf3c60bf`, and #917 (the Dates build) made it green again at `9afb7efd`. Three more landed the same
