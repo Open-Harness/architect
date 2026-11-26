@@ -763,9 +763,10 @@ jobs:
 
   # Goal 4's done check, begun (`e2e/on-chain/README.md`): the budgets journeys, the seam, the snag log and each slice's check, through the
   # ratchet, so it is green while every failure is listed. `nx run e2e:on-chain` itself (red while anything is listed) is the done check and
-  # is run by hand and at landing. Only for the goal's own branch: pull requests into goal/on-chain. On any other pull request
-  # or push, and on a docs-only pull request, the job runs and passes without its steps: a required job never skips (CI-drafts-race.md,
-  # CI-docs-fast-path.md). It is goal/on-chain's own e2e suite, so the fast gate runs it (CI-integration.md, B1). No secret and no `id-token`.
+  # is run by hand and at landing. For main and goal/on-chain: pull requests into either and pushes to either (Goal 18, slice 9). On any
+  # other pull request or push, on a docs-only pull request, and on a pull request that affected.sh says leaves the e2e project alone, the
+  # job runs and passes without its steps: a required job never skips (CI-drafts-race.md, CI-docs-fast-path.md). Every push to main runs it
+  # whole. It is goal/on-chain's own e2e suite, so the fast gate runs it there (CI-integration.md, B1). No secret and no `id-token`.
   e2e-on-chain:
     name: ${{ needs.ready.outputs.draft != 'false' && 'e2e-on-chain (draft)' || 'e2e-on-chain' }}
     needs: [ready, changes]
@@ -773,7 +774,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      SKIP: ${{ !((github.event_name == 'pull_request' && github.base_ref == 'goal/on-chain') || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') }}
+      SKIP: ${{ !((github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'goal/on-chain')) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/goal/on-chain') || (needs.changes.result == 'success' && needs.changes.outputs.docs_only == 'true') || (github.event_name == 'pull_request' && needs.changes.result == 'success' && needs.changes.outputs.affected_e2e == 'false') }}
     steps:
       - if: env.SKIP == 'true'
         run: echo "A docs-only pull request, or one that is not for this gate, where this job passes without its steps (design/decisions/CI-drafts-race.md, CI-docs-fast-path.md)."
