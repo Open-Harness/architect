@@ -1,6 +1,13 @@
 // Scaffolded from blueprint/things/payroll-entry/verbs/submit.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import type { InstanceOf } from "orthograph";
+import { Ids, Records } from "@orthograph/language-effect";
+import { Employee } from "../../blueprint/things/employee/thing.ts";
+import { PayrollEmployeeDetail } from "../../blueprint/things/payroll-employee-detail/thing.ts";
+import { SalaryDetail } from "../../blueprint/things/salary-detail/thing.ts";
+import { SalarySlip } from "../../blueprint/things/salary-slip/thing.ts";
+import { SalarySlipDetail } from "../../blueprint/things/salary-slip-detail/thing.ts";
+import { SalaryStructureAssignment } from "../../blueprint/things/salary-structure-assignment/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/payroll-entry/submit.handler.ts";
 
@@ -44,37 +51,114 @@ const { SalarySlipExists, NoAssignmentAtStart } = Errors.declared;
  *   once it answers, it writes PayrollEntrySubmitted: payrollEntry and slips from the answer;
  *   the call is the span payroll-entry.submit, and its commit payroll-entry.submit.commit.
  */
-const submit: Handler = (_payload, { steps, move }) =>
+const submit: Handler = ({ payrollEntry }, { steps, move, subject }) =>
   Effect.gen(function* () {
-    // Step load: database, span payroll-entry.submit.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
+    const all = { order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
+    if (!subject) return yield* Effect.die(new Error(`payroll entry ${payrollEntry} was checked and then not found`));
+    const startDate = subject["startDate"] as string;
+    const endDate = subject["endDate"] as string;
 
-    // SalarySlipExists: exit 48, PE-008.
-    if (yield* Handlers.blank<boolean>("refuse SalarySlipExists when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why SalarySlipExists was refused"));
-      return yield* new SalarySlipExists({
-        employee: yield* Handlers.blank("SalarySlipExists.employee, an employee.id"),
-      });
+    // Step load: database, span payroll-entry.submit.load. The entry's employees in its order, each with their record,
+    // their slips, their submitted assignments starting by the last day, the structure of the latest of those, and
+    // that structure's lines.
+    const employees = yield* steps.load(
+      Effect.gen(function* () {
+        const rows = yield* records.list({ ...all, thing: PayrollEmployeeDetail, where: { payrollEntry }, state: undefined });
+        return yield* Effect.forEach(rows.items, (row) =>
+          Effect.gen(function* () {
+            const id = row["employee"] as string;
+            const record = yield* records.find(Employee, id);
+            const slips = (yield* records.list({ ...all, thing: SalarySlip, where: { employee: id }, state: undefined })).items;
+            const held = yield* records.list({ ...all, thing: SalaryStructureAssignment, where: { employee: id }, state: "submitted" });
+            const byEnd = held.items.filter((a) => (a["fromDate"] as string) <= endDate);
+            const latest = byEnd.reduce<(typeof byEnd)[number] | undefined>(
+              (best, a) => (best === undefined || (a["fromDate"] as string) > (best["fromDate"] as string) ? a : best),
+              undefined,
+            );
+            const structure = latest?.["salaryStructure"] as string | undefined;
+            const lines =
+              structure === undefined ? [] : (yield* records.list({ ...all, thing: SalaryDetail, where: { salaryStructure: structure }, state: undefined })).items;
+            return { id, record, slips, byEnd, structure, lines };
+          }),
+        );
+      }),
+    );
+
+    // Refusal order (errors.ts): SalarySlipExists over every employee, then NoAssignmentAtStart.
+    // SalarySlipExists: exit 48, PE-008. A slip from another entry, draft or submitted, for these very days.
+    const paid = employees.find(({ slips }) =>
+      slips.some((s) => s["payrollEntry"] !== payrollEntry && s["startDate"] === startDate && s["endDate"] === endDate),
+    );
+    if (paid) {
+      yield* Effect.logInfo(`${paid.id} already has a slip from ${startDate} to ${endDate}`);
+      return yield* new SalarySlipExists({ employee: paid.id as never });
     }
 
-    // NoAssignmentAtStart: exit 49, PE-009.
-    if (yield* Handlers.blank<boolean>("refuse NoAssignmentAtStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why NoAssignmentAtStart was refused"));
-      return yield* new NoAssignmentAtStart({
-        employee: yield* Handlers.blank("NoAssignmentAtStart.employee, an employee.id"),
-      });
+    // NoAssignmentAtStart: exit 49, PE-009. The structure is that of the latest submitted assignment starting by the
+    // last day; one of its submitted assignments must start by the first day, or by the joining day for a joiner.
+    const paying = employees.map(({ id, record, byEnd, structure, lines }) => {
+      const joined = (record?.["dateOfJoining"] as string | undefined) ?? startDate;
+      const from = joined > startDate ? joined : startDate;
+      const started = structure !== undefined && byEnd.some((a) => a["salaryStructure"] === structure && (a["fromDate"] as string) <= from);
+      return { id, structure, lines, started };
+    });
+    const unstarted = paying.find((p) => !p.started);
+    if (unstarted) {
+      yield* Effect.logInfo(`${unstarted.id} has no assignment to their structure by the start of the payroll`);
+      return yield* new NoAssignmentAtStart({ employee: unstarted.id as never });
     }
 
     // Step slips: database, in the store payroll-entry, salary-slip, salary-slip-detail, span payroll-entry.submit.slips.
-    yield* steps.slips(Handlers.blank("slips: the work this step does"));
+    // A draft slip per employee in the entry's order, its lines its structure's (earnings, then deductions, numbered
+    // as on the structure), every line paid in full.
+    yield* steps.slips(
+      Effect.forEach(paying, ({ id: employee, structure, lines }) =>
+        Effect.gen(function* () {
+          const ordered = [...lines.filter((l) => l["type"] === "Earning"), ...lines.filter((l) => l["type"] === "Deduction")];
+          const sum = (type: string) => ordered.filter((l) => l["type"] === type).reduce((total, l) => total + (l["amount"] as bigint), 0n);
+          const grossPay = sum("Earning");
+          const totalDeduction = sum("Deduction");
+          const slip = yield* Ids.of(SalarySlip.fields.id);
+          yield* records.insert(SalarySlip, {
+            id: slip,
+            company: subject["company"] as never,
+            employee: employee as never,
+            payrollEntry,
+            salaryStructure: structure as never,
+            postingDate: subject["postingDate"] as never,
+            startDate: startDate as never,
+            endDate: endDate as never,
+            grossPay,
+            totalDeduction,
+            netPay: grossPay - totalDeduction,
+            status: "Draft",
+            // No journal entry until submit-slips books it. `InstanceOf` types every field as required, and neither
+            // `journalEntry: undefined` nor a single cast compiles, so the cast goes through unknown.
+          } as unknown as Omit<InstanceOf<typeof SalarySlip>, "state">);
+          for (const l of ordered) {
+            const lineId = yield* Ids.of(SalarySlipDetail.fields.id);
+            yield* records.insert(SalarySlipDetail, {
+              id: lineId,
+              salarySlip: slip,
+              type: l["type"] as never,
+              line: l["line"] as bigint,
+              salaryComponent: l["salaryComponent"] as never,
+              amount: l["amount"] as bigint,
+            });
+          }
+        }),
+      ),
+    );
 
     // The move submit, from draft, to submitted.
     yield* move();
 
     return {
-      payrollEntry: yield* Handlers.blank("payrollEntry, a payroll-entry.id"),
+      payrollEntry,
       // PayrollEntrySubmitted needs slips, and only the answer can give it.
-      slips: yield* Handlers.blank("slips, an EmployeeCount"),
+      slips: BigInt(paying.length),
     };
   });
 

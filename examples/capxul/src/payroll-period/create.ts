@@ -1,6 +1,7 @@
 // Scaffolded from blueprint/things/payroll-period/verbs/create.ts. Yours from now on.
 import { Effect } from "effect";
-import { Handlers } from "@orthograph/language-effect";
+import { Records } from "@orthograph/language-effect";
+import { PayrollPeriod } from "../../blueprint/things/payroll-period/thing.ts";
 import { Errors } from "../../generated/api/src/index.ts";
 import type { Handler } from "../../generated/api/src/payroll-period/create.handler.ts";
 
@@ -44,29 +45,34 @@ const { PayrollPeriodEndsBeforeStart, PayrollPeriodOverlaps } = Errors.declared;
  *   once it answers, it writes PayrollPeriodCreated: payrollPeriod from the answer, company, startDate and endDate from the payload;
  *   the call is the span payroll-period.create, and its commit payroll-period.create.commit.
  */
-const create: Handler = (_payload, { steps, move, id }) =>
+const create: Handler = ({ company, payrollPeriodName, startDate, endDate }, { steps, move, id }) =>
   Effect.gen(function* () {
-    // Step load: database, span payroll-period.create.load.
-    yield* steps.load(Handlers.blank("load: the work this step does"));
+    const records = yield* Records;
+    // Every matching row counts as read at commit; the limit is set so the page holds them all.
+    const all = { state: undefined, order: "oldest", limit: Number.MAX_SAFE_INTEGER, after: undefined } as const;
 
-    // PayrollPeriodEndsBeforeStart: exit 41, PP-001.
-    if (yield* Handlers.blank<boolean>("refuse PayrollPeriodEndsBeforeStart when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayrollPeriodEndsBeforeStart was refused"));
-      return yield* new PayrollPeriodEndsBeforeStart({
-        startDate: yield* Handlers.blank("PayrollPeriodEndsBeforeStart.startDate, a Day"),
-      });
+    // Step load: database, span payroll-period.create.load. The company's own periods.
+    const periods = yield* steps.load(records.list({ ...all, thing: PayrollPeriod, where: { company } }));
+
+    // Refusal order (errors.ts): the days, then an overlap; the runtime judges the name after these.
+    // PayrollPeriodEndsBeforeStart: exit 41, PP-001. A one-day period is allowed.
+    if (endDate < startDate) {
+      yield* Effect.logInfo(`the period ends on ${endDate}, before it starts on ${startDate}`);
+      return yield* new PayrollPeriodEndsBeforeStart({ startDate });
     }
 
-    // PayrollPeriodOverlaps: exit 42, PP-002.
-    if (yield* Handlers.blank<boolean>("refuse PayrollPeriodOverlaps when?")) {
-      yield* Effect.logInfo(yield* Handlers.blank("why PayrollPeriodOverlaps was refused"));
-      return yield* new PayrollPeriodOverlaps({
-        payrollPeriod: yield* Handlers.blank("PayrollPeriodOverlaps.payrollPeriod, a payroll-period.id"),
-      });
+    // PayrollPeriodOverlaps: exit 42, PP-002. Sharing a day, both ends counted; the earliest-starting one is named.
+    const overlapping = periods.items
+      .filter((p) => (p["startDate"] as string) <= endDate && startDate <= (p["endDate"] as string))
+      .sort((a, b) => ((a["startDate"] as string) < (b["startDate"] as string) ? -1 : (a["startDate"] as string) > (b["startDate"] as string) ? 1 : 0));
+    const first = overlapping[0];
+    if (first) {
+      yield* Effect.logInfo(`the period shares days with ${first["id"]}, from ${first["startDate"]} to ${first["endDate"]}`);
+      return yield* new PayrollPeriodOverlaps({ payrollPeriod: first["id"] as never });
     }
 
     // Step insert: database, span payroll-period.create.insert.
-    yield* steps.insert(Handlers.blank("insert: the work this step does"));
+    yield* steps.insert(records.insert(PayrollPeriod, { id, company, payrollPeriodName, startDate, endDate }));
 
     // The move create, to active.
     yield* move();
