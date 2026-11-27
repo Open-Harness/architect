@@ -295,7 +295,7 @@ jobs:
 
   # Is this pull request docs only? Then the layer gates and the other required jobs of goal/stage-1 (e2e-climb, e2e-grid,
   # e2e-m1, e2e-stage1) pass without running their steps, since a required job never skips (CI-drafts-race.md), and
-  # prove-tests, the M1 shards, e2e-totals and e2e-m2 skip (design/decisions/CI-docs-fast-path.md, CI-speed.md; the parked suites,
+  # prove-tests, the M1 shards, e2e-totals e2e-m2 and e2e-acceptance skip (design/decisions/CI-docs-fast-path.md, CI-speed.md; the parked suites,
   # e2e-m8 among them, are the `parked` workflow's, which skips them too): main is
   # strict, so every pull request reruns all of CI each time another lands, and a docs change cannot move them.
   # Docs-only is every changed path under design/ (but not design/grid/), a *.md file outside packages/, e2e/ and examples/,
@@ -679,6 +679,34 @@ jobs:
           path: ~/.cache/orthograph/otelcol-contrib
           key: otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}
       - run: NX_DAEMON=false pnpm nx run e2e:m2-ratchet --outputStyle=static
+
+  # Goal 18 slice 11's acceptance check (e2e/acceptance/, GOAL18-getting-started-acceptance): Orthograph built and published to a local
+  # Verdaccio on 127.0.0.1 (Orthograph's names served only from this run's publish; every other dependency proxied to npmjs, read only),
+  # then `ortho new app`, one thing declared, generated, proved, run and called through the CLI, SDK and MCP, and the getting-started
+  # page's steps run. Through the ratchet: every check is green, so e2e/acceptance/expected-failing/ is empty and any red fails it. A job of its
+  # own, so its build, install and two proves have the 20 minutes to themselves. Skipped as e2e-m2 is. Not a required check yet.
+  e2e-acceptance:
+    needs: [ready, changes]
+    if: ${{ needs.ready.outputs.draft == 'false' && !cancelled() && !(needs.changes.result == 'success' && (needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.fast == 'true' || needs.changes.outputs.affected_e2e == 'false')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: No Docker on the PATH
+        run: |
+          sudo rm -f "$(command -v docker)"
+          ! command -v docker
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/orthograph/otelcol-contrib
+          key: otelcol-contrib-0.164.0-${{ runner.os }}-${{ runner.arch }}
+      - run: NX_DAEMON=false pnpm nx run e2e:acceptance-ratchet --outputStyle=static
 
   # Goal 3's climbability check (`e2e/climb/README.md`): `ortho prove` on planted wrong handlers must name the journey and
   # step, show expected and got, point to the handler file and declaration, finish fast and give the same result twice.

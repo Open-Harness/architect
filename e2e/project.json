@@ -194,6 +194,23 @@
       },
       "cache": false
     },
+    "acceptance-checks": {
+      "metadata": { "description": "Goal 18 slice 11's acceptance check: Orthograph published to a local registry, ortho new app, one thing declared, generated, proved, run and called through the CLI, SDK and MCP, and the getting-started page's steps run." },
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --root {projectRoot} --config vitest.acceptance.config.ts acceptance" },
+      "cache": false
+    },
+    "acceptance-ratchet": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false,
+        "commands": [
+          "mkdir -p tmp && rm -f tmp/acceptance-report.json tmp/acceptance-errors.json",
+          "RATCHET_ERRORS_FILE=tmp/acceptance-errors.json vitest run --root e2e --config vitest.acceptance-ratchet.config.ts acceptance --reporter=default --reporter=json --reporter=./e2e/ratchet/reporter.ts --outputFile.json=../tmp/acceptance-report.json; node e2e/ratchet/check.ts tmp/acceptance-report.json e2e/acceptance/expected-failing tmp/acceptance-errors.json"
+        ]
+      },
+      "cache": false
+    },
     "m2": {
       "executor": "nx:run-commands",
       "options": { "command": "nx run e2e:m2-checks" },
