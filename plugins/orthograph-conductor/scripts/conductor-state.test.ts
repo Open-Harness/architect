@@ -1,21 +1,21 @@
-// Tests for guide-state.mjs. Run: bun test (from plugins/orthograph-guide).
+// Tests for conductor-state.mjs. Run: bun test (from plugins/orthograph-conductor).
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { existsSync, mkdtempSync, readFileSync, rmSync, appendFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 // @ts-ignore: plain JavaScript module, no types
-import { STAGES, TYPES, append, brief, fold, init, page, readLog, rebuild } from "./guide-state.mjs";
+import { STAGES, TYPES, append, brief, due, fold, init, page, readLog, rebuild } from "./conductor-state.mjs";
 
-const SCRIPT = join(import.meta.dir, "guide-state.mjs");
+const SCRIPT = join(import.meta.dir, "conductor-state.mjs");
 let app: string;
-const guide = (f: string) => join(app, ".orthograph/guide", f);
-const lines = () => readFileSync(guide("log.jsonl"), "utf8").trim().split("\n");
+const conductor = (f: string) => join(app, ".orthograph/conductor", f);
+const lines = () => readFileSync(conductor("log.jsonl"), "utf8").trim().split("\n");
 const cli = (...args: string[]) => {
   const r = Bun.spawnSync(["node", SCRIPT, ...args, "--dir", app]);
   return { code: r.exitCode, out: r.stdout.toString(), err: r.stderr.toString() };
 };
 
-beforeEach(() => { app = mkdtempSync(join(tmpdir(), "guide-")); });
+beforeEach(() => { app = mkdtempSync(join(tmpdir(), "conductor-")); });
 afterEach(() => rmSync(app, { recursive: true, force: true }));
 
 describe("the stages", () => {
@@ -32,19 +32,19 @@ describe("the stages", () => {
 });
 
 describe("init", () => {
-  test("writes the goal and enters plan, and makes state.json and GUIDE.md", () => {
+  test("writes the goal and enters plan, and makes state.json and ROADMAP.md", () => {
     const s = init(app, "sell event tickets");
     expect(s.goal).toBe("sell event tickets");
     expect(s.stage).toBe("plan");
     expect(s.visit).toBe(1);
     expect(lines()).toHaveLength(2);
-    expect(JSON.parse(readFileSync(guide("state.json"), "utf8")).stage).toBe("plan");
-    expect(readFileSync(guide("GUIDE.md"), "utf8")).toContain("**Goal:** sell event tickets");
+    expect(JSON.parse(readFileSync(conductor("state.json"), "utf8")).stage).toBe("plan");
+    expect(readFileSync(conductor("ROADMAP.md"), "utf8")).toContain("**Goal:** sell event tickets");
   });
   test("refuses a second init, and a missing goal", () => {
     init(app, "a");
-    expect(() => init(app, "b")).toThrow("already has a guide log");
-    const other = mkdtempSync(join(tmpdir(), "guide-"));
+    expect(() => init(app, "b")).toThrow("already has a conductor log");
+    const other = mkdtempSync(join(tmpdir(), "conductor-"));
     expect(() => init(other, "")).toThrow("needs the goal");
     rmSync(other, { recursive: true, force: true });
   });
@@ -70,7 +70,7 @@ describe("append", () => {
     expect(lines()).toHaveLength(2);
   });
   test("every type the contract lists is accepted", () => {
-    expect(TYPES).toEqual(["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "thread.started", "thread.returned", "check.ran", "blocker", "replan", "note"]);
+    expect(TYPES).toEqual(["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "worker.started", "worker.returned", "check.ran", "blocker", "replan", "note"]);
   });
 });
 
@@ -127,16 +127,16 @@ describe("fold", () => {
     expect(s.decided).toEqual([{ q: "is a refund final?", a: "yes, after a day", by: "owner", at: 5 }]);
   });
 
-  test("threads: started is running, returned takes the outcome and brings its open questions", () => {
+  test("workers: started is running, returned takes the outcome and brings its open questions", () => {
     const s = fold(ev([
       { type: "stage.entered", stage: "spike" },
-      { type: "thread.started", stage: "spike", thread: "t1", role: "spike", task: "can two tabs reserve one seat?" },
-      { type: "thread.started", stage: "spike", thread: "t2", role: "spike", task: "is the webhook ordered?" },
-      { type: "thread.returned", stage: "spike", thread: "t1", outcome: "done", open: ["hold seats for how long?"] },
+      { type: "worker.started", stage: "spike", worker: "t1", role: "spike", task: "can two tabs reserve one seat?" },
+      { type: "worker.started", stage: "spike", worker: "t2", role: "spike", task: "is the webhook ordered?" },
+      { type: "worker.returned", stage: "spike", worker: "t1", outcome: "done", open: ["hold seats for how long?"] },
     ]));
-    expect(s.threads.map((t: any) => [t.id, t.status])).toEqual([["t1", "done"], ["t2", "running"]]);
+    expect(s.workers.map((t: any) => [t.id, t.status])).toEqual([["t1", "done"], ["t2", "running"]]);
     expect(s.open).toEqual([{ q: "hold seats for how long?", waits_on: "owner", blocks: "spike", at: 4 }]);
-    expect(s.roadmap.find((r: any) => r.stage === "spike").visits[0].threads).toEqual(["t1", "t2"]);
+    expect(s.roadmap.find((r: any) => r.stage === "spike").visits[0].workers).toEqual(["t1", "t2"]);
   });
 
   test("a blocker blocks its stage; a replan that clears it unblocks it", () => {
@@ -170,63 +170,95 @@ describe("page", () => {
     append(app, { type: "stage.entered", stage: "spike" });
     append(app, { type: "stage.reopened", stage: "plan", from: "spike", because: "refunds break a rule" });
     append(app, { type: "open", stage: "plan", q: "is a refund final?" });
-    append(app, { type: "open", stage: "plan", q: "for the thread", waits_on: "t1" });
+    append(app, { type: "open", stage: "plan", q: "for the worker", waits_on: "t1" });
     const s = append(app, { type: "decision", stage: "plan", q: "who sells?", a: "organisers", next: { do: "ask about refunds", why: "it blocks the plan" } });
     const md = page(s);
     expect(md).toContain("**Now:** Plan it, visit 2");
     expect(md).toContain("**Next:** ask about refunds (it blocks the plan)");
     expect(md).toContain("- is a refund final?");
-    expect(md).not.toContain("for the thread");
+    expect(md).not.toContain("for the worker");
     expect(md).toContain("[~] **Plan it** (visited 2 times)");
     expect(md).toContain("    - visit 2: reopened from spike: refunds break a rule");
     expect(md).toContain("[~] **Spike what you doubt**");
     expect(md).toContain("[ ] **Describe it**");
     expect(md).toContain("- who sells? **organisers** (owner)");
-    expect(readFileSync(guide("GUIDE.md"), "utf8")).toBe(md);
+    expect(readFileSync(conductor("ROADMAP.md"), "utf8")).toBe(md);
   });
 });
 
 describe("rebuild", () => {
-  test("state.json and GUIDE.md come back from the log alone", () => {
+  test("state.json and ROADMAP.md come back from the log alone", () => {
     init(app, "g");
     append(app, { type: "open", stage: "plan", q: "q?" }, "2026-11-26T10:00:00.000Z");
-    const state = readFileSync(guide("state.json"), "utf8"), md = readFileSync(guide("GUIDE.md"), "utf8");
-    rmSync(guide("state.json")); rmSync(guide("GUIDE.md"));
+    const state = readFileSync(conductor("state.json"), "utf8"), md = readFileSync(conductor("ROADMAP.md"), "utf8");
+    rmSync(conductor("state.json")); rmSync(conductor("ROADMAP.md"));
     rebuild(app);
-    expect(readFileSync(guide("state.json"), "utf8")).toBe(state);
-    expect(readFileSync(guide("GUIDE.md"), "utf8")).toBe(md);
+    expect(readFileSync(conductor("state.json"), "utf8")).toBe(state);
+    expect(readFileSync(conductor("ROADMAP.md"), "utf8")).toBe(md);
   });
   test("a line that is not JSON is named", () => {
     init(app, "g");
-    appendFileSync(guide("log.jsonl"), "not json\n");
+    appendFileSync(conductor("log.jsonl"), "not json\n");
     expect(() => readLog(app)).toThrow("log.jsonl line 3 is not JSON");
   });
 });
 
 describe("brief", () => {
-  test("with no project, says to start with the guide skill", () => {
-    expect(brief(app)).toBe("orthograph guide: no project yet. Start with the guide skill.");
+  test("with no project, says to start with the conductor skill", () => {
+    expect(brief(app)).toBe("orthograph conductor: no project yet. Start with the conductor skill.");
   });
-  test("names the goal, the stage, what is done, next, what waits and running threads", () => {
+  test("names the goal, the stage, what is done, next, what waits and running workers", () => {
     init(app, "g");
     append(app, { type: "stage.done", stage: "plan" });
     append(app, { type: "stage.entered", stage: "spike" });
-    append(app, { type: "thread.started", stage: "spike", thread: "t1", role: "spike", task: "x" });
+    append(app, { type: "worker.started", stage: "spike", worker: "t1", role: "spike", task: "x" });
     append(app, { type: "open", stage: "spike", q: "q?", next: { do: "wait for t1" } });
     expect(brief(app).split("\n")).toEqual([
-      'orthograph guide: goal "g"',
+      'orthograph conductor: goal "g"',
       "now: Spike what you doubt, visit 1, doing",
       "done: plan",
       "next: wait for t1",
       "waiting: q?",
-      "running threads: t1 spike",
+      "running workers: t1 spike",
     ]);
+  });
+});
+
+describe("due: whether a scheduled wake has work", () => {
+  test("no project is idle", () => {
+    expect(due(app)).toEqual({ due: false, why: ["no project yet"] });
+  });
+  test("a stage in progress with a next step is due", () => {
+    init(app, "g");
+    expect(due(app)).toEqual({ due: true, why: ["carry on: plan it with the owner"] });
+  });
+  test("a stage waiting on the owner's answer is idle, and says what it waits on", () => {
+    init(app, "g");
+    append(app, { type: "open", stage: "plan", q: "is a refund final?" });
+    expect(due(app)).toEqual({ due: false, why: ["waiting on the owner: is a refund final?"] });
+  });
+  test("a running worker is due even while the owner is asked something", () => {
+    init(app, "g");
+    append(app, { type: "open", stage: "plan", q: "q?" });
+    append(app, { type: "worker.started", stage: "plan", worker: "w1", role: "spike", task: "x" });
+    expect(due(app)).toEqual({ due: true, why: ["check on w1"] });
+  });
+  test("a question for another stage, or for a worker, does not hold this stage", () => {
+    init(app, "g");
+    append(app, { type: "open", stage: "describe", q: "later?" });
+    append(app, { type: "open", stage: "plan", q: "for w2", waits_on: "w2" });
+    expect(due(app).due).toBeTrue();
+  });
+  test("a blocked stage is due: the conductor looks for a way round", () => {
+    init(app, "g");
+    append(app, { type: "blocker", stage: "plan", what: "no network" });
+    expect(due(app)).toEqual({ due: true, why: ["find a way round: no network"] });
   });
 });
 
 describe("the command line", () => {
   test("init, log, brief, show and rebuild, with --dir", () => {
-    expect(cli("init", "sell tickets")).toMatchObject({ code: 0, out: "guide started: sell tickets\n" });
+    expect(cli("init", "sell tickets")).toMatchObject({ code: 0, out: "conductor started: sell tickets\n" });
     expect(cli("log", JSON.stringify({ type: "note", stage: "plan", text: "x" }))).toMatchObject({ code: 0, out: "logged #3; now plan, visit 1\n" });
     expect(cli("brief").out).toContain('goal "sell tickets"');
     expect(JSON.parse(cli("show").out).last).toBe(3);
@@ -236,7 +268,7 @@ describe("the command line", () => {
     cli("init", "g");
     const r = cli("log", JSON.stringify({ type: "bogus" }));
     expect(r.code).toBe(1);
-    expect(r.err).toContain("guide-state: unknown event type bogus");
+    expect(r.err).toContain("conductor-state: unknown event type bogus");
     expect(lines()).toHaveLength(2);
   });
   test("bad JSON exits 1; an unknown command prints usage and exits 2", () => {
@@ -245,6 +277,23 @@ describe("the command line", () => {
     const r = cli("frobnicate");
     expect(r.code).toBe(2);
     expect(r.err).toContain("usage:");
+  });
+  test("due exits 0 when there is work and 3 when there is not", () => {
+    expect(cli("due")).toMatchObject({ code: 3, out: "idle: no project yet\n" });
+    cli("init", "g");
+    expect(cli("due")).toMatchObject({ code: 0, out: "due: carry on: plan it with the owner\n" });
+  });
+  test("the tick wakes the agent only when work is due, and tells it why", () => {
+    const tick = join(import.meta.dir, "conductor-tick.sh");
+    const run = () => Bun.spawnSync(["sh", tick], { cwd: app, env: { ...process.env, CONDUCTOR_AGENT: "cat" } });
+    let r = run();
+    expect(r.exitCode).toBe(0);
+    expect(r.stdout.toString()).toBe("idle: no project yet\n");
+    cli("init", "g");
+    r = run();
+    expect(r.exitCode).toBe(0);
+    expect(r.stdout.toString()).toContain("You were woken on a schedule");
+    expect(r.stdout.toString()).toContain("carry on: plan it with the owner");
   });
   test("importing the module runs no command and writes nothing", () => {
     const r = Bun.spawnSync(["bun", "-e", `await import(${JSON.stringify(SCRIPT)})`], { cwd: app });
