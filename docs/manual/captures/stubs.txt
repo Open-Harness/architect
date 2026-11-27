@@ -1,0 +1,10 @@
+$ ortho add journeys handle
+wrote blueprint/journeys/handle-claim-created-in-claimed.ts
+wrote blueprint/journeys/handle-release-claimed-to-released.ts
+wrote blueprint/journeys/handle-release-refused-from-released.ts
+wrote blueprint/journeys/handle-claim-refused-anonymous.ts
+wrote blueprint/journeys/handle-claim-refused-handle-taken.ts
+wrote blueprint/journeys/handle-claim-refused-handle-already-owned.ts
+wrote blueprint/journeys/handle-release-refused-not-handleOwner.ts
+wrote blueprint/journeys/handle-resolve-allowed-anyone.ts
+wrote blueprint/journeys/handle-resolve-refused-handle-not-found.ts

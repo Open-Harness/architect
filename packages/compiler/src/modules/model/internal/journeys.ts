@@ -48,8 +48,9 @@ export const storiesOf = (
   const names = new Map([...layout.things.values()].flatMap((t) => [...t.verbs].map(([verb, v]) => [v.declaration, `${t.name}.${verb}`] as const)));
   const things = new Map([...layout.things.values()].map((t) => [t.thing, t.name]));
   const refused = new Map([...layout.things.values()].map((t) => [t.machine?.notFrom, t.name]));
+  // A cast member that is still a blank has no role to read yet: it is left out of the model's cast and listed as a blank.
   const castOf = (cast: Readonly<Record<string, Allowed>>, file: string) =>
-    Object.fromEntries(Object.entries(cast).map(([name, role]) => [name, allowed(role, file)]));
+    Object.fromEntries(Object.entries(cast).flatMap(([name, role]) => (Blanks.isBlank(role) ? [] : [[name, allowed(role, file)] as const])));
 
   const callOf = (call: AnyCall) => {
     // A step that moves the world's clock has no operation: the model tells it as a step that is not in the model's operations, and prove runs it against the world's clock door (M8.07).
@@ -104,12 +105,18 @@ export const storiesOf = (
   // A journey with blanks (a stub from `ortho add journeys`) is listed here, and prove skips it, naming it (K16 e).
   const blanks: Record<string, Array<string>> = {};
   for (const [file, { declaration: j, sourceHash }] of [...layout.journeys].sort(([a], [b]) => a.localeCompare(b))) {
-    const cast = castOf(j.cast, file);
+    // `ortho add journey` writes the cast and the steps as blanks: each is listed like any other blank, and read as empty until it is filled.
+    const members: Readonly<Record<string, Allowed>> = Blanks.isBlank(j.cast) ? {} : j.cast;
+    const cast = castOf(members, file);
     // A clash would let the script's own `s.clock` hide a cast member silently, so the journey is refused and its steps not read.
-    const clashes = castClashes(j.cast, file, `the journey "${j.name}"`);
+    const clashes = castClashes(members, file, `the journey "${j.name}"`);
     problems.push(...clashes);
-    const declared = clashes.length > 0 ? [] : j.steps(Scripting.script(j.cast));
-    const found = [...blanksIn(j.starts), ...declared.flatMap(stepBlanks)];
+    // The script needs only the cast's names, so a member still blank can already be written into a step (`s.owner.run(...)`).
+    const written: unknown = clashes.length > 0 ? [] : j.steps(Scripting.script(members));
+    // One step left blank among written ones is a blank too, and the steps around it are read.
+    const all: ReadonlyArray<unknown> = Blanks.isBlank(written) ? [] : written as ReturnType<typeof j.steps>;
+    const declared = all.filter((step) => !Blanks.isBlank(step)) as ReturnType<typeof j.steps>;
+    const found = [...blanksIn(j.cast), ...blanksIn(j.starts), ...blanksIn(written), ...declared.flatMap(stepBlanks)];
     if (found.length > 0) blanks[file] = found;
     const steps = declared.map((step) => {
       const call = callOf(step.call);
@@ -123,15 +130,18 @@ export const storiesOf = (
 
   const startingWorlds: Record<string, StartingWorldModel> = {};
   for (const [name, { file, declaration: w, sourceHash }] of layout.startingWorlds) {
-    const cast = castOf(w.cast, file);
-    const clashes = castClashes(w.cast, file, `the starting world "${name}"`);
+    // A starting world's cast may be a blank too: it is listed under the world's file, and read as empty until filled.
+    const own: Readonly<Record<string, Allowed>> = Blanks.isBlank(w.cast) ? {} : w.cast;
+    if (blanksIn(w.cast).length > 0) blanks[file] = [...(blanks[file] ?? []), ...blanksIn(w.cast)];
+    const cast = castOf(own, file);
+    const clashes = castClashes(own, file, `the starting world "${name}"`);
     problems.push(...clashes);
-    const members = { ...w.cast };
+    const members = { ...own };
     const seen = new Set([name]);
     for (let parent = w.from; parent !== undefined && !seen.has(parent);) {
       seen.add(parent);
       const ancestor = layout.startingWorlds.get(parent)?.declaration;
-      for (const [actor, role] of Object.entries(ancestor?.cast ?? {})) members[actor] ??= role;
+      for (const [actor, role] of Object.entries(Blanks.isBlank(ancestor?.cast) ? {} : ancestor?.cast ?? {})) members[actor] ??= role;
       parent = ancestor?.from;
     }
     // A name an ancestor casts counts too: the script is not made for a cast it would refuse (the ancestor's own clash is a problem of its own).

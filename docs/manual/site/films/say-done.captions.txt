@@ -1,0 +1,273 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.540
+An agent can write a handler in minutes.
+
+2
+00:00:02.540 --> 00:00:05.240
+So the question is never, can it build this.
+
+3
+00:00:05.240 --> 00:00:08.117
+The question is, how will you know it's right.
+
+4
+00:00:08.517 --> 00:00:11.417
+The answer is to say what done means before anyone builds.
+
+5
+00:00:11.417 --> 00:00:13.355
+And to have someone else say it.
+
+6
+00:00:13.955 --> 00:00:15.655
+In Orthograph, done is a journey:
+
+7
+00:00:15.655 --> 00:00:19.618
+a short story, told through real calls to the real system.
+
+8
+00:00:20.018 --> 00:00:21.538
+One agent writes the journeys.
+
+9
+00:00:21.538 --> 00:00:22.918
+We call it the author.
+
+10
+00:00:22.918 --> 00:00:27.101
+A different agent builds until they pass, and it may not change them.
+
+11
+00:00:28.701 --> 00:00:30.661
+Here's the app we build across this series:
+
+12
+00:00:30.661 --> 00:00:31.581
+Plugged In.
+
+13
+00:00:31.581 --> 00:00:35.256
+A person claims a name, and gets a public page of links.
+
+14
+00:00:35.656 --> 00:00:37.976
+The stubs are made while planning, before anyone builds.
+
+15
+00:00:37.976 --> 00:00:40.036
+The designer picks one thing:
+
+16
+00:00:40.036 --> 00:00:40.835
+the handle.
+
+17
+00:00:41.235 --> 00:00:42.275
+And runs one command.
+
+18
+00:00:42.275 --> 00:00:44.389
+ortho add journeys handle.
+
+19
+00:00:44.789 --> 00:00:45.949
+Seven files appear.
+
+20
+00:00:45.949 --> 00:00:52.853
+One for each path through the handle's states, one for each role, and one for each error an operation declares.
+
+21
+00:00:53.253 --> 00:00:54.273
+Look inside one.
+
+22
+00:00:54.273 --> 00:00:57.353
+A stranger tries to release a name that isn't theirs.
+
+23
+00:00:57.353 --> 00:01:02.183
+The stub already knows who may call, and that this caller must be refused.
+
+24
+00:01:02.583 --> 00:01:04.243
+What it can't know, it leaves blank.
+
+25
+00:01:04.243 --> 00:01:09.067
+And ortho check lists every blank as a question, with its file and its line.
+
+26
+00:01:10.667 --> 00:01:14.227
+The author fills the blanks, and writes the stories the stubs couldn't guess.
+
+27
+00:01:14.227 --> 00:01:16.071
+This is the one you read.
+
+28
+00:01:16.471 --> 00:01:17.131
+Claim a handle.
+
+29
+00:01:17.131 --> 00:01:19.531
+Eight steps, and each one is a sentence.
+
+30
+00:01:19.531 --> 00:01:22.611
+A name nobody has claimed does not resolve.
+
+31
+00:01:22.611 --> 00:01:24.471
+Aaron claims the free name.
+
+32
+00:01:24.471 --> 00:01:27.725
+Aaron cannot claim a second name while he holds one.
+
+33
+00:01:28.325 --> 00:01:31.225
+Under each sentence is a call, and then what must be true afterwards.
+
+34
+00:01:31.225 --> 00:01:32.465
+The answer.
+
+35
+00:01:32.465 --> 00:01:33.425
+The event.
+
+36
+00:01:33.425 --> 00:01:34.265
+The state.
+
+37
+00:01:34.265 --> 00:01:35.985
+The spans in the trace.
+
+38
+00:01:36.385 --> 00:01:37.385
+You don't check the code.
+
+39
+00:01:37.385 --> 00:01:41.325
+You read the sentences, and say yes, or no, or you've missed one.
+
+40
+00:01:42.925 --> 00:01:44.925
+Now the author has to prove something odd:
+
+41
+00:01:44.925 --> 00:01:46.661
+that its journeys can fail.
+
+42
+00:01:47.061 --> 00:01:51.804
+ortho prove, with the flag empty, runs every journey on handlers that do nothing.
+
+43
+00:01:52.204 --> 00:01:52.964
+Seven journeys.
+
+44
+00:01:52.964 --> 00:01:54.244
+Fifty-six steps.
+
+45
+00:01:54.244 --> 00:01:55.422
+Fifty of them red.
+
+46
+00:01:56.122 --> 00:01:57.282
+That's the result you want.
+
+47
+00:01:57.282 --> 00:01:59.690
+A check that can't fail proves nothing.
+
+48
+00:02:00.090 --> 00:02:01.990
+And every red line says what it expected.
+
+49
+00:02:01.990 --> 00:02:03.110
+Expected:
+
+50
+00:02:03.110 --> 00:02:05.210
+refused, with profile not found.
+
+51
+00:02:05.210 --> 00:02:06.150
+Got:
+
+52
+00:02:06.150 --> 00:02:07.840
+failed, with five hundred.
+
+53
+00:02:08.240 --> 00:02:11.800
+Six steps are green already, marked proved by the description.
+
+54
+00:02:11.800 --> 00:02:17.640
+The blueprint says who may call, so the runtime refuses a stranger before any handler runs.
+
+55
+00:02:17.640 --> 00:02:19.866
+Nobody has to build those.
+
+56
+00:02:21.466 --> 00:02:24.326
+So before a single handler exists, you hold two things.
+
+57
+00:02:24.326 --> 00:02:26.166
+The stories, which you agreed.
+
+58
+00:02:26.166 --> 00:02:28.851
+And a red run, which shows they bite.
+
+59
+00:02:29.251 --> 00:02:30.591
+Three things go wrong here.
+
+60
+00:02:30.591 --> 00:02:35.691
+A journey that's green on the empty run, and isn't proved by the description, can't fail.
+
+61
+00:02:35.691 --> 00:02:36.974
+Send it back.
+
+62
+00:02:37.374 --> 00:02:41.554
+An author who is also the builder writes down what the code does, not what you meant.
+
+63
+00:02:41.554 --> 00:02:43.086
+Use two sessions.
+
+64
+00:02:43.486 --> 00:02:44.666
+And be plain about this one:
+
+65
+00:02:44.666 --> 00:02:47.986
+nothing in Orthograph enforces that split for you yet.
+
+66
+00:02:47.986 --> 00:02:52.014
+It's a way of working, and you keep it by how you hand out the work.
+
+67
+00:02:52.714 --> 00:02:53.114
+Next:
+
+68
+00:02:53.114 --> 00:02:55.366
+a builder gets one brief, and climbs.

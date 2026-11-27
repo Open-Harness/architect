@@ -1,0 +1,76 @@
+$ ortho prove --only "claim a handle"
+journey claim a handle ✔ 8/8 steps
+handle.claim answer shape ✔
+handle.claim declared errors ✔
+handle.claim machine path ✔
+handle.claim events ✔
+handle.claim who may call ✔
+handle.claim steps ✔
+handle.claim performance ✔ p50 20ms p95 22ms budget p95 150ms
+handle.claim coverage not judged: rule handle.oneHolderPerName refused by no journey
+handle.claim explainability ✔
+handle.claim 8 evals ✔, coverage not judged p50 20ms p95 22ms budget p95 150ms
+handle.release answer shape ✔
+handle.release declared errors ✔
+handle.release machine path ✔
+handle.release events ✔
+handle.release who may call ✔
+handle.release steps ✔
+handle.release performance ✔ no timed calls
+handle.release coverage not judged: handle.release reached by no journey
+handle.release explainability ✔
+handle.release 8 evals ✔, coverage not judged no timed calls
+handle.resolve answer shape ✔
+handle.resolve declared errors ✔
+handle.resolve machine path ✔
+handle.resolve events ✔
+handle.resolve who may call ✔
+handle.resolve steps ✔
+handle.resolve performance ✔ p50 10ms p95 21ms budget p95 150ms
+handle.resolve coverage ✔
+handle.resolve explainability ✔
+handle.resolve 9 evals ✔ p50 10ms p95 21ms budget p95 150ms
+link.add answer shape ✔
+link.add declared errors ✔
+link.add machine path ✔
+link.add events ✔
+link.add who may call ✔
+link.add steps ✔
+link.add performance ✔ p50 12ms p95 12ms budget p95 150ms
+link.add coverage not judged: move link.add made by no journey
+link.add coverage not judged: outcome link listed reached by no journey
+link.add explainability ✔
+link.add 8 evals ✔, coverage not judged p50 12ms p95 12ms budget p95 150ms
+link.order answer shape ✔
+link.order declared errors ✔
+link.order machine path ✔
+link.order events ✔
+link.order who may call ✔
+link.order steps ✔
+link.order performance ✔ no timed calls
+link.order coverage not judged: link.order reached by no journey
+link.order explainability ✔
+link.order 8 evals ✔, coverage not judged no timed calls
+link.remove answer shape ✔
+link.remove declared errors ✔
+link.remove machine path ✔
+link.remove events ✔
+link.remove who may call ✔
+link.remove steps ✔
+link.remove performance ✔ no timed calls
+link.remove coverage not judged: link.remove reached by no journey
+link.remove explainability ✔
+link.remove 8 evals ✔, coverage not judged no timed calls
+profile.get answer shape ✔
+profile.get declared errors ✔
+profile.get machine path ✔
+profile.get events ✔
+profile.get who may call ✔
+profile.get steps ✔
+profile.get performance ✔ p50 8ms p95 17ms budget p95 150ms
+profile.get coverage ✔
+profile.get explainability ✔
+profile.get 9 evals ✔ p50 8ms p95 17ms budget p95 150ms
+coverage ✔ moves 1/4 · outcomes 1/4 · refusals 4/6 · runtime refusals 0/7 (not counted: IdempotencyConflict, which no journey can cause: a step cannot send a second payload under a held request key)
+ran 1 of 7 journeys (--only): coverage is judged by the whole run, ortho prove; 5 operations above not reached in full by this one
+prove ✔

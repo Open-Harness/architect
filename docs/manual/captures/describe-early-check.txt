@@ -1,0 +1,12 @@
+$ ortho check
+wallet has 3 blanks
+  blueprint/things/wallet/machine.ts:6  the states a wallet can be in, the first one where it starts
+  blueprint/things/wallet/roles.ts:5  when a person holds this role on a wallet
+  blueprint/things/wallet/thing.ts:4  what a wallet is, in one sentence
+types ✘ 1
+  generated/sdk/src/wallet/types.ts:9  TS1110: Type expected.
+rules ✔
+drift ✔
+ratchets 0
+check ✘
+exit 1

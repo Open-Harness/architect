@@ -1,0 +1,7 @@
+$ ortho check
+blanks left 0
+types ✔
+rules ✔
+drift ✔
+ratchets 0
+check ✔

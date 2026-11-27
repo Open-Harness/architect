@@ -1,5 +1,5 @@
 import { existsSync, realpathSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { Effect } from "effect";
 import { Compiler, nodeSource } from "@orthograph/compiler";
 import type { CheckApi, Finding } from "./types.ts";
@@ -19,7 +19,8 @@ const run: CheckApi["run"] = (at) =>
   Effect.gen(function* () {
     // The real path: tools report files by it, so a root reached through a symlink (macOS /var) still matches.
     const root = existsSync(at) ? realpathSync(at) : resolve(at);
-    const left = blanks(textsUnder(root, "blueprint"));
+    // Journeys are read from blueprint/journeys/ and from a journeys folder at the project's root (BLU-02), so a blank counts in both.
+    const left = blanks([...textsUnder(root, "blueprint"), ...textsUnder(root, "journeys").filter((f) => dirname(f.path) === "journeys")]);
     const compiled = yield* Compiler.model.pipe(Effect.provide(nodeSource(root)), Effect.result);
     if (compiled._tag === "Failure") {
       // Each problem names its files: the app's, and a plugin's package path with the mount that brought it in.

@@ -1,0 +1,4 @@
+$ ortho watch --env local
+watch local  last 1h  from files .ortho/prove-telemetry  (68 traces from prove runs left out)
+no calls in the window
+drift none

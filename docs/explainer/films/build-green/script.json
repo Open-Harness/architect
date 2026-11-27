@@ -1,0 +1,160 @@
+{
+ "title": "Build until green",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Brief",
+  "Scaffold",
+  "Climb",
+  "Green",
+  "Report"
+ ],
+ "about": "Every line of code in this film is read from examples/plugged-in, and every line of terminal output is replayed from docs/manual/captures, recorded by running the commands for real.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "scenes": [
+  {
+   "id": "brief",
+   "title": "One brief",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "The journeys are agreed, and they're red. Now someone builds."
+    },
+    {
+     "id": "b2",
+     "text": "You don't write a task. You run ortho brief, with the name of one operation: handle.claim.",
+     "say": "You don't write a task. You run ortho brief, with the name of one operation: handle dot claim."
+    },
+    {
+     "id": "b3",
+     "text": "The brief is everything a builder needs, and nothing else. The one file to write. The files to read. What the handler must do."
+    },
+    {
+     "id": "b4",
+     "text": "The paths it must not touch: the blueprint, the journeys, anything generated."
+    },
+    {
+     "id": "b5",
+     "text": "And what done means: prove passes, and check passes. Hand it over exactly as printed."
+    }
+   ]
+  },
+  {
+   "id": "scaffold",
+   "title": "Rung zero: the scaffold",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "c1",
+     "text": "The builder doesn't start from an empty file. Generate has already written a scaffold: the frame, with a blank where the behaviour goes."
+    },
+    {
+     "id": "c2",
+     "text": "First run. It proves only the one journey: claim a handle."
+    },
+    {
+     "id": "c3",
+     "text": "Four of eight steps pass before a line is written. Those are the steps that never needed this handler."
+    },
+    {
+     "id": "c4",
+     "text": "And one of the failures names the blank the handler reached, and the file it's in. That's where the builder goes."
+    }
+   ]
+  },
+  {
+   "id": "climb",
+   "title": "Rung one: the work",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "d1",
+     "text": "So it writes the work. Two records, saved together: the handle, and its public page."
+    },
+    {
+     "id": "d2",
+     "text": "Prove again. Still four of eight.",
+     "gap": 0.6
+    },
+    {
+     "id": "d3",
+     "text": "The number didn't move. But read the reasons. Before: the server died. Now: answered, without making its move."
+    },
+    {
+     "id": "d4",
+     "text": "The handler saved the records and forgot to change the state. So there's no event, and no state. The failure says exactly that."
+    },
+    {
+     "id": "d5",
+     "text": "This is what climbing looks like. Not every rung turns a light green. But every rung changes what fails first."
+    }
+   ]
+  },
+  {
+   "id": "green",
+   "title": "Rung two: the move",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "g1",
+     "text": "One line: make the move."
+    },
+    {
+     "id": "g2",
+     "text": "Prove again. Eight of eight.",
+     "gap": 0.7
+    },
+    {
+     "id": "g3",
+     "text": "But look at the last line. Prove is still red, with five failing. One journey doesn't reach every operation, so coverage fails."
+    },
+    {
+     "id": "g4",
+     "text": "Green on one journey is not done. The builder runs the whole proof."
+    },
+    {
+     "id": "g5",
+     "text": "Seven journeys. Fifty-six steps. Nine evals for each of seven operations. Prove passes. Then check passes."
+    }
+   ]
+  },
+  {
+   "id": "report",
+   "title": "What you read",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "h1",
+     "text": "You read none of that code. You read one line for each journey, and the last line of the full run."
+    },
+    {
+     "id": "h2",
+     "text": "When a builder says a journey is wrong, it stops, and tells the author. It doesn't edit the story, and it doesn't work round it."
+    },
+    {
+     "id": "h3",
+     "text": "When a handler starts deciding things the blueprint never said, that's a finding for review."
+    },
+    {
+     "id": "h4",
+     "text": "One honest note. What you just watched is a replay. We put one handler at three points, and recorded the real run at each. No agent was filmed writing it.",
+     "gap": 0.6
+    },
+    {
+     "id": "h5",
+     "text": "The loop is real, and an agent can run it alone. Next: run the app, break it, and read the trace."
+    }
+   ]
+  }
+ ]
+}

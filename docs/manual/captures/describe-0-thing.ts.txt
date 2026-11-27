@@ -1,0 +1,9 @@
+# blueprint/things/wallet/thing.ts
+import { Blueprint } from "orthograph";
+
+export const Wallet = Blueprint.thing({
+  description: Blueprint.todo("what a wallet is, in one sentence"),
+  fields: {
+    id: Blueprint.id("wal"),
+  },
+});

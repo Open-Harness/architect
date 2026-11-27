@@ -138,8 +138,9 @@ journeys find a hole.
 ### App UI (built as an app needs it)
 
 An app's screens are generated headless hooks over its actions, drawn by the app's own component library (K48, which
-supersedes K29's pieces for an app's screens). Agents act through the actions as tools; UI SDK waits until an app wants an
-agent driving the live screen. The portal is not changed by K48.
+supersedes K29's pieces for an app's screens), and each thing has a generated reference (K46). Agents act through the
+actions as tools; UI SDK waits until an app wants an agent driving the live screen. The portal is not changed by K48. The
+reference is decided and has no row yet.
 
 | id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
 |---|---|---|---|---|---|---|---|---|---|

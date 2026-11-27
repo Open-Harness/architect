@@ -1,0 +1,164 @@
+{
+ "title": "Review without reading the code",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Hand",
+  "Read",
+  "Stale",
+  "Prove",
+  "Report"
+ ],
+ "about": "Every line of code in this film is read from examples/plugged-in, and every line of terminal output is replayed from docs/manual/captures, recorded by running the commands for real. The change was staged by the recording.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "scenes": [
+  {
+   "id": "hand",
+   "title": "Someone who wrote none of it",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "A change has come back. You asked for two small things about claiming a name: a plainer description, and a tighter time budget."
+    },
+    {
+     "id": "a2",
+     "text": "Nine files changed. You should not have to read nine files."
+    },
+    {
+     "id": "a3",
+     "text": "So the change goes to a reviewer: an agent that wrote none of it."
+    },
+    {
+     "id": "a4",
+     "text": "It is given two things. The change, and the brief the change was made from. Here, the brief is your two sentences."
+    },
+    {
+     "id": "a5",
+     "text": "It touches nothing. It reads, it runs commands, and it reports."
+    }
+   ]
+  },
+  {
+   "id": "read",
+   "title": "The part you can read",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "The reviewer starts with the blueprint's part of the change, because that is the part you will read."
+    },
+    {
+     "id": "b2",
+     "text": "Two lines out, two lines in. The description. And the budget: a hundred and fifty milliseconds becomes a hundred."
+    },
+    {
+     "id": "b3",
+     "text": "Then every file the change touched. One is the blueprint's. Eight are generated."
+    },
+    {
+     "id": "b4",
+     "text": "No handler. No journey. And nobody reads the eight: a check will say whether they are exactly what the blueprint makes."
+    }
+   ]
+  },
+  {
+   "id": "stale",
+   "title": "What the change unproved",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "c1",
+     "text": "Next: how far does the change reach? One command says: ortho impact."
+    },
+    {
+     "id": "c2",
+     "text": "It compares with the record the last full proof left on this machine. Before the change: nothing stale, and seven operations proven.",
+     "gap": 0.6
+    },
+    {
+     "id": "c3",
+     "text": "With the change in place, it names the declaration that changed: handle.claim, its budget and its description.",
+     "say": "With the change in place, it names the declaration that changed: handle dot claim, its budget and its description."
+    },
+    {
+     "id": "c4",
+     "text": "And it names what that unproved. One operation is stale. The other six stand."
+    }
+   ]
+  },
+  {
+   "id": "prove",
+   "title": "Run it yourself",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "d1",
+     "text": "A report that says it passes is a claim. So the reviewer runs the whole proof itself."
+    },
+    {
+     "id": "d2",
+     "text": "Seven journeys pass. And claim's performance line is now measured against the new budget: a hundred milliseconds."
+    },
+    {
+     "id": "d3",
+     "text": "Then the check. Drift passes. That one line is why nobody read the eight generated files."
+    },
+    {
+     "id": "d4",
+     "text": "Ask impact once more. Nothing stale. Seven proven, as before the change.",
+     "gap": 0.6
+    }
+   ]
+  },
+  {
+   "id": "report",
+   "title": "What you read",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "e1",
+     "text": "You read four lines of blueprint, and the reviewer's findings. A finding names a file, a line, and what would make it right."
+    },
+    {
+     "id": "e2",
+     "text": "When a change arrives before generate was run, the check fails, and names every file that is behind."
+    },
+    {
+     "id": "e3",
+     "text": "When an operation goes stale and no line says what changed, the code moved and the blueprint did not. That is when the reviewer reads the handler."
+    },
+    {
+     "id": "e4",
+     "text": "And ask impact before you prove. A full proof writes a new record, and after it nothing is stale."
+    },
+    {
+     "id": "e5",
+     "text": "Honest notes. This was staged: the recording made the change, and no reviewer was filmed reading it. And no command checks who wrote what. That is practice.",
+     "gap": 0.6
+    },
+    {
+     "id": "e6",
+     "text": "Next: run the app, break it, and read the trace."
+    }
+   ]
+  }
+ ],
+ "pictures": {
+  "carries": "The row of seven operations, each with its proof mark, counted from the impact recordings: all seven proven (review-impact-before), handle.claim alone stale (review-impact), all seven proven again (review-impact-after). It returns in the stale, prove and report sheets.",
+  "hand": "Kit.who shows you handing the change to the reviewer; an editor quotes the two changed lines of examples/plugged-in/blueprint/things/handle/verbs/claim.ts as they stand before the change, and the count of nine files is read from the last line of review-stat.",
+  "read": "A terminal replays review-diff (the blueprint's two lines out and two lines in), then review-stat, with the one blueprint row set apart from the eight generated rows; the counts one and eight are computed from review-stat.",
+  "stale": "A terminal replays review-impact-before and then review-impact, and the row of seven operations is drawn from their stale and proven lines: seven proven, then handle.claim marked stale (not red: stale is not a verdict).",
+  "prove": "A terminal replays review-prove (the seven journey lines, handle.claim's performance line with the budget of 100ms, and the last line), then review-check with its drift line, then review-impact-after; the row of seven returns to all proven.",
+  "report": "Kit.who shows you reading; two small terminals replay review-check-early (drift failing on eight files) and review-impact-handler (stale handle.claim with no changed line above it); Kit.stand marks the commands as running today, the reviewer's independence and who wrote what as practice, and a printed brief for a blueprint change as missing, and says the change was staged by the recording."
+ }
+}

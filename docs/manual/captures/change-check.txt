@@ -1,0 +1,20 @@
+$ ortho check
+blanks left 0
+types ✘ 1
+  src/link/add.ts:7  TS2305: Module '"../../blueprint/things/handle/invariants.ts"' has no exported member 'oneNamePerPerson'.
+rules ✔
+drift ✘ 9
+  generated/actions/handle/claim.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/api/src/handle/claim.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/mcp/src/index.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/model/model.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/server/main.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/server/migrations/0001_things.sql  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/handle/index.md  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/handle/claim.md  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/portal/blueprint.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+changes 1
+  handle.claim.refusals (HandleAlreadyOwned removed): major
+ratchets 0
+check ✘
+exit 1

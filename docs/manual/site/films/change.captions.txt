@@ -1,0 +1,293 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:02.420
+Plugged In has been live for months.
+
+2
+00:00:02.420 --> 00:00:03.740
+And you've decided:
+
+3
+00:00:03.740 --> 00:00:06.005
+a person may hold more than one name.
+
+4
+00:00:06.405 --> 00:00:07.105
+It's one rule.
+
+5
+00:00:07.105 --> 00:00:08.614
+But what was leaning on it?
+
+6
+00:00:09.014 --> 00:00:12.214
+First, your agent runs the whole proof on the app as it stands.
+
+7
+00:00:12.214 --> 00:00:14.714
+Seven operations, all proven.
+
+8
+00:00:14.714 --> 00:00:17.487
+That's the record the change is measured from.
+
+9
+00:00:17.887 --> 00:00:20.107
+Then the designer takes the rule out of the blueprint.
+
+10
+00:00:20.107 --> 00:00:22.487
+Six lines, and no other file.
+
+11
+00:00:22.487 --> 00:00:24.407
+This is the part you read.
+
+12
+00:00:26.007 --> 00:00:28.627
+Before anything is rebuilt, ask what the change did.
+
+13
+00:00:28.627 --> 00:00:30.971
+The command is ortho impact.
+
+14
+00:00:31.371 --> 00:00:32.311
+It names the change:
+
+15
+00:00:32.311 --> 00:00:35.151
+the handle's rules, and one operation, handle.
+
+16
+00:00:35.151 --> 00:00:35.953
+claim.
+
+17
+00:00:36.353 --> 00:00:36.953
+Then the cost.
+
+18
+00:00:36.953 --> 00:00:37.593
+Stale:
+
+19
+00:00:37.593 --> 00:00:38.793
+all seven operations.
+
+20
+00:00:38.793 --> 00:00:39.473
+Proven:
+
+21
+00:00:39.473 --> 00:00:40.020
+none.
+
+22
+00:00:40.620 --> 00:00:44.276
+In an app this small, one rule on the handle unproved everything.
+
+23
+00:00:45.876 --> 00:00:46.516
+Now the check.
+
+24
+00:00:46.516 --> 00:00:48.556
+It fails, in three of its parts.
+
+25
+00:00:48.956 --> 00:00:49.356
+Drift:
+
+26
+00:00:49.316 --> 00:00:52.556
+nine generated files still describe the old rule.
+
+27
+00:00:52.556 --> 00:00:56.194
+That's the framework's own work, and generate rewrites them.
+
+28
+00:00:56.594 --> 00:00:57.054
+Changes:
+
+29
+00:00:57.054 --> 00:00:59.614
+a refusal your callers could be given is gone.
+
+30
+00:00:59.614 --> 00:01:01.961
+That's counted as a major change.
+
+31
+00:01:02.361 --> 00:01:02.901
+And types.
+
+32
+00:01:02.901 --> 00:01:04.221
+The handler for link.
+
+33
+00:01:04.221 --> 00:01:05.701
+add no longer fits.
+
+34
+00:01:05.701 --> 00:01:07.701
+It found your page through this rule:
+
+35
+00:01:07.701 --> 00:01:09.588
+one name meant one page.
+
+36
+00:01:09.988 --> 00:01:12.208
+So with two names, which page gets the link?
+
+37
+00:01:12.208 --> 00:01:13.968
+That isn't a builder's question.
+
+38
+00:01:13.968 --> 00:01:15.458
+It comes back to you.
+
+39
+00:01:17.058 --> 00:01:17.958
+Prove what changed.
+
+40
+00:01:17.958 --> 00:01:22.278
+It can't place the regenerated files, so it chooses all seven journeys.
+
+41
+00:01:22.278 --> 00:01:23.798
+And then it can't run:
+
+42
+00:01:23.798 --> 00:01:25.299
+the app doesn't build.
+
+43
+00:01:25.699 --> 00:01:27.419
+To see further, we stood in for the builder.
+
+44
+00:01:27.419 --> 00:01:29.599
+The link goes on the oldest name.
+
+45
+00:01:29.599 --> 00:01:31.394
+Nobody decided that.
+
+46
+00:01:31.794 --> 00:01:32.734
+Now the whole proof.
+
+47
+00:01:32.734 --> 00:01:33.994
+Six journeys pass.
+
+48
+00:01:33.994 --> 00:01:34.954
+Claim a handle:
+
+49
+00:01:34.954 --> 00:01:35.778
+six of eight.
+
+50
+00:01:36.478 --> 00:01:37.198
+Read the reason.
+
+51
+00:01:37.198 --> 00:01:39.898
+Expected refused, with handle already owned.
+
+52
+00:01:39.898 --> 00:01:40.988
+It answered.
+
+53
+00:01:41.388 --> 00:01:42.408
+That's the proof working.
+
+54
+00:01:42.408 --> 00:01:45.828
+Months ago, an author wrote the old rule down as a step.
+
+55
+00:01:45.828 --> 00:01:47.475
+The step is still there.
+
+56
+00:01:49.075 --> 00:01:52.555
+So the red step is the author's to change, and nobody else's.
+
+57
+00:01:52.555 --> 00:01:54.915
+The author also writes the new story:
+
+58
+00:01:54.915 --> 00:01:57.175
+a person with two names adds a link.
+
+59
+00:01:57.175 --> 00:01:58.610
+It fails first.
+
+60
+00:01:59.010 --> 00:02:01.170
+Only then does a builder take the brief for link.
+
+61
+00:02:01.170 --> 00:02:02.854
+add, and climb.
+
+62
+00:02:03.254 --> 00:02:03.934
+What goes wrong.
+
+63
+00:02:03.934 --> 00:02:09.414
+After a failed proof, impact forgets the change, and calls every operation unproven.
+
+64
+00:02:09.414 --> 00:02:11.670
+So ask before you prove again.
+
+65
+00:02:12.070 --> 00:02:13.690
+And the next version needs a logbook.
+
+66
+00:02:13.690 --> 00:02:15.523
+On a laptop, we had none.
+
+67
+00:02:15.923 --> 00:02:16.903
+One honest note.
+
+68
+00:02:16.903 --> 00:02:20.443
+We made the edit ourselves, and the stand-in handler was staged.
+
+69
+00:02:20.443 --> 00:02:24.908
+No author and no builder were filmed, so this film stops at red.
+
+70
+00:02:25.508 --> 00:02:26.628
+The roles are our practice.
+
+71
+00:02:26.628 --> 00:02:28.748
+Nothing enforces them for you yet.
+
+72
+00:02:28.748 --> 00:02:29.648
+Next:
+
+73
+00:02:29.648 --> 00:02:30.998
+more than one agent.

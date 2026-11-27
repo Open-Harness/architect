@@ -1,0 +1,172 @@
+{
+ "title": "More than one agent",
+ "source": "the manual · this repository",
+ "steps": [
+  "Owners",
+  "Claim",
+  "Rule",
+  "Ratchet",
+  "Standing"
+ ],
+ "about": "Every file in this film is read from this repository as it stands, and every line of terminal output is replayed from docs/manual/captures, recorded by running plain shell commands for real; nothing in it is a command of Orthograph's.",
+ "voice": "af_heart",
+ "speed": 1,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "scenes": [
+  {
+   "id": "owners",
+   "title": "One owner for each line of work",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "Until now, one agent worked on Plugged In at a time. The next stage is bigger. You want several building at once."
+    },
+    {
+     "id": "a2",
+     "text": "Two agents in the same files undo each other's work, and neither notices."
+    },
+    {
+     "id": "a3",
+     "text": "Orthograph has no command for this yet. So this film leaves Plugged In, and shows how this repository builds Orthograph itself."
+    },
+    {
+     "id": "a4",
+     "text": "Every line of work has one owner, called a goal: one long-running agent that manages others. We asked the map which goals run."
+    },
+    {
+     "id": "a5",
+     "text": "Three. One builds the framework. One builds an app on it. One builds nothing new: it brings finished work into the shared branch."
+    }
+   ]
+  },
+  {
+   "id": "claim",
+   "title": "Claim before you build",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "c1",
+     "text": "Before a goal builds anything, it claims it."
+    },
+    {
+     "id": "c2",
+     "text": "The status page keeps one row for each piece of work. A claim is two cells of that row: the lane, which names the goal, and the paths it will change."
+    },
+    {
+     "id": "c3",
+     "text": "Here, goal sixteen holds this piece, and names two folders. Any other agent that needs those folders reads this first."
+    },
+    {
+     "id": "c4",
+     "text": "We counted the claims held today. Thirteen for the app's goal. One for the framework's. Every other lane says none.",
+     "gap": 0.6
+    }
+   ]
+  },
+  {
+   "id": "rule",
+   "title": "One rule, three cases",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "r1",
+     "text": "An agent building an app keeps finding gaps in the framework under it. Whose are they? One rule, three cases."
+    },
+    {
+     "id": "r2",
+     "text": "Case one. A running goal already has it. Wait, or take the part that has landed."
+    },
+    {
+     "id": "r3",
+     "text": "Case two. It would change paths another goal has claimed. One named goal settles it: one of them does it, or they split it."
+    },
+    {
+     "id": "r4",
+     "text": "Case three. Neither. Claim it, and build it."
+    },
+    {
+     "id": "r5",
+     "text": "Only the second case needs a decision."
+    }
+   ]
+  },
+  {
+   "id": "ratchet",
+   "title": "A list that may only shrink",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "s1",
+     "text": "Checks are written before the build, by a different agent. So red checks sit in the shared branch before the code that passes them."
+    },
+    {
+     "id": "s2",
+     "text": "To keep that branch a gate, each failure we know about is written in a list. The build fails on any failure that is not listed."
+    },
+    {
+     "id": "s3",
+     "text": "Here is one whole list, about Plugged In's own journeys. One line says why the entry is there. The other names the one check that may fail."
+    },
+    {
+     "id": "s4",
+     "text": "A builder may delete a line, and may never add one. A script in this repository's CI refuses the pull request.",
+     "say": "A builder may delete a line, and may never add one. A script in this repository's C I refuses the pull request."
+    },
+    {
+     "id": "s5",
+     "text": "Ten lists today. The smallest holds one file. Over time, the numbers go down.",
+     "gap": 0.6
+    }
+   ]
+  },
+  {
+   "id": "standing",
+   "title": "Practice, and what is missing",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "t1",
+     "text": "What goes wrong. A claim is a cell in a table. Nothing locks the paths, so two agents can still meet in one file, as a merge conflict."
+    },
+    {
+     "id": "t2",
+     "text": "And a claim can go stale, when a goal stops and leaves its lane set."
+    },
+    {
+     "id": "t3",
+     "text": "One honest note. Everything you watched is this repository's practice. No ortho command claims work, settles a collision, or keeps a list."
+    },
+    {
+     "id": "t4",
+     "text": "Nothing here was run on Plugged In. We read files, and counted them with plain shell."
+    },
+    {
+     "id": "t5",
+     "text": "The product's answer is called the factory: a board that agents build from. It is designed, and not built.",
+     "gap": 0.6
+    },
+    {
+     "id": "t6",
+     "text": "This is the manual's closing chapter, so nothing comes next. What you can copy today is small: one file of claims, one rule, and one list that only shrinks."
+    }
+   ]
+  }
+ ],
+ "pictures": {
+  "owners": "You, then the goals: a terminal replays captures/agents-goals.txt, and its three lines become three lanes across the sheet, the picture every later sheet returns to.",
+  "claim": "The builder's goal acting: an editor quotes line 224 of docs/canon/status.md with the lane cell and the Touches cell lit, the two folders drop into lane sixteen as a claim, and a terminal replays captures/agents-claims.txt for the counts.",
+  "rule": "An editor quotes lines 29 to 36 of design/goals/map.md, one case lit at a time, and each case is played on the three lanes: a piece waits, two lanes reach for one path and Goal 18 settles it, a free piece is claimed.",
+  "ratchet": "The author, then the builder: an editor quotes both lines of e2e/stage1/expected-failing/01-plugged-in-journeys.txt, a line is shown leaving and an added line refused, and a terminal replays captures/agents-ratchets.txt, its ten counts drawn as bars computed from the recording.",
+  "standing": "The three lanes once more with Kit.stand over them: claims, the collision rule and the ratchet marked practice, the factory marked missing (the work-factory row of docs/canon/status.md, quoted), and no terminal that is not a replay.",
+  "carries": "The lanes: one lane for each running goal, read from captures/agents-goals.txt, with claimed paths sitting in them; it opens the film, takes the claim, plays the three cases, and closes under the standing marks."
+ }
+}

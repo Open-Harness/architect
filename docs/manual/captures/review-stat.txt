@@ -1,0 +1,11 @@
+$ git diff --stat --relative
+ blueprint/things/handle/verbs/claim.ts |  4 ++--
+ generated/actions/handle/claim.ts      |  4 ++--
+ generated/cli/src/handle/claim.ts      |  4 ++--
+ generated/docs/handle/claim.md         |  4 ++--
+ generated/docs/handle/index.md         |  2 +-
+ generated/mcp/src/index.ts             |  2 +-
+ generated/model/model.json             |  8 ++++----
+ generated/portal/blueprint.json        | 16 ++++++++--------
+ generated/sdk/src/handle/claim.ts      |  2 +-
+ 9 files changed, 23 insertions(+), 23 deletions(-)

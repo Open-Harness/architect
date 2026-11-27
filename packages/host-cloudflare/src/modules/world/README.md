@@ -52,7 +52,7 @@ rows survive a world's end (open, K3 "What M1.17 built").
 
 ## Reset (ST1.24)
 
-`POST /_world/reset` (a world without leases only) empties every table of the default database and of each declared store, and keeps the cast: the Durable Object answers who is in it, and the Worker deletes everything but those people's `auth_user` and `auth_account` rows (`internal/reset.ts`). It is how a warm world (`ortho dev`) starts a prove run with none of the last run's records. Not reset: actor storage.
+`POST /_world/reset` (a world without leases only) empties every table of the default database and of each declared store, and keeps the cast: the Durable Object answers who is in it, and the Worker deletes everything but those people's `auth_user` and `auth_account` rows (`internal/reset.ts`). It is how a warm world (`ortho dev`) starts a prove run with none of the last run's records, and, in a world whose clock is stepped or scaled, how prove starts each journey's clock again on its declared start (G16-journey-clocks). Not reset: actor storage.
 
 ## Reset sequence and the fence (M8.07 call 13)
 

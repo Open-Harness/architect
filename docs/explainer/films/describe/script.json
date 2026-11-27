@@ -1,0 +1,166 @@
+{
+ "title": "Describe it",
+ "source": "the manual · examples/plugged-in",
+ "steps": [
+  "Declare",
+  "Blanks",
+  "Fill",
+  "Generate",
+  "Read"
+ ],
+ "about": "Every file in this film is quoted from docs/manual/captures as it stood on examples/plugged-in while recording, and every line of terminal output is replayed from the same recordings, made by running the commands for real.",
+ "voice": "af_heart",
+ "speed": 1.0,
+ "gap": 0.4,
+ "uses": [
+  "../manual/kit.js"
+ ],
+ "scenes": [
+  {
+   "id": "declare",
+   "title": "Declare what the page names",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "a1",
+     "text": "The plan page is agreed, as far as it goes. It names a wallet. It still has doubts on it."
+    },
+    {
+     "id": "a2",
+     "text": "Now the page becomes a blueprint. And what you haven't decided must not get decided on the way."
+    },
+    {
+     "id": "a3",
+     "text": "The designer doesn't start from an empty file. It runs ortho add thing, wallet. Then ortho add operation, wallet.open.",
+     "say": "The designer doesn't start from an empty file. It runs ortho add thing, wallet. Then ortho add operation, wallet dot open."
+    },
+    {
+     "id": "a4",
+     "text": "The framework writes the frame. Seven files for the thing, one for the operation."
+    },
+    {
+     "id": "a5",
+     "text": "None of them holds a decision. Where a decision goes, there is a blank, and the blank says what is missing."
+    }
+   ]
+  },
+  {
+   "id": "blanks",
+   "title": "Every blank is a question",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "b1",
+     "text": "Now run ortho check.",
+     "say": "Now run Ortho check."
+    },
+    {
+     "id": "b2",
+     "text": "The wallet has seven blanks. Each one is a line: a file, a line number, and the question.",
+     "gap": 0.6
+    },
+    {
+     "id": "b3",
+     "text": "What a wallet is. Its states. Who holds a role on it. And four about opening one."
+    },
+    {
+     "id": "b4",
+     "text": "The model says it shorter. The wallet is listed with no states, and two lines say what is unfinished."
+    }
+   ]
+  },
+  {
+   "id": "fill",
+   "title": "Fill what the page says",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "c1",
+     "text": "Two of the seven are already answered on the plan page. So the designer fills those two, in the page's words."
+    },
+    {
+     "id": "c2",
+     "text": "What a wallet is: a handle's money, one for each claimed handle."
+    },
+    {
+     "id": "c3",
+     "text": "And its states: opening, open, frozen, closed."
+    },
+    {
+     "id": "c4",
+     "text": "Check again. Five blanks.",
+     "gap": 0.6
+    },
+    {
+     "id": "c5",
+     "text": "The designer stops there. Who may open a wallet depends on a question you haven't answered. So it stays a blank."
+    }
+   ]
+  },
+  {
+   "id": "generate",
+   "title": "The generated files fall behind",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "d1",
+     "text": "The check has a second complaint. Drift, eight files. The blueprint changed, so what was made from it is stale."
+    },
+    {
+     "id": "d2",
+     "text": "So run ortho generate. It doesn't wait for the blanks.",
+     "say": "So run Ortho generate. It doesn't wait for the blanks."
+    },
+    {
+     "id": "d3",
+     "text": "The wallet gets its types, its page of docs and its table. The unfinished operation is left out, and no handler is written for it."
+    },
+    {
+     "id": "d4",
+     "text": "Check again. Types pass. Rules pass. Drift passes. And check still fails, on five blanks. That is right."
+    }
+   ]
+  },
+  {
+   "id": "read",
+   "title": "What you read",
+   "lead": 0.7,
+   "tail": 0.9,
+   "lines": [
+    {
+     "id": "e1",
+     "text": "You read two changed lines, and a list of questions. The count should go down only when you decide something."
+    },
+    {
+     "id": "e2",
+     "text": "Generate too early, and it goes wrong. With the states still blank, generate wrote a types file that doesn't compile, and check said so."
+    },
+    {
+     "id": "e3",
+     "text": "And the check can't tell a decision from a guess. When the count drops, ask which line of the plan each answer came from."
+    },
+    {
+     "id": "e4",
+     "text": "One honest note. The recording filled those two blanks itself, in the plan's words. No agent was filmed designing. And leaving blanks is our practice. Nothing enforces it yet.",
+     "gap": 0.6
+    },
+    {
+     "id": "e5",
+     "text": "Next: say what done means."
+    }
+   ]
+  }
+ ],
+ "pictures": {
+  "carries": "The count of blanks, drawn as the check's own list of questions with its number above it: seven, then five, computed from describe-0-check.txt, describe-1-check.txt and describe-2-check.txt. It returns on every sheet after the first.",
+  "declare": "The designer acts. A terminal replays describe-add-thing.txt and describe-add-operation.txt; beside it an editor quotes describe-0-open.ts.txt, its four Blueprint.todo lines marked as blanks.",
+  "blanks": "A terminal replays describe-0-check.txt down to its seventh blank, each line becoming one row of the list of questions under the number seven; the lower third replays the wallet's line and the two unfinished lines of describe-0-model.txt.",
+  "fill": "The designer acts. An editor shows describe-0-thing.ts.txt becoming describe-1-thing.ts.txt, then describe-0-machine.ts.txt becoming describe-1-machine.ts.txt, beside the Wallet line of plan-page.txt; two rows leave the list as describe-1-check.txt replays and the number becomes five.",
+  "generate": "A terminal replays the drift lines of describe-1-check.txt, then describe-2-generate.txt, then describe-2-check.txt, with describe-2-handlers.txt showing no wallet folder under src; the list of five questions stays beside it, and only the final verdict is red.",
+  "read": "You act. The list of five questions stands alone; then a terminal replays the types lines of describe-early-check.txt over line nine of describe-early-types.ts.txt; Kit.stand marks add, check, model and generate as running today, the designer leaving blanks as practice, and a second kind of blank and the ready check as missing."
+ }
+}

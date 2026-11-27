@@ -7,7 +7,7 @@ import type { CallRecord, JourneyRun, JourneysApi, Project, StepResult } from ".
 import { callDevice, onDevice } from "./internal/device.ts";
 import { keepersIn } from "./internal/keepers.ts";
 import { loadProject } from "./internal/load.ts";
-import { callOperation, callTools, castPeople, doorFacts, makeKey, mayCall, mintCredential, signUpPeople, stateOf } from "./internal/world.ts";
+import { callOperation, callTools, castPeople, doorFacts, makeKey, mayCall, mintCredential, resetWorld, signUpPeople, stateOf } from "./internal/world.ts";
 import { databaseFacts } from "./internal/database-facts.ts";
 import { d1Facts } from "./internal/d1-facts.ts";
 import { subjectId } from "./internal/subject.ts";
@@ -47,6 +47,13 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     // Cast as anyone: not signed up, so the script can sign them up itself; everyone else is, for real.
     const anyone = names.filter((n) => cast[n]?.kind === "anyone" && !lineage.some((w) => n in w.cast));
     const wanted = [names.filter((n) => !anyone.includes(n) && !outsiders.includes(n)).map((n) => `j${index}.${n}`), anyone.map((n) => `j${index}.${n}`)] as const;
+    // A clock that moves starts again for each journey, on the environment's declared start (G16-journey-clocks call 1): before
+    // the cast is made, since the reset ends every session. A real clock is never touched.
+    const kind = (yield* WorldClock.read(url))?.kind;
+    if (kind === "stepped" || kind === "scaled") {
+      const problem = yield* resetWorld(url);
+      if (problem !== undefined) return done(`the world's clock couldn't start again for it: the reset answered ${problem}`);
+    }
     const casting = yield* how === "world"
       ? castPeople(url, ...wanted).pipe(Effect.map((c) => ({ cast: c })))
       : signUpPeople(url, ...wanted).pipe(Effect.map((c) => ({ cast: c })), Effect.catch((problem: string) => Effect.succeed({ problem })));
@@ -62,6 +69,8 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
     // The keeper's call is not built yet (M8.10): it refuses, never pretends.
     const unbuilt = (call: AnyCall, kept: ReadonlySet<string> = keepers): string | undefined =>
       call.kind !== "clock-call" && call.kind !== "stand-call" && kept.has(call.actor) ? "time is not built yet: M8.10 (a call made as the keeper)" : undefined;
+    // Each credential the world minted for a cast member's way in, once per journey and again after each clock step.
+    const minted = new Map<string, string | undefined>();
     /** A step that moves the world's clock: the world's door answers `{ now, fired }` once it is quiet at the target (M8.07). */
     const moveClock = (step: string, call: Extract<AnyCall, { readonly kind: "clock-call" }>) =>
       Effect.gen(function* () {
@@ -76,6 +85,17 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
           trace: randomBytes(16).toString("hex"), parent: randomBytes(8).toString("hex"), mayCall: true, journal: [], clock: true,
         };
         calls.push(record);
+        // After every step, whatever it answered and whatever its checks say, the cast signs in again at the world's new time
+        // (G16-journey-clocks call 2): the same people, new sessions, and each way in minted again on its next use. On the step,
+        // never on a refusal: prove retries nothing. A real environment's people (sign-up) have no world to cast them again.
+        if (how === "world" && wanted[0].length > 0) {
+          const again = yield* castPeople(url, wanted[0]);
+          for (const [name, member] of Object.entries(people)) {
+            const token = again[`j${index}.${name}`]?.token;
+            if (token !== undefined) people[name] = { ...member, token };
+          }
+          minted.clear();
+        }
         return record;
       });
     /**
@@ -102,8 +122,6 @@ const run: JourneysApi["run"] = (project, url, journey, index, how = "world", gi
       const said = record.body as { readonly _tag?: string; readonly message?: string } | null;
       return `the world refused the clock step: ${said?._tag ?? record.status}${said?.message === undefined ? "" : ` (${said.message})`}`;
     };
-    // Each credential the world minted for a cast member's way in, once per journey.
-    const minted = new Map<string, string | undefined>();
     const tokenFor = (actor: string, via: Via | undefined) =>
       Effect.gen(function* () {
         const kind = cast[actor]?.kind;

@@ -239,6 +239,14 @@ each owned a piece of one nonce's state, and the relayer guessed the rest. The f
 
 - **A `retrySafe` predicate per operation** (`decisions/WEB-actions-projection.md`, call 5). A generated action never names `retrySafe`. An operation whose payload carries its own idempotency key could emit it as a predicate on the input (`spikes/agent-native-compat` finding 5). **Trigger:** the model can say an operation carries its own key.
 
+- **Things that say what they need, and sealed fields** (K46, Aaron, 26 November 2026). Decided as a design, with no
+  slice and no row on the status page: a move that is asked for and of how many; `needs` on a generated reference to a
+  thing; a sealed field on a chain operation; a chain store that makes a contract per instance of its root thing and
+  says whether it can be upgraded, with a rule change published as a version; the outcome of a chain call as something
+  that makes a move; and a check that every waiting state has a way out. The worked design is
+  `docs/explainer/films/capxul-lite/app/`. **Decide before** ST3.06 (collecting owners' approvals), which K46 takes for
+  a thing that asks, and before M6.17 deploys a contract outside a world. Ranking it is Goal 18's.
+
 ## From #995's stand-ins (Goal 16, 25 November 2026)
 
 - **Stand-ins under `ortho dev`.** Today only a world prove starts runs a mount's process stand-in (G16-adapter-mounts
