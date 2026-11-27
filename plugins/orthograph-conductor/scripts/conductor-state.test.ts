@@ -258,6 +258,22 @@ describe("page", () => {
   });
 });
 
+describe("workers ahead of the owner", () => {
+  test("a worker started for another stage belongs to that stage's current visit, or to none if it was never entered", () => {
+    const ev = (list: any[]) => list.map((e, k) => ({ n: k + 1, at: "t", ...e }));
+    const s = fold(ev([
+      { type: "stage.entered", stage: "describe" },
+      { type: "stage.entered", stage: "plan" },
+      { type: "stage.reopened", stage: "plan", from: "spike", because: "x" },
+      { type: "worker.started", stage: "describe", worker: "w1", role: "designer", task: "the wallet" },
+      { type: "worker.started", stage: "done", worker: "w2", role: "author", task: "handle journeys" },
+    ]));
+    expect(s.workers.map((w: any) => [w.id, w.visit])).toEqual([["w1", 1], ["w2", null]]);
+    expect(s.roadmap.find((r: any) => r.stage === "describe").visits[0].workers).toEqual(["w1"]);
+    expect(s.roadmap.find((r: any) => r.stage === "plan").visits[1].workers).toEqual([]);
+  });
+});
+
 describe("closing workers", () => {
   test("a worker that returned and is not closed makes work due, and the brief lists it", () => {
     init(app, "g");
@@ -371,6 +387,12 @@ describe("due: whether a scheduled wake has work", () => {
     append(app, { type: "open", stage: "describe", q: "later?" });
     append(app, { type: "open", stage: "plan", q: "for w2", waits_on: "w2" });
     expect(due(app).due).toBeTrue();
+  });
+  test("a blocked stage that waits on the owner is idle", () => {
+    init(app, "g");
+    append(app, { type: "blocker", stage: "plan", what: "needs a credential" });
+    append(app, { type: "open", stage: "plan", q: "may I have the provider's key?" });
+    expect(due(app)).toEqual({ due: false, why: ["waiting on the owner: may I have the provider's key?"] });
   });
   test("a blocked stage is due: the conductor looks for a way round", () => {
     init(app, "g");

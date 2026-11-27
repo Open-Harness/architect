@@ -48,8 +48,9 @@ Work in this order; the order matters.
    longer holds. `stale` with no `changed` line means code moved and the blueprint did not: that is the one time you
    read a handler, looking for a decision made in code that belongs in the blueprint. On a fresh checkout there is no
    record to compare with and every operation shows as unproven; say so rather than read it as a finding.
-2. **Read the part the owner can read first**: the blueprint's diff (`git diff -- blueprint`). Then list every file the
-   change touched (`git diff --stat`) and hold the list against the brief's "Write" and "Don't touch" lines. A builder
+2. **Read the part the owner can read first**: the blueprint's diff between the change's base and its head
+   (`git diff <base>...<head> -- blueprint`; on a clean checkout a bare `git diff` shows nothing). Then list every
+   file the change touched (`git diff --stat <base>...<head>`) and hold the list against the brief's "Write" and "Don't touch" lines. A builder
    that touched a journey, the blueprint or `generated/` is a blocking finding.
 3. **Run the proof yourself, whole**, then the check:
 

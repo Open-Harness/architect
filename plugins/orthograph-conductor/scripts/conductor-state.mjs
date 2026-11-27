@@ -89,7 +89,8 @@ export function fold(events) {
       case "decision": s.decided.push({ q: e.q, a: e.a, by: e.by ?? "owner", at: e.n }); s.open = s.open.filter((o) => o.q !== e.q); break;
       case "open": s.open.push({ q: e.q, waits_on: e.waits_on ?? "owner", blocks: e.blocks ?? e.stage, at: e.n }); break;
       case "closed": s.open = s.open.filter((o) => o.q !== e.q); break;
-      case "worker.started": s.workers.push({ id: e.worker, role: e.role, stage: e.stage, visit: s.visit, task: e.task, status: "running", at: e.n }); current(e.stage)?.workers.push(e.worker); break;
+      case "worker.started": { // a worker belongs to its own stage's current visit, which may not be the stage the owner is in
+        const v = current(e.stage); s.workers.push({ id: e.worker, role: e.role, stage: e.stage, visit: v ? v.visit : null, task: e.task, status: "running", at: e.n }); v?.workers.push(e.worker); break; }
       case "worker.closed": { const t = s.workers.find((x) => x.id === e.worker); t.closed = e.n; if (t.status === "running") t.status = "stopped"; break; }
       case "worker.returned": { const t = s.workers.find((x) => x.id === e.worker); if (t) { t.status = e.outcome; t.returned = e.n; } for (const q of e.open ?? []) s.open.push({ q, waits_on: "owner", blocks: e.stage, at: e.n }); break; }
       case "blocker": s.blockers.push({ what: e.what, stage: e.stage, at: e.n, cleared: false }); road(e.stage).status = "blocked"; break;
@@ -230,7 +231,7 @@ export function due(root) {
   const r = s.roadmap.find((x) => x.stage === s.stage);
   const asks = s.open.filter((o) => o.waits_on === "owner" && o.blocks === s.stage);
   if (r && r.status === "doing" && !asks.length && s.next) why.push(`carry on: ${s.next.do}`);
-  if (r && r.status === "blocked") why.push(`find a way round: ${s.blockers.filter((b) => !b.cleared).map((b) => b.what).join("; ")}`);
+  if (r && r.status === "blocked" && !asks.length) why.push(`find a way round: ${s.blockers.filter((b) => !b.cleared).map((b) => b.what).join("; ")}`);
   if (!why.length) why.push(asks.length ? `waiting on the owner: ${asks.map((o) => o.q).join(" | ")}` : "nothing to do");
   return { due: running.length > 0 || finished.length > 0 || why.some((w) => w.startsWith("carry on") || w.startsWith("find a way")), why };
 }
