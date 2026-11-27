@@ -256,8 +256,8 @@ These touch only new code and their own checks, none of what Goal 3 or Goal 6 is
 | # | Slice | Done when |
 |---|---|---|
 | 3 | **M1.22, the actions projection**: one generated action per operation in `generated/actions/` | M1.22's check |
-| 4 | **ST1.25, the web projection**: `@orthograph/web` (the browser host and the piece runtime), the pieces' templates, `--through web` in Chromium, and `ortho/no-ui-in-worker` carved out for `generated/web/` with check 26 still holding the Worker line (K29 sections 3 and 6) | ST1.26's checks |
-| 5 | **ST1.04's three screens** (the user): `/@:handle`, `/claim` and `/edit` in `examples/plugged-in/src/web/`, built on the pieces, with the app's own link list (K29 sections 4 and 5), routed in `src/web/main.tsx` until the map language lands; on `@orthograph/theme` if Goal 6's theme landing has reached `goal/stage-1`, else UI SDK's default tokens. Needs ST1.03 (Goal 3's handles plugin) | in Chromium a claim and a link show on `/@aaron`; Plugged In's claim, links and page journeys pass `--through web` |
+| 4 | **ST1.25, the web projection**: `@orthograph/web` (the browser host and the hook runtime), the hooks' templates, `--through web` in Chromium, and `ortho/no-ui-in-worker` carved out for `generated/web/` with check 26 still holding the Worker line (K29 sections 3 and 6) | ST1.26's checks |
+| 5 | **ST1.04's three screens** (the user): `/@:handle`, `/claim` and `/edit` in `examples/plugged-in/src/web/`, built on the generated hooks and drawn by the app's own components (K48), with the app's own link list (K29 sections 4 and 5), routed in `src/web/main.tsx` until the map language lands; on `@orthograph/theme` if Goal 6's theme landing has reached `goal/stage-1`, else the app's own library's tokens. Needs ST1.03 (Goal 3's handles plugin) | in Chromium a claim and a link show on `/@aaron`; Plugged In's claim, links and page journeys pass `--through web` |
 
 ### Where it meets Goal 3
 

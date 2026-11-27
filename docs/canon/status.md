@@ -129,7 +129,7 @@ journeys find a hole.
 | adopt-mounted-thing | Adopt a mounted thing: so a running app can switch a plugin on after the fact (Capxul's modules, K43) | provisional | Capxul | 1.0 | — | none | `packages/compiler/src/modules/mounts` | plugins-mounts | slices M2.19, M2.20; the CRM comes after payroll, so no milestone yet |
 | journeys-through-clients | Journeys through the CLI, MCP and the page: no `--through` | provisional | framework | — | — | none | `packages/prove` | generated-outputs | slices M2.08, ST1.25 |
 | handles-plugin | The handles plugin: the code runs inside Plugged In and is not extracted | provisional | framework | — | — | none | `examples/plugged-in` | — | slice ST1.03 |
-| web-runtime | `@orthograph/web`: the browser host and the runtime every generated piece shares | provisional | framework | — | — | none | `packages/web` | ui-sdk-base | slices ST1.25, ST1.06; K29 |
+| web-runtime | `@orthograph/web`: the browser host and the runtime every generated hook shares (K48) | provisional | framework | — | — | none | `packages/web` | actions | slices ST1.25, ST1.06; K29 |
 | plugged-in-screens | Plugged In's three screens: no `src/web/` yet | provisional | framework | — | — | none | `examples/plugged-in/src/web` | ui-pieces | slice ST1.04 |
 | infra-staging | Infra and staging: the infra projection and `ortho env up` / `destroy` staging, run with no credential and no network | built | framework | 1.0 | — | none | `packages/projections`, `packages/host-cloudflare` | — | checks 37 and 41; K41 clash 6; slices M7.03, M7.04; proved on Plugged In by `e2e/m1/37-m7-03-staging-plan.test.ts` and `e2e/m1/41-m7-04-prove-staging.test.ts` |
 | staging-run | A live staging run: deploy, run the story, destroy; five clean runs in `spikes/staging-pass` came before the workflow | building | framework | 1.0 | — | none | `.github/workflows/staging.yml` | infra-staging | slices M7.01, M7.04 |
@@ -137,14 +137,16 @@ journeys find a hole.
 
 ### App UI (built as an app needs it)
 
-The UI is a generated piece per operation (K29, K41 clash 2) and a generated reference per thing (K46), in place of the
-hand-written React hooks ST1.01 once planned. The reference is decided and has no row yet.
+An app's screens are generated headless hooks over its actions, drawn by the app's own component library (K48, which
+supersedes K29's pieces for an app's screens), and each thing has a generated reference (K46). Agents act through the
+actions as tools; UI SDK waits until an app wants an agent driving the live screen. The portal is not changed by K48. The
+reference is decided and has no row yet.
 
 | id | Item | Stage | Pulled by | Release | Milestone | Lane | Touches | Needs | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| ui-sdk-base | UI SDK as the interface base: decided, nothing wired yet | provisional | framework | — | — | none | `packages/theme` | — | K24 |
-| ui-pieces | A generated piece per operation on UI SDK: no generator and no `generated/web/` yet | spiked | framework | — | — | none | `packages/generators`, `generated/web/` | ui-sdk-base, web-runtime | `spikes/ui-sdk-real-world`; slice ST1.25 (K29); `issue #476` |
-| agent-marks | Agent marks from blueprint meaning: three of four map | spiked | framework | — | — | none | `packages/orthograph` | ui-pieces | the spike's marks |
+| ui-sdk-base | UI SDK as the interface base: the portal's; an app's screens use the app's own library (K48) | provisional | framework | — | — | none | `packages/theme` | — | K24 |
+| ui-pieces | A generated headless hook per operation over its action, drawn by the app's library (K48): no generator and no `generated/web/` yet | spiked | framework | — | — | none | `packages/generators`, `generated/web/` | actions, web-runtime | `spikes/ui-sdk-real-world`; slice ST1.25 (K29); `issue #476` |
+| agent-marks | Agent marks from blueprint meaning: three of four map; they wait with UI SDK, since agents act through the actions as tools (K48) | spiked | framework | — | — | none | `packages/orthograph` | ui-pieces | the spike's marks |
 | gap-approval-declaration | Approval declaration: the blueprint can't declare an approval or a hidden payload field, which generated pieces need | spiked | framework | — | — | none | `packages/orthograph` | agent-marks | no slice; found by the agent-marks spike |
 | actions | Actions: one per operation, for the page, MCP and the CLI | spiked | framework | — | — | none | `packages/projections` | ui-pieces | `spikes/agent-native-compat`, `spikes/ui-sdk-real-world/src/action.ts`; slices M1.22, M1.23 (moved into stage 1 by K29) |
 | approvals-once | Approvals once: an approval is asked once | spiked | framework | — | — | none | `packages/projections` | actions, gap-approval-declaration | agent-native checks 04 to 06; slices M1.23, M1.37 |

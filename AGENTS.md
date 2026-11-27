@@ -36,10 +36,11 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   is done when its gate passes on `main`. The running goals and the collision rule are in `design/goals/map.md`. Ideas
   for later go in `design/later.md`, never into code.
 - **Goals.** A goal is one long-running agent, today a thread that manages other threads, later a superagent (K42).
-  Two goals build (K44): the framework goal (Goal 18), which builds the Orthograph alpha, and Capxul (Goal 16). The
-  framework goal always runs: it ranks what can run now, keeps the board, settles collisions and brings grills to
-  Aaron. Capxul dogfoods the framework: it builds its app and the framework gaps it claims. The lander (Goal 19) always
-  runs: it brings each app goal's green slices into `main`. The superagent (Goal 17) is parked. A goal exists while its
+  Three goals build (K44, K47): the framework goal (Goal 18), which builds the Orthograph alpha, Capxul (Goal 16), and
+  Coworker (K47; Goal 18 gives it its number). The framework goal always runs: it ranks what can run now, keeps the
+  board, settles collisions and brings grills to Aaron. Capxul and Coworker dogfood the framework: each builds its app
+  and the framework gaps it claims. The lander (Goal 19) always runs: it brings each app goal's green slices into
+  `main`. The superagent (Goal 17) is parked. A goal exists while its
   agent runs. Its brief in `design/goals/` has one done check; it works one commit per slice, each ending green with
   its "done when" check. It loops generate, run, fix until the check passes, then moves on. Its work reaches `main` by
   pull requests, merged when CI is green and a 🔍 reviewer subagent passed it. Threads are optional, for work that truly runs in
@@ -84,7 +85,7 @@ decisions, and where docs disagree, take ownership and make them consistent. So:
   with `// Scaffolded from <path>. Yours from now on.`
 - Package rules (Nx module boundaries): `orthograph` (the front door, the `Blueprint` API) depends only on Effect;
   generated code imports only the language's runtime, `orthograph`, the host and project code, and in `generated/web/`
-  also `@ui-sdk/*`, `react` and `@orthograph/web` (K29); `compiler` and `generators`
+  also `react` and `@orthograph/web`, and the app's own generated SDK and actions (K48); `compiler` and `generators`
   never run in production.
 - Pin dependency versions exactly, and use versions published at least three days before you add them (Aaron, 17
   November 2026). A younger version needs an override: its name in `minimumReleaseAgeExclude` in
