@@ -8,6 +8,7 @@
 //   due                                  for a scheduled wake: exit 0 and say why if there is work the agent can do
 //                                        without the owner, exit 3 if not
 //   show                                 print state.json
+// Every write also makes ROADMAP.html, the same state as a page the conductor publishes for the owner.
 // log.jsonl is the truth: append-only, one event per line, never rewritten. state.json and ROADMAP.md are made from it, so
 // either can be deleted and rebuilt. Only the main agent (the conductor) runs this; a worker hands its result back instead.
 // Plain Node, no dependencies. --dir <path> sets the app's folder (the current folder by default).
@@ -54,10 +55,10 @@ export const STAGES = [
 // The fields each event must carry. fold refuses an event without them, so a bad event never reaches the log.
 export const NEEDS = { "goal.set": ["goal"], "stage.entered": ["stage"], "stage.done": ["stage"], "stage.reopened": ["stage", "from", "because"],
   decision: ["stage", "q", "a"], open: ["stage", "q"], closed: ["q"], "worker.started": ["stage", "worker", "role", "task"],
-  "worker.returned": ["stage", "worker", "outcome"], "check.ran": ["stage", "check", "pass"], blocker: ["stage", "what"], replan: ["stage", "plan"], note: ["text"] };
-export const TYPES = ["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "worker.started", "worker.returned", "check.ran", "blocker", "replan", "note"];
+  "worker.returned": ["stage", "worker", "outcome"], "check.ran": ["stage", "check", "pass"], blocker: ["stage", "what"], replan: ["stage", "plan"], note: ["text"], "worker.closed": ["worker"] };
+export const TYPES = ["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "worker.started", "worker.returned", "worker.closed", "check.ran", "blocker", "replan", "note"];
 
-const paths = (root) => { const dir = join(resolve(root), ".orthograph/conductor"); return { dir, LOG: join(dir, "log.jsonl"), STATE: join(dir, "state.json"), PAGE: join(dir, "ROADMAP.md") }; };
+const paths = (root) => { const dir = join(resolve(root), ".orthograph/conductor"); return { dir, LOG: join(dir, "log.jsonl"), STATE: join(dir, "state.json"), PAGE: join(dir, "ROADMAP.md"), HTML: join(dir, "ROADMAP.html") }; };
 export const readLog = (root = ".") => { const { LOG } = paths(root); return existsSync(LOG) ? readFileSync(LOG, "utf8").split("\n").filter(Boolean).map((l, k) => { try { return JSON.parse(l); } catch { throw new Error(`log.jsonl line ${k + 1} is not JSON`); } }) : []; };
 
 // The snapshot is a fold over the log. Every visit of a stage is kept, so a loop (plan, spike, plan again) is history, not loss.
@@ -72,6 +73,8 @@ export function fold(events) {
     if (e.type === "worker.returned" && !["done", "blocked", "partial"].includes(e.outcome)) throw new Error(`event #${e.n} (worker.returned): outcome is done, blocked or partial`);
     for (const f of ["plan", "clears", "done_when", "open"]) if (e[f] !== undefined && !Array.isArray(e[f])) throw new Error(`event #${e.n} (${e.type}): ${f} is a list`);
     if (e.type === "worker.returned" && !s.workers.some((w) => w.id === e.worker)) throw new Error(`event #${e.n}: no worker ${e.worker} was started`);
+    if (e.type === "worker.closed" && !s.workers.some((w) => w.id === e.worker)) throw new Error(`event #${e.n}: no worker ${e.worker} was started`);
+    if (e.type === "worker.closed" && s.workers.some((w) => w.id === e.worker && w.closed)) throw new Error(`event #${e.n}: worker ${e.worker} is already closed`);
     if (e.type === "worker.started" && s.workers.some((w) => w.id === e.worker)) throw new Error(`event #${e.n}: worker ${e.worker} was already started`);
     s.last = e.n;
     switch (e.type) {
@@ -87,6 +90,7 @@ export function fold(events) {
       case "open": s.open.push({ q: e.q, waits_on: e.waits_on ?? "owner", blocks: e.blocks ?? e.stage, at: e.n }); break;
       case "closed": s.open = s.open.filter((o) => o.q !== e.q); break;
       case "worker.started": s.workers.push({ id: e.worker, role: e.role, stage: e.stage, visit: s.visit, task: e.task, status: "running", at: e.n }); current(e.stage)?.workers.push(e.worker); break;
+      case "worker.closed": { const t = s.workers.find((x) => x.id === e.worker); t.closed = e.n; if (t.status === "running") t.status = "stopped"; break; }
       case "worker.returned": { const t = s.workers.find((x) => x.id === e.worker); if (t) { t.status = e.outcome; t.returned = e.n; } for (const q of e.open ?? []) s.open.push({ q, waits_on: "owner", blocks: e.stage, at: e.n }); break; }
       case "blocker": s.blockers.push({ what: e.what, stage: e.stage, at: e.n, cleared: false }); road(e.stage).status = "blocked"; break;
       case "replan": { s.plan = e.plan; for (const b of s.blockers) if (!b.cleared && (e.clears ?? []).includes(b.what)) b.cleared = true;
@@ -117,7 +121,50 @@ export function page(s) {
   return out.join("\n") + "\n";
 }
 
-function write(root, events) { const { STATE, PAGE } = paths(root); const s = fold(events); writeFileSync(STATE, JSON.stringify(s, null, 2) + "\n"); writeFileSync(PAGE, page(s)); return s; }
+function write(root, events) {
+  const { STATE, PAGE, HTML } = paths(root), s = fold(events);
+  writeFileSync(STATE, JSON.stringify(s, null, 2) + "\n"); writeFileSync(PAGE, page(s)); writeFileSync(HTML, html(s, events));
+  return s;
+}
+
+// The same state as one self-contained web page, for the owner to keep open: the conductor publishes it wherever the
+// harness shows pages (an artifact, a canvas, a preview), so it is always the log as it now stands.
+const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const say = (e) => e.text ?? e.because ?? e.q ?? e.what ?? e.task ?? e.check ?? e.goal ?? (e.plan ? e.plan.join("; ") : "") ?? "";
+export function html(s, events = []) {
+  const now = s.roadmap.find((r) => r.stage === s.stage), asks = s.open.filter((o) => o.waits_on === "owner");
+  const li = (xs) => xs.length ? `<ul>${xs.join("")}</ul>` : `<p class="quiet">none</p>`;
+  const stages = s.roadmap.map((r) => `<li class="st ${r.status}"><span class="mark">${{ todo: "", doing: "●", done: "✓", blocked: "!" }[r.status]}</span><b>${esc(r.title)}</b>${r.visits.length > 1 ? ` <span class="quiet">visited ${r.visits.length} times</span>` : ""}${r.visits.length > 1 ? `<ol>${r.visits.map((v) => `<li>${esc(v.because)}${v.ended ? " · done" : ""}</li>`).join("")}</ol>` : ""}</li>`).join("");
+  const workers = s.workers.map((w) => `<tr><td>${esc(w.id)}</td><td>${esc(w.role)}</td><td>${esc(w.stage)}</td><td>${esc(w.task)}</td><td class="${esc(w.status)}">${esc(w.status)}${w.closed ? " · closed" : ""}</td></tr>`).join("");
+  const recent = events.slice(-15).reverse().map((e) => `<li><span class="quiet">#${e.n} ${esc(e.type)}${e.stage ? ` · ${esc(e.stage)}` : ""}</span> ${esc(say(e))}</li>`).join("");
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project roadmap</title>
+<!-- Made from .orthograph/conductor/log.jsonl. Do not edit: the conductor rewrites it with every event. -->
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1b;--quiet:#6b6a64;--line:#e4e1d8;--accent:#2f5d50;--warn:#a23b2a;--card:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161614;--fg:#ecebe6;--quiet:#9a988f;--line:#2c2b27;--accent:#7fb8a4;--warn:#e0806e;--card:#1e1e1b}}
+:root[data-theme="dark"]{--bg:#161614;--fg:#ecebe6;--quiet:#9a988f;--line:#2c2b27;--accent:#7fb8a4;--warn:#e0806e;--card:#1e1e1b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 16px 64px}h1{font-size:1.6rem;margin:0 0 4px}h2{font-size:1rem;text-transform:uppercase;letter-spacing:.06em;color:var(--quiet);margin:32px 0 8px}
+.quiet{color:var(--quiet)}.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:8px 0}
+.asks{border-color:var(--accent)}ul,ol{margin:4px 0;padding-left:20px}.road{list-style:none;padding:0}.st{padding:6px 0;border-bottom:1px solid var(--line)}
+.mark{display:inline-block;width:1.4em;color:var(--accent)}.st.todo b{color:var(--quiet);font-weight:500}.st.blocked .mark,.st.blocked b{color:var(--warn)}.st ol{color:var(--quiet);font-size:.9rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.running{color:var(--accent)}td.blocked{color:var(--warn)}.scroll{overflow-x:auto}
+</style></head><body><main>
+<p class="quiet">The conductor's roadmap · made from the log, event ${esc(s.last)}</p>
+<h1>${esc(s.goal ?? "No goal yet")}</h1>
+<div class="card"><b>Now:</b> ${now ? `${esc(now.title)}, visit ${esc(s.visit)}` : "not started"}${s.next ? `<br><b>Next:</b> ${esc(s.next.do)}${s.next.why ? ` <span class="quiet">(${esc(s.next.why)})</span>` : ""}` : ""}</div>
+${asks.length ? `<div class="card asks"><b>Waiting on you</b>${li(asks.map((o) => `<li>${esc(o.q)}</li>`))}</div>` : ""}
+<h2>Roadmap</h2><ul class="road">${stages}</ul>
+<h2>Workers</h2>${s.workers.length ? `<div class="scroll"><table><tr><th>id</th><th>role</th><th>stage</th><th>task</th><th>status</th></tr>${workers}</table></div>` : `<p class="quiet">none yet</p>`}
+<h2>Decided</h2>${li(s.decided.map((d) => `<li>${esc(d.q)} <b>${esc(d.a)}</b> <span class="quiet">(${esc(d.by)})</span></li>`))}
+${s.blockers.some((b) => !b.cleared) ? `<h2>Blocked</h2>${li(s.blockers.filter((b) => !b.cleared).map((b) => `<li>${esc(b.what)} <span class="quiet">(${esc(b.stage)})</span></li>`))}` : ""}
+<h2>Latest</h2>${recent ? `<ul>${recent}</ul>` : `<p class="quiet">nothing yet</p>`}
+</main></body></html>
+`;
+}
 // One writer at a time: a lock folder, made atomically, held while the log is read, numbered and appended. A lock older
 // than a minute is from a writer that died, and is taken over.
 const pause = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
@@ -167,7 +214,8 @@ export function brief(root, quiet = false) {
   return [`orthograph conductor: goal "${s.goal}"`, `now: ${r ? `${r.title}, visit ${s.visit}, ${r.status}` : "not started"}`,
     `done: ${s.roadmap.filter((x) => x.status === "done").map((x) => x.stage).join(", ") || "nothing yet"}`,
     s.next ? `next: ${s.next.do}${s.next.why ? ` (${s.next.why})` : ""}` : "", s.open.length ? `waiting: ${s.open.map((o) => o.q).join(" | ")}` : "",
-    `running workers: ${s.workers.filter((t) => t.status === "running").map((t) => `${t.id} ${t.role}`).join(", ") || "none"}`].filter(Boolean).join("\n");
+    `running workers: ${s.workers.filter((t) => t.status === "running").map((t) => `${t.id} ${t.role}`).join(", ") || "none"}`,
+    s.workers.some((t) => t.status !== "running" && !t.closed) ? `to close: ${s.workers.filter((t) => t.status !== "running" && !t.closed).map((t) => t.id).join(", ")}` : ""].filter(Boolean).join("\n");
 }
 
 // What the agent can do now without the owner, for a scheduled wake: check on running workers, and carry on with the
@@ -177,12 +225,14 @@ export function due(root) {
   const s = fold(readLog(root)), why = [];
   const running = s.workers.filter((t) => t.status === "running");
   if (running.length) why.push(`check on ${running.map((t) => t.id).join(", ")}`);
+  const finished = s.workers.filter((t) => t.status !== "running" && !t.closed);
+  if (finished.length) why.push(`close ${finished.map((t) => t.id).join(", ")}`);
   const r = s.roadmap.find((x) => x.stage === s.stage);
   const asks = s.open.filter((o) => o.waits_on === "owner" && o.blocks === s.stage);
   if (r && r.status === "doing" && !asks.length && s.next) why.push(`carry on: ${s.next.do}`);
   if (r && r.status === "blocked") why.push(`find a way round: ${s.blockers.filter((b) => !b.cleared).map((b) => b.what).join("; ")}`);
   if (!why.length) why.push(asks.length ? `waiting on the owner: ${asks.map((o) => o.q).join(" | ")}` : "nothing to do");
-  return { due: running.length > 0 || why.some((w) => w.startsWith("carry on") || w.startsWith("find a way")), why };
+  return { due: running.length > 0 || finished.length > 0 || why.some((w) => w.startsWith("carry on") || w.startsWith("find a way")), why };
 }
 
 // The command line runs only when this file is run, not when it is imported (the tests import it).

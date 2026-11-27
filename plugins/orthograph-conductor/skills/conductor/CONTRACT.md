@@ -60,6 +60,7 @@ One JSON object per event, through `conductor-state.mjs log`. `n` and `at` are a
 | `stage.entered` | `stage`, `because` |
 | `stage.reopened` | `stage`, `from` (the stage that found it), `because` |
 | `stage.done` | `stage` |
+| `worker.closed` | `worker` |
 | `check.ran` | `stage`, `check`, `cmd`, `printed`, `pass` |
 | `open` | `stage`, `q`, `waits_on` (`owner` or a worker), `blocks` |
 | `decision` | `stage`, `q`, `a`, `by` |

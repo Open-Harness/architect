@@ -7,6 +7,7 @@ The conductor remembers a project between turns and between sessions in three fi
   log.jsonl    the truth: one event per line, append-only, never rewritten
   state.json   where the project is now, folded from the log (delete it and `rebuild` makes it again)
   ROADMAP.md     the same, for the owner to read (rebuilt every time an event is logged)
+  ROADMAP.html   the same again, as one self-contained page the conductor publishes for the owner
 ```
 
 Commit all three. The log is the project's history: every question asked, every answer, every visit to every stage,
@@ -66,6 +67,7 @@ from, so put one on the last event of every turn.
 | `closed` | `q` | drops an open question that no longer matters |
 | `worker.started` | `stage`, `worker`, `role`, `task` | adds a running worker to the stage's current visit |
 | `worker.returned` | `stage`, `worker`, `outcome`, `did`, `evidence`, `touched`, `open` | ends the worker; its `open` questions join the list |
+| `worker.closed` | `worker` | marks the worker closed (a running one becomes `stopped`); `due` lists returned workers not yet closed |
 | `blocker` | `stage`, `what` | the stage is blocked |
 | `replan` | `stage`, `plan` (list), `clears` (list of blockers' `what`) | the new plan; the blockers it names are cleared and the stage unblocked |
 | `note` | `text`, and `stage` if it is about one | nothing; for the record |

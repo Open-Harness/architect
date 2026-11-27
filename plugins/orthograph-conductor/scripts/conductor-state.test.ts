@@ -4,7 +4,7 @@ import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSyn
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 // @ts-ignore: plain JavaScript module, no types
-import { STAGES, TYPES, append, brief, due, fold, init, page, readLog, rebuild } from "./conductor-state.mjs";
+import { STAGES, TYPES, append, brief, due, fold, html, init, page, readLog, rebuild } from "./conductor-state.mjs";
 
 const SCRIPT = join(import.meta.dir, "conductor-state.mjs");
 let app: string;
@@ -124,7 +124,7 @@ describe("append", () => {
     expect(readLog(app).filter((e: any) => e.type === "goal.set")).toHaveLength(1);
   });
   test("every type the contract lists is accepted", () => {
-    expect(TYPES).toEqual(["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "worker.started", "worker.returned", "check.ran", "blocker", "replan", "note"]);
+    expect(TYPES).toEqual(["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "worker.started", "worker.returned", "worker.closed", "check.ran", "blocker", "replan", "note"]);
   });
 });
 
@@ -255,6 +255,55 @@ describe("page", () => {
     expect(md).toContain("[ ] **Describe it**");
     expect(md).toContain("- who sells? **organisers** (owner)");
     expect(readFileSync(conductor("ROADMAP.md"), "utf8")).toBe(md);
+  });
+});
+
+describe("closing workers", () => {
+  test("a worker that returned and is not closed makes work due, and the brief lists it", () => {
+    init(app, "g");
+    append(app, { type: "open", stage: "plan", q: "q?" });
+    append(app, { type: "worker.started", stage: "plan", worker: "w1", role: "spike", task: "x" });
+    append(app, { type: "worker.returned", stage: "plan", worker: "w1", outcome: "done" });
+    expect(due(app)).toEqual({ due: true, why: ["close w1"] });
+    expect(brief(app)).toContain("to close: w1");
+    append(app, { type: "worker.closed", worker: "w1" });
+    expect(due(app).due).toBeFalse();
+    expect(brief(app)).not.toContain("to close");
+  });
+  test("closing a running worker stops it; an unknown or twice-closed worker is refused", () => {
+    init(app, "g");
+    append(app, { type: "worker.started", stage: "plan", worker: "w1", role: "spike", task: "x" });
+    const s = append(app, { type: "worker.closed", worker: "w1" });
+    expect(s.workers[0]).toMatchObject({ status: "stopped", closed: 4 });
+    expect(() => append(app, { type: "worker.closed", worker: "w1" })).toThrow("already closed");
+    expect(() => append(app, { type: "worker.closed", worker: "w2" })).toThrow("no worker w2");
+  });
+});
+
+describe("the page", () => {
+  test("every write makes ROADMAP.html from the log: goal, now, next, what waits, the roadmap, workers, latest", () => {
+    init(app, "sell <tickets>");
+    append(app, { type: "open", stage: "plan", q: "is a refund final?" });
+    append(app, { type: "worker.started", stage: "plan", worker: "w1", role: "spike", task: "two tabs, one seat" });
+    const out = readFileSync(conductor("ROADMAP.html"), "utf8");
+    expect(out.startsWith("<!doctype html>")).toBeTrue();
+    expect(out).toContain("<h1>sell &lt;tickets&gt;</h1>");
+    expect(out).toContain("<b>Now:</b> Plan it, visit 1");
+    expect(out).toContain("Waiting on you");
+    expect(out).toContain("<li>is a refund final?</li>");
+    expect(out).toContain("<td>two tabs, one seat</td>");
+    expect(out).toContain("#4 worker.started");
+    expect(out).toContain("prefers-color-scheme:dark");
+    expect(out).not.toContain("<tickets>");
+  });
+  test("the page is the same when rebuilt from the log alone", () => {
+    init(app, "g");
+    append(app, { type: "note", text: "x" }, "2026-11-27T00:00:00.000Z");
+    const before = readFileSync(conductor("ROADMAP.html"), "utf8");
+    rmSync(conductor("ROADMAP.html"));
+    rebuild(app);
+    expect(readFileSync(conductor("ROADMAP.html"), "utf8")).toBe(before);
+    expect(html(fold(readLog(app)), readLog(app))).toBe(before);
   });
 });
 

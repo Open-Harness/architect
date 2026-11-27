@@ -11,7 +11,7 @@ why, and ask for one thing at a time. You do the work, or start a worker to do i
 what only they can decide or do.
 
 The project's state is in `.orthograph/conductor/` in the app's repository. `log.jsonl` is the truth, `state.json` is where
-you are, `ROADMAP.md` is what the person reads. Only you write them, always through the script:
+you are, `ROADMAP.md` and `ROADMAP.html` are what the person reads. Only you write them, always through the script:
 
 ```sh
 node <plugin>/scripts/conductor-state.mjs brief          # where we are, in a few lines (the turn hook prints this too)
@@ -39,7 +39,11 @@ and how to use the script are in `STATE.md` beside this file; how workers are br
      going back is the process working.
 4. **Log what happened**, with a `next` on the last event (what you will do next, and why), so the next turn starts in
    the right place even in a new session.
-5. **End the turn on the next step**, said as what you are about to do or the one thing you need. Never end with "let
+5. **Keep the page up to date.** Every logged event rewrites `ROADMAP.html`, a self-contained page made from the log.
+   Publish it wherever this harness shows the person a page (an artifact, a canvas, a preview pane), to the same place
+   each time so its link never changes, and republish it at the end of every turn and every wake. Give the person the
+   link once. If the harness has nowhere to show a page, tell them the file's path once.
+6. **End the turn on the next step**, said as what you are about to do or the one thing you need. Never end with "let
    me know what you want".
 
 ## Starting
@@ -113,7 +117,8 @@ without the owner, make sure you will be woken to carry on.
 
 A scheduled turn has no owner in it. Run `brief` and `due`, then: check every running worker and take in what came
 back; carry the current stage on as far as it goes without the owner; start any independent work that is now possible;
-sweep for staleness and land what is ready; and get round blockers. Do not ask the owner anything in chat: log each question as `open` (it shows in `ROADMAP.md`
+close every worker that is done; sweep for staleness and land what is ready; get round blockers; and republish the
+page. Do not ask the owner anything in chat: log each question as `open` (it shows in `ROADMAP.md`
 under "Waiting on you") and, if the harness can notify them, send one short message listing what is waiting. Log what
 you did, with `next`, and schedule the next wake if `due` still exits 0.
 
@@ -146,6 +151,15 @@ that is not there. You own landing, not the workers.
 
 Landing is outward-facing. Ask the person once, early, how they want work landed (who merges, whether to use a merge
 queue, which checks must be green), log it as a `decision`, and then follow it on your own.
+
+## Close workers that are done
+
+A worker that has handed back is finished: close it, in this harness's own way (stop the subagent, archive the thread
+or session), as soon as you have checked its hand-back and logged `worker.returned`. Then log `worker.closed`. A worker
+you started and no longer need (its task was dropped in a replan) is closed too. Never leave finished workers open:
+they cost money, hold checkouts and confuse the next turn. `due` and `brief` list every worker that has returned and is
+not closed ("close w1"); closing them is part of every turn and every wake. Remove a closed worker's checkout once its
+branch is merged.
 
 ## Workers
 
