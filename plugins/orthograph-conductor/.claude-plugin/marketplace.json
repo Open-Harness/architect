@@ -1,0 +1,16 @@
+{
+  "name": "orthograph",
+  "owner": {
+    "name": "Orthograph"
+  },
+  "plugins": [
+    {
+      "name": "orthograph-conductor",
+      "source": "./",
+      "description": "A conductor that drives you from an idea to a proved, reviewed Orthograph app, stage by stage, with workers in parallel."
+    }
+  ],
+  "metadata": {
+    "description": "Orthograph's conductor plugin."
+  }
+}

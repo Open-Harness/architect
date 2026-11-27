@@ -1,5 +1,7 @@
 # The Orthograph guide: a router plugin that drives a project to done
 
+Renamed on 27 November 2026, on Aaron's word: the guide is now the conductor and its workers, `plugins/orthograph-conductor/`.
+
 Brief for a 📐 designer thread, then a 🔨 builder. Written 26 November 2026 by the thread that wrote the manual
 (`docs/manual`), from Aaron's words in that thread. Read `AGENTS.md` first.
 
@@ -65,17 +67,63 @@ So:
   how we already run many agents on Orthograph itself: a router for *this* repository. The guide is the same idea for an
   app built with Orthograph.
 
+## The state (decided with Aaron, 26 November 2026; built 27 November)
+
+"the state must allow for loops of spikes and working but i agree i dont want to hold this up make it and show me"
+
+Aaron renamed the guide on 27 November ("its more of a conductor and workers"): the main agent is the conductor, the
+agents it starts are workers, and the plugin is `plugins/orthograph-conductor/`. What follows is what it ships; its own
+`skills/conductor/STATE.md` is the full schema.
+
+Stored in the app's own repository, in `.orthograph/conductor/`, committed, so it works in every harness and moves with
+the project. Three files:
+
+- `log.jsonl`: one event per line, append-only, never rewritten. The script adds `n` (its number) and `at` to each, and
+  replaces any the caller passes. Types: `goal.set`, `stage.entered`, `stage.done`, `stage.reopened` (with `from` and
+  `because`), `decision` (`q`, `a`, `by`), `open` (a question, who it waits on, what it blocks), `closed`,
+  `worker.started` (`worker`, role, stage, task), `worker.returned` (the hand-back, below), `check.ran` (`cmd`,
+  `printed`, `pass`), `blocker`, `replan` (`plan`, and `clears`, the blockers it gets round), `note`. Each type's fields
+  are checked before an event is written, and writes take a lock, so a scheduled wake and a live session cannot both
+  take one number.
+- `state.json`: the snapshot, folded from the log, so the agent reads where it is in one look: `goal` in the owner's
+  words, the project's `done_when`, the `stage` and `visit` it is in, the `roadmap`, `decided`, `open`, `workers`,
+  `blockers`, `plan`, and `next` (what it does next, and why).
+- `ROADMAP.md`: made from the state, for the person: the roadmap with ticks, the loops so far, what is next, and what is
+  waiting on them.
+
+**Loops are first-class.** Work is not a line. A spike can send the plan back for another pass; a review finding sends
+a change back to the builder; a red journey sends the author or the builder back. So the roadmap is the stages in their
+usual order, and each stage holds its `visits`: every time it is entered there is a new visit with why it was entered
+(`first`, or the event that reopened it), its checks, its workers, and how it ended. `stage.reopened` is how a loop is
+recorded, and the conductor replans after it. The script records checks; it does not refuse a `stage.done` whose
+checks did not pass. The conductor's skill holds that rule: done is checked, not claimed.
+
+**One writer.** Only the conductor writes the state. A worker never touches it: it hands back one result in a fixed
+shape, which the conductor checks against the stage's done checks and then logs:
+`{ "worker", "role", "stage", "outcome": "done" | "blocked" | "partial", "did": [], "evidence": [{ "cmd", "printed" }],
+"touched": [paths], "open": [questions], "suggest": "what it would do next" }`.
+
+**Done is checked, not claimed.** Each stage's `done_when` is a list of checks, each a real command where one exists
+(`ortho check` with no blanks left, `ortho prove --empty` red with only steps proved by the description green, the full
+`ortho prove` green, `ortho impact` showing nothing stale), or a named reader's yes (the owner agreed the plan page). The
+evidence is what the command printed, kept in the log.
+
+**Proactive, in parallel, landed.** `due` says whether there is work the conductor can do without the owner; the
+conductor schedules its own wake with the scheduler of the harness it runs in (Aaron, 27 November: no script outside
+the harness). It starts independent workers together, lands their work as small pull requests (stacked where they
+depend on each other, through a merge train when CI is slow), and sweeps for staleness every turn.
+
 ## The decisions to make first, with Aaron (batch them, `threads` skill, "Talking to Aaron")
 
-1. **Where state lives.** A file in the app (for example `.orthograph/guide.json` with a readable `GUIDE.md` beside it),
-   so it moves with the repository and works in every harness; the harness's own project memory as a cache at most.
+1. **Where state lives.** Decided, above.
 2. **Which harnesses first.** Claude Code (a plugin: skills, a hook that loads the state at the start of every turn,
    subagents or cloud sessions for threads) and Amp. Check what Amp offers for project state and for starting threads
    today; do not assume it.
 3. **How threads are run** in each harness, and what the router does when a harness cannot start one (it writes the
    brief for the person to hand over).
-4. **Whether this is the parked agent kit.** `design/milestones.md` parks the kit (M3.12) until after 1.0. Building
-   the guide un-parks it. That is Aaron's call, and the conductor's board must show it.
+4. **The parked agent kit.** `design/milestones.md` parks the kit (M3.12) until after 1.0. Aaron said to make the guide
+   now ("make it and show me", 26 November 2026): tell the conductor (Goal 18) so the board shows it, and do not edit
+   `design/milestones.md` yourself.
 
 ## Done when
 

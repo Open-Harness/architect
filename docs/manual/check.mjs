@@ -20,7 +20,8 @@ const read = (p) => readFileSync(p, "utf8");
 const problems = [];
 const { roles } = JSON.parse(read(join(here, "kit/roles.json")));
 
-for (const page of ["working-with-your-agents.md", "kit/AGENTS.md"]) {
+// The conductor plugin carries its own copy of the table, so it stands alone in another repository; it is held here too.
+for (const page of ["working-with-your-agents.md", "kit/AGENTS.md", "../../plugins/orthograph-conductor/skills/conductor/CONTRACT.md"]) {
   const text = read(join(here, page));
   for (const r of roles) {
     const row = `| ${r.role} | ${r.touches} | ${r.given} | ${r.checked} |`;
