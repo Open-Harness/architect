@@ -9,11 +9,14 @@ Every worker starts from a brief with these six parts, in this order, and nothin
 
 1. **Role**: one of the five below. Put the role's line into the brief, word for word, so the worker knows its limits.
 2. **Skill**: the stage skill it follows (`ortho-spike`, `ortho-done` and so on).
-3. **Task**: one sentence. One question for a spike, one thing or operation for an author, one brief from `ortho brief`
-   for a builder.
+3. **Task**: one sentence. One question for a spike, one thing or operation for an author, the brief `ortho brief
+   <operation>` printed, for a builder.
 4. **May touch**: the paths it may write. Everything else is read-only.
 5. **Done when**: the checks that end the job, each a command where one exists.
 6. **Hand back**: the shape below, and nothing else as its final answer.
+
+The skills a worker follows: `ortho-spike` (spike), `ortho-done` (author), `ortho-build` (builder), `ortho-validate`
+(reviewer). A designer worker follows `ortho-describe`.
 
 ### The roles
 
@@ -62,7 +65,7 @@ One JSON object per event, through `conductor-state.mjs log`. `n` and `at` are a
 | `worker.returned` | `stage`, `worker`, and the hand-back's `outcome`, `did`, `evidence`, `touched`, `open` |
 | `blocker` | `stage`, `what` |
 | `replan` | `stage`, `plan` (list), `clears` (list of blockers it gets round) |
-| `note` | `stage`, `text` |
+| `note` | `text`, and `stage` if it is about one |
 
 A loop is two events: `stage.reopened` on the earlier stage, then work, then `stage.done` again. Every visit stays in
 the log and in the roadmap, so the person can see how the project got where it is.

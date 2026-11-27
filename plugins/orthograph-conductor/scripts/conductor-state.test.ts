@@ -1,6 +1,6 @@
 // Tests for conductor-state.mjs. Run: bun test (from plugins/orthograph-conductor).
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync, appendFileSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 // @ts-ignore: plain JavaScript module, no types
@@ -22,12 +22,17 @@ describe("the stages", () => {
   test("eleven stages, in the manual's order", () => {
     expect(STAGES.map((s: any) => s.stage)).toEqual(["plan", "spike", "describe", "done", "build", "review", "trace", "stage", "watch", "change", "agents"]);
   });
-  test("the four built stages each have done checks; a check is either a command or a person's yes, or neither", () => {
-    for (const name of ["plan", "spike", "describe", "done"]) {
+  test("the seven stages with skills each have done checks, each a sentence with at most a command or a reader", () => {
+    for (const name of ["plan", "spike", "describe", "done", "build", "review", "trace"]) {
       const s = STAGES.find((x: any) => x.stage === name);
       expect(s.done_when.length).toBeGreaterThan(0);
-      for (const c of s.done_when) expect(c.check).toBeString();
+      for (const c of s.done_when) {
+        expect(c.check).toBeString();
+        expect(Object.keys(c).every((k) => ["check", "cmd", "reader"].includes(k))).toBeTrue();
+        expect(c.cmd === undefined || c.reader === undefined).toBeTrue();
+      }
     }
+    for (const name of ["stage", "watch", "change", "agents"]) expect(STAGES.find((x: any) => x.stage === name).done_when).toEqual([]);
   });
 });
 
@@ -68,6 +73,41 @@ describe("append", () => {
     init(app, "g");
     expect(() => append(app, { type: "stage.entered", stage: "deploy" })).toThrow("no stage deploy");
     expect(lines()).toHaveLength(2);
+  });
+  test("the number and the time are always the script's: a caller's n and at are replaced", () => {
+    init(app, "g");
+    append(app, { type: "note", text: "x", n: 1, at: "yesterday" }, "2026-11-27T00:00:00.000Z");
+    expect(JSON.parse(lines()[2])).toMatchObject({ n: 3, at: "2026-11-27T00:00:00.000Z" });
+  });
+  test("an event without its required fields is refused and nothing is written", () => {
+    init(app, "g");
+    for (const bad of [{ type: "open", q: "no stage" }, { type: "decision", stage: "plan", q: "q" }, { type: "worker.started", stage: "plan", worker: "w1" }, { type: "note" }]) {
+      expect(() => append(app, bad)).toThrow("needs");
+    }
+    expect(lines()).toHaveLength(2);
+  });
+  test("a worker must be started before it returns, and started only once", () => {
+    init(app, "g");
+    expect(() => append(app, { type: "worker.returned", stage: "plan", worker: "w9", outcome: "done" })).toThrow("no worker w9 was started");
+    append(app, { type: "worker.started", stage: "plan", worker: "w1", role: "spike", task: "x" });
+    expect(() => append(app, { type: "worker.started", stage: "plan", worker: "w1", role: "spike", task: "y" })).toThrow("already started");
+  });
+  test("many writers at once each get their own number", async () => {
+    init(app, "g");
+    const procs = Array.from({ length: 8 }, (_, k) => Bun.spawn(["node", SCRIPT, "log", JSON.stringify({ type: "note", text: `w${k}` }), "--dir", app]));
+    await Promise.all(procs.map((p) => p.exited));
+    expect(procs.every((p) => p.exitCode === 0)).toBeTrue();
+    expect(lines().map((l) => JSON.parse(l).n)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(existsSync(conductor("lock"))).toBeFalse();
+    expect(readLog(app)).toHaveLength(10);
+  });
+  test("a lock left by a writer that died is taken over", () => {
+    init(app, "g");
+    mkdirSync(conductor("lock"));
+    const old = new Date(Date.now() - 120_000);
+    require("node:fs").utimesSync(conductor("lock"), old, old);
+    append(app, { type: "note", text: "after" });
+    expect(lines()).toHaveLength(3);
   });
   test("every type the contract lists is accepted", () => {
     expect(TYPES).toEqual(["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "worker.started", "worker.returned", "check.ran", "blocker", "replan", "note"]);
@@ -139,6 +179,24 @@ describe("fold", () => {
     expect(s.roadmap.find((r: any) => r.stage === "spike").visits[0].workers).toEqual(["t1", "t2"]);
   });
 
+  test("a replan that clears only one of two blockers leaves the stage blocked", () => {
+    const s = fold(ev([
+      { type: "stage.entered", stage: "describe" },
+      { type: "blocker", stage: "describe", what: "a" },
+      { type: "blocker", stage: "describe", what: "b" },
+      { type: "replan", stage: "describe", plan: ["x"], clears: ["a"] },
+    ]));
+    expect(s.roadmap.find((r: any) => r.stage === "describe").status).toBe("blocked");
+    expect(s.blockers.map((b: any) => b.cleared)).toEqual([true, false]);
+  });
+  test("a replan that clears nothing leaves the stage blocked", () => {
+    const s = fold(ev([
+      { type: "stage.entered", stage: "describe" },
+      { type: "blocker", stage: "describe", what: "a" },
+      { type: "replan", stage: "describe", plan: ["x"] },
+    ]));
+    expect(s.roadmap.find((r: any) => r.stage === "describe").status).toBe("blocked");
+  });
   test("a blocker blocks its stage; a replan that clears it unblocks it", () => {
     const base = [
       { type: "stage.entered", stage: "describe" },
@@ -204,8 +262,10 @@ describe("rebuild", () => {
 });
 
 describe("brief", () => {
-  test("with no project, says to start with the conductor skill", () => {
+  test("with no project, says to start with the conductor skill; quiet, it says nothing", () => {
     expect(brief(app)).toBe("orthograph conductor: no project yet. Start with the conductor skill.");
+    expect(brief(app, true)).toBe("");
+    expect(cli("brief", "--quiet")).toMatchObject({ code: 0, out: "" });
   });
   test("names the goal, the stage, what is done, next, what waits and running workers", () => {
     init(app, "g");
@@ -283,17 +343,14 @@ describe("the command line", () => {
     cli("init", "g");
     expect(cli("due")).toMatchObject({ code: 0, out: "due: carry on: plan it with the owner\n" });
   });
-  test("the tick wakes the agent only when work is due, and tells it why", () => {
-    const tick = join(import.meta.dir, "conductor-tick.sh");
-    const run = () => Bun.spawnSync(["sh", tick], { cwd: app, env: { ...process.env, CONDUCTOR_AGENT: "cat" } });
-    let r = run();
-    expect(r.exitCode).toBe(0);
+  test("the command line works when the script is reached through a symlinked folder", () => {
+    const real = mkdtempSync(join(tmpdir(), "plug-")), link = join(mkdtempSync(join(tmpdir(), "via-")), "plugin");
+    cpSync(SCRIPT, join(real, "conductor-state.mjs"));
+    symlinkSync(real, link);
+    const r = Bun.spawnSync(["node", join(link, "conductor-state.mjs"), "due", "--dir", app]);
+    expect(r.exitCode).toBe(3);
     expect(r.stdout.toString()).toBe("idle: no project yet\n");
-    cli("init", "g");
-    r = run();
-    expect(r.exitCode).toBe(0);
-    expect(r.stdout.toString()).toContain("You were woken on a schedule");
-    expect(r.stdout.toString()).toContain("carry on: plan it with the owner");
+    rmSync(real, { recursive: true, force: true });
   });
   test("importing the module runs no command and writes nothing", () => {
     const r = Bun.spawnSync(["bun", "-e", `await import(${JSON.stringify(SCRIPT)})`], { cwd: app });

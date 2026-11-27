@@ -1,6 +1,6 @@
 ---
 name: conductor
-description: The Orthograph conductor. Drives a person from an idea to a proved, reviewed Orthograph app, one stage at a time, keeping the project's roadmap and log in .orthograph/conductor/. Use it at the start of every turn in an Orthograph app, whenever the person says what they want, asks "what next" or "where are we", or seems unsure what to do. It routes each stage's work to the stage skills (ortho-plan, ortho-spike, ortho-describe, ortho-done) and to workers it starts.
+description: The Orthograph conductor. Drives a person from an idea to a proved, reviewed Orthograph app, one stage at a time, keeping the project's roadmap and log in .orthograph/conductor/. Use it at the start of every turn in an Orthograph app, whenever the person says what they want, asks "what next" or "where are we", or seems unsure what to do. It routes each stage's work to the stage skills (ortho-plan, ortho-spike, ortho-describe, ortho-done, ortho-build, ortho-validate) and to workers it starts, in parallel where it can, and lands their work.
 ---
 
 # The conductor
@@ -56,17 +56,19 @@ and that you will take them through each.
 | spike | `ortho-spike` | a page per doubt that needed one, and the plan updated or confirmed |
 | describe | `ortho-describe` | a blueprint with every answer the plan has, and its blanks as open questions |
 | done | `ortho-done` | journeys an author wrote, red on purpose, agreed by the person as stories |
-| build onward | not written yet | see "After done" below |
+| build | `ortho-build` | every handler written by a builder from its own brief; `ortho prove` and `ortho check` green, run whole |
+| review | `ortho-validate` | a reviewer that wrote none of it proved it again; its blocking findings fixed; nothing stale |
+| trace | `ortho-validate` | the person ran the app, tried to break it, and every surprise was explained from a trace |
+| stage onward | not written yet | see "After trace" below |
 
 A stage with nothing to do is done at once: log a `note` with the reason, then `stage.done`. A plan with no doubts
 skips spike.
 
-## After done
+## After trace
 
-The skills stop at agreed journeys. If the person wants to go on, say so plainly and work the next step with them by
-hand, keeping the same log: a builder worker per brief (`ortho brief` prints one per unbuilt operation; the builder
-touches the one handler it names and is done when `ortho prove` and `ortho check` both pass, each run whole with no
-flags), then a reviewer worker that wrote none of it. Enter `build` and `review` as stages so the roadmap stays true.
+The skills stop once the person has used the app locally and believes it. Staging it, watching it and changing it later
+are on the roadmap without skills yet. If the person wants to go on, say so plainly, work the next step with them by
+hand, and keep the same log, entering each stage so the roadmap stays true.
 
 ## Keep work moving in parallel
 
@@ -92,20 +94,51 @@ without the owner, make sure you will be woken to carry on.
 - `node <plugin>/scripts/conductor-state.mjs due` says whether there is such work: it exits 0 and says why ("check on
   w1, w2", "carry on: ...", "find a way round: ...") or exits 3 ("waiting on the owner: ..."). Questions for the owner
   never make work due.
-- **In Claude Code**, schedule your own next turn with the harness's scheduler (a `/loop`, a scheduled wake-up or a
-  scheduled task, whichever this session has), about every 30 minutes while `due` exits 0, and stop when it exits 3.
-  Tell the owner once that you will keep going on your own, and how to stop you.
-- **Anywhere, without a harness scheduler**: `scripts/conductor-tick.sh`, run from the app's folder by cron, launchd or
-  a CI schedule, runs `due` and wakes the agent only when there is work (`CONDUCTOR_AGENT` is the command that runs one
-  turn from a prompt on stdin, `claude -p` by default). Offer the owner the crontab line in its header.
+- **Set up the wake yourself, in the harness you are running in**, at the start of the project, with whatever
+  scheduler it gives you (every harness has one: a recurring prompt or loop, a scheduled task, a scheduled wake-up).
+  Use this harness's own; do not assume another's, and never set one up outside the harness (a cron job, a script
+  that starts an agent). Schedule a turn about every 30 minutes
+  that starts by running `due`: when it exits 0, do the work; when it exits 3, end the turn at once, saying nothing.
+  Stop the schedule when the project is done or the person asks.
+- **A woken turn runs unattended**, so it can only run what it is allowed to run without asking. When you set up the
+  wake, help the person allow `node`, `ortho` and `git` for this app in the harness's own permission settings, once.
+- Tell the person once that you will keep going on your own, how often, and how to stop you.
 
 ### When you are woken, not asked
 
 A scheduled turn has no owner in it. Run `brief` and `due`, then: check every running worker and take in what came
 back; carry the current stage on as far as it goes without the owner; start any independent work that is now possible;
-and get round blockers. Do not ask the owner anything in chat: log each question as `open` (it shows in `ROADMAP.md`
+sweep for staleness and land what is ready; and get round blockers. Do not ask the owner anything in chat: log each question as `open` (it shows in `ROADMAP.md`
 under "Waiting on you") and, if the harness can notify them, send one short message listing what is waiting. Log what
 you did, with `next`, and schedule the next wake if `due` still exits 0.
+
+## Land the work, and keep it from going stale
+
+Work that sits unmerged goes stale: its base moves, its proof stops holding, and the next worker builds on something
+that is not there. You own landing, not the workers.
+
+- **One branch and one pull request per worker's job**, opened as soon as the job is done and checked, not saved up.
+  Keep each small: one brief, one spike, one thing's journeys.
+- **Prefer stacked pull requests.** When one job builds on another (a builder's handler on the author's journeys; a
+  second operation on the first), branch it from the first job's branch and open its pull request against that
+  branch, not the main one. The stack lets work go on while the first waits for review or CI; land from the bottom up,
+  and after each lands, point the next at the main branch and bring it up to date. Independent jobs are not stacked:
+  each goes straight against the main branch.
+- **Bring branches up to date by merging the base in**, every time the base moves and before every review, so a
+  reviewer's reading stays true. Never rewrite a branch others have read.
+- **Re-prove after every update.** After a merge from the base, run `ortho impact`: anything it lists as stale is
+  proved again (`ortho prove`, whole) before the pull request may land. A green run from before the update is not
+  evidence any more.
+- **When CI is slow, use a merge train** (a merge queue, where the repository's host has one): queue each pull request
+  that is approved and green, and let the train test it on top of everything queued ahead of it, instead of updating
+  and re-running CI by hand after every landing. Without a queue, land one at a time, oldest first, updating each on
+  the new base.
+- **Sweep for staleness every turn and every wake**: a pull request whose base moved; a branch behind by more than a
+  day; a worker started and not returned; an `ortho impact` that lists anything stale; an open question the person
+  has not seen. Each is something to do now: update it, re-prove it, chase it, or ask. Log what you found as a `note`.
+
+Landing is outward-facing. Ask the person once, early, how they want work landed (who merges, whether to use a merge
+queue, which checks must be green), log it as a `decision`, and then follow it on your own.
 
 ## Workers
 

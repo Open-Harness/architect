@@ -1,5 +1,7 @@
 # The Orthograph guide: a router plugin that drives a project to done
 
+Renamed on 27 November 2026, on Aaron's word: the guide is now the conductor and its workers, `plugins/orthograph-conductor/`.
+
 Brief for a 📐 designer thread, then a 🔨 builder. Written 26 November 2026 by the thread that wrote the manual
 (`docs/manual`), from Aaron's words in that thread. Read `AGENTS.md` first.
 
@@ -65,41 +67,51 @@ So:
   how we already run many agents on Orthograph itself: a router for *this* repository. The guide is the same idea for an
   app built with Orthograph.
 
-## The state (decided with Aaron, 26 November 2026)
+## The state (decided with Aaron, 26 November 2026; built 27 November)
 
 "the state must allow for loops of spikes and working but i agree i dont want to hold this up make it and show me"
 
-Stored in the app's own repository, in `.orthograph/guide/`, committed, so it works in every harness and moves with the
-project. Three files:
+Aaron renamed the guide on 27 November ("its more of a conductor and workers"): the main agent is the conductor, the
+agents it starts are workers, and the plugin is `plugins/orthograph-conductor/`. What follows is what it ships; its own
+`skills/conductor/STATE.md` is the full schema.
 
-- `log.jsonl`: one event per line, append-only, never rewritten. Each has `n` (its number), `at`, `type`, `stage` and
-  `visit`. Types: `goal.set`, `stage.entered`, `stage.done`, `stage.reopened` (with `from` and `because`), `decision`
-  (`q`, `a`, who decided), `open` (a question, who it waits on, what it blocks), `thread.started` (role, stage, task,
-  contract), `thread.returned` (the hand-back, below), `check.ran` (`cmd`, `printed`, `pass`), `blocker`, `replan`
-  (old plan, new plan, why), `note`.
-- `state.json`: the snapshot, rewritten every turn from the log, so the agent reads where it is in one look: `goal` in
-  the owner's words, the project's `done_when`, the `stage` and `visit` it is in, the `roadmap`, `decided`, `open`,
-  running `threads`, and `next` (what it does next, and why).
-- `GUIDE.md`: made from `state.json`, for the person: the roadmap with ticks, the loops so far, what is next, and what it
-  needs from them.
+Stored in the app's own repository, in `.orthograph/conductor/`, committed, so it works in every harness and moves with
+the project. Three files:
+
+- `log.jsonl`: one event per line, append-only, never rewritten. The script adds `n` (its number) and `at` to each, and
+  replaces any the caller passes. Types: `goal.set`, `stage.entered`, `stage.done`, `stage.reopened` (with `from` and
+  `because`), `decision` (`q`, `a`, `by`), `open` (a question, who it waits on, what it blocks), `closed`,
+  `worker.started` (`worker`, role, stage, task), `worker.returned` (the hand-back, below), `check.ran` (`cmd`,
+  `printed`, `pass`), `blocker`, `replan` (`plan`, and `clears`, the blockers it gets round), `note`. Each type's fields
+  are checked before an event is written, and writes take a lock, so a scheduled wake and a live session cannot both
+  take one number.
+- `state.json`: the snapshot, folded from the log, so the agent reads where it is in one look: `goal` in the owner's
+  words, the project's `done_when`, the `stage` and `visit` it is in, the `roadmap`, `decided`, `open`, `workers`,
+  `blockers`, `plan`, and `next` (what it does next, and why).
+- `ROADMAP.md`: made from the state, for the person: the roadmap with ticks, the loops so far, what is next, and what is
+  waiting on them.
 
 **Loops are first-class.** Work is not a line. A spike can send the plan back for another pass; a review finding sends
-a change back to the builder; a red journey sends the author or the builder back; a change months later reopens
-describe, done and build. So the roadmap is the stages in their usual order, and each stage holds its `visits`: every
-time it is entered there is a new visit with why it was entered (`first`, or the event that reopened it), what was done,
-its checks and their evidence, and how it ended. A stage is `done` only when its latest visit's checks pass. `stage.reopened`
-is how a loop is recorded, and the main agent replans after it. GUIDE.md shows the loops, so the person sees that going
-back was the plan working, not failing.
+a change back to the builder; a red journey sends the author or the builder back. So the roadmap is the stages in their
+usual order, and each stage holds its `visits`: every time it is entered there is a new visit with why it was entered
+(`first`, or the event that reopened it), its checks, its workers, and how it ended. `stage.reopened` is how a loop is
+recorded, and the conductor replans after it. The script records checks; it does not refuse a `stage.done` whose
+checks did not pass. The conductor's skill holds that rule: done is checked, not claimed.
 
-**One writer.** Only the main agent writes the state. A thread never touches it: it hands back one result in a fixed
-shape, which the main agent checks against the stage's done checks and then logs:
-`{ "thread", "role", "stage", "visit", "outcome": "done" | "blocked" | "partial", "did": [], "evidence": [{ "cmd", "printed" }],
+**One writer.** Only the conductor writes the state. A worker never touches it: it hands back one result in a fixed
+shape, which the conductor checks against the stage's done checks and then logs:
+`{ "worker", "role", "stage", "outcome": "done" | "blocked" | "partial", "did": [], "evidence": [{ "cmd", "printed" }],
 "touched": [paths], "open": [questions], "suggest": "what it would do next" }`.
 
 **Done is checked, not claimed.** Each stage's `done_when` is a list of checks, each a real command where one exists
 (`ortho check` with no blanks left, `ortho prove --empty` red with only steps proved by the description green, the full
 `ortho prove` green, `ortho impact` showing nothing stale), or a named reader's yes (the owner agreed the plan page). The
 evidence is what the command printed, kept in the log.
+
+**Proactive, in parallel, landed.** `due` says whether there is work the conductor can do without the owner; the
+conductor schedules its own wake with the scheduler of the harness it runs in (Aaron, 27 November: no script outside
+the harness). It starts independent workers together, lands their work as small pull requests (stacked where they
+depend on each other, through a merge train when CI is slow), and sweeps for staleness every turn.
 
 ## The decisions to make first, with Aaron (batch them, `threads` skill, "Talking to Aaron")
 

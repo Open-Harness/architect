@@ -25,6 +25,10 @@ the check shows `drift ✔`.
    wrote blueprint/things/wallet/thing.ts
    wrote blueprint/things/wallet/machine.ts
    wrote blueprint/things/wallet/roles.ts
+   wrote blueprint/things/wallet/events.ts
+   wrote blueprint/things/wallet/errors.ts
+   wrote blueprint/things/wallet/invariants.ts
+   wrote blueprint/values/wallet.ts
    $ ortho add operation wallet.open
    wrote blueprint/things/wallet/verbs/open.ts
    ```
@@ -51,7 +55,12 @@ the check shows `drift ✔`.
      ...
    ```
 
-   Log it (`check.ran`, with what it printed). `ortho model` says the same more briefly (`unfinished wallet  3 blanks`).
+   Log it (`check.ran`, with what it printed). `ortho model` counts them by thing and operation, more briefly:
+
+   ```sh
+   unfinished wallet  3 blanks
+   unfinished wallet.open  4 blanks
+   ```
 
 3. **Fill only what the plan already says**, in the plan's words. For the wallet the page said "a handle's money, one
    per claimed handle" and named four states, so exactly two blanks are filled:
@@ -74,6 +83,7 @@ the check shows `drift ✔`.
 
    ```sh
    wallet has 5 blanks
+     ...
    types ✔
    rules ✔
    drift ✔

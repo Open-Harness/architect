@@ -18,7 +18,7 @@ worker never touches them; it hands its result back and the conductor logs it.
 ```sh
 S=<plugin>/scripts/conductor-state.mjs     # ${CLAUDE_PLUGIN_ROOT}/scripts/conductor-state.mjs in Claude Code
 node $S init "sell tickets for small venues"     # once: sets the goal and enters plan
-node $S brief                                    # where we are, in six lines (the turn hook prints this)
+node $S brief                                    # where we are, in six lines (the hook runs brief --quiet)
 node $S log '{"type":"open","stage":"plan","q":"is a refund final?"}'
 node $S log '{"type":"decision","stage":"plan","q":"is a refund final?","a":"yes, after a day","next":{"do":"ask who may cancel","why":"the plan waits on it"}}'
 node $S due                                      # for a scheduled wake: exit 0 if there is work without the owner, 3 if not
@@ -28,9 +28,22 @@ node $S rebuild                                  # state.json and ROADMAP.md aga
 
 Every command takes `--dir <app>` (the current folder by default). An event the state cannot take (an unknown type, a
 stage that does not exist, bad JSON) is refused with exit 1 and nothing is written. `n` (its number) and `at` (the time)
-are added to every event for you.
+are added to every event for you, and any `n` or `at` you pass is replaced. Each type's required fields (the
+table below) are checked, and a `worker.returned` must name a worker that was started. Writes take a lock
+(`.orthograph/conductor/lock`), so two writers at once (a scheduled wake and a live session) cannot both take the same
+number.
 
 ## An event
+
+What you log:
+
+```json
+{ "type": "stage.reopened",
+  "stage": "plan", "from": "spike", "because": "a late reversal breaks a rule",
+  "next": { "do": "ask the owner whether a settled payment is final", "why": "the spike found it can be reversed" } }
+```
+
+What the log keeps, with its number and time added:
 
 ```json
 { "n": 7, "at": "2026-11-26T10:04:00.000Z", "type": "stage.reopened",
@@ -55,7 +68,7 @@ from, so put one on the last event of every turn.
 | `worker.returned` | `stage`, `worker`, `outcome`, `did`, `evidence`, `touched`, `open` | ends the worker; its `open` questions join the list |
 | `blocker` | `stage`, `what` | the stage is blocked |
 | `replan` | `stage`, `plan` (list), `clears` (list of blockers' `what`) | the new plan; the blockers it names are cleared and the stage unblocked |
-| `note` | `stage`, `text` | nothing; for the record |
+| `note` | `text`, and `stage` if it is about one | nothing; for the record |
 
 The stages are `plan`, `spike`, `describe`, `done`, `build`, `review`, `trace`, `stage`, `watch`, `change` and
 `agents`, in the order a project goes through them (`STAGES` in the script, each with its `done_when` checks).
@@ -87,4 +100,4 @@ started, the checks it ran, the workers it started and how it ended.
 ## Tests
 
 `scripts/conductor-state.test.ts`, run with `bun test` from the plugin's folder. They cover every event type, loops,
-refusals, rebuilding from the log alone, the brief, and the command line.
+refusals, the lock, rebuilding from the log alone, the brief, and the command line.
