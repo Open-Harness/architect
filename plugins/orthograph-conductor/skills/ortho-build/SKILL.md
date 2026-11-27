@@ -63,7 +63,7 @@ by a builder.
 3. **Make one integration branch for the build** (for example `build/<goal>`), from the main branch. Every builder's
    branch starts from it and is merged back into it; the whole proof is judged there, and the integration branch
    lands as one pull request (or as a stack, one builder's pull request on the next, when the owner wants each
-   reviewed alone). A builder's pull request never goes straight against the main branch: alone, it cannot pass a
+   reviewed alone; then only the top of the stack, which holds every builder's work, is held to the whole proof). A builder's pull request never goes straight against the main branch: alone, it cannot pass a
    whole proof while its siblings are blank.
 4. **Start the builders together**, one worker per brief, each in its own checkout (`CONTRACT.md` in the conductor
    skill: in Claude Code a subagent with worktree isolation; elsewhere a separate worktree, `git worktree add`), on its

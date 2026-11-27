@@ -128,8 +128,16 @@ export function locked(root, work) {
     try { mkdirSync(lock); break; } catch (err) {
       if (err.code !== "EEXIST") throw err;
       // A stale lock is moved aside under a name of its own before it is removed, so of two writers that both saw it, only
-      // one takes it over: the other's rename fails, and it waits for the lock like any writer.
-      try { if (Date.now() - statSync(lock).mtimeMs > 60_000) { const aside = `${lock}.stale.${process.pid}`; renameSync(lock, aside); rmdirSync(aside); continue; } } catch { continue; }
+      // one takes it over: the other's rename fails, or finds a fresh lock and puts it back, and waits like any writer.
+      try {
+        if (Date.now() - statSync(lock).mtimeMs > 60_000) {
+          const aside = `${lock}.stale.${process.pid}`;
+          renameSync(lock, aside);
+          // What was moved may be a fresh lock another writer took in between: if so, put it back and wait.
+          if (Date.now() - statSync(aside).mtimeMs > 60_000) rmdirSync(aside); else renameSync(aside, lock);
+          continue;
+        }
+      } catch { continue; }
       if (tries > 500) throw new Error("another writer holds .orthograph/conductor/lock");
       pause(10);
     }

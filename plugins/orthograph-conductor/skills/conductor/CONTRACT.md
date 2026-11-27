@@ -28,6 +28,9 @@ The skills a worker follows: `ortho-spike` (spike), `ortho-done` (author), `orth
 | reviewer | nothing: it reads | the change and the brief it was made from | it wrote none of what it reviews |
 | spike | throwaway code under `spikes/` | one question | one page with the answer and what was tried |
 
+A builder working beside unbuilt siblings cannot pass a whole run alone: it hands back `partial`, and the whole run
+is judged on the build's integration branch once every builder's work is in (`ortho-build`).
+
 The author and the builder are never the same worker: a builder who writes its own stories writes down what its code
 does, not what the owner meant. Nothing in Orthograph enforces this; the conductor keeps it by how it hands out the work.
 
