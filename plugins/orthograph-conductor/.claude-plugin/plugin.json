@@ -2,5 +2,8 @@
   "name": "orthograph-conductor",
   "version": "0.1.0",
   "description": "A conductor that drives you from an idea to a proved Orthograph app, stage by stage, keeping the roadmap and log in your repository.",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Orthograph"
+  }
 }

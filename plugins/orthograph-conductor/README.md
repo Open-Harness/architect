@@ -33,9 +33,10 @@ Or, for one session without installing: `claude --plugin-dir /path/to/orthograph
 the path, and prints nothing in a folder that has no project. Then, in your app's repository, say what you want to build;
 the `conductor` skill starts the project.
 
-**Amp, Codex and other agents.** Copy the `skills/*` folders to the app's `.agents/skills/` and `scripts/` beside
-them, and replace `<plugin>` in the skills with that path. There is no turn hook there, so the conductor runs `brief`
-itself at the start of each turn, as its skill says. This has not been tried yet in Amp.
+**Amp, Codex and other agents.** In the app's repository, copy each `skills/*` folder into `.agents/skills/` and the
+`scripts/` folder to `.agents/scripts/`, so the state script is `.agents/scripts/conductor-state.mjs`. Then `<plugin>`
+in the skills is `.agents`. There is no turn hook there, so the conductor runs `brief` itself at the start of each turn,
+as its skill says. This has not been tried yet in Amp or Codex.
 
 **Proactive.** The conductor sets up its own wake, about every 30 minutes, with the scheduler of whatever harness it is
 running in, and each woken turn starts with `conductor-state.mjs due`, so it does nothing when nothing can move without

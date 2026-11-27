@@ -83,6 +83,11 @@ them together, each as its own worker, and do not wait on one to start the next.
 - **Never in parallel**: two workers touching the same files; an author and a builder on the same operation; anything
   that needs an answer the owner has not given.
 
+**Each worker that runs beside another gets its own checkout**: in Claude Code, a subagent with worktree isolation;
+elsewhere, a separate worktree (`git worktree add <path> -b <branch> <base>`). One shared working tree cannot hold two
+branches, its diff cannot say who touched what, and two `ortho prove` runs in one tree share its state. Check each
+worker's work in its own checkout, against the base it started from.
+
 Log every `worker.started` as it starts, so the state always says what is running. When several return, read each
 hand-back and re-run its evidence before you act on any of them.
 
@@ -119,6 +124,8 @@ that is not there. You own landing, not the workers.
 
 - **One branch and one pull request per worker's job**, opened as soon as the job is done and checked, not saved up.
   Keep each small: one brief, one spike, one thing's journeys.
+- **Work that is only right together lands together.** Builders working beside each other cannot each pass a whole
+  proof alone, so they share an integration branch, and it is proved whole before it lands (`ortho-build`).
 - **Prefer stacked pull requests.** When one job builds on another (a builder's handler on the author's journeys; a
   second operation on the first), branch it from the first job's branch and open its pull request against that
   branch, not the main one. The stack lets work go on while the first waits for review or CI; land from the bottom up,
@@ -146,7 +153,7 @@ A stage's work goes to a worker when it is a job with one role: an author, a bui
 the way this harness starts one (a subagent in Claude Code; a new thread in Amp or Codex), with the brief in `CONTRACT.md`: the
 role, the one task, what it may touch, what it must hand back, and the check that says it is done. Log
 `worker.started`. When it returns, read its hand-back, check its evidence yourself (re-run its commands), log
-`worker.returned`, and decide: the stage's checks pass, or the worker goes again with what was missing, or the stage
+`worker.returned`, and decide: the stage's checks pass, or a new worker (a new id: an id is never reused) goes again with what was missing, or the stage
 reopens. A worker never writes the conductor's state.
 
 ## Blockers

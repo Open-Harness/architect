@@ -109,6 +109,20 @@ describe("append", () => {
     append(app, { type: "note", text: "after" });
     expect(lines()).toHaveLength(3);
   });
+  test("fields are held to their kinds: pass is true or false, outcome is one of three, lists are lists", () => {
+    init(app, "g");
+    append(app, { type: "worker.started", stage: "plan", worker: "w1", role: "spike", task: "x" });
+    expect(() => append(app, { type: "check.ran", stage: "plan", check: "c", pass: "maybe" })).toThrow("pass is true or false");
+    expect(() => append(app, { type: "worker.returned", stage: "plan", worker: "w1", outcome: "finished" })).toThrow("outcome is done, blocked or partial");
+    expect(() => append(app, { type: "replan", stage: "plan", plan: "one step" })).toThrow("plan is a list");
+    expect(lines()).toHaveLength(3);
+  });
+  test("two inits at once start one project", async () => {
+    const procs = Array.from({ length: 4 }, () => Bun.spawn(["node", SCRIPT, "init", "g", "--dir", app], { stderr: "pipe" }));
+    await Promise.all(procs.map((p) => p.exited));
+    expect(procs.filter((p) => p.exitCode === 0).length).toBeGreaterThanOrEqual(1);
+    expect(readLog(app).filter((e: any) => e.type === "goal.set")).toHaveLength(1);
+  });
   test("every type the contract lists is accepted", () => {
     expect(TYPES).toEqual(["goal.set", "stage.entered", "stage.done", "stage.reopened", "decision", "open", "closed", "worker.started", "worker.returned", "check.ran", "blocker", "replan", "note"]);
   });

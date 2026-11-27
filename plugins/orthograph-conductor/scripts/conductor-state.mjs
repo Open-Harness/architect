@@ -11,7 +11,7 @@
 // log.jsonl is the truth: append-only, one event per line, never rewritten. state.json and ROADMAP.md are made from it, so
 // either can be deleted and rebuilt. Only the main agent (the conductor) runs this; a worker hands its result back instead.
 // Plain Node, no dependencies. --dir <path> sets the app's folder (the current folder by default).
-import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, rmdirSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -38,7 +38,7 @@ export const STAGES = [
     { check: "every operation has a handler, each written by a builder worker from its own brief" },
     { check: "ortho prove passes, run whole, with every operation's evals and the coverage line green", cmd: "ortho prove" },
     { check: "ortho check passes", cmd: "ortho check" },
-    { check: "no builder changed a journey, the blueprint or a generated file", cmd: "git diff --stat" } ] },
+    { check: "no builder changed a journey, the blueprint or a generated file", cmd: "git diff --stat <main branch>...build/<goal>" } ] },
   { stage: "review", title: "Review without reading the code", done_when: [
     { check: "a reviewer that wrote none of it ran ortho impact, ortho prove and ortho check and handed back findings" },
     { check: "every blocking finding is fixed and the fix reviewed again" },
@@ -68,6 +68,9 @@ export function fold(events) {
   for (const e of events) {
     const missing = (NEEDS[e.type] ?? []).filter((f) => e[f] === undefined || e[f] === null || e[f] === "");
     if (missing.length) throw new Error(`event #${e.n} (${e.type}) needs ${missing.join(", ")}`);
+    if (e.type === "check.ran" && typeof e.pass !== "boolean") throw new Error(`event #${e.n} (check.ran): pass is true or false`);
+    if (e.type === "worker.returned" && !["done", "blocked", "partial"].includes(e.outcome)) throw new Error(`event #${e.n} (worker.returned): outcome is done, blocked or partial`);
+    for (const f of ["plan", "clears", "done_when", "open"]) if (e[f] !== undefined && !Array.isArray(e[f])) throw new Error(`event #${e.n} (${e.type}): ${f} is a list`);
     if (e.type === "worker.returned" && !s.workers.some((w) => w.id === e.worker)) throw new Error(`event #${e.n}: no worker ${e.worker} was started`);
     if (e.type === "worker.started" && s.workers.some((w) => w.id === e.worker)) throw new Error(`event #${e.n}: worker ${e.worker} was already started`);
     s.last = e.n;
@@ -124,17 +127,20 @@ export function locked(root, work) {
   for (let tries = 0; ; tries++) {
     try { mkdirSync(lock); break; } catch (err) {
       if (err.code !== "EEXIST") throw err;
-      try { if (Date.now() - statSync(lock).mtimeMs > 60_000) { rmdirSync(lock); continue; } } catch { continue; }
+      // A stale lock is moved aside under a name of its own before it is removed, so of two writers that both saw it, only
+      // one takes it over: the other's rename fails, and it waits for the lock like any writer.
+      try { if (Date.now() - statSync(lock).mtimeMs > 60_000) { const aside = `${lock}.stale.${process.pid}`; renameSync(lock, aside); rmdirSync(aside); continue; } } catch { continue; }
       if (tries > 500) throw new Error("another writer holds .orthograph/conductor/lock");
       pause(10);
     }
   }
   try { return work(); } finally { rmdirSync(lock); }
 }
-export function append(root, e, now = new Date().toISOString()) {
+export function append(root, e, now = new Date().toISOString(), first = false) {
   if (!e || typeof e !== "object" || !TYPES.includes(e.type)) throw new Error(`unknown event type ${e?.type}; one of ${TYPES.join(", ")}`);
   return locked(root, () => {
     const events = readLog(root);
+    if (first && events.length) throw new Error("this project already has a conductor log: use log, not init");
     const full = { ...e, n: events.length + 1, at: now }; // the number and the time are always the script's, never the caller's
     fold([...events, full]); // refuse an event the state cannot take, before it is written
     appendFileSync(paths(root).LOG, JSON.stringify(full) + "\n");
@@ -143,8 +149,7 @@ export function append(root, e, now = new Date().toISOString()) {
 }
 export function init(root, goal) {
   if (!goal) throw new Error("init needs the goal, in the owner's words");
-  if (readLog(root).length) throw new Error("this project already has a conductor log: use log, not init");
-  append(root, { type: "goal.set", goal, done_when: ["the first operation is planned, described, has agreed journeys that fail on purpose, and is proved and reviewed"], next: { do: "plan it with the owner", why: "nothing is planned yet" } });
+  append(root, { type: "goal.set", goal, done_when: ["the first operation is planned, described, has agreed journeys that fail on purpose, is built, reviewed, and run by the owner"], next: { do: "plan it with the owner", why: "nothing is planned yet" } }, undefined, true);
   return append(root, { type: "stage.entered", stage: "plan", because: "first" });
 }
 export const rebuild = (root) => write(root, readLog(root));

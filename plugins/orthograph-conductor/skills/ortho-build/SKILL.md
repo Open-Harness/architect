@@ -28,37 +28,55 @@ by a builder.
    ```
 
 2. **Get one brief per operation.** Never write a builder's task yourself; ask for it by the operation's name and hand
-   it over exactly as printed. Anything you add in your own words is something the builder can misread.
+   it over exactly as printed. Anything you add in your own words is something the builder can misread. A brief has
+   five parts, in this order (shortened here):
 
    ```sh
    $ ortho brief handle.claim
    brief handle.claim
+
    Write   src/handle/claim.ts, and nothing else.
+
+   Read
+     blueprint/things/handle/verbs/claim.ts  the declaration: payload, answer, move, steps, errors
+     generated/api/src/handle/claim.handler.ts  what the handler is given and may return
+     ...
+   Do
+     run step handle.claim.record (database) through steps.record(...)
+     make the move with move(): claim, emitting HandleClaimed
+     never refuse HandleTaken or HandleAlreadyOwned or NotAllowed yourself: the runtime does, before the handler runs
+     ...
    Don't touch
      blueprint/**
-     blueprint/journeys/**
-     blueprint/starting-worlds/**
      journeys/**
      generated/**
-     test/**
+     ...
    Done when
      ortho prove --env local passes, with handle.claim's 9 evals: answer shape, declared errors, machine path, events, who may call, steps, performance, coverage, explainability
-     and the journeys that call it: journeys/claim-a-handle.ts, journeys/release-a-handle.ts, ...
+     and the journeys that call it: journeys/a-name-is-claimed-once.ts, journeys/claim-a-handle.ts, ...
+     (to run one of them alone: ortho prove --only journeys/a-name-is-claimed-once.ts)
      ortho check passes
    ```
 
-   The brief goes on to say what to read and what the handler must do. Its "Write" line is the worker's "may touch";
-   its "Done when" is the worker's "done when".
-3. **Start the builders together**, one worker per brief (`CONTRACT.md` in the conductor skill): role builder; skill
-   `ortho-build`; task, the brief as printed. Briefs write different files, so they never collide. Order matters only
-   for which journey goes green first: an operation whose journeys start from another's result (a release needs a
-   claim) shows failures in the other handler until that one is built, and that is expected. Log each
-   `worker.started`.
-4. **When a builder returns, check it yourself.** Re-run `ortho prove` whole and `ortho check`; a builder's word, or a
-   green `--only` run, is not done. Then list the files it touched (`git status`, `git diff --stat`): anything beyond
-   its one handler is sent back. Log `worker.returned` with what you ran and saw.
-5. **When the whole run is green**, log the checks and `stage.done`. Say to the owner, in a sentence, what is now true:
-   every story passes, run whole, and nobody changed a story to get there.
+   Its "Write" line is the worker's "may touch". Its "Done when" is the stage's done; a builder working beside
+   unbuilt siblings has its own done, below.
+3. **Make one integration branch for the build** (for example `build/<goal>`), from the main branch. Every builder's
+   branch starts from it and is merged back into it; the whole proof is judged there, and the integration branch
+   lands as one pull request (or as a stack, one builder's pull request on the next, when the owner wants each
+   reviewed alone). A builder's pull request never goes straight against the main branch: alone, it cannot pass a
+   whole proof while its siblings are blank.
+4. **Start the builders together**, one worker per brief, each in its own checkout (`CONTRACT.md` in the conductor
+   skill: in Claude Code a subagent with worktree isolation; elsewhere a separate worktree, `git worktree add`), on its
+   own branch from the integration branch: role builder; skill `ortho-build`; task, the brief as printed. Briefs write
+   different files, so their branches never conflict. Log each `worker.started`.
+5. **When a builder returns, check it yourself, in its checkout.** List what it changed against the base it started
+   from (`git diff --stat build/<goal>...HEAD`): anything beyond its one handler is sent back. Re-run its operation's
+   journeys (`ortho prove --only <journey file>`, each named in its brief). Log `worker.returned` with what you ran and
+   saw, then merge its branch into the integration branch.
+6. **Judge the whole build on the integration branch**, once every builder's work is merged: `ortho prove`, run whole,
+   then `ortho check`. A failure there goes back to the builder whose handler it names, with a new worker id. When both
+   pass, log the checks and `stage.done`. Say to the owner, in a sentence, what is now true: every story passes, run
+   whole, and nobody changed a story to get there.
 
 ## For the worker (the builder)
 
@@ -112,9 +130,15 @@ You have one brief. Write only the file it names. Never edit a journey, the blue
    prove ✔
    ```
 
-   Finish with `ortho prove`, run whole, and then `ortho check`. Both must pass. The whole run judges nine evals per
-   operation, and a journey can pass while one of them fails (performance against the budget, say).
-6. Hand back in the contract's shape, with the whole runs' last lines as evidence and the one file in `touched`.
+   Finish with `ortho prove`, run whole, and then `ortho check`. The whole run judges nine evals per operation, and a
+   journey can pass while one of them fails (performance against the budget, say).
+6. **Your done, beside unbuilt siblings.** Other builders are working at the same time, so the whole run can still fail
+   in their handlers (`BlankReached` in a file that is not yours). You are done when: every journey your brief names
+   passes, or fails only in a handler that is not yours; nothing in the whole run fails in your file; your operation's
+   evals that the run reaches pass; and `ortho check` shows nothing wrong in your file. Hand back `done` if the whole
+   run is green, otherwise `partial`, listing each failure left and the handler it is in. The conductor judges the
+   whole proof once every builder's work is in.
+7. Hand back in the contract's shape, with the runs' last lines as evidence and the one file in `touched`.
 
 ## When it goes wrong
 
