@@ -93,7 +93,7 @@ this. This record adds no lane, row, slice or goal.
 - design/decisions/K29-ui-layer.md: "a React-only hook layer would sit beside it doing the same job" → "an app's screens are generated headless hooks over its actions, drawn by the app's own component library (K48)"
 - design/decisions/K29-ui-layer.md: "one per operation: a UI SDK primitive bound to its action, and its parts per framework" → "for an app's screens, one generated headless hook per operation, drawn by the app's own library (K48)"
 - design/decisions/K29-ui-layer.md: "inputs, buttons, dialogs, focus, keyboard, screen readers, the agent bridge" → "for an app's screens, the app's own component library; the portal is not changed by K48 (K48)"
-- docs/canon/status.md: "The UI is pieces, not hooks (K29, K41 clash 2)" → "An app's screens are generated headless hooks over its actions, drawn by the app's own component library (K48"
+- docs/canon/status.md: "The UI is a generated piece per operation (K29, K41 clash 2)" → "An app's screens are generated headless hooks over its actions, drawn by the app's own component library (K48"
 - docs/canon/status.md: "A generated piece per operation on UI SDK" → "A generated headless hook per operation over its action, drawn by the app's library (K48)"
 - design/goals/05-ui-layer.md: "the browser host and the piece runtime), the pieces' templates" → "the browser host and the hook runtime), the hooks' templates"
 - design/goals/05-ui-layer.md: "built on the pieces, with the app's own link list" → "built on the generated hooks and drawn by the app's own components (K48), with the app's own link list"
