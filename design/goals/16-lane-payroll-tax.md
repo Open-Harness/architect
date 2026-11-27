@@ -133,8 +133,11 @@ request that touches one.
 **Shared files it may touch, and how.** Each is a line or a section of its own, never a rewrite:
 
 - `docs/canon/status.md`: its own rows only (below, "On GitHub").
-- `pnpm-workspace.yaml`: the line `examples/capxul/plugins/*`, if the pieces move (CX-composable-pieces, move 1) has not
-  added it by the time slice 0 needs it. It is the same line the move adds, so the two merge cleanly.
+- `pnpm-workspace.yaml`: the line `examples/capxul/plugins/payroll-tax-us`, the piece's own path, added in slice 0.
+  The glob `examples/capxul/plugins/*` that the pieces move (CX-composable-pieces, move 1) names can't be used yet. It
+  makes the Bridge adapter in `examples/capxul/plugins/bridge/` a workspace package, and that adapter's peer
+  `"orthograph": "*"` sends `pnpm install` to npm for `orthograph`, which fails with a 404 (Snag #1177, for move 1's
+  owner). The explicit line sits alongside whatever move 1 adds, so the two merge cleanly.
 - `examples/capxul/package.json`: the one dependency `"@capxul/payroll-tax-us": "workspace:*"`. The pieces move
   (move 1) edits the same file. On a conflict, keep both sides' dependencies, then run `pnpm install`.
 - `examples/capxul/generated/`, `examples/capxul/blueprint/refusals.lock` and `pnpm-lock.yaml`: written by `ortho
