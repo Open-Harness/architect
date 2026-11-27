@@ -1,0 +1,261 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.600
+Until now, one agent worked on Plugged In at a time.
+
+2
+00:00:03.600 --> 00:00:05.220
+The next stage is bigger.
+
+3
+00:00:05.220 --> 00:00:07.552
+You want several building at once.
+
+4
+00:00:07.952 --> 00:00:12.207
+Two agents in the same files undo each other's work, and neither notices.
+
+5
+00:00:12.607 --> 00:00:14.667
+Orthograph has no command for this yet.
+
+6
+00:00:14.667 --> 00:00:20.429
+So this film leaves Plugged In, and shows how this repository builds Orthograph itself.
+
+7
+00:00:20.829 --> 00:00:23.309
+Every line of work has one owner, called a goal:
+
+8
+00:00:23.309 --> 00:00:26.349
+one long-running agent that manages others.
+
+9
+00:00:26.349 --> 00:00:28.780
+We asked the map which goals run.
+
+10
+00:00:29.180 --> 00:00:29.580
+Three.
+
+11
+00:00:29.520 --> 00:00:30.900
+One builds the framework.
+
+12
+00:00:30.900 --> 00:00:32.580
+One builds an app on it.
+
+13
+00:00:32.580 --> 00:00:34.140
+One builds nothing new:
+
+14
+00:00:34.140 --> 00:00:36.830
+it brings finished work into the shared branch.
+
+15
+00:00:38.430 --> 00:00:40.669
+Before a goal builds anything, it claims it.
+
+16
+00:00:41.069 --> 00:00:43.929
+The status page keeps one row for each piece of work.
+
+17
+00:00:43.929 --> 00:00:46.169
+A claim is two cells of that row:
+
+18
+00:00:46.169 --> 00:00:50.085
+the lane, which names the goal, and the paths it will change.
+
+19
+00:00:50.485 --> 00:00:54.065
+Here, goal sixteen holds this piece, and names two folders.
+
+20
+00:00:54.065 --> 00:00:57.936
+Any other agent that needs those folders reads this first.
+
+21
+00:00:58.336 --> 00:00:59.836
+We counted the claims held today.
+
+22
+00:00:59.836 --> 00:01:01.736
+Thirteen for the app's goal.
+
+23
+00:01:01.736 --> 00:01:03.016
+One for the framework's.
+
+24
+00:01:03.016 --> 00:01:05.074
+Every other lane says none.
+
+25
+00:01:06.674 --> 00:01:10.074
+An agent building an app keeps finding gaps in the framework under it.
+
+26
+00:01:10.074 --> 00:01:11.134
+Whose are they?
+
+27
+00:01:11.134 --> 00:01:13.214
+One rule, three cases.
+
+28
+00:01:13.614 --> 00:01:14.194
+Case one.
+
+29
+00:01:14.194 --> 00:01:15.954
+A running goal already has it.
+
+30
+00:01:15.954 --> 00:01:18.478
+Wait, or take the part that has landed.
+
+31
+00:01:18.878 --> 00:01:19.498
+Case two.
+
+32
+00:01:19.498 --> 00:01:21.838
+It would change paths another goal has claimed.
+
+33
+00:01:21.838 --> 00:01:23.878
+One named goal settles it:
+
+34
+00:01:23.878 --> 00:01:25.961
+one of them does it, or they split it.
+
+35
+00:01:26.361 --> 00:01:27.035
+Case three.
+
+36
+00:01:27.035 --> 00:01:27.581
+Neither.
+
+37
+00:01:27.581 --> 00:01:28.832
+Claim it, and build it.
+
+38
+00:01:29.232 --> 00:01:31.475
+Only the second case needs a decision.
+
+39
+00:01:33.075 --> 00:01:35.835
+Checks are written before the build, by a different agent.
+
+40
+00:01:35.835 --> 00:01:40.103
+So red checks sit in the shared branch before the code that passes them.
+
+41
+00:01:40.503 --> 00:01:44.383
+To keep that branch a gate, each failure we know about is written in a list.
+
+42
+00:01:44.383 --> 00:01:47.845
+The build fails on any failure that is not listed.
+
+43
+00:01:48.245 --> 00:01:51.045
+Here is one whole list, about Plugged In's own journeys.
+
+44
+00:01:51.045 --> 00:01:53.645
+One line says why the entry is there.
+
+45
+00:01:53.645 --> 00:01:56.168
+The other names the one check that may fail.
+
+46
+00:01:56.568 --> 00:01:59.448
+A builder may delete a line, and may never add one.
+
+47
+00:01:59.448 --> 00:02:03.702
+A script in this repository's CI refuses the pull request.
+
+48
+00:02:04.102 --> 00:02:04.922
+Ten lists today.
+
+49
+00:02:04.922 --> 00:02:06.822
+The smallest holds one file.
+
+50
+00:02:06.822 --> 00:02:08.992
+Over time, the numbers go down.
+
+51
+00:02:10.592 --> 00:02:11.312
+What goes wrong.
+
+52
+00:02:11.312 --> 00:02:13.372
+A claim is a cell in a table.
+
+53
+00:02:13.372 --> 00:02:19.097
+Nothing locks the paths, so two agents can still meet in one file, as a merge conflict.
+
+54
+00:02:19.497 --> 00:02:23.187
+And a claim can go stale, when a goal stops and leaves its lane set.
+
+55
+00:02:23.587 --> 00:02:24.587
+One honest note.
+
+56
+00:02:24.587 --> 00:02:27.767
+Everything you watched is this repository's practice.
+
+57
+00:02:27.767 --> 00:02:32.533
+No ortho command claims work, settles a collision, or keeps a list.
+
+58
+00:02:32.933 --> 00:02:34.713
+Nothing here was run on Plugged In.
+
+59
+00:02:34.713 --> 00:02:37.688
+We read files, and counted them with plain shell.
+
+60
+00:02:38.088 --> 00:02:39.908
+The product's answer is called the factory:
+
+61
+00:02:39.908 --> 00:02:41.968
+a board that agents build from.
+
+62
+00:02:41.968 --> 00:02:44.342
+It is designed, and not built.
+
+63
+00:02:44.942 --> 00:02:48.142
+This is the manual's closing chapter, so nothing comes next.
+
+64
+00:02:48.142 --> 00:02:50.242
+What you can copy today is small:
+
+65
+00:02:50.242 --> 00:02:54.417
+one file of claims, one rule, and one list that only shrinks.

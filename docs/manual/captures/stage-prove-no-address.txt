@@ -1,0 +1,3 @@
+$ ortho prove --env staging --run demo1
+ORTHO_STAGING_SUBDOMAIN is not set: one label of lower-case letters, digits and dashes, 1 to 63, not starting or ending with a dash
+exit 2

@@ -1,0 +1,6 @@
+generated/server/
+  routes.ts            one route for each operation that is served
+  enforce.ts           row · role · machine · handler · rules · commit, in that order
+  migrations/          spend and entry, and an index for each rule
+  actors/Relayer.ts    takes signed calls, keeps reasons under their seals, pays the gas
+  actors/Indexer.ts    reads the chain back into the events you declared

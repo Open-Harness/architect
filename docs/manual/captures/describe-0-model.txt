@@ -1,0 +1,14 @@
+$ ortho model
+thing handle (claimed, released)  d9dcca222783bbef
+thing link (listed, removed)  72c22f92188f5790
+thing profile  b6fe73c29fc30ccb
+thing wallet ()  442d058dd5931be9
+operation handle.claim  refuses HandleTaken, HandleAlreadyOwned, NotAllowed, IdempotencyConflict  61e97f85ea760d5b
+operation handle.release  refuses HandleNotClaimed, NotAllowed  a815562f353c0c01
+operation handle.resolve  refuses HandleNotFound  c7e3558f97930e9a
+operation link.add  refuses LinkNeedsHandle, NotAllowed, IdempotencyConflict  d3ed67ad7a36cbca
+operation link.order  refuses LinkAlreadyRemoved, NotAllowed  c2bb84f2918d1db3
+operation link.remove  refuses LinkNotListed, NotAllowed  58309131d39628e5
+operation profile.get  refuses ProfileNotFound  64401959da0ca2d4
+unfinished wallet  3 blanks
+unfinished wallet.open  4 blanks

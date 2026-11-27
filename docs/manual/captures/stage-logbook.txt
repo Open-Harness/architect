@@ -1,0 +1,3 @@
+$ ortho env up logbook
+the logbook needs a policy: ORTHO_OIDC_ISSUER, ORTHO_OIDC_REPOSITORY, ORTHO_OIDC_REF and ORTHO_OIDC_WORKFLOW
+exit 2

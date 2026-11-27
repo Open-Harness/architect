@@ -1,0 +1,45 @@
+$ ortho check
+journeys/handle-claim-created-in-claimed has 4 blanks
+  blueprint/journeys/handle-claim-created-in-claimed.ts:14  a starting world where handle.claim can run
+  blueprint/journeys/handle-claim-created-in-claimed.ts:18  handle.claim's payload: name
+  blueprint/journeys/handle-claim-created-in-claimed.ts:19  HandleClaimed's fields: handle, name
+  blueprint/journeys/handle-claim-created-in-claimed.ts:20  the handle's id
+journeys/handle-claim-refused-anonymous has 2 blanks
+  blueprint/journeys/handle-claim-refused-anonymous.ts:12  a starting world where handle.claim can run
+  blueprint/journeys/handle-claim-refused-anonymous.ts:16  handle.claim's payload: name
+journeys/handle-claim-refused-handle-already-owned has 2 blanks
+  blueprint/journeys/handle-claim-refused-handle-already-owned.ts:14  a starting world where handle.claim would break handle.oneNamePerPerson
+  blueprint/journeys/handle-claim-refused-handle-already-owned.ts:18  handle.claim's payload that breaks handle.oneNamePerPerson: name
+journeys/handle-claim-refused-handle-taken has 2 blanks
+  blueprint/journeys/handle-claim-refused-handle-taken.ts:14  a starting world where handle.claim would break handle.oneHolderPerName
+  blueprint/journeys/handle-claim-refused-handle-taken.ts:18  handle.claim's payload that breaks handle.oneHolderPerName: name
+journeys/handle-release-claimed-to-released has 4 blanks
+  blueprint/journeys/handle-release-claimed-to-released.ts:15  a starting world with a handle in claimed
+  blueprint/journeys/handle-release-claimed-to-released.ts:19  handle.release's payload: handle
+  blueprint/journeys/handle-release-claimed-to-released.ts:20  HandleReleased's fields: handle, name
+  blueprint/journeys/handle-release-claimed-to-released.ts:21  the handle's id
+journeys/handle-release-refused-from-released has 3 blanks
+  blueprint/journeys/handle-release-refused-from-released.ts:14  a starting world with a handle in released
+  blueprint/journeys/handle-release-refused-from-released.ts:18  handle.release's payload: handle
+  blueprint/journeys/handle-release-refused-from-released.ts:21  the handle's id
+journeys/handle-release-refused-not-handleOwner has 2 blanks
+  blueprint/journeys/handle-release-refused-not-handleOwner.ts:12  a starting world where handle.release can run
+  blueprint/journeys/handle-release-refused-not-handleOwner.ts:16  handle.release's payload: handle
+journeys/handle-resolve-allowed-anyone has 3 blanks
+  blueprint/journeys/handle-resolve-allowed-anyone.ts:12  a starting world where handle.resolve can run
+  blueprint/journeys/handle-resolve-allowed-anyone.ts:16  handle.resolve's payload: name
+  blueprint/journeys/handle-resolve-allowed-anyone.ts:17  what handle.resolve answers: handle
+journeys/handle-resolve-refused-handle-not-found has 2 blanks
+  blueprint/journeys/handle-resolve-refused-handle-not-found.ts:13  a starting world where handle.resolve can be refused HandleNotFound
+  blueprint/journeys/handle-resolve-refused-handle-not-found.ts:17  handle.resolve's payload that triggers HandleNotFound: name
+types ✔
+rules ✔
+drift ✘ 5
+  generated/model/model.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/handle/claim.md  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/handle/release.md  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/docs/handle/resolve.md  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+  generated/portal/blueprint.json  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+ratchets 0
+check ✘
+exit 1

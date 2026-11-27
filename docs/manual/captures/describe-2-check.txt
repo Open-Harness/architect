@@ -1,0 +1,13 @@
+$ ortho check
+wallet has 5 blanks
+  blueprint/things/wallet/roles.ts:5  when a person holds this role on a wallet
+  blueprint/things/wallet/verbs/open.ts:5  what open does to a wallet, in one sentence
+  blueprint/things/wallet/verbs/open.ts:6  what a caller sends
+  blueprint/things/wallet/verbs/open.ts:7  what open answers
+  blueprint/things/wallet/verbs/open.ts:8  who may open
+types ✔
+rules ✔
+drift ✔
+ratchets 0
+check ✘
+exit 1

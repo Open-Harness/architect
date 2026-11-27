@@ -1,0 +1,370 @@
+{
+  "title": "How Orthograph works",
+  "source": "examples/plugged-in",
+  "steps": [
+    "Describe",
+    "Compile",
+    "Generate",
+    "Enforce",
+    "Behave",
+    "Prove",
+    "Change"
+  ],
+  "about": "Every line of code and every line of terminal output in this film is read from examples/plugged-in and from recorded runs of ortho.",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "gap": 0.38,
+  "scenes": [
+    {
+      "id": "problem",
+      "title": "One fact, six copies",
+      "lead": 0.7,
+      "tail": 0.5,
+      "lines": [
+        {
+          "id": "p1",
+          "text": "Take one small feature. A person can claim a name."
+        },
+        {
+          "id": "p2",
+          "text": "To ship it, you write that same fact over and over. A route. A validator. An SDK method. A CLI command. A tool for agents. A page of docs.",
+          "gap": 0.5
+        },
+        {
+          "id": "p3",
+          "text": "Six copies of one idea, kept in sync by hand."
+        },
+        {
+          "id": "p4",
+          "text": "Change one, and the others quietly go stale.",
+          "gap": 1.1
+        }
+      ]
+    },
+    {
+      "id": "title",
+      "title": "Orthograph",
+      "lead": 0.7,
+      "tail": 1.1,
+      "lines": [
+        {
+          "id": "t1",
+          "text": "Orthograph starts somewhere else.",
+          "gap": 0.5
+        },
+        {
+          "id": "t2",
+          "text": "Describe a system once, and everything else falls out of it."
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "title": "The whole idea",
+      "lead": 0.8,
+      "tail": 0.7,
+      "lines": [
+        {
+          "id": "m1",
+          "text": "Here's the whole idea on one sheet."
+        },
+        {
+          "id": "m2",
+          "text": "On the left is what you write: the blueprint. Small, typed declarations of what your system is."
+        },
+        {
+          "id": "m3",
+          "text": "Orthograph compiles them into one model."
+        },
+        {
+          "id": "m4",
+          "text": "From that model, it generates the server, the HTTP API, the SDK, the command line tool, the MCP tools, the docs, and more."
+        },
+        {
+          "id": "m5",
+          "text": "The only code you write by hand is behaviour: one handler per operation."
+        },
+        {
+          "id": "m6",
+          "text": "And you don't just claim it works. Stories run against the real system, and the result is a verdict."
+        },
+        {
+          "id": "m7",
+          "text": "Let's take one feature all the way through."
+        }
+      ]
+    },
+    {
+      "id": "blueprint",
+      "title": "What goes in",
+      "lead": 0.8,
+      "tail": 0.8,
+      "lines": [
+        {
+          "id": "b1",
+          "text": "Our app is called Plugged In. You claim a name, and you get a public page of links."
+        },
+        {
+          "id": "b2",
+          "text": "Start with a thing. A handle has an id, a name, and an owner.",
+          "gap": 0.6
+        },
+        {
+          "id": "b3",
+          "text": "Next, its machine: the states a handle can be in, and the moves between them. Claimed, then released.",
+          "gap": 0.7
+        },
+        {
+          "id": "b4",
+          "text": "Now the verb. Claim is an operation on a handle."
+        },
+        {
+          "id": "b5",
+          "text": "It says what comes in, what goes back, and which move it makes."
+        },
+        {
+          "id": "b6",
+          "text": "Who may call it, and what it's allowed to write."
+        },
+        {
+          "id": "b7",
+          "text": "That the same request twice counts once, and how fast it has to be.",
+          "gap": 0.7
+        },
+        {
+          "id": "b8",
+          "text": "Last, the rules. A name has one holder. A person holds one name. Each rule owns its own refusal.",
+          "gap": 0.7
+        },
+        {
+          "id": "b9",
+          "text": "That's the whole description. Notice what isn't here: no route, no request parsing, no command line flags."
+        }
+      ]
+    },
+    {
+      "id": "compile",
+      "title": "One model",
+      "lead": 0.8,
+      "tail": 0.8,
+      "lines": [
+        {
+          "id": "c1",
+          "text": "Run ortho check.",
+          "gap": 0.9
+        },
+        {
+          "id": "c2",
+          "text": "It compiles the blueprint, and it refuses a description that doesn't hold together."
+        },
+        {
+          "id": "c3",
+          "text": "What comes out is the model: one JSON file, with every declaration in it, each one hashed."
+        },
+        {
+          "id": "c4",
+          "text": "Everything after this is made from the model, never from your files directly."
+        }
+      ]
+    },
+    {
+      "id": "generate",
+      "title": "What comes out",
+      "lead": 0.8,
+      "tail": 0.9,
+      "lines": [
+        {
+          "id": "g1",
+          "text": "Now, ortho generate.",
+          "gap": 0.8
+        },
+        {
+          "id": "g2",
+          "text": "From those ten lines, you get an HTTP endpoint, with its payload, answer, and refusals all typed."
+        },
+        {
+          "id": "g3",
+          "text": "An SDK function."
+        },
+        {
+          "id": "g4",
+          "text": "A command in your app's own command line tool."
+        },
+        {
+          "id": "g5",
+          "text": "An MCP tool, so any agent can call it. It's already described, including how it refuses."
+        },
+        {
+          "id": "g6",
+          "text": "A docs page, with every refusal and its code."
+        },
+        {
+          "id": "g7",
+          "text": "And the served operation itself, next to the portal and the infrastructure plan.",
+          "gap": 0.7
+        },
+        {
+          "id": "g8",
+          "text": "Each of these is a projection: one view of the same model, made by code."
+        },
+        {
+          "id": "g9",
+          "text": "They're never yours to edit. Change one by hand, and the check fails.",
+          "gap": 1.0
+        }
+      ]
+    },
+    {
+      "id": "enforce",
+      "title": "One enforcer",
+      "lead": 0.8,
+      "tail": 1.0,
+      "lines": [
+        {
+          "id": "e1",
+          "text": "Here's the rule that holds it all together. Each operation is enforced in exactly one place."
+        },
+        {
+          "id": "e2",
+          "text": "Every way in reaches that one place. HTTP, the SDK, the command line, an agent's tool. None of them decides anything on its own.",
+          "gap": 0.6
+        },
+        {
+          "id": "e3",
+          "text": "So when Bob tries to claim a name that's taken, the refusal is the same everywhere. Same name. Same code."
+        }
+      ]
+    },
+    {
+      "id": "handler",
+      "title": "The code you write",
+      "lead": 0.8,
+      "tail": 0.9,
+      "lines": [
+        {
+          "id": "h1",
+          "text": "So what's left for you to write? Behaviour."
+        },
+        {
+          "id": "h2",
+          "text": "Orthograph scaffolds one handler per operation, once. From then on it's yours, and it's never overwritten."
+        },
+        {
+          "id": "h3",
+          "text": "The header lists everything the runtime already does, so your code doesn't.",
+          "gap": 0.7
+        },
+        {
+          "id": "h4",
+          "text": "The body is ordinary TypeScript, written with Effect. Save the handle and its page. Make the move. Answer.",
+          "gap": 0.6
+        },
+        {
+          "id": "h5",
+          "text": "It never checks who's calling. It never parses a request. It never refuses a taken name. The declaration already said all of that."
+        }
+      ]
+    },
+    {
+      "id": "prove",
+      "title": "Proof",
+      "lead": 0.8,
+      "tail": 1.7,
+      "lines": [
+        {
+          "id": "v1",
+          "text": "How do you know it works? A journey."
+        },
+        {
+          "id": "v2",
+          "text": "A journey is a story told through real operations. A different agent from the builder writes it, before the handler exists."
+        },
+        {
+          "id": "v3",
+          "text": "Aaron claims a free name. Expect an id back. Expect the event. Expect the handle to be in the state claimed. And expect these spans in the trace.",
+          "gap": 0.7
+        },
+        {
+          "id": "v4",
+          "text": "ortho prove starts a real world, with real stores, runs every story, and judges what they left behind."
+        },
+        {
+          "id": "v5",
+          "text": "With an empty handler, it's red, and it tells you exactly where.",
+          "gap": 0.9
+        },
+        {
+          "id": "v6",
+          "text": "So building is climbing. Fix the handler, prove again, and repeat until every journey is green. A coding agent can run that loop by itself.",
+          "gap": 0.8
+        },
+        {
+          "id": "v7",
+          "text": "Seven journeys. Fifty-six steps. Nine evals on every operation. Done is a verdict, not a claim."
+        }
+      ]
+    },
+    {
+      "id": "change",
+      "title": "Change",
+      "lead": 0.8,
+      "tail": 1.0,
+      "lines": [
+        {
+          "id": "x1",
+          "text": "Now change something. Tighten claim's budget, and reword its description."
+        },
+        {
+          "id": "x2",
+          "text": "The check notices right away: eight generated files no longer match the model."
+        },
+        {
+          "id": "x3",
+          "text": "Generate, and they're remade. The SDK, the command line, the MCP tool, the docs."
+        },
+        {
+          "id": "x4",
+          "text": "Then ortho impact tells you what the change made stale. Only claim. Everything else is still proven."
+        },
+        {
+          "id": "x5",
+          "text": "Prove again, and you're green."
+        }
+      ]
+    },
+    {
+      "id": "loop",
+      "title": "The loop",
+      "lead": 0.8,
+      "tail": 2.6,
+      "lines": [
+        {
+          "id": "l1",
+          "text": "That's the loop. Describe. Compile. Generate. Write the behaviour. Prove. Then ship it, and watch it run."
+        },
+        {
+          "id": "l2",
+          "text": "What flows down is the description. What flows back is evidence.",
+          "gap": 0.6
+        },
+        {
+          "id": "l3",
+          "text": "You write the blueprint, the handlers, and the journeys."
+        },
+        {
+          "id": "l4",
+          "text": "You get the server, the API, the SDK, the command line, the agent tools, and the docs."
+        },
+        {
+          "id": "l5",
+          "text": "And you know it works, because it's proved.",
+          "gap": 0.9
+        },
+        {
+          "id": "l6",
+          "text": "Orthograph. Describe a system once, and everything else falls out of it."
+        }
+      ]
+    }
+  ]
+}

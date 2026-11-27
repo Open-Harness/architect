@@ -385,7 +385,7 @@ live in a separate package, `@formants/portal` (to be `@orthograph/portal`), so 
 ### 6. Steps and workflows: publishing
 
 A step lives inside one attempt. A workflow lives across attempts and owners. Publishing crosses D1, a person's
-wallet and the chain, so it is a workflow:
+wallet and the chain, so it is a workflow: (Superseded by K46, 26 November 2026: it is a workflow only when no single thing can hold the wait.)
 
 ```ts
 // blueprint/workflows/publish.ts: illustrative; the exact shape is M3.01's decision
@@ -574,7 +574,7 @@ These are the building agent's calls, with the evidence above. Aaron can overrul
 6. Step signals are OTLP log records sent as each step starts and ends (M1.21), so work in flight is visible.
 7. A workflow activity is keyed by run id and activity name, and a wait wakes on `on:` or `Timers`. The rest belongs to
    M3.01.
-8. A chain is a host, and its store kind is K3's `chain`. A server call that sends a transaction is a workflow.
+8. A chain is a host, and its store kind is K3's `chain`. A server call that sends a transaction is a workflow. (Superseded by K46, 26 November 2026: it is more than one call.)
 9. Noir's limits are part of the contract: metadata is visible, proving time is in the budget, and an unverified proof
    blocks production.
 10. The scaffold is a wired function: the steps in declared order, the move, and a stub per refusal, each hole a

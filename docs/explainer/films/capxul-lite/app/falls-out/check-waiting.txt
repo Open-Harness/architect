@@ -1,0 +1,7 @@
+$ ortho check
+waiting   proposal · open
+            yes       pass, when enough owners approve
+            no        nothing
+            silence   expire, after 7 days
+          An open proposal can't be turned down. Its owners can only let it run out.
+check ✔ with 1 note

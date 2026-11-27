@@ -1,0 +1,10 @@
+$ ortho generate
+updated generated/api/src/errors.ts
+updated generated/model/model.json
+updated generated/sdk/src/index.ts
+created generated/sdk/src/wallet/types.ts
+updated generated/server/main.ts
+updated generated/server/migrations/0001_things.sql
+created generated/docs/wallet/index.md
+updated generated/portal/blueprint.json
+updated blueprint/refusals.lock

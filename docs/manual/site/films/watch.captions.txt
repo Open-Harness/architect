@@ -1,0 +1,273 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.160
+Plugged In is running, and people are calling it.
+
+2
+00:00:03.160 --> 00:00:06.072
+Nobody is running journeys against those calls.
+
+3
+00:00:06.472 --> 00:00:07.652
+So the question changes.
+
+4
+00:00:07.652 --> 00:00:10.236
+Is it healthy, and what changed this week?
+
+5
+00:00:10.636 --> 00:00:12.476
+Start with what is already written down.
+
+6
+00:00:12.476 --> 00:00:15.456
+Every operation in the blueprint carries a budget.
+
+7
+00:00:15.456 --> 00:00:17.776
+For the public page, profile.
+
+8
+00:00:17.776 --> 00:00:20.706
+get, it's a hundred and fifty milliseconds.
+
+9
+00:00:21.106 --> 00:00:23.406
+The proof has held the app to that number all along.
+
+10
+00:00:23.406 --> 00:00:27.585
+A full run prints a line for each operation, with its budget.
+
+11
+00:00:27.985 --> 00:00:29.665
+But those are the journeys' own calls.
+
+12
+00:00:29.665 --> 00:00:31.527
+They say nothing about this week.
+
+13
+00:00:33.127 --> 00:00:35.147
+One command judges real calls.
+
+14
+00:00:35.147 --> 00:00:38.018
+ortho watch, with the name of an environment.
+
+15
+00:00:38.418 --> 00:00:42.510
+Before the environment has run, there's nothing to read, and watch says so.
+
+16
+00:00:42.910 --> 00:00:45.910
+So we start the test environment on this machine, and use it.
+
+17
+00:00:45.910 --> 00:00:47.090
+A name claimed.
+
+18
+00:00:47.090 --> 00:00:48.690
+A second one refused.
+
+19
+00:00:48.690 --> 00:00:51.440
+The public page, read three times.
+
+20
+00:00:51.840 --> 00:00:52.440
+Watch again.
+
+21
+00:00:52.440 --> 00:00:56.120
+Each operation that was called has a line, against its own budget.
+
+22
+00:00:56.120 --> 00:00:57.386
+Both pass.
+
+23
+00:00:57.986 --> 00:00:58.506
+Then the counts.
+
+24
+00:00:58.506 --> 00:01:00.326
+Two claims, three reads.
+
+25
+00:01:00.326 --> 00:01:01.886
+One refusal, by name.
+
+26
+00:01:01.886 --> 00:01:04.486
+A refusal is the app saying no on purpose.
+
+27
+00:01:04.486 --> 00:01:05.906
+Defects:
+
+28
+00:01:05.906 --> 00:01:06.340
+none.
+
+29
+00:01:06.740 --> 00:01:07.646
+And the evals.
+
+30
+00:01:07.646 --> 00:01:09.360
+That's the proof again, on real calls.
+
+31
+00:01:09.360 --> 00:01:10.080
+Drift:
+
+32
+00:01:10.080 --> 00:01:10.726
+none.
+
+33
+00:01:12.326 --> 00:01:13.846
+Nothing on our machine was slow.
+
+34
+00:01:13.846 --> 00:01:18.366
+So, to see what slow looks like, we tightened one budget in the blueprint.
+
+35
+00:01:18.366 --> 00:01:21.250
+From a hundred and fifty milliseconds, to ten.
+
+36
+00:01:21.650 --> 00:01:25.071
+Then we read the page twenty-five more times, and watched again.
+
+37
+00:01:25.671 --> 00:01:26.451
+Now profile.
+
+38
+00:01:26.451 --> 00:01:27.511
+get is marked.
+
+39
+00:01:27.511 --> 00:01:29.764
+Twenty-two milliseconds, against ten.
+
+40
+00:01:29.764 --> 00:01:31.439
+And the drift line names it.
+
+41
+00:01:31.839 --> 00:01:32.959
+Watch did one more thing.
+
+42
+00:01:32.959 --> 00:01:34.134
+It wrote a file.
+
+43
+00:01:35.734 --> 00:01:38.303
+The file is a task, ready to hand to a builder.
+
+44
+00:01:38.703 --> 00:01:39.463
+It has the numbers.
+
+45
+00:01:39.463 --> 00:01:44.766
+It names the slowest calls by their trace, so the builder reads one before it guesses.
+
+46
+00:01:45.166 --> 00:01:47.305
+It points at the brief for that one operation.
+
+47
+00:01:47.705 --> 00:01:49.325
+And it ends with a line for you.
+
+48
+00:01:49.325 --> 00:01:52.065
+Making the handler faster is a builder's job.
+
+49
+00:01:52.065 --> 00:01:54.469
+Loosening the budget is your decision.
+
+50
+00:01:54.869 --> 00:01:55.849
+We put the budget back.
+
+51
+00:01:55.849 --> 00:01:58.634
+The same twenty-eight calls are healthy again.
+
+52
+00:02:00.234 --> 00:02:00.954
+What goes wrong?
+
+53
+00:02:00.954 --> 00:02:03.374
+Calls you make under ortho dev are not watched.
+
+54
+00:02:03.374 --> 00:02:06.045
+We made three, and watch counted none.
+
+55
+00:02:06.445 --> 00:02:07.925
+A few calls are not a pattern.
+
+56
+00:02:07.925 --> 00:02:12.365
+Under twenty, watch says the numbers are thin, and won't call it drift.
+
+57
+00:02:12.765 --> 00:02:15.185
+And an environment only starts from committed work.
+
+58
+00:02:15.185 --> 00:02:18.449
+One stray file, and ours was refused.
+
+59
+00:02:18.849 --> 00:02:19.909
+One honest note.
+
+60
+00:02:19.909 --> 00:02:23.029
+The drift you saw was staged, by tightening a budget.
+
+61
+00:02:23.029 --> 00:02:25.709
+The traffic was ours, on one machine.
+
+62
+00:02:25.709 --> 00:02:28.909
+Watch can also read a hosted store, Axiom.
+
+63
+00:02:28.909 --> 00:02:31.970
+It was not available to us, so it is not shown.
+
+64
+00:02:32.570 --> 00:02:33.850
+And watch prints one window.
+
+65
+00:02:33.850 --> 00:02:36.630
+It doesn't compare weeks, and nothing runs it for you.
+
+66
+00:02:36.630 --> 00:02:37.870
+Someone has to ask.
+
+67
+00:02:37.870 --> 00:02:38.810
+Next:
+
+68
+00:02:38.810 --> 00:02:40.303
+change it, months later.

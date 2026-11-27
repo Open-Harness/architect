@@ -1,0 +1,7 @@
+blanks left 0
+types ✔
+rules ✔
+drift ✘ 1
+  generated/sdk/src/handle/claim.ts  no-edited-output: differs from what the blueprint generates: never edit generated/, run ortho generate
+ratchets 0
+check ✘

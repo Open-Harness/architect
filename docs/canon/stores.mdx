@@ -12,7 +12,7 @@ questions:
 status: draft
 milestone: M1
 slices: [M1.17, M5.13, M5.06]
-decisions: [K3, D1, D2, K5]
+decisions: [K3, D1, D2, K5, K46]
 links: [data, things, invariants, operations, views, adapters, workflows, environments, features]
 ---
 
@@ -328,7 +328,7 @@ local-first, Noir on Aztec.
 | | The default store only | A declared store |
 |---|---|---|
 | What you write | nothing | `blueprint/stores/<name>.ts`, and `lives` on each thing |
-| Commits | any operation can touch any of its things in one commit | an operation commits to one store; work across stores is a workflow |
+| Commits | any operation can touch any of its things in one commit | an operation commits to one store; work across stores is more than one call, joined by an event (K46) |
 | Migrations | one set | one set per store, ordered per environment |
 | Pick it when | almost always | a group of things must be kept apart: a ledger, a plugin's own tables, a store bound differently in production |
 
@@ -420,7 +420,7 @@ local-first, Noir on Aztec.
 
 <Note kind="decision" decision="K7">
   Is a chain a store? Settled by K3 item 2 and K5 seam 2: a chain is a host, and the store kind it runs is `chain`.
-  The contract commits per transaction, with one writer. A server call that sends a transaction is a workflow. K7 decided
+  The contract commits per transaction, with one writer. A server call that sends a transaction is more than one call (K46). K7 decided
   that a chain store's own commit may answer late, and its caller
   gets a submission (`simulated` to `confirmed`); how an operation maps to a contract, and the rest of chain storage, are
   K7's and K25's ([chains-and-wallets](chains-and-wallets.mdx)). Aaron's doubt (18 November 2026, said in the canon session on PR #38: "it just doesn't seem like a
@@ -440,4 +440,14 @@ local-first, Noir on Aztec.
 <Note kind="question" id="store-binding-keys" slice="M1.17">
   The `stores:` keys in an environment are identifiers checked against generated types. If that reads as writing a
   declared name by hand, the fallback is `Store.bind(ledger, …)`.
+</Note>
+
+<Note kind="decision" decision="K46">
+  A chain store may make one contract for each instance of the thing that is its root, from a generated factory, so each
+  company's treasury has an address of its own (Aaron, 26 November 2026). K25 did not choose this, and its reason stands
+  as the cost: the money then sits in generated code. K25's own choice, one module per network that an account switches
+  on, stands for an app built on a Safe. A chain store also says whether its contracts can be upgraded. Either way a rule
+  change on a live contract is a published version: new instances take it, and the owners of the others take it in place
+  or move to a new contract. Designed, with no slice. Not decided anywhere: who deploys a contract, and where its address
+  is kept.
 </Note>

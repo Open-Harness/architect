@@ -1,0 +1,149 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.449
+An agent can write a working system in an afternoon.
+
+2
+00:00:03.849 --> 00:00:04.309
+The server.
+
+3
+00:00:04.309 --> 00:00:05.049
+The database.
+
+4
+00:00:05.049 --> 00:00:06.309
+The command line.
+
+5
+00:00:06.309 --> 00:00:07.969
+The tools for other agents.
+
+6
+00:00:07.969 --> 00:00:09.539
+The page of docs.
+
+7
+00:00:09.939 --> 00:00:11.813
+Writing it was never the hard part.
+
+8
+00:00:13.413 --> 00:00:15.299
+The hard part is the next morning.
+
+9
+00:00:15.699 --> 00:00:16.199
+Is it right?
+
+10
+00:00:16.199 --> 00:00:17.139
+Is it fast enough?
+
+11
+00:00:17.139 --> 00:00:19.225
+What happens when something fails?
+
+12
+00:00:19.625 --> 00:00:22.489
+And when one rule changes, what else has to change?
+
+13
+00:00:22.889 --> 00:00:25.649
+To answer any of that, someone has to read all of it.
+
+14
+00:00:25.649 --> 00:00:27.633
+Usually, that someone is you.
+
+15
+00:00:29.233 --> 00:00:31.227
+Orthograph moves the part you read.
+
+16
+00:00:31.627 --> 00:00:33.007
+You work on the system itself:
+
+17
+00:00:33.007 --> 00:00:37.341
+the things in it, who may do what to them, and what must always be true.
+
+18
+00:00:37.741 --> 00:00:39.161
+That description is the blueprint.
+
+19
+00:00:39.161 --> 00:00:41.219
+It is small enough to read whole.
+
+20
+00:00:41.619 --> 00:00:47.615
+Everything below it is made by the framework, or written by an agent inside a frame the blueprint sets.
+
+21
+00:00:48.015 --> 00:00:50.315
+And nobody takes anyone's word that it works.
+
+22
+00:00:50.315 --> 00:00:55.264
+The running system is proved, against stories you agreed to before it was built.
+
+23
+00:00:56.864 --> 00:00:59.146
+So three parties do three different jobs.
+
+24
+00:00:59.546 --> 00:01:02.933
+You decide the system, and you read the blueprint and the stories.
+
+25
+00:01:03.333 --> 00:01:07.856
+Your agents plan with you, write the stories, build the behaviour, and review each other.
+
+26
+00:01:08.256 --> 00:01:13.649
+The framework makes the server, the A P I, the S D K and the command line, and proves them.
+
+27
+00:01:15.249 --> 00:01:17.829
+This manual follows one small app, Plugged In.
+
+28
+00:01:17.829 --> 00:01:21.459
+A person claims a name, and gets a public page of links.
+
+29
+00:01:21.859 --> 00:01:23.879
+Eleven chapters, in the order things happen.
+
+30
+00:01:23.879 --> 00:01:24.819
+Before any code.
+
+31
+00:01:24.819 --> 00:01:25.519
+Build it.
+
+32
+00:01:25.519 --> 00:01:26.219
+Run it.
+
+33
+00:01:26.219 --> 00:01:27.148
+Live with it.
+
+34
+00:01:27.548 --> 00:01:30.608
+Everything a chapter prints was recorded from a real run.
+
+35
+00:01:30.608 --> 00:01:34.225
+And where something doesn't exist yet, the chapter says so.
+
+36
+00:01:34.625 --> 00:01:36.565
+And we start where every system should start:
+
+37
+00:01:36.565 --> 00:01:37.604
+with a plan.

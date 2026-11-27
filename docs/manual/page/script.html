@@ -1,0 +1,25 @@
+<script>
+// Captions for each film: a WebVTT file, published as plain text, turned into a caption track the viewer can switch on.
+(() => {
+  const seconds = (stamp) => stamp.split(":").reduce((sum, part) => sum * 60 + parseFloat(part), 0);
+  document.querySelectorAll("video[data-captions]").forEach((video) => {
+    // The captions are in the page beside the film, so they work from a file too; fetching them is the fallback.
+    const inline = video.parentElement.querySelector("script.vtt");
+    (inline ? Promise.resolve(inline.textContent.replace(/&lt;/g, "<")) : fetch(video.dataset.captions).then((r) => (r.ok ? r.text() : ""))).then((text) => {
+      const cues = [...text.matchAll(/(\d\d:\d\d:\d\d\.\d\d\d) --> (\d\d:\d\d:\d\d\.\d\d\d)\n([^\n]+)/g)];
+      if (!cues.length) return;
+      const track = video.addTextTrack("captions", "English", "en");
+      cues.forEach(([, from, to, words]) => track.addCue(new VTTCue(seconds(from), seconds(to), words)));
+    }).catch(() => {});
+  });
+})();
+
+// The contents rail marks the chapter on screen.
+(() => {
+  const links = new Map([...document.querySelectorAll(".toc a[data-to]")].map((a) => [a.dataset.to, a]));
+  const seen = [...links.keys()].map((id) => document.getElementById(id)).filter(Boolean);
+  if (!("IntersectionObserver" in window) || !seen.length) return;
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) { links.forEach((a) => a.classList.remove("here")); links.get(e.target.id)?.classList.add("here"); } }), { rootMargin: "0px 0px -70% 0px" });
+  seen.forEach((el) => io.observe(el));
+})();
+</script>

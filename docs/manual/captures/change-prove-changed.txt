@@ -1,0 +1,8 @@
+$ ortho prove --changed
+prove --changed: proving all 7 journeys: cannot place generated/actions/handle/claim.ts, generated/mcp/src/index.ts, generated/model/model.json, generated/portal/blueprint.json, generated/server/main.ts, generated/server/migrations/0001_things.sql (nothing in the model says which journeys they touch)
+prove couldn't run: couldn't start the world: wrangler could not build the worker:
+✘ [ERROR] Build failed with 1 error:
+✘ [ERROR] No matching export in "../../blueprint/things/handle/invariants.ts" for import "oneNamePerPerson"
+      ../../src/link/add.ts:7:9:
+wrangler's output is in examples/plugged-in/.ortho/prove/wrangler.log
+exit 2

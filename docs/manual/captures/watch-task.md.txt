@@ -1,0 +1,9 @@
+# .ortho/tasks/drift-test-profile.get.md
+# profile.get is over its budget in test
+
+Written by `ortho watch --env test`. The next watch that finds profile.get back under its budget removes this file.
+
+- p95 22ms against a budget of 10ms (p50 16ms, over 28 calls in the window).
+- The slowest calls, to read as a tree: `ortho telemetry trace 5e49b6d870591f22e4e030a0bb73c8b9 --env test`, `ortho telemetry trace a25f0a742484b4399652a6e8d6b5e586 --env test`, `ortho telemetry trace 31e82899965ebfe4fff1b06faa32be2a --env test`.
+- What it must do, and what it must not touch: `ortho brief profile.get`. Its handler is `src/profile/get.ts`.
+- The budget is the operation's `budget` in its declaration. Make the handler faster; loosening the budget is a decision that makes the operation's verdicts stale.

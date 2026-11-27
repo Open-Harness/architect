@@ -1,0 +1,12 @@
+$ ortho prove --empty --only "claim a handle"
+journey claim a handle ✘ 0/8 steps
+  ✘ "a name nobody has claimed does not resolve": BlankReached: refuse HandleNotFound when?; expected refused with HandleNotFound, failed with 500; span handle.resolve.load missing: expected present, the call produced handle.resolve, journey.claim a handle
+  ✘ "an unclaimed name has no public page": BlankReached: refuse ProfileNotFound when?; expected refused with ProfileNotFound, failed with 500
+  ✘ "aaron cannot add a link before he has a page": BlankReached: load: the work this step does; expected refused with LinkNeedsHandle, failed with 500
+  ✘ "aaron claims the free name": BlankReached: record: the work this step does; expected an answer, failed with 500; emits: nothing at last.handle; is-in: nothing at last.handle; span handle.claim.commit missing: expected present, the call produced handle.claim, handle.claim.record, journey.claim a handle
+  ✘ "the name now resolves to a handle": BlankReached: refuse HandleNotFound when?; expected an answer, failed with 500
+  ✘ "the claim made a public page, with no links yet": BlankReached: refuse ProfileNotFound when?; expected an answer, failed with 500
+  ✘ "aaron cannot claim a second name while he holds one": BlankReached: record: the work this step does; expected refused with HandleAlreadyOwned, failed with 500
+  ✘ "the refused second name is still free": BlankReached: refuse HandleNotFound when?; expected refused with HandleNotFound, failed with 500
+prove ✘ 8 failing
+exit 1

@@ -1,0 +1,24 @@
+$ git diff blueprint/things/handle/invariants.ts
+diff --git a/examples/plugged-in/blueprint/things/handle/invariants.ts b/examples/plugged-in/blueprint/things/handle/invariants.ts
+index 77fc3748..1c8119ee 100644
+--- a/examples/plugged-in/blueprint/things/handle/invariants.ts
++++ b/examples/plugged-in/blueprint/things/handle/invariants.ts
+@@ -1,17 +1,10 @@
+ import { Blueprint } from "orthograph";
+ import { Handle } from "./thing.ts";
+ import { machine } from "./machine.ts";
+-import { HandleAlreadyOwned, HandleTaken } from "./errors.ts";
++import { HandleTaken } from "./errors.ts";
+ 
+ // A name has one holder while it is claimed. A released handle keeps its name and frees it.
+ export const oneHolderPerName = Blueprint.invariant.unique(Handle.fields.name, {
+   while: [machine.states.claimed],
+   refuse: HandleTaken,
+ });
+-
+-// A person holds one claimed name at a time.
+-export const oneNamePerPerson = Blueprint.invariant.unique(Handle.fields.owner, {
+-  while: [machine.states.claimed],
+-  refuse: HandleAlreadyOwned,
+-  description: "you already hold a name", // the generated sentence reads poorly here
+-});

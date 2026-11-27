@@ -1,0 +1,9 @@
+$ ortho generate
+updated generated/actions/handle/claim.ts
+updated generated/cli/src/handle/claim.ts
+updated generated/mcp/src/index.ts
+updated generated/model/model.json
+updated generated/sdk/src/handle/claim.ts
+updated generated/docs/handle/index.md
+updated generated/docs/handle/claim.md
+updated generated/portal/blueprint.json

@@ -10,7 +10,7 @@ questions:
 status: specified
 milestone: M1
 slices: [M1.17, M1.24, M5.05, M5.06]
-decisions: [K3, K5]
+decisions: [K3, K5, K46]
 links: [things, stores, invariants, views, adapters, portal, workflows, languages-and-hosts]
 ---
 
@@ -130,8 +130,9 @@ the spot (K7). Both are built in M6.10; [chains-and-wallets](chains-and-wallets.
 ### What crosses the edge of a store
 
 One call commits to one store: the compiler refuses an operation whose steps write to two (K3 item 5). Work that
-changes two stores, or a store and a chain, is a [workflow](workflows.mdx), with a waiting state between the two
-commits (K5 seam 6). A source is never migrated and never committed to. A handler only calls it, through a step the
+changes two stores, or a store and a chain, is more than one call: each commits to its own store, an event joins them,
+and the wait between them is a state of a thing ([machines](machines.mdx), K46). A [workflow](workflows.mdx) is for
+durable work that belongs to no single thing (K5 seam 6). A source is never migrated and never committed to. A handler only calls it, through a step the
 operation declares, so the call shows in the trace with its declared errors (K3 item 8).
 
 ### What stays true among many records
@@ -220,7 +221,7 @@ migrations, every source with its adapter, calls and stand-in, and every view (K
 its commit. Anything else is a source, reached through an adapter. The word "home" is retired (ledger `G-03`).</Note>
 
 <Note kind="decision" decision="K5">A chain is a host, and its store kind is `chain`. A server call that sends a
-transaction writes two stores, so it is a workflow. K7 settled the rest of chain data: a thing is declared on one by living
+transaction writes two stores, so it is more than one call (K46). K7 settled the rest of chain data: a thing is declared on one by living
 in a chain store (K25); its commit returns a submission, because a chain store may answer late; and private state is a
 capability of one kind, Aztec's `private`, while a public chain store refuses a secret or private field (ledger `G-04`,
 `STO-02` and `X-18`).</Note>
@@ -228,3 +229,11 @@ capability of one kind, Aztec's `private`, while a public chain store refuses a 
 <Note kind="question" id="kind-capabilities" slice="M1.17">A store kind is to declare what it can serve (lists,
 search, private state), so the compiler can refuse a read it can't serve. No shape for that declaration exists yet
 (ledger `STO-07`).</Note>
+
+<Note kind="decision" decision="K46">
+  A thing has four places to live: a database, an actor, a public chain, and a private chain (Aaron, 26 November 2026).
+  The fourth is the Aztec store kind K25 sketched, designed and not built. So "is it private?" no longer sends a fact off
+  chain by itself. A private fact about something on a public chain can also be a sealed field: our server keeps the
+  words, and the chain carries a salted hash of them. On a private store the same field needs no server. Work across two
+  places is more than one call, never one commit, and it is a workflow only when no single thing can hold the wait.
+</Note>

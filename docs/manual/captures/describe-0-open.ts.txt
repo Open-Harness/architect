@@ -1,0 +1,10 @@
+# blueprint/things/wallet/verbs/open.ts
+import { Blueprint } from "orthograph";
+import { Wallet } from "../thing.ts";
+
+export default Blueprint.operation(Wallet, {
+  description: Blueprint.todo("what open does to a wallet, in one sentence"),
+  payload: Blueprint.todo("what a caller sends"),
+  answer: Blueprint.todo("what open answers"),
+  allowed: Blueprint.todo("who may open"),
+});

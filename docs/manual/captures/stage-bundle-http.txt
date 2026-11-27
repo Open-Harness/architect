@@ -1,0 +1,6 @@
+$ curl -i http://127.0.0.1:4628/_ortho/bundle
+HTTP/1.1 200 OK
+Content-Length: 99
+Content-Type: application/json
+
+{"revision":"aae9721e","sha256":"6604eb7f85b9037a4b329735409d0cde38be9be9d189f333d2cdc3588c75cfba"}
